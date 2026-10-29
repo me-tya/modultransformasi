@@ -125,16 +125,24 @@ a{color:var(--blue)}
 .btn.dng{color:var(--bad);border-color:#F0C4C4}
 .btn.sm{height:26px;padding:0 9px;font-size:11px;border-radius:7px}
 .btn[disabled]{opacity:.45;cursor:not-allowed}
-.ptabs{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px;gap:4px;overflow-x:auto}
+.ptabs{display:flex;background:linear-gradient(180deg,#FFFFFF,#F6F8FC);border:1px solid #DCE3EF;border-radius:14px;padding:6px;gap:4px;overflow-x:auto;overflow-y:hidden;box-shadow:0 1px 0 #fff inset,0 4px 14px rgba(11,31,69,.06)}
+.ptabs a:hover:not(.on){background:#EEF3FB;color:var(--navy)}
+.ptabs a+a:before{content:"";position:absolute;left:-3px;top:12px;bottom:12px;width:1px;background:#E3E8F1}
+.ptabs a.on:before,.ptabs a.on+a:before{display:none}
 .ptabs a{flex:1 0 auto;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 12px;border-radius:10px;font-weight:700;font-size:12px;color:var(--ink-3);text-decoration:none;white-space:nowrap;position:relative}
 .ptabs a b{font-size:10px;font-family:var(--mono);background:var(--line-2);color:var(--ink-3);border-radius:10px;padding:0 6px}
-.ptabs a.on{background:var(--gold-l);color:var(--navy)}
+.ptabs a.on{background:linear-gradient(135deg,#0B1F45,#17457F);color:#fff;box-shadow:0 6px 14px rgba(11,31,69,.22)}
+.ptabs a.on:after{content:"";position:absolute;left:22%;right:22%;bottom:5px;height:2.5px;border-radius:2px;background:var(--yellow)}
 .ptabs a.on b{background:var(--yellow);color:var(--navy)}
+.ptabs a{transition:background .15s,color .15s}
 .ptabs a em{font-style:normal;font-size:10px;width:17px;height:17px;border-radius:50%;background:var(--navy);color:#fff;display:inline-grid;place-items:center}
-.ptabs a.on em{background:var(--gold)}
-.subt{display:flex;gap:2px;border-bottom:1px solid var(--line);padding:0 12px;overflow-x:auto}
-.subt a{padding:10px 11px;font-weight:700;font-size:12px;color:var(--ink-3);border-bottom:2.5px solid transparent;margin-bottom:-1px;text-decoration:none;white-space:nowrap;cursor:pointer}
-.subt a.on{color:var(--navy);border-color:var(--yellow)}
+.ptabs a.on em{background:var(--yellow);color:#0B1F45}
+.subt{display:flex;gap:4px;padding:5px;margin:8px;background:#EEF2F8;border:1px solid #E1E7F0;border-radius:11px;overflow-x:auto;overflow-y:hidden;width:max-content;max-width:calc(100% - 16px)}
+.subt a{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;font-weight:700;font-size:12px;color:var(--ink-3);border-radius:8px;text-decoration:none;white-space:nowrap;cursor:pointer;transition:background .15s,color .15s}
+.subt a:before{content:"";width:6px;height:6px;border-radius:50%;background:#C3CCDB}
+.subt a:hover:not(.on){color:var(--navy);background:rgba(255,255,255,.6)}
+.subt a.on{color:var(--navy);background:#fff;box-shadow:0 1px 2px rgba(11,31,69,.08),0 3px 10px rgba(11,31,69,.08)}
+.subt a.on:before{background:var(--yellow);box-shadow:0 0 0 3px rgba(253,185,19,.22)}
 .flt{background:linear-gradient(115deg,#0D2A50,#17457F 70%,#1D5596);border-radius:14px;color:#fff;box-shadow:0 6px 18px rgba(13,40,71,.14);border:1px solid #E9C25A;overflow:hidden}
 .fhd{display:flex;align-items:stretch;min-height:46px;cursor:pointer;user-select:none;background:#FFF8E6}
 .fhd:focus-visible{outline:2px solid var(--yellow);outline-offset:-2px}
@@ -293,8 +301,19 @@ th.srt{cursor:pointer;user-select:none;white-space:nowrap}th.srt:hover{color:var
 .colx{display:flex;gap:18px;padding:6px 8px 0}.colx span{flex:1;text-align:center;font-size:11.5px;font-weight:800;color:var(--ink-3)}
 .lgd{display:flex;gap:12px;font-size:11.5px;color:var(--ink-3);flex-wrap:wrap}.lgd i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
 .stg{display:flex;gap:3px}.stg span{flex:1;height:8px;border-radius:3px;background:var(--line-2);position:relative;overflow:hidden;min-width:20px}.stg span i{position:absolute;inset:0 auto 0 0;background:var(--ok)}
-.mhead{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
-.mhead .kvs{display:flex;gap:18px;flex-wrap:wrap;margin-left:auto}.mhead .kvs div{font-size:12px}.mhead .kvs span{display:block;font-size:10px;font-weight:800;color:var(--ink-3);text-transform:uppercase;letter-spacing:.4px}
+.mhead{display:flex;gap:14px;align-items:center;flex-wrap:wrap;border-radius:16px;padding:16px 18px;color:#fff;position:relative;overflow:hidden;
+ background:radial-gradient(circle at 92% -30%,rgba(253,185,19,.28),transparent 42%),radial-gradient(circle at 0% 130%,rgba(47,123,214,.45),transparent 45%),linear-gradient(120deg,#0B1F45,#143A70 60%,#1B4F92);box-shadow:0 10px 26px rgba(11,31,69,.22)}
+.mhead:after{content:"";position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;border:1px solid rgba(255,255,255,.08);box-shadow:0 0 0 26px rgba(255,255,255,.03),0 0 0 54px rgba(255,255,255,.02);pointer-events:none}
+.mhead>*{position:relative;z-index:1}
+.mhead .s{color:#AFC6E8}.mhead h1{color:#fff}.mhead>div>b{color:#fff}.mhead .kvs .chip{color:#0B1F45;background:#FFF4CC;border-color:#FFE08A}
+.mhead .code{background:rgba(253,185,19,.18);border-color:rgba(253,185,19,.5);color:#FFE7A3}
+.mhead .pic{box-shadow:0 0 0 3px rgba(255,255,255,.14)}
+.mhead .smc{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:3px 10px 3px 4px;border-radius:20px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#E8F0FB}
+.mhead .smc i{font-style:normal;font-family:var(--mono);font-size:10px;background:var(--yellow);color:#0B1F45;border-radius:12px;padding:1px 6px}
+.mhead .kvs{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+.mhead .kvs div{font-size:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:7px 11px;min-width:110px;color:#fff}
+.mhead .kvs span{display:block;font-size:9.5px;font-weight:800;color:#FFD66B;text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px}
+.mhead .chip{border:1px solid rgba(255,255,255,.25)}
 .mx td,.mx th{text-align:center}.mx td:first-child,.mx th:first-child{text-align:left}
 .mx select{height:28px;border:1px solid var(--line);border-radius:6px;padding:0 4px;font-size:11.5px;font-weight:800}
 .jj{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
@@ -842,7 +861,7 @@ document.addEventListener('change',e=>{const t=e.target;
 document.addEventListener('keydown',e=>{if(e.key==='/'&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){const q=document.querySelector('[data-q]');if(q){e.preventDefault();q.focus()}}if(e.key==='Escape'){const ov=document.querySelector('.ov');if(ov)ov.remove()}if((e.key==='Enter'||e.key===' ')&&document.activeElement.classList.contains('fhd')){e.preventDefault();ACT.ftog()}});
 
 function onChange(el){const k=el.dataset.on,v=el.value;if(k==='impwbs')return;
- if(['tahun','prog','unit','umode','lvm','wcm','wth','wst','mod','pr','d1','d2','cunit','crole'].includes(k)){if(k==='cunit'&&!v)S.ui.crole='';if(k==='cunit'||k==='crole')S.ui.mod=''}
+ if(['tahun','prog','unit','umode','lvm','wcm','wth','wst','mod','pr','d1','d2','cunit','crole'].includes(k)){if(k==='cunit'&&!v)S.ui.crole='';if(k==='umode'&&v!=='up'&&!curUnit()&&ME.unit&&UNITS.includes(ME.unit)){S.ui.unit=ME.unit;toast(`Unit diisi ${ME.unit} (unit Anda) agar peran unit bisa diterapkan.`)}if(k==='unit'&&!v)S.ui.umode='up';if(k==='cunit'||k==='crole')S.ui.mod=''}
  if(['tahun','prog','unit','umode','lvm','wcm','wth','wst','mod','pr','d1','d2','cunit','crole'].includes(k)){S.ui[k]=k==='tahun'?+v:v;Object.keys(PG).forEach(x=>PG[x]=0)}
  else if(k==='ltw'){S.ui.ltw=+v}
  else if(k==='lvn')S.ui.lvn=+v;
@@ -866,7 +885,7 @@ ACT.sub=el=>{S.ui.sub[el.dataset.k]=el.dataset.v;save();render()};
 /* ======================== filter bar bersama (Dashboard & WBS) ======================== */
 function fltHead(open,title,chips,n,reset){return `<div class="fhd" data-act="ftog" role="button" tabindex="0" aria-expanded="${open}" title="Klik untuk ${open?'menyembunyikan':'menampilkan'} filter"><div class="fl"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg>${title}<span class="fn" title="Filter aktif">${n}</span></div><div class="fr"><div class="fchips">${chips.map(c=>`<span>${esc(c)}</span>`).join('')}</div>${reset}<span class="fcar" aria-hidden="true">▾</span></div></div>`}
 function fltBar(o={}){const P=per();const open=S.ui.fopen!==0;const pv=progVis();const act=c=>c?' act':'';
- const isW=VIEW==='pmo-wbs';const chips=[`Tahun ${S.ui.tahun}`,...(P.lab===`Tahun ${S.ui.tahun}`?[]:[P.lab]),S.ui.prog?progLabel(S.ui.prog):'Semua program',curUnit()?curUnit()+(lockU()?' (unit Anda)':''):'Semua UE I',...(isW&&S.ui.wth?['Tahapan: '+tahapLab(S.ui.wth)]:[])];
+ const isW=VIEW==='pmo-wbs';const chips=[`Tahun ${S.ui.tahun}`,...(P.lab===`Tahun ${S.ui.tahun}`?[]:[P.lab]),S.ui.prog?progLabel(S.ui.prog):'Semua program',curUnit()?curUnit()+(curUnit()===ME.unit?' (unit Anda)':'')+(o.umode&&(S.ui.umode||'up')!=='up'?' · '+({u:'sebagai UIC Utama',p:'sebagai UIC Pendukung',ue:'cakupan UE I'}[S.ui.umode]):''):'Semua UE I',...(isW&&S.ui.wth?['Tahapan: '+tahapLab(S.ui.wth)]:[])];
  const nAct=[S.ui.prog,(!lockU()&&S.ui.unit),(S.ui.pr&&S.ui.pr!=='3'),o.umode&&(S.ui.umode||'up')!=='up',isW&&S.ui.wth,isW&&S.ui.wst].filter(Boolean).length;
  return `<section class="flt${open?' open':''}" aria-label="Filter">${fltHead(open,'Filter',chips,nAct,(S.ui.prog||(!lockU()&&S.ui.unit)||(S.ui.pr&&S.ui.pr!=='3')||(isW&&(S.ui.wth||S.ui.wst)))?'<button class="freset" data-act="freset">Atur ulang</button>':'')}
  <div class="fbar"${open?'':' hidden'}>
@@ -874,8 +893,8 @@ function fltBar(o={}){const P=per();const open=S.ui.fopen!==0;const pv=progVis()
  <span class="fg"><label for="f-pr2">Periode</label><select class="sel${act(P.pr!=='3')}" id="f-pr2" data-on="pr">${opts([['all','Setahun penuh'],['1','TW 1 (Jan–Mar)'],['2','TW 2 (Apr–Jun)'],['3','TW 3 (Jul–Sep)'],['4','TW 4 (Okt–Des)'],['r','Rentang tanggal…']],P.pr)}</select></span>
  ${P.pr==='r'?`<span class="fg"><label for="f-d1">Dari</label><input type="date" class="sel act" id="f-d1" data-on="d1" value="${P.d1}"></span><span class="fg"><label for="f-d2">s.d.</label><input type="date" class="sel act" id="f-d2" data-on="d2" value="${P.d2}"></span>`:''}
  <span class="fg"><label for="f-pr">Program</label><select class="sel${act(S.ui.prog)}" id="f-pr" data-on="prog"><option value="">Semua program</option>${pv.map(p=>`<option value="${p.akr}" ${S.ui.prog===p.akr?'selected':''}>${p.kode} · ${esc(p.nama)}</option>`).join('')}</select></span>
- <span class="fg"><label for="f-un">Unit</label>${lockU()?`<select class="sel" id="f-un" disabled title="Terkunci ke unit Anda"><option>${esc(lockU())} (unit Anda)</option></select>`:`<select class="sel${act(S.ui.unit)}" id="f-un" data-on="unit"><option value="">Semua UE I</option>${UNITS.map(u=>`<option ${curUnit()===u?'selected':''}>${u}</option>`).join('')}</select>`}</span>
- ${o.umode?`<select class="sel${act((S.ui.umode||'up')!=='up')}" data-on="umode" aria-label="Peran unit">${opts([['up','sebagai UIC Utama/Pendukung'],['u','sebagai UIC Utama'],['p','sebagai UIC Pendukung'],['ue','cakupan UE I (kolom Setjen–LNSW)']],S.ui.umode)}</select>`:''}
+ <span class="fg"><label for="f-un">Unit</label>${lockU()?`<select class="sel" id="f-un" disabled title="Terkunci ke unit Anda"><option>${esc(lockU())} (unit Anda)</option></select>`:`<select class="sel${act(S.ui.unit)}" id="f-un" data-on="unit"><option value="">Semua UE I</option>${(UNITS.includes(ME.unit)?[ME.unit,...UNITS.filter(x=>x!==ME.unit)]:UNITS).map(u=>`<option value="${u}" ${curUnit()===u?'selected':''}>${u}${u===ME.unit?' (unit Anda)':''}</option>`).join('')}</select>`}</span>
+ ${o.umode?`<select class="sel${act((S.ui.umode||'up')!=='up')}" data-on="umode" aria-label="Peran unit"${!curUnit()&&!(ME.unit&&UNITS.includes(ME.unit))?' disabled title="Pilih unit dulu"':''}>${opts([['up','sebagai UIC Utama/Pendukung'],['u','sebagai UIC Utama'],['p','sebagai UIC Pendukung'],['ue','cakupan UE I (kolom Setjen–LNSW)']],S.ui.umode)}</select>`:''}
  ${o.extra||''}</div></section>`}
 ACT.ftog=()=>{S.ui.fopen=S.ui.fopen===0?1:0;save();render()};
 ACT.freset=()=>{S.ui.prog='';S.ui.unit='';S.ui.pr='3';S.ui.umode='up';S.ui.wcm='';S.ui.wth='';S.ui.wst='';Object.keys(PG).forEach(x=>PG[x]=0);save();render()};
@@ -1233,7 +1252,7 @@ function viewCmo(tab,mk){const f=tab==='siklus'?'adp':tab;
  return head+cmoTabs(tab,mk)+(mk?'':cmoFlt(f,tab))+body}
 function modHead(mk){const m=modOf(mk);if(!m)return `<div class="card empty">Modul ${esc(mk)} tidak ditemukan (item ADP mungkin diarsipkan).</div>`;const sm=S.sub.filter(s=>s.modul===mk);
  return `<div class="vh"><a href="#cmo-siklus" class="btn sm">‹ Semua modul</a></div><div class="mhead"><div class="pic cmo" style="width:44px;height:44px;border-radius:11px;display:grid;place-items:center;color:#fff;font-weight:800">M</div>
- <div style="min-width:0"><div class="s">${esc(m.aplikasi)} › Modul</div><h1 style="font-size:19px;margin:0;font-weight:800">${esc(m.nama)} <span class="code">${m.kode}</span></h1><div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap">${sm.map((s,i)=>`<span class="chip c-gray">${m.kode}.${i+1} ${esc(s.nama)}</span>`).join('')||'<span class="chip c-warn">Sub modul belum diisi di ADP</span>'}</div></div>
+ <div style="min-width:0"><div class="s">${esc(m.aplikasi)} › Modul</div><h1 style="font-size:19px;margin:0;font-weight:800">${esc(m.nama)} <span class="code">${m.kode}</span></h1><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">${sm.map((s,i)=>`<span class="smc"><i>${m.kode}.${i+1}</i>${esc(s.nama)}</span>`).join('')||'<span class="chip c-warn">Sub modul belum diisi di ADP</span>'}</div></div>
  <div class="kvs"><div><span>Program</span>${progLabel(m.prog)}</div><div><span>UIC Utama</span>${esc(short(m.uic,50))}</div><div><span>Pendamping CM</span>Pusmantap (advisory)</div><div><span>Status ADP</span>${chipSt(adpSt(mk))}</div>${relChip(m)?`<div><span>Peran unit Anda</span>${relChip(m)}</div>`:''}</div></div>`}
 /* --- Siklus --- */
 function stgBar(m,s){const it=m.st[s];if(!it.length)return `<span title="${s}: belum ada item WBS" style="background:repeating-linear-gradient(135deg,#FCF1DC 0 3px,#F2D9A6 3px 6px)"></span>`;const d=it.filter(w=>doneAt(w,12)).length;return `<span title="${s}: ${d}/${it.length} selesai"><i style="width:${d/it.length*100}%"></i></span>`}
