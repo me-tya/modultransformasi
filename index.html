@@ -682,10 +682,12 @@ const scope=()=>(S.akses[ME.role]||{}).scope||'Unit';
 function inScope(mk){const sc=scope();if(sc==='Semua')return true;const m=modOf(mk);if(!m)return false;if(sc==='Unit')return m.uicUnits.includes(ME.unit);return (ME.modules||[]).includes(mk)}
 function can(f,act,mk){const L=lv(f);if(L==='-'||!L.includes(act))return false;if(act==='R'&&UNREAD_SCOPED.includes(f))return true;if(mk==null)return scope()==='Semua'||mods().filter(cmoMatch).some(m=>inScope(m.kode));return inScope(mk)}
 function canW(f,act,uic,it){const L=lv(f);if(L==='-'||!L.includes(act))return false;const sc=scope();if(sc==='Semua')return true;if(sc==='Unit')return uic==null?true:unitsOf(uic).includes(ME.unit);if(it){const m=modOfItem(it);return !!m&&(ME.modules||[]).includes(m.kode)}return false}
-const lockU=()=>ME&&ME.role==='PMOU'?ME.unit:'';
+const lockU=()=>ME&&(ME.role==='PMOU'||ME.role==='CMOU')?ME.unit:'';
+const lockM=()=>ME&&ME.role==='CMOU'?'u':'';
+const umOf=()=>lockM()||S.ui.umode||'up';
 const curUnit=()=>lockU()||S.ui.unit;
-function progVis(){const u=lockU();return S.programs.filter(p=>!u||unitsOf(p.uic+', '+p.pend).includes(u)||S.wbs.some(w=>w.prog===p.akr&&!w.arsip&&unitMatch(w,u,'up')))}
-function riskVis(r){const u=lockU();if(!u)return true;const m=modOf(r.item),it=wbsBy(r.item);return r.pemilik===u||(m&&m.uicUnits.includes(u))||(it&&unitMatch(it,u,'up'))}
+function progVis(){const u=lockU();return S.programs.filter(p=>!u||unitsOf(lockM()?p.uic:p.uic+', '+p.pend).includes(u)||S.wbs.some(w=>w.prog===p.akr&&!w.arsip&&unitMatch(w,u,lockM()||'up')))}
+function riskVis(r){const u=lockU();if(!u)return true;const m=modOf(r.item),it=wbsBy(r.item);return r.pemilik===u||(m&&m.uicUnits.includes(u))||(it&&unitMatch(it,u,lockM()||'up'))}
 const visMods=f=>mods().filter(m=>can(f,'R',m.kode)&&(!lockU()||m.uicUnits.includes(lockU())||unitsOf(m.pend).includes(lockU())));
 const wMods=(f,a)=>mods().filter(m=>can(f,a||'U',m.kode));
 
@@ -885,8 +887,8 @@ ACT.sub=el=>{S.ui.sub[el.dataset.k]=el.dataset.v;save();render()};
 /* ======================== filter bar bersama (Dashboard & WBS) ======================== */
 function fltHead(open,title,chips,n,reset){return `<div class="fhd" data-act="ftog" role="button" tabindex="0" aria-expanded="${open}" title="Klik untuk ${open?'menyembunyikan':'menampilkan'} filter"><div class="fl"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg>${title}<span class="fn" title="Filter aktif">${n}</span></div><div class="fr"><div class="fchips">${chips.map(c=>`<span>${esc(c)}</span>`).join('')}</div>${reset}<span class="fcar" aria-hidden="true">▾</span></div></div>`}
 function fltBar(o={}){const P=per();const open=S.ui.fopen!==0;const pv=progVis();const act=c=>c?' act':'';
- const isW=VIEW==='pmo-wbs';const chips=[`Tahun ${S.ui.tahun}`,...(P.lab===`Tahun ${S.ui.tahun}`?[]:[P.lab]),S.ui.prog?progLabel(S.ui.prog):'Semua program',curUnit()?curUnit()+(curUnit()===ME.unit?' (unit Anda)':'')+(o.umode&&(S.ui.umode||'up')!=='up'?' · '+({u:'sebagai UIC Utama',p:'sebagai UIC Pendukung',ue:'cakupan UE I'}[S.ui.umode]):''):'Semua UE I',...(isW&&S.ui.wth?['Tahapan: '+tahapLab(S.ui.wth)]:[])];
- const nAct=[S.ui.prog,(!lockU()&&S.ui.unit),(S.ui.pr&&S.ui.pr!=='3'),o.umode&&(S.ui.umode||'up')!=='up',isW&&S.ui.wth,isW&&S.ui.wst].filter(Boolean).length;
+ const isW=VIEW==='pmo-wbs';const chips=[`Tahun ${S.ui.tahun}`,...(P.lab===`Tahun ${S.ui.tahun}`?[]:[P.lab]),S.ui.prog?progLabel(S.ui.prog):'Semua program',curUnit()?curUnit()+(curUnit()===ME.unit?' (unit Anda)':'')+(o.umode&&umOf()!=='up'?' · '+({u:'sebagai UIC Utama',p:'sebagai UIC Pendukung',ue:'cakupan UE I'}[umOf()]):''):'Semua UE I',...(isW&&S.ui.wth?['Tahapan: '+tahapLab(S.ui.wth)]:[])];
+ const nAct=[S.ui.prog,(!lockU()&&S.ui.unit),(S.ui.pr&&S.ui.pr!=='3'),o.umode&&!lockM()&&umOf()!=='up',isW&&S.ui.wth,isW&&S.ui.wst].filter(Boolean).length;
  return `<section class="flt${open?' open':''}" aria-label="Filter">${fltHead(open,'Filter',chips,nAct,(S.ui.prog||(!lockU()&&S.ui.unit)||(S.ui.pr&&S.ui.pr!=='3')||(isW&&(S.ui.wth||S.ui.wst)))?'<button class="freset" data-act="freset">Atur ulang</button>':'')}
  <div class="fbar"${open?'':' hidden'}>
  <span class="fg"><label for="f-th">Tahun</label><select class="sel" id="f-th" data-on="tahun">${yearsOpt().map(y=>`<option ${S.ui.tahun==y?'selected':''}>${y}</option>`).join('')}</select></span>
@@ -894,7 +896,7 @@ function fltBar(o={}){const P=per();const open=S.ui.fopen!==0;const pv=progVis()
  ${P.pr==='r'?`<span class="fg"><label for="f-d1">Dari</label><input type="date" class="sel act" id="f-d1" data-on="d1" value="${P.d1}"></span><span class="fg"><label for="f-d2">s.d.</label><input type="date" class="sel act" id="f-d2" data-on="d2" value="${P.d2}"></span>`:''}
  <span class="fg"><label for="f-pr">Program</label><select class="sel${act(S.ui.prog)}" id="f-pr" data-on="prog"><option value="">Semua program</option>${pv.map(p=>`<option value="${p.akr}" ${S.ui.prog===p.akr?'selected':''}>${p.kode} · ${esc(p.nama)}</option>`).join('')}</select></span>
  <span class="fg"><label for="f-un">Unit</label>${lockU()?`<select class="sel" id="f-un" disabled title="Terkunci ke unit Anda"><option>${esc(lockU())} (unit Anda)</option></select>`:`<select class="sel${act(S.ui.unit)}" id="f-un" data-on="unit"><option value="">Semua UE I</option>${(UNITS.includes(ME.unit)?[ME.unit,...UNITS.filter(x=>x!==ME.unit)]:UNITS).map(u=>`<option value="${u}" ${curUnit()===u?'selected':''}>${u}${u===ME.unit?' (unit Anda)':''}</option>`).join('')}</select>`}</span>
- ${o.umode?`<select class="sel${act((S.ui.umode||'up')!=='up')}" data-on="umode" aria-label="Peran unit"${!curUnit()&&!(ME.unit&&UNITS.includes(ME.unit))?' disabled title="Pilih unit dulu"':''}>${opts([['up','sebagai UIC Utama/Pendukung'],['u','sebagai UIC Utama'],['p','sebagai UIC Pendukung'],['ue','cakupan UE I (kolom Setjen–LNSW)']],S.ui.umode)}</select>`:''}
+ ${o.umode&&lockM()?`<select class="sel" disabled aria-label="Peran unit" title="Terkunci: akun CMO unit hanya melihat item yang UIC Utama-nya unit Anda"><option>sebagai UIC Utama (terkunci)</option></select>`:''}${o.umode&&!lockM()?`<select class="sel${act(umOf()!=='up')}" data-on="umode" aria-label="Peran unit"${!curUnit()&&!(ME.unit&&UNITS.includes(ME.unit))?' disabled title="Pilih unit dulu"':''}>${opts([['up','sebagai UIC Utama/Pendukung'],['u','sebagai UIC Utama'],['p','sebagai UIC Pendukung'],['ue','cakupan UE I (kolom Setjen–LNSW)']],S.ui.umode)}</select>`:''}
  ${o.extra||''}</div></section>`}
 ACT.ftog=()=>{S.ui.fopen=S.ui.fopen===0?1:0;save();render()};
 ACT.freset=()=>{S.ui.prog='';S.ui.unit='';S.ui.pr='3';S.ui.umode='up';S.ui.wcm='';S.ui.wth='';S.ui.wst='';Object.keys(PG).forEach(x=>PG[x]=0);save();render()};
@@ -953,12 +955,12 @@ function viewDash(){const P=per();const items=wbsFilt({mode:'ue'});
 ACT.lapexp=()=>exportLaporan();
 
 /* ======================== PMO ======================== */
-function pmoTabs(cur){const u=curUnit(),W=S.wbs.filter(w=>!w.arsip&&unitMatch(w,u,'up'));const cnt={portofolio:progVis().length,wbs:W.length,milestone:W.filter(w=>yrOf(w)===S.ui.tahun&&stOf(w,12)==='Terlambat').length,risiko:S.risks.filter(r=>r.st!=='Ditutup'&&riskVis(r)).length,cr:S.crs.filter(c=>crVis(c)&&['Diajukan','Telaah PMO Pusat'].includes(c.st)).length,bukti:W.filter(w=>buktiSt(w)==='Menunggu validasi').length,laporan:'',referensi:S.usul.filter(x=>x.st==='Diajukan').length};
+function pmoTabs(cur){const u=curUnit(),W=S.wbs.filter(w=>!w.arsip&&unitMatch(w,u,lockM()||'up'));const cnt={portofolio:progVis().length,wbs:W.length,milestone:W.filter(w=>yrOf(w)===S.ui.tahun&&stOf(w,12)==='Terlambat').length,risiko:S.risks.filter(r=>r.st!=='Ditutup'&&riskVis(r)).length,cr:S.crs.filter(c=>crVis(c)&&['Diajukan','Telaah PMO Pusat'].includes(c.st)).length,bukti:W.filter(w=>buktiSt(w)==='Menunggu validasi').length,laporan:'',referensi:S.usul.filter(x=>x.st==='Diajukan').length};
  return `<nav class="ptabs" aria-label="Tab PMO">${pmoTabsVis().map(t=>`<a href="#pmo-${t[0]}" class="${t[0]===cur?'on':''}">${t[1]}${cnt[t[0]]!==''?` <b>${cnt[t[0]]}</b>`:''}</a>`).join('')}</nav>`}
 function viewPmo(tab){const f={portofolio:pPorto,wbs:pWbs,milestone:pMilestone,risiko:pRisiko,cr:pCr,bukti:pBukti,laporan:pLaporan,referensi:pRef}[tab];return f?f():''}
 /* --- Portofolio --- */
 function pPorto(){const P=per(),M=P.b,tw=P.lab;const seg=S.ui.seg||'';const PV=progVis();const ps=PV.filter(p=>!seg||p.jenis===seg);
- const items=S.wbs.filter(w=>!w.arsip&&yrOf(w)===S.ui.tahun&&unitMatch(w,curUnit(),'up'));const tot=sumTR(items,M);
+ const items=S.wbs.filter(w=>!w.arsip&&yrOf(w)===S.ui.tahun&&unitMatch(w,curUnit(),lockM()||'up'));const tot=sumTR(items,M);
  const up=items.filter(w=>!doneAt(w,12)&&w.f>=TODAY&&w.f<=addDays(TODAY,30)).sort((a,b)=>a.f<b.f?-1:1);const late=items.filter(w=>stOf(w,12)==='Terlambat').sort((a,b)=>a.f<b.f?-1:1);
  return vh('P','pmo','Portofolio Program','Program transformasi berkelanjutan dan tematik beserta capaiannya.',`<button class="btn" data-act="tmpl">Template</button>`)+pmoTabs('portofolio')+
  `<div class="kpis"><div class="kpi dk"><div class="l">Total program${lockU()?' · '+esc(lockU()):''}</div><div class="v">${PV.length}</div><div class="d">${PV.filter(p=>p.jenis==='Berkelanjutan').length} berkelanjutan · ${PV.filter(p=>p.jenis==='Tematik').length} tematik</div></div>
@@ -981,7 +983,7 @@ function pPorto(){const P=per(),M=P.b,tw=P.lab;const seg=S.ui.seg||'';const PV=p
 ACT.gowbs=el=>{S.ui.prog=el.dataset.p;save()};
 ACT.tmpl=()=>{xlsxSave([{sheet:'Program',rows:[{Kode:'B26-XXX',Jenis:'Berkelanjutan','Akronim kode':'XXX','Tahun mulai':2026,'Program / proyek':'','Klaster (Lv 2)':'',Sponsor:'','UIC Utama':'','UIC Pendukung':'',Periode:'',Status:'Inisiasi'}]},{sheet:'Kompilasi',rows:[kompRow(S.wbs[0])]}],'Template_Modul_Transformasi.xlsx')};
 /* --- WBS --- */
-function wbsRows(){const P=per(),M=P.b;const u=curUnit(),um=S.ui.umode||'up';const lvm=S.ui.lvm||'sd',lvn=S.ui.lvn||10;const wth=S.ui.wth||'',wst=S.ui.wst||'';
+function wbsRows(){const P=per(),M=P.b;const u=curUnit(),um=umOf();const lvm=S.ui.lvm||'sd',lvn=S.ui.lvn||10;const wth=S.ui.wth||'',wst=S.ui.wst||'';
  return S.wbs.filter(w=>!w.arsip&&yrOf(w)===S.ui.tahun&&(!S.ui.prog||w.prog===S.ui.prog)&&unitMatch(w,u,um)&&inP(w,P)
   &&(lvm==='sd'?lvOf(w)<=lvn:lvOf(w)===lvn)&&(!wth||tahapMatch(w,wth))&&(!wst||stP(w,P)===wst))}
 function ganttCell(w){const y=yrOf(w)||S.ui.tahun;const d0=new Date(y,0,1),d1=new Date(y,11,31);const pos=d=>{if(!d)return null;const x=new Date(d+'T00:00:00');return Math.max(0,Math.min(1,(x-d0)/(d1-d0)))};const a=pos(w.s)??pos(w.f),b=pos(w.f)??a;if(a==null)return '';
@@ -1059,7 +1061,7 @@ function wbsDetail(w){const M=per().b;const m=modOfItem(w);const B=S.bukti[w.k]|
 
 /* --- Bukti dukung --- */
 function buktiSt(w){const B=S.bukti[w.k];if(w.v)return 'Valid';if(B&&B.st==='Ditolak')return 'Ditolak';if(doneAt(w,12)||(B&&(B.link||B.file)))return 'Menunggu validasi';return 'Belum diunggah'}
-function pBukti(){const P=per();const base=S.wbs.filter(w=>!w.arsip&&yrOf(w)===S.ui.tahun&&(!S.ui.prog||w.prog===S.ui.prog)&&unitMatch(w,curUnit(),S.ui.umode||'up')&&inP(w,P));
+function pBukti(){const P=per();const base=S.wbs.filter(w=>!w.arsip&&yrOf(w)===S.ui.tahun&&(!S.ui.prog||w.prog===S.ui.prog)&&unitMatch(w,curUnit(),umOf())&&inP(w,P));
  const segs=['Menunggu validasi','Ditolak','Belum diunggah','Valid'];const seg=S.ui.bseg||'Menunggu validasi';const rows=base.filter(w=>buktiSt(w)===seg);
  return vh('B','pmo','Bukti Dukung','Antrean unggah dan validasi bukti dukung item WBS.',`<a class="btn" href="http://s.kemenkeu.go.id/BuktiDukungTProgram2026" target="_blank" rel="noopener">Folder SharePoint ›</a>`)+pmoTabs('bukti')+fltBar({all:true,umode:true})+
  `<div class="kpis">${segs.map(s=>`<button class="kpi" style="text-align:left;cursor:pointer;${s===seg?'outline:2px solid var(--yellow)':''}" data-seg="bseg" data-v="${s}"><div class="l">${s}</div><div class="v">${base.filter(w=>buktiSt(w)===s).length}</div></button>`).join('')}</div>
@@ -1080,7 +1082,7 @@ function buktiUpload(w){const B=S.bukti[w.k]||{};modal(`Bukti dukung <span class
   S.bukti[w.k]={link:link||'(berkas lokal) '+nama,nama,note:$('#bk-c').value,by:ME.nama,tgl:TODAY,st:'Menunggu validasi',cat:''};w.v=0;if(!doneAt(w,12))markDone(w);log('Unggah bukti',w.k);save();toast('Bukti dukung terkirim untuk validasi PMO Pusat.');render()})}
 
 /* --- Milestone --- */
-function pMilestone(){const y=S.ui.tahun,P=per();const yr=S.wbs.filter(w=>!w.arsip&&yrOf(w)===y&&(!S.ui.prog||w.prog===S.ui.prog)&&unitMatch(w,curUnit(),'up'));const base=yr.filter(w=>inP(w,P));const in30=w=>!doneAt(w,12)&&w.f>=TODAY&&w.f<=addDays(TODAY,30);
+function pMilestone(){const y=S.ui.tahun,P=per();const yr=S.wbs.filter(w=>!w.arsip&&yrOf(w)===y&&(!S.ui.prog||w.prog===S.ui.prog)&&unitMatch(w,curUnit(),lockM()||'up'));const base=yr.filter(w=>inP(w,P));const in30=w=>!doneAt(w,12)&&w.f>=TODAY&&w.f<=addDays(TODAY,30);
  const seg=S.ui.mseg||'all';const rows=base.filter(w=>seg==='all'||(seg==='late'&&stOf(w,12)==='Terlambat')||(seg==='30'&&in30(w))||(seg==='done'&&doneAt(w,12))).sort((a,b)=>(a.f||'')<(b.f||'')?-1:1);
  const nextCut=[1,2,3,4].map(t=>twEnd(y,t)).find(d=>d>=TODAY)||'—';
  const perM=MON.map((m,i)=>{const it=yr.filter(w=>+String(w.f).slice(5,7)===i+1);return {n:it.length,d:it.filter(w=>doneAt(w,12)).length}});const mx=Math.max(1,...perM.map(x=>x.n));
@@ -1126,7 +1128,7 @@ function crChanges(c,html){if(c.jenis==='Tambah item')return `Item baru “${c.n
  const e=Object.entries(c.ch||{});if(!e.length)return '—';return e.map(([k,[o,n]])=>html?`<div><span class="s">${crLab(k)}:</span> ${esc(crFmt(k,o))} → <b>${esc(crFmt(k,n))}</b></div>`:`${crLab(k)}: ${crFmt(k,o)} → ${crFmt(k,n)}`).join(html?'':'; ')}
 function crDampak(c){const it=wbsBy(c.item);if(c.jenis==='Tambah item')return c.cmBaru==='ADP'?'Besar':'Kecil';if(c.jenis==='Hapus/arsip item')return 'Besar';const ch=c.ch||{};
  if(ch.f&&(twOfDate(ch.f[1])!==twOfDate(ch.f[0])||String(ch.f[1]).slice(0,4)!==String(ch.f[0]).slice(0,4)))return 'Besar';if(ch.dl||ch.u)return 'Besar';if(it&&cmType(it)==='ADP'&&Object.keys(ch).length)return 'Besar';return 'Kecil'}
-function crVis(c){const u=lockU();if(!u)return true;const it=wbsBy(c.item);return c.unit===u||(it&&unitMatch(it,u,'up'))}
+function crVis(c){const u=lockU();if(!u)return true;const it=wbsBy(c.item);return c.unit===u||(it&&unitMatch(it,u,lockM()||'up'))}
 function pCr(){const seg=S.ui.crseg||'';const CS=S.crs.filter(crVis);const rows=CS.filter(c=>!seg||(seg==='open'?['Diajukan','Telaah PMO Pusat','Dikembalikan'].includes(c.st):['Diterapkan','Ditolak'].includes(c.st))).slice().reverse();
  const sla=c=>['Diajukan','Telaah PMO Pusat'].includes(c.st)&&addDays(c.tgl,7)<TODAY;
  return vh('CR','pmo','Change Request','Pengajuan dan keputusan perubahan item WBS yang sudah ber-baseline.',lv('cr').includes('C')?'<button class="btn pri" data-act="crnew">+ Change Request</button>':'')+pmoTabs('cr')+
