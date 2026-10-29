@@ -682,17 +682,18 @@ function navTree(){
  const ext=(id,l,ic,kids)=>({id,l,ic,kids:kids.map(k=>({l:k,ext:1}))});
  const trans={id:'trans',l:'Transformasi',badge:'BARU',ic:'◎',kids:[]};
  if(lv('dash')!=='-')trans.kids.push({l:'Dashboard Eksekutif',h:'dashboard'});
- const pt=pmoTabsVis();if(pt.length)trans.kids.push({id:'pmo',l:'PMO',kids:pt.map(t=>({l:t[1],h:'pmo-'+t[0]}))});
- const ct=cmoTabsVis();if(ct.length)trans.kids.push({id:'cmo',l:'CMO',kids:ct.map(t=>({l:t[1],h:'cmo-'+t[0]}))});
- const st=STN.filter(t=>lv(t[2])!=='-');if(st.length)trans.kids.push({id:'set',l:'Pengaturan',kids:st.map(t=>({l:t[1],h:t[0]}))});
+ const pt=pmoTabsVis();if(pt.length)trans.kids.push({l:'PMO',h:'pmo-'+pt[0][0],pre:'pmo-'});
+ const ct=cmoTabsVis();if(ct.length)trans.kids.push({l:'CMO',h:'cmo-'+ct[0][0],pre:'cmo-'});
+ const st=STN.filter(t=>lv(t[2])!=='-');if(st.length)trans.kids.push({l:'Pengaturan',h:st[0][0],pre:'set-'});
  return [{l:'Beranda',h:'beranda',ic:'⌂'},ext('kolab','Kolaborasi','⚇',['Nadine','My Task','Tim','Rapat','Inovasi','Kemenkeu Drive','Email','Perjalanan Dinas 2']),ext('fas','Fasilitas','▣',['Ruang Rapat','Kendaraan Dinas','Klinik']),ext('pd','Pengembangan Diri','✎',['Learning Center','Pustaka']),ext('perf','Performa','↗',['Kinerja','Presensi']),
   {id:'lainnya',l:'Lainnya',ic:'⋯',kids:['Digitalisasi Hukum','EKSIS','Digitalisasi Aset','Shortlink','Kemenkeu Hub','Saluran Aspirasi'].map(k=>({l:k,ext:1})).concat([trans])},ext('peg','Kepegawaian','☰',['Profil Pegawai','Cuti'])]}
 function curKey(){const m=VIEW.match(/^modul-(.+)-t-(\w+)$/);return m?'cmo-'+m[2]:VIEW}
-function hasActive(n,cur){return n.h===cur||(n.kids||[]).some(k=>hasActive(k,cur))}
+const isOn=(n,cur)=>n.h===cur||(n.pre&&cur.startsWith(n.pre));
+function hasActive(n,cur){return isOn(n,cur)||(n.kids||[]).some(k=>hasActive(k,cur))}
 function navHTML(nodes,d,cur){return nodes.map(n=>{const cls=`nv d${d}`;
  if(n.kids){const open=S.ui.nav[n.id]!=null?!!S.ui.nav[n.id]:hasActive(n,cur);return `<button class="${cls} ${open&&d===0?'open':''}" data-nav="${n.id}" aria-expanded="${open}">${d===0?`<span class="ic">${n.ic||''}</span>`:''}${n.l}${n.badge?`<span class="new">${n.badge}</span>`:''}<span class="ch">›</span></button><div class="grp"${open?'':' hidden'}>${navHTML(n.kids,d+1,cur)}</div>`}
  if(n.ext)return `<button class="${cls}" data-ext="${esc(n.l)}">${n.l}</button>`;
- return `<a class="${cls} ${n.h===cur?'on':''}" href="#${n.h}">${d===0?`<span class="ic">${n.ic||''}</span>`:''}${n.l}</a>`}).join('')}
+ return `<a class="${cls} ${isOn(n,cur)?'on':''}" href="#${n.h}">${d===0?`<span class="ic">${n.ic||''}</span>`:''}${n.l}</a>`}).join('')}
 function crumbOf(){const m=VIEW.match(/^modul-(.+)-t-(\w+)$/);const base='Lainnya › Transformasi › ';if(m)return base+`CMO › <b>${esc(modLabel(m[1]))}</b>`;
  if(VIEW==='beranda')return '<b>Beranda</b>';if(VIEW==='dashboard')return base+'<b>Dashboard Eksekutif</b>';
  const p=PMT.find(t=>'pmo-'+t[0]===VIEW);if(p)return base+'PMO › <b>'+p[1]+'</b>';const c=CMT.find(t=>'cmo-'+t[0]===VIEW);if(c)return base+'CMO › <b>'+c[1]+'</b>';const s=STN.find(t=>t[0]===VIEW);if(s)return base+'Pengaturan › <b>'+s[1]+'</b>';return base}
@@ -725,6 +726,7 @@ function render(){
  if(mm)h=viewCmo(mm[2],mm[1]);else if(VIEW==='beranda')h=viewHome(tk);else if(VIEW==='dashboard')h=viewDash();
  else if(VIEW.startsWith('pmo-'))h=viewPmo(VIEW.slice(4));else if(VIEW.startsWith('cmo-'))h=viewCmo(VIEW.slice(4),null);
  else if(VIEW==='set-pengguna')h=viewUsers();else if(VIEW==='set-akses')h=viewAkses();else if(VIEW==='set-sinkron')h=viewSinkron();else if(VIEW==='set-db')h=viewDb();else if(VIEW==='set-log')h=viewLog();
+ if(VIEW.startsWith('set-'))h=h.replace('<!--vh-->',setTabs());
  v.innerHTML=h;
 }
 const yearsOpt=()=>{const ys=new Set([S.ui.tahun]);S.wbs.forEach(w=>{const y=yrOf(w);if(y)ys.add(y)});return [...ys].sort()};
@@ -774,7 +776,8 @@ function onChange(el){const k=el.dataset.on,v=el.value;if(k==='impwbs')return;
  else if(k==='kepf'){const f=el.files[0];if(!f)return;if(f.size>(FB.on?7e5:1.5e6)){toast(FB.on?'Ukuran KEP maksimal 700 KB pada mode Firestore.':'Ukuran KEP maksimal 1,5 MB pada prototipe.');return}const rd=new FileReader();rd.onload=()=>{const j=jjm(el.dataset.m);j.kepFile=rd.result;j.kepName=f.name;log('Unggah KEP',f.name);save();toast('KEP terunggah.');render()};rd.readAsDataURL(f);return}
  save();render()}
 const jjm=mk=>S.jjMod[mk]||(S.jjMod[mk]={link:'',kepNo:'',kepTgl:'',kepFile:'',kepName:'',aktif:'Belum'});
-function vh(ic,cls,title,desc,acts){return `<div class="vh"><div class="pic ${cls}">${ic}</div><div style="min-width:0"><h1>${title}</h1><p title="${esc(desc)}">${desc}</p></div>${acts?`<div class="acts">${acts}</div>`:''}</div>`}
+function vh(ic,cls,title,desc,acts){return `<div class="vh"><div class="pic ${cls}">${ic}</div><div style="min-width:0"><h1>${title}</h1><p title="${esc(desc)}">${desc}</p></div>${acts?`<div class="acts">${acts}</div>`:''}</div><!--vh-->`}
+function setTabs(){return `<nav class="ptabs" aria-label="Pengaturan">${STN.filter(t=>lv(t[2])!=='-').map(([k,l])=>`<a href="#${k}" class="${k===VIEW?'on':''}"><span>${l}</span></a>`).join('')}</nav>`}
 function subNav(key,list,def){const cur=S.ui.sub[key]||def;return `<div class="subt" role="tablist">${list.map(([k,l])=>`<a data-act="sub" data-k="${key}" data-v="${k}" class="${cur===k?'on':''}" role="tab" aria-selected="${cur===k}">${l}</a>`).join('')}</div>`}
 ACT.sub=el=>{S.ui.sub[el.dataset.k]=el.dataset.v;save();render()};
 
