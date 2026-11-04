@@ -2068,7 +2068,7 @@ async function chPdf(c){try{toast('Menyiapkan PDF 4 halaman…');await chLib('ht
   const cv=await html2canvas(box,{scale:2,backgroundColor:'#ffffff'});box.remove();let w=W-2*m,h=cv.height*w/cv.width;if(h>H-2*m){h=H-2*m;w=cv.width*h/cv.height}if(i)pdf.addPage();pdf.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',(W-w)/2,m,w,h)}
  chSaveBlob(pdf.output('blob'),chFn(c,'pdf'));log('Ekspor charter PDF',c.prog)}catch(e){toast(e.message||'Gagal membuat PDF.')}}
 function chDoc(c){const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Charter</title><style>@page Section1{size:841.9pt 595.3pt;mso-page-orientation:landscape;margin:28pt 28pt 28pt 28pt}div.Section1{page:Section1}body{font-family:Arial,sans-serif;color:#152033}</style></head><body><div class="Section1">${chDocPages(c).join('<br clear="all" style="page-break-before:always">')}</div>
-<script>document.addEventListener('click',e=>{if(e.target.closest('.pm-sub-tree'))e.stopPropagation()},true);</script>
+
 </body></html>`;
  chSaveBlob(new Blob(['﻿',html],{type:'application/msword'}),chFn(c,'doc'));log('Ekspor charter Word',c.prog)}
 async function chPpt(c){
@@ -3458,6 +3458,7 @@ document.addEventListener('change',async e=>{
 </script>
 <script>
 /* Tooltip navigasi memakai tujuan menu, bukan teks tombol. */
+document.addEventListener('click',e=>{if(e.target.closest('.pm-sub-tree'))e.stopPropagation()},true);
 const DESTINASI_PMO={siklus:'Overview',oneonone:'Pelaksanaan - Jadwal 1-on-1',portofolio:'Portofolio',program:'Program',perencanaan:'Perencanaan - Dokumen Proyek',charter:'Perencanaan - Dokumen Proyek',wbsplan:'Perencanaan - WBS',wbs:'Pelaksanaan - WBS & Progres',bukti:'Pelaksanaan - Bukti Dukung',cr:'Pelaksanaan - Change Request',milestone:'Pemantauan - Milestone',risiko:'Pemantauan - Risiko & Isu',laporan:'Pemantauan - Capaian Triwulanan',narasi:'Pelaksanaan - Narasi T-Program',penutupan:'Penutupan Proyek',referensi:'Referensi Kode'};
 const DESTINASI_CMO={adp:'Perencanaan - Analisis Dampak Perubahan',rencana:'Perencanaan - Rencana Manajemen Perubahan',impl:'Implementasi Manajemen Perubahan',monev:'Monitoring dan Evaluasi',closing:'Penutupan Manajemen Perubahan'};
 function tujuanMenu(href){const dest=String(href||'').replace(/^#/,'');if(dest.startsWith('pmo-'))return DESTINASI_PMO[dest.slice(4)]||'PMO - '+dest.slice(4);if(dest.startsWith('cmo-'))return DESTINASI_CMO[dest.slice(4)]||'CMO - '+dest.slice(4);if(dest==='dashboard')return 'Dashboard Eksekutif';return ''}
