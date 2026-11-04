@@ -1046,6 +1046,7 @@ button[aria-label*="Bantuan"]:hover,button[title*="Bantuan"]:hover,.help-icon:ho
 .one-table td:nth-child(4){min-width:190px}
 .one-table td:nth-child(9){min-width:130px}
 .ov-filter-status{padding:8px 16px 14px;color:#546884;font-size:11.5px;border-top:1px solid #E5EAF2}.ov-filter-status b{color:#203E65}
+.kw-links{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;align-items:center}.kw-code,.kw-map{font-size:10px;border:1px solid #B9CDEE;border-radius:6px;background:#EBF3FF;color:#174879;padding:3px 7px;font-weight:800;cursor:pointer}.kw-code:hover,.kw-map:hover{background:#FDB913;color:#0B2447}.kw-links small{font-size:9px;color:#7D8698;flex-basis:100%}
 </style>
 
 <div id="root"></div>
@@ -1128,7 +1129,7 @@ const APLIKASI={'CORE-72':'SIKD Single Window','CORE-95':'SIMPONI V2','CORE-170'
 
 /* ======================== seed ======================== */
 function seed(){
- const S={v:6,cfg:{rep:9,pdmp:true},ui:{tahun:2026,tw:3,prog:'',unit:'',umode:'up',lvm:'sd',lvn:10,wcm:'',wst:'',seg:'',mod:'',sub:{},ps:{},nav:{lainnya:1,trans:1},bseg:'Menunggu validasi',mseg:'all',rf:''},users:[],akses:{},programs:PROG0.map(p=>Object.assign({id:uid(),ket:''},p)),wbs:wbsFromData(),bukti:{},ms:{},kwide:D0.K.map(x=>Object.assign({id:uid()},x)),oneonone:[],risks:[],crs:[],usul:[],sub:[],ind:[],sh:[],impl:{},jj:[],jjMod:{},pantau:[],adopsi:[],tr:[],reviu:[],modMeta:{},log:[]};
+ const S={v:6,cfg:{rep:9,pdmp:true},ui:{tahun:2026,tw:3,prog:'',unit:'',umode:'up',lvm:'sd',lvn:10,wcm:'',wst:'',seg:'',mod:'',sub:{},ps:{},nav:{lainnya:1,trans:1},bseg:'Menunggu validasi',mseg:'all',rf:''},users:[],akses:{},programs:PROG0.map(p=>Object.assign({id:uid(),ket:''},p)),wbs:wbsFromData(),bukti:{},ms:{},kwideLinks:{},kwide:D0.K.map(x=>Object.assign({id:uid()},x)),oneonone:[],risks:[],crs:[],usul:[],sub:[],ind:[],sh:[],impl:{},jj:[],jjMod:{},pantau:[],adopsi:[],tr:[],reviu:[],modMeta:{},log:[]};
  const U=(email,nama,role,unit,sub,modules)=>S.users.push({id:uid(),email,pw:PW,nama,role,unit,sub:sub||'',modules:modules||[],aktif:true});
  U('superadmin@kemenkeu.go.id','Admin Sistem','SA','BaTii','Puspensi');
  U('pmo.kemenkeu@kemenkeu.go.id','PMO Kemenkeu (Pusmantap)','PMOK','BaTii','Pusmantap');
@@ -2758,6 +2759,35 @@ const KWIDE_2026=[
  [4,'Digitalisasi Office Automation',4,null,'EA Level 3 tahap 3; dokumen sistem tahap 4; dokumen CM tahap 4'],
  [4,'Satu Data Kemenkeu',1,null,'CM implementasi portal Satu Data Kemenkeu']
 ];
+
+/* K-Wide → keterlacakan bukti WBS. Link tidak otomatis disahkan dari kesamaan teks. */
+function kwWbsCodes(row,index){
+ const key='2026-'+index,explicit=(S.kwideLinks||{})[key];
+ if(explicit&&explicit.length)return explicit.filter(k=>!!wbsBy(k));
+ const name=String(row[1]||'').toLowerCase();
+ const pref=/single profile/.test(name)?'SP':/seamless/.test(name)?'SSB':/core system/.test(name)?'CORE':/office automation/.test(name)?'OA':/satu data/.test(name)?'SD':/pajak.*tkd/.test(name)?'TKD':'';
+ const words=String(row[4]||'').toLowerCase().split(/[^a-z0-9]+/).filter(x=>x.length>4);
+ return S.wbs.filter(w=>!w.arsip&&yrOf(w)===2026&&w.prog===pref).map(w=>{
+  const hay=w.p.join(' ').toLowerCase();return {w,score:words.reduce((a,t)=>a+(hay.includes(t)?1:0),0)}
+ }).filter(x=>x.score>=2).sort((a,b)=>b.score-a.score).slice(0,5).map(x=>x.w.k);
+}
+function kwLinks(row,index){
+ const key='2026-'+index,codes=kwWbsCodes(row,index),mapped=!!((S.kwideLinks||{})[key]||[]).length;
+ return '<div class="kw-links">'+(codes.map(k=>'<button class="kw-code" data-act="kwWbs" data-k="'+esc(k)+'" title="Buka item WBS '+esc(k)+' dan bukti dukung">'+esc(k)+'</button>').join('')||'<small>Belum ada kandidat WBS</small>')+
+ '<button class="kw-map" data-act="kwMap" data-index="'+index+'" title="Pilih kode WBS yang benar">✎ '+(mapped?'Ubah relasi':'Petakan WBS')+'</button>'+(codes.length&&!mapped?'<small>Kandidat dari teks; verifikasi relasi sebelum digunakan.</small>':'')+'</div>';
+}
+ACT.kwWbs=el=>{const w=wbsBy(el.dataset.k);if(!w){toast('Item WBS tidak ditemukan.');return}wbsDetail(w)};
+ACT.kwMap=el=>{
+ const index=+el.dataset.index,row=KWIDE_2026[index],key='2026-'+index,pref=/single profile/i.test(row[1])?'SP':/seamless/i.test(row[1])?'SSB':/core system/i.test(row[1])?'CORE':/office automation/i.test(row[1])?'OA':/satu data/i.test(row[1])?'SD':/TKD/i.test(row[1])?'TKD':'';
+ const entries=S.wbs.filter(w=>!w.arsip&&yrOf(w)===2026&&(!pref||w.prog===pref));
+ const current=((S.kwideLinks||{})[key]||[]);
+ modal('Pemetaan output K-Wide ke WBS','<p class="s">'+esc(row[1])+' · TW '+row[0]+'</p><p>'+esc(row[4])+'</p><div class="fld"><label>Pilih kode WBS pendukung (bisa lebih dari satu)</label><select class="sel" id="kw-select" multiple size="12" style="width:100%">'+entries.map(w=>'<option value="'+esc(w.k)+'" '+(current.includes(w.k)?'selected':'')+'>'+esc(w.k+' · '+short(deliv(w),85))+'</option>').join('')+'</select><small>Gunakan Ctrl/Shift untuk memilih lebih dari satu. Hanya relasi yang dipilih dan disimpan yang dianggap sudah diverifikasi.</small></div>','Simpan relasi',()=>{
+  S.kwideLinks=S.kwideLinks||{};S.kwideLinks[key]=Array.from(document.querySelector('#kw-select').selectedOptions).map(x=>x.value);
+  log('Pemetaan WBS K-Wide',key+' → '+S.kwideLinks[key].join(', '));save();render();
+ },{size:'wide'});
+};
+ACT.kwBukti=el=>{const w=wbsBy(el.dataset.k);if(!w)return; if(!canW('bukti','U',bkUnits(w),w)){toast('Akses unggah bukti dukung tidak tersedia untuk unit/peran ini.');return}buktiUpload(w)};
+
 function pOverview(){
  const y=+S.ui.tahun,tab=['tw','kwide','tprog','ue'].includes(S.ui.overviewTab)?S.ui.overviewTab:'tw';
  const P=per(),data=lapData(),num=n=>Number(n||0).toLocaleString('id-ID');
@@ -2771,11 +2801,11 @@ function pOverview(){
  const matrix=(title,entries)=>'<div class="card ov-matrix"><div class="ch"><h3>'+title+'</h3><span class="r s">Bobot WBS kumulatif</span></div><div class="tscroll"><table class="lap"><thead><tr><th>Program / unit</th>'+months.map((m,i)=>'<th class="num">TW '+(i+1)+'</th>').join('')+'<th class="num">Target tahunan</th><th class="num">Capaian tahunan</th></tr></thead><tbody>'+entries.map(e=>'<tr><td><b>'+esc(e.name)+'</b></td>'+e.tw.map(x=>'<td class="num"><b>'+(x.t?pct(x.r/x.t*100):'—')+'</b><span class="sm">'+num(x.r)+' / '+num(x.t)+'</span></td>').join('')+'<td class="num">'+num(e.a)+'</td><td class="num"><b>'+(e.a?pct(e.tw[Math.max(0,Math.min(3,curTwDone()-1))].r/e.a*100):'—')+'</b></td></tr>').join('')+'</tbody></table></div></div>';
  const tprog=data.prog.map(x=>({name:x.p.nama,tw:x.tw,a:x.a}));
  const ue=data.ue.map(x=>({name:x.u,tw:x.tw,a:x.a}));
- const kv=KWIDE_2026,twSum=t=>kv.filter(x=>x[0]===t),kSumm=t=>({t:t,v:twSum(t),target:twSum(t).reduce((a,x)=>a+x[2],0),real:twSum(t).reduce((a,x)=>a+(x[3]||0),0)});
+ const kv=KWIDE_2026.map((x,i)=>({row:x,index:i})),twSum=t=>kv.filter(x=>x.row[0]===t).map(x=>x.row),kSumm=t=>({t:t,v:twSum(t),target:twSum(t).reduce((a,x)=>a+x[2],0),real:twSum(t).reduce((a,x)=>a+(x[3]||0),0)});
  const kTable=y!==2026?'<div class="note i">Sheet Capaian K-Wide yang tersedia sebagai referensi adalah tahun 2026. Data tahun lain belum tersedia.</div>':
  '<div class="note i">Indikator ini adalah <b>jumlah output IKU K-Wide</b> dari sheet Capaian K-Wide 2026, bukan persentase tertimbang WBS. Realisasi TW IV belum tercantum pada sumber.</div>'+
  '<div class="ov-kpi-grid">'+[1,2,3,4].map(t=>{const x=kSumm(t);return '<div class="ov-kpi"><small>TW '+t+' · Output IKU</small><strong>'+(t===4?'—':pct(x.real/x.target*100))+'</strong><span>'+ (t===4?'Realisasi belum tersedia':x.real+' dari '+x.target+' output')+'</span></div>'}).join('')+'</div>'+
- '<div class="card"><div class="ch"><h3>Matriks Target Output IKU K-Wide per Triwulan</h3><span class="r s">Sumber: Capaian K-Wide 2026</span></div><div class="tscroll"><table class="lap ov-kwide-table"><thead><tr><th>TW</th><th>Program Transformasi</th><th>Target output</th><th class="num">Target</th><th class="num">Realisasi</th><th class="num">Status</th></tr></thead><tbody>'+kv.map(x=>'<tr><td>TW '+x[0]+'</td><td><b>'+esc(x[1])+'</b></td><td>'+esc(x[4])+'</td><td class="num">'+num(x[2])+'</td><td class="num">'+(x[3]===null?'—':num(x[3]))+'</td><td class="num"><span class="chip '+(x[3]===null?'c-gray':x[3]>=x[2]?'c-ok':'c-bad')+'">'+(x[3]===null?'Belum tersedia':x[3]>=x[2]?'Tercapai':'Belum tercapai')+'</span></td></tr>').join('')+'</tbody></table></div></div>';
+ '<div class="card"><div class="ch"><h3>Matriks Target Output IKU K-Wide per Triwulan</h3><span class="r s">Sumber: Capaian K-Wide 2026</span></div><div class="tscroll"><table class="lap ov-kwide-table"><thead><tr><th>TW</th><th>Program Transformasi</th><th>Target output</th><th class="num">Target</th><th class="num">Realisasi</th><th class="num">Status</th></tr></thead><tbody>'+kv.map(({row:x,index:i})=>'<tr><td>TW '+x[0]+'</td><td><b>'+esc(x[1])+'</b></td><td>'+esc(x[4])+kwLinks(x,i)+'</td><td class="num">'+num(x[2])+'</td><td class="num">'+(x[3]===null?'—':num(x[3]))+'</td><td class="num"><span class="chip '+(x[3]===null?'c-gray':x[3]>=x[2]?'c-ok':'c-bad')+'">'+(x[3]===null?'Belum tersedia':x[3]>=x[2]?'Tercapai':'Belum tercapai')+'</span></td></tr>').join('')+'</tbody></table></div></div>';
  const quarter='<div class="card"><div class="ch"><h3>Capaian per Triwulan</h3><span class="r s">'+esc(periodLabel)+' · '+S.ui.tahun+'</span></div>'+
  '<div class="ov-qgrid">'+selectedMeasures.map(({t,v})=>'<div class="ov-q"><small>TRIWULAN '+t+(P.pr==='r'?' · sesuai rentang':'')+'</small><b>'+(v.t?pct(v.r/v.t*100):'—')+'</b><div class="bar"><i style="width:'+Math.min(100,v.t?v.r/v.t*100:0)+'%;background:var(--blue)"></i></div><span>'+num(v.r)+' realisasi / '+num(v.t)+' target</span></div>').join('')+'</div>'+
  '<div class="ov-filter-status"><b>Filter aktif:</b> '+esc(S.ui.prog?progLabel(S.ui.prog):'Semua program')+' · '+esc(curUnit()||'Semua UE I')+' · '+esc(curUnit()?({'u':'UIC Utama','p':'UIC Pendukung','ue':'Cakupan UE I','up':'Utama/Pendukung'}[umOf()]||'Utama/Pendukung'):'Seluruh peran')+' · '+esc(periodLabel)+'</div></div>';
@@ -3239,9 +3269,9 @@ function viewLog(){return vh('L','adm','Log Aktivitas','Jejak perubahan data ole
 // Isi konfigurasi di sini sebelum di-hosting agar semua pengguna langsung tersambung, contoh:
 // const FIREBASE_CONFIG={apiKey:'…',authDomain:'proyek.firebaseapp.com',projectId:'proyek',storageBucket:'proyek.appspot.com',messagingSenderId:'…',appId:'…'};
 const FIREBASE_CONFIG=null;
-const RULES="rules_version = '2';\nservice cloud.firestore {\n  match /databases/{db}/documents {\n    function signedIn() { return request.auth != null && request.auth.token.email.matches('.*@kemenkeu[.]go[.]id$'); }\n    function myRef() { return /databases/$(db)/documents/users/$(request.auth.token.email); }\n    function me() { return get(myRef()).data; }\n    function aktif() { return signedIn() && exists(myRef()) && me().aktif == true; }\n    function role(rs) { return aktif() && me().role in rs; }\n    function kosong() { return !exists(/databases/$(db)/documents/config/akses); }\n\n    // Pengguna: dibaca semua akun aktif; dikelola Superadmin.\n    // Pengecualian: saat database masih kosong, akun pertama boleh mendaftarkan dirinya sebagai Superadmin.\n    match /users/{email} {\n      allow read: if signedIn();\n      allow create: if role(['SA']) || (signedIn() && kosong() && email == request.auth.token.email && request.resource.data.role == 'SA');\n      allow update, delete: if role(['SA']);\n    }\n    match /config/{id} {\n      allow read: if signedIn();\n      allow write: if role(['SA']);\n    }\n    // Data PMO\n    match /{col}/{id} {\n      allow read: if aktif() && col in ['programs','charters','tahap','oneonone','wbs','bukti','ms','kwide','risks','crs','usul','sub','ind','sh','impl','jj','jjMod','pantau','adopsi','tr','reviu','modMeta','log'];\n      allow write: if col in ['programs','charters','tahap','oneonone','wbs','bukti','ms','kwide','risks','crs'] && role(['SA','PMOK','CMOK','PMOU']);\n      allow write: if col == 'usul' && role(['SA','PMOK','CMOK','PMOU','CMOU']);\n      allow write: if col in ['sub','ind','sh','impl','jj','jjMod','pantau','adopsi','tr','reviu','modMeta'] && role(['SA','PMOK','CMOK','CMOU','TIM']);\n      allow create: if col == 'log' && aktif();\n      allow update, delete: if col == 'log' && role(['SA']);\n    }\n  }\n}\n";
+const RULES="rules_version = '2';\nservice cloud.firestore {\n  match /databases/{db}/documents {\n    function signedIn() { return request.auth != null && request.auth.token.email.matches('.*@kemenkeu[.]go[.]id$'); }\n    function myRef() { return /databases/$(db)/documents/users/$(request.auth.token.email); }\n    function me() { return get(myRef()).data; }\n    function aktif() { return signedIn() && exists(myRef()) && me().aktif == true; }\n    function role(rs) { return aktif() && me().role in rs; }\n    function kosong() { return !exists(/databases/$(db)/documents/config/akses); }\n\n    // Pengguna: dibaca semua akun aktif; dikelola Superadmin.\n    // Pengecualian: saat database masih kosong, akun pertama boleh mendaftarkan dirinya sebagai Superadmin.\n    match /users/{email} {\n      allow read: if signedIn();\n      allow create: if role(['SA']) || (signedIn() && kosong() && email == request.auth.token.email && request.resource.data.role == 'SA');\n      allow update, delete: if role(['SA']);\n    }\n    match /config/{id} {\n      allow read: if signedIn();\n      allow write: if role(['SA']);\n    }\n    // Data PMO\n    match /{col}/{id} {\n      allow read: if aktif() && col in ['programs','charters','tahap','oneonone','wbs','bukti','ms','kwide','kwideLinks','risks','crs','usul','sub','ind','sh','impl','jj','jjMod','pantau','adopsi','tr','reviu','modMeta','log'];\n      allow write: if col in ['programs','charters','tahap','oneonone','wbs','bukti','ms','kwide','risks','crs'] && role(['SA','PMOK','CMOK','PMOU']);\n      allow write: if col == 'usul' && role(['SA','PMOK','CMOK','PMOU','CMOU']);\n      allow write: if col in ['sub','ind','sh','impl','jj','jjMod','pantau','adopsi','tr','reviu','modMeta'] && role(['SA','PMOK','CMOK','CMOU','TIM']);\n      allow create: if col == 'log' && aktif();\n      allow update, delete: if col == 'log' && role(['SA']);\n    }\n  }\n}\n";
 const FS_ARR=['users','programs','charters','tahap','oneonone','wbs','kwide','risks','crs','usul','sub','ind','sh','jj','pantau','adopsi','tr','reviu','log'];
-const FS_MAP=['bukti','ms','impl','jjMod','modMeta'];
+const FS_MAP=['bukti','ms','impl','jjMod','modMeta','kwideLinks'];
 const FB={on:false,ready:false,cfg:null,db:null,auth:null,last:{},timer:null,st:'',err:'',unsub:[],rt:null};
 function fbCfg(){if(FIREBASE_CONFIG)return FIREBASE_CONFIG;try{const r=localStorage.getItem('mt_fb_cfg');return r?JSON.parse(r):null}catch(e){return null}}
 const stab=v=>JSON.stringify(v,(k,x)=>x&&typeof x==='object'&&!Array.isArray(x)?Object.keys(x).sort().reduce((o,k2)=>(o[k2]=x[k2],o),{}):x);
