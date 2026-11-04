@@ -1716,7 +1716,7 @@ document.addEventListener('click',e=>{
  const pg=e.target.closest('[data-pg]');if(pg){if(pg.disabled)return;PG[pg.dataset.pg]=+pg.dataset.n;redrawT(pg.dataset.pg);return}
  const sg=e.target.closest('[data-seg]');if(sg){S.ui[sg.dataset.seg]=sg.dataset.v;Object.keys(PG).forEach(k=>PG[k]=0);save();render();return}
  const gg=e.target.closest('[data-go]');if(gg&&!e.target.closest('.menu')){go(gg.dataset.go);return}
- const proj=e.target.closest('.pm-project-click');if(proj&&!e.target.closest('a,button')){S.ui.prog=proj.dataset.prog;S.ui.wbsProject=proj.dataset.project;save();go('pmo-wbs');return}
+ const proj=e.target.closest('.pm-project-click');if(proj&&!e.target.closest('a,button,input,select,label')){ACT.prjOpen({dataset:{scope:projectKey(proj.dataset.prog,proj.dataset.project),tab:'ringkasan'}});return}
  const el=e.target.closest('[data-act]');if(!el)return;const act=el.dataset.act,id=el.dataset.t,o=T[id];
  if(act==='open'&&e.target.closest('button,input,select,a,label'))return;
  const row=o&&el.dataset.i!=null?o.rows().find(r=>String(r.id)===el.dataset.i):null;
@@ -1735,7 +1735,7 @@ document.addEventListener('change',e=>{const t=e.target;
  if(t.dataset.ps){S.ui.ps[t.dataset.ps]=+t.value;PG[t.dataset.ps]=0;save();redrawT(t.dataset.ps);return}
  if(t.dataset.imp){const f=t.files[0];t.value='';if(f)importT(t.dataset.imp,f);return}
  const el=t.closest('[data-on]');if(el)onChange(el)});
-document.addEventListener('keydown',e=>{if(e.key==='/'&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){const q=document.querySelector('[data-q]');if(q){e.preventDefault();q.focus()}}if(e.key==='Escape'){const ov=document.querySelector('.ov');if(ov)ov.remove()}if((e.key==='Enter'||e.key===' ')&&document.activeElement.classList.contains('pm-program-head')){e.preventDefault();ACT.pgfold(document.activeElement,e);return}if((e.key==='Enter'||e.key===' ')&&document.activeElement.classList.contains('pm-project-click')){e.preventDefault();const el=document.activeElement;S.ui.prog=el.dataset.prog;S.ui.wbsProject=el.dataset.project;save();go('pmo-wbs');return}if((e.key==='Enter'||e.key===' ')&&document.activeElement.classList.contains('ftop')){e.preventDefault();ACT.ftog()}});
+document.addEventListener('keydown',e=>{if(e.key==='/'&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){const q=document.querySelector('[data-q]');if(q){e.preventDefault();q.focus()}}if(e.key==='Escape'){const ov=document.querySelector('.ov');if(ov)ov.remove()}if((e.key==='Enter'||e.key===' ')&&document.activeElement.classList.contains('pm-program-head')){e.preventDefault();ACT.pgfold(document.activeElement,e);return}if((e.key==='Enter'||e.key===' ')&&document.activeElement.classList.contains('pm-project-click')){e.preventDefault();const el=document.activeElement;ACT.prjOpen({dataset:{scope:projectKey(el.dataset.prog,el.dataset.project),tab:'ringkasan'}});return}if((e.key==='Enter'||e.key===' ')&&document.activeElement.classList.contains('ftop')){e.preventDefault();ACT.ftog()}});
 
 function onChange(el){const k=el.dataset.on,v=el.value;if(k==='impwbs')return;
  if(['tahun','prog','unit','umode','lvm','wcm','wth','wst','mod','pr','d1','d2','cunit','crole','cpr','cd1','cd2','cprog','cth'].includes(k)){if(k==='cunit'&&!v)S.ui.crole='';if(k==='umode'&&v!=='up'&&!curUnit()&&ME.unit&&UNITS.includes(ME.unit)){S.ui.unit=ME.unit;toast(`Unit diisi ${ME.unit} (unit Anda) agar peran unit bisa diterapkan.`)}if(k==='unit'&&!v)S.ui.umode='up';if(k==='umode'&&lockU()){S.ui.umodeL=v;Object.keys(PG).forEach(x=>PG[x]=0);save();render();return}if(k==='cunit'||k==='crole')S.ui.mod=''}
@@ -3136,7 +3136,7 @@ function projectWorkspace(){
  const decisionRows=r=>'<div class="prj-table-scroll"><table class="lap"><thead><tr><th>Tanggal</th><th>Keputusan</th><th>Pengambil keputusan</th><th>PIC & tenggat</th><th>Status</th><th>Tindakan</th></tr></thead><tbody>'+r.map(x=>'<tr><td>'+fmtD(x.date)+'</td><td><b>'+esc(x.title)+'</b><small>'+esc(x.impact||'')+'</small></td><td>'+esc(x.by||'—')+'</td><td>'+esc(x.owner||'—')+'<small>'+fmtD(x.due)+'</small></td><td>'+esc(x.status||'—')+'</td><td>'+(editStake?btn('prjDecisionEdit',x.id,'Edit')+btn('prjDecisionDel',x.id,'Hapus'):'—')+'</td></tr>').join('')+'</tbody></table></div>';
  const search='<div class="prj-table-filter"><label>Cari dalam tab '+projectHelp('search',true)+'</label><input class="sel" type="search" data-on="prjSearch" value="'+esc(S.ui.prjSearch||'')+'" placeholder="Cari nama, PIC, status, atau kata kunci…"></div>';
  const summary='<div class="prj-summary-main">'+head('ringkasan','Ringkasan Proyek')+
- '<div class="prj-summary-stats">'+projectKpi('Status','Berjalan','Status indikatif')+projectKpi('Jumlah subproyek',String(scopeP.find(x=>x.n===proj)?.subItems?.length||0),'Sesuai WBS')+
+ '<div class="prj-summary-stats">'+projectKpi('Status',rows.length?(rows.every(w=>doneAt(w,12)&&w.v)?'Selesai':'Berjalan'):'Belum ada WBS','Dari status item WBS')+projectKpi('Jumlah subproyek',String(scopeP.find(x=>x.n===proj)?.subItems?.length||0),'Sesuai WBS')+
  projectKpi('Progres tervalidasi',(rows.length?Math.round(100*rows.filter(w=>doneAt(w,12)&&w.v).reduce((a,w)=>a+(+w.w||0),0)/Math.max(1,rows.reduce((a,w)=>a+(+w.w||0),0))):0)+'%','Berdasarkan bobot WBS')+projectKpi('UIC Utama',esc(p.uic||'—'),'Pemilik program')+'</div></div>';
  const briefRisks=risk.slice(0,5),briefStake=sh.slice(0,5);
  const brief='<div class="prj-brief-grid"><section class="prj-panel">'+head('risiko','Risk Register ('+risk.length+')','<button class="btn sm" data-act="prjTab" data-v="risiko">Lihat Semua</button>')+
@@ -3172,6 +3172,7 @@ function projectWorkspace(){
  '<footer class="prj-modal-footer"><span>Perubahan disimpan setiap kali tombol Simpan pada formulir dipilih.</span><button class="btn pri" data-act="prjClose">Selesai</button></footer></div></div>';
 }
 
+ACT.prjProgram=el=>{const p=progOf(el.dataset.v);const projects=p?progProjects(p):[];if(!projects.length){toast('Belum ada proyek WBS untuk program ini.');return}ACT.prjOpen({dataset:{scope:projectKey(p.akr,projects[0].n),tab:'ringkasan'}})};
 ACT.prjOpen=el=>{S.ui.prjScope=el.dataset.scope;S.ui.prjTab=el.dataset.tab||'ringkasan';S.ui.prjSearch='';S.ui.prjPages={};save();render();document.querySelector('.prj-close')?.focus()};
 ACT.prjHelp=el=>{const h=PROJECT_GUIDE[el.dataset.guide]||PROJECT_GUIDE.workspace;modal('<span class="exh"><span class="hlp sm" aria-hidden="true">?</span>Petunjuk · '+esc(h[0])+'</span>','<p><b>Cara mengisi / menggunakan</b></p><p>'+esc(h[1])+'</p><div class="prj-example-modal"><b>Contoh pengisian</b><p>'+esc(h[2])+'</p></div>','',null,{cancel:'Tutup',size:'sm'})};
 ACT.prjPage=el=>{S.ui.prjPages=S.ui.prjPages||{};S.ui.prjPages[el.dataset.tab]=Math.max(0,+el.dataset.page);save();render()};
@@ -3207,14 +3208,14 @@ function pProgram(){
     </div>
     <div class="pm-program-aside">
      <div class="pm-program-indicators">${chipSt(p.status)}<span class="pm-program-count">${P.length} proyek</span><span class="pm-program-progress">Capaian WBS <b>${x.done}%</b></span></div>
-     <div class="pm-program-actions"><a class="btn sm" href="#pmo-charter" data-act="chopen" data-p="${esc(p.akr)}">Lihat Charter</a><a class="btn sm" href="#pmo-wbs" data-act="pchipgo" data-v="${esc(p.akr)}">Lihat WBS ›</a></div>
+     <div class="pm-program-actions"><a class="btn sm" href="#pmo-charter" data-act="chopen" data-p="${esc(p.akr)}">Lihat Charter</a><button type="button" class="btn sm" data-act="prjProgram" data-v="${esc(p.akr)}" title="Buka Workspace Proyek">Kelola Proyek ›</button></div>
     </div>
    </div>
    <div class="pm-program-detail" id="${id}" ${closed?'hidden':''}>
     ${!P.length?`<p class="pm-program-empty">Belum ada item WBS untuk tahun ${S.ui.tahun}. Rincian proyek muncul setelah WBS diimpor melalui <a href="#pmo-wbsplan">Susun WBS</a>.</p>`:
     `<div class="pm-program-detail-label"><span>RINCIAN PROYEK</span><span>${P.length} proyek · WBS Level 4</span></div>
      <div class="tscroll pm-project-scroll"><table class="lap pm-project-table"><thead><tr><th>Proyek (WBS Level 4)</th><th>UIC Utama</th><th>Jadwal</th><th class="num">Item WBS</th><th>Progres Tervalidasi</th><th class="num" title="Jumlah item WBS yang melewati batas waktu dan belum selesai">Item Terlambat</th></tr></thead>
-     <tbody>${P.map(r=>`<tr class="pm-project-click" data-prog="${esc(p.akr)}" data-project="${esc(r.n)}" tabindex="0" role="button" title="Klik untuk melihat item WBS proyek ini"><td><strong>${esc(r.n)}</strong><div class="prj-scope-actions">
+     <tbody>${P.map(r=>`<tr class="pm-project-click" data-prog="${esc(p.akr)}" data-project="${esc(r.n)}" tabindex="0" role="button" title="Klik untuk membuka popup Workspace Proyek"><td><strong>${esc(r.n)}</strong><div class="prj-scope-actions">
  <button data-act="prjOpen" data-scope="${esc(projectKey(p.akr,r.n))}" data-tab="ringkasan">Workspace</button>
  <button data-act="prjOpen" data-scope="${esc(projectKey(p.akr,r.n))}" data-tab="risiko">Risiko</button>
  <button data-act="prjOpen" data-scope="${esc(projectKey(p.akr,r.n))}" data-tab="stakeholder">Stakeholder</button>
