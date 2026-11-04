@@ -990,6 +990,12 @@ table.ext td{font-size:12.5px;vertical-align:top;white-space:normal}
 button[disabled]{cursor:not-allowed;opacity:.45}
 button[aria-label*="Bantuan"],button[title*="Bantuan"],.help-icon,.hint-icon{background:var(--yellow);color:#142C4D;border:1px solid var(--yellow);transition:background .16s,color .16s,box-shadow .16s}
 button[aria-label*="Bantuan"]:hover,button[title*="Bantuan"]:hover,.help-icon:hover,.hint-icon:hover{background:#fff;color:#C88A00;box-shadow:0 3px 12px rgba(253,185,19,.24)}
+/* Kunci dimensi tab dokumen agar tidak meloncat saat berpindah */
+.chtabs{position:sticky;top:0;z-index:22;align-items:stretch;min-height:66px}
+.chtabs button{min-height:56px;min-width:0;flex:1 1 0}
+.chtabs small{display:none!important}
+.ch-preview-body{max-height:70vh;overflow:auto}
+.ch-preview-body .chpgh button{display:none}
 </style>
 
 <div id="root"></div>
@@ -1752,8 +1758,8 @@ function pCharter(){const akr=S.ui.chp;const p=S.programs.find(x=>x.akr===akr);
  const flow=c.st==='Draft'&&chCan('U',p)?`<button class="hb gold" data-act="chsub" data-id="${c.id}">Ajukan ke PMO Pusat ›</button>`:c.st==='Reviu'&&chApprover()?`<button class="hb" data-act="chret" data-id="${c.id}">↩ Kembalikan</button><button class="hb gold" data-act="chok" data-id="${c.id}">✓ Sahkan</button>`:'';
  const ret=(c.log||[]).slice(-1)[0];const tab=CHPG.some(t=>t[0]===S.ui.cht)?S.ui.cht:'ch';
  const OK=chDocOk(c);const cnt={asis:OK.asis?'terisi':'',tobe:OK.tobe?'terisi':'',ch:'',kp:(c.kp||[]).length,rk:(c.rk||[]).length,cs:(c.cs||[]).length,mf:(c.mf||[]).length};const unit={kp:' milestone',rk:' tindakan',cs:' pasangan',mf:' manfaat',asis:'',tobe:''};
- const tabs=`<div class="chtabs" role="tablist">${CHPG.map(([k,l,sub],i)=>`<button role="tab" aria-selected="${tab===k}" class="${tab===k?'on':''}" data-act="chtab" data-v="${k}"><i>${i+1}</i><span><b>${l}</b><small>${k==='ch'?(OK.ch?sub:'<em>belum diisi</em>'):(cnt[k]?(typeof cnt[k]==='number'?cnt[k]+unit[k]:sub):'<em>belum diisi</em>')}</small></span></button>`).join('')}</div>`;
- const pgHead=(k,t)=>`<div class="chpgh"><span class="pg">Dokumen ${CHPG.findIndex(x=>x[0]===k)+1} / 7</span><h3>${t}: <span>${esc(chJudul(c))}</span></h3>${ed?`<button class="btn" data-act="ched" data-p="${akr}" data-id="${c.id}" data-s="${k}">✎ Ubah dokumen ini</button>`:''}</div>`;
+ const tabs=`<div class="chtabs" role="tablist">${CHPG.map(([k,l,sub],i)=>`<button role="tab" aria-selected="${tab===k}" class="${tab===k?'on':''}" data-act="chtab" data-v="${k}"><i>${i+1}</i><span><b>${l}</b></span></button>`).join('')}</div>`;
+ const pgHead=(k,t)=>`<div class="chpgh"><span class="pg">Dokumen ${CHPG.findIndex(x=>x[0]===k)+1} / 7</span><h3>${t}: <span>${esc(chJudul(c))}</span></h3><button class="btn sm" data-act="chpreview" data-id="${c.id}" title="Preview dokumen aktif">👁 Preview</button>${ed?`<button class="btn" data-act="ched" data-p="${akr}" data-id="${c.id}" data-s="${k}">✎ Ubah dokumen ini</button>`:''}</div>`;
  let body='';
  if(tab==='ch')body=`<div class="chtuj"><span class="l">Tujuan Program</span><b>${esc(c.tujuan||'—')}</b>${edb(0)}</div>
  <div class="chg4">${sec('lb',chOl(c.lb))}${sec('tb',chTb(c.tb))}${sec('out',chOl(c.out))}${sec('oc',chOl(c.oc))}</div>
@@ -1772,6 +1778,7 @@ function pCharter(){const akr=S.ui.chp;const p=S.programs.find(x=>x.akr===akr);
  ${tabs}${body}
  ${c.doc&&c.doc.link?`<div class="card"><div class="pad" style="display:flex;gap:10px;align-items:center"><span class="pdfic">PDF</span><span><b>Dokumen pengesahan</b><br><a href="${esc(c.doc.link)}" target="_blank" rel="noopener">${esc(c.doc.link)}</a></span></div></div>`:''}`}
 ACT.chtab=el=>{S.ui.cht=el.dataset.v;save();render()};
+ACT.chpreview=el=>{const page=document.querySelector('.chpage');if(!page){toast('Dokumen belum tersedia.');return}const c=S.charters.find(x=>x.id===el.dataset.id);const name=(CHPG.find(x=>x[0]===S.ui.cht)||['ch','Charter'])[1];const html=page.outerHTML;modal('Preview '+esc(name),'<div class="ch-preview-body">'+html+'</div>','Tutup',()=>true,{size:'wide'});};
 
 /* ---- wizard ---- */
 function chChk(d){const f=a=>(a||[]).some(x=>String(x).trim());const r={};
@@ -2222,7 +2229,7 @@ function pbChart(PV,items,M,tw,jenis='Berkelanjutan'){
   <div class="pb-chips"><span class="pb-chip pb-ok"><i></i>${nOk} sesuai target</span><span class="pb-chip ${nLow?'pb-bad':'pb-mute'}"><i></i>${nLow} di bawah target</span>${nNA?`<span class="pb-chip pb-mute">${nNA} belum memiliki target periode</span>`:''}</div></div>
  <div class="pb-rows">${rows}</div>
  <div class="lgd pb-lgd"><span><i class="pb-sw"></i>Realisasi</span><span><i class="pb-tk"></i>Target s.d. ${tw}</span><span><i class="pb-dot pb-ok"></i>Sesuai</span><span><i class="pb-dot pb-warn"></i>Selisih ≤10 poin</span><span><i class="pb-dot pb-bad"></i>Selisih &gt;10 poin</span></div>`
- :'<div class="pb-empty">Belum ada program ${jenis.toLowerCase()} pada tahun ini.</div>'}</div></div>`}
+ :'<div class="pb-empty">Belum ada program pada kategori ini di tahun berjalan.</div>'}</div></div>`}
 function portoMetrics(p,items,M){
  const yearItems=items.filter(w=>w.prog===p.akr),t=sumTR(yearItems,M);
  const allCount=S.wbs.filter(w=>!w.arsip&&w.prog===p.akr).length;
@@ -2371,8 +2378,8 @@ function parseWbsBook(file,done){if(!window.XLSX){busyOff();toast('Pustaka Excel
 document.addEventListener('change',e=>{if(e.target.dataset.on!=='impwbs')return;e.stopPropagation();const f=e.target.files[0];if(!f)return;e.target.value='';busy('Membaca berkas WBS…',f.name,5);parseWbsBook(f,sheets=>{
  if(!sheets.length){toast('Tidak ada sheet berkolom Code, Start, Finish.');return}const hasProg=sheets.some(x=>x.type==='prog');
  const clash=sheets.flatMap(x=>x.rows).filter(r=>{const o=wbsBy(r.k);return o&&yrOf(o)&&yrOf(r)&&yrOf(o)!==yrOf(r)});
- modal('Import WBS dari sheet program',`${clash.length?`<div class="note" style="background:var(--bad-bg);color:var(--bad);margin:0 0 10px"><span><b>${clash.length} kode sudah dipakai item tahun lain</b> (mis. ${clash.slice(0,4).map(r=>`${r.k}: ${yrOf(wbsBy(r.k))} → ${yrOf(r)}`).join(', ')}). Bila diimpor dengan mode Perbarui, item lama akan tertimpa. Gunakan nomor lanjutan (lihat Referensi Kode › Kode berikut).</span></div>`:''}<p style="margin:0 0 8px">Belum punya format? <a href="#" data-act="tplwbs" onclick="return false">Unduh template WBS</a>. Pilih sheet yang diimpor. Bobot, target bulanan, triwulan, dan cakupan UE I <b>dihitung otomatis oleh sistem</b> (tidak perlu sheet Kompilasi). Realisasi dan validasi tetap dicatat di aplikasi.</p>
- <div class="multi" id="im-sh" style="flex-direction:column;gap:6px">${sheets.map((x,i)=>`<label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" value="${i}" ${x.type==='prog'||!hasProg?'checked':''}> <span><b>${esc(x.n)}</b> · ${x.rows.length} item (${x.progs.join(', ')})${x.type==='komp'?' <span class="chip c-warn">Kompilasi lama · ikut realisasi & status validasi dari Excel</span>':''}${x.bad.length?` <span class="chip c-bad">${x.bad.length} kode ditolak</span>`:''}</span></label>`).join('')}</div>
+ modal('Import WBS dari sheet program',`${clash.length?`<div class="note" style="background:var(--bad-bg);color:var(--bad);margin:0 0 10px"><span><b>${clash.length} kode sudah dipakai item tahun lain</b> (mis. ${clash.slice(0,4).map(r=>`${r.k}: ${yrOf(wbsBy(r.k))} → ${yrOf(r)}`).join(', ')}). Bila diimpor dengan mode Perbarui, item lama akan tertimpa. Gunakan nomor lanjutan (lihat Referensi Kode › Kode berikut).</span></div>`:''}<p style="margin:0 0 8px">Belum punya format? <a href="#" data-act="tplwbs" onclick="return false">Unduh template WBS</a>. Pilih sheet yang diimpor. <b>Disarankan memilih Kompilasi</b> karena memuat realisasi dan status validasi dari Excel. Sheet program hanya memuat baseline WBS. Bobot, target bulanan, triwulan, dan cakupan UE I dihitung otomatis dari Start–Finish.</p>
+ <div class="multi" id="im-sh" style="flex-direction:column;gap:6px">${sheets.map((x,i)=>`<label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" value="${i}" ${x.type==='komp'||!sheets.some(y=>y.type==='komp')?'checked':''}> <span><b>${esc(x.n)}</b> · ${x.rows.length} item (${x.progs.join(', ')})${x.type==='komp'?' <span class="chip c-warn">Kompilasi lama · ikut realisasi & status validasi dari Excel</span>':''}${x.bad.length?` <span class="chip c-bad">${x.bad.length} kode ditolak</span>`:''}</span></label>`).join('')}</div>
  <div class="fld" style="margin-top:12px"><label for="im-mode">Mode import</label><select id="im-mode">${opts([['upd','Perbarui berdasarkan kode + tambah kode baru'],['add','Hanya tambah kode baru'],['prog','Ganti seluruh item program yang diimpor'],['rep','Ganti semua WBS']],'upd')}</select><small>Untuk kode yang sudah ada, realisasi, tanggal aktual, bukti dukung, dan status validasi di aplikasi tetap dipertahankan.</small></div>`,'Import',()=>{
   const pick=[...document.querySelectorAll('#im-sh input:checked')].map(x=>sheets[+x.value]);if(!pick.length){toast('Pilih minimal satu sheet.');return false}
   const rows=[],seen=new Set();pick.forEach(x=>x.rows.forEach(r=>{if(!seen.has(r.k)){seen.add(r.k);rows.push(r)}}));const mode=$('#im-mode').value;let a=0,u=0,z=0;
