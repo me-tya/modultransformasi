@@ -376,6 +376,90 @@ th.srt{cursor:pointer;user-select:none;white-space:nowrap}th.srt:hover{color:var
 .hbar .t{height:12px;background:var(--line-2);border-radius:4px;position:relative;overflow:hidden}
 .hbar .t i{position:absolute;left:0;top:0;bottom:0;border-radius:4px}
 .hbar b{font-family:var(--mono);font-size:11px;text-align:right}
+.card.hfill{display:flex;flex-direction:column}
+.card.hfill>.pad{flex:1;display:flex;flex-direction:column;min-height:0}
+.hfill .hbars{flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.hfill .hbar{flex:1 1 0;min-height:30px;max-height:84px;padding:0}
+.hfill .hbar .t{height:clamp(12px,58%,44px);border-radius:6px}
+.hfill .hbar .t i{border-radius:6px}
+.hfill .hbar .t i+i{border-radius:0}
+.hfill .hbar>span{font-size:13px;font-weight:600}
+.hfill .hbar b{font-size:12.5px}
+.pb-card>.pad{gap:12px;padding:14px 16px}
+.pb-sum{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px dashed var(--line)}
+.pb-big{display:flex;align-items:center;gap:10px}
+.pb-big b{font-size:26px;font-weight:800;color:var(--navy);letter-spacing:-.5px;line-height:1}
+.pb-big span{font-size:11.5px;color:var(--ink-3);line-height:1.35}
+.pb-chips{display:flex;gap:6px;flex-wrap:wrap}
+.pb-chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:999px;background:var(--line-2);color:var(--ink-2)}
+.pb-chip i{width:7px;height:7px;border-radius:50%;background:currentColor}
+.pb-chip.pb-ok{background:var(--ok-bg);color:var(--ok)}.pb-chip.pb-bad{background:var(--bad-bg);color:var(--bad)}.pb-chip.pb-mute{color:var(--ink-4)}
+.pb-rows{flex:1;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.pb-row{flex:1 1 0;min-height:44px;max-height:86px;display:grid;grid-template-columns:minmax(120px,210px) minmax(0,1fr) 92px;gap:14px;align-items:center;padding:0 8px;margin:0 -8px;border-radius:10px;transition:background .15s}
+.pb-row:hover{background:#F6F8FC}
+.pb-lbl{display:flex;align-items:center;gap:9px;min-width:0}
+.pb-lbl>div{min-width:0;display:flex;flex-direction:column;line-height:1.25}
+.pb-lbl b{font-family:var(--mono);font-size:12.5px;font-weight:700;color:var(--ink);letter-spacing:-.2px}
+.pb-lbl small{font-size:11.5px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pb-dot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--ink-4);box-shadow:0 0 0 3px #fff,0 0 0 4px var(--line)}
+.pb-dot.pb-ok{background:var(--ok)}.pb-dot.pb-warn{background:#E0A021}.pb-dot.pb-bad{background:var(--bad)}
+.pb-trk{position:relative;height:clamp(10px,34%,26px);background:repeating-linear-gradient(90deg,transparent 0 calc(25% - 1px),#E3E8F1 calc(25% - 1px) 25%),var(--line-2);border-radius:999px}
+.pb-fill{position:absolute;inset:0 auto 0 0;width:var(--v);border-radius:999px;background:linear-gradient(90deg,var(--navy) 0%,#2D5FA3 100%);box-shadow:0 2px 6px rgba(22,58,107,.22);animation:pbgrow .9s cubic-bezier(.2,.8,.2,1) var(--d,0ms) both}
+.pb-tgt{position:absolute;top:-5px;bottom:-5px;left:var(--t);width:2px;margin-left:-1px;background:var(--bad);border-radius:2px}
+.pb-tgt::before{content:"";position:absolute;top:-4px;left:-3px;border:4px solid transparent;border-top-color:var(--bad);border-bottom:0}
+.pb-tgt em{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translate(-50%,3px);font-style:normal;font:600 10.5px var(--mono);color:#fff;background:var(--ink);padding:2px 6px;border-radius:5px;white-space:nowrap;opacity:0;pointer-events:none;transition:.15s}
+.pb-row:hover .pb-tgt em{opacity:1;transform:translate(-50%,0)}
+.pb-val{display:flex;flex-direction:column;align-items:flex-end;line-height:1.2}
+.pb-val b{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink)}
+.pb-val small{font-size:10.5px;font-weight:700;color:var(--ink-4);white-space:nowrap}
+.pb-val small.pb-ok{color:var(--ok)}.pb-val small.pb-warn{color:var(--warn)}.pb-val small.pb-bad{color:var(--bad)}
+.pb-lgd{padding-top:10px;border-top:1px solid var(--line-2);gap:14px}
+.pb-lgd .pb-sw{width:16px;height:8px;border-radius:999px;background:linear-gradient(90deg,var(--navy),#2D5FA3)}
+.pb-lgd .pb-tk{width:2px;height:12px;border-radius:2px;background:var(--bad);vertical-align:-2px}
+.pb-lgd .pb-dot{width:7px;height:7px;box-shadow:none;vertical-align:0}
+.pb-empty{flex:1;display:grid;place-items:center;color:var(--ink-4);font-size:13px;min-height:140px}
+@keyframes pbgrow{from{width:0}}
+/* ===== tampilan HP ===== */
+.tcard .tv{display:contents}
+.ptabs{scroll-behavior:smooth}
+.ptabs.fe-l::before,.ptabs.fe-r::after{content:"";position:sticky;flex:0 0 34px;z-index:2;pointer-events:none;align-self:stretch;margin:-6px 0}
+.ptabs.fe-l::before{left:-6px;margin-right:-34px;background:linear-gradient(90deg,#F8FAFD 15%,rgba(248,250,253,0))}
+.ptabs.fe-r::after{right:-6px;margin-left:-34px;background:linear-gradient(270deg,#F8FAFD 15%,rgba(248,250,253,0))}
+@media (max-width:600px){
+ .vh{align-items:flex-start;flex-wrap:wrap;row-gap:10px}
+ .vh>div:nth-child(2){flex:1 1 calc(100% - 60px)}
+ .vh .acts{flex:1 1 100%;margin-left:0;flex-wrap:wrap;gap:6px}
+ .vh .acts:has(>:nth-child(3)) .btn,.vh .acts:has(>:nth-child(3)) button{flex:1 1 auto;justify-content:center;text-align:center}
+ .vh p{white-space:normal;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;line-height:1.4;margin-top:4px}
+ .vh h1{white-space:normal;line-height:1.25}
+ .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .kpis>:last-child:nth-child(odd){grid-column:1/-1}
+ .tscroll:has(>.tcard){overflow:visible}
+ .tcard,.tcard tbody{display:block}
+ .tcard thead{display:none}
+ .tcard tbody{display:flex;flex-direction:column;gap:10px;padding:10px;background:var(--bg)}
+ .tcard tr{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px 8px;box-shadow:0 1px 3px rgba(11,31,69,.05)}
+ .tcard tr.click:active{background:#F6F8FC}
+ .tcard td{grid-column:1/-1;display:grid;grid-template-columns:minmax(96px,36%) minmax(0,1fr);gap:10px;align-items:start;padding:7px 0;border:0;border-top:1px dashed var(--line);background:none;text-align:left;font-size:13px;min-width:0;max-width:none;overflow-wrap:anywhere}
+ .tcard td::before{content:attr(data-l);padding-top:2px;font-size:11px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;color:var(--ink-3);line-height:1.3}
+ .tcard td[data-l=""]{grid-template-columns:minmax(0,1fr)}
+ .tcard td .tv{display:block;min-width:0}
+ .tcard td[data-l=""]::before{display:none}
+ .tcard td.tc1{grid-column:1;grid-row:1;grid-template-columns:minmax(0,1fr);border-top:0;padding:0 0 9px;align-self:center}
+ .tcard td.tc1::before{display:none}
+ .tcard td.tact{grid-column:2;grid-row:1;border-top:0;padding:0;display:block}
+ .tcard td.tact::before{display:none}
+ .tcard .ract button{min-width:36px;height:36px;border-radius:9px;font-size:14px}
+ .tcard td .sm{display:block}
+ .tcard tr.mgrp{display:block;padding:0;border:0;background:none;box-shadow:none}
+ .tcard tr.mgrp td{display:block;border-radius:10px;border-top:0}
+ .tcard tr.mgrp td::before{display:none}
+ .tfoot{justify-content:space-between}
+ .tfoot .pager{margin-left:auto}
+}
+@media (prefers-reduced-motion:reduce){.pb-fill{animation:none}}
+@media (max-width:600px){.pb-rows{gap:6px}.pb-row{flex:none;min-height:0;grid-template-columns:minmax(0,1fr) 78px;grid-template-areas:"l v" "t t";gap:12px 10px;max-height:none;padding:10px 8px 12px}.pb-lbl{grid-area:l}.pb-val{grid-area:v}.pb-trk{grid-area:t;height:10px}}
+
 .cols{display:flex;align-items:flex-end;gap:18px;height:170px;padding:18px 8px 0;border-bottom:1px solid var(--line)}
 .cols .c{flex:1;display:flex;align-items:flex-end;justify-content:center;gap:4px;height:100%}
 .cols .c i{width:min(30px,40%);border-radius:5px 5px 0 0;position:relative}
@@ -891,9 +975,9 @@ function tBody(id){const o=T[id];const all=tRows(id);const cols=o.cols.filter(c=
  const pl=[];const add=i=>pl.push(`<button data-pg="${id}" data-n="${i}" class="${i===pg?'on':''}">${i+1}</button>`);
  if(pages<=7){for(let i=0;i<pages;i++)add(i)}else{add(0);if(pg>2)pl.push('<span>…</span>');for(let i=Math.max(1,pg-1);i<=Math.min(pages-2,pg+1);i++)add(i);if(pg<pages-3)pl.push('<span>…</span>');add(pages-1)}
  const so=sortOf(id)||{},s0=all[0];const srt=c=>o.nosort?false:c.sort!==false&&!!c.k&&(c.sk||c.x||(s0&&s0[c.k]!=null&&typeof s0[c.k]!=='object'));
- return `<div class="tscroll"><table><thead><tr>${cols.map(c=>srt(c)?`<th class="${c.num?'num':''} srt${so.k===c.k?' on':''}" data-act="tsort" data-t="${id}" data-k="${c.k}" title="Urutkan" aria-sort="${so.k===c.k?(so.d==='asc'?'ascending':'descending'):'none'}">${c.l}<span class="ar">${so.k===c.k?(so.d==='asc'?'▲':'▼'):'⇅'}</span></th>`:`<th class="${c.num?'num':''}">${c.l}</th>`).join('')}${hasAct?'<th></th>':''}</tr></thead><tbody>${rows.map(r=>{const acts=hasAct?`${o.rowAct?o.rowAct(r):''}${o.edit&&o.canEdit&&o.canEdit(r)?`<button title="Ubah" aria-label="Ubah" data-act="edit" data-t="${id}" data-i="${esc(r.id)}">✎</button>`:''}${o.del&&o.canDel&&o.canDel(r)?`<button class="d" title="${o.delTitle||'Hapus'}" aria-label="${o.delTitle||'Hapus'}" data-act="del" data-t="${id}" data-i="${esc(r.id)}">🗑</button>`:''}`:'';
+ return `<div class="tscroll"><table class="tcard"><thead><tr>${cols.map(c=>srt(c)?`<th class="${c.num?'num':''} srt${so.k===c.k?' on':''}" data-act="tsort" data-t="${id}" data-k="${c.k}" title="Urutkan" aria-sort="${so.k===c.k?(so.d==='asc'?'ascending':'descending'):'none'}">${c.l}<span class="ar">${so.k===c.k?(so.d==='asc'?'▲':'▼'):'⇅'}</span></th>`:`<th class="${c.num?'num':''}">${c.l}</th>`).join('')}${hasAct?'<th></th>':''}</tr></thead><tbody>${rows.map(r=>{const acts=hasAct?`${o.rowAct?o.rowAct(r):''}${o.edit&&o.canEdit&&o.canEdit(r)?`<button title="Ubah" aria-label="Ubah" data-act="edit" data-t="${id}" data-i="${esc(r.id)}">✎</button>`:''}${o.del&&o.canDel&&o.canDel(r)?`<button class="d" title="${o.delTitle||'Hapus'}" aria-label="${o.delTitle||'Hapus'}" data-act="del" data-t="${id}" data-i="${esc(r.id)}">🗑</button>`:''}`:'';
   if(r.grp)return `<tr class="mgrp"><td colspan="${cols.length+(hasAct?1:0)}">${o.grpRow?o.grpRow(r):grpHead(r)}</td></tr>`;
-  return `<tr class="${o.open?'click ':''}${o.rowCls?o.rowCls(r):''}"${o.open?` data-act="open" data-t="${id}" data-i="${esc(r.id)}"`:''}>${cols.map(c=>`<td class="${c.w?'w':''} ${c.num?'num':''}">${c.r?c.r(r):esc(r[c.k]??'')}</td>`).join('')}${hasAct?`<td><div class="ract">${acts}</div></td>`:''}</tr>`}).join('')}</tbody></table></div>
+  return `<tr class="${o.open?'click ':''}${o.rowCls?o.rowCls(r):''}"${o.open?` data-act="open" data-t="${id}" data-i="${esc(r.id)}"`:''}>${cols.map((c,ci)=>`<td class="${c.w?'w':''} ${c.num?'num':''}${ci===0?' tc1':''}" data-l="${esc(String(c.l||'').replace(/<[^>]*>/g,''))}"><div class="tv">${c.r?c.r(r):esc(r[c.k]??'')}</div></td>`).join('')}${hasAct?`<td class="tact"><div class="ract">${acts}</div></td>`:''}</tr>`}).join('')}</tbody></table></div>
  <div class="tfoot"><label>Tampilkan <select data-ps="${id}" aria-label="Jumlah baris">${[10,20,50,100].map(n=>`<option ${n===ps?'selected':''}>${n}</option>`).join('')}</select> baris</label><span>${rp(pg*ps+1)}–${rp(Math.min(all.length,pg*ps+ps))} dari ${rp(all.length)}</span>${o.foot?o.foot(all):''}<div class="pager"><button data-pg="${id}" data-n="${pg-1}" ${pg===0?'disabled':''} aria-label="Sebelumnya">‹</button>${pl.join('')}<button data-pg="${id}" data-n="${pg+1}" ${pg>=pages-1?'disabled':''} aria-label="Berikutnya">›</button></div></div>`}
 function redrawT(id){const b=$('#tb-'+id);if(b)b.innerHTML=tBody(id)}
 function field(c,row){const v=row?row[c.k]:(c.def!=null?(typeof c.def==='function'?c.def():c.def):'');const id='f_'+c.k;const dis=c.ro?' disabled':'';
@@ -1363,6 +1447,24 @@ function pmoTabs(cur){const u=curUnit(),W=S.wbs.filter(w=>!w.arsip&&unitMatch(w,
  return `<nav class="ptabs" aria-label="Tab PMO">${pmoTabsVis().map(t=>`<a href="#pmo-${t[0]}" class="${t[0]===cur?'on':''}">${t[1]}${cnt[t[0]]!==''?` <b>${cnt[t[0]]}</b>`:''}</a>`).join('')}</nav>`}
 function viewPmo(tab){const f={charter:pCharter,portofolio:pPorto,wbs:pWbs,milestone:pMilestone,risiko:pRisiko,cr:pCr,bukti:pBukti,laporan:pLaporan,referensi:pRef}[tab];return f?f():''}
 /* --- Portofolio --- */
+function pbChart(PV,items,M,tw){
+ const L=PV.filter(p=>p.jenis==='Berkelanjutan').map(p=>{const s=sumTR(items.filter(w=>w.prog===p.akr),M);const has=!!s.a;const v=has?s.r/s.a*100:0,t=has?s.t/s.a*100:0,g=v-t;
+  const st=!has?'na':g>=-0.05?'ok':g>=-10?'warn':'bad';return {p,s,has,v:Math.min(v,100),vr:v,t:Math.min(t,100),tr:t,g,st}});
+ const T=L.reduce((a,x)=>(a.r+=x.s.r,a.t+=x.s.t,a.a+=x.s.a,a),{r:0,t:0,a:0});
+ const nOk=L.filter(x=>x.st==='ok').length,nLow=L.filter(x=>x.st==='warn'||x.st==='bad').length;
+ const fmtG=g=>(g>=0?'+':'−')+(Math.round(Math.abs(g)*10)/10).toLocaleString('id-ID',{minimumFractionDigits:1,maximumFractionDigits:1})+' poin';
+ const nm=p=>{const a=psing(p);return a&&a!==p.akr?a:short(p.nama||'',38)};
+ const rows=L.map((x,k)=>`<div class="pb-row" style="--d:${k*60}ms" title="${esc(p_tt(x))}">
+  <div class="pb-lbl"><span class="pb-dot pb-${x.st}"></span><div><b>${esc(x.p.kode)}</b><small>${esc(nm(x.p))}</small></div></div>
+  <div class="pb-trk">${x.has?`<i class="pb-fill" style="--v:${x.v}%"></i><i class="pb-tgt" style="--t:${x.t}%"><em>${pct(x.tr)}</em></i>`:''}</div>
+  <div class="pb-val"><b>${x.has?pct(x.vr):'—'}</b>${x.has?`<small class="pb-${x.st}">${x.st==='ok'?'✓ ':''}${fmtG(x.g)}</small>`:'<small>belum ada target</small>'}</div></div>`).join('');
+ function p_tt(x){return x.has?`${x.p.nama}\nRealisasi ${pct(x.vr)} · Target ${pct(x.tr)} (${fmtG(x.g)})`:x.p.nama}
+ return `<div class="card hfill pb-card"><div class="ch"><h3>Capaian Program Berkelanjutan</h3><span class="r s">s.d. ${tw}</span></div>
+ <div class="pad">${L.length?`<div class="pb-sum"><div class="pb-big">${T.a?`<b>${pct(T.r/T.a*100)}</b><span>capaian gabungan<br>target ${pct(T.t/T.a*100)}</span>`:`<span>Belum ada item WBS bertarget<br>untuk program berkelanjutan.</span>`}</div>
+  <div class="pb-chips"><span class="pb-chip pb-ok"><i></i>${nOk} sesuai target</span><span class="pb-chip ${nLow?'pb-bad':'pb-mute'}"><i></i>${nLow} di bawah target</span></div></div>
+ <div class="pb-rows">${rows}</div>
+ <div class="lgd pb-lgd"><span><i class="pb-sw"></i>Realisasi</span><span><i class="pb-tk"></i>Target s.d. ${tw}</span><span><i class="pb-dot pb-ok"></i>Sesuai</span><span><i class="pb-dot pb-warn"></i>Selisih ≤10 poin</span><span><i class="pb-dot pb-bad"></i>Selisih &gt;10 poin</span></div>`
+ :'<div class="pb-empty">Belum ada program berkelanjutan pada tahun ini.</div>'}</div></div>`}
 function pPorto(){const P=per(),M=P.b,tw=P.lab;const seg=S.ui.seg||'';const PV=progVis();const ps=PV.filter(p=>!seg||p.jenis===seg);
  const items=S.wbs.filter(w=>!w.arsip&&yrOf(w)===S.ui.tahun&&unitMatch(w,curUnit(),lockM()||'up'));const tot=sumTR(items,M);
  const up=items.filter(w=>!doneAt(w,12)&&w.f>=TODAY&&w.f<=addDays(TODAY,30)).sort((a,b)=>a.f<b.f?-1:1);const late=items.filter(w=>stOf(w,12)==='Terlambat').sort((a,b)=>a.f<b.f?-1:1);
@@ -1383,7 +1485,7 @@ function pPorto(){const P=per(),M=P.b,tw=P.lab;const seg=S.ui.seg||'';const PV=p
    {k:'_ch',l:'Project Charter',frm:false,nosort:1,r:p=>chCell(p),x:p=>{const c=chCur(p.akr);return c?CHST[c.st][0]+' v'+c.ver:'Belum dibuat'}},
    {k:'_n',l:'Item WBS',frm:false,num:1,r:p=>`<a href="#pmo-wbs" data-act="gowbs" data-p="${p.akr}">${S.wbs.filter(w=>w.prog===p.akr&&!w.arsip).length}</a>`,x:p=>S.wbs.filter(w=>w.prog===p.akr).length},
    {k:'status',l:'Status',t:'sel',o:['Inisiasi','On track','Perlu perhatian','Terlambat','Selesai','Arsip'],r:p=>chipSt(p.status)},{k:'ket',l:'Latar belakang & tujuan',t:'ta',tbl:false}]})+`</div>
- <div style="display:flex;flex-direction:column;gap:14px;min-width:0"><div class="card"><div class="ch"><h3>Capaian Program Berkelanjutan</h3><span class="r s">s.d. ${tw}</span></div><div class="pad">${PV.filter(p=>p.jenis==='Berkelanjutan').map(p=>{const s=sumTR(items.filter(w=>w.prog===p.akr),M);const v=s.a?s.r/s.a*100:0,t=s.a?s.t/s.a*100:0;return `<div class="hbar"><span title="${esc(p.nama)}">${p.kode}</span><div class="t"><i style="width:${v}%;background:var(--navy-2)"></i><i style="left:${t}%;width:2px;background:var(--bad)"></i></div><b>${pct(v)}</b></div>`}).join('')}<div class="lgd" style="margin-top:6px"><span><i style="background:var(--bad);width:3px"></i>target s.d. TW</span></div></div></div>
+ <div style="display:flex;flex-direction:column;gap:14px;min-width:0">${pbChart(PV,items,M,tw)}
  <div class="card"><div class="ch"><h3>Milestone Mendatang</h3><span class="r"><a class="btn sm" href="#pmo-milestone">Semua ›</a></span></div><div class="pad tl">${late.slice(0,3).map(w=>`<div class="it"><span class="dt" style="color:var(--bad)">${fmtD(w.f)}</span><div style="flex:1;min-width:0">${esc(short(deliv(w),55))}<div class="s"><span class="code">${w.k}</span> · ${chipSt('Terlambat')}</div></div></div>`).join('')}${up.slice(0,5).map(w=>`<div class="it"><span class="dt">${fmtD(w.f)}</span><div style="flex:1;min-width:0">${esc(short(deliv(w),55))}<div class="s"><span class="code">${w.k}</span> · ${esc(short(uicU(w),30))}</div></div></div>`).join('')||'<span class="s">Tidak ada.</span>'}</div></div></div></div>`}
 ACT.gowbs=el=>{S.ui.prog=el.dataset.p;save()};
 ACT.tmpl=()=>{xlsxSave([{sheet:'Program',rows:[{Kode:'B26-XXX',Jenis:'Berkelanjutan','Akronim kode':'XXX','Tahun mulai':2026,'Program / proyek':'','Klaster (Lv 2)':'',Sponsor:'','UIC Utama':'','UIC Pendukung':'',Periode:'',Status:'Inisiasi'}]},{sheet:'Kompilasi',rows:[kompRow(S.wbs[0])]}],'Template_Modul_Transformasi.xlsx')};
@@ -1972,4 +2074,9 @@ ACT.fbaccts=async el=>{el.disabled=true;let b=0,a=0;const gagal=[];for(const u o
  S=fsBlank();readHash();const sp=splashOn('Menghubungkan ke Firestore…');
  try{await fbInit();const u=await new Promise(r=>{const un=FB.auth.onAuthStateChanged(x=>{un();r(x)})});if(u){const r=await fbAfterAuth();if(r==='bootstrap'){sp.remove();render();bootstrapUI(u.email.toLowerCase());return}}}catch(e){FB.loginErr=fbErr(e)}
  sp.remove();render()})();
+
+/* tab: petunjuk geser & tab aktif terlihat */
+(function(){const upd=t=>{const m=t.scrollWidth-t.clientWidth;t.classList.toggle('fe-l',m>2&&t.scrollLeft>2);t.classList.toggle('fe-r',m>2&&t.scrollLeft<m-2)};
+ const init=()=>document.querySelectorAll('.ptabs').forEach(t=>{if(!t.dataset.fe){t.dataset.fe=1;t.addEventListener('scroll',()=>upd(t),{passive:true});const on=t.querySelector('a.on');if(on&&t.scrollWidth>t.clientWidth){t.style.scrollBehavior='auto';t.scrollLeft=on.offsetLeft-(t.clientWidth-on.offsetWidth)/2;t.style.scrollBehavior=''}}upd(t)});
+ new MutationObserver(init).observe(document.body,{childList:true,subtree:true});addEventListener('resize',init);init()})();
 </script>
