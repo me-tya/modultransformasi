@@ -1025,6 +1025,20 @@ button[aria-label*="Bantuan"]:hover,button[title*="Bantuan"]:hover,.help-icon:ho
 .pm-sub-tree ul{margin:7px 0 1px;padding-left:17px;list-style:none;border-left:2px solid #FDB913}
 .pm-sub-tree li{display:flex;justify-content:space-between;gap:10px;padding:5px 7px;border-bottom:1px solid #E7EBF1;font-size:11px}
 .pm-sub-tree li b{white-space:nowrap;color:#475F84;font-size:10px}
+
+.ov-tabs{display:flex;gap:6px;background:#fff;border:1px solid var(--line);padding:6px;border-radius:13px;margin:13px 0;overflow-x:auto}
+.ov-tabs button{flex:1 0 auto;min-height:42px;border:0;background:transparent;border-radius:9px;font-weight:800;color:#50627E;cursor:pointer;padding:8px 12px}
+.ov-tabs button.on{background:#0B2447;color:#fff}
+.ov-tabs button:hover:not(.on){background:#E9F1FC}
+.ov-qgrid,.ov-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:16px}
+.ov-q,.ov-kpi{padding:16px;border:1px solid #DCE4F1;background:#F7FAFE;border-radius:12px;display:flex;flex-direction:column;gap:9px}
+.ov-q small,.ov-kpi small{font-size:11px;letter-spacing:.5px;font-weight:850;color:#36577D}
+.ov-q b,.ov-kpi strong{font-size:26px;color:#0B2447;line-height:1.2}
+.ov-q span,.ov-kpi span{font-size:11px;color:#596D89}
+.ov-kwide-table td{vertical-align:top}
+.ov-kwide-table td:nth-child(3){max-width:480px;min-width:250px;white-space:normal}
+.ov-source{margin:12px 0}
+@media(max-width:760px){.ov-qgrid,.ov-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 
 <div id="root"></div>
@@ -2666,6 +2680,51 @@ function pSiklus(){const PV=pmoProgramList();const st=PV.map(p=>({p,x:progStat(p
  `<div class="card"><div class="ch"><h3>Tenggat terdekat</h3><span class="r s">mengacu Draft KEP Kepala BaTii</span></div><div class="pad sk-dl">${dl.slice(0,6).map(x=>{const n=daysTo(x.d);return `<a class="sk-d ${n<0?'bad':n<=5?'warn':''}" href="${x.h}"><span class="dd"><b>${fmtD(x.d)}</b><small>${n<0?`lewat ${-n} hari`:n===0?'hari ini':`${n} hari lagi`}</small></span><span><b>${esc(x.t)}</b><small>${esc(x.s)}</small></span></a>`}).join('')||'<span class="s">Tidak ada tenggat dalam waktu dekat.</span>'}</div></div>
  <div class="sk-board">${PSTG.map(([k,l,n,c])=>{const a=st.filter(z=>z.x.stage===k);return `<section class="sk-col"><header style="border-top-color:${c}"><span><em>${n}</em> ${l}</span><span class="chip c-gray">${a.length}</span></header>${a.map(card).join('')||'<span class="s" style="padding:8px">Tidak ada program.</span>'}</section>`}).join('')}</div>
  <p class="s" style="margin:0">Tahap ditentukan otomatis: charter belum disahkan → Perencanaan; charter disahkan → Pelaksanaan &amp; pemantauan; seluruh item WBS tervalidasi atau status program Selesai → Penutupan.</p>`}
+
+/* ======================== Overview capaian program: sumber sheet WBS 2026 ======================== */
+const KWIDE_2026=[
+ [1,'Single Profile Penerimaan Negara',2,2,'Identifikasi dan integrasi data internal; Analisis Dampak Perubahan'],
+ [1,'Pemotongan Pajak di Muka atas TKD',2,2,'Konsep proses bisnis pemotongan pajak di muka TKD; Analisis Dampak Perubahan'],
+ [1,'Digitalisasi Core System APBN',3,3,'EA Level 3; Modul Core APBN tahap 1; dokumen awareness dan ADP'],
+ [1,'Digitalisasi Office Automation',3,3,'EA Level 3; dokumen sistem tahap 1; dokumen CM tahap 1'],
+ [1,'Satu Data Kemenkeu',3,3,'Legal drafting KMK Tim Data Governance Officers; UR portal Satu Data; kertas kerja FGD'],
+ [2,'Single Profile Penerimaan Negara',2,2,'Identifikasi dan integrasi data eksternal; strategi manajemen perubahan'],
+ [2,'Seamless Services Bendahara (ex-Pajak TKD)',2,2,'Konsep proses bisnis Bupot PPh Unifikasi dan PPh Pasal 21'],
+ [2,'Digitalisasi Core System APBN',5,5,'EA level SOP modul tahap 1 dan 2; modul tahap 2; kesiapan jejaring perubahan; migrasi SPAN–SAKTI'],
+ [2,'Digitalisasi Office Automation',3,3,'EA Level 3 tahap 1; dokumen sistem tahap 2; dokumen CM tahap 2'],
+ [2,'Satu Data Kemenkeu',2,2,'Portal SDK tahap 1; kamus data tahap 1'],
+ [3,'Single Profile Penerimaan Negara',2,2,'Analisis proses bisnis sektoral; dokumen implementasi CM tahap I'],
+ [3,'Seamless Services Bendahara (ex-Pajak TKD)',4,4,'UR Bupot PPh Unifikasi; arsitektur; kebutuhan interoperabilitas gaji dan SIKD–Coretax'],
+ [3,'Digitalisasi Core System APBN',4,4,'EA level detail modul tahap 3; modul tahap 3; strategi CM; pemutakhiran SLA'],
+ [3,'Digitalisasi Office Automation',3,3,'EA Level 3 tahap 2; dokumen sistem tahap 3; dokumen CM tahap 3'],
+ [3,'Satu Data Kemenkeu',2,2,'Portal SDK tahap 2; kamus data tahap 2'],
+ [4,'Single Profile Penerimaan Negara',2,null,'Risk Profile; dokumen implementasi CM tahap II'],
+ [4,'Seamless Services Bendahara (ex-Pajak TKD)',5,null,'Interoperabilitas SAKTI–Coretax, E-Tukin dan SIKD untuk Bupot PPh'],
+ [4,'Digitalisasi Core System APBN',4,null,'EA level SOP modul tahap 4; modul tahap 4; implementasi strategi CM; migrasi SPAN–SAKTI'],
+ [4,'Digitalisasi Office Automation',4,null,'EA Level 3 tahap 3; dokumen sistem tahap 4; dokumen CM tahap 4'],
+ [4,'Satu Data Kemenkeu',1,null,'CM implementasi portal Satu Data Kemenkeu']
+];
+function pOverview(){
+ const y=+S.ui.tahun,tab=['tw','kwide','tprog','ue'].includes(S.ui.overviewTab)?S.ui.overviewTab:'tw';
+ const data=lapData(),num=n=>Number(n||0).toLocaleString('id-ID');
+ const annual=sumTR(data.items,12),months=[3,6,9,12];
+ const matrix=(title,entries)=>'<div class="card ov-matrix"><div class="ch"><h3>'+title+'</h3><span class="r s">Bobot WBS kumulatif</span></div><div class="tscroll"><table class="lap"><thead><tr><th>Program / unit</th>'+months.map((m,i)=>'<th class="num">TW '+(i+1)+'</th>').join('')+'<th class="num">Target tahunan</th><th class="num">Capaian tahunan</th></tr></thead><tbody>'+entries.map(e=>'<tr><td><b>'+esc(e.name)+'</b></td>'+e.tw.map(x=>'<td class="num"><b>'+(x.t?pct(x.r/x.t*100):'—')+'</b><span class="sm">'+num(x.r)+' / '+num(x.t)+'</span></td>').join('')+'<td class="num">'+num(e.a)+'</td><td class="num"><b>'+(e.a?pct(e.tw[2].r/e.a*100):'—')+'</b></td></tr>').join('')+'</tbody></table></div></div>';
+ const tprog=data.prog.map(x=>({name:x.p.nama,tw:x.tw,a:x.a}));
+ const ue=data.ue.map(x=>({name:x.u,tw:x.tw,a:x.a}));
+ const kv=KWIDE_2026,twSum=t=>kv.filter(x=>x[0]===t),kSumm=t=>({t:t,v:twSum(t),target:twSum(t).reduce((a,x)=>a+x[2],0),real:twSum(t).reduce((a,x)=>a+(x[3]||0),0)});
+ const kTable=y!==2026?'<div class="note i">Sheet Capaian K-Wide yang tersedia sebagai referensi adalah tahun 2026. Data tahun lain belum tersedia.</div>':
+ '<div class="note i">Indikator ini adalah <b>jumlah output IKU K-Wide</b> dari sheet Capaian K-Wide 2026, bukan persentase tertimbang WBS. Realisasi TW IV belum tercantum pada sumber.</div>'+
+ '<div class="ov-kpi-grid">'+[1,2,3,4].map(t=>{const x=kSumm(t);return '<div class="ov-kpi"><small>TW '+t+' · Output IKU</small><strong>'+(t===4?'—':pct(x.real/x.target*100))+'</strong><span>'+ (t===4?'Realisasi belum tersedia':x.real+' dari '+x.target+' output')+'</span></div>'}).join('')+'</div>'+
+ '<div class="card"><div class="ch"><h3>Matriks Target Output IKU K-Wide per Triwulan</h3><span class="r s">Sumber: Capaian K-Wide 2026</span></div><div class="tscroll"><table class="lap ov-kwide-table"><thead><tr><th>TW</th><th>Program Transformasi</th><th>Target output</th><th class="num">Target</th><th class="num">Realisasi</th><th class="num">Status</th></tr></thead><tbody>'+kv.map(x=>'<tr><td>TW '+x[0]+'</td><td><b>'+esc(x[1])+'</b></td><td>'+esc(x[4])+'</td><td class="num">'+num(x[2])+'</td><td class="num">'+(x[3]===null?'—':num(x[3]))+'</td><td class="num"><span class="chip '+(x[3]===null?'c-gray':x[3]>=x[2]?'c-ok':'c-bad')+'">'+(x[3]===null?'Belum tersedia':x[3]>=x[2]?'Tercapai':'Belum tercapai')+'</span></td></tr>').join('')+'</tbody></table></div></div>';
+ const quarter='<div class="card"><div class="ch"><h3>Capaian per Triwulan</h3><span class="r s">Kumulatif sesuai sheet Capaian TW 1–3</span></div><div class="ov-qgrid">'+months.map((m,i)=>{const v=sumTR(data.items,m);return '<div class="ov-q"><small>TRIWULAN '+(i+1)+'</small><b>'+(v.t?pct(v.r/v.t*100):'—')+'</b><div class="bar"><i style="width:'+Math.min(100,v.t?v.r/v.t*100:0)+'%;background:var(--blue)"></i></div><span>'+num(v.r)+' realisasi / '+num(v.t)+' target</span></div>'}).join('')+'</div></div>';
+ return vh('O','pmo','Overview','Capaian per triwulan, K-Wide, T-Program, dan per UE I sesuai struktur workbook WBS.')+pmoTabs('siklus')+
+ '<div class="ov-tabs" role="tablist" aria-label="Jenis capaian">'+[['tw','Capaian per Triwulan'],['kwide','Capaian K-Wide'],['tprog','Capaian T-Program'],['ue','Capaian per UE I']].map(([v,l])=>'<button type="button" data-act="ovTab" data-v="'+v+'" role="tab" aria-selected="'+(tab===v)+'" class="'+(tab===v?'on':'')+'">'+l+'</button>').join('')+'</div>'+
+ (tab==='tw'?quarter+(data.items.length?'':'<div class="note w">WBS tahun ini belum tersedia di aplikasi. Impor sheet Kompilasi untuk mengisi capaian WBS.</div>'):
+  tab==='kwide'?kTable:tab==='tprog'?matrix('Capaian T-Program',tprog):matrix('Capaian per Unit Eselon I',ue))+
+ '<p class="s ov-source">Perhitungan capaian WBS mengikuti bobot, jadwal, realisasi dan status validasi pada aplikasi. K-Wide 2026 menggunakan angka output dari workbook rujukan, sehingga keduanya tidak boleh disamakan.</p>';
+}
+ACT.ovTab=el=>{S.ui.overviewTab=el.dataset.v;save();render()};
+
 /* --- Program & proyek (diturunkan dari WBS Lv 4) --- */
 function progProjects(p){
  const it=pmoScopedWbs().filter(w=>w.prog===p.akr),g={};
