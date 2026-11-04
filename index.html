@@ -2765,8 +2765,8 @@ function pOverview(){
  const periodQuarters=P.pr==='all'?[1,2,3,4]:P.pr==='r'?[1,2,3,4].filter(t=>t*3>=P.a&&(t-1)*3+1<=P.b):[+P.pr];
  const periodLabel=P.pr==='all'?'Setahun':P.lab;
  const quarterMeasure=t=>{const hi=t*3,lo=(t-1)*3+1,first=Math.max(lo,P.a),last=Math.min(hi,P.b);if(first>last)return null;
-  const total=sumTR(data.items,last),before=first>1?sumTR(data.items,first-1):{t:0,r:0};
-  return {t:total.t-before.t,r:total.r-before.r};};
+  const total=sumTR(data.items,last);if(P.pr!=='r')return {t:total.t,r:total.r};
+  const before=first>1?sumTR(data.items,first-1):{t:0,r:0};return {t:total.t-before.t,r:total.r-before.r};};
  const selectedMeasures=periodQuarters.map(t=>({t,v:quarterMeasure(t)})).filter(x=>x.v);
  const matrix=(title,entries)=>'<div class="card ov-matrix"><div class="ch"><h3>'+title+'</h3><span class="r s">Bobot WBS kumulatif</span></div><div class="tscroll"><table class="lap"><thead><tr><th>Program / unit</th>'+months.map((m,i)=>'<th class="num">TW '+(i+1)+'</th>').join('')+'<th class="num">Target tahunan</th><th class="num">Capaian tahunan</th></tr></thead><tbody>'+entries.map(e=>'<tr><td><b>'+esc(e.name)+'</b></td>'+e.tw.map(x=>'<td class="num"><b>'+(x.t?pct(x.r/x.t*100):'—')+'</b><span class="sm">'+num(x.r)+' / '+num(x.t)+'</span></td>').join('')+'<td class="num">'+num(e.a)+'</td><td class="num"><b>'+(e.a?pct(e.tw[Math.max(0,Math.min(3,curTwDone()-1))].r/e.a*100):'—')+'</b></td></tr>').join('')+'</tbody></table></div></div>';
  const tprog=data.prog.map(x=>({name:x.p.nama,tw:x.tw,a:x.a}));
