@@ -1000,6 +1000,13 @@ button[aria-label*="Bantuan"]:hover,button[title*="Bantuan"]:hover,.help-icon:ho
 .ch-document-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin:8px 0 12px}
 #ch-active-document{min-width:0;min-height:420px}
 .ch-preview-body{background:#fff;color:#152033;padding:8px}
+/* Ikon kontrol dan bantuan konsisten dengan palet Satu Kemenkeu */
+.pm-program-toggle{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#FDB913;color:#112C4D;border:1px solid #E5A300;transition:all .18s ease}
+.pm-program-chevron{font-size:24px;font-family:Arial,sans-serif;font-weight:900;line-height:1;display:block;transform-origin:50% 48%}
+.pm-program-toggle[aria-expanded=false] .pm-program-chevron{transform:rotate(-90deg)}
+.pm-program-toggle:hover{background:#fff;border-color:#FDB913;color:#C28C0A;box-shadow:0 4px 12px rgba(253,185,19,.22)}
+.flt .lhint{width:19px;height:19px;font-size:11px;background:#FDB913;color:#15345B;border:1px solid #DB9D06;box-shadow:0 2px 5px rgba(253,185,19,.15);transition:all .15s ease}
+.flt .lhint:hover{background:#fff;color:#C28C0A;border-color:#FDB913;box-shadow:0 4px 12px rgba(253,185,19,.25)}
 </style>
 
 <div id="root"></div>
@@ -2658,7 +2665,7 @@ function pProgram(){
   return `<section class="card pgc pm-program-card" data-pg-code="${esc(p.akr)}" aria-label="Program ${esc(p.nama)}">
    <div class="pm-program-head" data-act="pgfold" data-v="${esc(p.akr)}" role="button" tabindex="0" aria-expanded="${!closed}" aria-controls="${id}" aria-label="${closed?'Tampilkan':'Sembunyikan'} rincian proyek ${esc(p.nama)}">
     <span class="pm-program-toggle" aria-hidden="true">
-     <span class="pm-program-chevron" aria-hidden="true">⌄</span>
+     <span class="pm-program-chevron" aria-hidden="true">▾</span>
     </span>
     <div class="pm-program-identity">
      <div class="pm-program-meta"><span class="pm-program-label">PROGRAM</span><span class="pm-program-code">${esc(p.kode)}</span><span class="pm-program-type">${esc(p.jenis||'Program')}</span></div>
