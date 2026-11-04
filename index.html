@@ -1047,6 +1047,9 @@ button[aria-label*="Bantuan"]:hover,button[title*="Bantuan"]:hover,.help-icon:ho
 .one-table td:nth-child(9){min-width:130px}
 .ov-filter-status{padding:8px 16px 14px;color:#546884;font-size:11.5px;border-top:1px solid #E5EAF2}.ov-filter-status b{color:#203E65}
 .kw-links{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;align-items:center}.kw-code,.kw-map{font-size:10px;border:1px solid #B9CDEE;border-radius:6px;background:#EBF3FF;color:#174879;padding:3px 7px;font-weight:800;cursor:pointer}.kw-code:hover,.kw-map:hover{background:#FDB913;color:#0B2447}.kw-links small{font-size:9px;color:#7D8698;flex-basis:100%}
+
+.prj-workspace{margin-top:18px;scroll-margin-top:18px}.prj-tabs{display:flex;gap:6px;padding:6px 14px;border-bottom:1px solid #DDE6F0;overflow:auto}.prj-tabs button{border:0;padding:10px 16px;background:#EDF2FA;border-radius:9px;font-weight:800;color:#284766;cursor:pointer}.prj-tabs button.on{background:#0B2447;color:#FDB913}.prj-register-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px}.prj-register-head span{display:flex;gap:7px}.prj-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.prj-field{display:flex;flex-direction:column;gap:5px;font-weight:700;font-size:12px;color:#243B5A}.prj-field input,.prj-field select{width:100%;padding:9px;border:1px solid #CDD9EA;border-radius:8px;background:#fff}.prj-field.prj-wide{grid-column:1/-1}.prj-cm{flex-direction:row;align-items:center;background:#F5F9FD;padding:10px;border-radius:9px}.prj-cm input{width:auto}.prj-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.prj-summary>div{background:#F3F7FC;border:1px solid #DDE6F1;padding:14px;border-radius:10px;display:flex;flex-direction:column;gap:5px}.prj-summary b{font-size:24px;color:#0B2447}.prj-summary span{font-size:11px;color:#546982}.prj-wbs-links{display:flex;flex-wrap:wrap;gap:6px}.prj-scope-actions{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.prj-scope-actions button{font-size:10px;border:1px solid #B5CDEB;background:#F1F6FF;color:#143D68;padding:4px 7px;border-radius:6px;cursor:pointer}.prj-scope-actions button:hover{background:#FDB913}
+@media(max-width:720px){.prj-form-grid{grid-template-columns:1fr}.prj-summary{grid-template-columns:repeat(2,1fr)}}
 </style>
 
 <div id="root"></div>
@@ -1129,7 +1132,7 @@ const APLIKASI={'CORE-72':'SIKD Single Window','CORE-95':'SIMPONI V2','CORE-170'
 
 /* ======================== seed ======================== */
 function seed(){
- const S={v:6,cfg:{rep:9,pdmp:true},ui:{tahun:2026,tw:3,prog:'',unit:'',umode:'up',lvm:'sd',lvn:10,wcm:'',wst:'',seg:'',mod:'',sub:{},ps:{},nav:{lainnya:1,trans:1},bseg:'Menunggu validasi',mseg:'all',rf:''},users:[],akses:{},programs:PROG0.map(p=>Object.assign({id:uid(),ket:''},p)),wbs:wbsFromData(),bukti:{},ms:{},kwideLinks:{},kwide:D0.K.map(x=>Object.assign({id:uid()},x)),oneonone:[],risks:[],crs:[],usul:[],sub:[],ind:[],sh:[],impl:{},jj:[],jjMod:{},pantau:[],adopsi:[],tr:[],reviu:[],modMeta:{},log:[]};
+ const S={v:6,cfg:{rep:9,pdmp:true},ui:{tahun:2026,tw:3,prog:'',unit:'',umode:'up',lvm:'sd',lvn:10,wcm:'',wst:'',seg:'',mod:'',sub:{},ps:{},nav:{lainnya:1,trans:1},bseg:'Menunggu validasi',mseg:'all',rf:''},users:[],akses:{},programs:PROG0.map(p=>Object.assign({id:uid(),ket:''},p)),wbs:wbsFromData(),bukti:{},ms:{},kwideLinks:{},kwide:D0.K.map(x=>Object.assign({id:uid()},x)),oneonone:[],projectRisks:[],projectStakeholders:[],risks:[],crs:[],usul:[],sub:[],ind:[],sh:[],impl:{},jj:[],jjMod:{},pantau:[],adopsi:[],tr:[],reviu:[],modMeta:{},log:[]};
  const U=(email,nama,role,unit,sub,modules)=>S.users.push({id:uid(),email,pw:PW,nama,role,unit,sub:sub||'',modules:modules||[],aktif:true});
  U('superadmin@kemenkeu.go.id','Admin Sistem','SA','BaTii','Puspensi');
  U('pmo.kemenkeu@kemenkeu.go.id','PMO Kemenkeu (Pusmantap)','PMOK','BaTii','Pusmantap');
@@ -2833,8 +2836,137 @@ function progProjects(p){
   return {n,a,uic:uic?uic[0]:'—',pg:t?Math.round(d/t*100):0,late:a.filter(w=>stOf(w,12)==='Terlambat').length,sub:Object.keys(v.subs),subItems:Object.entries(v.subs).map(([name,rows])=>({name,count:rows.length})),s:a.reduce((m,w)=>!m||w.s<m?w.s:m,''),f:a.reduce((m,w)=>w.f>m?w.f:m,'')};
  });
 }
+
+/* Register tingkat proyek dan subproyek (salinan independen antar modul). */
+const projectKey=(prog,project,sub='')=>[prog,project,sub].map(v=>encodeURIComponent(String(v||''))).join('|');
+const projectLabels=k=>String(k||'').split('|').map(v=>{try{return decodeURIComponent(v)}catch(e){return v}});
+function projectStores(){
+ S.projectRisks=Array.isArray(S.projectRisks)?S.projectRisks:[];
+ S.projectStakeholders=Array.isArray(S.projectStakeholders)?S.projectStakeholders:[];
+ S.projectDecisions=Array.isArray(S.projectDecisions)?S.projectDecisions:[];
+}
+function projectWbs(k){const [prog,proj,sub]=projectLabels(k);return S.wbs.filter(w=>!w.arsip&&w.prog===prog&&yrOf(w)===S.ui.tahun&&
+  (w.p.includes(proj)||((w.p[2]||'')===proj))&&(!sub||w.p.includes(sub)));}
+function projectCmoModule(k){
+ const a=projectWbs(k);const found=mods().find(m=>a.some(w=>m.items.includes(w)||m.adp===w||m.sc.every((x,i)=>w.p[i]===x)));
+ return found||null;
+}
+function projectField(k,label,val='',type='text',extra=''){return '<label class="prj-field"><span>'+label+'</span><input id="prj-'+k+'" type="'+type+'" value="'+esc(val)+'" '+extra+'></label>'}
+function projectRiskEdit(scope,id){
+ projectStores();
+ const old=S.projectRisks.find(x=>x.id===id),m=projectCmoModule(scope);
+ if(!lv('risk').includes('U')&&!lv('risk').includes('C')){toast('Anda tidak memiliki izin mengelola risiko.');return}
+ const html='<div class="prj-form-grid">'+
+ projectField('title','Uraian risiko / isu',old?.title||'')+
+ '<label class="prj-field"><span>Jenis</span><select id="prj-kind">'+['Risiko proyek','Risiko perubahan','Isu'].map(v=>'<option '+((old?.kind||'Risiko proyek')===v?'selected':'')+'>'+v+'</option>').join('')+'</select></label>'+
+ projectField('cause','Penyebab',old?.cause||'')+
+ projectField('impact','Dampak',old?.impact||'')+
+ '<label class="prj-field"><span>Kemungkinan 1–5</span><select id="prj-likelihood">'+[1,2,3,4,5].map(n=>'<option value="'+n+'" '+((old?.likelihood||3)==n?'selected':'')+'>'+n+'</option>').join('')+'</select></label>'+
+ '<label class="prj-field"><span>Dampak 1–5</span><select id="prj-severity">'+[1,2,3,4,5].map(n=>'<option value="'+n+'" '+((old?.severity||3)==n?'selected':'')+'>'+n+'</option>').join('')+'</select></label>'+
+ projectField('owner','Pemilik risiko (PIC)',old?.owner||'')+
+ projectField('due','Target mitigasi',old?.due||'','date')+
+ projectField('mit','Rencana mitigasi',old?.mit||'')+
+ '<label class="prj-field"><span>Status</span><select id="prj-status">'+['Terbuka','Dimitigasi','Menjadi isu','Ditutup'].map(v=>'<option '+((old?.status||'Terbuka')===v?'selected':'')+'>'+v+'</option>').join('')+'</select></label>'+
+ '<label class="prj-field prj-wide prj-cm"><input id="prj-cm" type="checkbox" '+(old?.cm?'checked':'')+'><span>Risiko CM — sinkronkan ke Register Risiko CMO</span></label>'+
+ '<p class="s prj-wide">Modul CMO terkait: '+esc(m?m.kode+' · '+m.nama:'Belum ditemukan pada WBS/ADP. Centang hanya dapat disimpan setelah modul CM terkait tersedia.')+'</p></div>';
+ modal(old?'Edit Risk Register':'Tambah Risiko / Isu',html,'Simpan',()=>{
+  const title=$('#prj-title').value.trim(),cm=$('#prj-cm').checked;
+  if(!title){toast('Uraian risiko/isu wajib diisi.');return false}
+  if(cm&&!m){toast('Belum ada modul CMO yang sesuai. Lengkapi ADP di WBS sebelum meneruskan risiko ke CMO.');return false}
+  const o=old||{id:uid(),scope,created:TODAY};
+  Object.assign(o,{title,kind:$('#prj-kind').value,cause:$('#prj-cause').value,impact:$('#prj-impact').value,
+   likelihood:+$('#prj-likelihood').value,severity:+$('#prj-severity').value,owner:$('#prj-owner').value,due:$('#prj-due').value,
+   mit:$('#prj-mit').value,status:$('#prj-status').value,cm,modul:cm?m.kode:''});
+  if(!old)S.projectRisks.push(o);
+  const mirror=S.risks.find(x=>x.projectRiskId===o.id);
+  if(cm){const [prog]=projectLabels(scope);const item={id:mirror?.id||uid(),rid:mirror?.rid||'R-'+String(S.risks.length+1).padStart(2,'0'),projectRiskId:o.id,
+   jenis:o.kind==='Isu'?'Isu':'Risiko',uraian:o.title,prog:(progOf(prog)||{}).kode||prog,item:m.kode,keCmo:true,jcm:'ro',sumber:'PMO',
+   kat:o.kind==='Risiko perubahan'?'Resistensi perubahan':'Operasional',kem:o.likelihood,dmp:o.severity,pemilik:o.owner,
+   sebab:o.cause,mit:o.mit,tenggat:o.due,st:o.status};
+   if(mirror)Object.assign(mirror,item);else S.risks.push(item);
+  }else if(mirror)S.risks=S.risks.filter(x=>x.id!==mirror.id);
+  log('Risk Register Proyek',title);save();render();return true;
+ },{size:'wide'});
+}
+function projectStakeEdit(scope,id){
+ projectStores();
+ const old=S.projectStakeholders.find(x=>x.id===id),m=projectCmoModule(scope);
+ if(!lv('porto').includes('U')&&!lv('porto').includes('C')){toast('Anda tidak memiliki izin mengubah stakeholder.');return}
+ const html='<div class="prj-form-grid">'+
+ projectField('name','Nama stakeholder / kelompok',old?.name||'')+projectField('unit','Unit / instansi',old?.unit||'')+
+ projectField('role','Peran / tanggung jawab',old?.role||'')+
+ '<label class="prj-field"><span>Internal / Eksternal</span><select id="prj-type">'+['Internal','Eksternal'].map(v=>'<option '+((old?.type||'Internal')===v?'selected':'')+'>'+v+'</option>').join('')+'</select></label>'+
+ '<label class="prj-field"><span>Pengaruh</span><select id="prj-power">'+['High','Low'].map(v=>'<option '+((old?.power||'High')===v?'selected':'')+'>'+v+'</option>').join('')+'</select></label>'+
+ '<label class="prj-field"><span>Kepentingan</span><select id="prj-interest">'+['High','Low'].map(v=>'<option '+((old?.interest||'High')===v?'selected':'')+'>'+v+'</option>').join('')+'</select></label>'+
+ '<label class="prj-field"><span>Dukungan</span><select id="prj-support">'+['Support','Neutral','Resisten'].map(v=>'<option '+((old?.support||'Neutral')===v?'selected':'')+'>'+v+'</option>').join('')+'</select></label>'+
+ projectField('engage','Strategi pelibatan / komunikasi',old?.engage||'')+
+ projectField('owner','PIC hubungan stakeholder',old?.owner||'')+
+ '<label class="prj-field prj-wide prj-cm"><input id="prj-cm" type="checkbox" '+(old?.cm?'checked':'')+'><span>Salin dan sinkronkan stakeholder ini ke modul CMO</span></label>'+
+ '<p class="s prj-wide">Modul CMO: '+esc(m?m.kode+' · '+m.nama:'Belum tersedia. Lengkapi item ADP yang relevan.')+'</p></div>';
+ modal(old?'Edit Stakeholder':'Tambah Stakeholder',html,'Simpan',()=>{
+  const name=$('#prj-name').value.trim(),cm=$('#prj-cm').checked;
+  if(!name){toast('Nama stakeholder wajib diisi.');return false}
+  if(cm&&!m){toast('Modul CMO yang sesuai belum tersedia.');return false}
+  const o=old||{id:uid(),scope,created:TODAY};
+  Object.assign(o,{name,unit:$('#prj-unit').value,role:$('#prj-role').value,type:$('#prj-type').value,power:$('#prj-power').value,
+   interest:$('#prj-interest').value,support:$('#prj-support').value,engage:$('#prj-engage').value,owner:$('#prj-owner').value,cm,modul:cm?m.kode:''});
+  if(!old)S.projectStakeholders.push(o);
+  const mirror=S.sh.find(x=>x.projectStakeId===o.id);
+  if(cm){const obj={id:mirror?.id||uid(),projectStakeId:o.id,modul:m.kode,kat:o.type,kel:'Stakeholder Proyek',
+   rin:o.name,unit:o.unit,peran:o.role,jml:'',ex:o.power,su:o.interest,ketEx:'',ketSu:o.support==='Resisten'?'Berpotensi resistensi':'',
+   strat:o.engage,kom:false,pel:false};
+   if(mirror)Object.assign(mirror,obj);else S.sh.push(obj);
+  }else if(mirror)S.sh=S.sh.filter(x=>x.id!==mirror.id);
+  log('Stakeholder Register Proyek',name);save();render();return true;
+ },{size:'wide'});
+}
+function projectDelete(type,id){
+ projectStores();const A=type==='risk'?S.projectRisks:S.projectStakeholders;
+ const o=A.find(x=>x.id===id);if(!o)return;
+ modal('Hapus data?', '<p>Hapus <b>'+esc(o.title||o.name)+'</b> hanya dari lingkup ini? Salinan asal pada proyek lain tidak terpengaruh.</p>','Hapus',()=>{
+  if(type==='risk'){S.projectRisks=S.projectRisks.filter(x=>x.id!==id);S.risks=S.risks.filter(x=>x.projectRiskId!==id)}
+  else{S.projectStakeholders=S.projectStakeholders.filter(x=>x.id!==id);S.sh=S.sh.filter(x=>x.projectStakeId!==id)}
+  log('Hapus register proyek',o.title||o.name);save();render();
+ },{danger:true,size:'sm'});
+}
+function projectCopy(scope,type){
+ projectStores();
+ const source=type==='risk'?S.projectRisks:S.projectStakeholders;
+ const from=[...new Set(source.map(x=>x.scope).filter(x=>x!==scope))];
+ if(!from.length){toast('Belum ada data dari proyek atau subproyek lain untuk disalin.');return}
+ const html='<div class="fld"><label>Salin dari</label><select class="sel" id="proj-from">'+from.map(k=>'<option value="'+esc(k)+'">'+esc(projectLabels(k).filter(Boolean).join(' › '))+'</option>').join('')+'</select></div><p class="s">Disalin sebagai baris baru yang dapat diedit; perubahan tidak memengaruhi sumber. Penanda CMO pada salinan dimatikan sampai Anda meninjau kembali.</p>';
+ modal('Salin '+(type==='risk'?'risiko':'stakeholder')+' dari modul lain',html,'Salin',()=>{
+  const k=$('#proj-from').value,a=source.filter(x=>x.scope===k);
+  a.forEach(x=>source.push(Object.assign({},x,{id:uid(),scope,cm:false,modul:'',created:TODAY,copiedFrom:x.id})));
+  log('Salin register proyek',type+': '+k+' → '+scope+' ('+a.length+')');save();render();
+ },{size:'wide'});
+}
+function projectWorkspace(){
+ projectStores();const key=S.ui.prjScope;if(!key)return '';
+ const [prog,proj,sub]=projectLabels(key),p=progOf(prog);
+ if(!p)return '';
+ const rows=projectWbs(key),tab=S.ui.prjTab||'ringkasan',risk=S.projectRisks.filter(x=>x.scope===key),sh=S.projectStakeholders.filter(x=>x.scope===key);
+ const editRisk=lv('risk').includes('C')||lv('risk').includes('U'),editStake=lv('porto').includes('C')||lv('porto').includes('U');
+ const b=(action,id,label)=>'<button class="btn sm" data-act="'+action+'" data-id="'+esc(id)+'">'+label+'</button>';
+ const grid=tab==='risiko'?'<div class="prj-register-head"><b>Risk & Issue Register</b><span>'+(editRisk?'<button class="btn sm" data-act="prjCopy" data-type="risk">Salin dari modul lain</button><button class="btn sm pri" data-act="prjRiskAdd">+ Risiko / Isu</button>':'')+'</span></div><div class="tscroll"><table class="lap"><thead><tr><th>Jenis</th><th>Risiko / Isu</th><th>Skor</th><th>PIC & mitigasi</th><th>CMO</th><th>Tindakan</th></tr></thead><tbody>'+risk.map(x=>'<tr><td>'+esc(x.kind)+'</td><td><b>'+esc(x.title)+'</b><span class="sm">'+esc(x.cause||'')+'</span></td><td>'+((x.likelihood||0)*(x.severity||0))+'</td><td>'+esc(x.owner||'—')+'<span class="sm">'+esc(x.mit||'')+'</span></td><td>'+(x.cm?'<span class="chip c-teal">Terhubung CMO</span>':'—')+'</td><td>'+(editRisk?b('prjRiskEdit',x.id,'Edit')+b('prjRiskDel',x.id,'Hapus'):'—')+'</td></tr>').join('')+'</tbody></table></div>':
+ tab==='stakeholder'?'<div class="prj-register-head"><b>Stakeholder Register</b><span>'+(editStake?'<button class="btn sm" data-act="prjCopy" data-type="stake">Salin dari modul lain</button><button class="btn sm pri" data-act="prjStakeAdd">+ Stakeholder</button>':'')+'</span></div><div class="tscroll"><table class="lap"><thead><tr><th>Stakeholder</th><th>Unit / instansi</th><th>Peran</th><th>Pengaruh / Kepentingan</th><th>Dukungan</th><th>CMO</th><th>Tindakan</th></tr></thead><tbody>'+sh.map(x=>'<tr><td><b>'+esc(x.name)+'</b></td><td>'+esc(x.unit||'—')+'</td><td>'+esc(x.role||'—')+'</td><td>'+esc(x.power)+' / '+esc(x.interest)+'</td><td>'+esc(x.support||'—')+'</td><td>'+(x.cm?'<span class="chip c-teal">Terhubung CMO</span>':'—')+'</td><td>'+(editStake?b('prjStakeEdit',x.id,'Edit')+b('prjStakeDel',x.id,'Hapus'):'—')+'</td></tr>').join('')+'</tbody></table></div>':
+ '<div class="prj-summary"><div><b>'+rows.length+'</b><span>Item WBS</span></div><div><b>'+risk.length+'</b><span>Risiko/Isu</span></div><div><b>'+sh.length+'</b><span>Stakeholder</span></div><div><b>'+rows.filter(w=>doneAt(w,12)&&w.v).length+'</b><span>Item tervalidasi</span></div></div><p class="s">Ruang lingkup berasal dari hierarki WBS. Risiko, stakeholder, dan mitigasi dapat dikelola secara terpisah untuk tiap proyek/subproyek.</p><div class="prj-wbs-links">'+rows.slice(0,40).map(w=>'<button class="kw-code" data-act="kwWbs" data-k="'+esc(w.k)+'">'+esc(w.k)+'</button>').join('')+'</div>';
+ return '<div class="card prj-workspace" id="project-workspace"><div class="ch"><h3>Workspace · '+esc([p.nama,proj,sub].filter(Boolean).join(' › '))+'</h3><span class="r"><button class="btn sm" data-act="prjClose">Tutup ×</button></span></div>'+
+ '<div class="prj-tabs">'+[['ringkasan','Ringkasan & WBS'],['risiko','Risk Register'],['stakeholder','Stakeholder Register']].map(([k,l])=>'<button data-act="prjTab" data-v="'+k+'" class="'+(tab===k?'on':'')+'">'+l+'</button>').join('')+'</div><div class="pad">'+grid+'</div></div>';
+}
+ACT.prjOpen=el=>{S.ui.prjScope=el.dataset.scope;S.ui.prjTab=el.dataset.tab||'ringkasan';save();render();document.getElementById('project-workspace')?.scrollIntoView({block:'start',behavior:'smooth'})};
+ACT.prjTab=el=>{S.ui.prjTab=el.dataset.v;save();render()};
+ACT.prjClose=()=>{S.ui.prjScope='';save();render()};
+ACT.prjRiskAdd=()=>projectRiskEdit(S.ui.prjScope);
+ACT.prjRiskEdit=el=>projectRiskEdit(S.ui.prjScope,el.dataset.id);
+ACT.prjRiskDel=el=>projectDelete('risk',el.dataset.id);
+ACT.prjStakeAdd=()=>projectStakeEdit(S.ui.prjScope);
+ACT.prjStakeEdit=el=>projectStakeEdit(S.ui.prjScope,el.dataset.id);
+ACT.prjStakeDel=el=>projectDelete('stake',el.dataset.id);
+ACT.prjCopy=el=>projectCopy(S.ui.prjScope,el.dataset.type);
+
 function pProgram(){
- const PV=pmoProgramList(),q=(S.ui.pgq||'').trim().toLowerCase();
+ projectStores();const PV=pmoProgramList(),q=(S.ui.pgq||'').trim().toLowerCase();
  // Tampilan awal ringkas: rincian proyek tetap dapat dibuka per program atau sekaligus.
  if(!S.ui.pgCollapse){S.ui.pgCollapse=Object.fromEntries(PV.map(p=>[p.akr,true]));}
  const collapsed=S.ui.pgCollapse;
@@ -2872,7 +3004,7 @@ function pProgram(){
   <label class="pm-program-check"><input type="checkbox" data-on="pgall" ${allOpen?'checked':''} aria-label="Tampilkan rincian seluruh program yang ditampilkan"><span>Tampilkan Semua Rincian</span></label>
   <span class="pm-program-total">${groups.length} program · ${totalProjects} proyek</span>
  </div></div>`+
- (groups.length?`<div class="pm-program-list">${cards}</div>`:'<div class="card"><div class="pad s">Tidak ada program atau proyek yang sesuai dengan pencarian dan filter.</div></div>');
+ (groups.length?`<div class="pm-program-list">${cards}</div>`:'<div class="card"><div class="pad s">Tidak ada program atau proyek yang sesuai dengan pencarian dan filter.</div></div>')+projectWorkspace();
 }
 /* --- Perencanaan: 7 dokumen proyek --- */
 function pPerencanaan(){const PV=pmoProgramList();const D=CHPG.map(x=>x[0]);
@@ -3269,7 +3401,7 @@ function viewLog(){return vh('L','adm','Log Aktivitas','Jejak perubahan data ole
 // Isi konfigurasi di sini sebelum di-hosting agar semua pengguna langsung tersambung, contoh:
 // const FIREBASE_CONFIG={apiKey:'…',authDomain:'proyek.firebaseapp.com',projectId:'proyek',storageBucket:'proyek.appspot.com',messagingSenderId:'…',appId:'…'};
 const FIREBASE_CONFIG=null;
-const RULES="rules_version = '2';\nservice cloud.firestore {\n  match /databases/{db}/documents {\n    function signedIn() { return request.auth != null && request.auth.token.email.matches('.*@kemenkeu[.]go[.]id$'); }\n    function myRef() { return /databases/$(db)/documents/users/$(request.auth.token.email); }\n    function me() { return get(myRef()).data; }\n    function aktif() { return signedIn() && exists(myRef()) && me().aktif == true; }\n    function role(rs) { return aktif() && me().role in rs; }\n    function kosong() { return !exists(/databases/$(db)/documents/config/akses); }\n\n    // Pengguna: dibaca semua akun aktif; dikelola Superadmin.\n    // Pengecualian: saat database masih kosong, akun pertama boleh mendaftarkan dirinya sebagai Superadmin.\n    match /users/{email} {\n      allow read: if signedIn();\n      allow create: if role(['SA']) || (signedIn() && kosong() && email == request.auth.token.email && request.resource.data.role == 'SA');\n      allow update, delete: if role(['SA']);\n    }\n    match /config/{id} {\n      allow read: if signedIn();\n      allow write: if role(['SA']);\n    }\n    // Data PMO\n    match /{col}/{id} {\n      allow read: if aktif() && col in ['programs','charters','tahap','oneonone','wbs','bukti','ms','kwide','kwideLinks','risks','crs','usul','sub','ind','sh','impl','jj','jjMod','pantau','adopsi','tr','reviu','modMeta','log'];\n      allow write: if col in ['programs','charters','tahap','oneonone','wbs','bukti','ms','kwide','risks','crs'] && role(['SA','PMOK','CMOK','PMOU']);\n      allow write: if col == 'usul' && role(['SA','PMOK','CMOK','PMOU','CMOU']);\n      allow write: if col in ['sub','ind','sh','impl','jj','jjMod','pantau','adopsi','tr','reviu','modMeta'] && role(['SA','PMOK','CMOK','CMOU','TIM']);\n      allow create: if col == 'log' && aktif();\n      allow update, delete: if col == 'log' && role(['SA']);\n    }\n  }\n}\n";
+const RULES="rules_version = '2';\nservice cloud.firestore {\n  match /databases/{db}/documents {\n    function signedIn() { return request.auth != null && request.auth.token.email.matches('.*@kemenkeu[.]go[.]id$'); }\n    function myRef() { return /databases/$(db)/documents/users/$(request.auth.token.email); }\n    function me() { return get(myRef()).data; }\n    function aktif() { return signedIn() && exists(myRef()) && me().aktif == true; }\n    function role(rs) { return aktif() && me().role in rs; }\n    function kosong() { return !exists(/databases/$(db)/documents/config/akses); }\n\n    // Pengguna: dibaca semua akun aktif; dikelola Superadmin.\n    // Pengecualian: saat database masih kosong, akun pertama boleh mendaftarkan dirinya sebagai Superadmin.\n    match /users/{email} {\n      allow read: if signedIn();\n      allow create: if role(['SA']) || (signedIn() && kosong() && email == request.auth.token.email && request.resource.data.role == 'SA');\n      allow update, delete: if role(['SA']);\n    }\n    match /config/{id} {\n      allow read: if signedIn();\n      allow write: if role(['SA']);\n    }\n    // Data PMO\n    match /{col}/{id} {\n      allow read: if aktif() && col in ['programs','charters','tahap','oneonone','projectRisks','projectStakeholders','wbs','bukti','ms','kwide','kwideLinks','risks','crs','usul','sub','ind','sh','impl','jj','jjMod','pantau','adopsi','tr','reviu','modMeta','log'];\n      allow write: if col in ['programs','charters','tahap','oneonone','projectRisks','projectStakeholders','wbs','bukti','ms','kwide','risks','crs'] && role(['SA','PMOK','CMOK','PMOU']);\n      allow write: if col == 'usul' && role(['SA','PMOK','CMOK','PMOU','CMOU']);\n      allow write: if col in ['sub','ind','sh','impl','jj','jjMod','pantau','adopsi','tr','reviu','modMeta'] && role(['SA','PMOK','CMOK','CMOU','TIM']);\n      allow create: if col == 'log' && aktif();\n      allow update, delete: if col == 'log' && role(['SA']);\n    }\n  }\n}\n";
 const FS_ARR=['users','programs','charters','tahap','oneonone','wbs','kwide','risks','crs','usul','sub','ind','sh','jj','pantau','adopsi','tr','reviu','log'];
 const FS_MAP=['bukti','ms','impl','jjMod','modMeta','kwideLinks'];
 const FB={on:false,ready:false,cfg:null,db:null,auth:null,last:{},timer:null,st:'',err:'',unsub:[],rt:null};
