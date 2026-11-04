@@ -1447,6 +1447,20 @@ function readHash(){VIEW=(location.hash||'').slice(1)||'beranda'}
 /* ======================== login ======================== */
 const sess=()=>{try{return sessionStorage.getItem('mt_me')}catch(e){return null}};
 const setSess=v=>{try{v?sessionStorage.setItem('mt_me',v):sessionStorage.removeItem('mt_me')}catch(e){}};
+// Hanya dipanggil setelah login baru; navigasi antartab tidak mengubah filter.
+function resetFiltersOnLogin(){
+ if(!S||!S.ui)return;
+ const ui=S.ui;
+ Object.assign(ui,{
+  fopen:0,prog:'',unit:'',pr:'all',d1:'',d2:'',umode:'up',umodeL:'',
+  wcm:'',wth:'',wst:'',lvn:10,lvm:'sd',portoF:{},portoAdvanced:false,
+  seg:'',crseg:'',mseg:'all',rf:'',rstatus:'',rrisk:'',
+  cunit:'',crole:'',cpr:'all',cd1:'',cd2:'',cprog:'',cth:'',mod:'',
+  pgq:''
+ });
+ if(typeof PG!=='undefined')Object.keys(PG).forEach(k=>PG[k]=0);
+}
+
 function renderLogin(err){if(!err&&FB.loginErr){err=FB.loginErr;FB.loginErr=''}
  const DU=FB.on?demoUsers():S.users;const demo=ROLES.map(r=>{const us=DU.filter(x=>x.role===r.id&&x.aktif);if(!us.length)return '';return `<details class="dg"><summary><b>${r.nama}</b><span>${us.length} akun ▾</span></summary>${us.map(u=>`<button type="button" data-fill="${esc(u.email)}"><span><b>${esc(u.nama)}</b><br><span style="color:var(--ink-3)">${esc(u.email)}</span></span><em>${esc(u.unit)}${u.sub&&u.sub!==u.nama?' · '+esc(u.sub):''}</em></button>`).join('')}</details>`}).join('');
  $('#root').innerHTML=`<div class="login"><div class="lg-art"><div class="arcs"></div><div class="sun"></div><div class="brand"><span class="glyph"></span><b>satu</b><span>kemenkeu</span></div>
@@ -1462,9 +1476,9 @@ function renderLogin(err){if(!err&&FB.loginErr){err=FB.loginErr;FB.loginErr=''}
  <div class="demo"><h4>Pilih akun uji · kata sandi ${FB.on?'awal ':''}<span class="mono">${PW}</span></h4><div class="dgs">${demo}</div></div></form></div></div>`;
  $('#lf').addEventListener('submit',async e=>{e.preventDefault();const em=$('#em').value.trim().toLowerCase(),pw=$('#pw').value;
   if(!/^[^@\s]+@kemenkeu\.go\.id$/.test(em))return renderLogin('Alamat email harus berakhiran @kemenkeu.go.id.');
-  if(FB.on){const sp=splashOn('Masuk…');try{await FB.auth.signInWithEmailAndPassword(em,pw);const r=await fbAfterAuth();sp.remove();if(r==='bootstrap'){bootstrapUI(em);return}log('Masuk',roleN(ME.role));save();if(!location.hash)location.hash='beranda';readHash();render()}catch(err){sp.remove();renderLogin(fbErr(err))}return}
+  if(FB.on){const sp=splashOn('Masuk…');try{await FB.auth.signInWithEmailAndPassword(em,pw);const r=await fbAfterAuth();sp.remove();if(r==='bootstrap'){bootstrapUI(em);return}resetFiltersOnLogin();log('Masuk',roleN(ME.role));save();if(!location.hash)location.hash='beranda';readHash();render()}catch(err){sp.remove();renderLogin(fbErr(err))}return}
   const u=S.users.find(x=>x.email.toLowerCase()===em);if(!u||u.pw!==pw)return renderLogin('Email atau kata sandi akun uji salah.');if(!u.aktif)return renderLogin('Akun nonaktif. Hubungi Superadmin.');
-  ME=u;setSess(u.email);log('Masuk',roleN(u.role));save();splash(()=>{if(!location.hash)location.hash='beranda';readHash();render()})});
+  ME=u;setSess(u.email);resetFiltersOnLogin();log('Masuk',roleN(u.role));save();splash(()=>{if(!location.hash)location.hash='beranda';readHash();render()})});
  $('#pwt').onchange=e=>{$('#pw').type=e.target.checked?'text':'password'};
  document.querySelectorAll('[data-fill]').forEach(b=>b.onclick=()=>{$('#em').value=b.dataset.fill;$('#pw').value=PW;document.querySelectorAll('[data-fill]').forEach(x=>x.style.background='');b.style.background='#E4ECF8';$('.lg-btn').focus()});
 }
@@ -1985,7 +1999,7 @@ function fltHead(open,title,chips,n,reset,res){const act=chips.filter(c=>typeof 
 
 function perSeg(key,cur){const L=[['all','Setahun'],['1','TW 1'],['2','TW 2'],['3','TW 3'],['4','TW 4'],['r','Rentang']];return `<span class="fg w2${key==='pr'&&VIEW.startsWith('pmo-')?' pm-period':''}"><label>Periode</label><span class="seg pseg" role="group" aria-label="Periode">${L.map(([v,l])=>`<button type="button" data-seg="${key}" data-v="${v}" class="${cur===v?'on':''}" aria-pressed="${cur===v}">${l}</button>`).join('')}</span></span>`}
 ACT.fclr=el=>{const k=el.dataset.k,v=el.dataset.v;if(k.startsWith('pf_')){S.ui.portoF=S.ui.portoF||{};S.ui.portoF[k.slice(3)]=v}else S.ui[k]=v;if(k==='lvn'){S.ui.lvn=10;S.ui.lvm='sd'}if(k==='unit'){S.ui.umode='up'}if(k==='cunit'){S.ui.crole='';S.ui.mod=''}Object.keys(PG).forEach(x=>PG[x]=0);save();render()};
-function fltBar(o={}){const P=per();const open=S.ui.fopen!==0;const pv=progVis();const act=c=>c?' act':'';
+function fltBar(o={}){const P=per();const open=S.ui.fopen===1;const pv=progVis();const act=c=>c?' act':'';
  const isW=['pmo-wbs','pmo-wbsplan'].includes(VIEW);const UML={up:'utama/pendukung',u:'UIC Utama',p:'UIC Pendukung',ue:'cakupan UE I'};const lvn=S.ui.lvn||10,lvm=S.ui.lvm||'sd';
  const chips=[`Tahun ${S.ui.tahun}`,(P.pr||'all')!=='all'?{t:P.lab,k:'pr',v:'all'}:'Setahun',S.ui.prog?{t:progLabel(S.ui.prog),k:'prog'}:'Semua program',
   lockU()?`${lockU()} (unit Anda)`:(S.ui.unit?{t:S.ui.unit,k:'unit'}:'Semua UE I'),
@@ -2001,7 +2015,7 @@ function fltBar(o={}){const P=per();const open=S.ui.fopen!==0;const pv=progVis()
  ${lockU()?'':`<span class="fg pm-unit"><label for="f-un">Unit</label><select class="sel${act(S.ui.unit)}" id="f-un" data-on="unit"><option value="">Semua UE I</option>${(UNITS.includes(ME.unit)?[ME.unit,...UNITS.filter(x=>x!==ME.unit)]:UNITS).map(u=>`<option value="${u}" ${curUnit()===u?'selected':''}>${u}${u===ME.unit?' (unit Anda)':''}</option>`).join('')}</select></span>`}
  ${o.umode?`<span class="fg pm-role"><label for="f-um">${lockU()?esc(lockU())+' sebagai':'Peran unit'}</label><select class="sel${act(umOf()!==umDef())}" id="f-um" data-on="umode" aria-label="Peran unit"${!curUnit()&&!(ME.unit&&UNITS.includes(ME.unit))?' disabled title="Pilih unit dulu"':''}>${opts([['up','Utama/Pendukung'],['u','UIC Utama'],['p','UIC Pendukung'],['ue','Cakupan UE I']],umOf())}</select></span>`:''}
  ${o.extra||''}</div></div></section>`}
-ACT.ftog=()=>{S.ui.fopen=S.ui.fopen===0?1:0;save();render()};
+ACT.ftog=()=>{S.ui.fopen=S.ui.fopen===1?0:1;save();render()};
 ACT.freset=()=>{S.ui.prog='';S.ui.unit='';S.ui.pr='all';S.ui.umode='up';S.ui.umodeL='';S.ui.wcm='';S.ui.wth='';S.ui.wst='';S.ui.lvn=10;S.ui.lvm='sd';S.ui.portoF={};S.ui.seg='';S.ui.crseg='';S.ui.mseg='all';S.ui.rf='';S.ui.rstatus='';S.ui.rrisk='';Object.keys(PG).forEach(x=>PG[x]=0);save();render()};
 const twSel=()=>S.ui.tw||(S.ui.tw===0?0:4);
 function unitMatch(it,u,mode){if(!u)return true;mode=mode||'ue';if(mode==='ue')return it.ue.includes(u);const U=unitsOf(uicU(it)).includes(u),P=unitsOf(it.d).includes(u);return mode==='u'?U:mode==='p'?P:U||P}
@@ -2781,7 +2795,7 @@ const modRel=(m,u)=>!u?'':m.uicUnits.includes(u)?'u':unitsOf(m.pend).includes(u)
 const cU=()=>lockU()||S.ui.cunit||'';
 function cmoMatch(m){const u=cU(),r=S.ui.crole||'';const y=S.ui.tahun,P=cper(),its=[m.adp,...m.items];if(!its.some(w=>yrOf(w)===y))return false;if(S.ui.cprog&&m.prog!==S.ui.cprog)return false;const th=S.ui.cth||'';if((P.pr!=='all'||th)&&!its.some(w=>yrOf(w)===y&&(P.pr==='all'||inP(w,P))&&(!th||tahapMatch(w,th))))return false;if(!u)return true;const x=modRel(m,u);return r==='u'?x==='u':r==='p'?x==='p':!!x}
 const relChip=m=>{if(!ME||!['CMOU','PMOU'].includes(ME.role))return '';const x=modRel(m,ME.unit);return x==='u'?'<span class="chip c-ok">Pemilik probis utama · ubah</span>':x==='p'?'<span class="chip c-gray">UIC Pendukung · baca</span>':''};
-function cmoFlt(f,tab){const open=S.ui.fopen!==0;const u=cU(),r=S.ui.crole||'';const ms=visMods(f).filter(cmoMatch);const act=c=>c?' act':'';
+function cmoFlt(f,tab){const open=S.ui.fopen===1;const u=cU(),r=S.ui.crole||'';const ms=visMods(f).filter(cmoMatch);const act=c=>c?' act':'';
  const lab={'':'utama + pendukung','u':'pemilik probis utama','p':'UIC pendukung'};
  const P=cper();const pv=progVis();
  const lab2={'':'utama + pendukung','u':'pemilik probis utama','p':'UIC pendukung'};const chips=[`Tahun ${S.ui.tahun}`,P.pr!=='all'?{t:P.lab,k:'cpr'}:'Setahun',S.ui.cprog?{t:progLabel(S.ui.cprog),k:'cprog'}:'Semua program',
@@ -3044,7 +3058,7 @@ async function doBootstrap(email){const sp=splashOn('Mengisi database Firestore�
  let me=S.users.find(u=>u.email.toLowerCase()===email);if(!me){me={id:uid(),email,nama:email.split('@')[0],role:'SA',unit:'BaTii',sub:'',modules:[],aktif:true};S.users.unshift(me)}else{me.role='SA';me.aktif=true}
  const d=Object.assign({},me);delete d.pw;await FB.db.collection('users').doc(email).set(JSON.parse(JSON.stringify(d)));
  FB.last={};ME=me;log('Inisialisasi Firestore','Data awal diunggah ke project '+FB.cfg.projectId);await fsFlush();if(FB.st==='Gagal menyimpan')throw new Error(FB.err);
- await fsListen();FB.ready=true;ME=S.users.find(u=>u.email.toLowerCase()===email);sp.remove();toast('Database terisi. Buat akun login pengguna lain di Pengaturan › Database.');if(!location.hash)location.hash='beranda';readHash();render()}
+ await fsListen();FB.ready=true;ME=S.users.find(u=>u.email.toLowerCase()===email);resetFiltersOnLogin();save();sp.remove();toast('Database terisi. Buat akun login pengguna lain di Pengaturan › Database.');if(!location.hash)location.hash='beranda';readHash();render()}
  catch(e){sp.remove();renderLogin('Gagal mengisi database: '+fbErr(e))}}
 async function fbCreateAuth(email,pw){const a=firebase.apps.find(x=>x.name==='sec')||firebase.initializeApp(FB.cfg,'sec');try{await a.auth().createUserWithEmailAndPassword(email,pw);await a.auth().signOut();return 'baru'}catch(e){if(e.code==='auth/email-already-in-use')return 'ada';throw e}}
 function splashOn(txt){const d=document.createElement('div');d.className='splash';d.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:18px"><span class="glyph" aria-hidden="true"></span><span style="color:#C9D4E6;font-size:13px">${esc(txt||'')}</span></div>`;document.body.appendChild(d);return d}
