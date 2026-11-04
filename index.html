@@ -1039,6 +1039,12 @@ button[aria-label*="Bantuan"]:hover,button[title*="Bantuan"]:hover,.help-icon:ho
 .ov-kwide-table td:nth-child(3){max-width:480px;min-width:250px;white-space:normal}
 .ov-source{margin:12px 0}
 @media(max-width:760px){.ov-qgrid,.ov-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.one-table{min-width:1180px}
+.one-table th{white-space:nowrap;min-width:72px}
+.one-table td{vertical-align:top;font-size:11.5px;max-width:250px;white-space:normal}
+.one-table td:nth-child(4){min-width:190px}
+.one-table td:nth-child(9){min-width:130px}
 </style>
 
 <div id="root"></div>
@@ -2385,6 +2391,51 @@ ACT.portoReset=()=>{S.ui.portoF={};S.ui.seg='';Q.porto='';PG.porto=0;save();rend
 ACT.portoAdv=()=>{S.ui.portoAdvanced=!S.ui.portoAdvanced;save();render()};
 document.addEventListener('change',e=>{const el=e.target.closest('[data-porto-filter]');if(!el)return;S.ui.portoF=S.ui.portoF||{};S.ui.portoF[el.dataset.portoFilter]=el.value;PG.porto=0;save();render()});
 ACT.tmpl=()=>{xlsxSave([{sheet:'Program',rows:[{Kode:'B26-XXX',Jenis:'Berkelanjutan','Akronim kode':'XXX','Tahun mulai':2026,'Program / proyek':'','Klaster (Lv 2)':'',Sponsor:'','UIC Utama':'','UIC Pendukung':'',Periode:'',Status:'Inisiasi'}]},{sheet:'Kompilasi',rows:[kompRow(S.wbs[0])]}],'Template_Modul_Transformasi.xlsx')};
+
+/* ======================== Jadwal One-on-One T-Program ======================== */
+const ONEONONE_2026=[
+ {id:'o1-SP',tahun:2026,no:1,tgl:'',jam:'',program:'Pengembangan Single Profile',tema:'Digitalisasi Data',uic:'BaTii, DJP, DJBC, DJA, LNSW',spv:'Arifudin',katim:'Alfarisi',anggota:'Irpan, Dhanang, Astika',lokasi:''},
+ {id:'o1-SSB',tahun:2026,no:2,tgl:'',jam:'',program:'Seamless Service Bendahara',tema:'Digitalisasi Core System',uic:'BaTii, DJPK, DJP, DJPb',spv:'Arifudin',katim:'Meida',anggota:'Albert, Priyo',lokasi:''},
+ {id:'o1-CORE',tahun:2026,no:3,tgl:'',jam:'',program:'Digitalisasi Core System APBN',tema:'Digitalisasi Core System',uic:'Seluruh UE I',spv:'Arifudin',katim:'Dyna',anggota:'Zalik, Andos',lokasi:''},
+ {id:'o1-OA',tahun:2026,no:4,tgl:'2026-07-02',jam:'',program:'Digitalisasi Office Automation (OA)',tema:'Digitalisasi OA',uic:'BaTii, Setjen, Itjen, BPPK, DJPb',spv:'Arifudin',katim:'Winny',anggota:'Endra, Mika',lokasi:''},
+ {id:'o1-CM',tahun:2026,no:5,tgl:'',jam:'',program:'Pengelolaan Change Management (CM)',tema:'Manajemen Birokrasi',uic:'Seluruh UE I',spv:'Arifudin',katim:'Atitya',anggota:'Dessy, Sarah, Dina',lokasi:''},
+ {id:'o1-SD',tahun:2026,no:6,tgl:'',jam:'',program:'Pembangunan Satu Data Kemenkeu',tema:'Digitalisasi Data',uic:'Seluruh UE I',spv:'Pusdatin',katim:'Pusdatin',anggota:'Pusdatin',lokasi:''}
+];
+function getOneOnOne(){
+ if(!Array.isArray(S.oneonone))S.oneonone=[];
+ if(!S.oneonone.length&&+S.ui.tahun===2026)S.oneonone=ONEONONE_2026.map(x=>Object.assign({},x));
+ return S.oneonone.filter(x=>+x.tahun===+S.ui.tahun).sort((a,b)=>String(a.tgl||'9999').localeCompare(String(b.tgl||'9999'))||(+a.no||0)-(+b.no||0));
+}
+function pOneOnOne(){
+ const rows=getOneOnOne(),scheduled=rows.filter(x=>x.tgl&&x.jam).length,online=rows.filter(x=>/^https?:/i.test(x.lokasi||'')).length;
+ const editable=lv('wbs').includes('U')||lv('wbs').includes('C');
+ const exportBtn='<button class="btn" data-act="oneExport">Ekspor Excel</button>';
+ const addBtn=editable?'<button class="btn pri" data-act="oneAdd">+ Tambah Jadwal</button>':'';
+ return vh('1','pmo','Jadwal 1-on-1','Jadwal pembahasan capaian WBS dan milestone T-Program, termasuk PIC dan tautan rapat.',exportBtn+addBtn)+pmoTabs('oneonone')+
+ '<div class="note i"><span><b>Rujukan jadwal TW II 2026:</b> 29 Juni s.d. 2 Juli 2026. Tanggal atau jam yang belum terisi pada file sumber tidak diasumsikan sudah terjadwal. Perubahan di aplikasi perlu diperbarui oleh PMO terkait.</span></div>'+
+ '<div class="kpis"><div class="kpi dk"><div class="l">Agenda 1-on-1</div><div class="v">'+rows.length+'</div><div class="d">Tahun '+S.ui.tahun+'</div></div><div class="kpi"><div class="l">Tanggal dan jam lengkap</div><div class="v">'+scheduled+'</div></div><div class="kpi"><div class="l">Tautan online terisi</div><div class="v">'+online+'</div></div></div>'+
+ '<div class="card"><div class="ch"><h3>Jadwal Pembahasan Progres T-Program</h3><span class="r s">Diadaptasi dari sheet Jadwal 1on1 TW II</span></div><div class="tscroll"><table class="lap one-table"><thead><tr><th>No.</th><th>Hari/Tanggal</th><th>Jam</th><th>Nama Program Transformasi</th><th>Tema</th><th>UIC Utama</th><th>SPV</th><th>Katim</th><th>Anggota</th><th>Teams / Lokasi</th>'+(editable?'<th>Tindakan</th>':'')+'</tr></thead><tbody>'+
+ rows.map(x=>'<tr><td>'+esc(x.no)+'</td><td><b>'+(x.tgl?fmtD(x.tgl):'Belum ditetapkan')+'</b></td><td>'+(x.jam?esc(x.jam):'—')+'</td><td><b>'+esc(x.program)+'</b></td><td>'+esc(x.tema)+'</td><td>'+esc(x.uic)+'</td><td>'+esc(x.spv)+'</td><td>'+esc(x.katim)+'</td><td>'+esc(x.anggota)+'</td><td>'+(x.lokasi?/^https?:/i.test(x.lokasi)?'<a href="'+esc(x.lokasi)+'" target="_blank" rel="noopener">Buka Teams</a>':esc(x.lokasi):'—')+'</td>'+(editable?'<td><button class="btn sm" data-act="oneEdit" data-id="'+esc(x.id)+'">Edit</button></td>':'')+'</tr>').join('')+
+ '</tbody></table></div></div>';
+}
+function editOneOnOne(item){
+ if(!lv('wbs').includes('U')&&!lv('wbs').includes('C')){toast('Tidak memiliki izin mengubah jadwal.');return}
+ const labels=[['tgl','Tanggal rapat','date'],['jam','Jam / rentang waktu','text'],['program','Nama program transformasi','text'],['tema','Tema','text'],['uic','UIC Utama','text'],['spv','Supervisor','text'],['katim','Ketua tim','text'],['anggota','Anggota','text'],['lokasi','Link Teams / lokasi rapat','text']];
+ const f=labels.map(([k,label,type])=>'<div class="fld"><label for="one-'+k+'">'+label+'</label><input id="one-'+k+'" type="'+type+'" value="'+esc(item[k]||'')+'" '+(k==='program'?'required':'')+'></div>').join('');
+ modal('Ubah Jadwal 1-on-1','<div class="fgrid">'+f+'</div>','Simpan',()=>{
+  const oldName=item.program;
+  labels.forEach(([k])=>item[k]=String($('#one-'+k).value||'').trim());
+  if(!item.program){toast('Nama program wajib diisi.');return false}
+  log('Pemutakhiran Jadwal 1-on-1',oldName+' → '+item.program);save();render();return true;
+ },{size:'wide'});
+}
+ACT.oneEdit=el=>{const item=(S.oneonone||[]).find(x=>x.id===el.dataset.id);if(item)editOneOnOne(item)};
+ACT.oneAdd=()=>{getOneOnOne();const x={id:uid(),tahun:+S.ui.tahun,no:(S.oneonone.filter(v=>+v.tahun===+S.ui.tahun).length+1),tgl:'',jam:'',program:'',tema:'',uic:'',spv:'',katim:'',anggota:'',lokasi:''};S.oneonone.push(x);editOneOnOne(x)};
+ACT.oneExport=()=>xlsxSave(getOneOnOne().map(x=>({
+ 'Hari/Tanggal':x.tgl,'Jam':x.jam,'No':x.no,'Nama Program Transformasi':x.program,'Tema':x.tema,
+ 'UIC Utama':x.uic,'SPV':x.spv,'Katim':x.katim,'Anggota':x.anggota,'Link Teams/lokasi meeting':x.lokasi
+})), 'Jadwal_1on1_TProgram_'+S.ui.tahun+'.xlsx','Jadwal 1on1');
+
 /* --- WBS --- */
 function wbsRows(){const P=per(),M=P.b;const u=curUnit(),um=umOf();const lvm=S.ui.lvm||'sd',lvn=S.ui.lvn||10;const wth=S.ui.wth||'',wst=S.ui.wst||'';
  return S.wbs.filter(w=>!w.arsip&&(VIEW==='pmo-wbsplan'&&S.ui.planYear!=='year'||yrOf(w)===S.ui.tahun)&&(!S.ui.prog||w.prog===S.ui.prog)&&unitMatch(w,u,um)&&(VIEW==='pmo-wbsplan'&&S.ui.planYear!=='year'||inP(w,P))
