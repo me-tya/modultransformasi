@@ -2847,13 +2847,12 @@ function projectStores(){
  S.projectRisks=Array.isArray(S.projectRisks)?S.projectRisks:[];
  S.projectStakeholders=Array.isArray(S.projectStakeholders)?S.projectStakeholders:[];
  S.projectDecisions=Array.isArray(S.projectDecisions)?S.projectDecisions:[];
- S.projectDecisions=Array.isArray(S.projectDecisions)?S.projectDecisions:[];
 }
 function projectWbs(k){const [prog,proj,sub]=projectLabels(k);return S.wbs.filter(w=>!w.arsip&&w.prog===prog&&yrOf(w)===S.ui.tahun&&
   (w.p.includes(proj)||((w.p[2]||'')===proj))&&(!sub||w.p.includes(sub)));}
 function projectCmoModule(k){
- const a=projectWbs(k);const found=mods().find(m=>a.some(w=>m.items.includes(w)||m.adp===w||m.sc.every((x,i)=>w.p[i]===x)));
- return found||null;
+ const a=projectWbs(k);const matching=mods().filter(m=>a.some(w=>m.items.includes(w)||m.adp===w||(m.sc.length>0&&m.sc.every((x,i)=>w.p[i]===x))));
+ return matching.length===1?matching[0]:null;
 }
 function projectField(k,label,val='',type='text',extra=''){return '<label class="prj-field"><span>'+label+'</span><input id="prj-'+k+'" type="'+type+'" value="'+esc(val)+'" '+extra+'></label>'}
 function projectRiskEdit(scope,id){
@@ -2872,7 +2871,7 @@ function projectRiskEdit(scope,id){
  projectField('mit','Rencana mitigasi',old?.mit||'')+
  '<label class="prj-field"><span>Status</span><select id="prj-status">'+['Terbuka','Dimitigasi','Menjadi isu','Ditutup'].map(v=>'<option '+((old?.status||'Terbuka')===v?'selected':'')+'>'+v+'</option>').join('')+'</select></label>'+
  '<label class="prj-field prj-wide prj-cm"><input id="prj-cm" type="checkbox" '+(old?.cm?'checked':'')+'><span>Risiko CM — sinkronkan ke Register Risiko CMO</span></label>'+
- '<p class="s prj-wide">Modul CMO terkait: '+esc(m?m.kode+' · '+m.nama:'Belum ditemukan pada WBS/ADP. Centang hanya dapat disimpan setelah modul CM terkait tersedia.')+'</p></div>';
+ '<p class="s prj-wide">Modul CMO terkait: '+esc(m?m.kode+' · '+m.nama:'Belum ada modul CM tunggal yang sesuai (atau terdapat beberapa modul). Pilih subproyek yang spesifik agar tidak salah mengirim ke CMO.')+'</p></div>';
  modal(old?'Edit Risk Register':'Tambah Risiko / Isu',html,'Simpan',()=>{
   const title=$('#prj-title').value.trim(),cm=$('#prj-cm').checked;
   if(!title){toast('Uraian risiko/isu wajib diisi.');return false}
@@ -2906,7 +2905,7 @@ function projectStakeEdit(scope,id){
  projectField('engage','Strategi pelibatan / komunikasi',old?.engage||'')+
  projectField('owner','PIC hubungan stakeholder',old?.owner||'')+
  '<label class="prj-field prj-wide prj-cm"><input id="prj-cm" type="checkbox" '+(old?.cm?'checked':'')+'><span>Salin dan sinkronkan stakeholder ini ke modul CMO</span></label>'+
- '<p class="s prj-wide">Modul CMO: '+esc(m?m.kode+' · '+m.nama:'Belum tersedia. Lengkapi item ADP yang relevan.')+'</p></div>';
+ '<p class="s prj-wide">Modul CMO: '+esc(m?m.kode+' · '+m.nama:'Belum ada modul CM tunggal yang sesuai. Pilih subproyek spesifik dan lengkapi item ADP bila diperlukan.')+'</p></div>';
  modal(old?'Edit Stakeholder':'Tambah Stakeholder',html,'Simpan',()=>{
   const name=$('#prj-name').value.trim(),cm=$('#prj-cm').checked;
   if(!name){toast('Nama stakeholder wajib diisi.');return false}
@@ -3447,8 +3446,8 @@ function viewLog(){return vh('L','adm','Log Aktivitas','Jejak perubahan data ole
 // Isi konfigurasi di sini sebelum di-hosting agar semua pengguna langsung tersambung, contoh:
 // const FIREBASE_CONFIG={apiKey:'…',authDomain:'proyek.firebaseapp.com',projectId:'proyek',storageBucket:'proyek.appspot.com',messagingSenderId:'…',appId:'…'};
 const FIREBASE_CONFIG=null;
-const RULES="rules_version = '2';\nservice cloud.firestore {\n  match /databases/{db}/documents {\n    function signedIn() { return request.auth != null && request.auth.token.email.matches('.*@kemenkeu[.]go[.]id$'); }\n    function myRef() { return /databases/$(db)/documents/users/$(request.auth.token.email); }\n    function me() { return get(myRef()).data; }\n    function aktif() { return signedIn() && exists(myRef()) && me().aktif == true; }\n    function role(rs) { return aktif() && me().role in rs; }\n    function kosong() { return !exists(/databases/$(db)/documents/config/akses); }\n\n    // Pengguna: dibaca semua akun aktif; dikelola Superadmin.\n    // Pengecualian: saat database masih kosong, akun pertama boleh mendaftarkan dirinya sebagai Superadmin.\n    match /users/{email} {\n      allow read: if signedIn();\n      allow create: if role(['SA']) || (signedIn() && kosong() && email == request.auth.token.email && request.resource.data.role == 'SA');\n      allow update, delete: if role(['SA']);\n    }\n    match /config/{id} {\n      allow read: if signedIn();\n      allow write: if role(['SA']);\n    }\n    // Data PMO\n    match /{col}/{id} {\n      allow read: if aktif() && col in ['programs','charters','tahap','oneonone','projectRisks','projectStakeholders','projectDecisions','wbs','bukti','ms','kwide','kwideLinks','risks','crs','usul','sub','ind','sh','impl','jj','jjMod','pantau','adopsi','tr','reviu','modMeta','log'];\n      allow write: if col in ['programs','charters','tahap','oneonone','projectRisks','projectStakeholders','wbs','bukti','ms','kwide','kwideLinks','risks','crs'] && role(['SA','PMOK','CMOK','PMOU']);\n      allow write: if col == 'sh' && role(['SA','PMOK','CMOK','PMOU','CMOU','TIM']);\n      allow write: if col == 'usul' && role(['SA','PMOK','CMOK','PMOU','CMOU']);\n      allow write: if col in ['sub','ind','impl','jj','jjMod','pantau','adopsi','tr','reviu','modMeta'] && role(['SA','PMOK','CMOK','CMOU','TIM']);\n      allow create: if col == 'log' && aktif();\n      allow update, delete: if col == 'log' && role(['SA']);\n    }\n  }\n}\n";
-const FS_ARR=['users','programs','charters','tahap','oneonone','projectRisks','projectStakeholders','wbs','kwide','risks','crs','usul','sub','ind','sh','jj','pantau','adopsi','tr','reviu','log'];
+const RULES="rules_version = '2';\nservice cloud.firestore {\n  match /databases/{db}/documents {\n    function signedIn() { return request.auth != null && request.auth.token.email.matches('.*@kemenkeu[.]go[.]id$'); }\n    function myRef() { return /databases/$(db)/documents/users/$(request.auth.token.email); }\n    function me() { return get(myRef()).data; }\n    function aktif() { return signedIn() && exists(myRef()) && me().aktif == true; }\n    function role(rs) { return aktif() && me().role in rs; }\n    function kosong() { return !exists(/databases/$(db)/documents/config/akses); }\n\n    // Pengguna: dibaca semua akun aktif; dikelola Superadmin.\n    // Pengecualian: saat database masih kosong, akun pertama boleh mendaftarkan dirinya sebagai Superadmin.\n    match /users/{email} {\n      allow read: if signedIn();\n      allow create: if role(['SA']) || (signedIn() && kosong() && email == request.auth.token.email && request.resource.data.role == 'SA');\n      allow update, delete: if role(['SA']);\n    }\n    match /config/{id} {\n      allow read: if signedIn();\n      allow write: if role(['SA']);\n    }\n    // Data PMO\n    match /{col}/{id} {\n      allow read: if aktif() && col in ['programs','charters','tahap','oneonone','projectRisks','projectStakeholders','projectDecisions','wbs','bukti','ms','kwide','kwideLinks','risks','crs','usul','sub','ind','sh','impl','jj','jjMod','pantau','adopsi','tr','reviu','modMeta','log'];\n      allow write: if col in ['programs','charters','tahap','oneonone','projectRisks','projectStakeholders','projectDecisions','wbs','bukti','ms','kwide','kwideLinks','risks','crs'] && role(['SA','PMOK','CMOK','PMOU']);\n      allow write: if col == 'sh' && role(['SA','PMOK','CMOK','PMOU','CMOU','TIM']);\n      allow write: if col == 'usul' && role(['SA','PMOK','CMOK','PMOU','CMOU']);\n      allow write: if col in ['sub','ind','impl','jj','jjMod','pantau','adopsi','tr','reviu','modMeta'] && role(['SA','PMOK','CMOK','CMOU','TIM']);\n      allow create: if col == 'log' && aktif();\n      allow update, delete: if col == 'log' && role(['SA']);\n    }\n  }\n}\n";
+const FS_ARR=['users','programs','charters','tahap','oneonone','projectRisks','projectStakeholders','projectDecisions','wbs','kwide','risks','crs','usul','sub','ind','sh','jj','pantau','adopsi','tr','reviu','log'];
 const FS_MAP=['bukti','ms','impl','jjMod','modMeta','kwideLinks'];
 const FB={on:false,ready:false,cfg:null,db:null,auth:null,last:{},timer:null,st:'',err:'',unsub:[],rt:null};
 function fbCfg(){if(FIREBASE_CONFIG)return FIREBASE_CONFIG;try{const r=localStorage.getItem('mt_fb_cfg');return r?JSON.parse(r):null}catch(e){return null}}
