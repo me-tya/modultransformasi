@@ -1117,6 +1117,15 @@ body:has(.prj-overlay){overflow:hidden}
 @media(max-width:950px){.prj-overview-layout{grid-template-columns:1fr}.prj-kpi-rail{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}.prj-brief-grid{grid-template-columns:1fr}}
 @media(max-width:650px){.prj-overlay{padding:4px}.prj-modal{width:100%;height:99dvh;max-height:99dvh;border-radius:10px}.prj-modal-header{padding:13px}.prj-title-line h2{font-size:18px}.prj-modal-content{padding:9px}.prj-kpi-rail,.prj-summary-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.prj-modal-footer span{display:none}.prj-modal .prj-tabs{padding:6px}}
 
+
+.prj-field-header{display:inline-flex;align-items:center;gap:7px}
+.prj-field-example{font-size:10px;color:#6C7E98;font-weight:400;line-height:1.45}
+.prj-form-instruction{padding:11px 13px;background:#EFF6FE;border:1px solid #CFE1F6;border-radius:10px;color:#31567F;margin-bottom:13px;font-size:12px}
+.prj-form-instruction>b{font-size:12px;color:#0B2447}
+.prj-form-instruction>p{margin:5px 0;line-height:1.5}
+.prj-form-instruction>small{display:block;color:#54708E;font-size:11px;line-height:1.5}
+.prj-form-instruction .hlp{vertical-align:middle}
+.prj-field .hlp{display:inline-grid}
 </style>
 
 <div id="root"></div>
@@ -2922,11 +2931,44 @@ function projectCmoModule(k){
  const a=projectWbs(k);const matching=mods().filter(m=>a.some(w=>m.items.includes(w)||m.adp===w||(m.sc.length>0&&m.sc.every((x,i)=>w.p[i]===x))));
  return matching.length===1?matching[0]:null;
 }
-function projectField(k,label,val='',type='text',extra=''){return '<label class="prj-field"><span>'+label+'</span><input id="prj-'+k+'" type="'+type+'" value="'+esc(val)+'" '+extra+'></label>'}
+
+const PROJECT_EXAMPLES={
+ 'risiko.title':'Contoh: Risiko keterlambatan data dari mitra integrasi.',
+ 'risiko.cause':'Contoh: Kesepakatan pertukaran data belum selesai.',
+ 'risiko.impact':'Contoh: Jadwal UAT FRSW mundur dua minggu.',
+ 'risiko.owner':'Contoh: Ketua Tim Integrasi Data.',
+ 'risiko.due':'Contoh: 2026-11-30',
+ 'risiko.mit':'Contoh: Koordinasi mingguan, eskalasi hambatan, dan rencana cadangan.',
+ 'stakeholder.name':'Contoh: Direktorat Sistem Perbendaharaan.',
+ 'stakeholder.unit':'Contoh: DJPb, Kementerian Keuangan.',
+ 'stakeholder.role':'Contoh: Pemilik data atau penerima manfaat.',
+ 'stakeholder.engage':'Contoh: FGD kebutuhan dan pembaruan progres tiap dua minggu.',
+ 'stakeholder.owner':'Contoh: PIC komunikasi DJPb.',
+ 'decision.title':'Contoh: Menetapkan piloting secara bertahap di dua unit.',
+ 'decision.by':'Contoh: Ketua Steering Committee.',
+ 'decision.impact':'Contoh: Memastikan kesiapan sebelum implementasi luas.',
+ 'decision.owner':'Contoh: PMO UE I.',
+ 'decision.date':'Contoh: 2026-11-05',
+ 'decision.due':'Contoh: 2026-11-30'
+};
+let PROJECT_FORM_TYPE='risiko';
+function projectField(k,label,val='',type='text',extra=''){
+ const example=PROJECT_EXAMPLES[PROJECT_FORM_TYPE+'.'+k]||'Isi '+label.toLowerCase()+' sesuai kondisi nyata proyek.';
+ const attrs=type==='date'?'':' placeholder="'+esc(example)+'"';
+ return '<label class="prj-field"><span class="prj-field-header">'+esc(label)+projectHelp(PROJECT_FORM_TYPE,true)+'</span><input id="prj-'+k+'" type="'+type+'" value="'+esc(val)+'" '+extra+attrs+'><small class="prj-field-example">'+esc(example)+'</small></label>';
+}
+function projectDecorateInputs(html,kind){
+ const example=PROJECT_GUIDE[kind]||PROJECT_GUIDE.ringkasan;
+ return '<div class="prj-form-instruction"><b>Petunjuk pengisian</b> '+projectHelp(kind,true)+'<p>'+esc(example[1])+'</p><small>'+esc(example[2])+'</small></div>'+
+ html.replace(/(<label class="prj-field"><span>)([^<]+)(<\/span>)/g,(_,a,label,z)=>a+label+projectHelp(kind,true)+z)
+ .replace(/(<label class="prj-field prj-wide prj-cm">[\s\S]*?<span>)([^<]+)(<\/span>)/g,(_,a,label,z)=>a+label+projectHelp('cm',true)+z);
+}
+
 function projectRiskEdit(scope,id){
  projectStores();
  const old=S.projectRisks.find(x=>x.id===id),m=projectCmoModule(scope);
  if(!lv('risk').includes('U')&&!lv('risk').includes('C')){toast('Anda tidak memiliki izin mengelola risiko.');return}
+ PROJECT_FORM_TYPE='risiko';
  const html='<div class="prj-form-grid">'+
  projectField('title','Uraian risiko / isu',old?.title||'')+
  '<label class="prj-field"><span>Jenis</span><select id="prj-kind">'+['Risiko proyek','Risiko perubahan','Isu'].map(v=>'<option '+((old?.kind||'Risiko proyek')===v?'selected':'')+'>'+v+'</option>').join('')+'</select></label>'+
@@ -2940,7 +2982,7 @@ function projectRiskEdit(scope,id){
  '<label class="prj-field"><span>Status</span><select id="prj-status">'+['Terbuka','Dimitigasi','Menjadi isu','Ditutup'].map(v=>'<option '+((old?.status||'Terbuka')===v?'selected':'')+'>'+v+'</option>').join('')+'</select></label>'+
  '<label class="prj-field prj-wide prj-cm"><input id="prj-cm" type="checkbox" '+(old?.cm?'checked':'')+'><span>Risiko CM — sinkronkan ke Register Risiko CMO</span></label>'+
  '<p class="s prj-wide">Modul CMO terkait: '+esc(m?m.kode+' · '+m.nama:'Belum ada modul CM tunggal yang sesuai (atau terdapat beberapa modul). Pilih subproyek yang spesifik agar tidak salah mengirim ke CMO.')+'</p></div>';
- modal(old?'Edit Risk Register':'Tambah Risiko / Isu',html,'Simpan',()=>{
+ modal(old?'Edit Risk Register · Risiko Proyek':'Tambah Risiko / Isu',projectDecorateInputs(html,'risiko'),'Simpan',()=>{
   const title=$('#prj-title').value.trim(),cm=$('#prj-cm').checked;
   if(!title){toast('Uraian risiko/isu wajib diisi.');return false}
   if(cm&&!m){toast('Belum ada modul CMO yang sesuai. Lengkapi ADP di WBS sebelum meneruskan risiko ke CMO.');return false}
@@ -2963,6 +3005,7 @@ function projectStakeEdit(scope,id){
  projectStores();
  const old=S.projectStakeholders.find(x=>x.id===id),m=projectCmoModule(scope);
  if(!lv('porto').includes('U')&&!lv('porto').includes('C')){toast('Anda tidak memiliki izin mengubah stakeholder.');return}
+ PROJECT_FORM_TYPE='stakeholder';
  const html='<div class="prj-form-grid">'+
  projectField('name','Nama stakeholder / kelompok',old?.name||'')+projectField('unit','Unit / instansi',old?.unit||'')+
  projectField('role','Peran / tanggung jawab',old?.role||'')+
@@ -2974,7 +3017,7 @@ function projectStakeEdit(scope,id){
  projectField('owner','PIC hubungan stakeholder',old?.owner||'')+
  '<label class="prj-field prj-wide prj-cm"><input id="prj-cm" type="checkbox" '+(old?.cm?'checked':'')+'><span>Salin dan sinkronkan stakeholder ini ke modul CMO</span></label>'+
  '<p class="s prj-wide">Modul CMO: '+esc(m?m.kode+' · '+m.nama:'Belum ada modul CM tunggal yang sesuai. Pilih subproyek spesifik dan lengkapi item ADP bila diperlukan.')+'</p></div>';
- modal(old?'Edit Stakeholder':'Tambah Stakeholder',html,'Simpan',()=>{
+ modal(old?'Edit Stakeholder':'Tambah Stakeholder',projectDecorateInputs(html,'stakeholder'),'Simpan',()=>{
   const name=$('#prj-name').value.trim(),cm=$('#prj-cm').checked;
   if(!name){toast('Nama stakeholder wajib diisi.');return false}
   if(cm&&!m){toast('Modul CMO yang sesuai belum tersedia.');return false}
@@ -3006,7 +3049,7 @@ function projectCopy(scope,type){
  const from=[...new Set(source.map(x=>x.scope).filter(x=>x!==scope))];
  if(!from.length){toast('Belum ada data dari proyek atau subproyek lain untuk disalin.');return}
  const html='<div class="fld"><label>Salin dari</label><select class="sel" id="proj-from">'+from.map(k=>'<option value="'+esc(k)+'">'+esc(projectLabels(k).filter(Boolean).join(' › '))+'</option>').join('')+'</select></div><p class="s">Disalin sebagai baris baru yang dapat diedit; perubahan tidak memengaruhi sumber. Penanda CMO pada salinan dimatikan sampai Anda meninjau kembali.</p>';
- modal('Salin '+(type==='risk'?'risiko':'stakeholder')+' dari modul lain',html,'Salin',()=>{
+ modal('Salin '+(type==='risk'?'risiko':'stakeholder')+' dari modul lain',projectDecorateInputs(html,'copy'),'Salin',()=>{
   const k=$('#proj-from').value,a=source.filter(x=>x.scope===k);
   a.forEach(x=>source.push(Object.assign({},x,{id:uid(),scope,cm:false,modul:'',created:TODAY,copiedFrom:x.id})));
   log('Salin register proyek',type+': '+k+' → '+scope+' ('+a.length+')');save();render();
@@ -3017,6 +3060,7 @@ function projectCopy(scope,type){
 function projectDecisionEdit(scope,id){
  projectStores();const o=S.projectDecisions.find(x=>x.id===id);
  if(!lv('porto').includes('U')&&!lv('porto').includes('C')){toast('Tidak ada hak mengubah catatan keputusan.');return}
+ PROJECT_FORM_TYPE='decision';
  const body='<div class="prj-form-grid">'+
  projectField('date','Tanggal keputusan',o?.date||TODAY,'date')+
  projectField('title','Keputusan / kesepakatan',o?.title||'')+
@@ -3025,7 +3069,7 @@ function projectDecisionEdit(scope,id){
  projectField('owner','PIC tindak lanjut',o?.owner||'')+
  projectField('due','Batas waktu',o?.due||'','date')+
  '<label class="prj-field"><span>Status tindak lanjut</span><select id="prj-status">'+['Belum dimulai','Berjalan','Selesai','Ditunda'].map(v=>'<option '+((o?.status||'Belum dimulai')===v?'selected':'')+'>'+v+'</option>').join('')+'</select></label></div>';
- modal(o?'Edit Decision Log':'Tambah Keputusan',body,'Simpan',()=>{
+ modal(o?'Edit Decision Log':'Tambah Keputusan',projectDecorateInputs(body,'decision'),'Simpan',()=>{
   if(!$('#prj-title').value.trim()){toast('Keputusan wajib diisi.');return false}
   const d=o||{id:uid(),scope};
   Object.assign(d,{date:$('#prj-date').value,title:$('#prj-title').value.trim(),by:$('#prj-by').value,
