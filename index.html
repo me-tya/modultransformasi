@@ -967,6 +967,19 @@ table.ext td{font-size:12.5px;vertical-align:top;white-space:normal}
 @media(max-width:950px){.pm-program-head{align-items:flex-start;flex-wrap:wrap}.pm-program-aside{max-width:none;width:100%;align-items:flex-start;padding-left:46px}.pm-program-indicators,.pm-program-actions{justify-content:flex-start}.pm-project-table{table-layout:auto;min-width:0}.pm-project-table th:nth-child(n){width:auto}}
 @media(max-width:610px){.pm-program-head{padding:13px}.pm-program-identity h3{font-size:15px}.pm-program-aside{padding-left:0}.pm-program-check{white-space:normal}.pm-program-detail-label{flex-wrap:wrap}}
 
+
+/* PMO visual alignment and keyboard-safe clickable program header */
+.crumb-link{color:#b4cee9;text-decoration:none}.crumb-link:hover{color:#fff;text-decoration:underline}
+.pm-program-head{cursor:pointer;transition:filter .15s}.pm-program-head:hover{filter:brightness(1.1)}.pm-program-head:focus-visible{outline:3px solid #FDB913;outline-offset:-3px}
+.pm-program-toggle{border-radius:50%;width:32px;height:32px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.5);pointer-events:none}
+.pm-program-head[aria-expanded=false] .pm-program-chevron{transform:rotate(-90deg)}
+.pm-project-click{cursor:pointer}.pm-project-click:hover td{background:#e9f2ff!important}.pm-project-click:focus-visible{outline:2px solid #1f5fb8;outline-offset:-2px}
+.pm-project-table{table-layout:auto;min-width:0!important}.pm-project-scroll{overflow-x:auto}.pm-project-table th:nth-child(1){min-width:290px;width:40%}.pm-project-table th:nth-child(2){width:11%}.pm-project-table th:nth-child(3){width:18%}.pm-project-table th:nth-child(4){width:8%}.pm-project-table th:nth-child(5){width:15%}.pm-project-table th:nth-child(6){width:8%}
+.pm-project-table td:first-child .sm{white-space:normal;overflow:visible;text-overflow:clip;display:block;line-height:1.5;overflow-wrap:anywhere}
+.pm-program-toolbar-inner{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center}
+.pm-program-check{min-height:45px}.pm-program-search .inp{height:45px}
+@media(max-width:950px){.pm-program-toolbar-inner{grid-template-columns:1fr auto}.pm-program-total{grid-column:1 / -1}}
+@media(max-width:600px){.pm-program-toolbar-inner{grid-template-columns:1fr}.pm-program-check{justify-self:start}}
 </style>
 
 <div id="root"></div>
@@ -992,7 +1005,7 @@ const SCOPES=['Semua','Unit','Modul'];
 const SCOPE_DESK={Semua:'seluruh data',Unit:'data yang unitnya UIC Utama',Modul:'modul yang ditugaskan'};
 const UNREAD_SCOPED=['dash','porto','wbs','mil','risk','cr','crok','bukti','valid','lap','ref','adopsi','adp','reviu','usul','user','akses','sinkron','log'];
 const CMT=[['siklus','Siklus CM'],['adopsi','Tingkat Adopsi'],['adp','ADP'],['rencana','Perencanaan'],['impl','Implementasi'],['monev','Monev'],['closing','Closing CM']];
-const PMT=[['siklus','Siklus Proyek','porto'],['portofolio','Portofolio','porto'],['program','Program','porto'],['perencanaan','Charter & detail proyek','charter'],['wbsplan','Susun WBS','wbs'],['wbs','WBS & progres','wbs'],['bukti','Bukti Dukung','bukti'],['cr','Change Request','cr'],['milestone','Milestone','mil'],['risiko','Risiko & Isu','risk'],['laporan','Capaian TW','lap'],['narasi','Laporan narasi TW','lap'],['penutupan','Penutupan','porto'],['referensi','Referensi Kode','ref']];
+const PMT=[['siklus','Siklus Proyek','porto'],['portofolio','Portofolio','porto'],['program','Program','porto'],['perencanaan','Dokumen Proyek','charter'],['wbsplan','WBS','wbs'],['wbs','WBS & progres','wbs'],['bukti','Bukti Dukung','bukti'],['cr','Change Request','cr'],['milestone','Milestone','mil'],['risiko','Risiko & Isu','risk'],['laporan','Capaian TW','lap'],['narasi','Laporan narasi TW','lap'],['penutupan','Penutupan','porto'],['referensi','Referensi Kode','ref']];
 /* kelompok tab PMO mengikuti alur Draft KEP Kepala BaTii: perencanaan → pelaksanaan → pemantauan → penutupan */
 const PMG=[['siklus','Siklus Proyek',0,['siklus']],['portofolio','Portofolio',0,['portofolio']],['program','Program',0,['program']],['plan','Perencanaan',1,['perencanaan','wbsplan']],['exec','Pelaksanaan',2,['wbs','bukti','cr']],['mon','Pemantauan',3,['milestone','risiko','laporan','narasi']],['close','Penutupan',4,['penutupan']],['ref','Referensi',0,['referensi']]];
 const STN=[['set-pengguna','Pengguna','user'],['set-akses','Hak Akses Peran','akses'],['set-sinkron','Aturan Sinkron CM','sinkron'],['set-log','Log Aktivitas','log'],['set-db','Database','user']];
@@ -1503,9 +1516,9 @@ function navHTML(nodes,d,cur){return nodes.map(n=>{const cls=`nv d${d}`;
  if(n.kids){const open=S.ui.nav[n.id]!=null?!!S.ui.nav[n.id]:hasActive(n,cur);return `<button class="${cls} ${open&&d===0?'open':''}" data-nav="${n.id}" aria-expanded="${open}">${d===0?`<span class="ic">${n.ic||''}</span>`:''}${n.l}${n.badge?`<span class="new">${n.badge}</span>`:''}<span class="ch">›</span></button><div class="grp"${open?'':' hidden'}>${navHTML(n.kids,d+1,cur)}</div>`}
  if(n.ext)return `<button class="${cls}" data-ext="${esc(n.l)}">${n.l}</button>`;
  return `<a class="${cls} ${isOn(n,cur)?'on':''}" href="#${n.h}">${d===0?`<span class="ic">${n.ic||''}</span>`:''}${n.l}</a>`}).join('')}
-function crumbOf(){const m=VIEW.match(/^modul-(.+)-t-(\w+)$/);const base='Lainnya › Transformasi › ';if(m)return base+`CMO › <b>${esc(modLabel(m[1]))}</b>`;
+function crumbOf(){const m=VIEW.match(/^modul-(.+)-t-(\w+)$/);const base='<a href="#pmo-siklus" class="crumb-link">Lainnya</a> › <a href="#pmo-siklus" class="crumb-link">Transformasi</a> › ';if(m)return base+`CMO › <b>${esc(modLabel(m[1]))}</b>`;
  if(VIEW==='beranda')return '<b>Beranda</b>';if(VIEW==='dashboard')return base+'<b>Dashboard Eksekutif</b>';
- if(VIEW==='pmo-charter')return base+'PMO › Perencanaan › <b>Charter & detail proyek</b>';const p=PMT.find(t=>'pmo-'+t[0]===VIEW);if(p){const g=PMG.find(x=>x[3].includes(p[0]));return base+'PMO › '+(g&&g[3].length>1?g[1]+' › ':'')+'<b>'+p[1]+'</b>'}const c=CMT.find(t=>'cmo-'+t[0]===VIEW);if(c)return base+'CMO › <b>'+c[1]+'</b>';const s=STN.find(t=>t[0]===VIEW);if(s)return base+'Pengaturan › <b>'+s[1]+'</b>';return base}
+ if(VIEW==='pmo-charter')return base+'<a href="#pmo-program" class="crumb-link">PMO</a> › <a href="#pmo-perencanaan" class="crumb-link">Perencanaan</a> › <b>Dokumen Proyek</b>';const p=PMT.find(t=>'pmo-'+t[0]===VIEW);if(p){const g=PMG.find(x=>x[3].includes(p[0]));return base+'<a href="#pmo-program" class="crumb-link">PMO</a> › '+(g&&g[3].length>1?'<a href="#pmo-'+g[3][0]+'" class="crumb-link">'+g[1]+'</a> › ':'')+'<b>'+p[1]+'</b>'}const c=CMT.find(t=>'cmo-'+t[0]===VIEW);if(c)return base+'<a href="#cmo-siklus" class="crumb-link">CMO</a> › <b>'+c[1]+'</b>';const s=STN.find(t=>t[0]===VIEW);if(s)return base+'<a href="#set-pengguna" class="crumb-link">Pengaturan</a> › <b>'+s[1]+'</b>';return base}
 function allowedViews(){const v=['beranda'];if(lv('dash')!=='-')v.push('dashboard');pmoTabsVis().forEach(t=>v.push('pmo-'+t[0]));if(lv('charter')!=='-')v.push('pmo-charter');cmoTabsVis().forEach(t=>v.push('cmo-'+t[0]));STN.forEach(t=>{if(lv(t[2])!=='-')v.push(t[0])});return v}
 function tasks(){const out=[];
  if(lv('valid').includes('U')){const n=S.wbs.filter(w=>!w.arsip&&buktiSt(w)==='Menunggu validasi').length;if(n)out.push(['PMO',`${n} bukti dukung menunggu validasi`,'pmo-bukti','Menunggu']);}
@@ -1556,6 +1569,7 @@ document.addEventListener('click',e=>{
  const pg=e.target.closest('[data-pg]');if(pg){if(pg.disabled)return;PG[pg.dataset.pg]=+pg.dataset.n;redrawT(pg.dataset.pg);return}
  const sg=e.target.closest('[data-seg]');if(sg){S.ui[sg.dataset.seg]=sg.dataset.v;Object.keys(PG).forEach(k=>PG[k]=0);save();render();return}
  const gg=e.target.closest('[data-go]');if(gg&&!e.target.closest('.menu')){go(gg.dataset.go);return}
+ const proj=e.target.closest('.pm-project-click');if(proj&&!e.target.closest('a,button')){S.ui.prog=proj.dataset.prog;S.ui.wbsProject=proj.dataset.project;save();go('pmo-wbs');return}
  const el=e.target.closest('[data-act]');if(!el)return;const act=el.dataset.act,id=el.dataset.t,o=T[id];
  if(act==='open'&&e.target.closest('button,input,select,a,label'))return;
  const row=o&&el.dataset.i!=null?o.rows().find(r=>String(r.id)===el.dataset.i):null;
@@ -1571,7 +1585,7 @@ document.addEventListener('change',e=>{const t=e.target;
  if(t.dataset.ps){S.ui.ps[t.dataset.ps]=+t.value;PG[t.dataset.ps]=0;save();redrawT(t.dataset.ps);return}
  if(t.dataset.imp){const f=t.files[0];t.value='';if(f)importT(t.dataset.imp,f);return}
  const el=t.closest('[data-on]');if(el)onChange(el)});
-document.addEventListener('keydown',e=>{if(e.key==='/'&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){const q=document.querySelector('[data-q]');if(q){e.preventDefault();q.focus()}}if(e.key==='Escape'){const ov=document.querySelector('.ov');if(ov)ov.remove()}if((e.key==='Enter'||e.key===' ')&&document.activeElement.classList.contains('ftop')){e.preventDefault();ACT.ftog()}});
+document.addEventListener('keydown',e=>{if(e.key==='/'&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){const q=document.querySelector('[data-q]');if(q){e.preventDefault();q.focus()}}if(e.key==='Escape'){const ov=document.querySelector('.ov');if(ov)ov.remove()}if((e.key==='Enter'||e.key===' ')&&document.activeElement.classList.contains('pm-program-head')){e.preventDefault();ACT.pgfold(document.activeElement,e);return}if((e.key==='Enter'||e.key===' ')&&document.activeElement.classList.contains('pm-project-click')){e.preventDefault();const el=document.activeElement;S.ui.prog=el.dataset.prog;S.ui.wbsProject=el.dataset.project;save();go('pmo-wbs');return}if((e.key==='Enter'||e.key===' ')&&document.activeElement.classList.contains('ftop')){e.preventDefault();ACT.ftog()}});
 
 function onChange(el){const k=el.dataset.on,v=el.value;if(k==='impwbs')return;
  if(['tahun','prog','unit','umode','lvm','wcm','wth','wst','mod','pr','d1','d2','cunit','crole','cpr','cd1','cd2','cprog','cth'].includes(k)){if(k==='cunit'&&!v)S.ui.crole='';if(k==='umode'&&v!=='up'&&!curUnit()&&ME.unit&&UNITS.includes(ME.unit)){S.ui.unit=ME.unit;toast(`Unit diisi ${ME.unit} (unit Anda) agar peran unit bisa diterapkan.`)}if(k==='unit'&&!v)S.ui.umode='up';if(k==='umode'&&lockU()){S.ui.umodeL=v;Object.keys(PG).forEach(x=>PG[x]=0);save();render();return}if(k==='cunit'||k==='crole')S.ui.mod=''}
@@ -1627,7 +1641,7 @@ const CH0=/*__CH__*/[{"prog":"SSB","judul":"Seamless Services Bendahara","p1":20
 const CHST={Draft:['Draft','c-warn'],Reviu:['Reviu PMO Pusat','c-info'],Disahkan:['Disahkan','c-ok'],Arsip:['Arsip','c-gray']};
 const CHSEC=[['lb','Latar Belakang','#5F6B85'],['tb','Terobosan','#C8A84B'],['out','<i>Output</i>','#1F5FB8'],['oc','<i>Outcome</i>','#0F7B57'],['ms','Periode &amp; <i>Key Milestones</i>','#0B2447'],['ris','Risiko','#BF3434'],['pk','Pendukung Kesuksesan','#7A4FB5'],['up','Unit Pengelola','#0B2447']];
 const BLN=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-const CHPG=[['asis','As-is','Proses bisnis, sistem, teknologi'],['tobe','To-be','Proses baru, digitalisasi, arsitektur'],['cs','Perbandingan','Current vs end state'],['ch','Charter','Tujuan s.d. unit pengelola'],['kp','Kriteria','Acceptance criteria'],['mf','Manfaat','Penerima, pengukuran, target'],['rk','Rencana Kerja','Milestone s.d. level 3']];
+const CHPG=[['asis','As-is','Proses bisnis, sistem, teknologi'],['tobe','To-be','Proses baru, digitalisasi, arsitektur'],['cs','Perbandingan','Current vs end state'],['ch','Charter','Tujuan s.d. unit pengelola'],['kp','Kriteria','Acceptance criteria'],['mf','Manfaat','Penerima, pengukuran, target'],['rk','Linimasa','Milestone s.d. level 3']];
 const CHW=[['asis','Kondisi saat ini (as-is)','Proses bisnis, sistem eksisting, teknologi'],['tobe','Kondisi diharapkan (to-be)','Proses baru, potensi digitalisasi, arsitektur'],['cs','Perbandingan','Current vs end state'],['id','Identitas charter','Judul, periode, tujuan, unit pengelola'],['isi','Isi charter','Latar belakang, terobosan, output, outcome'],['ms','Milestone, risiko & pendukung','Key milestones, risiko, pendukung'],['kp','Kriteria penyelesaian','Acceptance criteria per milestone'],['mf','Manfaat proyek','Penerima, pengukuran, target'],['rk','Rencana kerja','Milestone s.d. level 3, jadwal, UIC'],['rv','Tinjau & ajukan','Periksa kelengkapan']];
 const CHWG=[['Kondisi & perbandingan','As-is, to-be, current vs end state',['asis','tobe','cs'],'Dokumen 1–3'],['Charter','Identitas, isi, milestone',['id','isi','ms'],'Dokumen 4'],['Kriteria penyelesaian','Acceptance criteria',['kp'],'Dokumen 5'],['Manfaat proyek','Penerima, pengukuran, target',['mf'],'Dokumen 6'],['Rencana kerja','Milestone s.d. level 3',['rk'],'Dokumen 7'],['Tinjau & ajukan','Periksa kelengkapan',['rv'],'']];
 const CHSUB={asis:'As-is',tobe:'To-be',cs:'Perbandingan',id:'Identitas',isi:'Isi',ms:'Milestone'};
@@ -1713,7 +1727,7 @@ function chRkView(c){const R=c.rk||[];if(!R.length)return `<div class="chempty">
  const mob=`<div class="rkm">${R.map((r,i)=>{const sp=rkSpan(T,r);const l=sp?off(sp[0]):0,w=sp?off(sp[1]+1)-l:0;return `<div class="rkm-r"><div class="rkm-t"><span class="no">${i+1}</span><b>${esc(r.t)}</b></div><div class="rkm-d">${rkLab(r)}</div><div class="rkm-tr"><i style="left:${l}%;width:${w}%"></i></div><div class="rkm-ax"><span>${T.y1>T.y0?T.y0:'Jan '+T.y0}</span><span>${T.y1>T.y0?T.y1:'Des '+T.y0}</span></div><div class="rkm-u">${uicHtml(r)}</div></div>`}).join('')}</div>`;
  return `<div class="rkmeta"><span class="chip c-info">${R.length} tindakan</span><span class="s">Linimasa ${T.y0}${T.y1>T.y0?' s.d. '+T.y1:''} · ${T.det2||T.y1===T.y0?'per bulan':'per bulan di '+T.y0+', per tahun sesudahnya'}</span><span class="lg"><i class="b"></i>Jadwal <i class="t"></i>Hari ini <sup>★</sup> koordinator</span></div><div class="rkd">${chGantt(c,false)}</div>${mob}`}
 function pCharter(){const akr=S.ui.chp;const p=S.programs.find(x=>x.akr===akr);
- const back=vh('C','pmo','Charter & Detail Proyek','Tujuh dokumen proyek sesuai Draft KEP Kepala BaTii, dengan charter sebagai dokumen inti.')+pmoTabs('perencanaan')+`<div class="chbc"><a href="#pmo-perencanaan">‹ Semua program</a> / Charter Program Transformasi</div>`;
+ const back=vh('C','pmo','Dokumen Proyek','Tujuh dokumen proyek sesuai Draft KEP Kepala BaTii, dengan charter sebagai dokumen inti.')+pmoTabs('perencanaan')+`<div class="chbc"><a href="#pmo-perencanaan">‹ Semua program</a> / Charter Program Transformasi</div>`;
  if(!p)return back+`<div class="card empty">Pilih program dari Portofolio untuk membuka charter.</div>`;
  const L=chList(akr);let c=L.find(x=>x.id===S.ui.chv)||chCur(akr);
  if(!c)return back+`<div class="card empty" style="padding:30px;text-align:center"><b>${esc(p.kode)} · ${esc(p.nama)}</b><p class="s">Program ini belum memiliki Charter Program Transformasi.</p>${chCan('C',p)?`<button class="btn pri" data-act="chnew" data-p="${akr}">+ Buat charter</button>`:''}</div>`;
@@ -1899,7 +1913,7 @@ ACT.chok=el=>{const c=S.charters.find(x=>x.id===el.dataset.id);if(!c)return;moda
 ACT.chver=el=>{const c=S.charters.find(x=>x.id===el.dataset.id);if(!c)return;const n=JSON.parse(JSON.stringify(c));Object.assign(n,{id:uid(),ver:Math.max(...chList(c.prog).map(x=>x.ver))+1,tahun:S.ui.tahun,st:'Draft',log:[{st:'Draft',by:chBy(),at:TODAY}],doc:{link:''}});S.charters.push(n);log('Versi baru charter',c.prog+' v'+n.ver);save();CHD=null;S.ui.ched=n.id;S.ui.chws=0;S.ui.chsv='';chOpen(c.prog,n.id);toast(`Versi v${n.ver} dibuat sebagai Draft. Versi lama tetap berlaku sampai versi baru disahkan.`)};
 ACT.chdel=el=>{const c=S.charters.find(x=>x.id===el.dataset.id);if(!c||c.st!=='Draft')return;modal('Hapus draft charter',`<p style="margin:0">Draft charter <b>${esc(chJudul(c))}</b> v${c.ver} akan dihapus permanen.</p>`,'Hapus',()=>{S.charters=S.charters.filter(x=>x!==c);log('Hapus draft charter',c.prog+' v'+c.ver);if(S.ui.ched===c.id){S.ui.ched='';CHD=null}S.ui.chv='';save();render()},{okCls:'dng'})};
 ACT.pchipgo=el=>{S.ui.prog=el.dataset.v||'';save()};
-ACT.pgfold=el=>{const k=el.dataset.v;S.ui.pgCollapse=S.ui.pgCollapse||{};S.ui.pgCollapse[k]=!S.ui.pgCollapse[k];save();render()};
+ACT.pgfold=(el,e)=>{if(e&&e.target.closest('a,button,input,label,select')&&e.target!==el)return;const k=el.dataset.v;S.ui.pgCollapse=S.ui.pgCollapse||{};S.ui.pgCollapse[k]=!S.ui.pgCollapse[k];save();render()};
 ACT.chexp=el=>{const c=S.charters.find(x=>x.id===el.dataset.id);if(!c)return;const X=S.ui.chx||(S.ui.chx={kop:1,prog:0,ttd:0});
  const it=(k,bg,lab,t,sub)=>`<div class="it dm" data-m="${k}" role="menuitem"><i style="background:${bg};color:#fff;font-size:9.5px">${lab}</i><span><b>${t}</b><small>${sub}</small></span></div>`;
  const m=popMenu(el,`<div class="hd" style="display:flex;justify-content:space-between;gap:10px"><b>Ekspor charter</b><span>4 halaman · format resmi</span></div>${it('pdf','#BF3434','PDF','PDF','A4 lanskap, 4 halaman, siap ditandatangani')}${it('doc','#1F5FB8','DOC','Word (.doc)','4 halaman tabel yang masih bisa diedit')}${it('ppt','#C8571B','PPT','PowerPoint (.pptx)','4 slide 16:9 untuk paparan')}
@@ -2178,7 +2192,7 @@ function pmoTabs(cur0){let cur=VIEW.startsWith('pmo-')?VIEW.slice(4):cur0;if(cur
  const G=PMG.map(g=>({g,ks:g[3].filter(k=>vis.has(k))})).filter(x=>x.ks.length);const on=G.find(x=>x.ks.includes(cur))||G[0];
  const gc=x=>x.ks.reduce((a,k)=>a+(+cnt[k]||0),0);
  const sub=on&&on.ks.length>1?`<div class="subt" role="tablist" aria-label="${esc(on.g[1])}">${on.ks.map(k=>`<a href="#pmo-${k}" class="${k===cur?'on':''}" role="tab" aria-selected="${k===cur}">${L(k)}${cnt[k]!==''&&cnt[k]!=null&&+cnt[k]>0?` <b class="sb">${cnt[k]}</b>`:''}</a>`).join('')}</div>`:'';
- return `<nav class="ptabs" aria-label="Tab PMO">${G.map(x=>{const n=x.g[2];const c=x.ks.length>1?gc(x):cnt[x.ks[0]];const tgt=x.ks.includes(cur)?cur:x.ks[0];return `<a href="#pmo-${tgt}" class="${x===on?'on':''}"><span>${n?`<em>${n}</em> `:''}${x.g[1]}</span>${c!==''&&c!=null&&+c>0?` <b>${c}</b>`:''}</a>`}).join('')}</nav>${sub}`+pmoFilterPanel(cur)}
+ return pmoFilterPanel(cur)+`<nav class="ptabs" aria-label="Tab PMO">${G.map(x=>{const n=x.g[2];const c=x.ks.length>1?gc(x):cnt[x.ks[0]];const tgt=x.ks.includes(cur)?cur:x.ks[0];return `<a href="#pmo-${tgt}" class="${x===on?'on':''}"><span>${n?`<em>${n}</em> `:''}${x.g[1]}</span>${c!==''&&c!=null&&+c>0?` <b>${c}</b>`:''}</a>`}).join('')}</nav>${sub}`}
 function viewPmo(tab){const f={charter:pCharter,siklus:pSiklus,portofolio:pPorto,program:pProgram,perencanaan:pPerencanaan,wbsplan:pWbs,wbs:pWbs,milestone:pMilestone,risiko:pRisiko,cr:pCr,bukti:pBukti,laporan:pLaporan,narasi:pNarasi,penutupan:pPenutupan,referensi:pRef}[tab];return f?f():''}
 /* --- Portofolio --- */
 function pbChart(PV,items,M,tw){
@@ -2284,7 +2298,7 @@ function ganttCell(w){const y=yrOf(w)||S.ui.tahun;const d0=new Date(y,0,1),d1=ne
 function pWbs(){const P=per(),M=P.b,tw=P.tw;const rows=wbsRows();const yearlyRows=VIEW==='pmo-wbsplan'&&S.ui.planYear!=='year'?rows.filter(w=>yrOf(w)===S.ui.tahun):rows;const s0=sumP(yearlyRows,P);const s={t:s0.t,r:s0.r};const stc=st=>yearlyRows.filter(w=>stP(w,P)===st).length;
  const pr=S.ui.prog?progOf(S.ui.prog):null;
  const plan=VIEW==='pmo-wbsplan';
- return vh('W','pmo',plan?'Susun WBS':'WBS & Progres',plan?'Pecah rencana kerja hingga level paling detail, impor dari Excel, lalu jadikan baseline.':'Struktur, jadwal, progres, dan bukti dukung item WBS per program.',
+ return vh('W','pmo',plan?'WBS':'WBS & Progres',plan?'Pecah rencana kerja hingga level paling detail, impor dari Excel, lalu jadikan baseline.':'Struktur, jadwal, progres, dan bukti dukung item WBS per program.',
   `${plan?`${lv('wbs').includes('C')?`<button class="btn" data-act="tplwbs" title="Unduh template Excel sheet program untuk diisi lalu diimpor">Template WBS</button><label class="btn">Import WBS<input type="file" hidden accept=".xlsx,.xls" data-on="impwbs"></label>`:''}<button class="btn" data-act="expkomp">Export (format Kompilasi)</button>`:''}${lv('cr').includes('C')?'<button class="btn gold" data-act="crnew">Change Request</button>':''}${lv('wbs').includes('C')?'<button class="btn pri" data-act="add" data-t="wbs">+ Item WBS</button>':''}`)+pmoTabs('wbs')+(plan?`<div class="note i"><span><b>Susun WBS.</b> Impor sheet Kompilasi atau sheet program, atau tambah item manual. Bobot, target bulanan, triwulan, dan cakupan UE I dihitung otomatis dari Start–Finish. Setelah charter disahkan, WBS menjadi baseline dan perubahan berikutnya lewat Change Request. Update progres bulanan dilakukan di <a href="#pmo-wbs">Pelaksanaan › WBS &amp; progres</a>.</span></div>`:'')+
  (plan&&S.ui.planYear!=='year'?`<div class="note i"><span><b>Cakupan lengkap:</b> seluruh tahun dan WBS yang belum memiliki jadwal ikut ditampilkan. ${rp(rows.filter(w=>yrOf(w)===S.ui.tahun).length)} item tahun ${S.ui.tahun}; ${rp(rows.filter(w=>yrOf(w)&&yrOf(w)!==S.ui.tahun).length)} item tahun lainnya; ${rp(rows.filter(w=>!yrOf(w)).length)} item tanpa jadwal. Target, realisasi, dan status pada kartu ringkasan tetap dihitung khusus untuk tahun anggaran ${S.ui.tahun}.</span></div>`:'')+
  pChips()+
@@ -2585,10 +2599,10 @@ function pProgram(){
  const cards=groups.map(({p,x,P})=>{
   const closed=!!collapsed[p.akr],id='pg-body-'+String(p.akr).replace(/[^a-zA-Z0-9_-]/g,'-');
   return `<section class="card pgc pm-program-card" data-pg-code="${esc(p.akr)}" aria-label="Program ${esc(p.nama)}">
-   <div class="pm-program-head">
-    <button type="button" class="pm-program-toggle" data-act="pgfold" data-v="${esc(p.akr)}" aria-expanded="${!closed}" aria-controls="${id}" aria-label="${closed?'Perluas':'Ciutkan'} rincian proyek ${esc(p.nama)}" title="${closed?'Perluas':'Ciutkan'} rincian proyek">
+   <div class="pm-program-head" data-act="pgfold" data-v="${esc(p.akr)}" role="button" tabindex="0" aria-expanded="${!closed}" aria-controls="${id}" aria-label="${closed?'Tampilkan':'Sembunyikan'} rincian proyek ${esc(p.nama)}">
+    <span class="pm-program-toggle" aria-hidden="true">
      <span class="pm-program-chevron" aria-hidden="true">⌄</span>
-    </button>
+    </span>
     <div class="pm-program-identity">
      <div class="pm-program-meta"><span class="pm-program-label">PROGRAM</span><span class="pm-program-code">${esc(p.kode)}</span><span class="pm-program-type">${esc(p.jenis||'Program')}</span></div>
      <h3>${esc(p.nama)}</h3>
@@ -2603,13 +2617,13 @@ function pProgram(){
     ${!P.length?`<p class="pm-program-empty">Belum ada item WBS untuk tahun ${S.ui.tahun}. Rincian proyek muncul setelah WBS diimpor melalui <a href="#pmo-wbsplan">Susun WBS</a>.</p>`:
     `<div class="pm-program-detail-label"><span>RINCIAN PROYEK</span><span>${P.length} proyek · WBS Level 4</span></div>
      <div class="tscroll pm-project-scroll"><table class="lap pm-project-table"><thead><tr><th>Proyek (WBS Level 4)</th><th>UIC Utama</th><th>Jadwal</th><th class="num">Item WBS</th><th>Progres Tervalidasi</th><th class="num" title="Jumlah item WBS yang melewati batas waktu dan belum selesai">Item Terlambat</th></tr></thead>
-     <tbody>${P.map(r=>`<tr><td><strong>${esc(r.n)}</strong>${r.sub.length?`<span class="sm" title="${esc(r.sub.join(', '))}">${r.sub.length} subkelompok: ${esc(short(r.sub.slice(0,3).join(', '),80))}${r.sub.length>3?'…':''}</span>`:''}</td><td>${esc(r.uic)}</td><td class="s">${r.s?fmtD(r.s):'—'} – ${r.f?fmtD(r.f):'—'}</td><td class="num">${r.a.length}</td><td><div class="pg"><div class="bar"><i style="width:${r.pg}%;background:${r.pg===100?'var(--ok)':'var(--blue)'}"></i></div><b>${r.pg}%</b></div></td><td class="num">${r.late?`<span class="chip c-bad" title="${r.late} item WBS terlambat">${r.late}</span>`:'<span class="s">0</span>'}</td></tr>`).join('')}</tbody></table></div>`}
+     <tbody>${P.map(r=>`<tr class="pm-project-click" data-prog="${esc(p.akr)}" data-project="${esc(r.n)}" tabindex="0" role="button" title="Klik untuk melihat item WBS proyek ini"><td><strong>${esc(r.n)}</strong>${r.sub.length?`<span class="sm" title="${esc(r.sub.join(', '))}">${r.sub.length} subkelompok: ${esc(r.sub.join(', '))}</span>`:''}</td><td>${esc(r.uic)}</td><td class="s">${r.s?fmtD(r.s):'—'} – ${r.f?fmtD(r.f):'—'}</td><td class="num">${r.a.length}</td><td><div class="pg"><div class="bar"><i style="width:${r.pg}%;background:${r.pg===100?'var(--ok)':'var(--blue)'}"></i></div><b>${r.pg}%</b></div></td><td class="num">${r.late?`<span class="chip c-bad" title="${r.late} item WBS terlambat">${r.late}</span>`:'<span class="s">0</span>'}</td></tr>`).join('')}</tbody></table></div>`}
    </div>
   </section>`;
  }).join('');
  return vh('G','pmo','Program','Daftar program dan rincian proyek berdasarkan WBS Level 4.')+pmoTabs('program')+
  `<div class="card pm-program-toolbar"><div class="pad pm-program-toolbar-inner">
-  <div class="pm-program-search"><label class="sr-only" for="pm-program-query">Cari program atau proyek</label><input id="pm-program-query" class="inp" data-on="pgq" value="${esc(S.ui.pgq||'')}" placeholder="Cari program atau proyek..." aria-label="Cari program atau proyek"></div>
+  <div class="pm-program-search"><input id="pm-program-query" class="inp" data-on="pgq" value="${esc(S.ui.pgq||'')}" placeholder="Cari program atau proyek..." aria-label="Cari program atau proyek"></div>
   <label class="pm-program-check"><input type="checkbox" data-on="pgall" ${allOpen?'checked':''} aria-label="Tampilkan rincian seluruh program yang ditampilkan"><span>Tampilkan Semua Rincian</span></label>
   <span class="pm-program-total">${groups.length} program · ${totalProjects} proyek</span>
  </div></div>`+
@@ -2617,7 +2631,7 @@ function pProgram(){
 }
 /* --- Perencanaan: 7 dokumen proyek --- */
 function pPerencanaan(){const PV=pmoProgramList();const D=CHPG.map(x=>x[0]);
- return vh('C','pmo','Charter & Detail Proyek','Tujuh dokumen proyek per program sesuai Draft KEP Kepala BaTii, disusun pada T-1.',lv('charter').includes('C')?'<label class="btn pri">Import Charter (PPTX)<input type="file" accept=".pptx" hidden data-on="impcharter"></label>':'')+pmoTabs('perencanaan')+
+ return vh('C','pmo','Dokumen Proyek','Tujuh dokumen proyek per program sesuai Draft KEP Kepala BaTii, disusun pada T-1.',lv('charter').includes('C')?'<label class="btn pri">Import Charter (PPTX)<input type="file" accept=".pptx" hidden data-on="impcharter"></label>':'')+pmoTabs('perencanaan')+
  `<div class="note i"><span>Dokumen proyek ditetapkan dengan ND/Kesepakatan Bersama paling lambat <b>15 hari kerja</b> pada awal tahun proyek, lalu rencana kerja dirinci menjadi WBS paling lambat <b>15 hari kerja</b> setelahnya (<a href="#pmo-wbsplan">Susun WBS</a>).</span></div>
  <div class="card"><div class="tscroll"><table class="lap pdocs"><thead><tr><th>Program</th><th>Charter</th>${CHPG.map((x,i)=>`<th class="ctr" title="${esc(x[2]||x[1])}"><b class="dn2">${i+1}</b><span class="sm">${x[1]}</span></th>`).join('')}<th></th></tr></thead><tbody>${PV.map(p=>{const c=chCur(p.akr);const ok=c?chDocOk(c):{};const n=c?chPagesFilled(c):0;const can=c&&chCan('U',p)&&(c.st==='Draft'||(c.st==='Reviu'&&chApprover()));const miss=c?CHW.find(w=>w[0]!=='rv'&&!chChk(c)[w[0]].ok):null;
   return `<tr><td><b>${esc(p.nama)}</b><span class="sm">${esc(p.kode)} · ${n}/7 dokumen</span></td><td>${c?chLab(c):'<span class="chip c-gray">Belum dibuat</span>'}</td>${D.map(k=>`<td class="ctr">${ok[k]?'<span class="dok y" title="Terisi">✓</span>':'<span class="dok" title="Belum diisi">○</span>'}</td>`).join('')}<td class="r" style="white-space:nowrap;width:1%"><span class="row" style="gap:6px;justify-content:flex-end;flex-wrap:nowrap">${c?`<a class="btn sm" href="#pmo-charter" data-act="chopen" data-p="${p.akr}">Buka</a>${can&&miss?`<button class="btn sm pri" data-act="ched" data-p="${p.akr}" data-id="${c.id}" data-s="${miss[0]}">Lengkapi</button>`:''}`:chCan('C',p)?`<button class="btn sm pri" data-act="chnew" data-p="${p.akr}">+ Buat</button>`:''}</span></td></tr>`}).join('')}</tbody></table></div></div>`}
