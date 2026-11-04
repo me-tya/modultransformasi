@@ -2617,7 +2617,7 @@ function pProgram(){
 }
 /* --- Perencanaan: 7 dokumen proyek --- */
 function pPerencanaan(){const PV=pmoProgramList();const D=CHPG.map(x=>x[0]);
- return vh('C','pmo','Charter & Detail Proyek','Tujuh dokumen proyek per program sesuai Draft KEP Kepala BaTii, disusun pada T-1.')+pmoTabs('perencanaan')+
+ return vh('C','pmo','Charter & Detail Proyek','Tujuh dokumen proyek per program sesuai Draft KEP Kepala BaTii, disusun pada T-1.',lv('charter').includes('C')?'<label class="btn pri">Import Charter (PPTX)<input type="file" accept=".pptx" hidden data-on="impcharter"></label>':'')+pmoTabs('perencanaan')+
  `<div class="note i"><span>Dokumen proyek ditetapkan dengan ND/Kesepakatan Bersama paling lambat <b>15 hari kerja</b> pada awal tahun proyek, lalu rencana kerja dirinci menjadi WBS paling lambat <b>15 hari kerja</b> setelahnya (<a href="#pmo-wbsplan">Susun WBS</a>).</span></div>
  <div class="card"><div class="tscroll"><table class="lap pdocs"><thead><tr><th>Program</th><th>Charter</th>${CHPG.map((x,i)=>`<th class="ctr" title="${esc(x[2]||x[1])}"><b class="dn2">${i+1}</b><span class="sm">${x[1]}</span></th>`).join('')}<th></th></tr></thead><tbody>${PV.map(p=>{const c=chCur(p.akr);const ok=c?chDocOk(c):{};const n=c?chPagesFilled(c):0;const can=c&&chCan('U',p)&&(c.st==='Draft'||(c.st==='Reviu'&&chApprover()));const miss=c?CHW.find(w=>w[0]!=='rv'&&!chChk(c)[w[0]].ok):null;
   return `<tr><td><b>${esc(p.nama)}</b><span class="sm">${esc(p.kode)} · ${n}/7 dokumen</span></td><td>${c?chLab(c):'<span class="chip c-gray">Belum dibuat</span>'}</td>${D.map(k=>`<td class="ctr">${ok[k]?'<span class="dok y" title="Terisi">✓</span>':'<span class="dok" title="Belum diisi">○</span>'}</td>`).join('')}<td class="r" style="white-space:nowrap;width:1%"><span class="row" style="gap:6px;justify-content:flex-end;flex-wrap:nowrap">${c?`<a class="btn sm" href="#pmo-charter" data-act="chopen" data-p="${p.akr}">Buka</a>${can&&miss?`<button class="btn sm pri" data-act="ched" data-p="${p.akr}" data-id="${c.id}" data-s="${miss[0]}">Lengkapi</button>`:''}`:chCan('C',p)?`<button class="btn sm pri" data-act="chnew" data-p="${p.akr}">+ Buat</button>`:''}</span></td></tr>`}).join('')}</tbody></table></div></div>`}
@@ -3078,6 +3078,153 @@ ACT.fboff=()=>modal('Putuskan Firestore?','<p style="margin:0">Peramban ini kemb
 ACT.cprules=()=>{const done=()=>toast('Rules disalin.');try{navigator.clipboard.writeText(RULES).then(done,()=>{const r=document.createRange();r.selectNodeContents($('#rules'));getSelection().removeAllRanges();getSelection().addRange(r);toast('Teks rules terpilih; tekan Ctrl+C.')})}catch(e){const r=document.createRange();r.selectNodeContents($('#rules'));getSelection().removeAllRanges();getSelection().addRange(r);toast('Teks rules terpilih; tekan Ctrl+C.')}};
 ACT.fbaccts=async el=>{el.disabled=true;let b=0,a=0;const gagal=[];for(const u of S.users){if(!u.aktif)continue;el.textContent=`Membuat akun… ${b+a+gagal.length+1}/${S.users.length}`;try{const r=await fbCreateAuth(u.email.toLowerCase(),PW);r==='baru'?b++:a++}catch(e){gagal.push(u.email+': '+fbErr(e))}}
  log('Buat akun login',`${b} baru, ${a} sudah ada, ${gagal.length} gagal`);save();modal('Akun login',`<p style="margin:0 0 8px">${b} akun baru dibuat, ${a} sudah ada.</p>${gagal.length?`<p style="margin:0;color:var(--bad)">${gagal.map(esc).join('<br>')}</p>`:''}`,null,null,{cancel:'Tutup',size:'sm'});render()};
+
+
+/* ======== Import charter .pptx dari tabel dan teks PowerPoint ======== */
+const pptxt=n=>Array.from(n.getElementsByTagName('a:p')).map(p=>Array.from(p.getElementsByTagName('a:t')).map(t=>t.textContent||'').join('').trim()).filter(Boolean);
+const pptxn=x=>String(x||'').replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim();
+const pptxa=x=>(x||[]).map(pptxn).filter(Boolean);
+const pptxb=x=>pptxa(x).filter(t=>!/^(\d{4}|tahun\s+\d{4})$/i.test(t));
+function pptxsh(xml){
+ return Array.from(xml.getElementsByTagName('p:sp')).map(n=>{
+  const body=n.getElementsByTagName('p:txBody')[0];if(!body)return null;
+  const a=pptxt(body);if(!a.length)return null;
+  const props=n.getElementsByTagName('p:spPr')[0],trans=props&&props.getElementsByTagName('a:xfrm')[0];
+  const off=trans&&trans.getElementsByTagName('a:off')[0];
+  return {a,t:pptxn(a.join(' ')),x:off?+off.getAttribute('x')/914400:0,y:off?+off.getAttribute('y')/914400:0};
+ }).filter(Boolean);
+}
+function pptxtabs(xml){
+ return Array.from(xml.getElementsByTagName('a:tbl')).map(t=>
+  Array.from(t.getElementsByTagName('a:tr')).map(r=>
+   Array.from(r.children).filter(c=>c.localName==='tc').map(c=>pptxt(c))));
+}
+const pptxid=title=>{
+ const t=pptxn(title).toLowerCase();
+ return /seamless.*bendahara/.test(t)?'SSB':/single profile/.test(t)?'SP':/satu data/.test(t)?'SD':/integrated core system|core system apbn/.test(t)?'CORE':/office automation/.test(t)?'OA':'';
+};
+function pptxcore(sl){
+ const tbl=sl.tables[0]||[],cell=(i,j)=>tbl[i]&&tbl[i][j]||[];
+ const d={judul:sl.title,tujuan:'',lb:[],tb:'',out:[],oc:[],periode:'',ris:[],pk:[],mil:[],owners:'',champion:'Menteri Keuangan'};
+ if(tbl.length>=6&&/tujuan program/i.test(cell(0,0).join(' '))){
+  d.tujuan=pptxn(cell(0,1).join(' '));d.lb=pptxb(cell(2,0));d.tb=cell(2,1).join('\n');
+  d.out=pptxb(cell(2,2));d.oc=pptxb(cell(2,3));
+  const following=(col,label)=>{
+   for(let i=0;i<tbl.length;i++)if(pptxn(cell(i,col).join(' ')).toLowerCase()===label.toLowerCase())
+    for(let j=i+1;j<tbl.length;j++)if(cell(j,col).length)return cell(j,col);
+   return [];
+  };
+  d.periode=following(1,'Periode').join(' ');
+  d.ris=pptxb(following(2,'Risiko'));
+  d.pk=pptxb(following(0,'Pendukung Kesuksesan'));
+  d.mil=following(1,'Key Milestones');
+  d.owners=following(2,'Unit Pengelola').join('\n');
+ }else{
+  const sections=sl.shapes.filter(x=>x.t.length>3&&!/^(Tujuan Program|Latar Belakang|Terobosan|Output|Outcomes?|Periode|Risiko|Pendukung Kesuksesan|Key Milestones?|Unit Pengelola)$/i.test(x.t));
+  const at=(minx,maxx,miny,maxy)=>sections.filter(x=>x.x>=minx&&x.x<maxx&&x.y>=miny&&x.y<maxy).sort((a,b)=>a.y-b.y)[0];
+  const get=(x1,x2,y1,y2)=>{const q=at(x1,x2,y1,y2);return q?q.a:[]};
+  d.tujuan=pptxn(get(1.7,7.4,1.3,2.2).join(' '));
+  d.lb=pptxb(get(0,3.3,2.3,4.4));d.tb=get(3.3,7.15,2.3,4.15).join('\n');
+  d.out=pptxb(get(7.05,10.5,2.3,4.15));d.oc=pptxb(get(10.5,14.5,2.3,4.4));
+  d.periode=get(3.3,7.15,4.28,5.12).join(' ');
+  d.ris=pptxb(get(7.05,10.5,4.28,5.12));
+  d.pk=pptxb(get(0,3.3,5.0,7.4));
+  d.mil=get(3.3,7.15,5.12,7.2);
+  d.owners=get(7.05,10.5,5.12,7.4).join('\n');
+ }
+ const years=String(d.periode).match(/20\d{2}/g)||[];
+ d.p1=years.length?+years[0]:S.ui.tahun;d.p2=years.length?+years[years.length-1]:S.ui.tahun;
+ let y=d.p1;d.ms=[];
+ pptxa(d.mil).forEach(t=>{
+  const yr=t.match(/(?:^Tahun\s*)?(20\d{2})$/i);
+  if(yr){y=+yr[1];return}
+  if(!/^(Key Milestones?|Tahun)$/i.test(t))d.ms.push({y,t,g:''});
+ });
+ const m=d.owners.match(/Initiative Champions?:\s*([^\n]+)/i);
+ if(m)d.champion=pptxn(m[1]);
+ d.ow=pptxa(d.owners.split('\n')).filter(x=>!/Initiative Champions?|Initiative Owners?/i.test(x));
+ return d;
+}
+function pptxpairs(sl){
+ if(!sl||!sl.tables.length)return [];
+ const tb=sl.tables[0];
+ return tb.slice(1).filter(r=>r[0]&&r[1]&&r[0].length&&r[1].length).map(r=>({
+  a:pptxn(r[0].join(' ')).replace(/^\d+[\.)]\s*/,''),
+  b:pptxn(r[1].join(' '))
+ })).filter(x=>x.a&&x.b);
+}
+async function pptxcharters(file){
+ if(!/\.pptx$/i.test(file.name))throw Error('Berkas harus berformat .pptx');
+ if(file.size>20e6)throw Error('PPTX terlalu besar (maksimal 20 MB).');
+ if(!window.JSZip){
+  try{await chLib('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',()=>!!window.JSZip)}
+  catch(e){await chLib('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js',()=>!!window.JSZip)}
+ }
+ const zip=await JSZip.loadAsync(file);
+ const names=Object.keys(zip.files).filter(n=>/^ppt\/slides\/slide\d+\.xml$/.test(n))
+  .sort((a,b)=>+a.match(/slide(\d+)/)[1]-+b.match(/slide(\d+)/)[1]);
+ const slides=[];
+ for(const name of names){
+  const xml=new DOMParser().parseFromString(await zip.file(name).async('string'),'text/xml');
+  const shapes=pptxsh(xml),tables=pptxtabs(xml);
+  const h=shapes.find(x=>/^(?:Charter\s+)?Program Transformasi\s*:/i.test(x.t));
+  const title=h?pptxn(h.t.replace(/^(?:Charter\s+)?Program Transformasi\s*:\s*/i,'')):'';
+  slides.push({shapes,tables,title,index:slides.length+1});
+ }
+ const all=[];
+ slides.forEach((sl,i)=>{
+  if(!sl.title||/^(?:…|\.{2,}|xxx)/i.test(sl.title))return;
+  const d=pptxcore(sl);if(!d.tujuan&&!d.lb.length&&!d.out.length)return;
+  d.kp=pptxpairs(slides[i+1]).map(x=>({m:x.a,k:[x.b]}));
+  d.cs=pptxpairs(slides[i+3]).map(x=>({a:x.a,b:x.b}));
+  d.prog=pptxid(sl.title);d.slide=sl.index;
+  all.push(d);
+ });
+ return all;
+}
+function previewCharterImport(items,file){
+ const perms=S.programs.filter(p=>chCan('C',p)||chCan('U',p));
+ let body='<div class="note i"><span><b>'+items.length+' charter ditemukan</b> dalam '+esc(file.name)+'. Periksa program tujuan. Impor membuat versi Draft baru; dokumen yang sudah disahkan tetap utuh. Jadwal berbentuk grafik Gantt tidak otomatis diimpor.</span></div>';
+ body+=items.map((d,i)=>'<div style="border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px">'+
+ '<div><b>'+esc(d.judul)+'</b><div class="sm">Slide '+d.slide+' · '+d.lb.length+' latar belakang · '+d.out.length+' output · '+d.kp.length+' kriteria penyelesaian · '+d.cs.length+' perbandingan</div></div>'+
+ '<select class="sel" style="max-width:330px" data-charter-map="'+i+'"><option value="">Lewati / tidak cocok</option>'+
+ perms.map(p=>'<option value="'+esc(p.akr)+'"'+(p.akr===d.prog?' selected':'')+'>'+esc(p.kode+' · '+p.nama)+'</option>').join('')+
+ '</select></div><p class="s" style="margin:7px 0 0"><b>Tujuan:</b> '+esc(d.tujuan||'Belum terbaca')+'</p></div>').join('');
+ const box=modal('Pratinjau Import Charter dari PPTX',body,'Simpan Draft',()=>{
+  const targets=new Set(),sel=[];
+  for(let i=0;i<items.length;i++){
+   const akr=box.querySelector('[data-charter-map="'+i+'"]').value;
+   if(!akr)continue;
+   if(targets.has(akr)){toast('Ada dua charter dipetakan ke program yang sama.');return false}
+   const p=S.programs.find(x=>x.akr===akr);
+   if(!p||!chCan('C',p)&&!chCan('U',p)){toast('Tidak ada izin mengimpor ke program '+akr);return false}
+   if(!items[i].tujuan){toast('Tujuan program belum terbaca untuk '+items[i].judul);return false}
+   targets.add(akr);sel.push({d:items[i],akr,p});
+  }
+  if(!sel.length){toast('Pilih minimal satu program tujuan.');return false}
+  sel.forEach(({d,akr,p})=>{
+   const prior=chList(akr),ver=Math.max(0,...prior.map(x=>+x.ver||0))+1;
+   S.charters.push({id:uid(),prog:akr,tahun:S.ui.tahun,ver,st:'Draft',
+    judul:d.judul,tujuan:d.tujuan,lb:d.lb,tb:d.tb,out:d.out,oc:d.oc,
+    p1:d.p1,p2:d.p2,ms:d.ms,ris:d.ris,pk:d.pk,ch:d.champion,ow:d.ow.length?d.ow:[p.sponsor||''],
+    kpY:d.p1,kp:d.kp,cs:d.cs,rk:[],mf:[],
+    asis:{pb:'',masalah:'',link:'',kor:[],tek:''},tobe:{pb:[],pot:[],ar:'',link:'',arLink:''},
+    log:[{st:'Draft',by:chBy(),at:TODAY}],doc:{link:''},keRisk:true,
+    sumberPptx:file.name,slidePptx:d.slide});
+  });
+  log('Import Charter PPTX',file.name+': '+sel.length+' program');
+  save();render();toast(sel.length+' charter disimpan sebagai Draft baru.');
+ },{size:'wide'});
+}
+document.addEventListener('change',async e=>{
+ const input=e.target;if(input.dataset.on!=='impcharter')return;
+ e.stopPropagation();const file=input.files&&input.files[0];input.value='';if(!file)return;
+ busy('Membaca Charter PPTX…',file.name,10);
+ try{const items=await pptxcharters(file);busyOff();
+  if(!items.length){toast('Slide charter tidak ditemukan. Gunakan PPTX berisi teks atau tabel yang dapat diedit.');return}
+  previewCharterImport(items,file);
+ }catch(err){busyOff();toast('Gagal membaca PPTX: '+err.message)}
+},true);
 
 /* ======================== start ======================== */
 (async function start(){if(!fbCfg()){load();applyKK();S.programs.forEach(p=>{if(!p.sing&&SING0[p.akr])p.sing=SING0[p.akr]});const e=sess();if(e){ME=S.users.find(u=>u.email===e&&u.aktif)||null}readHash();render();return}
