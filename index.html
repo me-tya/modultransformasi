@@ -990,6 +990,13 @@ table.ext td{font-size:12.5px;vertical-align:top;white-space:normal}
 button[disabled]{cursor:not-allowed;opacity:.45}
 button[aria-label*="Bantuan"],button[title*="Bantuan"],.help-icon,.hint-icon{background:var(--yellow);color:#142C4D;border:1px solid var(--yellow);transition:background .16s,color .16s,box-shadow .16s}
 button[aria-label*="Bantuan"]:hover,button[title*="Bantuan"]:hover,.help-icon:hover,.hint-icon:hover{background:#fff;color:#C88A00;box-shadow:0 3px 12px rgba(253,185,19,.24)}
+/* Navigasi tab ringkas Portofolio: satu panel aktif setiap saat */
+.porto-view-tabs{display:flex;align-items:stretch;gap:6px;padding:6px;margin:14px 0;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(11,36,71,.04);overflow-x:auto}
+.porto-view-tab{border:0;background:transparent;border-radius:9px;color:var(--ink-3);font-weight:800;min-height:43px;padding:9px 18px;cursor:pointer;flex:1 0 auto;white-space:nowrap}
+.porto-view-tab.on{color:#fff;background:var(--navy);box-shadow:0 3px 10px rgba(11,36,71,.16)}
+.porto-view-tab:hover:not(.on){background:#edf3fb;color:var(--navy)}
+.porto-progress-pane .pb-card{width:100%;max-width:none}
+.porto-progress-pane .pb-row{grid-template-columns:minmax(185px,1fr) minmax(220px,2fr) minmax(100px,.7fr)}
 /* Kunci dimensi tab dokumen agar tidak meloncat saat berpindah */
 .chtabs{position:sticky;top:0;z-index:22;align-items:stretch;min-height:66px}
 .chtabs button{min-height:56px;min-width:0;flex:1 1 0}
@@ -2259,7 +2266,7 @@ function pmoTabs(cur0){let cur=VIEW.startsWith('pmo-')?VIEW.slice(4):cur0;if(cur
 function viewPmo(tab){const f={charter:pCharter,siklus:pSiklus,portofolio:pPorto,program:pProgram,perencanaan:pPerencanaan,wbsplan:pWbs,wbs:pWbs,milestone:pMilestone,risiko:pRisiko,cr:pCr,bukti:pBukti,laporan:pLaporan,narasi:pNarasi,penutupan:pPenutupan,referensi:pRef}[tab];return f?f():''}
 /* --- Portofolio --- */
 function pbChart(PV,items,M,tw,jenis='Berkelanjutan'){
- const L=PV.filter(p=>p.jenis===jenis).map(p=>{const s=sumTR(items.filter(w=>w.prog===p.akr),M);const pItems=items.filter(w=>w.prog===p.akr);const has=!!s.a,missing=!pItems.length?'Belum ada WBS':pItems.every(w=>!(+w.w>0))?'Bobot WBS belum diisi':'Bulan target/bobot belum lengkap';const v=has?s.r/s.a*100:0,t=has?s.t/s.a*100:0,g=v-t;
+ const L=PV.filter(p=>jenis==='Semua'||p.jenis===jenis).map(p=>{const s=sumTR(items.filter(w=>w.prog===p.akr),M);const pItems=items.filter(w=>w.prog===p.akr);const has=!!s.a,missing=!pItems.length?'Belum ada WBS':pItems.every(w=>!(+w.w>0))?'Bobot WBS belum diisi':'Bulan target/bobot belum lengkap';const v=has?s.r/s.a*100:0,t=has?s.t/s.a*100:0,g=v-t;
   const st=!has?'na':s.t<=0?'na':g>=-0.05?'ok':g>=-10?'warn':'bad';return {p,s,has,missing,v:Math.min(v,100),vr:v,t:Math.min(t,100),tr:t,g,st}});
  const T=L.reduce((a,x)=>(a.r+=x.s.r,a.t+=x.s.t,a.a+=x.s.a,a),{r:0,t:0,a:0});
  const nOk=L.filter(x=>x.st==='ok').length,nLow=L.filter(x=>x.st==='warn'||x.st==='bad').length,nNA=L.filter(x=>x.st==='na').length;
@@ -2270,7 +2277,7 @@ function pbChart(PV,items,M,tw,jenis='Berkelanjutan'){
   <div class="pb-trk">${x.has?`<i class="pb-fill" style="--v:${x.v}%"></i><i class="pb-tgt" style="--t:${x.t}%"><em>${pct(x.tr)}</em></i>`:''}</div>
   <div class="pb-val"><b>${x.has&&x.s.t>0?pct(x.vr):'—'}</b>${x.has&&x.s.t>0?`<small class="pb-${x.st}">${x.st==='ok'?'✓ ':''}${fmtG(x.g)}</small>`:`<small>${esc(x.has?'Belum jatuh tempo':x.missing)}</small>`}</div></div>`).join('');
  function p_tt(x){return x.has?`${x.p.nama}\nRealisasi ${pct(x.vr)} · Target ${pct(x.tr)} (${fmtG(x.g)})`:x.p.nama+' — '+x.missing}
- return `<div class="card hfill pb-card"><div class="ch"><h3>Capaian Program ${jenis}</h3><span class="r s">s.d. ${tw}</span></div>
+ return `<div class="card hfill pb-card"><div class="ch"><h3>Capaian Program ${jenis==='Semua'?'Transformasi':jenis}</h3><span class="r s">s.d. ${tw}</span></div>
  <div class="pad">${L.length?`<div class="pb-sum"><div class="pb-big">${T.t>0?`<b>${pct(T.r/T.a*100)}</b><span>capaian gabungan<br>target ${pct(T.t/T.a*100)}</span>`:`<span>Belum ada item WBS bertarget<br>untuk program ${jenis.toLowerCase()}.</span>`}</div>
   <div class="pb-chips"><span class="pb-chip pb-ok"><i></i>${nOk} sesuai target</span><span class="pb-chip ${nLow?'pb-bad':'pb-mute'}"><i></i>${nLow} di bawah target</span>${nNA?`<span class="pb-chip pb-mute">${nNA} belum memiliki target periode</span>`:''}</div></div>
  <div class="pb-rows">${rows}</div>
@@ -2324,7 +2331,7 @@ function portoFilterBar(ps,items,M){
 function portoStatus(p){const st=String(p.status||'—');return `<span class="chip c-${CHIP[st]||'gray'} porto-status" title="${esc(st)}">${st.split(/\s+/).map(esc).join('<br>')}</span>`}
 function portoCap(p,items,M){const x=portoMetrics(p,items,M);if(!x.hasTarget)return `<div class="porto-cap" title="Tidak ada bobot target WBS sampai periode ini"><small>Belum ada<br>target</small></div>`;
  const pct0=x.cap;return `<div class="porto-cap" title="Realisasi ${pct(pct0)} dari target tahunan, target kumulatif ${pct(x.t.t/x.t.a*100)}"><b>${pct(pct0)}</b><div class="bar" aria-label="Capaian ${pct(pct0)}"><i style="width:${Math.max(0,Math.min(100,pct0))}%;background:${x.t.r>=x.t.t?'var(--ok)':'var(--navy-2)'}"></i></div></div>`}
-function pPorto(){const P=per(),M=P.b,tw=P.lab;const seg=S.ui.seg||'';const PV=pmoProgramList(true);const ps=PV.filter(p=>!seg||p.jenis===seg);
+function pPorto(){const P=per(),M=P.b,tw=P.lab;const seg=S.ui.seg||'';const PV=pmoProgramList(true);const ps=PV.filter(p=>!seg||p.jenis===seg);const portoTab=['daftar','capaian','milestone'].includes(S.ui.portoTab)?S.ui.portoTab:'daftar';
  const items=S.wbs.filter(w=>!w.arsip&&yrOf(w)===S.ui.tahun&&unitMatch(w,curUnit(),umOf()));const tot=sumTR(items,M);
  const up=items.filter(w=>!doneAt(w,12)&&w.f>=TODAY&&w.f<=addDays(TODAY,30)).sort((a,b)=>a.f<b.f?-1:1);const late=items.filter(w=>stOf(w,12)==='Terlambat').sort((a,b)=>a.f<b.f?-1:1);const audit=portoAudit(items);
  return vh('P','pmo','Portofolio Program','Program transformasi berkelanjutan dan tematik beserta capaiannya.',`<button class="btn" data-act="tmpl">Template</button>`)+pmoTabs('portofolio')+portoAuditNote(items)+
@@ -2333,7 +2340,8 @@ function pPorto(){const P=per(),M=P.b,tw=P.lab;const seg=S.ui.seg||'';const PV=p
  <div class="kpi"><div class="l">Deliverable WBS ${S.ui.tahun}</div><div class="v">${audit.valid}<small>/ ${items.length} tervalidasi</small></div></div>
  <div class="kpi"><div class="l">Milestone 30 hari</div><div class="v">${up.length}</div><div class="d"><span class="chip c-bad">${late.length} terlambat</span></div></div>
  <div class="kpi"><div class="l">Risiko & isu terbuka</div><div class="v">${S.risks.filter(r=>r.st!=='Ditutup'&&riskVis(r)).length}</div></div></div>
- <div class="stk"><div style="display:flex;flex-direction:column;gap:14px;min-width:0">`+tbl('porto',{ent:'program',add:true,edit:true,del:true,addLabel:'Program Baru',wide:true,title:'Daftar Program',
+ <div class="porto-view-tabs" role="tablist" aria-label="Tampilan Portofolio">${[['daftar','Daftar Program'],['capaian','Capaian Program Transformasi'],['milestone','Milestone Mendatang']].map(([k,l])=>`<button type="button" role="tab" aria-selected="${portoTab===k}" class="porto-view-tab ${portoTab===k?'on':''}" data-act="portoTab" data-v="${k}">${l}</button>`).join('')}</div>`+
+ (portoTab==='daftar'?tbl('porto',{ent:'program',add:true,edit:true,del:true,addLabel:'Program Baru',wide:true,title:'Daftar Program',
   tools:`<div class="seg" role="group" aria-label="Jenis program">${[['','Semua'],['Berkelanjutan','Berkelanjutan'],['Tematik','Tematik']].map(([v,l])=>`<button data-seg="seg" data-v="${v}" class="${seg===v?'on':''}" aria-pressed="${seg===v}">${l}</button>`).join('')}</div>`,
   ph:'Cari kode, program, unit, atau status…',empty:'Tidak ada program sesuai filter. Gunakan Reset filter atau ubah kriteria.',
   canAdd:()=>lv('porto').includes('C'),canEdit:p=>canW('porto','U',p.uic),canDel:p=>canW('porto','D',p.uic)&&!S.wbs.some(w=>w.prog===p.akr),list:()=>S.programs,rows:()=>ps.filter(p=>portoMatch(p,items,M)),label:p=>p.kode,
@@ -2344,9 +2352,9 @@ function pPorto(){const P=per(),M=P.b,tw=P.lab;const seg=S.ui.seg||'';const PV=p
    {k:'_p',l:`Capaian ${S.ui.tahun}`,frm:false,r:p=>portoCap(p,items,M),x:p=>{const x=portoMetrics(p,items,M);return x.hasTarget?Math.round(x.cap*10)/10:''}},
    {k:'_ch',l:'Project Charter',frm:false,nosort:1,r:p=>chCell(p),x:p=>{const c=chCur(p.akr);return c?CHST[c.st][0]+' v'+c.ver:'Belum dibuat'}},
    {k:'_n',l:'Item WBS',frm:false,num:1,r:p=>`<a href="#pmo-wbs" data-act="gowbs" data-p="${p.akr}">${S.wbs.filter(w=>w.prog===p.akr&&!w.arsip).length}</a>`,x:p=>S.wbs.filter(w=>w.prog===p.akr).length},
-   {k:'status',l:'Status',t:'sel',o:['Inisiasi','On track','Perlu perhatian','Terlambat','Selesai','Arsip'],r:p=>portoStatus(p)},{k:'ket',l:'Latar belakang & tujuan',t:'ta',tbl:false}]})+`</div>
- <div style="display:flex;flex-direction:column;gap:14px;min-width:0">${pbChart(PV,items,M,tw,'Berkelanjutan')}${pbChart(PV,items,M,tw,'Tematik')}
- <div class="card"><div class="ch"><h3>Milestone Mendatang</h3><span class="r"><a class="btn sm" href="#pmo-milestone">Semua ›</a></span></div><div class="pad tl">${late.slice(0,3).map(w=>`<div class="it"><span class="dt" style="color:var(--bad)">${fmtD(w.f)}</span><div style="flex:1;min-width:0">${esc(short(deliv(w),55))}<div class="s"><span class="code">${w.k}</span> · ${chipSt('Terlambat')}</div></div></div>`).join('')}${up.slice(0,5).map(w=>`<div class="it"><span class="dt">${fmtD(w.f)}</span><div style="flex:1;min-width:0">${esc(short(deliv(w),55))}<div class="s"><span class="code">${w.k}</span> · ${esc(short(uicU(w),30))}</div></div></div>`).join('')||'<span class="s">Tidak ada.</span>'}</div></div></div></div>`}
+   {k:'status',l:'Status',t:'sel',o:['Inisiasi','On track','Perlu perhatian','Terlambat','Selesai','Arsip'],r:p=>portoStatus(p)},{k:'ket',l:'Latar belakang & tujuan',t:'ta',tbl:false}]}):'')+ (portoTab==='capaian'?`<div class="porto-progress-pane">${pbChart(PV,items,M,tw,'Semua')}</div>`:'')+
+ (portoTab==='milestone'?`<div class="card"><div class="ch"><h3>Milestone Mendatang</h3><span class="r"><a class="btn sm" href="#pmo-milestone">Semua ›</a></span></div><div class="pad tl">${late.slice(0,3).map(w=>`<div class="it"><span class="dt" style="color:var(--bad)">${fmtD(w.f)}</span><div style="flex:1;min-width:0">${esc(short(deliv(w),55))}<div class="s"><span class="code">${w.k}</span> · ${chipSt('Terlambat')}</div></div></div>`).join('')}${up.slice(0,5).map(w=>`<div class="it"><span class="dt">${fmtD(w.f)}</span><div style="flex:1;min-width:0">${esc(short(deliv(w),55))}<div class="s"><span class="code">${w.k}</span> · ${esc(short(uicU(w),30))}</div></div></div>`).join('')||'<span class="s">Tidak ada.</span>'}</div></div>`:'')}
+ACT.portoTab=el=>{const v=el.dataset.v;if(!['daftar','capaian','milestone'].includes(v))return;S.ui.portoTab=v;save();render()};
 ACT.gowbs=el=>{S.ui.prog=el.dataset.p;S.ui.wth='';S.ui.wst='';PG.wbs=0;save()};
 ACT.portoReset=()=>{S.ui.portoF={};S.ui.seg='';Q.porto='';PG.porto=0;save();render()};
 ACT.portoAdv=()=>{S.ui.portoAdvanced=!S.ui.portoAdvanced;save();render()};
@@ -3316,6 +3324,12 @@ document.addEventListener('change',async e=>{
  new MutationObserver(init).observe(document.body,{childList:true,subtree:true});addEventListener('resize',init);init()})();
 </script>
 <script>
-document.addEventListener('mouseover',function(e){const a=e.target.closest('a[href^="#"]');if(!a||a.hasAttribute('title'))return;const dest=a.getAttribute('href').slice(1);if(!dest||dest==='')return;const label=(a.textContent||'').replace(/\s+/g,' ').trim();a.title='Menuju '+(label&&label.length<48?label:dest.replace(/^(pmo|cmo)-/,'').replace(/-/g,' '));});
+/* Tooltip navigasi memakai tujuan menu, bukan teks tombol. */
+const DESTINASI_PMO={siklus:'Siklus Proyek',portofolio:'Portofolio',program:'Program',perencanaan:'Perencanaan - Dokumen Proyek',charter:'Perencanaan - Dokumen Proyek',wbsplan:'Perencanaan - WBS',wbs:'Pelaksanaan - WBS & Progres',bukti:'Pelaksanaan - Bukti Dukung',cr:'Pelaksanaan - Change Request',milestone:'Pemantauan - Milestone',risiko:'Pemantauan - Risiko & Isu',laporan:'Pemantauan - Capaian Triwulanan',narasi:'Pemantauan - Laporan Narasi',penutupan:'Penutupan Proyek',referensi:'Referensi Kode'};
+const DESTINASI_CMO={adp:'Perencanaan - Analisis Dampak Perubahan',rencana:'Perencanaan - Rencana Manajemen Perubahan',impl:'Implementasi Manajemen Perubahan',monev:'Monitoring dan Evaluasi',closing:'Penutupan Manajemen Perubahan'};
+function tujuanMenu(href){const dest=String(href||'').replace(/^#/,'');if(dest.startsWith('pmo-'))return DESTINASI_PMO[dest.slice(4)]||'PMO - '+dest.slice(4);if(dest.startsWith('cmo-'))return DESTINASI_CMO[dest.slice(4)]||'CMO - '+dest.slice(4);if(dest==='dashboard')return 'Dashboard Eksekutif';return ''}
+document.addEventListener('mouseover',function(e){const el=e.target.closest('a[href^="#"],button[data-act],button[data-seg]');if(!el)return;let h=el.getAttribute('href')||'';const action=el.dataset.act||'';if(!h){if(action==='gowbs')h='#pmo-wbs';else if(action==='pchipgo')h='#pmo-wbs';else if(action==='chopen')h='#pmo-perencanaan';else if(action==='portoTab'){el.title='Tampilkan tab '+(el.textContent||'').trim();return}else return}
+ const target=tujuanMenu(h);if(target)el.title='Menuju menu '+target;
+});
 </script>
 
