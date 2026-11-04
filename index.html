@@ -1981,9 +1981,7 @@ async function chPdf(c){try{toast('Menyiapkan PDF 4 halaman…');await chLib('ht
  for(let i=0;i<pages.length;i++){const box=document.createElement('div');box.style.cssText='position:fixed;left:-12000px;top:0;width:1123px;background:#fff;font-family:Arial,Helvetica,sans-serif;color:#152033;padding:0 0 14px';box.innerHTML=pages[i];document.body.appendChild(box);
   const cv=await html2canvas(box,{scale:2,backgroundColor:'#ffffff'});box.remove();let w=W-2*m,h=cv.height*w/cv.width;if(h>H-2*m){h=H-2*m;w=cv.width*h/cv.height}if(i)pdf.addPage();pdf.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',(W-w)/2,m,w,h)}
  chSaveBlob(pdf.output('blob'),chFn(c,'pdf'));log('Ekspor charter PDF',c.prog)}catch(e){toast(e.message||'Gagal membuat PDF.')}}
-function chDoc(c){const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Charter</title><style>@page Section1{size:841.9pt 595.3pt;mso-page-orientation:landscape;margin:28pt 28pt 28pt 28pt}div.Section1{page:Section1}body{font-family:Arial,sans-serif;color:#152033}</style></head><body><div class="Section1">${chDocPages(c).join('<br clear="all" style="page-break-before:always">')}</div><script>
-document.addEventListener('mouseover',function(e){const a=e.target.closest('a[href^="#"]');if(!a||a.hasAttribute('title'))return;const dest=a.getAttribute('href').slice(1);if(!dest||dest==='')return;const label=(a.textContent||'').replace(/\s+/g,' ').trim();a.title='Menuju '+(label&&label.length<48?label:dest.replace(/^(pmo|cmo)-/,'').replace(/-/g,' '));});
-</script>
+function chDoc(c){const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Charter</title><style>@page Section1{size:841.9pt 595.3pt;mso-page-orientation:landscape;margin:28pt 28pt 28pt 28pt}div.Section1{page:Section1}body{font-family:Arial,sans-serif;color:#152033}</style></head><body><div class="Section1">${chDocPages(c).join('<br clear="all" style="page-break-before:always">')}</div>
 </body></html>`;
  chSaveBlob(new Blob(['﻿',html],{type:'application/msword'}),chFn(c,'doc'));log('Ekspor charter Word',c.prog)}
 async function chPpt(c){
@@ -2213,7 +2211,7 @@ function pmoTabs(cur0){let cur=VIEW.startsWith('pmo-')?VIEW.slice(4):cur0;if(cur
 function viewPmo(tab){const f={charter:pCharter,siklus:pSiklus,portofolio:pPorto,program:pProgram,perencanaan:pPerencanaan,wbsplan:pWbs,wbs:pWbs,milestone:pMilestone,risiko:pRisiko,cr:pCr,bukti:pBukti,laporan:pLaporan,narasi:pNarasi,penutupan:pPenutupan,referensi:pRef}[tab];return f?f():''}
 /* --- Portofolio --- */
 function pbChart(PV,items,M,tw,jenis='Berkelanjutan'){
- const L=PV.filter(p=>p.jenis===jenis.map(p=>{const s=sumTR(items.filter(w=>w.prog===p.akr),M);const pItems=items.filter(w=>w.prog===p.akr);const has=!!s.a,missing=!pItems.length?'Belum ada WBS':pItems.every(w=>!(+w.w>0))?'Bobot WBS belum diisi':'Bulan target/bobot belum lengkap';const v=has?s.r/s.a*100:0,t=has?s.t/s.a*100:0,g=v-t;
+ const L=PV.filter(p=>p.jenis===jenis).map(p=>{const s=sumTR(items.filter(w=>w.prog===p.akr),M);const pItems=items.filter(w=>w.prog===p.akr);const has=!!s.a,missing=!pItems.length?'Belum ada WBS':pItems.every(w=>!(+w.w>0))?'Bobot WBS belum diisi':'Bulan target/bobot belum lengkap';const v=has?s.r/s.a*100:0,t=has?s.t/s.a*100:0,g=v-t;
   const st=!has?'na':s.t<=0?'na':g>=-0.05?'ok':g>=-10?'warn':'bad';return {p,s,has,missing,v:Math.min(v,100),vr:v,t:Math.min(t,100),tr:t,g,st}});
  const T=L.reduce((a,x)=>(a.r+=x.s.r,a.t+=x.s.t,a.a+=x.s.a,a),{r:0,t:0,a:0});
  const nOk=L.filter(x=>x.st==='ok').length,nLow=L.filter(x=>x.st==='warn'||x.st==='bad').length,nNA=L.filter(x=>x.st==='na').length;
@@ -2225,7 +2223,7 @@ function pbChart(PV,items,M,tw,jenis='Berkelanjutan'){
   <div class="pb-val"><b>${x.has&&x.s.t>0?pct(x.vr):'—'}</b>${x.has&&x.s.t>0?`<small class="pb-${x.st}">${x.st==='ok'?'✓ ':''}${fmtG(x.g)}</small>`:`<small>${esc(x.has?'Belum jatuh tempo':x.missing)}</small>`}</div></div>`).join('');
  function p_tt(x){return x.has?`${x.p.nama}\nRealisasi ${pct(x.vr)} · Target ${pct(x.tr)} (${fmtG(x.g)})`:x.p.nama+' — '+x.missing}
  return `<div class="card hfill pb-card"><div class="ch"><h3>Capaian Program ${jenis}</h3><span class="r s">s.d. ${tw}</span></div>
- <div class="pad">${L.length?`<div class="pb-sum"><div class="pb-big">${T.t>0?`<b>${pct(T.r/T.a*100)}</b><span>capaian gabungan<br>target ${pct(T.t/T.a*100)}</span>`:`<span>Belum ada item WBS bertarget<br>untuk program berkelanjutan.</span>`}</div>
+ <div class="pad">${L.length?`<div class="pb-sum"><div class="pb-big">${T.t>0?`<b>${pct(T.r/T.a*100)}</b><span>capaian gabungan<br>target ${pct(T.t/T.a*100)}</span>`:`<span>Belum ada item WBS bertarget<br>untuk program ${jenis.toLowerCase()}.</span>`}</div>
   <div class="pb-chips"><span class="pb-chip pb-ok"><i></i>${nOk} sesuai target</span><span class="pb-chip ${nLow?'pb-bad':'pb-mute'}"><i></i>${nLow} di bawah target</span>${nNA?`<span class="pb-chip pb-mute">${nNA} belum memiliki target periode</span>`:''}</div></div>
  <div class="pb-rows">${rows}</div>
  <div class="lgd pb-lgd"><span><i class="pb-sw"></i>Realisasi</span><span><i class="pb-tk"></i>Target s.d. ${tw}</span><span><i class="pb-dot pb-ok"></i>Sesuai</span><span><i class="pb-dot pb-warn"></i>Selisih ≤10 poin</span><span><i class="pb-dot pb-bad"></i>Selisih &gt;10 poin</span></div>`
@@ -3269,3 +3267,7 @@ document.addEventListener('change',async e=>{
  const init=()=>document.querySelectorAll('.ptabs,.wz-steps').forEach(t=>{if(!t.dataset.fe){t.dataset.fe=1;t.addEventListener('scroll',()=>upd(t),{passive:true});const on=t.querySelector('a.on,.wz-s.on');if(on&&t.scrollWidth>t.clientWidth){t.style.scrollBehavior='auto';t.scrollLeft=on.offsetLeft-(t.clientWidth-on.offsetWidth)/2;t.style.scrollBehavior=''}}upd(t)});
  new MutationObserver(init).observe(document.body,{childList:true,subtree:true});addEventListener('resize',init);init()})();
 </script>
+<script>
+document.addEventListener('mouseover',function(e){const a=e.target.closest('a[href^="#"]');if(!a||a.hasAttribute('title'))return;const dest=a.getAttribute('href').slice(1);if(!dest||dest==='')return;const label=(a.textContent||'').replace(/\s+/g,' ').trim();a.title='Menuju '+(label&&label.length<48?label:dest.replace(/^(pmo|cmo)-/,'').replace(/-/g,' '));});
+</script>
+
