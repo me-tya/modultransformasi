@@ -1456,7 +1456,7 @@ function resetFiltersOnLogin(){
   wcm:'',wth:'',wst:'',lvn:10,lvm:'sd',portoF:{},portoAdvanced:false,
   seg:'',crseg:'',mseg:'all',rf:'',rstatus:'',rrisk:'',
   cunit:'',crole:'',cpr:'all',cd1:'',cd2:'',cprog:'',cth:'',mod:'',
-  pgq:''
+  pgq:'',planYear:'all'
  });
  if(typeof PG!=='undefined')Object.keys(PG).forEach(k=>PG[k]=0);
 }
@@ -2017,7 +2017,7 @@ function fltBar(o={}){const P=per();const open=S.ui.fopen===1;const pv=progVis()
  ${o.umode?`<span class="fg pm-role"><label for="f-um">${lockU()?esc(lockU())+' sebagai':'Peran unit'}</label><select class="sel${act(umOf()!==umDef())}" id="f-um" data-on="umode" aria-label="Peran unit"${!curUnit()&&!(ME.unit&&UNITS.includes(ME.unit))?' disabled title="Pilih unit dulu"':''}>${opts([['up','Utama/Pendukung'],['u','UIC Utama'],['p','UIC Pendukung'],['ue','Cakupan UE I']],umOf())}</select></span>`:''}
  ${o.extra||''}</div></div></section>`}
 ACT.ftog=()=>{S.ui.fopen=S.ui.fopen===1?0:1;save();render()};
-ACT.freset=()=>{S.ui.prog='';S.ui.unit='';S.ui.pr='all';S.ui.umode='up';S.ui.umodeL='';S.ui.wcm='';S.ui.wth='';S.ui.wst='';S.ui.lvn=10;S.ui.lvm='sd';S.ui.portoF={};S.ui.seg='';S.ui.crseg='';S.ui.mseg='all';S.ui.rf='';S.ui.rstatus='';S.ui.rrisk='';Object.keys(PG).forEach(x=>PG[x]=0);save();render()};
+ACT.freset=()=>{S.ui.prog='';S.ui.unit='';S.ui.pr='all';S.ui.umode='up';S.ui.umodeL='';S.ui.wcm='';S.ui.wth='';S.ui.wst='';S.ui.lvn=10;S.ui.lvm='sd';S.ui.portoF={};S.ui.planYear='all';S.ui.seg='';S.ui.crseg='';S.ui.mseg='all';S.ui.rf='';S.ui.rstatus='';S.ui.rrisk='';Object.keys(PG).forEach(x=>PG[x]=0);save();render()};
 const twSel=()=>S.ui.tw||(S.ui.tw===0?0:4);
 function unitMatch(it,u,mode){if(!u)return true;mode=mode||'ue';if(mode==='ue')return it.ue.includes(u);const U=unitsOf(uicU(it)).includes(u),P=unitsOf(it.d).includes(u);return mode==='u'?U:mode==='p'?P:U||P}
 function wbsFilt(o={}){const y=S.ui.tahun,pr=S.ui.prog,u=curUnit();return S.wbs.filter(w=>!w.arsip&&yrOf(w)===y&&(!pr||w.prog===pr)&&unitMatch(w,u,o.mode))}
