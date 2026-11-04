@@ -916,6 +916,56 @@ table.ext td{font-size:12.5px;vertical-align:top;white-space:normal}
 .flt.fx2 .fg{min-width:0}
 @media(max-width:780px){.flt.fx2 .pm-fmore{flex:1 1 100%}}
 
+
+/* Hierarki program–proyek: identitas program navy; rincian proyek kontras dan ringkas. */
+.pm-program-list{display:flex;flex-direction:column;gap:16px}
+.pm-program-card{overflow:hidden;border:1px solid #BFCDE0;box-shadow:0 5px 16px rgba(11,36,71,.07)}
+.pm-program-head{display:flex;align-items:center;gap:12px;padding:15px 18px;background:linear-gradient(112deg,#102D56 0%,#174777 76%,#206095 100%);color:#fff}
+.pm-program-toggle{display:grid;place-items:center;width:34px;height:34px;border:1px solid rgba(255,255,255,.45);border-radius:10px;background:rgba(255,255,255,.12);color:#fff;cursor:pointer;flex:none}
+.pm-program-toggle:hover,.pm-program-toggle:focus-visible{background:rgba(255,255,255,.25)}
+.pm-program-chevron{font-size:26px;line-height:1;transition:transform .2s}
+.pm-program-toggle[aria-expanded=false] .pm-program-chevron{transform:rotate(-90deg)}
+.pm-program-identity{min-width:0;flex:1}
+.pm-program-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.pm-program-label{font-size:9px;font-weight:900;letter-spacing:1.25px;color:#FFE4A0}
+.pm-program-code{font-family:var(--mono);font-weight:800;font-size:11px;background:#FFF1C9;color:#18365D;padding:3px 8px;border-radius:5px}
+.pm-program-type{font-size:10.5px;border:1px solid rgba(255,255,255,.38);padding:2px 8px;border-radius:20px;color:#E2EEFF}
+.pm-program-identity h3{font-size:17px;line-height:1.3;color:#fff;margin:0;font-weight:800}
+.pm-program-sub{color:#C9DDF6;font-size:11.5px;margin-top:5px}
+.pm-program-sub b{color:#fff}
+.pm-program-aside{display:flex;flex-direction:column;align-items:flex-end;gap:9px;max-width:48%}
+.pm-program-indicators,.pm-program-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+.pm-program-count,.pm-program-progress{font-size:11px;font-weight:750;border-radius:20px;padding:4px 10px;background:rgba(255,255,255,.15);color:#fff}
+.pm-program-progress b{color:#FFE09B}
+.pm-program-actions .btn{border-color:rgba(255,255,255,.45);background:rgba(255,255,255,.96);color:#17385F}
+.pm-program-actions .btn:hover{background:#FFEBB0;border-color:#FFEBB0}
+.pm-program-detail[hidden]{display:none!important}
+.pm-program-detail{background:#F7F9FD;border-top:3px solid #E8B13C}
+.pm-program-detail-label{display:flex;justify-content:space-between;gap:12px;padding:9px 16px;background:#EAF1FA;color:#244D79;font-size:10.5px;font-weight:850;letter-spacing:.3px}
+.pm-project-table{width:100%;table-layout:fixed}
+.pm-project-table thead{background:#EDF2F9}
+.pm-project-table th{font-size:10.5px;color:#536781}
+.pm-project-table th:nth-child(1){width:45%}
+.pm-project-table th:nth-child(2){width:8%}
+.pm-project-table th:nth-child(3){width:17%}
+.pm-project-table th:nth-child(4){width:8%}
+.pm-project-table th:nth-child(5){width:15%}
+.pm-project-table th:nth-child(6){width:7%;white-space:normal}
+.pm-project-table td{padding:9px 12px;vertical-align:middle;overflow-wrap:anywhere}
+.pm-project-table td:first-child{border-left:4px solid #7EADDA;padding-left:12px}
+.pm-project-table tbody tr:nth-child(2n){background:#F7FAFF}
+.pm-project-table tbody tr:hover{background:#EAF3FF}
+.pm-project-table td strong{font-size:12.5px;color:#153459}
+.pm-project-table td .sm{font-size:11px;line-height:1.3}
+.pm-program-toolbar-inner{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.pm-program-search{flex:1;min-width:210px}
+.pm-program-check{display:flex;align-items:center;gap:8px;white-space:nowrap;font-weight:800;color:var(--navy);padding:8px 11px;background:#EEF4FB;border:1px solid #CAD9EB;border-radius:8px;cursor:pointer}
+.pm-program-check input{width:17px;height:17px;accent-color:#143C6A;cursor:pointer}
+.pm-program-total{font-size:11.5px;color:var(--ink-3);font-weight:750;white-space:nowrap}
+.pm-program-empty{padding:14px 18px;color:var(--ink-3);margin:0}
+@media(max-width:950px){.pm-program-head{align-items:flex-start;flex-wrap:wrap}.pm-program-aside{max-width:none;width:100%;align-items:flex-start;padding-left:46px}.pm-program-indicators,.pm-program-actions{justify-content:flex-start}.pm-project-table{table-layout:auto;min-width:0}.pm-project-table th:nth-child(n){width:auto}}
+@media(max-width:610px){.pm-program-head{padding:13px}.pm-program-identity h3{font-size:15px}.pm-program-aside{padding-left:0}.pm-program-check{white-space:normal}.pm-program-detail-label{flex-wrap:wrap}}
+
 </style>
 
 <div id="root"></div>
@@ -1500,6 +1550,7 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('input',e=>{const q=e.target.closest('[data-q]');if(q){Q[q.dataset.q]=q.value;PG[q.dataset.q]=0;redrawT(q.dataset.q)}});
 document.addEventListener('change',e=>{const t=e.target;
+ if(t.dataset.on==='pgall'){S.ui.pgCollapse=S.ui.pgCollapse||{};document.querySelectorAll('.pm-program-card[data-pg-code]').forEach(card=>{S.ui.pgCollapse[card.dataset.pgCode]=!t.checked});save();render();return}
  if(t.dataset.on==='adpimp'){const f=t.files[0];t.value='';if(f)adpImport(f);return}
  if(t.dataset.wsort){const id=t.dataset.wsort,[k,d]=t.value.split(':');S.ui.sort=S.ui.sort||{};S.ui.sort[id]=k?{k,d}:{k:'_none',d:''};PG[id]=0;save();redrawT(id);render();return}
  if(t.dataset.ps){S.ui.ps[t.dataset.ps]=+t.value;PG[t.dataset.ps]=0;save();redrawT(t.dataset.ps);return}
@@ -1832,6 +1883,7 @@ ACT.chok=el=>{const c=S.charters.find(x=>x.id===el.dataset.id);if(!c)return;moda
 ACT.chver=el=>{const c=S.charters.find(x=>x.id===el.dataset.id);if(!c)return;const n=JSON.parse(JSON.stringify(c));Object.assign(n,{id:uid(),ver:Math.max(...chList(c.prog).map(x=>x.ver))+1,tahun:S.ui.tahun,st:'Draft',log:[{st:'Draft',by:chBy(),at:TODAY}],doc:{link:''}});S.charters.push(n);log('Versi baru charter',c.prog+' v'+n.ver);save();CHD=null;S.ui.ched=n.id;S.ui.chws=0;S.ui.chsv='';chOpen(c.prog,n.id);toast(`Versi v${n.ver} dibuat sebagai Draft. Versi lama tetap berlaku sampai versi baru disahkan.`)};
 ACT.chdel=el=>{const c=S.charters.find(x=>x.id===el.dataset.id);if(!c||c.st!=='Draft')return;modal('Hapus draft charter',`<p style="margin:0">Draft charter <b>${esc(chJudul(c))}</b> v${c.ver} akan dihapus permanen.</p>`,'Hapus',()=>{S.charters=S.charters.filter(x=>x!==c);log('Hapus draft charter',c.prog+' v'+c.ver);if(S.ui.ched===c.id){S.ui.ched='';CHD=null}S.ui.chv='';save();render()},{okCls:'dng'})};
 ACT.pchipgo=el=>{S.ui.prog=el.dataset.v||'';save()};
+ACT.pgfold=el=>{const k=el.dataset.v;S.ui.pgCollapse=S.ui.pgCollapse||{};S.ui.pgCollapse[k]=!S.ui.pgCollapse[k];save();render()};
 ACT.chexp=el=>{const c=S.charters.find(x=>x.id===el.dataset.id);if(!c)return;const X=S.ui.chx||(S.ui.chx={kop:1,prog:0,ttd:0});
  const it=(k,bg,lab,t,sub)=>`<div class="it dm" data-m="${k}" role="menuitem"><i style="background:${bg};color:#fff;font-size:9.5px">${lab}</i><span><b>${t}</b><small>${sub}</small></span></div>`;
  const m=popMenu(el,`<div class="hd" style="display:flex;justify-content:space-between;gap:10px"><b>Ekspor charter</b><span>4 halaman · format resmi</span></div>${it('pdf','#BF3434','PDF','PDF','A4 lanskap, 4 halaman, siap ditandatangani')}${it('doc','#1F5FB8','DOC','Word (.doc)','4 halaman tabel yang masih bisa diedit')}${it('ppt','#C8571B','PPT','PowerPoint (.pptx)','4 slide 16:9 untuk paparan')}
@@ -2505,12 +2557,44 @@ function progProjects(p){const y=S.ui.tahun;const it=pmoScopedWbs().filter(w=>w.
  it.forEach(w=>{const k=w.p[2]||w.p[1]||'(tanpa kelompok)';(g[k]=g[k]||[]).push(w)});
  return Object.entries(g).map(([n,a])=>{let t=0,d=0;const u={};const sub=new Set();a.forEach(w=>{const b=+w.w||0;t+=b;if(doneAt(w,12)&&w.v)d+=b;const k=String(w.u||'').split(/[,(]/)[0].trim();if(k)u[k]=(u[k]||0)+1;if(w.p[3])sub.add(w.p[3])});
   const uic=Object.entries(u).sort((a,b)=>b[1]-a[1])[0];return {n,a,uic:uic?uic[0]:'—',pg:t?Math.round(d/t*100):0,late:a.filter(w=>stOf(w,12)==='Terlambat').length,sub:[...sub],s:a.reduce((m,w)=>!m||w.s<m?w.s:m,''),f:a.reduce((m,w)=>w.f>m?w.f:m,'')}})}
-function pProgram(){const PV=pmoProgramList();const q=(S.ui.pgq||'').toLowerCase();
- return vh('G','pmo','Program','Setiap program beserta proyek yang dikelola di dalamnya.')+pmoTabs('program')+
- `<div class="card"><div class="pad row" style="gap:8px;flex-wrap:wrap"><input class="inp" style="flex:1;min-width:220px" data-on="pgq" value="${esc(S.ui.pgq||'')}" placeholder="Cari program atau proyek"><span class="s">Proyek = kelompok WBS level 4 di setiap program, terbentuk otomatis dari impor WBS.</span></div></div>`+
- PV.map(p=>{const x=progStat(p);const P=progProjects(p).filter(r=>!q||(p.nama+' '+p.kode+' '+r.n).toLowerCase().includes(q));if(q&&!P.length&&!(p.nama+' '+p.kode).toLowerCase().includes(q))return '';
-  return `<div class="card pgc"><div class="ch"><span class="code">${esc(p.kode)}</span><h3>${esc(p.nama)}</h3><span class="s">${esc(p.jenis||'')} · ${esc(p.periode||'')} · UIC Utama ${esc(p.uic)}</span><span class="r row" style="gap:6px">${chipSt(p.status)}<span class="chip c-gray">Capaian WBS ${x.done}%</span><a class="btn sm" href="#pmo-charter" data-act="chopen" data-p="${p.akr}">Charter</a><a class="btn sm" href="#pmo-wbs" data-act="pchipgo" data-v="${p.akr}">WBS ›</a></span></div>
-  ${!P.length?`<p class="s pad" style="margin:0">Belum ada item WBS ${S.ui.tahun}. Proyek akan muncul otomatis setelah WBS diimpor di <a href="#pmo-wbsplan">Susun WBS</a>.</p>`:''}<div class="tscroll"${P.length?'':' hidden'}><table class="lap"><thead><tr><th>Proyek (WBS Lv 4)</th><th>UIC utama</th><th>Jadwal</th><th class="num">Item</th><th>Progres tervalidasi</th><th class="num">Terlambat</th></tr></thead><tbody>${P.map(r=>`<tr><td><b>${esc(r.n)}</b>${r.sub.length?`<span class="sm">${r.sub.length} sub-kelompok: ${esc(short(r.sub.slice(0,3).join(', '),80))}${r.sub.length>3?'…':''}</span>`:''}</td><td>${esc(r.uic)}</td><td class="s">${r.s?fmtD(r.s):'—'} – ${r.f?fmtD(r.f):'—'}</td><td class="num">${r.a.length}</td><td><div class="pg"><div class="bar"><i style="width:${r.pg}%;background:${r.pg===100?'var(--ok)':'var(--blue)'}"></i></div><b>${r.pg}%</b></div></td><td class="num">${r.late?`<span class="chip c-bad">${r.late}</span>`:'<span class="s">0</span>'}</td></tr>`).join('')||`<tr><td colspan="6" class="s">Belum ada item WBS ${S.ui.tahun}.</td></tr>`}</tbody></table></div></div>`}).join('')}
+function pProgram(){
+ const PV=pmoProgramList(),q=(S.ui.pgq||'').trim().toLowerCase(),collapsed=S.ui.pgCollapse||{};
+ const groups=PV.map(p=>({p,x:progStat(p),P:progProjects(p)})).filter(({p,P})=>!q||(p.nama+' '+p.kode+' '+(p.akr||'')+' '+P.map(r=>r.n+' '+r.uic).join(' ')).toLowerCase().includes(q));
+ const allOpen=groups.length>0&&groups.every(({p})=>!collapsed[p.akr]);
+ const totalProjects=groups.reduce((n,g)=>n+g.P.length,0);
+ const cards=groups.map(({p,x,P})=>{
+  const closed=!!collapsed[p.akr],id='pg-body-'+String(p.akr).replace(/[^a-zA-Z0-9_-]/g,'-');
+  return `<section class="card pgc pm-program-card" data-pg-code="${esc(p.akr)}" aria-label="Program ${esc(p.nama)}">
+   <div class="pm-program-head">
+    <button type="button" class="pm-program-toggle" data-act="pgfold" data-v="${esc(p.akr)}" aria-expanded="${!closed}" aria-controls="${id}" aria-label="${closed?'Perluas':'Ciutkan'} rincian proyek ${esc(p.nama)}" title="${closed?'Perluas':'Ciutkan'} rincian proyek">
+     <span class="pm-program-chevron" aria-hidden="true">⌄</span>
+    </button>
+    <div class="pm-program-identity">
+     <div class="pm-program-meta"><span class="pm-program-label">PROGRAM</span><span class="pm-program-code">${esc(p.kode)}</span><span class="pm-program-type">${esc(p.jenis||'Program')}</span></div>
+     <h3>${esc(p.nama)}</h3>
+     <div class="pm-program-sub">${esc(p.periode||'')} <span aria-hidden="true">·</span> UIC Utama: <b>${esc(p.uic||'—')}</b></div>
+    </div>
+    <div class="pm-program-aside">
+     <div class="pm-program-indicators">${chipSt(p.status)}<span class="pm-program-count">${P.length} proyek</span><span class="pm-program-progress">Capaian WBS <b>${x.done}%</b></span></div>
+     <div class="pm-program-actions"><a class="btn sm" href="#pmo-charter" data-act="chopen" data-p="${esc(p.akr)}">Lihat Charter</a><a class="btn sm" href="#pmo-wbs" data-act="pchipgo" data-v="${esc(p.akr)}">Lihat WBS ›</a></div>
+    </div>
+   </div>
+   <div class="pm-program-detail" id="${id}" ${closed?'hidden':''}>
+    ${!P.length?`<p class="pm-program-empty">Belum ada item WBS untuk tahun ${S.ui.tahun}. Rincian proyek muncul setelah WBS diimpor melalui <a href="#pmo-wbsplan">Susun WBS</a>.</p>`:
+    `<div class="pm-program-detail-label"><span>RINCIAN PROYEK</span><span>${P.length} proyek · WBS Level 4</span></div>
+     <div class="tscroll pm-project-scroll"><table class="lap pm-project-table"><thead><tr><th>Proyek (WBS Level 4)</th><th>UIC Utama</th><th>Jadwal</th><th class="num">Item WBS</th><th>Progres Tervalidasi</th><th class="num" title="Jumlah item WBS yang melewati batas waktu dan belum selesai">Item Terlambat</th></tr></thead>
+     <tbody>${P.map(r=>`<tr><td><strong>${esc(r.n)}</strong>${r.sub.length?`<span class="sm" title="${esc(r.sub.join(', '))}">${r.sub.length} subkelompok: ${esc(short(r.sub.slice(0,3).join(', '),80))}${r.sub.length>3?'…':''}</span>`:''}</td><td>${esc(r.uic)}</td><td class="s">${r.s?fmtD(r.s):'—'} – ${r.f?fmtD(r.f):'—'}</td><td class="num">${r.a.length}</td><td><div class="pg"><div class="bar"><i style="width:${r.pg}%;background:${r.pg===100?'var(--ok)':'var(--blue)'}"></i></div><b>${r.pg}%</b></div></td><td class="num">${r.late?`<span class="chip c-bad" title="${r.late} item WBS terlambat">${r.late}</span>`:'<span class="s">0</span>'}</td></tr>`).join('')}</tbody></table></div>`}
+   </div>
+  </section>`;
+ }).join('');
+ return vh('G','pmo','Program','Daftar program dan rincian proyek berdasarkan WBS Level 4.')+pmoTabs('program')+
+ `<div class="card pm-program-toolbar"><div class="pad pm-program-toolbar-inner">
+  <div class="pm-program-search"><label class="sr-only" for="pm-program-query">Cari program atau proyek</label><input id="pm-program-query" class="inp" data-on="pgq" value="${esc(S.ui.pgq||'')}" placeholder="Cari program atau proyek..." aria-label="Cari program atau proyek"></div>
+  <label class="pm-program-check"><input type="checkbox" data-on="pgall" ${allOpen?'checked':''} aria-label="Tampilkan rincian seluruh program yang ditampilkan"><span>Tampilkan Semua Rincian</span></label>
+  <span class="pm-program-total">${groups.length} program · ${totalProjects} proyek</span>
+ </div></div>`+
+ (groups.length?`<div class="pm-program-list">${cards}</div>`:'<div class="card"><div class="pad s">Tidak ada program atau proyek yang sesuai dengan pencarian dan filter.</div></div>');
+}
 /* --- Perencanaan: 7 dokumen proyek --- */
 function pPerencanaan(){const PV=pmoProgramList();const D=CHPG.map(x=>x[0]);
  return vh('C','pmo','Charter & Detail Proyek','Tujuh dokumen proyek per program sesuai Draft KEP Kepala BaTii, disusun pada T-1.')+pmoTabs('perencanaan')+
