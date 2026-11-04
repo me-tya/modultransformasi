@@ -1045,6 +1045,7 @@ button[aria-label*="Bantuan"]:hover,button[title*="Bantuan"]:hover,.help-icon:ho
 .one-table td{vertical-align:top;font-size:11.5px;max-width:250px;white-space:normal}
 .one-table td:nth-child(4){min-width:190px}
 .one-table td:nth-child(9){min-width:130px}
+.ov-filter-status{padding:8px 16px 14px;color:#546884;font-size:11.5px;border-top:1px solid #E5EAF2}.ov-filter-status b{color:#203E65}
 </style>
 
 <div id="root"></div>
@@ -2759,8 +2760,14 @@ const KWIDE_2026=[
 ];
 function pOverview(){
  const y=+S.ui.tahun,tab=['tw','kwide','tprog','ue'].includes(S.ui.overviewTab)?S.ui.overviewTab:'tw';
- const data=lapData(),num=n=>Number(n||0).toLocaleString('id-ID');
+ const P=per(),data=lapData(),num=n=>Number(n||0).toLocaleString('id-ID');
  const annual=sumTR(data.items,12),months=[3,6,9,12];
+ const periodQuarters=P.pr==='all'?[1,2,3,4]:P.pr==='r'?[1,2,3,4].filter(t=>t*3>=P.a&&(t-1)*3+1<=P.b):[+P.pr];
+ const periodLabel=P.pr==='all'?'Setahun':P.lab;
+ const quarterMeasure=t=>{const hi=t*3,lo=(t-1)*3+1,first=Math.max(lo,P.a),last=Math.min(hi,P.b);if(first>last)return null;
+  const total=sumTR(data.items,last),before=first>1?sumTR(data.items,first-1):{t:0,r:0};
+  return {t:total.t-before.t,r:total.r-before.r};};
+ const selectedMeasures=periodQuarters.map(t=>({t,v:quarterMeasure(t)})).filter(x=>x.v);
  const matrix=(title,entries)=>'<div class="card ov-matrix"><div class="ch"><h3>'+title+'</h3><span class="r s">Bobot WBS kumulatif</span></div><div class="tscroll"><table class="lap"><thead><tr><th>Program / unit</th>'+months.map((m,i)=>'<th class="num">TW '+(i+1)+'</th>').join('')+'<th class="num">Target tahunan</th><th class="num">Capaian tahunan</th></tr></thead><tbody>'+entries.map(e=>'<tr><td><b>'+esc(e.name)+'</b></td>'+e.tw.map(x=>'<td class="num"><b>'+(x.t?pct(x.r/x.t*100):'—')+'</b><span class="sm">'+num(x.r)+' / '+num(x.t)+'</span></td>').join('')+'<td class="num">'+num(e.a)+'</td><td class="num"><b>'+(e.a?pct(e.tw[Math.max(0,Math.min(3,curTwDone()-1))].r/e.a*100):'—')+'</b></td></tr>').join('')+'</tbody></table></div></div>';
  const tprog=data.prog.map(x=>({name:x.p.nama,tw:x.tw,a:x.a}));
  const ue=data.ue.map(x=>({name:x.u,tw:x.tw,a:x.a}));
@@ -2769,7 +2776,9 @@ function pOverview(){
  '<div class="note i">Indikator ini adalah <b>jumlah output IKU K-Wide</b> dari sheet Capaian K-Wide 2026, bukan persentase tertimbang WBS. Realisasi TW IV belum tercantum pada sumber.</div>'+
  '<div class="ov-kpi-grid">'+[1,2,3,4].map(t=>{const x=kSumm(t);return '<div class="ov-kpi"><small>TW '+t+' · Output IKU</small><strong>'+(t===4?'—':pct(x.real/x.target*100))+'</strong><span>'+ (t===4?'Realisasi belum tersedia':x.real+' dari '+x.target+' output')+'</span></div>'}).join('')+'</div>'+
  '<div class="card"><div class="ch"><h3>Matriks Target Output IKU K-Wide per Triwulan</h3><span class="r s">Sumber: Capaian K-Wide 2026</span></div><div class="tscroll"><table class="lap ov-kwide-table"><thead><tr><th>TW</th><th>Program Transformasi</th><th>Target output</th><th class="num">Target</th><th class="num">Realisasi</th><th class="num">Status</th></tr></thead><tbody>'+kv.map(x=>'<tr><td>TW '+x[0]+'</td><td><b>'+esc(x[1])+'</b></td><td>'+esc(x[4])+'</td><td class="num">'+num(x[2])+'</td><td class="num">'+(x[3]===null?'—':num(x[3]))+'</td><td class="num"><span class="chip '+(x[3]===null?'c-gray':x[3]>=x[2]?'c-ok':'c-bad')+'">'+(x[3]===null?'Belum tersedia':x[3]>=x[2]?'Tercapai':'Belum tercapai')+'</span></td></tr>').join('')+'</tbody></table></div></div>';
- const quarter='<div class="card"><div class="ch"><h3>Capaian per Triwulan</h3><span class="r s">Kumulatif sesuai sheet Capaian TW 1–3</span></div><div class="ov-qgrid">'+months.map((m,i)=>{const v=sumTR(data.items,m);return '<div class="ov-q"><small>TRIWULAN '+(i+1)+'</small><b>'+(v.t?pct(v.r/v.t*100):'—')+'</b><div class="bar"><i style="width:'+Math.min(100,v.t?v.r/v.t*100:0)+'%;background:var(--blue)"></i></div><span>'+num(v.r)+' realisasi / '+num(v.t)+' target</span></div>'}).join('')+'</div></div>';
+ const quarter='<div class="card"><div class="ch"><h3>Capaian per Triwulan</h3><span class="r s">'+esc(periodLabel)+' · '+S.ui.tahun+'</span></div>'+
+ '<div class="ov-qgrid">'+selectedMeasures.map(({t,v})=>'<div class="ov-q"><small>TRIWULAN '+t+(P.pr==='r'?' · sesuai rentang':'')+'</small><b>'+(v.t?pct(v.r/v.t*100):'—')+'</b><div class="bar"><i style="width:'+Math.min(100,v.t?v.r/v.t*100:0)+'%;background:var(--blue)"></i></div><span>'+num(v.r)+' realisasi / '+num(v.t)+' target</span></div>').join('')+'</div>'+
+ '<div class="ov-filter-status"><b>Filter aktif:</b> '+esc(S.ui.prog?progLabel(S.ui.prog):'Semua program')+' · '+esc(curUnit()||'Semua UE I')+' · '+esc(curUnit()?({'u':'UIC Utama','p':'UIC Pendukung','ue':'Cakupan UE I','up':'Utama/Pendukung'}[umOf()]||'Utama/Pendukung'):'Seluruh peran')+' · '+esc(periodLabel)+'</div></div>';
  return vh('O','pmo','Overview','Capaian per triwulan, K-Wide, T-Program, dan per UE I sesuai struktur workbook WBS.')+pmoTabs('siklus')+
  '<div class="ov-tabs" role="tablist" aria-label="Jenis capaian">'+[['tw','Capaian per Triwulan'],['kwide','Capaian K-Wide'],['tprog','Capaian T-Program'],['ue','Capaian per UE I']].map(([v,l])=>'<button type="button" data-act="ovTab" data-v="'+v+'" role="tab" aria-selected="'+(tab===v)+'" class="'+(tab===v?'on':'')+'">'+l+'</button>').join('')+'</div>'+
  (tab==='tw'?quarter+(data.items.length?'':'<div class="note w">WBS tahun ini belum tersedia di aplikasi. Impor sheet Kompilasi untuk mengisi capaian WBS.</div>'):
