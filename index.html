@@ -980,6 +980,16 @@ table.ext td{font-size:12.5px;vertical-align:top;white-space:normal}
 .pm-program-check{min-height:45px}.pm-program-search .inp{height:45px}
 @media(max-width:950px){.pm-program-toolbar-inner{grid-template-columns:1fr auto}.pm-program-total{grid-column:1 / -1}}
 @media(max-width:600px){.pm-program-toolbar-inner{grid-template-columns:1fr}.pm-program-check{justify-self:start}}
+/* Penyelarasan UI PMO November 2026 */
+.pm-program-toggle{width:36px;height:36px;border-radius:50%;background:var(--yellow);color:#142C4D;border:1px solid #F8CF58}
+.pm-program-toggle:hover,.pm-program-toggle:focus-visible{background:#fff;color:#D39500;border-color:var(--yellow);box-shadow:0 0 0 3px rgba(253,185,19,.18)}
+.pm-program-chevron{font-size:26px;font-weight:900;line-height:1}
+.ptabs,.subt{min-height:54px;scrollbar-gutter:stable}
+.ptabs a{min-width:104px}
+.chbc{min-height:22px}
+button[disabled]{cursor:not-allowed;opacity:.45}
+button[aria-label*="Bantuan"],button[title*="Bantuan"],.help-icon,.hint-icon{background:var(--yellow);color:#142C4D;border:1px solid var(--yellow);transition:background .16s,color .16s,box-shadow .16s}
+button[aria-label*="Bantuan"]:hover,button[title*="Bantuan"]:hover,.help-icon:hover,.hint-icon:hover{background:#fff;color:#C88A00;box-shadow:0 3px 12px rgba(253,185,19,.24)}
 </style>
 
 <div id="root"></div>
@@ -1964,7 +1974,10 @@ async function chPdf(c){try{toast('Menyiapkan PDF 4 halaman…');await chLib('ht
  for(let i=0;i<pages.length;i++){const box=document.createElement('div');box.style.cssText='position:fixed;left:-12000px;top:0;width:1123px;background:#fff;font-family:Arial,Helvetica,sans-serif;color:#152033;padding:0 0 14px';box.innerHTML=pages[i];document.body.appendChild(box);
   const cv=await html2canvas(box,{scale:2,backgroundColor:'#ffffff'});box.remove();let w=W-2*m,h=cv.height*w/cv.width;if(h>H-2*m){h=H-2*m;w=cv.width*h/cv.height}if(i)pdf.addPage();pdf.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',(W-w)/2,m,w,h)}
  chSaveBlob(pdf.output('blob'),chFn(c,'pdf'));log('Ekspor charter PDF',c.prog)}catch(e){toast(e.message||'Gagal membuat PDF.')}}
-function chDoc(c){const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Charter</title><style>@page Section1{size:841.9pt 595.3pt;mso-page-orientation:landscape;margin:28pt 28pt 28pt 28pt}div.Section1{page:Section1}body{font-family:Arial,sans-serif;color:#152033}</style></head><body><div class="Section1">${chDocPages(c).join('<br clear="all" style="page-break-before:always">')}</div></body></html>`;
+function chDoc(c){const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Charter</title><style>@page Section1{size:841.9pt 595.3pt;mso-page-orientation:landscape;margin:28pt 28pt 28pt 28pt}div.Section1{page:Section1}body{font-family:Arial,sans-serif;color:#152033}</style></head><body><div class="Section1">${chDocPages(c).join('<br clear="all" style="page-break-before:always">')}</div><script>
+document.addEventListener('mouseover',function(e){const a=e.target.closest('a[href^="#"]');if(!a||a.hasAttribute('title'))return;const dest=a.getAttribute('href').slice(1);if(!dest||dest==='')return;const label=(a.textContent||'').replace(/\s+/g,' ').trim();a.title='Menuju '+(label&&label.length<48?label:dest.replace(/^(pmo|cmo)-/,'').replace(/-/g,' '));});
+</script>
+</body></html>`;
  chSaveBlob(new Blob(['﻿',html],{type:'application/msword'}),chFn(c,'doc'));log('Ekspor charter Word',c.prog)}
 async function chPpt(c){
  try{
@@ -2109,8 +2122,8 @@ ACT.lapexp=()=>exportLaporan();
 /* ===== Satu komponen filter PMO lintas tab ===== */
 function pmoAllWbs(){return S.wbs.filter(w=>!w.arsip&&(VIEW==='pmo-wbsplan'&&S.ui.planYear!=='year'||yrOf(w)===S.ui.tahun))}
 function pmoScopedWbs(period=true){const P=per();return pmoAllWbs().filter(w=>(!S.ui.prog||w.prog===S.ui.prog)&&unitMatch(w,curUnit(),umOf())&&(!period||VIEW==='pmo-wbsplan'&&S.ui.planYear!=='year'||inP(w,P)))}
-function pmoProgramList(){const y=+S.ui.tahun,u=curUnit(),mode=umOf();return progVis().filter(p=>{
- if(S.ui.prog&&p.akr!==S.ui.prog)return false;
+function pmoProgramList(ignoreProgram=false){const y=+S.ui.tahun,u=curUnit(),mode=umOf();return progVis().filter(p=>{
+ if(!ignoreProgram&&S.ui.prog&&p.akr!==S.ui.prog)return false;
  const ys=String(p.periode||'').match(/20\d{2}/g)||[];
  const y0=+p.mulai||+(ys[0]||0),y1=+(ys[ys.length-1]||0)||y0;
  const inYear=(y0&&y>=y0&&y<=(y1||y0))||pmoAllWbs().some(w=>w.prog===p.akr);
@@ -2192,8 +2205,8 @@ function pmoTabs(cur0){let cur=VIEW.startsWith('pmo-')?VIEW.slice(4):cur0;if(cur
  return pmoFilterPanel(cur)+`<nav class="ptabs" aria-label="Tab PMO">${G.map(x=>{const n=x.g[2];const c=x.ks.length>1?gc(x):cnt[x.ks[0]];const tgt=x.ks.includes(cur)?cur:x.ks[0];return `<a href="#pmo-${tgt}" class="${x===on?'on':''}"><span>${n?`<em>${n}</em> `:''}${x.g[1]}</span>${c!==''&&c!=null&&+c>0?` <b>${c}</b>`:''}</a>`}).join('')}</nav>${sub}`}
 function viewPmo(tab){const f={charter:pCharter,siklus:pSiklus,portofolio:pPorto,program:pProgram,perencanaan:pPerencanaan,wbsplan:pWbs,wbs:pWbs,milestone:pMilestone,risiko:pRisiko,cr:pCr,bukti:pBukti,laporan:pLaporan,narasi:pNarasi,penutupan:pPenutupan,referensi:pRef}[tab];return f?f():''}
 /* --- Portofolio --- */
-function pbChart(PV,items,M,tw){
- const L=PV.filter(p=>p.jenis==='Berkelanjutan').map(p=>{const s=sumTR(items.filter(w=>w.prog===p.akr),M);const pItems=items.filter(w=>w.prog===p.akr);const has=!!s.a,missing=!pItems.length?'Belum ada WBS':pItems.every(w=>!(+w.w>0))?'Bobot WBS belum diisi':'Bulan target/bobot belum lengkap';const v=has?s.r/s.a*100:0,t=has?s.t/s.a*100:0,g=v-t;
+function pbChart(PV,items,M,tw,jenis='Berkelanjutan'){
+ const L=PV.filter(p=>p.jenis===jenis.map(p=>{const s=sumTR(items.filter(w=>w.prog===p.akr),M);const pItems=items.filter(w=>w.prog===p.akr);const has=!!s.a,missing=!pItems.length?'Belum ada WBS':pItems.every(w=>!(+w.w>0))?'Bobot WBS belum diisi':'Bulan target/bobot belum lengkap';const v=has?s.r/s.a*100:0,t=has?s.t/s.a*100:0,g=v-t;
   const st=!has?'na':s.t<=0?'na':g>=-0.05?'ok':g>=-10?'warn':'bad';return {p,s,has,missing,v:Math.min(v,100),vr:v,t:Math.min(t,100),tr:t,g,st}});
  const T=L.reduce((a,x)=>(a.r+=x.s.r,a.t+=x.s.t,a.a+=x.s.a,a),{r:0,t:0,a:0});
  const nOk=L.filter(x=>x.st==='ok').length,nLow=L.filter(x=>x.st==='warn'||x.st==='bad').length,nNA=L.filter(x=>x.st==='na').length;
@@ -2204,12 +2217,12 @@ function pbChart(PV,items,M,tw){
   <div class="pb-trk">${x.has?`<i class="pb-fill" style="--v:${x.v}%"></i><i class="pb-tgt" style="--t:${x.t}%"><em>${pct(x.tr)}</em></i>`:''}</div>
   <div class="pb-val"><b>${x.has&&x.s.t>0?pct(x.vr):'—'}</b>${x.has&&x.s.t>0?`<small class="pb-${x.st}">${x.st==='ok'?'✓ ':''}${fmtG(x.g)}</small>`:`<small>${esc(x.has?'Belum jatuh tempo':x.missing)}</small>`}</div></div>`).join('');
  function p_tt(x){return x.has?`${x.p.nama}\nRealisasi ${pct(x.vr)} · Target ${pct(x.tr)} (${fmtG(x.g)})`:x.p.nama+' — '+x.missing}
- return `<div class="card hfill pb-card"><div class="ch"><h3>Capaian Program Berkelanjutan</h3><span class="r s">s.d. ${tw}</span></div>
+ return `<div class="card hfill pb-card"><div class="ch"><h3>Capaian Program ${jenis}</h3><span class="r s">s.d. ${tw}</span></div>
  <div class="pad">${L.length?`<div class="pb-sum"><div class="pb-big">${T.t>0?`<b>${pct(T.r/T.a*100)}</b><span>capaian gabungan<br>target ${pct(T.t/T.a*100)}</span>`:`<span>Belum ada item WBS bertarget<br>untuk program berkelanjutan.</span>`}</div>
   <div class="pb-chips"><span class="pb-chip pb-ok"><i></i>${nOk} sesuai target</span><span class="pb-chip ${nLow?'pb-bad':'pb-mute'}"><i></i>${nLow} di bawah target</span>${nNA?`<span class="pb-chip pb-mute">${nNA} belum memiliki target periode</span>`:''}</div></div>
  <div class="pb-rows">${rows}</div>
  <div class="lgd pb-lgd"><span><i class="pb-sw"></i>Realisasi</span><span><i class="pb-tk"></i>Target s.d. ${tw}</span><span><i class="pb-dot pb-ok"></i>Sesuai</span><span><i class="pb-dot pb-warn"></i>Selisih ≤10 poin</span><span><i class="pb-dot pb-bad"></i>Selisih &gt;10 poin</span></div>`
- :'<div class="pb-empty">Belum ada program berkelanjutan pada tahun ini.</div>'}</div></div>`}
+ :'<div class="pb-empty">Belum ada program ${jenis.toLowerCase()} pada tahun ini.</div>'}</div></div>`}
 function portoMetrics(p,items,M){
  const yearItems=items.filter(w=>w.prog===p.akr),t=sumTR(yearItems,M);
  const allCount=S.wbs.filter(w=>!w.arsip&&w.prog===p.akr).length;
@@ -2258,8 +2271,8 @@ function portoFilterBar(ps,items,M){
 function portoStatus(p){const st=String(p.status||'—');return `<span class="chip c-${CHIP[st]||'gray'} porto-status" title="${esc(st)}">${st.split(/\s+/).map(esc).join('<br>')}</span>`}
 function portoCap(p,items,M){const x=portoMetrics(p,items,M);if(!x.hasTarget)return `<div class="porto-cap" title="Tidak ada bobot target WBS sampai periode ini"><small>Belum ada<br>target</small></div>`;
  const pct0=x.cap;return `<div class="porto-cap" title="Realisasi ${pct(pct0)} dari target tahunan, target kumulatif ${pct(x.t.t/x.t.a*100)}"><b>${pct(pct0)}</b><div class="bar" aria-label="Capaian ${pct(pct0)}"><i style="width:${Math.max(0,Math.min(100,pct0))}%;background:${x.t.r>=x.t.t?'var(--ok)':'var(--navy-2)'}"></i></div></div>`}
-function pPorto(){const P=per(),M=P.b,tw=P.lab;const seg=S.ui.seg||'';const PV=pmoProgramList();const ps=PV.filter(p=>!seg||p.jenis===seg);
- const items=S.wbs.filter(w=>!w.arsip&&yrOf(w)===S.ui.tahun&&(!S.ui.prog||w.prog===S.ui.prog)&&unitMatch(w,curUnit(),umOf()));const tot=sumTR(items,M);
+function pPorto(){const P=per(),M=P.b,tw=P.lab;const seg=S.ui.seg||'';const PV=pmoProgramList(true);const ps=PV.filter(p=>!seg||p.jenis===seg);
+ const items=S.wbs.filter(w=>!w.arsip&&yrOf(w)===S.ui.tahun&&unitMatch(w,curUnit(),umOf()));const tot=sumTR(items,M);
  const up=items.filter(w=>!doneAt(w,12)&&w.f>=TODAY&&w.f<=addDays(TODAY,30)).sort((a,b)=>a.f<b.f?-1:1);const late=items.filter(w=>stOf(w,12)==='Terlambat').sort((a,b)=>a.f<b.f?-1:1);const audit=portoAudit(items);
  return vh('P','pmo','Portofolio Program','Program transformasi berkelanjutan dan tematik beserta capaiannya.',`<button class="btn" data-act="tmpl">Template</button>`)+pmoTabs('portofolio')+portoAuditNote(items)+
  `<div class="kpis"><div class="kpi dk"><div class="l">Total program${lockU()?' · '+esc(lockU()):''}</div><div class="v">${PV.length}</div><div class="d">${PV.filter(p=>p.jenis==='Berkelanjutan').length} berkelanjutan · ${PV.filter(p=>p.jenis==='Tematik').length} tematik</div></div>
@@ -2279,7 +2292,7 @@ function pPorto(){const P=per(),M=P.b,tw=P.lab;const seg=S.ui.seg||'';const PV=p
    {k:'_ch',l:'Project Charter',frm:false,nosort:1,r:p=>chCell(p),x:p=>{const c=chCur(p.akr);return c?CHST[c.st][0]+' v'+c.ver:'Belum dibuat'}},
    {k:'_n',l:'Item WBS',frm:false,num:1,r:p=>`<a href="#pmo-wbs" data-act="gowbs" data-p="${p.akr}">${S.wbs.filter(w=>w.prog===p.akr&&!w.arsip).length}</a>`,x:p=>S.wbs.filter(w=>w.prog===p.akr).length},
    {k:'status',l:'Status',t:'sel',o:['Inisiasi','On track','Perlu perhatian','Terlambat','Selesai','Arsip'],r:p=>portoStatus(p)},{k:'ket',l:'Latar belakang & tujuan',t:'ta',tbl:false}]})+`</div>
- <div style="display:flex;flex-direction:column;gap:14px;min-width:0">${pbChart(PV,items,M,tw)}
+ <div style="display:flex;flex-direction:column;gap:14px;min-width:0">${pbChart(PV,items,M,tw,'Berkelanjutan')}${pbChart(PV,items,M,tw,'Tematik')}
  <div class="card"><div class="ch"><h3>Milestone Mendatang</h3><span class="r"><a class="btn sm" href="#pmo-milestone">Semua ›</a></span></div><div class="pad tl">${late.slice(0,3).map(w=>`<div class="it"><span class="dt" style="color:var(--bad)">${fmtD(w.f)}</span><div style="flex:1;min-width:0">${esc(short(deliv(w),55))}<div class="s"><span class="code">${w.k}</span> · ${chipSt('Terlambat')}</div></div></div>`).join('')}${up.slice(0,5).map(w=>`<div class="it"><span class="dt">${fmtD(w.f)}</span><div style="flex:1;min-width:0">${esc(short(deliv(w),55))}<div class="s"><span class="code">${w.k}</span> · ${esc(short(uicU(w),30))}</div></div></div>`).join('')||'<span class="s">Tidak ada.</span>'}</div></div></div></div>`}
 ACT.gowbs=el=>{S.ui.prog=el.dataset.p;S.ui.wth='';S.ui.wst='';PG.wbs=0;save()};
 ACT.portoReset=()=>{S.ui.portoF={};S.ui.seg='';Q.porto='';PG.porto=0;save();render()};
@@ -2307,7 +2320,7 @@ function pWbs(){const P=per(),M=P.b,tw=P.tw;const rows=wbsRows();const yearlyRow
   sx:w=>w.k+' '+w.p.join(' ')+' '+w.u+' '+w.d+' '+w.j,list:()=>S.wbs,rows:()=>wbsRows(),label:w=>w.k,open:w=>wbsDetail(w),sortDef:{k:'k',d:'asc'},
   tools:`<label class="s" style="display:flex;align-items:center;gap:6px;white-space:nowrap">Urutkan <select class="wsort" data-wsort="wbs" aria-label="Urutkan">${opts([['','Urutan data asli'],['k:asc','Kode naik (CORE-1, CORE-2, …)'],['k:desc','Kode turun'],['deliv:asc','Deliverable A–Z'],['jadwal:asc','Tanggal selesai terdekat'],['jadwal:desc','Tanggal selesai terjauh'],['w:desc','Bobot terbesar'],['_tw:asc','Triwulan TW 1 → TW 4'],['_s:asc','Status'],['u:asc','UIC Utama A–Z']],sortVal('wbs'))}</select></label>`,
   canEdit:w=>lv('wbs').includes('C')&&canW('wbs','U',uicU(w),w),canDel:w=>lv('wbs').includes('D')&&canW('wbs','D',uicU(w),w),onDel:w=>{w.arsip=true},
-  rowAct:w=>`${!doneAt(w,12)&&canW('wbs','U',uicU(w),w)?(hasBukti(w)?`<button title="Tandai 100%" data-act="done100" data-k="${w.k}">✓</button>`:`<button title="Unggah bukti dukung dulu, lalu tandai 100%" data-act="msbukti" data-k="${w.k}">📎</button>`):''}`,
+  rowAct:w=>`${!doneAt(w,12)&&canW('wbs','U',uicU(w),w)?(hasBukti(w)?`<button title="Tandai 100%" data-act="done100" data-k="${w.k}">✓</button>`:`<button title="Unggah bukti dukung terlebih dahulu" disabled aria-disabled="true" data-k="${w.k}">✓</button>`):''}`,
   exp:rows=>xlsxSave(rows.map(kompRow),`WBS_Kompilasi_${TODAY}.xlsx`,'Kompilasi'),
   foot:all=>{const x=sumP(all,P);return `<span>Σ target periode ${rp(x.t)} · realisasi ${rp(x.r)} poin</span>`},
   cols:[{k:'k',l:'Kode',req:true,ro:false,r:w=>`<span class="code">${esc(w.k)}</span>`},
