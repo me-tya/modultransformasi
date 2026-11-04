@@ -1371,7 +1371,7 @@ function perSeg(key,cur){const L=[['all','Setahun'],['1','TW 1'],['2','TW 2'],['
 ACT.fclr=el=>{const k=el.dataset.k,v=el.dataset.v;S.ui[k]=v;if(k==='lvn'){S.ui.lvn=10;S.ui.lvm='sd'}if(k==='unit'){S.ui.umode='up'}if(k==='cunit'){S.ui.crole='';S.ui.mod=''}Object.keys(PG).forEach(x=>PG[x]=0);save();render()};
 function fltBar(o={}){const P=per();const open=S.ui.fopen!==0;const pv=progVis();const act=c=>c?' act':'';
  const isW=VIEW==='pmo-wbs';const UML={up:'utama/pendukung',u:'UIC Utama',p:'UIC Pendukung',ue:'cakupan UE I'};const lvn=S.ui.lvn||10,lvm=S.ui.lvm||'sd';
- const chips=[`Tahun ${S.ui.tahun}`,(P.pr||'3')!=='3'?{t:P.pr==='all'?'Setahun':P.lab,k:'pr',v:'3'}:P.lab,S.ui.prog?{t:progLabel(S.ui.prog),k:'prog'}:'Semua program',
+ const chips=[`Tahun ${S.ui.tahun}`,(P.pr||'all')!=='all'?{t:P.lab,k:'pr',v:'all'}:'Setahun',S.ui.prog?{t:progLabel(S.ui.prog),k:'prog'}:'Semua program',
   lockU()?`${lockU()} (unit Anda)`:(S.ui.unit?{t:S.ui.unit,k:'unit'}:'Semua UE I'),
   ...(o.umode&&curUnit()?[umOf()!==umDef()?{t:'sebagai '+UML[umOf()],k:lockU()?'umodeL':'umode',v:lockU()?'':'up'}:'sebagai '+UML[umOf()]]:[]),
   ...(isW&&S.ui.wth?[{t:'Tahapan: '+tahapLab(S.ui.wth),k:'wth'}]:[]),...(isW&&(lvn!=10||lvm!=='sd')?[{t:(lvm==='eq'?'Hanya Lv ':'s.d. Lv ')+lvn,k:'lvn'}]:[]),...(isW&&S.ui.wst?[{t:'Status: '+S.ui.wst,k:'wst'}]:[])];
@@ -1379,14 +1379,14 @@ function fltBar(o={}){const P=per();const open=S.ui.fopen!==0;const pv=progVis()
  return `<section class="flt fx2${open?' open':''}" aria-label="Filter">${fltHead(open,'Filter',chips,nAct,'<button class="freset" data-act="freset">↺ Atur ulang</button>',o.res)}
  <div class="fbar"${open?'':' hidden'}>
  <span class="fg"><label for="f-th">Tahun</label><select class="sel" id="f-th" data-on="tahun">${yearsOpt().map(y=>`<option ${S.ui.tahun==y?'selected':''}>${y}</option>`).join('')}</select></span>
- ${perSeg('pr',P.pr||'3')}
+ ${perSeg('pr',P.pr||'all')}
  ${P.pr==='r'?`<span class="fg"><label for="f-d1">Dari</label><input type="date" class="sel act" id="f-d1" data-on="d1" value="${P.d1}"></span><span class="fg"><label for="f-d2">s.d.</label><input type="date" class="sel act" id="f-d2" data-on="d2" value="${P.d2}"></span>`:''}
  <span class="fg w2"><label for="f-pr">Program</label><select class="sel${act(S.ui.prog)}" id="f-pr" data-on="prog"><option value="">Semua program</option>${pv.map(p=>`<option value="${p.akr}" ${S.ui.prog===p.akr?'selected':''}>${p.kode} · ${esc(p.nama)}</option>`).join('')}</select></span>
  ${lockU()?'':`<span class="fg"><label for="f-un">Unit</label><select class="sel${act(S.ui.unit)}" id="f-un" data-on="unit"><option value="">Semua UE I</option>${(UNITS.includes(ME.unit)?[ME.unit,...UNITS.filter(x=>x!==ME.unit)]:UNITS).map(u=>`<option value="${u}" ${curUnit()===u?'selected':''}>${u}${u===ME.unit?' (unit Anda)':''}</option>`).join('')}</select></span>`}
  ${o.umode?`<span class="fg"><label for="f-um">${lockU()?esc(lockU())+' sebagai':'Peran unit'}</label><select class="sel${act(umOf()!==umDef())}" id="f-um" data-on="umode" aria-label="Peran unit"${!curUnit()&&!(ME.unit&&UNITS.includes(ME.unit))?' disabled title="Pilih unit dulu"':''}>${opts([['up','Utama/Pendukung'],['u','UIC Utama'],['p','UIC Pendukung'],['ue','Cakupan UE I']],umOf())}</select></span>`:''}
  ${o.extra||''}</div></div></section>`}
 ACT.ftog=()=>{S.ui.fopen=S.ui.fopen===0?1:0;save();render()};
-ACT.freset=()=>{S.ui.prog='';S.ui.unit='';S.ui.pr='3';S.ui.umode='up';S.ui.umodeL='';S.ui.wcm='';S.ui.wth='';S.ui.wst='';S.ui.lvn=10;S.ui.lvm='sd';Object.keys(PG).forEach(x=>PG[x]=0);save();render()};
+ACT.freset=()=>{S.ui.prog='';S.ui.unit='';S.ui.pr='all';S.ui.umode='up';S.ui.umodeL='';S.ui.wcm='';S.ui.wth='';S.ui.wst='';S.ui.lvn=10;S.ui.lvm='sd';Object.keys(PG).forEach(x=>PG[x]=0);save();render()};
 const twSel=()=>S.ui.tw||(S.ui.tw===0?0:4);
 function unitMatch(it,u,mode){if(!u)return true;mode=mode||'ue';if(mode==='ue')return it.ue.includes(u);const U=unitsOf(uicU(it)).includes(u),P=unitsOf(it.d).includes(u);return mode==='u'?U:mode==='p'?P:U||P}
 function wbsFilt(o={}){const y=S.ui.tahun,pr=S.ui.prog,u=curUnit();return S.wbs.filter(w=>!w.arsip&&yrOf(w)===y&&(!pr||w.prog===pr)&&unitMatch(w,u,o.mode))}
@@ -1410,7 +1410,7 @@ function viewHome(tk){const h=new Date().getHours();const salam=h<11?'Selamat pa
 
 /* ======================== DASHBOARD EKSEKUTIF ======================== */
 function perTW(n){const y=S.ui.tahun;return {a:n*3-2,b:n*3,d1:`${y}-${String(n*3-2).padStart(2,'0')}-01`,d2:twEnd(y,n),lab:'TW '+n,pr:String(n),tw:n}}
-function per(){const y=S.ui.tahun;const pr=S.ui.pr||'3';
+function per(){const y=S.ui.tahun;if(S.ui.prd!==2){S.ui.prd=2;if(!S.ui.pr||S.ui.pr==='3')S.ui.pr='all'}/* default periode: Setahun (migrasi sekali dari default lama TW 3) */const pr=S.ui.pr||'all';
  if(pr==='all')return {a:1,b:12,d1:`${y}-01-01`,d2:`${y}-12-31`,lab:'Tahun '+y,pr};
  if(pr==='r'){let d1=S.ui.d1||`${y}-01-01`,d2=S.ui.d2||(TODAY.slice(0,4)==String(y)?TODAY:`${y}-12-31`);if(d2<d1)[d1,d2]=[d2,d1];return {a:+d1.slice(5,7),b:+d2.slice(5,7),d1,d2,lab:`${fmtD(d1)} – ${fmtD(d2)}`,pr}}
  return perTW(+pr)}
