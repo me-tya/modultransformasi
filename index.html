@@ -1017,6 +1017,14 @@ button[aria-label*="Bantuan"]:hover,button[title*="Bantuan"]:hover,.help-icon:ho
 .pm-program-toggle:hover{background:#fff;border-color:#FDB913;color:#C28C0A;box-shadow:0 4px 12px rgba(253,185,19,.22)}
 .flt .lhint{width:19px;height:19px;font-size:11px;background:#FDB913;color:#15345B;border:1px solid #DB9D06;box-shadow:0 2px 5px rgba(253,185,19,.15);transition:all .15s ease}
 .flt .lhint:hover{background:#fff;color:#C28C0A;border-color:#FDB913;box-shadow:0 4px 12px rgba(253,185,19,.25)}
+
+/* Hirarki program - proyek - subproyek */
+.pm-sub-tree{margin-top:7px;font-size:11px;max-width:530px;color:#37557D}
+.pm-sub-tree summary{cursor:pointer;display:list-item;font-weight:750;color:#15539B;list-style:disclosure-closed;outline-offset:2px}
+.pm-sub-tree[open] summary{list-style:disclosure-open}
+.pm-sub-tree ul{margin:7px 0 1px;padding-left:17px;list-style:none;border-left:2px solid #FDB913}
+.pm-sub-tree li{display:flex;justify-content:space-between;gap:10px;padding:5px 7px;border-bottom:1px solid #E7EBF1;font-size:11px}
+.pm-sub-tree li b{white-space:nowrap;color:#475F84;font-size:10px}
 </style>
 
 <div id="root"></div>
@@ -2040,7 +2048,7 @@ async function chPdf(c){try{toast('Menyiapkan PDF 4 halaman…');await chLib('ht
   const cv=await html2canvas(box,{scale:2,backgroundColor:'#ffffff'});box.remove();let w=W-2*m,h=cv.height*w/cv.width;if(h>H-2*m){h=H-2*m;w=cv.width*h/cv.height}if(i)pdf.addPage();pdf.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',(W-w)/2,m,w,h)}
  chSaveBlob(pdf.output('blob'),chFn(c,'pdf'));log('Ekspor charter PDF',c.prog)}catch(e){toast(e.message||'Gagal membuat PDF.')}}
 function chDoc(c){const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Charter</title><style>@page Section1{size:841.9pt 595.3pt;mso-page-orientation:landscape;margin:28pt 28pt 28pt 28pt}div.Section1{page:Section1}body{font-family:Arial,sans-serif;color:#152033}</style></head><body><div class="Section1">${chDocPages(c).join('<br clear="all" style="page-break-before:always">')}</div>
-</body></html>`;
+<script>document.addEventListener('click',e=>{if(e.target.closest('.pm-sub-tree'))e.stopPropagation()},true);</script></body></html>`;
  chSaveBlob(new Blob(['﻿',html],{type:'application/msword'}),chFn(c,'doc'));log('Ekspor charter Word',c.prog)}
 async function chPpt(c){
  try{
@@ -2659,10 +2667,21 @@ function pSiklus(){const PV=pmoProgramList();const st=PV.map(p=>({p,x:progStat(p
  <div class="sk-board">${PSTG.map(([k,l,n,c])=>{const a=st.filter(z=>z.x.stage===k);return `<section class="sk-col"><header style="border-top-color:${c}"><span><em>${n}</em> ${l}</span><span class="chip c-gray">${a.length}</span></header>${a.map(card).join('')||'<span class="s" style="padding:8px">Tidak ada program.</span>'}</section>`}).join('')}</div>
  <p class="s" style="margin:0">Tahap ditentukan otomatis: charter belum disahkan → Perencanaan; charter disahkan → Pelaksanaan &amp; pemantauan; seluruh item WBS tervalidasi atau status program Selesai → Penutupan.</p>`}
 /* --- Program & proyek (diturunkan dari WBS Lv 4) --- */
-function progProjects(p){const y=S.ui.tahun;const it=pmoScopedWbs().filter(w=>w.prog===p.akr);const g={};
- it.forEach(w=>{const k=w.p[2]||w.p[1]||'(tanpa kelompok)';(g[k]=g[k]||[]).push(w)});
- return Object.entries(g).map(([n,a])=>{let t=0,d=0;const u={};const sub=new Set();a.forEach(w=>{const b=+w.w||0;t+=b;if(doneAt(w,12)&&w.v)d+=b;const k=String(w.u||'').split(/[,(]/)[0].trim();if(k)u[k]=(u[k]||0)+1;if(w.p[3])sub.add(w.p[3])});
-  const uic=Object.entries(u).sort((a,b)=>b[1]-a[1])[0];return {n,a,uic:uic?uic[0]:'—',pg:t?Math.round(d/t*100):0,late:a.filter(w=>stOf(w,12)==='Terlambat').length,sub:[...sub],s:a.reduce((m,w)=>!m||w.s<m?w.s:m,''),f:a.reduce((m,w)=>w.f>m?w.f:m,'')}})}
+function progProjects(p){
+ const it=pmoScopedWbs().filter(w=>w.prog===p.akr),g={};
+ it.forEach(w=>{
+   const coreModule=p.akr==='CORE'&&/pengembangan integrated core system apbn kemenkeu/i.test(w.p[2]||'')&&w.p[3];
+   const name=coreModule?w.p[3]:(w.p[2]||w.p[1]||'(tanpa kelompok)');
+   const sub=coreModule?(w.p[4]||w.p[5]||''):(w.p[3]||'');
+   const ent=g[name]||(g[name]={a:[],subs:{}});
+   ent.a.push(w);if(sub&&sub!==name)(ent.subs[sub]=ent.subs[sub]||[]).push(w);
+ });
+ return Object.entries(g).map(([n,v])=>{
+  const a=v.a;let t=0,d=0;const u={};a.forEach(w=>{const b=+w.w||0;t+=b;if(doneAt(w,12)&&w.v)d+=b;const k=String(w.u||'').split(/[,(]/)[0].trim();if(k)u[k]=(u[k]||0)+1});
+  const uic=Object.entries(u).sort((a,b)=>b[1]-a[1])[0];
+  return {n,a,uic:uic?uic[0]:'—',pg:t?Math.round(d/t*100):0,late:a.filter(w=>stOf(w,12)==='Terlambat').length,sub:Object.keys(v.subs),subItems:Object.entries(v.subs).map(([name,rows])=>({name,count:rows.length})),s:a.reduce((m,w)=>!m||w.s<m?w.s:m,''),f:a.reduce((m,w)=>w.f>m?w.f:m,'')};
+ });
+}
 function pProgram(){
  const PV=pmoProgramList(),q=(S.ui.pgq||'').trim().toLowerCase();
  // Tampilan awal ringkas: rincian proyek tetap dapat dibuka per program atau sekaligus.
@@ -2692,7 +2711,7 @@ function pProgram(){
     ${!P.length?`<p class="pm-program-empty">Belum ada item WBS untuk tahun ${S.ui.tahun}. Rincian proyek muncul setelah WBS diimpor melalui <a href="#pmo-wbsplan">Susun WBS</a>.</p>`:
     `<div class="pm-program-detail-label"><span>RINCIAN PROYEK</span><span>${P.length} proyek · WBS Level 4</span></div>
      <div class="tscroll pm-project-scroll"><table class="lap pm-project-table"><thead><tr><th>Proyek (WBS Level 4)</th><th>UIC Utama</th><th>Jadwal</th><th class="num">Item WBS</th><th>Progres Tervalidasi</th><th class="num" title="Jumlah item WBS yang melewati batas waktu dan belum selesai">Item Terlambat</th></tr></thead>
-     <tbody>${P.map(r=>`<tr class="pm-project-click" data-prog="${esc(p.akr)}" data-project="${esc(r.n)}" tabindex="0" role="button" title="Klik untuk melihat item WBS proyek ini"><td><strong>${esc(r.n)}</strong>${r.sub.length?`<span class="sm" title="${esc(r.sub.join(', '))}">${r.sub.length} subkelompok: ${esc(r.sub.join(', '))}</span>`:''}</td><td>${esc(r.uic)}</td><td class="s">${r.s?fmtD(r.s):'—'} – ${r.f?fmtD(r.f):'—'}</td><td class="num">${r.a.length}</td><td><div class="pg"><div class="bar"><i style="width:${r.pg}%;background:${r.pg===100?'var(--ok)':'var(--blue)'}"></i></div><b>${r.pg}%</b></div></td><td class="num">${r.late?`<span class="chip c-bad" title="${r.late} item WBS terlambat">${r.late}</span>`:'<span class="s">0</span>'}</td></tr>`).join('')}</tbody></table></div>`}
+     <tbody>${P.map(r=>`<tr class="pm-project-click" data-prog="${esc(p.akr)}" data-project="${esc(r.n)}" tabindex="0" role="button" title="Klik untuk melihat item WBS proyek ini"><td><strong>${esc(r.n)}</strong>${r.subItems&&r.subItems.length?`<details class="pm-sub-tree"><summary>${r.subItems.length} subproyek · lihat rincian</summary><ul>${r.subItems.map(x=>`<li><span>${esc(x.name)}</span><b>${x.count} WBS</b></li>`).join('')}</ul></details>`:''}</td><td>${esc(r.uic)}</td><td class="s">${r.s?fmtD(r.s):'—'} – ${r.f?fmtD(r.f):'—'}</td><td class="num">${r.a.length}</td><td><div class="pg"><div class="bar"><i style="width:${r.pg}%;background:${r.pg===100?'var(--ok)':'var(--blue)'}"></i></div><b>${r.pg}%</b></div></td><td class="num">${r.late?`<span class="chip c-bad" title="${r.late} item WBS terlambat">${r.late}</span>`:'<span class="s">0</span>'}</td></tr>`).join('')}</tbody></table></div>`}
    </div>
   </section>`;
  }).join('');
