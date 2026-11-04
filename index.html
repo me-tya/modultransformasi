@@ -1,3 +1,4 @@
+<!-- PMO Program UI build 2026-11-04: hierarki program, rincian dapat diperluas/diciutkan, tampilan awal ringkas. -->
 <title>Modul Transformasi Kemenkeu</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2558,7 +2559,10 @@ function progProjects(p){const y=S.ui.tahun;const it=pmoScopedWbs().filter(w=>w.
  return Object.entries(g).map(([n,a])=>{let t=0,d=0;const u={};const sub=new Set();a.forEach(w=>{const b=+w.w||0;t+=b;if(doneAt(w,12)&&w.v)d+=b;const k=String(w.u||'').split(/[,(]/)[0].trim();if(k)u[k]=(u[k]||0)+1;if(w.p[3])sub.add(w.p[3])});
   const uic=Object.entries(u).sort((a,b)=>b[1]-a[1])[0];return {n,a,uic:uic?uic[0]:'—',pg:t?Math.round(d/t*100):0,late:a.filter(w=>stOf(w,12)==='Terlambat').length,sub:[...sub],s:a.reduce((m,w)=>!m||w.s<m?w.s:m,''),f:a.reduce((m,w)=>w.f>m?w.f:m,'')}})}
 function pProgram(){
- const PV=pmoProgramList(),q=(S.ui.pgq||'').trim().toLowerCase(),collapsed=S.ui.pgCollapse||{};
+ const PV=pmoProgramList(),q=(S.ui.pgq||'').trim().toLowerCase();
+ // Tampilan awal ringkas: rincian proyek tetap dapat dibuka per program atau sekaligus.
+ if(!S.ui.pgCollapse){S.ui.pgCollapse=Object.fromEntries(PV.map(p=>[p.akr,true]));}
+ const collapsed=S.ui.pgCollapse;
  const groups=PV.map(p=>({p,x:progStat(p),P:progProjects(p)})).filter(({p,P})=>!q||(p.nama+' '+p.kode+' '+(p.akr||'')+' '+P.map(r=>r.n+' '+r.uic).join(' ')).toLowerCase().includes(q));
  const allOpen=groups.length>0&&groups.every(({p})=>!collapsed[p.akr]);
  const totalProjects=groups.reduce((n,g)=>n+g.P.length,0);
