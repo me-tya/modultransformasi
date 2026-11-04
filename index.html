@@ -1636,7 +1636,8 @@ function userMenu(btn){const m=popMenu(btn,`<div class="hd"><b>${esc(ME.nama)}</
 const ACT={};
 document.addEventListener('click',e=>{
  const nv=e.target.closest('[data-nav]');if(nv){const id=nv.dataset.nav;const open=nv.getAttribute('aria-expanded')==='true';S.ui.nav[id]=open?0:1;nv.setAttribute('aria-expanded',String(!open));nv.nextElementSibling.hidden=open;if(nv.classList.contains('d0'))nv.classList.toggle('open',!open);save();return}
- const ex=e.target.closest('[data-ext]');if(ex){toast(`“${ex.dataset.ext}” adalah menu Satu Kemenkeu di luar cakupan prototipe Modul Transformasi.`);return}
+ if(e.target.classList.contains('prj-overlay')){ACT.prjClose();return}
+  const ex=e.target.closest('[data-ext]');if(ex){toast(`“${ex.dataset.ext}” adalah menu Satu Kemenkeu di luar cakupan prototipe Modul Transformasi.`);return}
  const a=e.target.closest('a[href^="#"]');if(a&&innerWidth<=900){const sd=$('#side');sd&&sd.classList.remove('open')}
  const pg=e.target.closest('[data-pg]');if(pg){if(pg.disabled)return;PG[pg.dataset.pg]=+pg.dataset.n;redrawT(pg.dataset.pg);return}
  const sg=e.target.closest('[data-seg]');if(sg){S.ui[sg.dataset.seg]=sg.dataset.v;Object.keys(PG).forEach(k=>PG[k]=0);save();render();return}
@@ -1651,6 +1652,8 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('input',e=>{const q=e.target.closest('[data-q]');if(q){Q[q.dataset.q]=q.value;PG[q.dataset.q]=0;redrawT(q.dataset.q)}});
 document.addEventListener('change',e=>{const t=e.target;
+ if(t.dataset.on==='prjScopeSwitch'){S.ui.prjScope=t.value;S.ui.prjSearch='';S.ui.prjPages={};save();render();return}
+ if(t.dataset.on==='prjSearch'){S.ui.prjSearch=t.value;S.ui.prjPages=S.ui.prjPages||{};S.ui.prjPages[S.ui.prjTab||'ringkasan']=0;save();render();return}
  if(t.dataset.on==='pgsubs'){S.ui.pgSubs=t.checked;save();render();return}
  if(t.dataset.on==='pgall'){S.ui.pgCollapse=S.ui.pgCollapse||{};document.querySelectorAll('.pm-program-card[data-pg-code]').forEach(card=>{S.ui.pgCollapse[card.dataset.pgCode]=!t.checked});save();render();return}
  if(t.dataset.on==='adpimp'){const f=t.files[0];t.value='';if(f)adpImport(f);return}
@@ -2974,24 +2977,96 @@ ACT.prjDecisionDel=el=>{
  },{danger:true,size:'sm'});
 };
 
-function projectWorkspace(){
- projectStores();const key=S.ui.prjScope;if(!key)return '';
- const [prog,proj,sub]=projectLabels(key),p=progOf(prog);
- if(!p)return '';
- const rows=projectWbs(key),tab=S.ui.prjTab||'ringkasan',risk=S.projectRisks.filter(x=>x.scope===key),sh=S.projectStakeholders.filter(x=>x.scope===key),dec=S.projectDecisions.filter(x=>x.scope===key);
- const editRisk=lv('risk').includes('C')||lv('risk').includes('U'),editStake=lv('porto').includes('C')||lv('porto').includes('U');
- const b=(action,id,label)=>'<button class="btn sm" data-act="'+action+'" data-id="'+esc(id)+'">'+label+'</button>';
- const decisionPanel='<div class="prj-register-head"><b>Decision Log · Catatan Keputusan</b><span>'+(editStake?'<button class="btn sm pri" data-act="prjDecisionAdd">+ Keputusan</button>':'')+'</span></div><div class="tscroll"><table class="lap"><thead><tr><th>Tanggal</th><th>Keputusan</th><th>Pengambil keputusan</th><th>PIC & tindak lanjut</th><th>Status</th><th>Aksi</th></tr></thead><tbody>'+dec.map(x=>'<tr><td>'+fmtD(x.date)+'</td><td><b>'+esc(x.title)+'</b><span class="sm">'+esc(x.impact||'')+'</span></td><td>'+esc(x.by||'—')+'</td><td>'+esc(x.owner||'—')+'<span class="sm">'+fmtD(x.due)+'</span></td><td>'+esc(x.status)+'</td><td>'+(editStake?b('prjDecisionEdit',x.id,'Edit')+b('prjDecisionDel',x.id,'Hapus'):'—')+'</td></tr>').join('')+'</tbody></table></div>';
- const milestonePanel='<div class="prj-register-head"><b>Milestone & Deliverable</b><span class="s">Sumber data WBS yang sesuai ruang lingkup</span></div><div class="tscroll"><table class="lap"><thead><tr><th>Kode WBS</th><th>Deliverable</th><th>Jadwal</th><th>Status</th><th>Bukti dukung</th></tr></thead><tbody>'+rows.map(w=>'<tr><td><button class="kw-code" data-act="kwWbs" data-k="'+esc(w.k)+'">'+esc(w.k)+'</button></td><td>'+esc(deliv(w))+'</td><td>'+fmtD(w.s)+' – '+fmtD(w.f)+'</td><td>'+esc(stOf(w,12))+'</td><td>'+(hasBukti(w)?'<span class="chip c-ok">Ada bukti</span>':'<span class="chip c-gray">Belum ada</span>')+' '+(canW('bukti','U',bkUnits(w),w)?'<button class="kw-upload" data-act="kwBukti" data-k="'+esc(w.k)+'">⇪ Unggah</button>':'')+'</td></tr>').join('')+'</tbody></table></div>';
- const issuePanel='<div class="prj-register-head"><b>Issue Log</b><span class="s">Diambil dari Risk Register berjenis Isu</span></div><div class="tscroll"><table class="lap"><thead><tr><th>Isu</th><th>PIC</th><th>Mitigasi / Tindak lanjut</th><th>Target</th><th>Status</th></tr></thead><tbody>'+risk.filter(x=>x.kind==='Isu').map(x=>'<tr><td>'+esc(x.title)+'</td><td>'+esc(x.owner)+'</td><td>'+esc(x.mit)+'</td><td>'+fmtD(x.due)+'</td><td>'+esc(x.status)+'</td></tr>').join('')+'</tbody></table></div>';
- const grid=tab==='decision'?decisionPanel:tab==='milestone'?milestonePanel:tab==='issue'?issuePanel:tab==='risiko'?'<div class="prj-register-head"><b>Risk & Issue Register</b><span>'+(editRisk?'<button class="btn sm" data-act="prjCopy" data-type="risk">Salin dari modul lain</button><button class="btn sm pri" data-act="prjRiskAdd">+ Risiko / Isu</button>':'')+'</span></div><div class="tscroll"><table class="lap"><thead><tr><th>Jenis</th><th>Risiko / Isu</th><th>Skor</th><th>PIC & mitigasi</th><th>CMO</th><th>Tindakan</th></tr></thead><tbody>'+risk.map(x=>'<tr><td>'+esc(x.kind)+'</td><td><b>'+esc(x.title)+'</b><span class="sm">'+esc(x.cause||'')+'</span></td><td>'+((x.likelihood||0)*(x.severity||0))+'</td><td>'+esc(x.owner||'—')+'<span class="sm">'+esc(x.mit||'')+'</span></td><td>'+(x.cm?'<span class="chip c-teal">Terhubung CMO</span>':'—')+'</td><td>'+(editRisk?b('prjRiskEdit',x.id,'Edit')+b('prjRiskDel',x.id,'Hapus'):'—')+'</td></tr>').join('')+'</tbody></table></div>':
- tab==='stakeholder'?'<div class="prj-register-head"><b>Stakeholder Register</b><span>'+(editStake?'<button class="btn sm" data-act="prjCopy" data-type="stake">Salin dari modul lain</button><button class="btn sm pri" data-act="prjStakeAdd">+ Stakeholder</button>':'')+'</span></div><div class="tscroll"><table class="lap"><thead><tr><th>Stakeholder</th><th>Unit / instansi</th><th>Peran</th><th>Pengaruh / Kepentingan</th><th>Dukungan</th><th>CMO</th><th>Tindakan</th></tr></thead><tbody>'+sh.map(x=>'<tr><td><b>'+esc(x.name)+'</b></td><td>'+esc(x.unit||'—')+'</td><td>'+esc(x.role||'—')+'</td><td>'+esc(x.power)+' / '+esc(x.interest)+'</td><td>'+esc(x.support||'—')+'</td><td>'+(x.cm?'<span class="chip c-teal">Terhubung CMO</span>':'—')+'</td><td>'+(editStake?b('prjStakeEdit',x.id,'Edit')+b('prjStakeDel',x.id,'Hapus'):'—')+'</td></tr>').join('')+'</tbody></table></div>':
- '<div class="prj-summary"><div><b>'+rows.length+'</b><span>Item WBS</span></div><div><b>'+risk.length+'</b><span>Risiko/Isu</span></div><div><b>'+sh.length+'</b><span>Stakeholder</span></div><div><b>'+rows.filter(w=>doneAt(w,12)&&w.v).length+'</b><span>Item tervalidasi</span></div></div><p class="s">Ruang lingkup berasal dari hierarki WBS. Risiko, stakeholder, dan mitigasi dapat dikelola secara terpisah untuk tiap proyek/subproyek.</p><div class="prj-wbs-links">'+rows.slice(0,40).map(w=>'<button class="kw-code" data-act="kwWbs" data-k="'+esc(w.k)+'">'+esc(w.k)+'</button>').join('')+'</div>';
- return '<div class="card prj-workspace" id="project-workspace"><div class="ch"><h3>Workspace · '+esc([p.nama,proj,sub].filter(Boolean).join(' › '))+'</h3><span class="r"><button class="btn sm" data-act="prjClose">Tutup ×</button></span></div>'+
- '<div class="prj-tabs">'+[['ringkasan','Ringkasan & WBS'],['risiko','Risk Register'],['stakeholder','Stakeholder Register'],['issue','Issue Log'],['decision','Decision Log'],['milestone','Milestone & Deliverable']].map(([k,l])=>'<button data-act="prjTab" data-v="'+k+'" class="'+(tab===k?'on':'')+'">'+l+'</button>').join('')+'</div><div class="pad">'+grid+'</div></div>';
+
+/* Panduan kontekstual: berlaku pada setiap header dan form Workspace Proyek. */
+const PROJECT_GUIDE={
+ workspace:['Workspace Proyek','Pilih proyek atau subproyek untuk mengelola WBS, risiko, stakeholder, isu, keputusan, dan milestone tanpa meninggalkan menu Program.','Contoh: Core System APBN › Sektor Keuangan › FRSW. Informasi FRSW terpisah dari SIPK.'],
+ ringkasan:['Ringkasan Proyek','Angka ringkasan dihitung dari WBS dan register pada lingkup yang dipilih; bukan kolom yang diisi manual.','Contoh: 41 item WBS, 6 risiko aktif, 12 stakeholder dan 3 milestone belum selesai.'],
+ wbs:['WBS & Target Output','Klik kode WBS untuk melihat detail dan bukti dukung. Unggah bukti hanya bila deliverable telah tersedia; status 100% tetap melalui mekanisme validasi.','Contoh: CORE-041 — Penyusunan Arsitektur FRSW, target 30 September 2026, PIC Tim Arsitektur.'],
+ risiko:['Risk Register','Catat potensi kejadian, penyebab, kemungkinan (1–5), dampak (1–5), pemilik, mitigasi, tenggat dan status. Centang Risiko CM hanya jika memengaruhi kesiapan/adopsi perubahan.','Contoh: Risiko keterlambatan integrasi data; PIC Tim Data; mitigasi koordinasi penyedia data setiap minggu.'],
+ stakeholder:['Stakeholder Register','Identifikasi individu atau kelompok yang memengaruhi/terdampak proyek; isi unit, peran, pengaruh, kepentingan, dukungan serta strategi pelibatan. Data dapat disalin dari subproyek lain lalu disesuaikan.','Contoh: DJPb — pengaruh tinggi, kepentingan tinggi; engagement: FGD kebutuhan dan pembaruan progres berkala.'],
+ issue:['Issue Log','Isu adalah masalah yang sudah terjadi, berbeda dengan risiko yang masih berpotensi terjadi. Buat record berjenis Isu pada Risk Register, lalu pantau di sini.','Contoh: Koneksi data antarsistem gagal pada UAT; PIC integrasi; tenggat penyelesaian 15 November 2026.'],
+ decision:['Decision Log','Catat keputusan penting, tanggal, pengambil keputusan, alasan, PIC tindak lanjut, tenggat dan statusnya.','Contoh: Disepakati piloting FRSW dilakukan bertahap; keputusan rapat steering committee; PIC pemilik proses bisnis.'],
+ milestone:['Milestone & Deliverable','Gunakan jadwal dan deliverable WBS sebagai sumber. Klik kode untuk membuka item; bukti dukung dapat diunggah sesuai kewenangan.','Contoh: Penyelesaian UAT modul pada 30 September 2026 disertai berita acara dan bukti pengujian.'],
+ copy:['Salin dari Modul Lain','Pilih sumber register dari proyek/subproyek lain. Salinan menjadi data terpisah dan dapat diedit tanpa mengubah sumber. Sinkronisasi CMO perlu ditinjau ulang.','Contoh: Salin stakeholder dari FRSW ke SIPK, lalu tambahkan pihak regulator khusus SIPK.'],
+ cm:['Risiko CM dan Sinkronisasi CMO','Centang bila risiko berkaitan dengan penerimaan, kesiapan, kompetensi, atau adopsi perubahan. Sinkronisasi hanya dilakukan bila modul CMO yang relevan teridentifikasi unik.','Contoh: Rendahnya kesiapan agen layanan menghadapi alur baru → Risiko CM. Kegagalan server semata → risiko proyek.'],
+ scope:['Pilihan Proyek/Subproyek','Setiap lingkup mempunyai register tersendiri. Perubahan data subproyek tidak otomatis mengubah proyek induk atau subproyek lainnya.','Contoh: Stakeholder SIPK dan FRSW berbeda, walaupun keduanya berada pada proyek Sektor Keuangan.'],
+ search:['Pencarian & Pagination','Cari kata kunci pada tab aktif. Tabel menampilkan maksimal sepuluh data per halaman; ubah halaman untuk melihat data berikutnya.','Contoh: Ketik "data" untuk mencari risiko terkait integrasi data.']
+};
+function projectHelp(name,small=false){
+ return '<button type="button" class="hlp prj-help '+(small?'prj-help-sm':'')+'" data-act="prjHelp" data-guide="'+esc(name)+'" aria-label="Petunjuk dan contoh '+esc(PROJECT_GUIDE[name]?.[0]||name)+'" title="Petunjuk dan contoh pengisian">?</button>';
 }
-ACT.prjOpen=el=>{S.ui.prjScope=el.dataset.scope;S.ui.prjTab=el.dataset.tab||'ringkasan';save();render();document.getElementById('project-workspace')?.scrollIntoView({block:'start',behavior:'smooth'})};
-ACT.prjTab=el=>{S.ui.prjTab=el.dataset.v;save();render()};
+function projectKpi(name,value,detail=''){
+ return '<div class="prj-kpi-card"><span>'+esc(name)+'</span><b>'+value+'</b><small>'+detail+'</small></div>';
+}
+function projectPagination(rows,tab){
+ const q=String(S.ui.prjSearch||'').trim().toLowerCase(),page=Number(S.ui.prjPages?.[tab]||0);
+ const found=q?rows.filter(x=>JSON.stringify(x).toLowerCase().includes(q)):rows;
+ const max=Math.max(0,Math.ceil(found.length/10)-1),cur=Math.min(max,Math.max(0,page));
+ return {rows:found.slice(cur*10,cur*10+10),count:found.length,page:cur,max,
+ footer:'<div class="prj-pager"><small>Menampilkan '+(found.length?cur*10+1:0)+'–'+Math.min(found.length,cur*10+10)+' dari '+found.length+' data</small><div><button type="button" class="btn sm" data-act="prjPage" data-tab="'+tab+'" data-page="'+(cur-1)+'" '+(cur===0?'disabled':'')+'>‹ Sebelumnya</button><span>Halaman '+(cur+1)+' / '+(max+1)+'</span><button type="button" class="btn sm" data-act="prjPage" data-tab="'+tab+'" data-page="'+(cur+1)+'" '+(cur===max?'disabled':'')+'>Berikutnya ›</button></div></div>'};
+}
+function projectWorkspace(){
+ projectStores();
+ const key=S.ui.prjScope;if(!key)return '';
+ const [prog,proj,sub]=projectLabels(key),p=progOf(prog);if(!p)return '';
+ const tab=['ringkasan','risiko','stakeholder','issue','decision','milestone'].includes(S.ui.prjTab)?S.ui.prjTab:'ringkasan';
+ const rows=projectWbs(key),risk=S.projectRisks.filter(x=>x.scope===key),sh=S.projectStakeholders.filter(x=>x.scope===key),dec=S.projectDecisions.filter(x=>x.scope===key);
+ const editRisk=lv('risk').includes('C')||lv('risk').includes('U'),editStake=lv('porto').includes('C')||lv('porto').includes('U');
+ const btn=(action,id,label)=>'<button type="button" class="btn sm" data-act="'+action+'" data-id="'+esc(id)+'">'+label+'</button>';
+ const head=(id,title,extras='')=>'<div class="prj-section-head"><div class="prj-section-title"><h3>'+title+'</h3>'+projectHelp(id,true)+'</div><div class="prj-section-actions">'+extras+'</div></div>';
+ const empty=label=>'<div class="prj-empty">Belum ada '+label+' pada lingkup ini. Gunakan tombol Tambah untuk mengisi.</div>';
+ const scopeP=progProjects(p),allScopes=scopeP.flatMap(x=>[{k:projectKey(prog,x.n),label:x.n},...x.subItems.map(a=>({k:projectKey(prog,x.n,a.name),label:x.n+' › '+a.name}))]);
+ const picker='<label class="prj-scope-select"><span>Pilih Proyek / Subproyek '+projectHelp('scope',true)+'</span><select data-on="prjScopeSwitch">'+allScopes.map(x=>'<option value="'+esc(x.k)+'" '+(x.k===key?'selected':'')+'>'+esc(x.label)+'</option>').join('')+'</select></label>';
+ const pRisk=projectPagination(risk,'risiko'),pStake=projectPagination(sh,'stakeholder'),pIssue=projectPagination(risk.filter(x=>x.kind==='Isu'),'issue'),pDec=projectPagination(dec,'decision'),pWbs=projectPagination(rows,'milestone');
+ const riskRow=x=>'<tr><td><b>'+esc(x.title)+'</b><small>'+esc(x.kind)+'</small></td><td><span class="chip '+((x.likelihood||0)*(x.severity||0)>=15?'c-bad':'c-warn')+'">'+((x.likelihood||0)*(x.severity||0))+'</span></td><td>'+esc(x.owner||'—')+'</td><td>'+esc(x.mit||'—')+'</td><td>'+esc(x.status||'—')+'</td><td>'+(x.cm?'<span class="chip c-teal">→ CMO</span>':'—')+'</td><td>'+(editRisk?btn('prjRiskEdit',x.id,'Edit')+btn('prjRiskDel',x.id,'Hapus'):'—')+'</td></tr>';
+ const stakeRow=x=>'<tr><td><b>'+esc(x.name)+'</b></td><td>'+esc(x.unit||'—')+'</td><td>'+esc(x.role||'—')+'</td><td>'+esc(x.power||'—')+' / '+esc(x.interest||'—')+'</td><td>'+esc(x.support||'—')+'</td><td>'+esc(x.engage||'—')+'</td><td>'+(x.cm?'<span class="chip c-teal">→ CMO</span>':'—')+'</td><td>'+(editStake?btn('prjStakeEdit',x.id,'Edit')+btn('prjStakeDel',x.id,'Hapus'):'—')+'</td></tr>';
+ const riskTable=r=>'<div class="prj-table-scroll"><table class="lap"><thead><tr><th>Risiko / Isu</th><th>Skor</th><th>PIC</th><th>Mitigasi</th><th>Status</th><th>CMO</th><th>Tindakan</th></tr></thead><tbody>'+r.map(riskRow).join('')+'</tbody></table></div>';
+ const stakeTable=r=>'<div class="prj-table-scroll"><table class="lap"><thead><tr><th>Stakeholder</th><th>Unit / Instansi</th><th>Peran</th><th>Pengaruh / Kepentingan</th><th>Dukungan</th><th>Strategi Engagement</th><th>CMO</th><th>Tindakan</th></tr></thead><tbody>'+r.map(stakeRow).join('')+'</tbody></table></div>';
+ const wbsRows=r=>'<div class="prj-table-scroll"><table class="lap"><thead><tr><th>Kode WBS</th><th>Target Output / Deliverable</th><th>PIC / UIC</th><th>Target</th><th>Capaian</th><th>Bukti</th><th>Aksi</th></tr></thead><tbody>'+r.map(w=>'<tr><td><button class="kw-code" data-act="kwWbs" data-k="'+esc(w.k)+'">'+esc(w.k)+'</button></td><td>'+esc(deliv(w))+'</td><td>'+esc(uicU(w)||'—')+'</td><td>'+fmtD(w.f)+'</td><td>'+chipSt(stOf(w,12))+'</td><td>'+chipSt(buktiSt(w))+'</td><td><button class="btn sm" data-act="kwWbs" data-k="'+esc(w.k)+'">Buka WBS</button> '+(canW('bukti','U',bkUnits(w),w)?'<button class="btn sm" data-act="kwBukti" data-k="'+esc(w.k)+'">⇪ Unggah Bukti</button>':'')+'</td></tr>').join('')+'</tbody></table></div>';
+ const decisionRows=r=>'<div class="prj-table-scroll"><table class="lap"><thead><tr><th>Tanggal</th><th>Keputusan</th><th>Pengambil keputusan</th><th>PIC & tenggat</th><th>Status</th><th>Tindakan</th></tr></thead><tbody>'+r.map(x=>'<tr><td>'+fmtD(x.date)+'</td><td><b>'+esc(x.title)+'</b><small>'+esc(x.impact||'')+'</small></td><td>'+esc(x.by||'—')+'</td><td>'+esc(x.owner||'—')+'<small>'+fmtD(x.due)+'</small></td><td>'+esc(x.status||'—')+'</td><td>'+(editStake?btn('prjDecisionEdit',x.id,'Edit')+btn('prjDecisionDel',x.id,'Hapus'):'—')+'</td></tr>').join('')+'</tbody></table></div>';
+ const search='<div class="prj-table-filter"><label>Cari dalam tab '+projectHelp('search',true)+'</label><input class="sel" type="search" data-on="prjSearch" value="'+esc(S.ui.prjSearch||'')+'" placeholder="Cari nama, PIC, status, atau kata kunci…"></div>';
+ const summary='<div class="prj-summary-main">'+head('ringkasan','Ringkasan Proyek')+
+ '<div class="prj-summary-stats">'+projectKpi('Status','Berjalan','Status indikatif')+projectKpi('Jumlah subproyek',String(scopeP.find(x=>x.n===proj)?.subItems?.length||0),'Sesuai WBS')+
+ projectKpi('Progres tervalidasi',(rows.length?Math.round(100*rows.filter(w=>doneAt(w,12)&&w.v).reduce((a,w)=>a+(+w.w||0),0)/Math.max(1,rows.reduce((a,w)=>a+(+w.w||0),0))):0)+'%','Berdasarkan bobot WBS')+projectKpi('UIC Utama',esc(p.uic||'—'),'Pemilik program')+'</div></div>';
+ const briefRisks=risk.slice(0,5),briefStake=sh.slice(0,5);
+ const brief='<div class="prj-brief-grid"><section class="prj-panel">'+head('risiko','Risk Register ('+risk.length+')','<button class="btn sm" data-act="prjTab" data-v="risiko">Lihat Semua</button>')+
+ '<p class="prj-example">Contoh: keterlambatan integrasi data; PIC Tim Data; mitigasi koordinasi mingguan.</p>'+ (risk.length?riskTable(briefRisks):empty('risiko'))+'</section>'+
+ '<section class="prj-panel">'+head('stakeholder','Stakeholder Register ('+sh.length+')','<button class="btn sm" data-act="prjTab" data-v="stakeholder">Lihat Semua</button>')+
+ '<p class="prj-example">Contoh: DJPb, pengaruh tinggi, strategi FGD kebutuhan dan pembaruan berkala.</p>'+(sh.length?stakeTable(briefStake):empty('stakeholder'))+'</section></div>';
+ const overview='<div class="prj-overview-layout"><aside class="prj-kpi-rail">'+
+ projectKpi('Item WBS',String(rows.length),'Item dalam lingkup ini')+
+ projectKpi('Risiko terbuka',String(risk.filter(x=>x.status!=='Ditutup').length),'Termasuk risiko CM')+
+ projectKpi('Stakeholder',String(sh.length),'Register lingkup aktif')+
+ projectKpi('Milestone berjalan',String(rows.filter(w=>!doneAt(w,12)).length),'Item WBS belum selesai')+
+ '</aside><div class="prj-overview-main">'+summary+'<section class="prj-panel">'+head('wbs','WBS & Target Output','<button class="btn sm" data-act="prjTab" data-v="milestone">Lihat Semua WBS</button>')+
+ '<p class="prj-example">Contoh: CORE-041 — Penyusunan Arsitektur FRSW. Bukti dukung tidak otomatis membuat capaian 100%.</p>'+
+ (rows.length?wbsRows(rows.slice(0,5)):empty('item WBS'))+'</section>'+brief+'</div></div>';
+ const riskPanel='<section class="prj-panel">'+head('risiko','Risk Register', (editRisk?'<button class="btn sm" data-act="prjCopy" data-type="risk">Salin dari Modul Lain</button><button class="btn sm pri" data-act="prjRiskAdd">+ Tambah Risiko / Isu</button>':''))+
+ '<p class="prj-example">Isi potensi kejadian, PIC, kemungkinan × dampak, mitigasi, dan tenggat. Centang Risiko CM agar muncul di modul CMO yang tepat.</p>'+search+(pRisk.count?riskTable(pRisk.rows):empty('risiko'))+pRisk.footer+'</section>';
+ const stakePanel='<section class="prj-panel">'+head('stakeholder','Stakeholder Register',(editStake?'<button class="btn sm" data-act="prjCopy" data-type="stake">Salin dari Modul Lain</button><button class="btn sm pri" data-act="prjStakeAdd">+ Tambah Stakeholder</button>':''))+
+ '<p class="prj-example">Catat pihak internal/eksternal, pengaruh, kepentingan, dukungan, dan strategi engagement.</p>'+search+(pStake.count?stakeTable(pStake.rows):empty('stakeholder'))+pStake.footer+'</section>';
+ const issuePanel='<section class="prj-panel">'+head('issue','Issue Log',(editRisk?'<button class="btn sm pri" data-act="prjRiskAdd">+ Catat Isu melalui Register</button>':''))+
+ '<p class="prj-example">Isu adalah masalah yang sudah terjadi. Tambahkan data melalui Risk Register dengan jenis Isu.</p>'+search+
+ (pIssue.count?'<div class="prj-table-scroll"><table class="lap"><thead><tr><th>Isu</th><th>PIC</th><th>Tindakan</th><th>Tenggat</th><th>Status</th></tr></thead><tbody>'+pIssue.rows.map(x=>'<tr><td>'+esc(x.title)+'</td><td>'+esc(x.owner||'—')+'</td><td>'+esc(x.mit||'—')+'</td><td>'+fmtD(x.due)+'</td><td>'+esc(x.status||'—')+'</td></tr>').join('')+'</tbody></table></div>':empty('isu'))+pIssue.footer+'</section>';
+ const decisionPanel='<section class="prj-panel">'+head('decision','Decision Log',(editStake?'<button class="btn sm pri" data-act="prjDecisionAdd">+ Tambah Keputusan</button>':''))+
+ '<p class="prj-example">Contoh: keputusan piloting FRSW secara bertahap, PIC, tenggat tindak lanjut, dan status.</p>'+search+
+ (pDec.count?decisionRows(pDec.rows):empty('keputusan'))+pDec.footer+'</section>';
+ const milestonePanel='<section class="prj-panel">'+head('milestone','Milestone & Deliverable')+
+ '<p class="prj-example">Target dan bukti ditautkan ke item WBS. Klik kode untuk melihat detail dan unggah bukti.</p>'+search+(pWbs.count?wbsRows(pWbs.rows):empty('item WBS'))+pWbs.footer+'</section>';
+ const content={ringkasan:overview,risiko:riskPanel,stakeholder:stakePanel,issue:issuePanel,decision:decisionPanel,milestone:milestonePanel}[tab];
+ const tabs=[['ringkasan','Ringkasan & WBS'],['risiko','Risk Register'],['stakeholder','Stakeholder Register'],['issue','Issue Log'],['decision','Decision Log'],['milestone','Milestone & Deliverable']];
+ return '<div class="prj-overlay" id="project-workspace" role="presentation"><div class="prj-modal" role="dialog" aria-modal="true" aria-label="Workspace proyek '+esc(proj)+'">'+
+ '<header class="prj-modal-header"><div><div class="prj-title-line"><h2>Workspace Proyek</h2>'+projectHelp('workspace')+'</div><p>'+esc([p.nama,proj,sub].filter(Boolean).join(' › '))+'</p></div><button type="button" class="prj-close" data-act="prjClose" aria-label="Tutup Workspace">×</button></header>'+
+ '<nav class="prj-tabs" role="tablist" aria-label="Tab Workspace Proyek">'+tabs.map(([k,l])=>'<span class="prj-tab-group"><button type="button" data-act="prjTab" data-v="'+k+'" class="'+(tab===k?'on':'')+'" role="tab" aria-selected="'+(tab===k)+'">'+l+'</button>'+projectHelp(k,true)+'</span>').join('')+'</nav>'+
+ '<div class="prj-modal-content"><div class="prj-scope-bar">'+picker+'<span class="prj-hint">Setiap proyek/subproyek memiliki data sendiri. Salin bila diperlukan, lalu edit sesuai kebutuhan.</span></div>'+content+'</div>'+
+ '<footer class="prj-modal-footer"><span>Perubahan disimpan setiap kali tombol Simpan pada formulir dipilih.</span><button class="btn pri" data-act="prjClose">Selesai</button></footer></div></div>';
+}
+
+ACT.prjOpen=el=>{S.ui.prjScope=el.dataset.scope;S.ui.prjTab=el.dataset.tab||'ringkasan';S.ui.prjSearch='';S.ui.prjPages={};save();render();document.querySelector('.prj-close')?.focus()};
+ACT.prjHelp=el=>{const h=PROJECT_GUIDE[el.dataset.guide]||PROJECT_GUIDE.workspace;modal('<span class="exh"><span class="hlp sm" aria-hidden="true">?</span>Petunjuk · '+esc(h[0])+'</span>','<p><b>Cara mengisi / menggunakan</b></p><p>'+esc(h[1])+'</p><div class="prj-example-modal"><b>Contoh pengisian</b><p>'+esc(h[2])+'</p></div>','',null,{cancel:'Tutup',size:'sm'})};
+ACT.prjPage=el=>{S.ui.prjPages=S.ui.prjPages||{};S.ui.prjPages[el.dataset.tab]=Math.max(0,+el.dataset.page);save();render()};
+ACT.prjTab=el=>{S.ui.prjTab=el.dataset.v;S.ui.prjSearch='';save();render()};
 ACT.prjClose=()=>{S.ui.prjScope='';save();render()};
 ACT.prjRiskAdd=()=>projectRiskEdit(S.ui.prjScope);
 ACT.prjRiskEdit=el=>projectRiskEdit(S.ui.prjScope,el.dataset.id);
