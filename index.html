@@ -894,6 +894,8 @@ table.ext td{font-size:12.5px;vertical-align:top;white-space:normal}
 
 
 .flt.pmo-unified .fbar{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px 14px;align-items:end}
+/* Perbaikan hide/show: hidden mengalahkan display:grid pada seluruh tab PMO. */
+.flt.pmo-unified .fbar[hidden]{display:none!important}
 .flt.pmo-unified .fbar>.fg{width:100%;min-width:0;flex:none}
 .flt.pmo-unified .fbar>.fg.pm-year{grid-column:span 4}
 .flt.pmo-unified .fbar>.fg.pm-period{grid-column:span 8}
