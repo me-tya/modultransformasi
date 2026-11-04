@@ -996,6 +996,10 @@ button[aria-label*="Bantuan"]:hover,button[title*="Bantuan"]:hover,.help-icon:ho
 .chtabs small{display:none!important}
 .ch-preview-body{max-height:70vh;overflow:auto}
 .ch-preview-body .chpgh button{display:none}
+/* Dokumen aktif: menu stabil dan ekspor per dokumen */
+.ch-document-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin:8px 0 12px}
+#ch-active-document{min-width:0;min-height:420px}
+.ch-preview-body{background:#fff;color:#152033;padding:8px}
 </style>
 
 <div id="root"></div>
@@ -1759,7 +1763,7 @@ function pCharter(){const akr=S.ui.chp;const p=S.programs.find(x=>x.akr===akr);
  const ret=(c.log||[]).slice(-1)[0];const tab=CHPG.some(t=>t[0]===S.ui.cht)?S.ui.cht:'ch';
  const OK=chDocOk(c);const cnt={asis:OK.asis?'terisi':'',tobe:OK.tobe?'terisi':'',ch:'',kp:(c.kp||[]).length,rk:(c.rk||[]).length,cs:(c.cs||[]).length,mf:(c.mf||[]).length};const unit={kp:' milestone',rk:' tindakan',cs:' pasangan',mf:' manfaat',asis:'',tobe:''};
  const tabs=`<div class="chtabs" role="tablist">${CHPG.map(([k,l,sub],i)=>`<button role="tab" aria-selected="${tab===k}" class="${tab===k?'on':''}" data-act="chtab" data-v="${k}"><i>${i+1}</i><span><b>${l}</b></span></button>`).join('')}</div>`;
- const pgHead=(k,t)=>`<div class="chpgh"><span class="pg">Dokumen ${CHPG.findIndex(x=>x[0]===k)+1} / 7</span><h3>${t}: <span>${esc(chJudul(c))}</span></h3><button class="btn sm" data-act="chpreview" data-id="${c.id}" title="Preview dokumen aktif">👁 Preview</button>${ed?`<button class="btn" data-act="ched" data-p="${akr}" data-id="${c.id}" data-s="${k}">✎ Ubah dokumen ini</button>`:''}</div>`;
+ const pgHead=(k,t)=>`<div class="chpgh"><span class="pg">Dokumen ${CHPG.findIndex(x=>x[0]===k)+1} / 7</span><h3>${t}: <span>${esc(chJudul(c))}</span></h3>${ed?`<button class="btn" data-act="ched" data-p="${akr}" data-id="${c.id}" data-s="${k}">✎ Ubah dokumen ini</button>`:''}</div>`;
  let body='';
  if(tab==='ch')body=`<div class="chtuj"><span class="l">Tujuan Program</span><b>${esc(c.tujuan||'—')}</b>${edb(0)}</div>
  <div class="chg4">${sec('lb',chOl(c.lb))}${sec('tb',chTb(c.tb))}${sec('out',chOl(c.out))}${sec('oc',chOl(c.oc))}</div>
@@ -1775,10 +1779,47 @@ function pCharter(){const akr=S.ui.chp;const p=S.programs.find(x=>x.akr===akr);
  <div class="rt">${flow}<div class="hgrp">${ed?`<button class="hb" data-act="ched" data-p="${akr}" data-id="${c.id}">✎ Ubah</button>`:''}${chCan('C',p)&&c.st==='Disahkan'&&!L.some(x=>x.st==='Draft'||x.st==='Reviu')?`<button class="hb" data-act="chver" data-id="${c.id}">⧉ Versi baru</button>`:''}${chCan('D',p)?`<button class="hb icn" data-act="chdel" data-id="${c.id}" title="${c.st==='Draft'?'Hapus draft':'Hanya charter berstatus Draft yang bisa dihapus'}" ${c.st==='Draft'?'':'disabled'}>🗑</button>`:''}</div><button class="hb gold" data-act="chexp" data-id="${c.id}">⇩ Ekspor ▾</button></div></div>
  ${ret&&ret.st==='Draft'&&ret.cat?`<div class="note w"><span><b>Catatan reviu PMO Pusat:</b> ${esc(ret.cat)}</span></div>`:''}
  <div class="card"><div class="chstep">${step('Draft','Draft')}<span class="cbar"></span>${step('Reviu','Reviu PMO Pusat')}<span class="cbar"></span>${step('Disahkan','Disahkan')}<span class="cbar"></span><div class="cst${c.st==='Disahkan'?' on':''}"><i>🔒</i><span><b>Baseline WBS</b><small>${c.st==='Disahkan'?S.wbs.filter(w=>w.prog===akr&&!w.arsip).length+' item · perubahan via CR':'aktif setelah disahkan'}</small></span></div></div></div>
- ${tabs}${body}
+ ${tabs}<div class="ch-document-actions"><button class="btn sm" data-act="chpreview" data-id="${c.id}" title="Pratinjau dokumen ${esc((CHPG.find(x=>x[0]===tab)||[])[1]||'')}">👁 Preview</button><button class="btn sm" data-act="chactiveexport" data-id="${c.id}" data-fmt="pdf" title="Ekspor dokumen aktif ke PDF">PDF</button><button class="btn sm" data-act="chactiveexport" data-id="${c.id}" data-fmt="docx" title="Ekspor dokumen aktif ke Word .docx">Word</button><button class="btn sm" data-act="chactiveexport" data-id="${c.id}" data-fmt="pptx" title="Ekspor dokumen aktif ke PowerPoint .pptx">PPTX</button></div><section id="ch-active-document">${body}</section>
  ${c.doc&&c.doc.link?`<div class="card"><div class="pad" style="display:flex;gap:10px;align-items:center"><span class="pdfic">PDF</span><span><b>Dokumen pengesahan</b><br><a href="${esc(c.doc.link)}" target="_blank" rel="noopener">${esc(c.doc.link)}</a></span></div></div>`:''}`}
 ACT.chtab=el=>{S.ui.cht=el.dataset.v;save();render()};
-ACT.chpreview=el=>{const page=document.querySelector('.chpage');if(!page){toast('Dokumen belum tersedia.');return}const c=S.charters.find(x=>x.id===el.dataset.id);const name=(CHPG.find(x=>x[0]===S.ui.cht)||['ch','Charter'])[1];const html=page.outerHTML;modal('Preview '+esc(name),'<div class="ch-preview-body">'+html+'</div>','Tutup',()=>true,{size:'wide'});};
+ACT.chpreview=el=>{const page=document.querySelector('#ch-active-document');if(!page){toast('Dokumen belum tersedia.');return}const name=(CHPG.find(x=>x[0]===S.ui.cht)||['ch','Charter'])[1];modal('Preview '+esc(name),'<div class="ch-preview-body">'+page.innerHTML+'</div>','Tutup',()=>true,{size:'wide'});};
+ACT.chactiveexport=async el=>{
+ const page=document.querySelector('#ch-active-document'),c=S.charters.find(x=>x.id===el.dataset.id),fmt=el.dataset.fmt;
+ if(!page||!c){toast('Dokumen belum tersedia.');return}
+ const tab=(CHPG.find(x=>x[0]===S.ui.cht)||['ch','Charter'])[0],nm=(CHPG.find(x=>x[0]===tab)||['ch','Charter'])[1];
+ const base='Dokumen_'+tab+'_'+c.prog+'_v'+c.ver;
+ try{
+  if(fmt==='docx'){
+   if(!window.JSZip)await chLib('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',()=>window.JSZip);
+   const zip=new JSZip(),xmlEsc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+   const txt=(page.innerText||page.textContent||'').split(/\n+/).map(x=>x.trim()).filter(Boolean);
+   const paragraphs=[nm+' – '+chJudul(c),...txt].map((line,i)=>'<w:p><w:pPr><w:spacing w:after="120"/></w:pPr><w:r><w:rPr>'+(i===0?'<w:b/><w:sz w:val="32"/>':'<w:sz w:val="22"/>')+'</w:rPr><w:t xml:space="preserve">'+xmlEsc(line)+'</w:t></w:r></w:p>').join('');
+   zip.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
+   zip.file('_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
+   zip.file('word/document.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+paragraphs+'<w:sectPr><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="850" w:right="850" w:bottom="850" w:left="850"/></w:sectPr></w:body></w:document>');
+   chSaveBlob(await zip.generateAsync({type:'blob',compression:'DEFLATE'}),base+'.docx');
+  }else{
+   await chLib('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',()=>window.html2canvas);
+   const clone=document.createElement('div');clone.style.cssText='position:fixed;left:-12000px;top:0;width:1100px;padding:28px;background:#fff;color:#152033;font-family:Arial,sans-serif;';
+   clone.innerHTML='<h2>'+esc(nm)+' – '+esc(chJudul(c))+'</h2>'+page.innerHTML;
+   clone.querySelectorAll('button,[data-act]').forEach(x=>x.remove());document.body.appendChild(clone);
+   let canvas;try{canvas=await html2canvas(clone,{scale:1.7,backgroundColor:'#ffffff',useCORS:true})}finally{clone.remove()}
+   if(fmt==='pdf'){
+    await chLib('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',()=>window.jspdf);
+    const pdf=new jspdf.jsPDF({orientation:'landscape',unit:'mm',format:'a4'}),w=281,h=canvas.height*w/canvas.width,ph=194;
+    let offset=0;while(offset<h){if(offset)pdf.addPage();pdf.addImage(canvas.toDataURL('image/jpeg',.9),'JPEG',8,8-offset,w,h);offset+=ph}
+    pdf.save(base+'.pdf');
+   }else if(fmt==='pptx'){
+    if(!window.PptxGenJS)await chLib('https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js',()=>window.PptxGenJS);
+    const ppt=new PptxGenJS();ppt.layout='LAYOUT_WIDE';ppt.author='PMO Kementerian Keuangan';
+    const cv=document.createElement('canvas'),ctx=cv.getContext('2d');let y=0;const sliceH=Math.round(canvas.width*7.3/13.1);
+    while(y<canvas.height){cv.width=canvas.width;cv.height=Math.min(sliceH,canvas.height-y);ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);ctx.drawImage(canvas,0,y,canvas.width,cv.height,0,0,cv.width,cv.height);const slide=ppt.addSlide();slide.background={color:'FFFFFF'};slide.addImage({data:cv.toDataURL('image/png'),x:.12,y:.12,w:13.1,h:cv.height/cv.width*13.1});y+=sliceH}
+    await ppt.writeFile({fileName:base+'.pptx'});
+   }
+  }
+  toast('Ekspor '+nm+' selesai.');
+ }catch(err){toast('Ekspor gagal: '+err.message)}
+};
 
 /* ---- wizard ---- */
 function chChk(d){const f=a=>(a||[]).some(x=>String(x).trim());const r={};
