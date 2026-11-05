@@ -1537,6 +1537,45 @@ body:has(.prj-overlay){overflow:hidden}
 .ko-pm span,.ko-cm span{font-size:12.5px;color:var(--ink-2);line-height:1.4}
 .ko-ph u{text-decoration:none;padding:0 12px;font-size:12.5px;font-weight:800;color:var(--navy-2)}
 @media(max-width:900px){.ko-g5{grid-template-columns:repeat(2,1fr)}.ko-g4{grid-template-columns:repeat(2,1fr)}.ko-row{grid-template-columns:1fr}.ko-steps{grid-template-columns:1fr}}
+
+/* ===== K-Wide: penyegaran tipografi ===== */
+.kw-sum{border-radius:14px}
+.kw-lead{padding:14px 18px}.kw-lead b{font-size:14px;font-weight:800}.kw-lead small{font-size:12px;line-height:1.5;color:#BFD0EA}
+.kw-tw{padding:12px 16px;gap:4px}
+.kw-tw .h{font-size:11px;letter-spacing:.6px}
+.kw-tw .h .chip{font-size:10.5px;padding:1px 8px}
+.kw-tw .v b{font-size:22px;font-weight:800;letter-spacing:-.3px}
+.kw-tw .v span{font-size:12.5px}
+.kw-tw .bk{font-size:12px;color:#8A97AB}
+.kw-head{padding:12px 18px;gap:14px}
+.kw-head h3{font-size:14.5px;font-weight:800;color:var(--navy)}
+.kw-head .btn{font-size:12px}
+.kw-q{height:34px;font-size:13px}
+.kw-sw{font-size:12.5px}
+.kw-tbl th{font-size:10.5px;font-weight:800;letter-spacing:.5px;padding:9px 14px;color:#6B7A90}
+.kw-tbl td{font-size:13px;padding:12px 14px;vertical-align:top;color:var(--ink-2);line-height:1.5}
+.kw-tbl td.kw-no{font-size:12px;color:#8A97AB;padding-top:14px}
+.kw-tbl td.kw-prog{font-size:13.5px;font-weight:700;color:var(--navy);line-height:1.45}
+.kw-tbl td.kw-cut{font-size:12.5px;color:var(--ink-3)}
+.kw-tbl td.num{font-size:13.5px;font-weight:700;color:var(--ink);font-family:inherit;font-variant-numeric:tabular-nums;text-align:center}
+.kw-tbl th.num{text-align:center}
+.kw-tbl td .chip{font-size:11.5px}
+.kw-tbl tbody tr:hover td{background:#FAFCFF}
+.kw-ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.kw-ol li{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;line-height:1.45;color:var(--ink-2)}
+.kw-ol li i{flex:none;font-style:normal;display:grid;place-items:center;width:18px;height:18px;border-radius:6px;background:#EEF3FA;color:var(--navy-2,#17457F);font-size:10.5px;font-weight:800;margin-top:1px}
+.kw-ol li small{display:block;font-size:11.5px;color:#8A97AB;margin-top:1px}
+.kw-ol li.kw-oh{font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:#8A97AB;margin-top:4px}
+.kw-more-o{margin-top:5px}
+.kw-more-o>summary{cursor:pointer;font-size:12px;font-weight:800;color:var(--navy-2,#17457F);list-style:none}
+.kw-more-o>summary::-webkit-details-marker{display:none}
+.kw-more-o[open]>summary{margin-bottom:5px}
+.kw-none{display:inline-block;font-style:normal;font-size:11.5px;font-weight:700;color:#8A97AB;background:#F1F4F8;border-radius:20px;padding:2px 10px}
+.kw-ev small{font-size:12px}
+.kw-rb{height:30px;font-size:12px;padding:0 12px}
+.kw-tbl{table-layout:fixed;min-width:1080px}.kw-act{vertical-align:top!important;text-align:right}.kw-ev{align-items:flex-start}
+.kw-tbl tfoot td{font-size:12.5px}
+.kw-more{font-size:12.5px}
 </style>
 
 <div id="root"></div>
@@ -3296,7 +3335,7 @@ function kwEv(index){const row=kwRows()[index];const ws=kwWbsCodes(row,index).ma
  const c={Valid:0,'Menunggu validasi':0,Ditolak:0,'Belum diunggah':0};ws.forEach(w=>c[buktiSt(w)]++);
  const done=row[3]!==null&&row[3]!=null,ok=done&&row[3]>=row[2];
  return {row,index,ws,c,n:ws.length,done,ok,attn:(done&&!ok)||!ws.length||c.Valid<ws.length}}
-function kwEvCell(e){if(!e.n)return '<div class="kw-ev"><span class="kw-none">Item WBS belum ditautkan</span></div>';
+function kwEvCell(e){if(!e.n)return '<div class="kw-ev"><span class="kw-none" title="PMO Kemenkeu menautkan item WBS lewat Rincian ›">Belum ditautkan</span></div>';
  const p=k=>Math.round(e.c[k]/e.n*100),parts=[];
  if(e.c.Valid)parts.push('<b>'+e.c.Valid+' valid</b>');if(e.c['Menunggu validasi'])parts.push('<em>'+e.c['Menunggu validasi']+' menunggu</em>');
  if(e.c.Ditolak)parts.push('<i class="r">'+e.c.Ditolak+' ditolak</i>');if(e.c['Belum diunggah'])parts.push(e.c['Belum diunggah']+' belum');
@@ -3314,18 +3353,21 @@ function kwideView(){
  const strip='<div class="kw-sum card"><div class="kw-lead"><b>Output IKU K-Wide</b><small>Klik triwulan untuk melihat rinciannya. Capaian dari sheet Capaian K-Wide (Manual IKU); bukti dari WBS.</small></div>'+
   [1,2,3,4].map(t=>{const es=all.filter(e=>e.row[0]===t),tg=es.reduce((a,e)=>a+e.row[2],0),has=twHas(t),rl=es.reduce((a,e)=>a+(e.row[3]||0),0);
    const bn=es.reduce((a,e)=>a+e.n,0),bv=es.reduce((a,e)=>a+e.c.Valid,0),ok=has&&rl>=tg;
-   return '<button type="button" class="kw-tw'+(t===tw?' on':'')+(has?'':' na')+'" data-act="kwTw" data-v="'+t+'" aria-pressed="'+(t===tw)+'"><span class="h">TW '+t+'<span class="chip '+(!has?'c-gray':ok?'c-ok':'c-bad')+'">'+(!has?'Belum ada data':ok?'Tercapai':'Belum tercapai')+'</span></span><span class="v"><b>'+(has&&tg?pct(rl/tg*100):'—')+'</b><span>'+(has?rl:0)+'/'+tg+' output</span></span><span class="bk">'+(bn?'Bukti WBS <b>'+bv+'/'+bn+'</b> lengkap':es.length?'Item WBS belum ditautkan':'—')+'</span></button>'}).join('')+'</div>';
+   return '<button type="button" class="kw-tw'+(t===tw?' on':'')+(has?'':' na')+'" data-act="kwTw" data-v="'+t+'" aria-pressed="'+(t===tw)+'"><span class="h">TW '+t+'<span class="chip '+(!has?'c-gray':ok?'c-ok':'c-bad')+'">'+(!has?'Belum ada data':ok?'Tercapai':'Belum tercapai')+'</span></span><span class="v"><b>'+(has&&tg?pct(rl/tg*100):'—')+'</b><span>'+(has?rl:0)+'/'+tg+' output</span></span><span class="bk">'+(bn?'Bukti WBS <b>'+bv+'/'+bn+'</b> lengkap':es.length?'Bukti WBS belum ditautkan':'—')+'</span></button>'}).join('')+'</div>';
  const es=all.filter(e=>e.row[0]===tw).sort((a,b)=>(a.row[6]||0)-(b.row[6]||0)),shown=attnOnly?es.filter(e=>e.attn):es;
  const tg=es.reduce((a,e)=>a+e.row[2],0),rl=es.reduce((a,e)=>a+(e.row[3]||0),0),has=twHas(tw);
  const cut=[...new Set(es.map(e=>e.row[5]).filter(Boolean))].join(', ');
- const outCell=t=>esc(t).replace(/\n{2,}/g,'<br><br>').replace(/\n/g,'<br>');
+ const outCell=t=>{const L=String(t||'').split(/\n+/).map(x=>x.trim()).filter(Boolean);const items=[];L.forEach(x=>{const m=x.match(/^(\d+)[.)]\s*(.*)$/);if(m)items.push({n:m[1],t:m[2],sub:[]});else if(/^[-–•]/.test(x)&&items.length)items[items.length-1].sub.push(x.replace(/^[-–•]\s*/,''));else items.push({n:'',t:x,sub:[],h:1})});
+  const li=it=>it.h?'<li class="kw-oh">'+esc(it.t)+'</li>':'<li><i>'+esc(it.n)+'</i><span>'+esc(it.t)+(it.sub.length?'<small>'+it.sub.map(esc).join(' · ')+'</small>':'')+'</span></li>';
+  const vis=items.slice(0,3),more=items.slice(3);
+  return '<ol class="kw-ol">'+vis.map(li).join('')+'</ol>'+(more.length?'<details class="kw-more-o"><summary>+'+more.length+' output lainnya</summary><ol class="kw-ol">'+more.map(li).join('')+'</ol></details>':'')};
  const row=e=>{const x=e.row;return '<tr data-kwrow="'+e.index+'" data-s="'+esc((x[1]+' '+x[4]).toLowerCase())+'"><td class="kw-no">'+(x[6]||'')+'</td><td class="kw-prog">'+esc(x[1])+'</td><td class="kw-out">'+outCell(x[4])+'</td><td class="kw-cut">'+esc(x[5]||'—')+'</td><td class="num">'+x[2]+'</td><td class="num">'+(x[3]==null?'—':x[3])+'</td><td>'+kwStatus(x)+'</td><td>'+kwEvCell(e)+'</td><td class="kw-act"><button type="button" class="kw-rb" data-act="kwOpen" data-index="'+e.index+'">Rincian ›</button></td></tr>'};
  const body=shown.length?shown.map(row).join(''):'<tr class="kw-sep ok"><td colspan="9">Semua output TW '+tw+' sudah tercapai dan buktinya lengkap.</td></tr>';
  const foot='<tfoot><tr class="kw-tot"><td colspan="4">TOTAL</td><td class="num">'+tg+'</td><td class="num">'+(has?rl:'—')+'</td><td colspan="3"></td></tr><tr class="kw-cap-row"><td colspan="4">CAPAIAN Q'+tw+'</td><td colspan="2" class="num"><b>'+(has?rl+'/'+tg+' · '+pct(tg?rl/tg*100:0):'—')+'</b></td><td colspan="3"></td></tr></tfoot>';
  const src=meta?'<span class="s kw-src">Sumber: '+esc(meta.file||'Capaian K-Wide')+(meta.at?' · diimpor '+fmtD(meta.at):'')+'</span>':'<span class="s kw-src">Sumber: Capaian K-Wide '+S.ui.tahun+' (Manual IKU)</span>';
  const link=(meta&&meta.link)||(S.ui.tahun===2026?KWIDE_2026_LINK:'');
  const tbl='<div class="card kw-card"><div class="kw-head"><h3>Target Output Q'+tw+' · '+es.length+' program · '+tg+' output'+(cut?' <small>Cut off '+esc(cut)+'</small>':'')+'</h3><button type="button" class="kw-sw'+(attnOnly?' on':'')+'" data-act="kwAll" role="switch" aria-checked="'+attnOnly+'"><i></i>Perlu perhatian saja</button><span class="kw-sp"></span><input type="search" class="kw-q" data-kwq placeholder="Cari program atau output…" aria-label="Cari program atau output">'+(link?'<a class="btn sm" href="'+esc(link)+'" target="_blank" rel="noopener" title="Folder SharePoint bukti dukung capaian IKU">Folder bukti capaian ›</a>':'')+impBtn+'</div>'+
-  '<div class="tscroll"><table class="kw-tbl"><thead><tr><th style="width:44px">No</th><th style="width:200px">Program Transformasi</th><th>Target Output Q'+tw+'</th><th style="width:96px">Tanggal Cut Off</th><th class="num" style="width:84px">Jumlah Target</th><th class="num" style="width:90px">Jumlah Realisasi</th><th style="width:120px">Status</th><th style="width:210px">Kelengkapan bukti<small>item WBS terkait</small></th><th style="width:100px"></th></tr></thead><tbody>'+body+'</tbody>'+foot+'</table></div>'+
+  '<div class="tscroll"><table class="kw-tbl"><colgroup><col style="width:44px"><col style="width:19%"><col><col style="width:92px"><col style="width:76px"><col style="width:84px"><col style="width:124px"><col style="width:150px"><col style="width:96px"></colgroup><thead><tr><th>No</th><th>Program Transformasi</th><th>Target Output Q'+tw+'</th><th>Cut off</th><th class="num">Target</th><th class="num">Realisasi</th><th>Status</th><th>Bukti WBS</th><th></th></tr></thead><tbody>'+body+'</tbody>'+foot+'</table></div>'+
   '<div class="kw-more"><span>Menampilkan '+shown.length+' dari '+es.length+' program</span>'+src+'</div></div>';
  return strip+tbl}
 function kwStatus(x){if(x[3]==null)return '<span class="chip c-gray">Belum tersedia</span>';return '<span class="chip '+(x[3]>=x[2]?'c-ok':'c-bad')+'">'+(x[3]>=x[2]?'Tercapai':'Belum tercapai')+'</span>'}
