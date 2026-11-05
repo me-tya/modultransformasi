@@ -1849,6 +1849,31 @@ td .nt-chip span{display:inline!important;margin:0!important;font-size:12px!impo
 .flt.pmo-unified .fbar>.fg.pm-fmore{flex:0 0 auto!important}.flt.pmo-unified .fbar>.fg.pm-fmore .btn{height:34px;white-space:nowrap}
 .flt.pmo-unified .fbar>.fg.pm-period,.flt.pmo-unified .fbar>.fg.pm-program{max-width:none}
 @media(max-width:760px){.flt.pmo-unified .fbar>.fg{max-width:none}}
+
+/* ===== Topbar seragam (Usulan B + lonceng L3) ===== */
+.top{--tbh:36px}
+.top .tsel,.top .role,.top .dbb,.top .hbtn,.top .ibtn,.top .av{height:var(--tbh)!important;min-height:0;border-radius:10px!important;font-size:13px!important;font-weight:800!important;box-sizing:border-box;flex:none}
+.top .tsel{border:1px solid rgba(255,255,255,.18)!important;background:rgba(255,255,255,.04);padding:0 8px 0 12px!important;color:#AFC2E2;gap:8px}
+.top .tsel span{font-weight:600}
+.top .tsel select{font-size:14px;font-weight:800;color:var(--yellow);cursor:pointer}
+.top .tsel:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.32)!important}
+.top .role{padding:0 12px!important;background:rgba(253,185,19,.10)!important;border:1px solid rgba(253,185,19,.45)!important;color:#F6D47E!important}
+.top .dbb{padding:0 12px!important;background:rgba(62,207,142,.08)!important;border:1px solid rgba(62,207,142,.40)!important;color:#8BE6BC!important;gap:6px}
+.top .hbtn{padding:0 12px 0 8px!important;gap:8px!important;background:var(--navy)!important;border:1px solid var(--yellow)!important;color:var(--yellow)!important}
+.top .hbtn span{display:inline!important}
+.top .hbtn i{width:22px!important;height:22px!important;font-size:12.5px!important;background:var(--yellow)!important;color:var(--navy)!important}
+.top .hbtn:hover{background:#13315C!important;color:var(--yellow)!important}
+.top .ibtn{width:var(--tbh)!important;display:grid;place-items:center;color:var(--yellow);border:1px solid rgba(255,255,255,.18)!important;background:rgba(255,255,255,.04)}
+.top .ibtn:hover{background:rgba(255,255,255,.09)}
+.top .ibtn i{top:-7px!important;right:-7px!important;min-width:20px;height:20px;line-height:20px!important;padding:0 5px!important;font-size:11px!important;border-radius:999px!important;box-shadow:0 0 0 2px var(--top,#0B2447);text-align:center}
+.top .ibtn.bell-on{border-color:var(--yellow)!important}
+.top .ibtn.bell-on svg{fill:var(--yellow);transform-origin:50% 10%;animation:bellRing 2.4s ease-in-out infinite}
+.top .ibtn.bell-on:after{content:"";position:absolute;inset:-4px;border-radius:13px;border:2px solid var(--yellow);opacity:0;pointer-events:none;animation:bellPulse 2.4s ease-out infinite}
+@keyframes bellRing{0%,70%,100%{transform:rotate(0)}74%{transform:rotate(16deg)}78%{transform:rotate(-14deg)}82%{transform:rotate(10deg)}86%{transform:rotate(-6deg)}90%{transform:rotate(0)}}
+@keyframes bellPulse{0%,60%{opacity:0;transform:scale(.9)}70%{opacity:.8}100%{opacity:0;transform:scale(1.15)}}
+.top .av{width:var(--tbh)!important;border-radius:10px!important;background:#E8EEF8!important;color:var(--navy)!important;font-size:12px!important;border:1px solid #E8EEF8!important}
+@media(max-width:900px){.top .hbtn span{display:none!important}.top .hbtn{padding:0 6px!important}.top .tsel span{display:none}}
+@media(prefers-reduced-motion:reduce){.top .ibtn.bell-on svg,.top .ibtn.bell-on:after{animation:none}}
 </style>
 
 <div id="root"></div>
@@ -2410,7 +2435,7 @@ function render(){try{ensureBkFlow()}catch(e){}try{kwMigrate()}catch(e){}
  <div class="main"><header class="top"><button class="hamb" id="hamb" aria-label="Tampilkan/sembunyikan menu">☰</button><div class="crumb">${crumbOf()}</div>
  <label class="tsel"><span>Tahun Anggaran</span><select id="yr" aria-label="Tahun anggaran">${yearsOpt().map(y=>`<option ${S.ui.tahun==y?'selected':''}>${y}</option>`).join('')}</select></label>
  <span class="role">${meLab()}</span>
- ${FB.on?`<span class="dbb" id="dbb" title="Status sinkron Firestore">${FB.st==="Gagal menyimpan"?"⚠ ":"● "}${esc(FB.st||"Firestore")}</span>`:""}<button class="hbtn" data-act="helphome" title="Pusat Bantuan: alur, peta menu, dan istilah"><i>?</i><span>Bantuan</span></button><button class="ibtn" id="bell" aria-label="Notifikasi">🔔${tk.length?`<i>${tk.length}</i>`:''}</button>
+ ${FB.on?`<span class="dbb" id="dbb" title="Status sinkron Firestore">${FB.st==="Gagal menyimpan"?"⚠ ":"● "}${esc(FB.st||"Firestore")}</span>`:""}<button class="hbtn" data-act="helphome" title="Pusat Bantuan: alur, peta menu, dan istilah"><i>?</i><span>Bantuan</span></button><button class="ibtn${tk.length?' bell-on':''}" id="bell" aria-label="Notifikasi${tk.length?', '+tk.length+' baru':''}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>${tk.length?`<i>${tk.length}</i>`:''}</button>
  <button class="av" id="av" aria-label="Akun">${esc(ME.nama.split(' ').map(w=>w[0]).slice(0,2).join(''))}</button></header>
  <main class="view" id="view"></main></div></div>`;
  $('#hamb').onclick=()=>{if(innerWidth<=900)$('#side').classList.toggle('open');else{S.ui.side=S.ui.side===0?1:0;save();$('#app').classList.toggle('collapsed')}};
