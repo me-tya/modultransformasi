@@ -1464,6 +1464,34 @@ body:has(.prj-overlay){overflow:hidden}
 .prj-subrow .pg .bar{background:#E9EEF5}
 .pm-ws-icon.sub{width:34px;height:34px;opacity:.85}
 .pm-ws-icon.sub svg{width:16px;height:16px}
+
+/* ===== Jadwal & Bukti (Workspace) ===== */
+.ws-jlist,.ws-minilist{list-style:none;margin:0;padding:0}
+.ws-jlist .ws-jd,.ws-minilist .ws-mini{display:grid;grid-template-columns:64px minmax(0,1fr) 120px 150px auto;gap:14px;align-items:center;padding:10px 4px}
+.ws-minilist .ws-mini{grid-template-columns:64px minmax(0,1fr) auto}
+.ws-jd .ws-ms-date,.ws-mini .ws-ms-date{width:64px;height:56px}
+.ws-jd+.ws-jd,.ws-mini+.ws-mini{border-top:1px solid var(--line-2)}
+.j-ok .ws-ms-date{color:var(--ok)}.j-bad .ws-ms-date{color:var(--bad)}.j-warn .ws-ms-date{color:#E0A021}.j-info .ws-ms-date{color:var(--info)}.j-gray .ws-ms-date{color:#9AA6BA}
+.ws-jd.j-bad{background:#FFFBFA}
+.ws-jd .ws-ev-act{display:flex;gap:6px;justify-content:flex-end;flex-wrap:nowrap}
+.ws-jnote{grid-column:2/-1;margin-top:-2px;padding:7px 11px;border-radius:9px;background:var(--bad-bg,#FDECEA);color:var(--bad);font-size:12.5px;line-height:1.5}
+.ws-jmon{position:relative;z-index:2;display:flex;align-items:center;gap:10px;padding:8px 12px;margin:10px 0 2px;border-radius:9px;background:#F1F5FB;color:var(--navy);font-size:13px}
+.ws-jmon:first-child{margin-top:0}
+.ws-jmon span{font-size:12px;font-weight:700;color:var(--ink-3)}
+.ws-jmon.now{background:#FFF6DC}.ws-jmon em{font-style:normal;font-size:10.5px;font-weight:800;background:var(--yellow);color:var(--navy);padding:1px 8px;border-radius:20px}
+.ws-jsep{width:1px;height:24px;background:var(--line);margin:0 2px;align-self:center}
+.ws-jtools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.ws-jtools .ws-toolbar{flex:1;margin:0}
+.ws-seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#fff}
+.ws-seg button{border:0;background:none;padding:7px 13px;font:inherit;font-size:12.5px;font-weight:800;color:var(--ink-3);cursor:pointer}.ws-seg button.on{background:var(--navy);color:#fff}
+.ws-upbar{display:flex;align-items:center;gap:10px;margin:10px 0;padding:9px 14px;border-radius:11px;background:#FFF9E8;border:1px solid #F6E3A8;color:#5B4A12;font-size:13px}
+.ws-upbar .btn{margin-left:auto}
+.btn.ws-dis{opacity:.4;pointer-events:none}
+.ws-mini-st{display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+.ws-jdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:1px;background:#9AA6BA}
+.ws-jdot.j-ok{background:var(--ok)}.ws-jdot.j-bad{background:var(--bad)}.ws-jdot.j-warn{background:#E0A021}.ws-jdot.j-info{background:var(--info)}
+.ws-more{margin:8px 4px 0;font-size:12.5px;color:var(--ink-3)}
+.ws-empty.sm{padding:18px}
+@media(max-width:1100px){.ws-jlist .ws-jd{grid-template-columns:64px minmax(0,1fr) auto}.ws-jd .ws-ev-st{display:none}.ws-jd .ws-ev-act{grid-column:2/-1;justify-content:flex-start}}
 </style>
 
 <div id="root"></div>
@@ -3539,6 +3567,7 @@ const PROJECT_GUIDE={
  stakeholder:['Stakeholder Register','Mendata pihak yang memengaruhi atau terdampak proyek, menilai pengaruh, kepentingan, dan dukungannya, lalu menetapkan strategi pelibatan.','BKN (Direktorat Pengembangan Sistem SIASN) · Eksternal · High/High · Neutral · rapat teknis dua mingguan.'],
  issue:['Issue Log','Memantau masalah yang sudah terjadi. Isu dibuat dari Risk Register dengan jenis Isu atau dengan mengubah status risiko menjadi Menjadi isu.','Koneksi API SIASN gagal saat UAT tahap 2 · PIC Tim Integrasi · tenggat 15/10/2026.'],
  decision:['Decision Log','Mencatat keputusan penting proyek agar alasan, pengambil keputusan, dan tindak lanjutnya bisa ditelusuri kemudian.','Cut-over pengajuan pensiun via HRIS dimulai Januari 2027 · Steering Committee HRIS · PIC Biro SDM.'],
+ jadwal:['Jadwal & Bukti','Satu daftar untuk seluruh item WBS proyek: kapan tenggatnya, sudah selesai atau belum, dan apakah buktinya sudah valid. Gunakan chip untuk menyaring (status bukti, Terlambat, 30 hari ke depan) dan pilih tampilan Linimasa atau Tabel. Unggah bukti tetap di Pelaksanaan › WBS & progres.','OA-112 · 30 Sep · Selesai · bukti Ditolak (lampiran hasil uji belum disertakan) → klik Buka WBS & progres untuk mengganti bukti.'],
  bukti:['Bukti Dukung','Melihat dan mengunduh bukti dukung tiap item WBS proyek. Unggah hanya di Pelaksanaan › WBS & progres; validasi oleh PMO Kemenkeu.','Saring "Belum diunggah" untuk melihat deliverable Interkoneksi HRIS–SIASN yang buktinya belum ada.'],
  milestone:['Milestone & Deliverable','Daftar tonggak dan deliverable proyek berdasarkan jadwal WBS.','UAT interkoneksi HRIS–SIASN selesai 30/09/2026, dibuktikan berita acara UAT.'],
  copy:['Salin dari Modul Lain','Menyalin risiko atau stakeholder dari proyek/subproyek lain sebagai data baru. Sumber tidak berubah; tinjau ulang hasil salinan.','Salin stakeholder dari Integrasi HRIS–TOOS ke Interkoneksi HRIS–SIASN, lalu ganti mitra Taspen menjadi BKN.'],
@@ -3583,11 +3612,12 @@ const WS_ICO={
 };
 const wsIco=(k,s=16)=>'<svg class="ws-i" viewBox="0 0 24 24" width="'+s+'" height="'+s+'" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(WS_ICO[k]||'')+'</svg>';
 const WS_BULAN=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+const WS_BULAN_L=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 function projectWorkspace(){
  projectStores();
  const key=S.ui.prjScope;if(!key)return '';
  const [prog,proj,sub]=projectLabels(key),p=progOf(prog);if(!p)return '';
- const tab=['ringkasan','risiko','stakeholder','issue','decision','milestone','bukti'].includes(S.ui.prjTab)?S.ui.prjTab:'ringkasan';
+ const tab0=S.ui.prjTab==='milestone'||S.ui.prjTab==='bukti'?'jadwal':S.ui.prjTab,tab=['ringkasan','jadwal','risiko','stakeholder','issue','decision'].includes(tab0)?tab0:'ringkasan';
  const rows=projectWbs(key),risk=S.projectRisks.filter(x=>x.scope===key),sh=S.projectStakeholders.filter(x=>x.scope===key),dec=S.projectDecisions.filter(x=>x.scope===key),issues=risk.filter(x=>x.kind==='Isu');
  const editRisk=lv('risk').includes('C')||lv('risk').includes('U'),editStake=lv('porto').includes('C')||lv('porto').includes('U');
  const btn=(action,id,label,cls='')=>'<button type="button" class="btn sm '+cls+'" data-act="'+action+'" data-id="'+esc(id)+'">'+label+'</button>';
@@ -3603,13 +3633,12 @@ function projectWorkspace(){
  const status=rows.length?(rows.every(w=>doneAt(w,12)&&w.v)?'Selesai':late?'Perlu perhatian':'Berjalan'):'Belum ada WBS';
  const jadwalS=rows.reduce((m,w)=>w.s&&(!m||w.s<m)?w.s:m,''),jadwalF=rows.reduce((m,w)=>w.f&&w.f>m?w.f:m,'');
  const pend=String(p.pend||'').split(/[,;]/).map(s=>s.trim()).filter(Boolean);
- const counts={ringkasan:'',risiko:risk.length,stakeholder:sh.length,issue:issues.length,decision:dec.length,milestone:rows.length,bukti:(bkCount.Valid||0)+'/'+rows.length};
+ const counts={ringkasan:'',risiko:risk.length,stakeholder:sh.length,issue:issues.length,decision:dec.length,jadwal:rows.length};
  /* ---------- pemilih lingkup ---------- */
  const picker='<div class="ws-scope"><label class="ws-field"><span>Modul / Proyek · WBS Level 4</span><select class="sel" data-on="prjProjSwitch">'+scopeP.map(x=>'<option value="'+esc(projectKey(prog,x.n))+'" '+(x.n===proj?'selected':'')+'>'+esc(x.n)+'</option>').join('')+'</select></label><label class="ws-field"><span>Submodul / Subproyek · WBS Level 5</span><select class="sel" data-on="prjSubSwitch" '+(!subOptions.length?'disabled':'')+'><option value="'+esc(projectKey(prog,activeProject?.n||proj))+'">'+(subOptions.length?'Semua submodul ('+subOptions.length+')':'Tidak ada submodul')+'</option>'+subOptions.map(x=>'<option value="'+esc(projectKey(prog,activeProject.n,x.name))+'" '+(x.name===sub?'selected':'')+'>'+esc(x.name)+'</option>').join('')+'</select></label></div>';
  /* ---------- paginasi ---------- */
  const bkF=BK.includes(S.ui.prjBuktiF)?S.ui.prjBuktiF:'';
- const pRisk=projectPagination(risk,'risiko'),pStake=projectPagination(sh,'stakeholder'),pIssue=projectPagination(issues,'issue'),pDec=projectPagination(dec,'decision'),
-  pWbs=projectPagination(rows.slice().sort((a,b)=>String(a.f||'9').localeCompare(String(b.f||'9'))),'milestone'),pBukti=projectPagination(bkF?rows.filter(w=>buktiSt(w)===bkF):rows,'bukti');
+ const pRisk=projectPagination(risk,'risiko'),pStake=projectPagination(sh,'stakeholder'),pIssue=projectPagination(issues,'issue'),pDec=projectPagination(dec,'decision');
  /* ---------- tabel register ---------- */
  const score=x=>{const v=(x.likelihood||0)*(x.severity||0);return '<span class="ws-score '+(v>=15?'hi':v>=8?'md':'lo')+'" title="Kemungkinan × Dampak">'+v+'</span>'};
  const cmTag=x=>x.cm?'<span class="chip c-teal">→ CMO</span>':'<span class="ws-dash">—</span>';
@@ -3628,20 +3657,54 @@ function projectWorkspace(){
  const kpis='<div class="ws-kpis">'+
   kpi('wbs','navy','Item WBS',rows.length,'Item dalam lingkup ini')+
   kpi('progress','green','Progres tervalidasi',pgVal+'%','Berdasarkan bobot WBS','<span class="ws-meter"><i style="width:'+pgVal+'%"></i></span>')+
-  kpi('milestone','gold','Milestone berjalan',running,late?'<em class="ws-late">'+late+' terlambat</em>':'Tidak ada yang terlambat')+
+  kpi('milestone','gold','Item belum selesai',running,late?'<em class="ws-late">'+late+' terlambat</em>':'Tidak ada yang terlambat')+
   kpi('risiko','red','Risiko terbuka',openRisk,'Termasuk risiko CM')+
   kpi('stakeholder','teal','Stakeholder',sh.length,'Register lingkup aktif')+'</div>';
  const dist=(order,cnt,cls)=>{const tot=order.reduce((a,s)=>a+(cnt[s]||0),0);return '<div class="ws-stack" role="img" aria-label="Distribusi">'+(tot?order.filter(s=>cnt[s]).map(s=>'<i class="'+cls(s)+'" style="flex:'+cnt[s]+'" title="'+esc(s)+': '+cnt[s]+'"></i>').join(''):'<i class="t-empty" style="flex:1"></i>')+'</div><ul class="ws-legend">'+order.map(s=>'<li><i class="'+cls(s)+'"></i><span>'+esc(s)+'</span><b>'+(cnt[s]||0)+'</b></li>').join('')+'</ul>'};
  const stCls=s=>({'Selesai':'t-ok','Berjalan':'t-info','Terjadwal':'t-gray','Terlambat':'t-bad','Belum dijadwalkan':'t-warn'})[s]||'t-gray';
  const bkCls=s=>({'Valid':'t-ok','Menunggu validasi':'t-warn','Belum diunggah':'t-gray','Ditolak':'t-bad'})[s]||'t-gray';
+ /* ---------- Jadwal & Bukti (gabungan Milestone + Bukti Dukung) ---------- */
+ const validN=bkCount.Valid||0,validPct=rows.length?Math.round(100*validN/rows.length):0;
+ const jTone=w=>{const st=stOf(w,12),bs=buktiSt(w);if(bs==='Valid')return 'j-ok';if(bs==='Ditolak'||st==='Terlambat')return 'j-bad';if(bs==='Menunggu validasi')return 'j-warn';if(st==='Berjalan')return 'j-info';return 'j-gray'};
+ const dLeft=w=>w.f?Math.round((new Date(w.f)-new Date(TODAY))/864e5):null;
+ const tile=w=>{const d=String(w.f||'').split('-');return '<div class="ws-ms-date"><b>'+(d.length===3?d[2]:'—')+'</b><span>'+(d.length===3?WS_BULAN[(+d[1]||1)-1]:'—')+'</span></div>'};
+ const when=w=>{const a=aktOf(w),n=dLeft(w);if(a)return 'selesai '+fmtD(a);if(doneAt(w,12))return 'selesai';if(n!=null&&n>=0)return n===0?'tenggat hari ini':n+' hari lagi';if(n!=null)return 'lewat '+(-n)+' hari';return w.s?'mulai '+fmtD(w.s):''};
+ const docBtns=w=>{const B=S.bukti[w.k]||{};return (B.link?'<a class="btn sm" href="'+esc(B.link)+'" target="_blank" rel="noopener" title="Lihat bukti dukung">'+wsIco('ext',14)+'Lihat</a><a class="btn sm" href="'+esc(B.link)+'" download target="_blank" rel="noopener" title="Unduh bukti dukung">'+wsIco('bukti',14)+'Unduh</a>':'<span class="btn sm ws-dis" aria-disabled="true">'+wsIco('ext',14)+'Lihat</span><span class="btn sm ws-dis" aria-disabled="true">'+wsIco('bukti',14)+'Unduh</span>')+
+  '<button type="button" class="btn sm ws-ghost" data-act="prjDemoPdf" data-k="'+esc(w.k)+'" title="Unduh ringkasan PDF item WBS">'+wsIco('bukti',14)+'Dokumen</button>'};
+ const JF=['Valid','Menunggu validasi','Belum diunggah','Ditolak','Terlambat','30'];const jf=JF.includes(S.ui.prjJF)?S.ui.prjJF:'';
+ const in30=w=>{const n=dLeft(w);return !doneAt(w,12)&&n!=null&&n>=0&&n<=30};
+ const jMatch=(w,f)=>!f||(f==='Terlambat'?stOf(w,12)==='Terlambat':f==='30'?in30(w):buktiSt(w)===f);
+ const jSorted=rows.slice().sort((a,b)=>String(a.f||'9').localeCompare(String(b.f||'9')));
+ const jRows=jSorted.filter(w=>jMatch(w,jf)),pJ=projectPagination(jRows,'jadwal');
+ const jCnt=f=>rows.filter(w=>jMatch(w,f)).length;
+ const chip=(v,l,dot)=>'<button type="button" class="ws-bk-chip'+(jf===v?' on':'')+'" data-act="prjJF" data-v="'+esc(v)+'">'+(dot?'<i class="'+dot+'"></i>':'')+'<span>'+l+'</span><b>'+(v?jCnt(v):rows.length)+'</b></button>';
+ const jChips='<div class="ws-bk-filter" role="group" aria-label="Saring jadwal dan bukti">'+chip('','Semua')+BK.map(s=>chip(s,s,bkCls(s))).join('')+'<span class="ws-jsep" aria-hidden="true"></span>'+chip('Terlambat','Terlambat','t-bad')+chip('30','30 hari ke depan')+'</div>';
+ const jView=S.ui.prjJV==='tbl'?'tbl':'lin';
+ const jTools='<div class="ws-jtools">'+search(pJ.count,'kode, output, atau UIC')+'<div class="ws-seg" role="group" aria-label="Tampilan"><button type="button" data-act="prjJV" data-v="lin" class="'+(jView==='lin'?'on':'')+'">Linimasa</button><button type="button" data-act="prjJV" data-v="tbl" class="'+(jView==='tbl'?'on':'')+'">Tabel</button></div></div>';
+ const firstOpen=jSorted.find(w=>buktiSt(w)!=='Valid'&&canW('bukti','U',bkUnits(w),w));
+ const upBar=firstOpen?'<div class="ws-upbar">'+wsIco('upload',15)+'<span>Perlu mengunggah atau mengganti bukti? Unggah dilakukan di <b>Pelaksanaan › WBS &amp; progres</b>.</span><button type="button" class="btn sm gold" data-act="bkgo" data-k="'+esc(firstOpen.k)+'">Buka WBS &amp; progres ›</button></div>':'';
+ const jItem=w=>{const st=stOf(w,12),bs=buktiSt(w),B=S.bukti[w.k]||{};
+  return '<li class="ws-jd ws-ms '+jTone(w)+'">'+tile(w)+'<div class="ws-ms-body">'+wbsCode(w)+'<p>'+esc(deliv(w))+'</p><small>'+esc(uicU(w)||'—')+(when(w)?' · '+esc(when(w)):'')+'</small></div>'+
+  '<div class="ws-ev-st"><span class="ws-ev-lbl">Pelaksanaan</span>'+chipSt(st)+'</div><div class="ws-ev-st"><span class="ws-ev-lbl">Bukti</span>'+chipSt(bs)+'</div><div class="ws-ev-act">'+docBtns(w)+'</div>'+
+  (bs==='Ditolak'&&B.cat?'<div class="ws-jnote"><b>Catatan validator:</b> '+esc(B.cat)+'</div>':'')+'</li>'};
+ const monKey=w=>String(w.f||'').slice(0,7),monLab=k=>{const [y,m]=k.split('-');return m?WS_BULAN_L[(+m||1)-1]+' '+y:'Belum dijadwalkan'};
+ const curMon=String(TODAY).slice(0,7);
+ let lastMon=null;
+ const lin=pJ.rows.map(w=>{const k=monKey(w);let h='';if(k!==lastMon){lastMon=k;const all=jRows.filter(x=>monKey(x)===k);h='<li class="ws-jmon'+(k===curMon?' now':'')+'"><b>'+esc(monLab(k))+'</b><span>'+all.length+' item · '+all.filter(x=>buktiSt(x)==='Valid').length+' valid</span>'+(k===curMon?'<em>Bulan ini</em>':'')+'</li>'}return h+jItem(w)}).join('');
+ const jTbl=r=>tbl([['Tenggat'],['Kode WBS'],['Target Output / Deliverable'],['PIC / UIC'],['Pelaksanaan'],['Bukti'],['Aksi','ws-td-act']],r.map(w=>'<tr><td class="ws-nowrap"><span class="ws-jdot '+jTone(w)+'"></span>'+fmtD(w.f)+'</td><td>'+wbsCode(w)+'</td><td class="ws-td-wide">'+esc(deliv(w))+'</td><td>'+esc(uicU(w)||'—')+'</td><td>'+chipSt(stOf(w,12))+'</td><td>'+chipSt(buktiSt(w))+'</td><td class="ws-td-act"><div class="ws-ev-act">'+docBtns(w)+'</div></td></tr>').join(''));
+ const jadwalPanel='<section class="ws-panel">'+head('jadwal','Jadwal &amp; Bukti','', 'otomatis dari WBS')+
+  '<div class="ws-bk-hero"><span class="ws-bk-shield">'+wsIco('shield',22)+'</span><div class="ws-bk-hero-txt"><b>'+validN+' dari '+rows.length+' bukti tervalidasi</b><span class="ws-meter lg"><i style="width:'+validPct+'%"></i></span><small>Bukti diunggah di Pelaksanaan › WBS &amp; progres, lalu divalidasi PMO Kemenkeu — capaian 100 dihitung setelah valid. Di sini hanya untuk melihat dan mengunduh. Tombol <b>Dokumen</b> mengunduh ringkasan PDF item WBS.</small></div><div class="ws-bk-pct">'+validPct+'<span>%</span></div></div>'+
+  jChips+jTools+upBar+
+  (pJ.count?(jView==='tbl'?jTbl(pJ.rows):'<ol class="ws-timeline ws-jlist">'+lin+'</ol>'):empty(jf?'item untuk filter ini':'item WBS','milestone'))+pJ.footer+'</section>';
  const profil='<section class="ws-panel ws-profile">'+head('ringkasan','Profil Proyek')+
   '<dl class="ws-dl"><div><dt>Status</dt><dd>'+chipSt(status)+'</dd></div><div><dt>Jadwal</dt><dd class="ws-nowrap">'+(jadwalS?fmtD(jadwalS):'—')+' – '+(jadwalF?fmtD(jadwalF):'—')+'</dd></div><div><dt>Jumlah subproyek</dt><dd>'+(activeProject?.subItems?.length||0)+(sub?' <span class="ws-muted">· aktif: '+esc(sub)+'</span>':'')+'</dd></div><div><dt>UIC Utama</dt><dd><span class="ws-uic main">'+esc(p.uic||'—')+'</span></dd></div><div class="ws-dl-wide"><dt>UIC Pendukung</dt><dd class="ws-uics">'+(pend.length?pend.map(u=>'<span class="ws-uic">'+esc(u)+'</span>').join(''):'<span class="ws-muted">—</span>')+'</dd></div></dl></section>';
  const komposisi='<section class="ws-panel">'+head('wbs','Komposisi Status')+'<div class="ws-dist"><h4>Capaian item WBS</h4>'+dist(ST,stCount,stCls)+'</div><div class="ws-dist"><h4>Status bukti dukung</h4>'+dist(BK,bkCount,bkCls)+'</div></section>';
  const briefRisks=risk.slice(0,5),briefStake=sh.slice(0,5);
+ const miniLi=w=>'<li class="ws-mini '+jTone(w)+'">'+tile(w)+'<div class="ws-ms-body">'+wbsCode(w)+'<p>'+esc(deliv(w))+'</p><small>'+esc(uicU(w)||'—')+' · '+esc(when(w))+'</small></div><div class="ws-mini-st">'+chipSt(stOf(w,12))+chipSt(buktiSt(w))+'</div></li>';
+ const attn=jSorted.filter(w=>stOf(w,12)==='Terlambat'||buktiSt(w)==='Ditolak'),soon=jSorted.filter(in30);
+ const miniPanel=(id,title,sub2,list,f,emptyTxt)=>'<section class="ws-panel">'+head(id,title,'<button type="button" class="btn sm" data-act="prjTab" data-v="jadwal" data-f="'+f+'">Lihat semua ›</button>',sub2)+(list.length?'<ol class="ws-timeline ws-minilist">'+list.slice(0,5).map(miniLi).join('')+'</ol>'+(list.length>5?'<p class="ws-more">+'+(list.length-5)+' item lainnya di Jadwal &amp; Bukti</p>':''):'<div class="ws-empty sm"><b>'+emptyTxt+'</b></div>')+'</section>';
  const overview=kpis+'<div class="ws-grid-2">'+profil+komposisi+'</div>'+
-  '<section class="ws-panel">'+head('wbs','WBS & Target Output','<button type="button" class="btn sm" data-act="prjTab" data-v="milestone">Lihat Semua WBS ›</button>',rows.length>5?'5 dari '+rows.length+' item':'')+(rows.length?wbsTable(rows.slice(0,5)):empty('item WBS','wbs'))+'</section>'+
-  '<div class="ws-grid-2"><section class="ws-panel">'+head('risiko','Risk Register','<button type="button" class="btn sm" data-act="prjTab" data-v="risiko">Lihat Semua ›</button>',risk.length+' data')+(risk.length?riskTable(briefRisks):empty('risiko','risiko'))+'</section>'+
-  '<section class="ws-panel">'+head('stakeholder','Stakeholder Register','<button type="button" class="btn sm" data-act="prjTab" data-v="stakeholder">Lihat Semua ›</button>',sh.length+' data')+(sh.length?stakeTable(briefStake):empty('stakeholder','stakeholder'))+'</section></div>';
+  '<div class="ws-grid-2">'+miniPanel('jadwal','Perlu perhatian','terlambat atau bukti ditolak · '+attn.length,attn,'Terlambat','Tidak ada item terlambat atau bukti ditolak.')+miniPanel('jadwal','Tenggat terdekat','30 hari ke depan · '+soon.length,soon,'30','Tidak ada tenggat dalam 30 hari ke depan.')+'</div>';
  /* ---------- Tab register ---------- */
  const riskPanel='<section class="ws-panel">'+head('risiko','Risk Register',(editRisk?'<button type="button" class="btn sm" data-act="prjCopy" data-type="risk">Salin dari Modul Lain</button><button type="button" class="btn sm pri" data-act="prjRiskAdd">+ Tambah Risiko / Isu</button>':''))+
   hint('Isi potensi kejadian, PIC, kemungkinan × dampak, mitigasi, dan tenggat. Centang <b>Risiko CM</b> agar tersinkron ke modul CMO yang tepat.')+search(pRisk.count,'risiko, PIC, atau status')+(pRisk.count?riskTable(pRisk.rows):empty('risiko','risiko'))+pRisk.footer+'</section>';
@@ -3651,31 +3714,18 @@ function projectWorkspace(){
   hint('Isu adalah masalah yang <b>sudah terjadi</b>. Tambahkan melalui Risk Register dengan jenis Isu, lalu pantau tindak lanjutnya di sini.')+search(pIssue.count,'isu atau PIC')+(pIssue.count?issueTable(pIssue.rows):empty('isu','issue'))+pIssue.footer+'</section>';
  const decisionPanel='<section class="ws-panel">'+head('decision','Decision Log',(editStake?'<button type="button" class="btn sm pri" data-act="prjDecisionAdd">+ Tambah Keputusan</button>':''))+
   hint('Catat keputusan penting, pengambil keputusan, PIC tindak lanjut, tenggat, dan statusnya.')+search(pDec.count,'keputusan atau PIC')+(pDec.count?decisionTable(pDec.rows):empty('keputusan','decision'))+pDec.footer+'</section>';
- /* ---------- Milestone: linimasa ---------- */
- const msItem=w=>{const st=stOf(w,12),d=String(w.f||'').split('-');const day=d.length===3?d[2]:'—',mon=d.length===3?WS_BULAN[(+d[1]||1)-1]+' '+d[0]:'Belum dijadwalkan';
-  return '<li class="ws-ms '+stCls(st)+'"><div class="ws-ms-date"><b>'+day+'</b><span>'+mon+'</span></div><div class="ws-ms-body">'+wbsCode(w)+'<p>'+esc(deliv(w))+'</p><small>'+esc(uicU(w)||'—')+(w.s?' · mulai '+fmtD(w.s):'')+'</small></div><div class="ws-ms-meta">'+chipSt(st)+chipSt(w.v?'Valid':'Belum tervalidasi')+'<button type="button" class="btn sm" data-act="kwWbs" data-k="'+esc(w.k)+'">Buka WBS</button></div></li>'};
- const milestonePanel='<section class="ws-panel">'+head('milestone','Milestone','', 'otomatis dari WBS')+hint('Jadwal, output, dan status berasal dari WBS Pelaksanaan dan diurutkan menurut tanggal target — tanpa input milestone tambahan.')+search(pWbs.count,'kode, output, atau UIC')+
-  (pWbs.count?'<ol class="ws-timeline">'+pWbs.rows.map(msItem).join('')+'</ol>':empty('milestone WBS','milestone'))+pWbs.footer+'</section>';
- /* ---------- Bukti Dukung ---------- */
- const validN=bkCount.Valid||0,validPct=rows.length?Math.round(100*validN/rows.length):0;
- const bkFilter='<div class="ws-bk-filter" role="group" aria-label="Saring status bukti"><button type="button" class="ws-bk-chip'+(bkF?'':' on')+'" data-act="prjBuktiF" data-v=""><span>Semua</span><b>'+rows.length+'</b></button>'+BK.map(s=>'<button type="button" class="ws-bk-chip'+(bkF===s?' on':'')+'" data-act="prjBuktiF" data-v="'+esc(s)+'"><i class="'+bkCls(s)+'"></i><span>'+esc(s)+'</span><b>'+(bkCount[s]||0)+'</b></button>').join('')+'</div>';
- const evItem=w=>{const bs=buktiSt(w),B=S.bukti[w.k]||{},canUp=canW('bukti','U',bkUnits(w),w)&&!w.v;const ref=B.nama||B.link||'';
-  return '<li class="ws-ev '+bkCls(bs)+'"><div class="ws-ev-id">'+wbsCode(w)+'<span class="ws-ev-date">Target '+fmtD(w.f)+'</span></div><div class="ws-ev-body"><p>'+esc(deliv(w))+'</p><small>'+esc(uicU(w)||'—')+(ref?' · <span class="ws-ev-ref" title="'+esc(ref)+'">'+wsIco('bukti',13)+esc(short(String(ref),48))+'</span>':'')+'</small></div>'+
-  '<div class="ws-ev-st"><span class="ws-ev-lbl">Capaian</span>'+chipSt(stOf(w,12))+'</div><div class="ws-ev-st"><span class="ws-ev-lbl">Bukti</span>'+chipSt(bs)+'</div>'+
-  '<div class="ws-ev-act"><button type="button" class="btn sm" data-act="kwWbs" data-k="'+esc(w.k)+'" title="Buka WBS">'+wsIco('ext',14)+'WBS</button>'+(B.link?'<a class="btn sm" href="'+esc(B.link)+'" target="_blank" rel="noopener" title="Lihat bukti dukung">'+wsIco('bukti',14)+'Lihat</a>':'')+(canUp?'<button type="button" class="btn sm gold" data-act="bkgo" data-k="'+esc(w.k)+'" title="Unggah di Pelaksanaan › WBS & progres">'+wsIco('upload',14)+'Unggah di WBS ›</button>':'')+'<button type="button" class="btn sm ws-ghost" data-act="prjDemoPdf" data-k="'+esc(w.k)+'" title="Unduh dokumen PDF ringkasan item WBS">'+wsIco('bukti',14)+'Dokumen</button></div></li>'};
- const buktiPanel='<section class="ws-panel">'+head('bukti','Bukti Dukung','', 'terintegrasi WBS')+
-  '<div class="ws-bk-hero"><span class="ws-bk-shield">'+wsIco('shield',22)+'</span><div class="ws-bk-hero-txt"><b>'+validN+' dari '+rows.length+' bukti tervalidasi</b><span class="ws-meter lg"><i style="width:'+validPct+'%"></i></span><small>Bukti diunggah di Pelaksanaan › WBS &amp; progres, lalu divalidasi PMO Kemenkeu — capaian 100 dihitung setelah valid. Di sini hanya untuk melihat dan mengunduh. Tombol <b>Dokumen</b> mengunduh ringkasan PDF item WBS.</small></div><div class="ws-bk-pct">'+validPct+'<span>%</span></div></div>'+
-  bkFilter+search(pBukti.count,'kode atau output')+(pBukti.count?'<ul class="ws-evlist">'+pBukti.rows.map(evItem).join('')+'</ul>':empty(bkF?'bukti berstatus “'+bkF+'”':'item WBS','bukti'))+pBukti.footer+'</section>';
- const content={ringkasan:overview,risiko:riskPanel,stakeholder:stakePanel,issue:issuePanel,decision:decisionPanel,milestone:milestonePanel,bukti:buktiPanel}[tab];
- const tabs=[['ringkasan','Ringkasan'],['risiko','Risk Register'],['stakeholder','Stakeholder'],['issue','Issue Log'],['decision','Decision Log'],['milestone','Milestone'],['bukti','Bukti Dukung']];
+ const content={ringkasan:overview,jadwal:jadwalPanel,risiko:riskPanel,stakeholder:stakePanel,issue:issuePanel,decision:decisionPanel}[tab];
+ const tabs=[['ringkasan','Ringkasan'],['jadwal','Jadwal & Bukti'],['risiko','Risk Register'],['stakeholder','Stakeholder'],['issue','Issue Log'],['decision','Decision Log']];
  const crumbs=[p.nama||p.akr,proj,sub].filter(Boolean);
  return '<div class="prj-overlay" id="project-workspace" role="presentation"><div class="prj-modal ws-modal" role="dialog" aria-modal="true" aria-label="Workspace proyek '+esc(proj)+'">'+
  '<header class="ws-head"><span class="ws-head-ico">'+wsIco('open',24)+'</span><div class="ws-head-id"><div class="ws-head-meta"><span class="ws-eyebrow">Workspace Proyek</span><span class="ws-code-chip">'+esc(p.akr)+'</span><span class="ws-level">'+(sub?'Subproyek · WBS L5':'Proyek · WBS L4')+'</span></div><h2 title="'+esc(sub||proj)+'">'+esc(sub||proj)+'</h2><p class="ws-crumb">'+crumbs.map((c,i)=>'<span'+(i===crumbs.length-1?' class="cur"':'')+'>'+esc(c)+'</span>').join('<i>›</i>')+'</p></div><div class="ws-head-act">'+projectHelp('workspace')+'<button type="button" class="prj-close ws-close" data-act="prjClose" aria-label="Tutup Workspace">'+wsIco('close',18)+'</button></div></header>'+
- '<nav class="ws-tabs" role="tablist" aria-label="Tab Workspace Proyek">'+tabs.map(([k,l])=>'<button type="button" data-act="prjTab" data-v="'+k+'" class="ws-tab'+(tab===k?' on':'')+'" role="tab" aria-selected="'+(tab===k)+'">'+wsIco(k,16)+'<span>'+l+'</span>'+(counts[k]!==''?'<b>'+counts[k]+'</b>':'')+'</button>').join('')+'</nav>'+
+ '<nav class="ws-tabs" role="tablist" aria-label="Tab Workspace Proyek">'+tabs.map(([k,l])=>'<button type="button" data-act="prjTab" data-v="'+k+'" class="ws-tab'+(tab===k?' on':'')+'" role="tab" aria-selected="'+(tab===k)+'">'+wsIco(k==='jadwal'?'milestone':k,16)+'<span>'+esc(l)+'</span>'+(counts[k]!==''?'<b>'+counts[k]+'</b>':'')+'</button>').join('')+'</nav>'+
  '<div class="prj-modal-content ws-body">'+picker+content+'</div>'+
  '<footer class="ws-foot"><span>'+wsIco('save',15)+'<em>Perubahan tersimpan setiap kali tombol <b>Simpan</b> pada formulir dipilih.</em></span><button type="button" class="btn pri" data-act="prjClose">Selesai</button></footer></div></div>';
 }
 ACT.prjBuktiF=el=>{S.ui.prjBuktiF=el.dataset.v||'';S.ui.prjPages=S.ui.prjPages||{};S.ui.prjPages.bukti=0;save();render()};
+ACT.prjJF=el=>{S.ui.prjJF=el.dataset.v||'';S.ui.prjPages=S.ui.prjPages||{};S.ui.prjPages.jadwal=0;save();render()};
+ACT.prjJV=el=>{S.ui.prjJV=el.dataset.v==='tbl'?'tbl':'lin';save();render()};
 
 ACT.prjDemoPdf=el=>{const w=S.wbs.find(x=>x.k===el.dataset.k);if(!w){toast('Item WBS tidak ditemukan');return}const clean=t=>String(t||'').normalize('NFKD').replace(/[^\x20-\x7E]/g,' ').replace(/[()\\]/g,' ').slice(0,115);const lines=['RINGKASAN ITEM WBS','Modul Transformasi - Kementerian Keuangan','Kode WBS: '+clean(w.k),'Program: '+clean(w.prog),'Output: '+clean(deliv(w)),'UIC: '+clean(uicU(w)),'Target: '+clean(w.f),'Status: '+clean(stOf(w,12)),'Validasi: '+(w.v?'Tercatat tervalidasi':'Belum tervalidasi'),'Dicetak: '+clean(TODAY)];const stream='BT /F1 12 Tf 45 775 Td 18 TL '+lines.map((v,i)=>(i?'T* ':'')+'('+clean(v)+') Tj').join(' ')+' ET';const objs=['<< /Type /Catalog /Pages 2 0 R >>','<< /Type /Pages /Kids [3 0 R] /Count 1 >>','<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>','<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>','<< /Length '+stream.length+' >>\nstream\n'+stream+'\nendstream'];let pdf='%PDF-1.4\n',offset=[0];objs.forEach((o,i)=>{offset.push(pdf.length);pdf+=(i+1)+' 0 obj\n'+o+'\nendobj\n'});const at=pdf.length;pdf+='xref\n0 '+(objs.length+1)+'\n0000000000 65535 f \n';offset.slice(1).forEach(n=>pdf+=String(n).padStart(10,'0')+' 00000 n \n');pdf+='trailer << /Size '+(objs.length+1)+' /Root 1 0 R >>\nstartxref\n'+at+'\n%%EOF';const url=URL.createObjectURL(new Blob([pdf],{type:'application/pdf'}));const a=document.createElement('a');a.href=url;a.download=w.k+'_Ringkasan.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500)};
 ACT.prjProgram=el=>{const p=progOf(el.dataset.v);const projects=p?progProjects(p):[];if(!projects.length){toast('Belum ada proyek WBS untuk program ini.');return}ACT.prjOpen({dataset:{scope:projectKey(p.akr,projects[0].n),tab:'ringkasan'}})};
@@ -3686,7 +3736,7 @@ ACT.prjHelp=el=>{const g=el.dataset.guide,h=PROJECT_GUIDE[g]||PROJECT_GUIDE.work
   '<div class="hp-tips" style="margin-top:12px"><b>Contoh dari proyek Interkoneksi HRIS–SIASN (Setjen)</b>'+esc(h[2])+'</div>';
  modal('<span class="exh"><span class="hlp sm" aria-hidden="true">?</span>Bantuan · '+esc(h[0])+'</span>',body,'',null,{cancel:'Tutup',size:'wide hp'})};
 ACT.prjPage=el=>{S.ui.prjPages=S.ui.prjPages||{};S.ui.prjPages[el.dataset.tab]=Math.max(0,+el.dataset.page);save();render()};
-ACT.prjTab=el=>{S.ui.prjTab=el.dataset.v;S.ui.prjSearch='';save();render();document.querySelector('.ws-tab.on')?.scrollIntoView({inline:'nearest',block:'nearest'})};
+ACT.prjTab=el=>{S.ui.prjTab=el.dataset.v;if(el.dataset.f!=null){S.ui.prjJF=el.dataset.f;S.ui.prjPages=S.ui.prjPages||{};S.ui.prjPages.jadwal=0}S.ui.prjSearch='';save();render();document.querySelector('.ws-tab.on')?.scrollIntoView({inline:'nearest',block:'nearest'})};
 ACT.prjClose=()=>{S.ui.prjScope='';S.ui.prjSearch='';save();render();document.querySelector('.pm-project-click')?.focus({preventScroll:true})};
 ACT.prjRiskAdd=()=>projectRiskEdit(S.ui.prjScope);
 ACT.prjRiskEdit=el=>projectRiskEdit(S.ui.prjScope,el.dataset.id);
@@ -4172,7 +4222,7 @@ const GUIDE={
   ['Pilih mode tampilan','Switch Buka Subproyek membuka semua proyek; Semua Rincian menampilkan kolom lengkap.'],
   ['Kelola proyek','Klik Kelola Proyek › untuk membuka Workspace Proyek (ringkasan, WBS, bukti dukung, risiko, stakeholder, keputusan, dokumen).'],
   ['Lihat dokumen perencanaan','Lihat Charter membuka charter program bila sudah dibuat.','pmo-perencanaan','Buka Dokumen Proyek']],
- tab:[['Ringkasan (Workspace)','Gambaran proyek: progres, UIC, jadwal, dan jumlah risiko.'],['WBS','Item WBS proyek beserta status.'],['Bukti Dukung','Melihat dan mengunduh bukti per item. Unggah dilakukan di WBS & progres (tombol Unggah di WBS ›).'],['Risk Register / Issue Log','Risiko dan isu proyek.'],['Stakeholder','Daftar pihak terkait dan strategi pelibatannya.'],['Decision Log','Catatan keputusan penting proyek.'],['Dokumen','Tautan dokumen pendukung proyek.']],
+ tab:[['Ringkasan (Workspace)','Gambaran proyek: angka utama, profil, komposisi status, serta daftar Perlu perhatian dan Tenggat terdekat.'],['Jadwal & Bukti','Seluruh item WBS proyek dalam linimasa per bulan: tenggat, status pelaksanaan, status bukti, serta Lihat/Unduh/Dokumen.'],['Risk Register / Issue Log','Risiko dan isu proyek.'],['Stakeholder','Daftar pihak terkait dan strategi pelibatannya.'],['Decision Log','Catatan keputusan penting proyek.']],
  btn:[['Buka Subproyek','Membuka/menutup semua proyek dalam program.','Halaman yang sama'],['Semua Rincian','Menampilkan kolom lengkap.','Halaman yang sama'],['Kelola Proyek ›','Membuka Workspace Proyek.','Pop-up Workspace'],['Lihat Charter','Menuju charter program.','Dokumen Proyek','pmo-perencanaan'],['WBS ›','Membuka WBS program tersebut.','WBS & progres','pmo-wbs']],
  isi:['prjRisk','prjStake','prjDec'],
  tips:['Bukti dukung hanya diunggah di Pelaksanaan › WBS & progres. Di Workspace, tombol Unggah di WBS › langsung membawa Anda ke item tersebut.']},
