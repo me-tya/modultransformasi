@@ -2030,10 +2030,10 @@ button.nt-chip{font:inherit;cursor:pointer}
 
 .wz-fin{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .dk-md{max-width:1180px!important}
-.dk-wrap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.dk-wrap{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;max-width:980px;margin:0 auto}
 .dk-f{margin:0;display:flex;flex-direction:column;gap:6px}.dk-f figcaption{font-size:12.5px;font-weight:800;color:var(--navy)}
-.dk-f>div{position:relative;overflow:hidden;width:100%;aspect-ratio:16/9;border-radius:8px;box-shadow:0 2px 10px rgba(11,36,71,.15)}
-.dk-scale{width:1280px;height:720px;transform-origin:0 0;position:absolute;left:0;top:0}
+.dk-f>.dk-box{position:relative;overflow:hidden;width:100%;aspect-ratio:16/9;border-radius:8px;box-shadow:0 2px 10px rgba(11,36,71,.15)}
+.dk-scale{width:1280px!important;height:720px;transform-origin:0 0;position:absolute;left:0;top:0}
 .dk-s{position:relative;width:1280px;height:720px;overflow:hidden;font-family:Calibri,'Segoe UI',Arial,sans-serif}
 .dk-e{position:absolute;box-sizing:border-box}
 .dk-t{display:flex;flex-direction:column;line-height:1.22;overflow:hidden;padding:2px;white-space:pre-line}
@@ -2837,7 +2837,7 @@ function pCharter(){const akr=S.ui.chp;const p=S.programs.find(x=>x.akr===akr);
  if(tab==='tobe')body=`<div class="card chpage">${pgHead('tobe','Analisis Kondisi yang Diharapkan (To-be)')}${chTobeView(c)}</div>`;
  if(tab==='mf')body=`<div class="card chpage">${pgHead('mf','Manfaat Proyek')}${chMfView(c)}</div>`;
  return back+`<div class="chhero"><div class="ic">${esc(psing(p))}</div><div class="tt"><h2>Charter Program Transformasi: ${esc(chJudul(c))}</h2><div class="sub">${esc(p.kode)} · ${esc(p.jenis||'')} · Periode ${c.p1}${c.p2>c.p1?' s.d. '+c.p2:''} ${verOpt} <span class="vchip ${c.st==='Disahkan'?'ok':''}">${c.st==='Disahkan'?'✓ Berlaku':CHST[c.st][0]}</span></div></div>
- <div class="rt">${flow}<div class="hgrp"><button class="hb" data-act="chdeck" data-id="${c.id}" title="Pratinjau dan unduh paparan PowerPoint untuk pimpinan">🎞 Paparan</button>${ed?`<button class="hb" data-act="ched" data-p="${akr}" data-id="${c.id}">✎ Ubah</button>`:''}${chCan('C',p)&&c.st==='Disahkan'&&!L.some(x=>x.st==='Draft'||x.st==='Reviu')?`<button class="hb" data-act="chver" data-id="${c.id}">⧉ Versi baru</button>`:''}${chCan('D',p)?`<button class="hb icn" data-act="chdel" data-id="${c.id}" title="${c.st==='Draft'?'Hapus draft':'Hanya charter berstatus Draft yang bisa dihapus'}" ${c.st==='Draft'?'':'disabled'}>🗑</button>`:''}</div><button class="hb gold" data-act="chexp" data-id="${c.id}">⇩ Ekspor ▾</button></div></div>
+ <div class="rt">${flow}<div class="hgrp"><button class="hb" data-act="chdeck" data-id="${c.id}" title="Pratinjau dan unduh PowerPoint 3 slide: charter, kriteria, rencana kerja">🎞 Paparan</button>${ed?`<button class="hb" data-act="ched" data-p="${akr}" data-id="${c.id}">✎ Ubah</button>`:''}${chCan('C',p)&&c.st==='Disahkan'&&!L.some(x=>x.st==='Draft'||x.st==='Reviu')?`<button class="hb" data-act="chver" data-id="${c.id}">⧉ Versi baru</button>`:''}${chCan('D',p)?`<button class="hb icn" data-act="chdel" data-id="${c.id}" title="${c.st==='Draft'?'Hapus draft':'Hanya charter berstatus Draft yang bisa dihapus'}" ${c.st==='Draft'?'':'disabled'}>🗑</button>`:''}</div><button class="hb gold" data-act="chexp" data-id="${c.id}">⇩ Ekspor ▾</button></div></div>
  ${ret&&ret.st==='Draft'&&ret.cat?`<div class="note w"><span><b>Catatan reviu PMO Pusat:</b> ${esc(ret.cat)}</span></div>`:''}
  <div class="card"><div class="chstep">${step('Draft','Draft')}<span class="cbar"></span>${step('Reviu','Reviu PMO Pusat')}<span class="cbar"></span>${step('Disahkan','Disahkan')}<span class="cbar"></span><div class="cst${c.st==='Disahkan'?' on':''}"><i>🔒</i><span><b>Baseline WBS</b><small>${c.st==='Disahkan'?S.wbs.filter(w=>w.prog===akr&&!w.arsip).length+' item · perubahan via CR':'aktif setelah disahkan'}</small></span></div></div></div>
  <div class="ch-tabbar">${tabs}<div class="ch-document-actions" role="group" aria-label="Dokumen aktif"><span class="cda-l">Dokumen ini</span><button class="btn sm" data-act="chpreview" data-id="${c.id}" title="Pratinjau dokumen ${esc((CHPG.find(x=>x[0]===tab)||[])[1]||'')}">👁</button><button class="btn sm" data-act="chactiveexport" data-id="${c.id}" data-fmt="pdf" title="Ekspor dokumen aktif ke PDF">PDF</button><button class="btn sm" data-act="chactiveexport" data-id="${c.id}" data-fmt="docx" title="Ekspor dokumen aktif ke Word .docx">Word</button><button class="btn sm" data-act="chactiveexport" data-id="${c.id}" data-fmt="pptx" title="Ekspor dokumen aktif ke PowerPoint .pptx">PPTX</button></div></div><section id="ch-active-document">${body}</section>
@@ -2949,7 +2949,7 @@ function chWizard(c,p){if(!CHD||CHD.id!==c.id){CHD=JSON.parse(JSON.stringify(c))
  return `<div class="chebar"><b>${fresh?'＋ Charter baru':'✎ Ubah charter'}</b><span>${esc(p.kode)} · Versi ${d.tahun} v${d.ver} · ${CHST[d.st][0]}</span><span class="sv">${S.ui.chsv?'● Tersimpan otomatis '+S.ui.chsv:'Perubahan tersimpan otomatis tiap pindah langkah'}</span><span class="r"><button class="hb" data-act="chimpdoc" title="Isi charter dari PPTX charter, atau Word/PDF/Excel/PPTX yang labelnya sama dengan isian charter">⇪ Impor charter</button><button class="hb" data-act="chcancel">Tutup</button><button class="hb" data-act="chsave">💾 Simpan draf</button></span></div>
  <div class="wz"><div class="wz-top"><div class="wz-prog"><div class="wz-pt"><b>${esc(chJudul(d))}</b><span>${done} dari ${CHW.length-1} bagian lengkap</span></div><div class="wz-bar"><i style="width:${pct}%"></i></div></div><nav class="wz-steps" aria-label="Langkah charter">${stp}</nav></div>
  <div class="wz-body"><div class="wz-hd">${subn}<div class="wz-hr"><div><span class="k">Langkah ${gi+1} dari ${CHWG.length}${G[2].length>1?` · bagian ${G[2].indexOf(W)+1} dari ${G[2].length}`:''}${G[3]?' · '+G[3]:''}</span><h3>${CHW[st][1]}</h3></div>${EXS[W]?`<button class="btn sm exb" data-act="chex" data-k="${W}">💡 Lihat contoh pengisian</button>`:''}</div><p>${{asis:'Dokumen 1: analisis proses bisnis berjalan, korelasinya dengan sistem eksisting, dan teknologi yang digunakan.',tobe:'Dokumen 2: proses bisnis yang dimutakhirkan, potensi digitalisasi lainnya, serta arsitektur aplikasi dan teknologi.',mf:'Dokumen 6: manfaat proyek, penerima manfaat, mekanisme pengukuran, dan target tercapainya manfaat.',id:'Dokumen 4 (charter): identitas dan tujuan. Judul kosong akan memakai nama program.',isi:'Uraikan alasan dan isi program sesuai format halaman 1 charter.',ms:'Susun key milestones per tahun, risiko, dan faktor pendukung kesuksesan.',kp:'Dokumen 5: untuk setiap milestone, tuliskan kriteria yang menandai milestone itu selesai (acceptance criteria).',rk:'Dokumen 7: rencana kerja berupa milestone hingga level 3, jadwal, dan UIC; menjadi dasar penyusunan WBS.',cs:'Dokumen 3: perbandingan kondisi saat ini dan kondisi setelah implementasi.',rv:'Periksa kelengkapan setiap bagian sebelum diajukan.'}[W]}</p></div>${body}</div>
- <div class="wz-nav"><button class="btn" data-act="chwp" ${st?'':'disabled'}>‹ Sebelumnya</button><span class="dots">${CHWG.map((x,j)=>`<i class="${j===gi?'on':''}"></i>`).join('')}</span>${st<CHW.length-1?`<button class="btn pri" data-act="chwn">Lanjut<span class="wl">: ${CHW[st+1][1]}</span> ›</button>`:`<span class="wz-fin"><button class="btn" data-act="chdeck" data-id="${d.id}" title="Pratinjau dan unduh paparan PowerPoint (cover + 3 slide) untuk pimpinan">🎞 Paparan</button><button class="btn pri" data-act="chsave" title="Simpan draf charter">💾 Simpan draf</button>${d.st==='Draft'?`<button class="btn gold" data-act="chsave" data-sub="1" title="Simpan dan ajukan ke PMO Pusat">Ajukan ›</button>`:''}</span>`}</div></div>`}
+ <div class="wz-nav"><button class="btn" data-act="chwp" ${st?'':'disabled'}>‹ Sebelumnya</button><span class="dots">${CHWG.map((x,j)=>`<i class="${j===gi?'on':''}"></i>`).join('')}</span>${st<CHW.length-1?`<button class="btn pri" data-act="chwn">Lanjut<span class="wl">: ${CHW[st+1][1]}</span> ›</button>`:`<span class="wz-fin"><button class="btn" data-act="chdeck" data-id="${d.id}" title="Pratinjau dan unduh PowerPoint 3 slide: charter, kriteria, rencana kerja">🎞 Paparan</button><button class="btn pri" data-act="chsave" title="Simpan draf charter">💾 Simpan draf</button>${d.st==='Draft'?`<button class="btn gold" data-act="chsave" data-sub="1" title="Simpan dan ajukan ke PMO Pusat">Ajukan ›</button>`:''}</span>`}</div></div>`}
 function chInput(t){if(!CHD)return false;const ds=t.dataset;
  if(ds.chf){const f=ds.chf;if(f==='keRisk')CHD.keRisk=t.checked;else if(f==='doclink')CHD.doc={link:t.value.trim()};else CHD[f]=(f==='p1'||f==='p2'||f==='kpY')?+t.value:t.value;if(f==='p1'||f==='p2'){if(CHD.p2<CHD.p1)CHD.p2=CHD.p1;return 'r'}if(f==='kpY')return 'r';return true}
  if(ds.chl!=null){CHD[ds.chl][+ds.i]=t.value;return true}
@@ -3036,10 +3036,10 @@ ACT.wbsprojclear=()=>{S.ui.wbsProject='';save();render()};
 ACT.pgfold=(el,e)=>{if(e&&e.target.closest('a,button,input,label,select')&&e.target!==el)return;const k=el.dataset.v;S.ui.pgCollapse=S.ui.pgCollapse||{};S.ui.pgCollapse[k]=!S.ui.pgCollapse[k];save();render()};
 ACT.chexp=el=>{const c=S.charters.find(x=>x.id===el.dataset.id);if(!c)return;const X=S.ui.chx||(S.ui.chx={kop:1,prog:0,ttd:0});
  const it=(k,bg,lab,t,sub)=>`<div class="it dm" data-m="${k}" role="menuitem"><i style="background:${bg};color:#fff;font-size:9.5px">${lab}</i><span><b>${t}</b><small>${sub}</small></span></div>`;
- const m=popMenu(el,`<div class="hd" style="display:flex;justify-content:space-between;gap:10px"><b>Ekspor charter</b><span>4 halaman · format resmi</span></div>${it('pdf','#BF3434','PDF','PDF','A4 lanskap, 4 halaman, siap ditandatangani')}${it('doc','#1F5FB8','DOC','Word (.doc)','4 halaman tabel yang masih bisa diedit')}${it('ppt','#C8571B','PPT','PowerPoint (.pptx)','4 slide 16:9 untuk paparan')}
+ const m=popMenu(el,`<div class="hd" style="display:flex;justify-content:space-between;gap:10px"><b>Ekspor charter</b><span>4 halaman · format resmi</span></div>${it('pdf','#BF3434','PDF','PDF','A4 lanskap, 4 halaman, siap ditandatangani')}${it('doc','#1F5FB8','DOC','Word (.doc)','4 halaman tabel yang masih bisa diedit')}${it('ppt','#C8571B','PPT','PowerPoint (.pptx)','3 slide: charter, kriteria, rencana kerja · pratinjau dulu')}
  <div class="chxo"><label><input type="checkbox" data-x="kop" ${X.kop?'checked':''}> Kop Kementerian Keuangan</label><label><input type="checkbox" data-x="prog" ${X.prog?'checked':''}> Cantumkan progres milestone dari WBS</label><label><input type="checkbox" data-x="ttd" ${X.ttd?'checked':''}> Kolom tanda tangan</label></div>`);
  m.style.width='330px';m.addEventListener('change',e=>{const k=e.target.dataset.x;if(k){X[k]=e.target.checked?1:0;save()}});
- m.onclick=e=>{if(e.target.closest('.chxo'))return;const k=(e.target.closest('[data-m]')||{}).dataset?.m;if(!k)return;m.remove();if(k==='pdf')chPdf(c);if(k==='doc')chDoc(c);if(k==='ppt')chPpt(c)}};
+ m.onclick=e=>{if(e.target.closest('.chxo'))return;const k=(e.target.closest('[data-m]')||{}).dataset?.m;if(!k)return;m.remove();if(k==='pdf')chPdf(c);if(k==='doc')chDoc(c);if(k==='ppt')chDeckOpen(CHD&&CHD.id===c.id?CHD:c)}};
 /* ---- ekspor ---- */
 const chFn=(c,ext)=>`Charter_${(chProg(c).kode||c.prog)}_v${c.ver}.${ext}`;
 function chSaveBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);toast('Unduhan '+name+' dijalankan. Di mode pratinjau unduhan bisa diblokir; buka dari GitHub Pages.')}
@@ -4475,21 +4475,95 @@ function chDeck(c){const p=chProg(c),J=chJudul(c),per=c.p1+(c.p2>c.p1?'–'+c.p2
 /* Render HTML (pratinjau): 1 in = 96 px */
 function dkHtml(sl){const px=v=>(v*96).toFixed(1)+'px',col=h=>'#'+h,op=e=>e.tr!=null?(1-e.tr/100):1;
  return `<div class="dk-s" style="background:${col(sl.bg)}">${sl.E.map(e=>{const st=`left:${px(e.x)};top:${px(e.y)};width:${px(e.w)};height:${px(e.h)};`;
-  if(e.t==='r')return `<div class="dk-e" style="${st}background:${col(e.fill)};opacity:${op(e)};${e.line?`border:1px solid ${col(e.line)};`:''}border-radius:${e.rad?px(Math.min(e.w,e.h)*e.rad):0}"></div>`;
+  if(e.t==='r')return `<div class="dk-e" style="${st}background:${col(e.fill)};opacity:${op(e)};${e.line?`border:${Math.max(1,Math.round((e.lw||.75)*96/72))}px solid ${col(e.line)};`:''}border-radius:${e.rad?px(Math.min(e.w,e.h)*e.rad):0}"></div>`;
   if(e.t==='e')return `<div class="dk-e" style="${st}background:${col(e.fill)};opacity:${op(e)};border-radius:50%"></div>`;
   const tx=Array.isArray(e.txt)?(e.bul?`<ul>${e.txt.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:e.txt.map(esc).join('<br>')):esc(e.txt);
   return `<div class="dk-e dk-t" style="${st}font-size:${(e.s*96/72).toFixed(1)}px;color:${col(e.c||DK.ink)};font-weight:${e.b?800:400};${e.i?'font-style:italic;':''}text-align:${e.a||'left'};justify-content:${e.v==='middle'?'center':e.v==='bottom'?'flex-end':'flex-start'};${e.sp?`letter-spacing:${e.sp/2}px;`:''}">${tx}</div>`}).join('')}</div>`}
 async function dkPptx(D){if(!window.PptxGenJS){try{await chLib('https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js',()=>window.PptxGenJS)}catch(e){await chLib('https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js',()=>window.PptxGenJS)}}
  const ppt=new PptxGenJS();ppt.layout='LAYOUT_WIDE';ppt.author='PMO Kementerian Keuangan';ppt.title=D.title;const F='Calibri';
  D.slides.forEach(sl=>{const s=ppt.addSlide();s.background={color:sl.bg};sl.E.forEach(e=>{
-  if(e.t==='r'||e.t==='e'){s.addShape(e.t==='e'?ppt.ShapeType.ellipse:(e.rad?ppt.ShapeType.roundRect:ppt.ShapeType.rect),{x:e.x,y:e.y,w:e.w,h:e.h,fill:{color:e.fill,transparency:e.tr||0},line:e.line?{color:e.line,width:.75}:{type:'none'},rectRadius:e.rad?Math.min(e.w,e.h)*e.rad:undefined});return}
+  if(e.t==='r'||e.t==='e'){s.addShape(e.t==='e'?ppt.ShapeType.ellipse:(e.rad?ppt.ShapeType.roundRect:ppt.ShapeType.rect),{x:e.x,y:e.y,w:e.w,h:e.h,fill:{color:e.fill,transparency:e.tr||0},line:e.line?{color:e.line,width:e.lw||.75}:{type:'none'},rectRadius:e.rad?Math.min(e.w,e.h)*e.rad:undefined});return}
   const base={x:e.x,y:e.y,w:e.w,h:e.h,fontFace:F,fontSize:e.s,color:e.c||DK.ink,bold:!!e.b,italic:!!e.i,align:e.a||'left',valign:e.v||'top',margin:2,charSpacing:e.sp||0,paraSpaceAfter:e.bul?3:0};
   if(Array.isArray(e.txt))s.addText(e.txt.map((t,i)=>({text:t,options:{bullet:e.bul?{indent:12}:false,breakLine:i<e.txt.length-1}})),base);else s.addText(String(e.txt),base)})});
  await ppt.writeFile({fileName:D.file+'.pptx'})}
-function chDeckOpen(c){const D=chDeck(c);const body=`<div class="dk-wrap">${D.slides.map((sl,i)=>`<figure class="dk-f"><div class="dk-scale">${dkHtml(sl)}</div><figcaption>${i+1}. ${esc(sl.n)}</figcaption></figure>`).join('')}</div><p class="s" style="margin:8px 0 0">Pratinjau paparan untuk pimpinan dari isian charter saat ini (${c.st==='Disahkan'?'versi berlaku':'draf'}). Logo Kemenkeu/BaTii dapat ditambahkan setelah berkas logo tersedia.</p>`;
- const ov=modal(`<span class="exh">🎞 Paparan charter · ${esc(D.title)}</span>`,body,null,null,{cancel:'Tutup',size:'wide dk-md',extra:'<button class="btn pri" data-mx="pptx">⬇ Unduh PowerPoint</button>',onExtra:async k=>{if(k==='pptx'){busy('Menyusun PowerPoint…',D.file+'.pptx');try{await dkPptx(D);busyOff();toast('Paparan PowerPoint diunduh.')}catch(err){busyOff();toast('Gagal membuat PPTX: '+(err.message||err))}return false}}});
+function chDeckOpen(c){const D=chDeck3(c);const body=`<div class="dk-wrap">${D.slides.map((sl,i)=>`<figure class="dk-f"><div class="dk-box"><div class="dk-scale">${dkHtml(sl)}</div></div><figcaption>${i+1}. ${esc(sl.n)}</figcaption></figure>`).join('')}</div><p class="s" style="margin:8px 0 0">Pratinjau 3 slide charter (format resmi: Charter, Kriteria Penyelesaian, Rencana Kerja) dari isian ${c.st==='Disahkan'?'versi berlaku':'draf'} saat ini. Berkas PowerPoint dapat diedit; isian yang terlalu panjang diringkas menjadi “… dan n butir lainnya”.</p>`;
+ const ov=modal(`<span class="exh">🎞 Ekspor PowerPoint charter · ${esc(D.title)}</span>`,body,null,null,{cancel:'Tutup',size:'wide dk-md',extra:'<button class="btn pri" data-mx="pptx">⬇ Unduh PowerPoint</button>',onExtra:async k=>{if(k==='pptx'){busy('Menyusun PowerPoint…',D.file+'.pptx');try{await dkPptx(D);busyOff();toast('Paparan PowerPoint diunduh.')}catch(err){busyOff();toast('Gagal membuat PPTX: '+(err.message||err))}return false}}});
  const fit=()=>ov.querySelectorAll('.dk-scale').forEach(b=>{const w=b.parentElement.clientWidth;if(!w)return;b.style.transform=`scale(${w/1280})`;b.parentElement.style.height=(720*w/1280)+'px'});requestAnimationFrame(fit);setTimeout(fit,120);setTimeout(fit,400);try{const ro=new ResizeObserver(fit);ov.querySelectorAll('.dk-f').forEach(f=>ro.observe(f))}catch(e){}}
 ACT.chdeck=el=>{const c=el.dataset.id?S.charters.find(x=>x.id===el.dataset.id):null;const src=c&&CHD&&CHD.id===c.id?CHD:(c||CHD);if(!src){toast('Charter tidak ditemukan.');return}chDeckOpen(src)};
+
+
+/* ===== Ekspor charter 3 slide (format resmi Charter · Kriteria · Rencana Kerja), tampilan modern navy–emas ===== */
+function chDeck3(c){const p=chProg(c),J=chJudul(c),per=c.p1+(c.p2>c.p1?' s.d. '+c.p2:''),A=[],B=[],C=[];
+ const frame=(E,no,title)=>{E.push(dkR(0,0,13.33,7.5,'FFFFFF'));E.push(dkR(0,0,13.33,.1,DK.navy));E.push(dkR(0,.1,3.2,.05,DK.gold));
+  E.push(dkT(.45,.28,7,.3,'KEMENTERIAN KEUANGAN REPUBLIK INDONESIA',{s:12,b:1,c:DK.mute,sp:2}));
+  E.push(dkT(.45,.56,8.6,.5,title,{s:22,b:1,c:DK.navy}));E.push(dkT(.45,1.02,8.8,.36,'Program Transformasi: '+J,{s:13,c:DK.ink}));
+  E.push(dkR(10.05,.38,1.45,.42,DK.navy,{rad:.5}));E.push(dkT(10.05,.38,1.45,.42,p.kode||c.prog,{s:12,b:1,c:DK.gold,a:'center',v:'middle'}));
+  E.push(dkR(11.58,.38,1.3,.42,DK.cream,{rad:.5,line:DK.gold2}));E.push(dkT(11.58,.38,1.3,.42,c.p1+(c.p2>c.p1?'–'+c.p2:''),{s:12,b:1,c:'8A6A12',a:'center',v:'middle'}));
+  E.push(dkT(9.4,.88,3.5,.3,(c.st==='Disahkan'?'Disahkan':'Draf')+' · versi '+c.tahun+' v'+c.ver,{s:12,c:DK.mute,a:'right'}));
+  E.push(dkR(0,7.12,13.33,.38,DK.navy));E.push(dkR(0,7.12,.18,.38,DK.gold));E.push(dkT(.45,7.12,9,.38,'Charter Program Transformasi Kemenkeu  ·  '+(p.kode||c.prog)+'  ·  '+J,{s:12,c:'C9D6EC',v:'middle'}));E.push(dkT(11.6,7.12,1.3,.38,no+' / 3',{s:12,b:1,c:DK.gold,a:'right',v:'middle'}))};
+ const card=(E,x,y,w,h,title,items,o)=>{o=o||{};E.push(dkR(x,y,w,h,o.bg||'FFFFFF',{line:DK.line,rad:.05}));
+  if(o.soft){const nv=(window.DK_HD||'navy')==='navy',hb=nv?DK.navy:'EEF2F8';E.push(dkR(x,y,w,.4,hb,{rad:.05}));E.push(dkR(x,y+.25,w,.15,hb));E.push(dkR(x,y+.4,w,.025,DK.gold));E.push(dkR(x+.14,y+.1,.06,.2,DK.gold));E.push(dkT(x+.28,y,w-.35,.4,title,{s:12,b:1,c:nv?DK.white:DK.navy,v:'middle',i:!!o.it}))}
+  else{E.push(dkR(x,y,w,.36,o.hd||DK.navy,{rad:.05}));E.push(dkR(x,y+.2,w,.16,o.hd||DK.navy));E.push(dkT(x+.14,y,w-.2,.36,title,{s:12,b:1,c:o.hc||DK.white,v:'middle',i:!!o.it}))}const L=(items||[]).filter(Boolean),ih=h-.56;
+  if(!L.length){E.push(dkT(x+.14,y+.44,w-.25,ih,'Belum diisi',{s:12,i:1,c:DK.mute}));return}const fs=dkFit(L,w-.3,ih,o.max||13,12);E.push(dkT(x+.12,y+.42,w-.22,ih,dkClip(L,w-.3,ih,fs),{s:fs,c:DK.ink,bul:L.length>1||o.bul}))};
+ /* 1. CHARTER */
+ frame(A,1,'Charter Program');
+ const tj=c.tujuan||'—';A.push(dkR(.45,1.45,12.43,.68,DK.navy,{rad:.08}));A.push(dkR(.45,1.45,1.85,.68,DK.gold,{rad:.08}));A.push(dkR(2.0,1.45,.3,.68,DK.gold));
+ A.push(dkT(.55,1.45,1.7,.68,'TUJUAN PROGRAM',{s:12,b:1,c:DK.navy,v:'middle',a:'center'}));A.push(dkT(2.45,1.45,10.3,.68,tj,{s:dkFit([tj],10.2,.64,16,12),b:1,c:DK.white,v:'middle'}));
+ const tbL=String(c.tb||'').split('\n').filter(Boolean),cw4=(12.43-.45)/4,y2=2.24,h2=2.78;
+ [['Latar Belakang',c.lb],['Terobosan',tbL],['Output',c.out],['Outcome',c.oc]].forEach(([t,L],i)=>card(A,.45+i*(cw4+.15),y2,cw4,h2,t,L,{soft:1,it:t==='Output'||t==='Outcome'}));
+ const y3=y2+h2+.12,h3=7.02-y3;
+ /* periode & key milestones */
+ const yrs=[];for(let y=+c.p1;y<=+c.p2;y++)yrs.push(y);const msItems=[];yrs.forEach(y=>{const M=(c.ms||[]).filter(m=>+m.y===y&&String(m.t||'').trim());if(M.length){msItems.push('▸ '+y);M.forEach(m=>msItems.push(m.t))}});
+ {const X=.45,W=3.95,nv=(window.DK_HD||'navy')==='navy',hb=nv?DK.navy:'EEF2F8';A.push(dkR(X,y3,W,h3,'FFFFFF',{line:DK.line,rad:.05}));A.push(dkR(X,y3,W,.4,hb,{rad:.05}));A.push(dkR(X,y3+.25,W,.15,hb));A.push(dkR(X,y3+.4,W,.025,DK.gold));A.push(dkR(X+.14,y3+.1,.06,.2,DK.gold));A.push(dkT(X+.28,y3,2.2,.4,'Key Milestones',{s:12,b:1,c:nv?DK.white:DK.navy,v:'middle'}));
+  A.push(dkR(X+W-1.42,y3+.07,1.3,.26,DK.gold,{rad:.5}));A.push(dkT(X+W-1.42,y3+.07,1.3,.26,per,{s:12,b:1,c:DK.navy,a:'center',v:'middle'}));
+  const G=yrs.map(y=>({y,L:(c.ms||[]).filter(m=>+m.y===y&&String(m.t||'').trim()).map(m=>m.t)})).filter(g=>g.L.length);let yy=y3+.5;const bot=y3+h3-.08;
+  if(!G.length)A.push(dkT(X+.2,yy,W-.4,.4,'Belum diisi',{s:12,i:1,c:DK.mute}));
+  G.forEach((g,gi)=>{if(yy+.3>bot)return;const cur=g.y===+S.ui.tahun;A.push(dkR(X+.18,yy+.03,.62,.24,cur?DK.navy:'E3E8F0',{rad:.5}));A.push(dkT(X+.18,yy+.03,.62,.24,String(g.y),{s:12,b:1,c:cur?DK.gold:DK.navy,a:'center',v:'middle'}));
+   const room=bot-yy,rest=G.slice(gi+1).length,avail=Math.max(.3,room-(rest?Math.min(rest,2)*.42:0)),fs=12,Lc=dkClip(g.L,W-1.1,avail,fs),hh=Math.min(avail,dkH(Lc,fs,W-1.1));A.push(dkT(X+.9,yy,W-1.0,hh+.02,Lc,{s:fs,c:DK.ink,bul:Lc.length>1}));yy+=Math.max(.34,hh)+.08})}
+
+ card(A,4.55,y3,3.0,h3,'Risiko',c.ris,{soft:1});card(A,7.7,y3,2.55,h3,'Pendukung Kesuksesan',c.pk,{soft:1});
+ const ow=(c.ow||[]).filter(Boolean);A.push(dkR(10.4,y3,2.48,h3,DK.navy,{rad:.05}));A.push(dkT(10.52,y3+.06,2.3,.3,'UNIT PENGELOLA',{s:12,b:1,c:DK.gold,sp:1}));
+ A.push(dkT(10.52,y3+.4,2.3,.28,'Initiative Champion',{s:12,i:1,c:DK.gold2}));A.push(dkT(10.52,y3+.66,2.3,.35,c.ch||'—',{s:12,b:1,c:DK.white}));
+ A.push(dkT(10.52,y3+1.0,2.3,.28,'Initiative Owner',{s:12,i:1,c:DK.gold2}));{const ih=h3-1.3;let owT=ow.join('; ')||'—';if(dkH([owT],12,2.28)>ih)for(let n=ow.length-1;n>=1;n--){owT=ow.slice(0,n).join('; ')+' (+'+(ow.length-n)+' lainnya)';if(dkH([owT],12,2.28)<=ih)break}A.push(dkT(10.52,y3+1.26,2.3,ih,dkClip([owT],2.28,ih,12),{s:12,c:DK.white}))}
+ /* 2. KRITERIA PENYELESAIAN */
+ frame(B,2,'Kriteria Penyelesaian');
+ const K=(c.kp||[]).filter(k=>String(k.m||'').trim());const hy=1.55;B.push(dkR(.45,hy,12.43,.42,DK.navy,{rad:.06}));
+ B.push(dkT(.6,hy,4,.42,'MILESTONES (LEVEL 4)',{s:12,b:1,c:DK.gold,v:'middle',sp:1}));B.push(dkT(4.75,hy,6,.42,'KRITERIA PENYELESAIAN',{s:12,b:1,c:DK.gold,v:'middle',sp:1}));B.push(dkT(10.95,hy,1.85,.42,'PROGRES WBS',{s:12,b:1,c:DK.gold,v:'middle',a:'center',sp:1}));
+ const avail=7.0-(hy+.5),need=K.map(k=>{const L=(k.k||[]).filter(Boolean);return Math.max(.62,dkFit(L.length?L:['—'],5.9,9,13,12)&&(L.reduce((a,t)=>a+Math.max(1,Math.ceil(t.length/Math.floor(5.9*72/(13*DK_CW))))*13*DK_LH/72+.05,0)+.22))});
+ const tot=need.reduce((a,b)=>a+b,0)||1,sc=Math.min(1.45,avail/tot);let yy=hy+.5;
+ if(!K.length)B.push(dkT(.6,yy+.1,10,.5,'Kriteria penyelesaian belum diisi.',{s:13,i:1,c:DK.mute}));
+ K.forEach((k,i)=>{const h=Math.max(.55,need[i]*sc)-.06;B.push(dkR(.45,yy,12.43,h,i%2?'FFFFFF':'F4F7FC',{line:DK.line,rad:.04}));B.push(dkR(.45,yy,.1,h,i%2?DK.gold:DK.navy));
+  B.push(dkR(.68,yy+h/2-.21,.42,.42,DK.navy,{rad:.2}));B.push(dkT(.68,yy+h/2-.21,.42,.42,String(i+1),{s:13,b:1,c:DK.gold,a:'center',v:'middle'}));
+  B.push(dkT(1.2,yy+.04,3.35,h-.08,k.m,{s:dkFit([k.m],3.3,h-.1,14,12),b:1,c:DK.navy,v:'middle'}));B.push(dkR(4.62,yy+.08,.015,h-.16,DK.line));
+  const L=(k.k||[]).filter(Boolean),fs=dkFit(L.length?L:['—'],5.9,h-.12,13,12);B.push(dkT(4.75,yy+.06,6.05,h-.12,L.length?dkClip(L,5.9,h-.12,fs):['—'],{s:fs,c:DK.ink,bul:L.length>1,v:'middle'}));
+  const x=kpProg(p,k);const pg=x?x.pg:null;B.push(dkR(10.95,yy+h/2-.08,1.25,.16,'E3E8F0',{rad:.5}));if(pg)B.push(dkR(10.95,yy+h/2-.08,Math.max(.08,1.25*pg/100),.16,pg===100?DK.teal:DK.gold,{rad:.5}));
+  B.push(dkT(12.25,yy,.6,h,pg==null?'—':pg+'%',{s:12,b:1,c:pg===100?DK.teal:DK.navy,v:'middle'}));yy+=h+.06});
+ /* 3. RENCANA KERJA */
+ frame(C,3,'Rencana Kerja');
+ const RK=(c.rk||[]).filter(r=>String(r.t||'').trim()),Y0=+c.p1,cy=+S.ui.tahun>=Y0&&+S.ui.tahun<=+c.p2?+S.ui.tahun:Y0;
+ /* kolom: 12 bulan tahun berjalan + kolom tahun berikutnya */
+ const later=yrs.filter(y=>y>cy),gx=4.05,gw=6.55,mW=later.length?gw*0.62/12:gw/12,yW=later.length?(gw-mW*12)/later.length:0,hy3=1.55;
+ C.push(dkR(.45,hy3,12.43,.62,DK.navy,{rad:.06}));C.push(dkT(.6,hy3,3.3,.62,'TINDAKAN',{s:12,b:1,c:DK.gold,v:'middle',sp:1}));C.push(dkT(10.7,hy3,2.1,.62,'PENANGGUNG JAWAB',{s:12,b:1,c:DK.gold,v:'middle',sp:1}));
+ C.push(dkT(gx,hy3+.02,mW*12,.3,String(cy),{s:12,b:1,c:DK.white,a:'center'}));for(let m=0;m<12;m++)C.push(dkT(gx+m*mW,hy3+.3,mW,.3,String(m+1),{s:12,c:'C9D6EC',a:'center'}));
+ later.forEach((y,i)=>C.push(dkT(gx+mW*12+i*yW,hy3,yW,.62,String(y),{s:12,b:1,c:DK.white,a:'center',v:'middle'})));
+ const rowsY=hy3+.7,full=7.0-rowsY,nr=Math.max(1,RK.length),rh0=Math.min(1.0,full/nr),MSL=(c.ms||[]).filter(m=>String(m.t||'').trim()),strip=full-nr*rh0>1.35&&MSL.length,rh=strip?rh0:full/nr,rowsH=nr*rh;
+ const col=(ym)=>{const y=+ym.slice(0,4),m=+ym.slice(5,7)-1;if(y<cy)return 0;if(y===cy)return m*mW;const i=later.indexOf(y);return i<0?gw:mW*12+i*yW+(yW*m/12)};
+ const colE=(ym)=>{const y=+ym.slice(0,4),m=+ym.slice(5,7);if(y<cy)return 0;if(y===cy)return m*mW;const i=later.indexOf(y);return i<0?gw:mW*12+i*yW+(yW*m/12)};
+ RK.forEach((r,i)=>{const y=rowsY+i*rh;if(i%2==0)C.push(dkR(.45,y,12.43,rh,'F7F9FC'));C.push(dkR(.45,y+rh-.01,12.43,.01,DK.line))});
+ for(let m=0;m<=12;m++)C.push(dkR(gx+m*mW,rowsY,.008,rowsH,m%3?'EEF1F6':'DCE3EE'));later.forEach((y,i)=>C.push(dkR(gx+mW*12+(i+1)*yW,rowsY,.008,rowsH,'DCE3EE')));C.push(dkR(gx+mW*12,rowsY,.012,rowsH,'B9C4D6'));
+
+ if(strip){const sy=rowsY+rowsH+.18,sh=7.0-sy;C.push(dkR(.45,sy,12.43,sh,DK.cream,{rad:.06,line:DK.gold2}));C.push(dkT(.6,sy+.06,3.3,.32,'KEY MILESTONES',{s:12,b:1,c:'8A6A12',sp:1}));C.push(dkT(.6,sy+.38,3.3,sh-.45,'Target per tahun dari charter; posisi kolom mengikuti linimasa di atas.',{s:12,i:1,c:DK.mute}));
+  const segs=[{y:cy,x:gx,w:mW*12}].concat(later.map((y,i)=>({y,x:gx+mW*12+i*yW,w:yW})));segs.forEach(g=>{const L=MSL.filter(m=>+m.y===g.y).map(m=>m.t);C.push({t:'e',x:g.x+.05,y:sy+.12,w:.2,h:.2,fill:g.y===cy?DK.gold:DK.navy});C.push(dkT(g.x+.3,sy+.06,g.w-.35,.32,String(g.y),{s:12,b:1,c:DK.navy}));if(L.length){const ih=sh-.48,fs=dkFit(L,g.w-.15,ih,13,12);C.push(dkT(g.x+.02,sy+.42,g.w-.06,ih,dkClip(L,g.w-.15,ih,fs),{s:fs,c:DK.ink,bul:L.length>1}))}else C.push(dkT(g.x+.05,sy+.42,g.w-.1,.3,'—',{s:12,c:DK.mute}))})}
+ if(!RK.length)C.push(dkT(.6,rowsY+.1,10,.5,'Rencana kerja belum diisi.',{s:13,i:1,c:DK.mute}));
+ const pal=[DK.navy,DK.gold,'4A6890',DK.navy2,'C99A1E','7D93B5'];
+ RK.forEach((r,i)=>{const y=rowsY+i*rh;
+  C.push(dkR(.58,y+rh/2-.19,.38,.38,DK.navy,window.DK_BAR==='frame2'?{rad:.25,line:DK.gold,lw:1.5}:{rad:.25}));C.push(dkT(.58,y+rh/2-.19,.38,.38,String(i+1),{s:12,b:1,c:DK.gold,a:'center',v:'middle'}));
+  C.push(dkT(1.05,y,2.95,rh,r.t,{s:dkFit([r.t],2.9,rh-.06,13,12),b:1,c:DK.navy,v:'middle'}));
+  if(r.s&&r.e){const x0=col(r.s),x1=colE(r.e);if(x1>x0){const bh=Math.min(.34,rh*.42);if((window.DK_BAR||'strip')==='strip'){C.push(dkR(gx+x0,y+rh/2-bh/2,x1-x0,bh,DK.navy,{rad:.5}));C.push(dkR(gx+x0+.06,y+rh/2-bh/2+.07,.07,bh-.14,DK.gold,{rad:.5}))}else C.push(dkR(gx+x0,y+rh/2-bh/2,x1-x0,bh,DK.navy,{rad:.5,line:DK.gold,lw:window.DK_BAR==='frame2'?2.5:1.5}));
+   const lab=fmtYM?fmtYM(r.s)+' – '+fmtYM(r.e):(r.s+' – '+r.e);if(x1-x0>1.6)C.push(dkT(gx+x0+.14,y+rh/2-bh/2,x1-x0-.2,bh,lab,{s:12,b:1,c:DK.white,v:'middle'}))}}
+  const pj=['Utama: '+(r.u||p.uic||'—')].concat(r.pd?['Pendukung: '+r.pd]:[]);C.push(dkT(10.7,y,2.15,rh,pj,{s:dkFit(pj,2.1,rh-.06,12,12),c:DK.ink,v:'middle'}))});
+ return {title:J,file:'Charter_'+(p.kode||c.prog).replace(/[^A-Za-z0-9]+/g,'_')+'_'+c.tahun,slides:[{bg:'FFFFFF',E:A,n:'Charter Program'},{bg:'FFFFFF',E:B,n:'Kriteria Penyelesaian'},{bg:'FFFFFF',E:C,n:'Rencana Kerja'}]}}
+const fmtYM=ym=>{const [y,m]=String(ym).split('-');return ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][(+m||1)-1]+' '+String(y).slice(2)};
 
 /* ===== Notula / dokumen pendukung rapat (dipakai di Decision Log, Jadwal 1-on-1, Change Request) ===== */
 const NOT_MAX=300*1024,NOT_TMP={};
