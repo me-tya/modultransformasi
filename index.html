@@ -1760,6 +1760,20 @@ td .nt-chip span{display:inline!important;margin:0!important;font-size:12px!impo
 .tp-hist{display:flex;flex-direction:column;gap:6px}.tp-hist>div{border-left:3px solid var(--line);padding:2px 0 2px 10px;font-size:13px}
 @media(max-width:1100px){.tp-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.tp-flow{flex-wrap:wrap}.tp-flow>div{flex:1 1 40%}.tp-flow>i{display:none}}
 @media(max-width:760px){.tp-kpis,.tp-ready{grid-template-columns:repeat(2,minmax(0,1fr))}.tp-ll{grid-template-columns:1fr}.tp-head{flex-direction:column;align-items:flex-start}.tp-flow>div{flex-basis:100%}}
+
+/* Jadwal 1-on-1: pengingat & aksi */
+.one-strip{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:linear-gradient(90deg,#FFF8E6,#FFFFFF 70%);border:1px solid #F3D9A4;border-left:5px solid var(--yellow);border-radius:12px;padding:9px 12px}
+.one-strip.today{background:linear-gradient(90deg,#FFE9B0,#FFF8E6 70%);border-color:#E9B949}
+.one-ic{width:36px;height:36px;border-radius:10px;background:var(--navy);color:var(--yellow);display:flex;align-items:center;justify-content:center;flex:none}
+.one-main{display:flex;flex-direction:column;min-width:0;flex:1}.one-k{font-size:12px;font-weight:800;color:#8A5A00;text-transform:uppercase;letter-spacing:.3px}.one-t{font-size:14px;color:var(--ink);overflow:hidden;text-overflow:ellipsis}
+.one-today{color:#B42318}.one-more{font-size:12px;font-weight:700;color:var(--ink-3);white-space:nowrap}
+.one-x{border:0;background:transparent;font-size:20px;line-height:1;color:var(--ink-3);cursor:pointer;padding:2px 6px;border-radius:6px}.one-x:hover{background:#F2F4F7}
+.one-table .one-act{width:92px;white-space:nowrap}.one-table .nw{white-space:nowrap}.one-trtoday td{background:#FFF8E6}
+.pm-ws-icon.one-del:hover,.pm-ws-icon.one-del:focus-visible{background:#FEE4E2;border-color:#F4A6A0;color:#B42318}
+@media(max-width:760px){.one-strip{gap:8px}.one-main{flex-basis:calc(100% - 60px)}}
+.one-tim span{display:block;font-size:12.5px;line-height:1.4}.one-tim b{font-weight:700}.one-table td .chip{white-space:nowrap}
+.one-table td .sm{display:block;margin-top:2px}
+.one-table{min-width:0;width:100%}.one-table th{white-space:normal;min-width:0}.one-table td:nth-child(4),.one-table td:nth-child(9){min-width:0}.one-table td:nth-child(3){min-width:180px}.one-table td{font-size:12.5px}
 </style>
 
 <div id="root"></div>
@@ -3018,7 +3032,7 @@ function pmoTabs(cur0){let cur=VIEW.startsWith('pmo-')?VIEW.slice(4):cur0;if(cur
  const G=PMG.map(g=>({g,ks:g[3].filter(k=>vis.has(k))})).filter(x=>x.ks.length);const on=G.find(x=>x.ks.includes(cur))||G[0];
  const gc=x=>x.ks.reduce((a,k)=>a+(+cnt[k]||0),0);
  const sub=on&&on.ks.length>1?`<div class="subt" role="tablist" aria-label="${esc(on.g[1])}">${on.ks.map(k=>`<a href="#pmo-${k}" class="${k===cur?'on':''}" role="tab" aria-selected="${k===cur}">${L(k)}${cnt[k]!==''&&cnt[k]!=null&&+cnt[k]>0?` <b class="sb">${cnt[k]}</b>`:''}</a>`).join('')}</div>`:'';
- return pmoFilterPanel(cur)+`<nav class="ptabs" aria-label="Tab PMO">${G.map(x=>{const n=x.g[2];const c=x.ks.length>1?gc(x):cnt[x.ks[0]];const tgt=x.ks.includes(cur)?cur:x.ks[0];return `<a href="#pmo-${tgt}" class="${x===on?'on':''}"><span>${n?`<em>${n}</em> `:''}${x.g[1]}</span>${c!==''&&c!=null&&+c>0?` <b>${c}</b>`:''}</a>`}).join('')}</nav>${sub}`}
+ return oneStrip(cur)+pmoFilterPanel(cur)+`<nav class="ptabs" aria-label="Tab PMO">${G.map(x=>{const n=x.g[2];const c=x.ks.length>1?gc(x):cnt[x.ks[0]];const tgt=x.ks.includes(cur)?cur:x.ks[0];return `<a href="#pmo-${tgt}" class="${x===on?'on':''}"><span>${n?`<em>${n}</em> `:''}${x.g[1]}</span>${c!==''&&c!=null&&+c>0?` <b>${c}</b>`:''}</a>`}).join('')}</nav>${sub}`}
 function viewPmo(tab){const f={charter:pCharter,siklus:pOverview,portofolio:pPorto,program:pProgram,perencanaan:pPerencanaan,wbsplan:pWbs,wbs:pWbs,oneonone:pOneOnOne,milestone:pMilestone,risiko:pRisiko,cr:pCr,bukti:pBukti,laporan:pLaporan,narasi:pNarasi,penutupan:pPenutupan,referensi:pRef}[tab];return f?f():''}
 /* --- Portofolio --- */
 function pbChart(PV,items,M,tw,jenis='Berkelanjutan'){
@@ -3131,29 +3145,43 @@ function getOneOnOne(){
  if(!S.oneonone.length&&+S.ui.tahun===2026)S.oneonone=ONEONONE_2026.map(x=>Object.assign({},x));
  return S.oneonone.filter(x=>+x.tahun===+S.ui.tahun).sort((a,b)=>String(a.tgl||'9999').localeCompare(String(b.tgl||'9999'))||(+a.no||0)-(+b.no||0));
 }
+/* Jadwal 1-on-1: status, agenda terdekat (strip di semua tab PMO), hapus */
+const ONE_DAYS=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+function oneSt(x){if(!x.tgl)return ['Belum dijadwalkan','c-gray'];if(x.tgl<TODAY)return [x.notula&&notulaChip(x.notula,1)?'Selesai · notula ada':'Selesai','c-ok'];if(x.tgl===TODAY)return ['Hari ini','c-warn'];return ['Terjadwal','c-info']}
+const oneDate=x=>{if(!x.tgl)return 'Belum ditetapkan';const d=new Date(x.tgl+'T00:00:00');return (isNaN(d)?'':ONE_DAYS[d.getDay()]+', ')+rptLongDate(x.tgl)};
+let ONE_HIDE=false;
+function oneStrip(cur){if(cur==='oneonone'||ONE_HIDE)return '';let rows;try{rows=getOneOnOne()}catch(e){return ''}if(!rows.length)return '';
+ const up=rows.filter(x=>x.tgl&&x.tgl>=TODAY).sort((a,b)=>(a.tgl+(a.jam||'')).localeCompare(b.tgl+(b.jam||''))),un=rows.filter(x=>!x.tgl).length;const can=lv('wbs').includes('U')||lv('wbs').includes('C');
+ if(!up.length&&!(un&&can))return '';const n=up[0];const days=n?Math.round((new Date(n.tgl+'T00:00:00')-new Date(TODAY+'T00:00:00'))/864e5):null;
+ const when=n?(days===0?'<b class="one-today">Hari ini</b>':days===1?'<b>Besok</b>':`<b>${days} hari lagi</b>`):'';
+ return `<div class="one-strip${n&&days===0?' today':''}" role="status"><span class="one-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/><path d="M8 14h3v3H8z"/></svg></span>
+  ${n?`<div class="one-main"><span class="one-k">1-on-1 berikutnya · ${when}</span><span class="one-t"><b>${esc(n.program)}</b> · ${esc(oneDate(n))}${n.jam?' · '+esc(n.jam):''}${n.katim?' · Katim '+esc(n.katim):''}</span></div>${/^https?:/i.test(n.lokasi||'')?`<a class="btn sm pri" href="${esc(n.lokasi)}" target="_blank" rel="noopener">Gabung Teams</a>`:n.lokasi?`<span class="chip c-gray">${esc(n.lokasi)}</span>`:''}${up.length>1?`<span class="one-more">+${up.length-1} agenda terjadwal</span>`:''}`:`<div class="one-main"><span class="one-k">Jadwal 1-on-1</span><span class="one-t"><b>${un} agenda</b> belum memiliki tanggal</span></div>`}
+  ${n&&un&&can?`<span class="one-more">${un} belum dijadwalkan</span>`:''}<a class="btn sm" href="#pmo-oneonone">${n?'Lihat jadwal':'Atur jadwal'} ›</a><button type="button" class="one-x" data-act="oneHide" aria-label="Sembunyikan pengingat 1-on-1">×</button></div>`}
+ACT.oneHide=()=>{ONE_HIDE=true;render()};
+ACT.oneDel=el=>{const x=(S.oneonone||[]).find(v=>v.id===el.dataset.id);if(!x)return;confirmDel('Jadwal 1-on-1 '+(x.program||''),()=>{S.oneonone=S.oneonone.filter(v=>v.id!==x.id);log('Hapus Jadwal 1-on-1',x.program||'');save();render();toast('Jadwal dihapus.')})};
 function pOneOnOne(){
  const rows=getOneOnOne(),scheduled=rows.filter(x=>x.tgl&&x.jam).length,online=rows.filter(x=>/^https?:/i.test(x.lokasi||'')).length;
- const editable=lv('wbs').includes('U')||lv('wbs').includes('C');
+ const editable=lv('wbs').includes('U')||lv('wbs').includes('C'),canDel=lv('wbs').includes('D');
  const exportBtn='<button class="btn" data-act="oneExport">Ekspor Excel</button>';
  const addBtn=editable?'<button class="btn pri" data-act="oneAdd">+ Tambah Jadwal</button>':'';
  return vh('1','pmo','Jadwal 1-on-1','Jadwal pembahasan capaian WBS dan milestone T-Program, termasuk PIC dan tautan rapat.',exportBtn+addBtn)+pmoTabs('oneonone')+
  '<div class="note i"><span><b>Rujukan jadwal TW II 2026:</b> 29 Juni s.d. 2 Juli 2026. Tanggal atau jam yang belum terisi pada file sumber tidak diasumsikan sudah terjadwal. Perubahan di aplikasi perlu diperbarui oleh PMO terkait.</span></div>'+
  '<div class="kpis"><div class="kpi dk"><div class="l">Agenda 1-on-1</div><div class="v">'+rows.length+'</div><div class="d">Tahun '+S.ui.tahun+'</div></div><div class="kpi"><div class="l">Tanggal dan jam lengkap</div><div class="v">'+scheduled+'</div></div><div class="kpi"><div class="l">Tautan online terisi</div><div class="v">'+online+'</div></div></div>'+
- '<div class="card"><div class="ch"><h3>Jadwal Pembahasan Progres T-Program</h3><span class="r s">Diadaptasi dari sheet Jadwal 1on1 TW II</span></div><div class="tscroll"><table class="lap one-table"><thead><tr><th>No.</th><th>Hari/Tanggal</th><th>Jam</th><th>Nama Program Transformasi</th><th>Tema</th><th>UIC Utama</th><th>SPV</th><th>Katim</th><th>Anggota</th><th>Teams / Lokasi</th><th>Notula</th>'+(editable?'<th>Tindakan</th>':'')+'</tr></thead><tbody>'+
- rows.map(x=>'<tr><td>'+esc(x.no)+'</td><td><b>'+(x.tgl?fmtD(x.tgl):'Belum ditetapkan')+'</b></td><td>'+(x.jam?esc(x.jam):'—')+'</td><td><b>'+esc(x.program)+'</b></td><td>'+esc(x.tema)+'</td><td>'+esc(x.uic)+'</td><td>'+esc(x.spv)+'</td><td>'+esc(x.katim)+'</td><td>'+esc(x.anggota)+'</td><td>'+(x.lokasi?/^https?:/i.test(x.lokasi)?'<a href="'+esc(x.lokasi)+'" target="_blank" rel="noopener">Buka Teams</a>':esc(x.lokasi):'—')+'</td><td>'+(notulaChip(x.notula,1)||'<span class="s">—</span>')+'</td>'+(editable?'<td><button class="btn sm" data-act="oneEdit" data-id="'+esc(x.id)+'">Edit</button></td>':'')+'</tr>').join('')+
+ '<div class="card"><div class="ch"><h3>Jadwal Pembahasan Progres T-Program</h3><span class="r row" style="gap:8px;align-items:center"><span class="s">Diadaptasi dari sheet Jadwal 1on1 TW II</span></span></div><div class="tscroll"><table class="lap one-table"><thead><tr><th>No.</th><th>Hari/Tanggal · Jam</th><th>Program Transformasi · Tema</th><th>UIC Utama</th><th>Tim (SPV · Katim · Anggota)</th><th>Teams / Lokasi</th><th>Status</th><th>Notula</th>'+(editable?'<th class="one-act">Aksi</th>':'')+'</tr></thead><tbody>'+
+ rows.map(x=>{const st=oneSt(x);return '<tr class="'+(st[0]==='Hari ini'?'one-trtoday':'')+'"><td>'+esc(x.no)+'</td><td><b class="nw">'+(x.tgl?fmtD(x.tgl):'Belum ditetapkan')+'</b>'+(x.jam?'<span class="sm nw">'+esc(x.jam)+'</span>':'')+'</td><td><b>'+esc(x.program)+'</b>'+(x.tema?'<span class="sm">'+esc(x.tema)+'</span>':'')+'</td><td>'+esc(x.uic)+'</td><td class="one-tim"><span>SPV <b>'+esc(x.spv||'—')+'</b></span><span>Katim <b>'+esc(x.katim||'—')+'</b></span><span>'+esc(x.anggota||'—')+'</span></td><td>'+(x.lokasi?/^https?:/i.test(x.lokasi)?'<a href="'+esc(x.lokasi)+'" target="_blank" rel="noopener">Buka Teams</a>':esc(x.lokasi):'—')+'</td><td><span class="chip '+st[1]+'">'+esc(st[0])+'</span></td><td>'+(notulaChip(x.notula,1)||'<span class="s">—</span>')+'</td>'+(editable?'<td class="one-act"><span class="pm-act2"><button type="button" class="pm-ws-icon" data-act="oneEdit" data-id="'+esc(x.id)+'" title="Ubah jadwal" aria-label="Ubah jadwal '+esc(x.program)+'"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button>'+(canDel?'<button type="button" class="pm-ws-icon one-del" data-act="oneDel" data-id="'+esc(x.id)+'" title="Hapus jadwal" aria-label="Hapus jadwal '+esc(x.program)+'"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>':'')+'</span></td>':'')+'</tr>'}).join('')+
  '</tbody></table></div></div>';
 }
 function editOneOnOne(item){
  if(!lv('wbs').includes('U')&&!lv('wbs').includes('C')){toast('Tidak memiliki izin mengubah jadwal.');return}
  const labels=[['tgl','Tanggal rapat','date'],['jam','Jam / rentang waktu','text'],['program','Nama program transformasi','text'],['tema','Tema','text'],['uic','UIC Utama','text'],['spv','Supervisor','text'],['katim','Ketua tim','text'],['anggota','Anggota','text'],['lokasi','Link Teams / lokasi rapat','text']];
- const f=labels.map(([k,label,type])=>'<div class="fld"><label for="one-'+k+'">'+label+'</label><input id="one-'+k+'" type="'+type+'" value="'+esc(item[k]||'')+'" '+(k==='program'?'required':'')+'></div>').join('');
- notulaReset('one');modal('Ubah Jadwal 1-on-1','<div class="fgrid">'+f+notulaField('one',item.notula,'Notula rapat 1-on-1')+'</div>','Simpan',()=>{
+ const isNew=!S.oneonone.some(x=>x.id===item.id);const f=labels.map(([k,label,type])=>'<div class="fld"><label for="one-'+k+'">'+label+'</label><input class="inp" id="one-'+k+'" type="'+type+'" value="'+esc(item[k]||'')+'" '+(k==='program'?'required list="one-progs"':'')+'></div>').join('')+'<datalist id="one-progs">'+progVis().map(p=>'<option value="'+esc(p.nama)+'">').join('')+'</datalist>';
+ notulaReset('one');modal(isNew?'Tambah Jadwal 1-on-1':'Ubah Jadwal 1-on-1','<div class="fgrid">'+f+notulaField('one',item.notula,'Notula rapat 1-on-1')+'</div>','Simpan',()=>{
   const oldName=item.program;const nt=notulaCollect('one',item.notula);if(nt===false)return false;item.notula=nt;notulaReset('one');
   labels.forEach(([k])=>item[k]=String($('#one-'+k).value||'').trim());
   if(!item.program){toast('Nama program wajib diisi.');return false}
   if(!S.oneonone.some(x=>x.id===item.id))S.oneonone.push(item);
-  log('Pemutakhiran Jadwal 1-on-1',oldName+' → '+item.program);save();render();return true;
- },{size:'wide'});
+  log(isNew?'Tambah Jadwal 1-on-1':'Pemutakhiran Jadwal 1-on-1',isNew?item.program:oldName+' → '+item.program);save();render();return true;
+ },{size:'wide',extra:!isNew&&lv('wbs').includes('D')?'<button class="btn dng" data-mx="del" style="margin-right:auto">Hapus</button>':'',onExtra:k=>{if(k==='del'){setTimeout(()=>ACT.oneDel({dataset:{id:item.id}}),0);return true}return false}});
 }
 ACT.oneEdit=el=>{const item=(S.oneonone||[]).find(x=>x.id===el.dataset.id);if(item)editOneOnOne(item)};
 ACT.oneAdd=()=>{getOneOnOne();const x={id:uid(),tahun:+S.ui.tahun,no:(S.oneonone.filter(v=>+v.tahun===+S.ui.tahun).length+1),tgl:'',jam:'',program:'',tema:'',uic:'',spv:'',katim:'',anggota:'',lokasi:''};editOneOnOne(x)};
