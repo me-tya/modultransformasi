@@ -5146,7 +5146,7 @@ ACT.pgRep=el=>{const d=el.dataset;let spec={k:d.k||'filter',p:d.p||'',j:d.j||'',
   <div class="rpt2-bar">
    <label class="rpt2-f w3"><span>Cakupan laporan</span><select class="sel" id="rpt-sc">${opts(optsC(),rptEnc(spec))}</select></label>
    <label class="rpt2-f w2"><span>Tahapan</span><select class="sel" id="rpt-th">${tahapOpts('')}</select></label>
-   <label class="rpt2-f"><span>No. dokumen</span><input class="inp" id="rpt-no" placeholder="opsional"></label>
+   <label class="rpt2-f"><span>No. dokumen</span><input class="inp" id="rpt-no" placeholder="LAP-[NO]/KODE UNIT/TAHUN" title="Opsional. Format: LAP-[nomor urut]/[kode unit]/[tahun], contoh LAP-12/BTI.3/2026"></label>
    <button type="button" class="btn sm" id="rpt-tteb">✍ Atur TTE</button>
   </div>
   <div class="rpt2-tte" hidden><div class="rpt2-tteg">${[['city','Kota','Jakarta'],['date','Tanggal',rptLongDate(TODAY)],['label','Keterangan','Mengetahui,'],['title','Jabatan','Kepala ...'],['name','Nama pejabat','Nama lengkap']].map(([k,l,ph])=>`<label class="rpt2-f"><span>${l}</span><input class="inp" data-tte="${k}" value="${esc(sg[k]||'')}" placeholder="${esc(ph)}"></label>`).join('')}</div><div class="rpt2-tteft"><button type="button" class="btn sm pri" id="rpt-tteok">Terapkan</button></div></div>
