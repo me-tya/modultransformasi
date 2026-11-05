@@ -2039,6 +2039,20 @@ button.nt-chip{font:inherit;cursor:pointer}
 .dk-t{display:flex;flex-direction:column;line-height:1.22;overflow:hidden;padding:2px;white-space:pre-line}
 .dk-t ul{margin:0;padding-left:1.1em}.dk-t li{margin-bottom:.25em}
 @media(max-width:800px){.dk-wrap{grid-template-columns:1fr}}
+
+/* Charter: tab dokumen + aksi dokumen dalam satu baris, jarak antarkartu rapat */
+.chhero{margin-bottom:10px!important;padding:12px 18px!important}
+.chstep{padding:8px 14px!important}
+.ch-tabbar{display:flex;align-items:center;gap:10px;margin:10px 0;position:sticky;top:0;z-index:22;background:var(--bg,#F3F5F9);padding:2px 0}
+.ch-tabbar .chtabs{flex:1 1 auto;margin:0!important;min-height:0!important;position:static!important;padding:4px!important}
+.ch-tabbar .chtabs button{min-height:40px!important;padding:6px 8px!important;gap:7px!important}
+.ch-tabbar .chtabs{gap:2px!important}
+.ch-tabbar .chtabs button i{width:22px;height:22px;font-size:11.5px}
+.ch-document-actions{margin:0!important;flex:none;display:flex;align-items:center;gap:4px!important;background:#fff;border:1px solid #DCE3EF;border-radius:12px;padding:4px 6px}
+.ch-document-actions .btn.sm{height:30px;padding:0 9px;border-radius:8px}
+.cda-l{font-size:11px;font-weight:800;color:var(--ink-3);letter-spacing:.3px;text-transform:uppercase;padding:0 4px}
+#ch-active-document>.chtuj:first-child,#ch-active-document>*:first-child{margin-top:0!important}
+@media(max-width:1200px){.ch-tabbar{flex-wrap:wrap}.ch-tabbar .chtabs{flex-basis:100%}.ch-document-actions{margin-left:auto!important}}
 </style>
 
 <div id="root"></div>
@@ -2826,7 +2840,7 @@ function pCharter(){const akr=S.ui.chp;const p=S.programs.find(x=>x.akr===akr);
  <div class="rt">${flow}<div class="hgrp"><button class="hb" data-act="chdeck" data-id="${c.id}" title="Pratinjau dan unduh paparan PowerPoint untuk pimpinan">🎞 Paparan</button>${ed?`<button class="hb" data-act="ched" data-p="${akr}" data-id="${c.id}">✎ Ubah</button>`:''}${chCan('C',p)&&c.st==='Disahkan'&&!L.some(x=>x.st==='Draft'||x.st==='Reviu')?`<button class="hb" data-act="chver" data-id="${c.id}">⧉ Versi baru</button>`:''}${chCan('D',p)?`<button class="hb icn" data-act="chdel" data-id="${c.id}" title="${c.st==='Draft'?'Hapus draft':'Hanya charter berstatus Draft yang bisa dihapus'}" ${c.st==='Draft'?'':'disabled'}>🗑</button>`:''}</div><button class="hb gold" data-act="chexp" data-id="${c.id}">⇩ Ekspor ▾</button></div></div>
  ${ret&&ret.st==='Draft'&&ret.cat?`<div class="note w"><span><b>Catatan reviu PMO Pusat:</b> ${esc(ret.cat)}</span></div>`:''}
  <div class="card"><div class="chstep">${step('Draft','Draft')}<span class="cbar"></span>${step('Reviu','Reviu PMO Pusat')}<span class="cbar"></span>${step('Disahkan','Disahkan')}<span class="cbar"></span><div class="cst${c.st==='Disahkan'?' on':''}"><i>🔒</i><span><b>Baseline WBS</b><small>${c.st==='Disahkan'?S.wbs.filter(w=>w.prog===akr&&!w.arsip).length+' item · perubahan via CR':'aktif setelah disahkan'}</small></span></div></div></div>
- ${tabs}<div class="ch-document-actions"><button class="btn sm" data-act="chpreview" data-id="${c.id}" title="Pratinjau dokumen ${esc((CHPG.find(x=>x[0]===tab)||[])[1]||'')}">👁 Preview</button><button class="btn sm" data-act="chactiveexport" data-id="${c.id}" data-fmt="pdf" title="Ekspor dokumen aktif ke PDF">PDF</button><button class="btn sm" data-act="chactiveexport" data-id="${c.id}" data-fmt="docx" title="Ekspor dokumen aktif ke Word .docx">Word</button><button class="btn sm" data-act="chactiveexport" data-id="${c.id}" data-fmt="pptx" title="Ekspor dokumen aktif ke PowerPoint .pptx">PPTX</button></div><section id="ch-active-document">${body}</section>
+ <div class="ch-tabbar">${tabs}<div class="ch-document-actions" role="group" aria-label="Dokumen aktif"><span class="cda-l">Dokumen ini</span><button class="btn sm" data-act="chpreview" data-id="${c.id}" title="Pratinjau dokumen ${esc((CHPG.find(x=>x[0]===tab)||[])[1]||'')}">👁</button><button class="btn sm" data-act="chactiveexport" data-id="${c.id}" data-fmt="pdf" title="Ekspor dokumen aktif ke PDF">PDF</button><button class="btn sm" data-act="chactiveexport" data-id="${c.id}" data-fmt="docx" title="Ekspor dokumen aktif ke Word .docx">Word</button><button class="btn sm" data-act="chactiveexport" data-id="${c.id}" data-fmt="pptx" title="Ekspor dokumen aktif ke PowerPoint .pptx">PPTX</button></div></div><section id="ch-active-document">${body}</section>
  ${c.doc&&c.doc.link?`<div class="card"><div class="pad" style="display:flex;gap:10px;align-items:center"><span class="pdfic">PDF</span><span><b>Dokumen pengesahan</b><br><a href="${esc(c.doc.link)}" target="_blank" rel="noopener">${esc(c.doc.link)}</a></span></div></div>`:''}`}
 ACT.chtab=el=>{S.ui.cht=el.dataset.v;save();render()};
 ACT.chpreview=el=>{const page=document.querySelector('#ch-active-document');if(!page){toast('Dokumen belum tersedia.');return}const name=(CHPG.find(x=>x[0]===S.ui.cht)||['ch','Charter'])[1];modal('Preview '+esc(name),'<div class="ch-preview-body">'+page.innerHTML+'</div>','Tutup',()=>true,{size:'wide'});};
@@ -4399,11 +4413,18 @@ ACT.chimpdoc=()=>{if(!CHD)return;const p=progOf(CHD.prog)||{};docPick(async file
 /* ===== Paparan charter untuk pimpinan: cover + 3 slide, satu model elemen untuk pratinjau HTML dan PPTX native ===== */
 const DK={navy:'0B2447',navy2:'163A6B',gold:'FDB913',gold2:'F5D27A',ink:'1E2B42',mute:'5B6B82',light:'F4F6FB',line:'DCE3EE',teal:'16807F',red:'C0392B',blue:'1F5FB8',white:'FFFFFF',cream:'FFF8E6'};
 /* perkiraan ukuran huruf agar teks muat di kotak (min 12 pt) */
-const DK_CW=.46,DK_LH=1.2;
-function dkFit(items,w,h,max,min){min=min||12;const arr=(Array.isArray(items)?items:[items]).map(x=>String(x||''));for(let fs=max;fs>=min;fs-=0.5){const cpl=Math.max(8,Math.floor(w*72/(fs*DK_CW)));let lines=0;arr.forEach(t=>{lines+=Math.max(1,Math.ceil(t.length/cpl))});const need=lines*fs*DK_LH/72+arr.length*fs*0.2/72;if(need<=h)return fs}return min}
-function dkClip(items,w,h,fs){const out=[];const cpl=Math.max(8,Math.floor(w*72/(fs*DK_CW))),lh=fs*DK_LH/72,ps=fs*0.2/72;let used=0;
- for(let i=0;i<items.length;i++){const t=String(items[i]||'');const l=Math.max(1,Math.ceil(t.length/cpl))*lh+ps;
-  if(used+l>h){const rest=items.length-i,room=Math.floor((h-used-ps-(rest>1?lh+ps:0))/lh);if(room>=2){out.push(t.slice(0,room*cpl-2).replace(/\s+\S*$/,'')+'…');if(rest>1)out.push('… dan '+(rest-1)+' butir lainnya')}else out.push('… dan '+rest+' butir lainnya');break}used+=l;out.push(t)}return out}
+const DK_CW=.46,DK_LH=1.2;let DK_CTX=null;
+/* hitung jumlah baris teks dengan mengukur lebar kata (Calibri/Carlito), agar pratinjau dan PPTX tidak meluap */
+function dkLines(t,fs,w){if(!DK_CTX){try{DK_CTX=document.createElement('canvas').getContext('2d')}catch(e){}}const W=w*96;if(!DK_CTX)return Math.max(1,Math.ceil(String(t).length/Math.max(8,Math.floor(w*72/(fs*DK_CW)))));
+ DK_CTX.font=(fs*96/72).toFixed(2)+'px Calibri, Carlito, "Segoe UI", Arial, sans-serif';let n=0;String(t||'').split('\n').forEach(par=>{let line='';n++;par.split(/\s+/).filter(Boolean).forEach(wd=>{const tr=line?line+' '+wd:wd;if(DK_CTX.measureText(tr).width*1.04>W&&line){n++;line=wd}else line=tr})});return Math.max(1,n)}
+const dkH=(arr,fs,w)=>{const bw=arr.length>1?w-.24:w;return arr.reduce((a,t)=>a+dkLines(t,fs,bw)*fs*DK_LH/72+(arr.length>1?fs*0.25/72:0),0)+.04};
+function dkFit(items,w,h,max,min){min=min||12;const arr=(Array.isArray(items)?items:[items]).map(x=>String(x||''));for(let fs=max;fs>=min;fs-=0.5){if(dkH(arr,fs,w)<=h)return fs}return min}
+function dkClip(items,w,h,fs){const out=[];const multi=items.length>1,bw=multi?w-.24:w,lh=fs*DK_LH/72,ps=multi?fs*0.25/72:0;let used=.04;
+ for(let i=0;i<items.length;i++){const t=String(items[i]||'');const n=dkLines(t,fs,bw),l=n*lh+ps;if(used+l<=h){used+=l;out.push(t);continue}
+  const rest=items.length-i-1,room=Math.floor((h-used-ps-(rest?lh+ps:0))/lh);
+  if(room>=1){let lo=0,hi=t.length;while(lo<hi){const mid=Math.ceil((lo+hi)/2);if(dkLines(t.slice(0,mid)+'…',fs,bw)<=room)lo=mid;else hi=mid-1}const cut=t.slice(0,lo).replace(/\s+\S*$/,'');if(cut.length>8)out.push(cut+'…');else if(!rest){out.push('… dan '+(items.length-i)+' butir lainnya');break}}
+  else if(!rest&&out.length){out.push('… dan 1 butir lainnya');break}
+  if(rest)out.push('… dan '+rest+' butir lainnya');break}return out}
 const dkT=(x,y,w,h,txt,o)=>Object.assign({t:'t',x,y,w,h,txt},o||{});
 const dkR=(x,y,w,h,fill,o)=>Object.assign({t:'r',x,y,w,h,fill},o||{});
 function dkBox(E,x,y,w,h,title,items,o){o=o||{};E.push(dkR(x,y,w,h,o.bg||DK.white,{line:o.lineC||DK.line,rad:.08}));E.push(dkR(x,y,.09,h,o.acc||DK.gold,{}));
