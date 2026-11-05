@@ -1061,7 +1061,7 @@ button[aria-label*="Bantuan"]:hover,button[title*="Bantuan"]:hover,.help-icon:ho
 
 
 .prj-field-header{display:inline-flex;align-items:center;gap:7px}
-.prj-field-example{font-size:10px;color:#6C7E98;font-weight:400;line-height:1.45}
+.prj-field-example{font-size:11.5px;color:#6C7E98;font-weight:400;line-height:1.45}
 .prj-form-instruction{padding:11px 13px;background:#EFF6FE;border:1px solid #CFE1F6;border-radius:10px;color:#31567F;margin-bottom:13px;font-size:12px}
 .prj-form-instruction>b{font-size:12px;color:#0B2447}
 .prj-form-instruction>p{margin:5px 0;line-height:1.5}
@@ -1360,6 +1360,19 @@ body:has(.prj-overlay){overflow:hidden}
 @media(max-width:640px){.hp-flow>li{grid-template-columns:34px minmax(0,1fr)}.hp-flow>li>.hp-go{grid-column:2}.hp-tbl td:first-child,.hp-ftbl td:first-child,.hp-ftbl td:last-child{width:auto}.md.hp .bd{padding:0 12px 12px}}
 
 
+
+.kw-tbl td.kw-out{font-size:13px;line-height:1.5;min-width:260px}
+.kw-tbl td.kw-no{font-family:var(--mono);color:var(--ink-3);font-size:12.5px}
+.kw-tbl td.kw-cut{font-size:12.5px;white-space:nowrap}
+.kw-tbl .num{text-align:right;font-family:var(--mono)}
+.kw-tbl th.num{font-family:inherit}
+.kw-tbl td.kw-prog{width:auto;min-width:160px}
+.kw-tbl tfoot td{padding:9px 14px;background:#F7F9FC;font-weight:800;color:var(--navy);font-size:13px;border-top:1px solid var(--line)}
+.kw-tbl tfoot tr.kw-cap-row td{background:#FFF9E8;border-top:1px solid #F6E3A8}
+.kw-tbl tfoot td:first-child{text-align:right}
+.kw-head h3 small{font-weight:600;color:var(--ink-3);font-size:12.5px;margin-left:6px}
+.kw-src{font-size:12.5px}
+.kw-emptybox{padding:22px;display:flex;flex-direction:column;gap:8px;align-items:flex-start}.kw-emptybox p{margin:0;color:var(--ink-2);font-size:13.5px;line-height:1.55}
 /* ===== K-Wide v3 ===== */
 .kw-sum{display:grid;grid-template-columns:250px repeat(4,minmax(0,1fr));overflow:hidden;padding:0}
 .kw-lead{padding:13px 16px;background:linear-gradient(135deg,#0B1F45,#17457F);color:#fff;display:flex;flex-direction:column;justify-content:center;gap:3px}
@@ -1976,7 +1989,7 @@ function tasks(){const out=[];
  const imp=implRows(s=>can('impl','U',s.modul)).filter(r=>r.status==='Belum dijadwalkan').length;if(imp)out.push(['CMO',`${imp} kegiatan CM belum dijadwalkan`,'cmo-impl','Jadwalkan']);
  return out}
 function ensureBkFlow(){if(!S||!S.akses||S.bkF===1)return;const A=S.akses,up=(r,v)=>{if(A[r]&&A[r].f&&!String(A[r].f.bukti||'').includes('U'))A[r].f.bukti=v};up('PMOK','CRUD');up('CMOK','CRU');up('PMOU','CRUD');up('CMOU','CRU');['CMOK','PMOU','CMOU','TIM'].forEach(r=>{if(A[r]&&A[r].f)A[r].f.valid='-'});if(A.PMOK&&A.PMOK.f&&!String(A.PMOK.f.valid||'').includes('U'))A.PMOK.f.valid='RU';S.bkF=1}
-function render(){try{ensureBkFlow()}catch(e){}
+function render(){try{ensureBkFlow()}catch(e){}try{kwMigrate()}catch(e){}
  if(!ME){renderLogin();return}
  ensureCh();ensureNar();
  const mm=VIEW.match(/^modul-(.+)-t-(\w+)$/);
@@ -3123,35 +3136,36 @@ function pSiklus(){const PV=pmoProgramList();const st=PV.map(p=>({p,x:progStat(p
 
 /* ======================== Overview capaian program: sumber sheet WBS 2026 ======================== */
 const KWIDE_2026=[
- [1,'Single Profile Penerimaan Negara',2,2,'Identifikasi dan integrasi data internal; Analisis Dampak Perubahan'],
- [1,'Pemotongan Pajak di Muka atas TKD',2,2,'Konsep proses bisnis pemotongan pajak di muka TKD; Analisis Dampak Perubahan'],
- [1,'Digitalisasi Core System APBN',3,3,'EA Level 3; Modul Core APBN tahap 1; dokumen awareness dan ADP'],
- [1,'Digitalisasi Office Automation',3,3,'EA Level 3; dokumen sistem tahap 1; dokumen CM tahap 1'],
- [1,'Satu Data Kemenkeu',3,3,'Legal drafting KMK Tim Data Governance Officers; UR portal Satu Data; kertas kerja FGD'],
- [2,'Single Profile Penerimaan Negara',2,2,'Identifikasi dan integrasi data eksternal; strategi manajemen perubahan'],
- [2,'Seamless Services Bendahara (ex-Pajak TKD)',2,2,'Konsep proses bisnis Bupot PPh Unifikasi dan PPh Pasal 21'],
- [2,'Digitalisasi Core System APBN',5,5,'EA level SOP modul tahap 1 dan 2; modul tahap 2; kesiapan jejaring perubahan; migrasi SPAN–SAKTI'],
- [2,'Digitalisasi Office Automation',3,3,'EA Level 3 tahap 1; dokumen sistem tahap 2; dokumen CM tahap 2'],
- [2,'Satu Data Kemenkeu',2,2,'Portal SDK tahap 1; kamus data tahap 1'],
- [3,'Single Profile Penerimaan Negara',2,2,'Analisis proses bisnis sektoral; dokumen implementasi CM tahap I'],
- [3,'Seamless Services Bendahara (ex-Pajak TKD)',4,4,'UR Bupot PPh Unifikasi; arsitektur; kebutuhan interoperabilitas gaji dan SIKD–Coretax'],
- [3,'Digitalisasi Core System APBN',4,4,'EA level detail modul tahap 3; modul tahap 3; strategi CM; pemutakhiran SLA'],
- [3,'Digitalisasi Office Automation',3,3,'EA Level 3 tahap 2; dokumen sistem tahap 3; dokumen CM tahap 3'],
- [3,'Satu Data Kemenkeu',2,2,'Portal SDK tahap 2; kamus data tahap 2'],
- [4,'Single Profile Penerimaan Negara',2,null,'Risk Profile; dokumen implementasi CM tahap II'],
- [4,'Seamless Services Bendahara (ex-Pajak TKD)',5,null,'Interoperabilitas SAKTI–Coretax, E-Tukin dan SIKD untuk Bupot PPh'],
- [4,'Digitalisasi Core System APBN',4,null,'EA level SOP modul tahap 4; modul tahap 4; implementasi strategi CM; migrasi SPAN–SAKTI'],
- [4,'Digitalisasi Office Automation',4,null,'EA Level 3 tahap 3; dokumen sistem tahap 4; dokumen CM tahap 4'],
- [4,'Satu Data Kemenkeu',1,null,'CM implementasi portal Satu Data Kemenkeu']
+ [1, "Single Profile Penerimaan Negara", 2, 2, "1. Identifikasi dan integrasi data internal Kemenkeu\n2. Dokumen Analisis Dampak Perubahan", "31/3/2026", 1],
+ [1, "Pemotongan Pajak di Muka atas TKD", 2, 2, "1. Konsep Probis Pemotongan Pajak di muka atas TKD\n2. Dokumen Analisis Dampak Perubahan", "31/3/2026", 2],
+ [1, "Digitalisasi Core System APBN", 3, 3, "1. EA Sampai Dengan Level 3\n2. Modul Core APBN Tahap 1\n3. Dokumen awareness dan  analisis dampak perubahan", "31/3/2026", 3],
+ [1, "Digitalisasi Office Automation", 3, 3, "1. EA Sampai Dengan Level 3\n- High Level Business Level Model\n2. Pengembangan Sistem\n- Dokumen sistem tahap 1\n3. Change Management\n- Dokumen CM tahap 1", "31/3/2026", 4],
+ [1, "Satu Data Kemenkeu", 3, 3, "1. Legal Drafting KMK Tim Data Governance Officers\n2. UR Pembangunan Portal Satu Data Kemenkeu\n3. Kertas Kerja Bahan FGD", "31/3/2026", 5],
+ [2, "Single Profile Penerimaan Negara", 2, 2, "1. Identifikasi dan integrasi data eksternal Kemenkeu\n2. Strategi Change Management", "30/6/2026", 1],
+ [2, "Seamless Services Bendahara (ex-Pajak TKD)", 2, 2, "1. Konsep Proses Bisnis Seamless Services untuk Bendahara Pemerintah PPh Unifikasi\n2. Konsep Proses Bisnis Seamless Services untuk Bendahara Pemerintah  PPH pasal 21", "30/6/2026", 2],
+ [2, "Digitalisasi Core System APBN", 5, 5, "1. EA Sampai Dengan Level SOP untuk modul tahap 1 dan 2\n2. Modul Core APBN Tahap 2\n3. Dokumentasi kesiapan implementasi jejaring perubahan\n\nMigrasi SPAN-SAKTI:\n4. Hasil pemetaan sdm yang akan ditugaskan ke BaTii (squad team)\n5. Kertas kerja arsitektur aplikasi DJPb yang telah dimutakhirkan", "30/6/2026", 3],
+ [2, "Digitalisasi Office Automation", 3, 3, "1. EA Sampai Dengan Level 3\n- Detail Business Level Model Tahap 1\n2. Pengembangan Sistem\n- Dokumen sistem tahap 2\n3. Change Management\n- Dokumen CM tahap 2", "30/6/2026", 4],
+ [2, "Satu Data Kemenkeu", 2, 2, "1. Portal SDK tahap 1\n2. Kamus data yang valid dan mutakhir tahap 1", "30/6/2026", 5],
+ [3, "Single Profile Penerimaan Negara", 2, 2, "1. Dokumen Analisis Proses Bisnis Sektoral\n2. Dokumen Implementasi CM Tahap I", "30/9/2026", 1],
+ [3, "Seamless Services Bendahara (ex-Pajak TKD)", 4, 4, "1. User requirement (UR)​ / Analisis Dokumen untuk pembentukan Bupot PPh Unifikasi   \n2. Arsitektur untuk pembentukan Bupot PPh Unifikasi\n3. Requirment Gathering Interoperabilitas Sistem Pembayaran Gaji dengan Coretax\n4. Requirment Gathering Interoperabilitas SIKD dengan Coretax", "30/9/2026", 2],
+ [3, "Digitalisasi Core System APBN", 4, 4, "1. EA Sampai Dengan Level Detail untuk modul tahap 3\n2. Modul Core APBN Tahap 3\n3. Dokumentasi rencana strategi Change Management\n\nMigrasi SPAN-SAKTI:\n4. Pemutakhiran SLA DJPB dan BaTii", "30/9/2026", 3],
+ [3, "Digitalisasi Office Automation", 3, 3, "1. EA Sampai Dengan Level 3\n- Detail Business Level Model Tahap 2\n2. Pengembangan Sistem\n- Dokumen sistem tahap 3\n3. Change Management\n- Dokumen CM tahap 3", "30/9/2026", 4],
+ [3, "Satu Data Kemenkeu", 2, 2, "1. Portal SDK tahap 2\n2. Kamus data yang valid dan mutakhir tahap 2", "30/9/2026", 5],
+ [4, "Single Profile Penerimaan Negara", 2, null, "1. Risk Profile\n2. Dokumen Implementasi CM Tahap II", "", 1],
+ [4, "Seamless Services Bendahara (ex-Pajak TKD)", 5, null, "1. Penyesuaian Sistem Interoperabilitas Pembayaran dan Penerimaan (SAKTI-Coretax) untuk PPh Unifikasi\n2. Uji Coba Interoperabilitas Pembayaran dan Penerimaan (SAKTI-Coretax) untuk PPh Unifikasi\n3. Penyesuaian Sistem Interoperabilitas E-Tukin ke gaji Web\n4. Uji Coba Interoperabilitas E-Tukin ke gaji Web\n5. User Requirement Interoperabilitas SIKD dengan Coretax untuk PPh Pasal 21", "", 2],
+ [4, "Digitalisasi Core System APBN", 4, null, "1. EA Sampai Dengan Level SOP untuk modul tahap 4\n2. Modul Core APBN Tahap 4\n3. Dokumentasi implementasi strategi Change Management\n\nMigrasi SPAN-SAKTI\n4. Hasil Koordinasi Kesepakatan Migrasi SPAN SAKTI antara DJPB, BaTii dan KL terkait", "", 3],
+ [4, "Digitalisasi Office Automation", 4, null, "1. EA Sampai Dengan Level 3\n- High Level Business Level Model\n- Detail Business Level Model Tahap 3\n2. Pengembangan SIstem\n- Dokumen sistem tahap 4\n3. Change Management\n- Dokumen CM tahap 4", "", 4],
+ [4, "Satu Data Kemenkeu", 1, null, "1. CM implementasi portal satu data kemenkeu (dokumen modul pertukaran data dan standarisasi data)", "", 5]
 ];
+const KWIDE_2026_LINK="https://kemenkeu.sharepoint.com/:f:/r/sites/PMOKemenkeu/Shared%20Documents/General/2026%20T-Program/Bukti%20Dukung%20Capaian%20IKU%20Transformasi%20(Wide)?csf=1&web=1&e=fuhFUO";
 
 /* K-Wide → keterlacakan bukti WBS. Link tidak otomatis disahkan dari kesamaan teks. */
-function kwWbsCodes(row,index){const ex=(S.kwideLinks||{})['2026-'+index];return ex&&ex.length?ex.filter(k=>!!wbsBy(k)):[]}
+function kwWbsCodes(row,index){const ex=(S.kwideLinks||{})[kwKey(row)];return ex&&ex.length?ex.filter(k=>!!wbsBy(k)):[]}
 function kwGuess(row,index){
  const name=String(row[1]||'').toLowerCase();
  const pref=/single profile/.test(name)?'SP':/seamless/.test(name)?'SSB':/core system/.test(name)?'CORE':/office automation/.test(name)?'OA':/satu data/.test(name)?'SD':/pajak.*tkd/.test(name)?'TKD':'';
  const words=String(row[4]||'').toLowerCase().split(/[^a-z0-9]+/).filter(x=>x.length>4);
- return S.wbs.filter(w=>!w.arsip&&yrOf(w)===2026&&w.prog===pref).map(w=>{
+ return S.wbs.filter(w=>!w.arsip&&yrOf(w)===+S.ui.tahun&&w.prog===pref).map(w=>{
   const hay=w.p.join(' ').toLowerCase();return {w,score:words.reduce((a,t)=>a+(hay.includes(t)?1:0),0)}
  }).filter(x=>x.score>=2).sort((a,b)=>b.score-a.score).slice(0,5).map(x=>x.w.k);
 }
@@ -3162,8 +3176,8 @@ function kwLinks(row,index){
 }
 ACT.kwWbs=el=>{const w=wbsBy(el.dataset.k);if(!w){toast('Item WBS tidak ditemukan.');return}wbsDetail(w)};
 ACT.kwMap=el=>{
- const index=+el.dataset.index,row=KWIDE_2026[index],key='2026-'+index,pref=/single profile/i.test(row[1])?'SP':/seamless/i.test(row[1])?'SSB':/core system/i.test(row[1])?'CORE':/office automation/i.test(row[1])?'OA':/satu data/i.test(row[1])?'SD':/TKD/i.test(row[1])?'TKD':'';
- const entries=S.wbs.filter(w=>!w.arsip&&yrOf(w)===2026&&(!pref||w.prog===pref));
+ const index=+el.dataset.index,row=kwRows()[index],key=kwKey(row),pref=/single profile/i.test(row[1])?'SP':/seamless/i.test(row[1])?'SSB':/core system/i.test(row[1])?'CORE':/office automation/i.test(row[1])?'OA':/satu data/i.test(row[1])?'SD':/TKD/i.test(row[1])?'TKD':'';
+ const entries=S.wbs.filter(w=>!w.arsip&&yrOf(w)===+S.ui.tahun&&(!pref||w.prog===pref));
  const saved=((S.kwideLinks||{})[key]||[]),current=saved.length?saved:kwGuess(row,index);
  modal('Pemetaan output K-Wide ke WBS','<p class="s">'+esc(row[1])+' · TW '+row[0]+'</p><p>'+esc(row[4])+'</p><div class="fld"><label>Pilih kode WBS pendukung (bisa lebih dari satu)</label><select class="sel" id="kw-select" multiple size="12" style="width:100%">'+entries.map(w=>'<option value="'+esc(w.k)+'" '+(current.includes(w.k)?'selected':'')+'>'+esc(w.k+' · '+short(deliv(w),85))+'</option>').join('')+'</select><small>Gunakan Ctrl/Shift untuk memilih lebih dari satu.'+(saved.length?'':' Pilihan awal adalah saran sistem dari kemiripan teks; periksa sebelum menyimpan.')+' Hanya item yang disimpan yang tampil ke pengguna.</small></div>','Simpan relasi',()=>{
   S.kwideLinks=S.kwideLinks||{};S.kwideLinks[key]=Array.from(document.querySelector('#kw-select').selectedOptions).map(x=>x.value);
@@ -3180,7 +3194,7 @@ function bkGo(w){if(!w)return;document.querySelectorAll('.ov,.kw-wrap').forEach(
  setTimeout(()=>toast('Item '+w.k+' ditampilkan di WBS & progres. Klik ⇪ untuk mengunggah bukti dukung.'),350)}
 ACT.bkgo=el=>bkGo(wbsBy(el.dataset.k));
 const KW_ORD={'Belum diunggah':0,'Ditolak':1,'Menunggu validasi':2,'Valid':3};
-function kwEv(index){const row=KWIDE_2026[index];const ws=kwWbsCodes(row,index).map(k=>wbsBy(k)).filter(Boolean);
+function kwEv(index){const row=kwRows()[index];const ws=kwWbsCodes(row,index).map(k=>wbsBy(k)).filter(Boolean);
  const c={Valid:0,'Menunggu validasi':0,Ditolak:0,'Belum diunggah':0};ws.forEach(w=>c[buktiSt(w)]++);
  const done=row[3]!==null&&row[3]!=null,ok=done&&row[3]>=row[2];
  return {row,index,ws,c,n:ws.length,done,ok,attn:(done&&!ok)||!ws.length||c.Valid<ws.length}}
@@ -3192,25 +3206,68 @@ function kwEvCell(e){if(!e.n)return '<div class="kw-ev"><span class="kw-none">It
 function kwCapCell(x){if(x[3]===null||x[3]===undefined)return '<span class="kw-cap"><b>—/'+x[2]+'</b><span class="chip c-gray">Belum tersedia</span></span>';
  return '<span class="kw-cap"><b>'+x[3]+'/'+x[2]+'</b><span class="chip '+(x[3]>=x[2]?'c-ok':'c-bad')+'">'+(x[3]>=x[2]?'Tercapai':'Belum tercapai')+'</span></span>'}
 function kwideView(){
- const all=KWIDE_2026.map((x,i)=>kwEv(i));
+ const R=kwRows();const meta=kwMeta();const canImp=kwCanImp();
+ const impBtn=canImp?'<button type="button" class="btn sm" data-act="kwImp">⇪ Import Capaian K-Wide</button>':'';
+ if(!R)return '<div class="card kw-emptybox"><b>Data Capaian K-Wide tahun '+S.ui.tahun+' belum tersedia.</b><p>Data diambil dari sheet <b>Capaian K-Wide</b> pada workbook WBS Transformation Program (sumber: Manual IKU).'+(canImp?' Klik tombol di bawah untuk mengimpornya.':' PMO Kemenkeu akan mengimpornya.')+'</p>'+impBtn+'</div>';
+ const all=R.map((x,i)=>kwEv(i));
  const twHas=t=>all.some(e=>e.row[0]===t&&e.done);
  let tw=+S.ui.kwTw;if(![1,2,3,4].includes(tw)){tw=[4,3,2,1].find(twHas)||1}
- const attnOnly=S.ui.kwAll!==1;
- const strip='<div class="kw-sum card"><div class="kw-lead"><b>Output IKU K-Wide</b><small>Klik triwulan untuk melihat rinciannya. Capaian diambil dari sheet K-Wide; bukti diambil dari WBS.</small></div>'+
+ const attnOnly=S.ui.kwAttn===1;
+ const strip='<div class="kw-sum card"><div class="kw-lead"><b>Output IKU K-Wide</b><small>Klik triwulan untuk melihat rinciannya. Capaian dari sheet Capaian K-Wide (Manual IKU); bukti dari WBS.</small></div>'+
   [1,2,3,4].map(t=>{const es=all.filter(e=>e.row[0]===t),tg=es.reduce((a,e)=>a+e.row[2],0),has=twHas(t),rl=es.reduce((a,e)=>a+(e.row[3]||0),0);
    const bn=es.reduce((a,e)=>a+e.n,0),bv=es.reduce((a,e)=>a+e.c.Valid,0),ok=has&&rl>=tg;
    return '<button type="button" class="kw-tw'+(t===tw?' on':'')+(has?'':' na')+'" data-act="kwTw" data-v="'+t+'" aria-pressed="'+(t===tw)+'"><span class="h">TW '+t+'<span class="chip '+(!has?'c-gray':ok?'c-ok':'c-bad')+'">'+(!has?'Belum ada data':ok?'Tercapai':'Belum tercapai')+'</span></span><span class="v"><b>'+(has&&tg?pct(rl/tg*100):'—')+'</b><span>'+(has?rl:0)+'/'+tg+' output</span></span><span class="bk">'+(bn?'Bukti WBS <b>'+bv+'/'+bn+'</b> lengkap':es.length?'Item WBS belum ditautkan':'—')+'</span></button>'}).join('')+'</div>';
- const es=all.filter(e=>e.row[0]===tw),att=es.filter(e=>e.attn),fine=es.filter(e=>!e.attn);
- const row=e=>{const x=e.row;return '<tr data-kwrow="'+e.index+'" data-s="'+esc((x[1]+' '+x[4]).toLowerCase())+'"><td class="kw-prog">'+esc(x[1])+'</td><td class="kw-out">'+esc(x[4])+'</td><td>'+kwCapCell(x)+'</td><td>'+kwEvCell(e)+'</td><td class="kw-act"><button type="button" class="kw-rb" data-act="kwOpen" data-index="'+e.index+'">Rincian ›</button></td></tr>'};
- const sep=(t,n,extra)=>'<tr class="kw-sep"><td colspan="5">'+t+' · '+n+(extra?' <span>'+extra+'</span>':'')+'</td></tr>';
- const body=(att.length?sep('PERLU PERHATIAN',att.length)+att.map(row).join(''):'<tr class="kw-sep ok"><td colspan="5">Semua output TW '+tw+' sudah tercapai dan buktinya lengkap.</td></tr>')+
-  (attnOnly?(fine.length?sep('SUDAH LENGKAP',fine.length,'(disembunyikan karena “Perlu perhatian saja” aktif)'):''):(fine.length?sep('SUDAH LENGKAP',fine.length)+fine.map(row).join(''):''));
- const tbl='<div class="card kw-card"><div class="kw-head"><h3>TW '+tw+' · '+es.length+' program · '+es.reduce((n,e)=>n+e.row[2],0)+' output</h3><button type="button" class="kw-sw'+(attnOnly?' on':'')+'" data-act="kwAll" role="switch" aria-checked="'+attnOnly+'"><i></i>Perlu perhatian saja</button><span class="kw-sp"></span><input type="search" class="kw-q" data-kwq placeholder="Cari program atau output…" aria-label="Cari program atau output"><span class="s">Sumber: Capaian K-Wide 2026</span></div>'+
-  '<div class="tscroll"><table class="kw-tbl"><thead><tr><th>Program Transformasi</th><th>Target output</th><th style="width:170px">Capaian<small>sumber K-Wide</small></th><th style="width:240px">Kelengkapan bukti<small>item WBS terkait</small></th><th style="width:110px"></th></tr></thead><tbody>'+body+'</tbody></table></div>'+
-  '<div class="kw-more"><span>Menampilkan '+(attnOnly?att.length:es.length)+' dari '+es.length+' program</span>'+(attnOnly&&fine.length?'<button type="button" class="kw-link" data-act="kwAll">Tampilkan semua</button>':'')+'</div></div>';
+ const es=all.filter(e=>e.row[0]===tw).sort((a,b)=>(a.row[6]||0)-(b.row[6]||0)),shown=attnOnly?es.filter(e=>e.attn):es;
+ const tg=es.reduce((a,e)=>a+e.row[2],0),rl=es.reduce((a,e)=>a+(e.row[3]||0),0),has=twHas(tw);
+ const cut=[...new Set(es.map(e=>e.row[5]).filter(Boolean))].join(', ');
+ const outCell=t=>esc(t).replace(/\n{2,}/g,'<br><br>').replace(/\n/g,'<br>');
+ const row=e=>{const x=e.row;return '<tr data-kwrow="'+e.index+'" data-s="'+esc((x[1]+' '+x[4]).toLowerCase())+'"><td class="kw-no">'+(x[6]||'')+'</td><td class="kw-prog">'+esc(x[1])+'</td><td class="kw-out">'+outCell(x[4])+'</td><td class="kw-cut">'+esc(x[5]||'—')+'</td><td class="num">'+x[2]+'</td><td class="num">'+(x[3]==null?'—':x[3])+'</td><td>'+kwStatus(x)+'</td><td>'+kwEvCell(e)+'</td><td class="kw-act"><button type="button" class="kw-rb" data-act="kwOpen" data-index="'+e.index+'">Rincian ›</button></td></tr>'};
+ const body=shown.length?shown.map(row).join(''):'<tr class="kw-sep ok"><td colspan="9">Semua output TW '+tw+' sudah tercapai dan buktinya lengkap.</td></tr>';
+ const foot='<tfoot><tr class="kw-tot"><td colspan="4">TOTAL</td><td class="num">'+tg+'</td><td class="num">'+(has?rl:'—')+'</td><td colspan="3"></td></tr><tr class="kw-cap-row"><td colspan="4">CAPAIAN Q'+tw+'</td><td colspan="2" class="num"><b>'+(has?rl+'/'+tg+' · '+pct(tg?rl/tg*100:0):'—')+'</b></td><td colspan="3"></td></tr></tfoot>';
+ const src=meta?'<span class="s kw-src">Sumber: '+esc(meta.file||'Capaian K-Wide')+(meta.at?' · diimpor '+fmtD(meta.at):'')+'</span>':'<span class="s kw-src">Sumber: Capaian K-Wide '+S.ui.tahun+' (Manual IKU)</span>';
+ const link=(meta&&meta.link)||(S.ui.tahun===2026?KWIDE_2026_LINK:'');
+ const tbl='<div class="card kw-card"><div class="kw-head"><h3>Target Output Q'+tw+' · '+es.length+' program · '+tg+' output'+(cut?' <small>Cut off '+esc(cut)+'</small>':'')+'</h3><button type="button" class="kw-sw'+(attnOnly?' on':'')+'" data-act="kwAll" role="switch" aria-checked="'+attnOnly+'"><i></i>Perlu perhatian saja</button><span class="kw-sp"></span><input type="search" class="kw-q" data-kwq placeholder="Cari program atau output…" aria-label="Cari program atau output">'+(link?'<a class="btn sm" href="'+esc(link)+'" target="_blank" rel="noopener" title="Folder SharePoint bukti dukung capaian IKU">Folder bukti capaian ›</a>':'')+impBtn+'</div>'+
+  '<div class="tscroll"><table class="kw-tbl"><thead><tr><th style="width:44px">No</th><th style="width:200px">Program Transformasi</th><th>Target Output Q'+tw+'</th><th style="width:96px">Tanggal Cut Off</th><th class="num" style="width:84px">Jumlah Target</th><th class="num" style="width:90px">Jumlah Realisasi</th><th style="width:120px">Status</th><th style="width:210px">Kelengkapan bukti<small>item WBS terkait</small></th><th style="width:100px"></th></tr></thead><tbody>'+body+'</tbody>'+foot+'</table></div>'+
+  '<div class="kw-more"><span>Menampilkan '+shown.length+' dari '+es.length+' program</span>'+src+'</div></div>';
  return strip+tbl}
+function kwStatus(x){if(x[3]==null)return '<span class="chip c-gray">Belum tersedia</span>';return '<span class="chip '+(x[3]>=x[2]?'c-ok':'c-bad')+'">'+(x[3]>=x[2]?'Tercapai':'Belum tercapai')+'</span>'}
+/* ---- data K-Wide per tahun (impor dari sheet Capaian K-Wide) ---- */
+function kwMeta(){return (S.kwide||{})[S.ui.tahun]||null}
+function kwRows(){const m=kwMeta();if(m&&m.rows&&m.rows.length)return m.rows;return S.ui.tahun===2026?KWIDE_2026:null}
+const kwKey=row=>S.ui.tahun+'|'+row[0]+'|'+String(row[1]).trim().toLowerCase();
+function kwMigrate(){if(!S||S.kwideMig===1)return;const L=S.kwideLinks||{};Object.keys(L).forEach(k=>{const m=k.match(/^2026-(\d+)$/);if(m&&KWIDE_2026[+m[1]]){const r=KWIDE_2026[+m[1]];L['2026|'+r[0]+'|'+String(r[1]).trim().toLowerCase()]=L[k];delete L[k]}});S.kwideLinks=L;S.kwideMig=1}
+const kwCanImp=()=>lv('lap').includes('U')||lv('valid').includes('U');
+ACT.kwImp=()=>{const i=document.createElement('input');i.type='file';i.accept='.xlsx,.xlsm,.xls';i.hidden=true;document.body.appendChild(i);i.onchange=()=>{const f=i.files[0];i.remove();if(f)kwImport(f)};i.click()};
+function kwImport(file){if(!window.XLSX){toast('Pustaka Excel belum termuat. Periksa koneksi internet.');return}
+ const rd=new FileReader();rd.onload=e=>{try{
+  const wb=XLSX.read(e.target.result,{type:'array'});
+  const sn=wb.SheetNames.find(n=>/k[\s-]*wide/i.test(n));
+  if(!sn){toast('Sheet "Capaian K-Wide" tidak ditemukan di berkas ini.');return}
+  const A=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,raw:true,defval:''});
+  const cl=v=>String(v==null?'':v).replace(/ /g,' ').replace(/​/g,'').trim();
+  const num=v=>{const t=cl(v).replace(',','.');return t===''||isNaN(+t)?null:+t};
+  const dt=v=>typeof v==='number'?XLSX.SSF.format('d/m/yyyy',v):cl(v);
+  let tw=0,ix=null,year=null,link='';const rows=[];
+  A.forEach(r=>{const c=r.map(cl);
+   c.forEach(v=>{if(/^https?:\/\//i.test(v))link=v;const y=v.match(/\b(20\d\d)\b/);if(!year&&y&&/target output iku|trajectory/i.test(v))year=+y[1]});
+   const h=c.findIndex(v=>/target output\s*q\s*\d/i.test(v));
+   if(h>=0){tw=+c[h].match(/q\s*(\d)/i)[1];const f=re=>c.findIndex(v=>re.test(v));ix={no:f(/^no\.?$/i),prog:f(/program/i),out:h,cut:f(/cut\s*off/i),t:f(/jumlah target/i),r:f(/jumlah realisasi/i)};return}
+   if(!tw||!ix)return;if(c.some(v=>/^total$/i.test(v))){return}
+   const no=num(c[ix.no]),prog=c[ix.prog];if(no==null||!prog)return;
+   rows.push([tw,prog,num(c[ix.t])||0,ix.r>=0?num(c[ix.r]):null,cl(r[ix.out]),ix.cut>=0?dt(r[ix.cut]):'',no])});
+  if(!rows.length){toast('Tidak ada baris program yang terbaca. Pastikan format sheet sama dengan Capaian K-Wide.');return}
+  const y=year||+S.ui.tahun;
+  const sum=[1,2,3,4].map(t=>{const rs=rows.filter(x=>x[0]===t);if(!rs.length)return '';const tg=rs.reduce((a,x)=>a+x[2],0),rl=rs.reduce((a,x)=>a+(x[3]||0),0),has=rs.some(x=>x[3]!=null);
+   return '<tr><td><b>TW '+t+'</b></td><td class="num">'+rs.length+'</td><td class="num">'+tg+'</td><td class="num">'+(has?rl:'—')+'</td><td class="num">'+(has&&tg?pct(rl/tg*100):'—')+'</td></tr>'}).join('');
+  const old=(S.kwide||{})[y];
+  modal('Import Capaian K-Wide '+y,'<p style="margin:0 0 10px">Berkas <b>'+esc(file.name)+'</b> · sheet <b>'+esc(sn)+'</b>. Periksa ringkasan sebelum menyimpan.</p><div class="tscroll"><table class="lap"><thead><tr><th>Triwulan</th><th class="num">Program</th><th class="num">Target output</th><th class="num">Realisasi</th><th class="num">Capaian</th></tr></thead><tbody>'+sum+'</tbody></table></div>'+
+   (link?'<p class="s" style="margin:10px 0 0">Tautan folder bukti capaian ikut disimpan.</p>':'')+
+   '<div class="note '+(old||y===2026?'w':'i')+'" style="margin-top:10px">'+(old||y===2026?'Data Capaian K-Wide '+y+' yang ada akan diganti. Tautan item WBS yang sudah ditetapkan tetap dipertahankan untuk program dan triwulan yang sama.':'Data akan disimpan sebagai Capaian K-Wide '+y+'.')+'</div>','Simpan data',()=>{
+   S.kwide=S.kwide||{};S.kwide[y]={rows,link,file:file.name,sheet:sn,at:TODAY,by:ME.nama};
+   log('Import Capaian K-Wide',y+' · '+rows.length+' baris · '+file.name);S.ui.tahun=y;S.ui.kwTw=0;save();toast('Capaian K-Wide '+y+' tersimpan ('+rows.length+' baris).');render()},{size:'wide'});
+ }catch(err){toast('Import gagal: '+err.message)}};rd.readAsArrayBuffer(file)}
 ACT.kwTw=el=>{S.ui.kwTw=+el.dataset.v;save();render()};
-ACT.kwAll=()=>{S.ui.kwAll=S.ui.kwAll===1?0:1;save();render()};
+ACT.kwAll=()=>{S.ui.kwAll=0;S.ui.kwAttn=S.ui.kwAttn===1?0:1;save();render()};
 document.addEventListener('input',e=>{const q=e.target.closest('[data-kwq]');if(!q)return;const v=q.value.trim().toLowerCase();document.querySelectorAll('tr[data-kwrow]').forEach(r=>{r.hidden=!!v&&!r.dataset.s.includes(v)})});
 function kwClose(){document.querySelectorAll('.kw-wrap').forEach(o=>o.remove());document.querySelectorAll('tr[data-kwrow].sel').forEach(r=>r.classList.remove('sel'))}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.querySelector('.kw-wrap')&&!document.querySelector('.ov'))kwClose()});
@@ -3251,8 +3308,7 @@ function pOverview(){
  const tprog=data.prog.map(x=>({name:x.p.nama,tw:x.tw,a:x.a}));
  const ue=data.ue.map(x=>({name:x.u,tw:x.tw,a:x.a}));
  const kv=KWIDE_2026.map((x,i)=>({row:x,index:i})),twSum=t=>kv.filter(x=>x.row[0]===t).map(x=>x.row),kSumm=t=>({t:t,v:twSum(t),target:twSum(t).reduce((a,x)=>a+x[2],0),real:twSum(t).reduce((a,x)=>a+(x[3]||0),0)});
- const kTable=y!==2026?'<div class="note i">Sheet Capaian K-Wide yang tersedia sebagai referensi adalah tahun 2026. Data tahun lain belum tersedia.</div>':
- kwideView();
+ const kTable=kwideView();
  const quarter='<div class="card"><div class="ch"><h3>Capaian per Triwulan</h3><span class="r s">'+esc(periodLabel)+' · '+S.ui.tahun+'</span></div>'+
  '<div class="ov-qgrid">'+selectedMeasures.map(({t,v})=>'<div class="ov-q"><small>TRIWULAN '+t+(P.pr==='r'?' · sesuai rentang':'')+'</small><b>'+(v.t?pct(v.r/v.t*100):'—')+'</b><div class="bar"><i style="width:'+Math.min(100,v.t?v.r/v.t*100:0)+'%;background:var(--blue)"></i></div><span>'+num(v.r)+' realisasi / '+num(v.t)+' target</span></div>').join('')+'</div>'+
  '<div class="ov-filter-status"><b>Filter aktif:</b> '+esc(S.ui.prog?progLabel(S.ui.prog):'Semua program')+' · '+esc(curUnit()||'Semua UE I')+' · '+esc(curUnit()?({'u':'UIC Utama','p':'UIC Pendukung','ue':'Cakupan UE I','up':'Utama/Pendukung'}[umOf()]||'Utama/Pendukung'):'Seluruh peran')+' · '+esc(periodLabel)+'</div></div>';
@@ -3318,14 +3374,12 @@ const PROJECT_EXAMPLES={
 let PROJECT_FORM_TYPE='risiko';
 function projectField(k,label,val='',type='text',extra=''){
  const example=PROJECT_EXAMPLES[PROJECT_FORM_TYPE+'.'+k]||'Isi '+label.toLowerCase()+' sesuai kondisi nyata proyek.';
- const attrs=type==='date'?'':' placeholder="'+esc(example)+'"';
- return '<label class="prj-field"><span class="prj-field-header">'+esc(label)+projectHelp(PROJECT_FORM_TYPE,true)+'</span><input id="prj-'+k+'" type="'+type+'" value="'+esc(val)+'" '+extra+attrs+'><small class="prj-field-example">'+esc(example)+'</small></label>';
+ const attrs='';
+ return '<label class="prj-field"><span class="prj-field-header">'+esc(label)+'</span><input id="prj-'+k+'" type="'+type+'" value="'+esc(val)+'" '+extra+attrs+'><small class="prj-field-example">'+esc(example)+'</small></label>';
 }
 function projectDecorateInputs(html,kind){
  const example=PROJECT_GUIDE[kind]||PROJECT_GUIDE.ringkasan;
- return '<div class="prj-form-instruction"><b>Petunjuk pengisian</b> '+projectHelp(kind,true)+'<p>'+esc(example[1])+'</p><small>'+esc(example[2])+'</small></div>'+
- html.replace(/(<label class="prj-field"><span>)([^<]+)(<\/span>)/g,(_,a,label,z)=>a+label+projectHelp(kind,true)+z)
- .replace(/(<label class="prj-field prj-wide prj-cm">[\s\S]*?<span>)([^<]+)(<\/span>)/g,(_,a,label,z)=>a+label+projectHelp('cm',true)+z);
+ return '<div class="prj-form-instruction"><b>Petunjuk pengisian</b><p>'+esc(example[1])+'</p><small>'+esc(example[2])+'</small></div>'+html;
 }
 
 function projectRiskEdit(scope,id){
@@ -3346,7 +3400,7 @@ function projectRiskEdit(scope,id){
  '<label class="prj-field"><span>Status</span><select id="prj-status">'+['Terbuka','Dimitigasi','Menjadi isu','Ditutup'].map(v=>'<option '+((old?.status||'Terbuka')===v?'selected':'')+'>'+v+'</option>').join('')+'</select></label>'+
  '<label class="prj-field prj-wide prj-cm"><input id="prj-cm" type="checkbox" '+(old?.cm?'checked':'')+'><span>Risiko CM — sinkronkan ke Register Risiko CMO</span></label>'+
  '<p class="s prj-wide">Modul CMO terkait: '+esc(m?m.kode+' · '+m.nama:'Belum ada modul CM tunggal yang sesuai (atau terdapat beberapa modul). Pilih subproyek yang spesifik agar tidak salah mengirim ke CMO.')+'</p></div>';
- modal(old?'Edit Risk Register · Risiko Proyek':'Tambah Risiko / Isu',projectDecorateInputs(html,'risiko'),'Simpan',()=>{
+ modal((old?'Edit Risk Register · Risiko Proyek':'Tambah Risiko / Isu')+projectHelp('risiko',true),projectDecorateInputs(html,'risiko'),'Simpan',()=>{
   const title=$('#prj-title').value.trim(),cm=$('#prj-cm').checked;
   if(!title){toast('Uraian risiko/isu wajib diisi.');return false}
   if(cm&&!m){toast('Belum ada modul CMO yang sesuai. Lengkapi ADP di WBS sebelum meneruskan risiko ke CMO.');return false}
@@ -3381,7 +3435,7 @@ function projectStakeEdit(scope,id){
  projectField('owner','PIC hubungan stakeholder',old?.owner||'')+
  '<label class="prj-field prj-wide prj-cm"><input id="prj-cm" type="checkbox" '+(old?.cm?'checked':'')+'><span>Salin dan sinkronkan stakeholder ini ke modul CMO</span></label>'+
  '<p class="s prj-wide">Modul CMO: '+esc(m?m.kode+' · '+m.nama:'Belum ada modul CM tunggal yang sesuai. Pilih subproyek spesifik dan lengkapi item ADP bila diperlukan.')+'</p></div>';
- modal(old?'Edit Stakeholder':'Tambah Stakeholder',projectDecorateInputs(html,'stakeholder'),'Simpan',()=>{
+ modal((old?'Edit Stakeholder':'Tambah Stakeholder')+projectHelp('stakeholder',true),projectDecorateInputs(html,'stakeholder'),'Simpan',()=>{
   const name=$('#prj-name').value.trim(),cm=$('#prj-cm').checked;
   if(!name){toast('Nama stakeholder wajib diisi.');return false}
   if(cm&&!m){toast('Modul CMO yang sesuai belum tersedia.');return false}
@@ -3413,7 +3467,7 @@ function projectCopy(scope,type){
  const from=[...new Set(source.map(x=>x.scope).filter(x=>x!==scope))];
  if(!from.length){toast('Belum ada data dari proyek atau subproyek lain untuk disalin.');return}
  const html='<div class="fld"><label>Salin dari</label><select class="sel" id="proj-from">'+from.map(k=>'<option value="'+esc(k)+'">'+esc(projectLabels(k).filter(Boolean).join(' › '))+'</option>').join('')+'</select></div><p class="s">Disalin sebagai baris baru yang dapat diedit; perubahan tidak memengaruhi sumber. Penanda CMO pada salinan dimatikan sampai Anda meninjau kembali.</p>';
- modal('Salin '+(type==='risk'?'risiko':'stakeholder')+' dari modul lain',projectDecorateInputs(html,'copy'),'Salin',()=>{
+ modal('Salin '+(type==='risk'?'risiko':'stakeholder')+' dari modul lain'+projectHelp('copy',true),projectDecorateInputs(html,'copy'),'Salin',()=>{
   const k=$('#proj-from').value,a=source.filter(x=>x.scope===k);
   a.forEach(x=>source.push(Object.assign({},x,{id:uid(),scope,cm:false,modul:'',created:TODAY,copiedFrom:x.id})));
   log('Salin register proyek',type+': '+k+' → '+scope+' ('+a.length+')');save();render();
@@ -3433,7 +3487,7 @@ function projectDecisionEdit(scope,id){
  projectField('owner','PIC tindak lanjut',o?.owner||'')+
  projectField('due','Batas waktu',o?.due||'','date')+
  '<label class="prj-field"><span>Status tindak lanjut</span><select id="prj-status">'+['Belum dimulai','Berjalan','Selesai','Ditunda'].map(v=>'<option '+((o?.status||'Belum dimulai')===v?'selected':'')+'>'+v+'</option>').join('')+'</select></label></div>';
- modal(o?'Edit Decision Log':'Tambah Keputusan',projectDecorateInputs(body,'decision'),'Simpan',()=>{
+ modal((o?'Edit Decision Log':'Tambah Keputusan')+projectHelp('decision',true),projectDecorateInputs(body,'decision'),'Simpan',()=>{
   if(!$('#prj-title').value.trim()){toast('Keputusan wajib diisi.');return false}
   const d=o||{id:uid(),scope};
   Object.assign(d,{date:$('#prj-date').value,title:$('#prj-title').value.trim(),by:$('#prj-by').value,
@@ -3525,7 +3579,7 @@ function projectWorkspace(){
  const pend=String(p.pend||'').split(/[,;]/).map(s=>s.trim()).filter(Boolean);
  const counts={ringkasan:'',risiko:risk.length,stakeholder:sh.length,issue:issues.length,decision:dec.length,milestone:rows.length,bukti:(bkCount.Valid||0)+'/'+rows.length};
  /* ---------- pemilih lingkup ---------- */
- const picker='<div class="ws-scope"><label class="ws-field"><span>Modul / Proyek · WBS Level 4</span><select class="sel" data-on="prjProjSwitch">'+scopeP.map(x=>'<option value="'+esc(projectKey(prog,x.n))+'" '+(x.n===proj?'selected':'')+'>'+esc(x.n)+'</option>').join('')+'</select></label><label class="ws-field"><span>Submodul / Subproyek · WBS Level 5</span><select class="sel" data-on="prjSubSwitch" '+(!subOptions.length?'disabled':'')+'><option value="'+esc(projectKey(prog,activeProject?.n||proj))+'">'+(subOptions.length?'Semua submodul ('+subOptions.length+')':'Tidak ada submodul')+'</option>'+subOptions.map(x=>'<option value="'+esc(projectKey(prog,activeProject.n,x.name))+'" '+(x.name===sub?'selected':'')+'>'+esc(x.name)+'</option>').join('')+'</select></label>'+projectHelp('scope',true)+'</div>';
+ const picker='<div class="ws-scope"><label class="ws-field"><span>Modul / Proyek · WBS Level 4</span><select class="sel" data-on="prjProjSwitch">'+scopeP.map(x=>'<option value="'+esc(projectKey(prog,x.n))+'" '+(x.n===proj?'selected':'')+'>'+esc(x.n)+'</option>').join('')+'</select></label><label class="ws-field"><span>Submodul / Subproyek · WBS Level 5</span><select class="sel" data-on="prjSubSwitch" '+(!subOptions.length?'disabled':'')+'><option value="'+esc(projectKey(prog,activeProject?.n||proj))+'">'+(subOptions.length?'Semua submodul ('+subOptions.length+')':'Tidak ada submodul')+'</option>'+subOptions.map(x=>'<option value="'+esc(projectKey(prog,activeProject.n,x.name))+'" '+(x.name===sub?'selected':'')+'>'+esc(x.name)+'</option>').join('')+'</select></label></div>';
  /* ---------- paginasi ---------- */
  const bkF=BK.includes(S.ui.prjBuktiF)?S.ui.prjBuktiF:'';
  const pRisk=projectPagination(risk,'risiko'),pStake=projectPagination(sh,'stakeholder'),pIssue=projectPagination(issues,'issue'),pDec=projectPagination(dec,'decision'),
@@ -3542,7 +3596,7 @@ function projectWorkspace(){
  const wbsTable=r=>tbl([['Kode WBS'],['Target Output / Deliverable'],['PIC / UIC'],['Target'],['Capaian'],['Bukti'],['Aksi','ws-td-act']],r.map(w=>'<tr><td>'+wbsCode(w)+'</td><td class="ws-td-wide">'+esc(deliv(w))+'</td><td>'+esc(uicU(w)||'—')+'</td><td class="ws-nowrap">'+fmtD(w.f)+'</td><td>'+chipSt(stOf(w,12))+'</td><td>'+chipSt(buktiSt(w))+'</td><td class="ws-td-act"><button type="button" class="btn sm" data-act="kwWbs" data-k="'+esc(w.k)+'">Buka WBS</button></td></tr>').join(''));
  const decisionTable=r=>tbl([['Tanggal'],['Keputusan'],['Pengambil Keputusan'],['PIC & Tenggat'],['Status'],['Tindakan','ws-td-act']],r.map(x=>'<tr><td class="ws-nowrap">'+fmtD(x.date)+'</td><td class="ws-td-main ws-td-wide"><b>'+esc(x.title)+'</b><small>'+esc(x.impact||'')+'</small></td><td>'+esc(x.by||'—')+'</td><td>'+esc(x.owner||'—')+'<small class="ws-sub">'+fmtD(x.due)+'</small></td><td>'+chipSt(x.status||'—')+'</td><td class="ws-td-act">'+(editStake?btn('prjDecisionEdit',x.id,'Edit')+btn('prjDecisionDel',x.id,'Hapus','dng'):'<span class="ws-dash">—</span>')+'</td></tr>').join(''));
  const issueTable=r=>tbl([['Isu'],['PIC'],['Tindak Lanjut'],['Tenggat'],['Status']],r.map(x=>'<tr><td class="ws-td-main"><b>'+esc(x.title)+'</b></td><td>'+esc(x.owner||'—')+'</td><td class="ws-td-wide">'+esc(x.mit||'—')+'</td><td class="ws-nowrap">'+fmtD(x.due)+'</td><td>'+chipSt(x.status||'—')+'</td></tr>').join(''));
- const search=(n,label)=>'<div class="ws-toolbar"><label class="ws-search">'+wsIco('search',16)+'<input type="search" data-on="prjSearch" value="'+esc(S.ui.prjSearch||'')+'" placeholder="Cari '+label+'… (tekan Enter)" aria-label="Cari dalam tab"></label><span class="ws-count"><b>'+n+'</b> data ditemukan</span>'+projectHelp('search',true)+'</div>';
+ const search=(n,label)=>'<div class="ws-toolbar"><label class="ws-search">'+wsIco('search',16)+'<input type="search" data-on="prjSearch" value="'+esc(S.ui.prjSearch||'')+'" placeholder="Cari '+label+'… (tekan Enter)" aria-label="Cari dalam tab"></label><span class="ws-count"><b>'+n+'</b> data ditemukan</span></div>';
  /* ---------- Ringkasan ---------- */
  const kpi=(ico,tone,label,val,subTxt,extra='')=>'<div class="ws-kpi ws-'+tone+'"><span class="ws-kpi-ico">'+wsIco(ico,18)+'</span><div><span class="ws-kpi-lbl">'+label+'</span><b>'+val+'</b>'+extra+'<small>'+subTxt+'</small></div></div>';
  const kpis='<div class="ws-kpis">'+
@@ -4037,7 +4091,7 @@ const GUIDE={
   ['Pilih periode','Gunakan filter Tahun dan periode di bagian atas (bulan, triwulan, atau rentang tanggal).'],
   ['Pilih tab capaian','Pindah antara Per Triwulan, K-Wide, T-Program, dan Per UE I sesuai sudut pandang yang dibutuhkan.'],
   ['Telusuri angka yang rendah','Bila ada capaian rendah, buka WBS & progres untuk melihat item mana yang belum selesai.','pmo-wbs','Buka WBS & progres']],
- tab:[['Per Triwulan','Capaian kumulatif tiap triwulan dibanding target tahunan.'],['K-Wide','Capaian output IKU K-Wide per program (sumber sheet K-Wide) beserta kelengkapan bukti WBS terkait. Klik TW untuk menyaring, Rincian › untuk melihat item WBS dan bukti (lihat/unduh saja).'],['T-Program','Capaian kelompok program transformasi (T-Program) yang dilaporkan.'],['Per UE I','Capaian dipecah per unit Eselon I untuk melihat unit yang tertinggal.']],
+ tab:[['Per Triwulan','Capaian kumulatif tiap triwulan dibanding target tahunan.'],['K-Wide','Tabel sesuai sheet Capaian K-Wide (Manual IKU): No, program, target output, tanggal cut off, jumlah target dan realisasi, TOTAL, dan CAPAIAN per triwulan, ditambah kelengkapan bukti WBS. PMO Kemenkeu memperbarui datanya lewat ⇪ Import Capaian K-Wide (workbook WBS, sheet Capaian K-Wide).'],['T-Program','Capaian kelompok program transformasi (T-Program) yang dilaporkan.'],['Per UE I','Capaian dipecah per unit Eselon I untuk melihat unit yang tertinggal.']],
  btn:[['Filter periode','Mengubah rentang waktu yang dihitung.','Halaman yang sama'],['Nama program / unit','Membuka rincian di halaman terkait.','Halaman rincian']],
  tips:['Realisasi hanya naik setelah bukti dukung divalidasi (lihat Bukti Dukung).']},
 
