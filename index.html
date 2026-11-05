@@ -1943,6 +1943,25 @@ div.dx-ai{cursor:default}
 @media(max-width:760px){.dx-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dx-q{min-width:0;flex:1 1 100%}.dx-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
 @media(prefers-reduced-motion:reduce){.dx-card{transition:none}.dx-card:hover{transform:none}}
 .dx-tgt.old{background:#F5F7FB;border-color:#E1E7F0}.dx-tgt.old em{color:var(--ink-3)}.dx-tgt b small{font-weight:700;color:var(--ink-3);font-size:11px}
+
+td.dx-k{white-space:nowrap;font:inherit;font-size:12.5px;font-weight:800;color:var(--navy-2)}
+.dx-ai .mono{white-space:nowrap}
+.cap-ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-left:auto}
+.cap-seg{display:inline-flex;border:1px solid #D5DEEC;border-radius:8px;overflow:hidden;background:#fff}
+.cap-seg button{border:0;background:transparent;font:inherit;font-size:12px;font-weight:800;color:#4A5E7C;padding:5px 10px;cursor:pointer;white-space:nowrap}
+.cap-seg button+button{border-left:1px solid #D5DEEC}
+.cap-seg button.on{background:var(--navy);color:#fff}
+.cap-q .cap-h{display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
+.cap-q .cap-h .chip{font-size:10.5px}
+.cap-q .cap-y{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding-top:8px;border-top:1px dashed #D5DEEC}
+.cap-q .cap-y span{font-size:11.5px;color:#4A5E7C;font-weight:700}
+.cap-q .cap-y b{font-size:15px}
+.cap-q .cap-l{font-size:11px;color:#8A6A12;background:#FFF7DC;border-radius:6px;padding:3px 7px}
+.cap-q.plan b.big{color:#9AA7BC}
+.cap-q b.big{font-size:26px;color:#0B2447;line-height:1.2}
+.cap-q .btn.sm{align-self:flex-start}
+.cap-note{padding:0 16px 12px;color:#546884;font-size:11.5px;line-height:1.5}
+td.num .src{display:block;font-size:10px;font-weight:800;color:#8A6A12}
 </style>
 
 <div id="root"></div>
@@ -3019,7 +3038,7 @@ function fltHead(open,title,chips,n,reset,res){const act=chips.filter(c=>typeof 
   :`<div class="lp" data-act="ftog"><span class="gi">${ico}</span><div class="lt"><span><b>${title}</b></span></div></div>`;
  return lp+`<div class="rp"><div class="ftop" data-act="ftog" role="button" tabindex="0" aria-expanded="${open}" title="Klik untuk ${open?'menyembunyikan':'menampilkan'} filter"><span class="tl">Filter aktif</span>${ch}${(!open||pu)&&res?`<span class="rs2"><b>${rp(res[0])}</b> dari ${rp(res[1])} ${res[2]}${pu?`<span class="rs2m"><i style="width:${pc}%"></i></span>`:''}</span>`:''}${(!open||pu)&&n?reset.replace('class="freset"','class="freset rsm"'):''}<span class="fcar" aria-hidden="true"><svg class="fcar-tri${window.FCAR_ANIM?' anim':''}" viewBox="0 0 12 12" width="12" height="12"><path d="M2.2 3.8h7.6L6 8.6z" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/></svg></span></div>`}
 
-function perSeg(key,cur){const L=[['all','Setahun'],['1','TW 1'],['2','TW 2'],['3','TW 3'],['4','TW 4'],['r','Rentang']];return `<span class="fg w2${key==='pr'&&VIEW.startsWith('pmo-')?' pm-period':''}"><label>Periode</label><span class="seg pseg" role="group" aria-label="Periode">${L.map(([v,l])=>`<button type="button" data-seg="${key}" data-v="${v}" class="${cur===v?'on':''}" aria-pressed="${cur===v}">${l}</button>`).join('')}</span></span>`}
+function perSeg(key,cur){const L=[['all','Setahun'],['1','TW 1'],['2','TW 2'],['3','TW 3'],['4','TW 4'],['r','Rentang']];return `<span class="fg w2${key==='pr'&&(VIEW.startsWith('pmo-')||VIEW==='dashboard')?' pm-period':''}"><label>Periode</label><span class="seg pseg" role="group" aria-label="Periode">${L.map(([v,l])=>`<button type="button" data-seg="${key}" data-v="${v}" class="${cur===v?'on':''}" aria-pressed="${cur===v}">${l}</button>`).join('')}</span></span>`}
 ACT.fclr=el=>{const k=el.dataset.k,v=el.dataset.v;if(k.startsWith('pf_')){S.ui.portoF=S.ui.portoF||{};S.ui.portoF[k.slice(3)]=v}else S.ui[k]=v;if(k==='lvn'){S.ui.lvn=10;S.ui.lvm='sd'}if(k==='unit'){S.ui.umode='up'}if(k==='cunit'){S.ui.crole='';S.ui.mod=''}Object.keys(PG).forEach(x=>PG[x]=0);save();render()};
 function fltBar(o={}){const P=per();const open=S.ui.fopen===1;const pv=progVis();const act=c=>c?' act':'';
  const isW=['pmo-wbs','pmo-wbsplan'].includes(VIEW);const UML={up:'utama/pendukung',u:'UIC Utama',p:'UIC Pendukung',ue:'cakupan UE I'};const lvn=S.ui.lvn||10,lvm=S.ui.lvm||'sd';
@@ -3135,7 +3154,7 @@ function dxPeta(items){const n=dxTw(),G=dxModules(items),q=(S.ui.dxq||'').trim()
 ACT.dxSt=el=>{const v=el.dataset.v||'';S.ui.dxSt=S.ui.dxSt===v?'':v;save();render()};
 /* ---- Pop-up detail modul ---- */
 ACT.dxMod=el=>{const p=S.programs.find(x=>x.akr===el.dataset.p);const m=dxModules(dxItems()).flatMap(g=>g.mods).find(x=>x.p.akr===el.dataset.p&&x.n===el.dataset.j);if(!m){toast('Data modul tidak ditemukan.');return}dxModPop(m)};
-function dxItemRows(list,M){return list.length?`<div class="tscroll"><table class="lap dx-it"><thead><tr><th>Kode</th><th>Output</th><th>Tahapan</th><th>UIC</th><th>Jadwal</th><th>Status</th><th>Bukti</th></tr></thead><tbody>${list.map(w=>{const st=stOf(w,M);return `<tr><td class="mono">${esc(w.k)}</td><td>${esc(deliv(w))}</td><td>${esc(tahapOf(w).map(t=>thShort(t)).join(', ')||'—')}</td><td>${esc(uicU(w)||'—')}</td><td>${pgJadwal(w.s,w.f)}</td><td><span class="chip ${(DX_ST[st==='Selesai'?'Tercapai':st]||DX_ST.Terjadwal)[0]}">${esc(st)}</span></td><td>${esc(buktiSt(w))}</td></tr>`}).join('')}</tbody></table></div>`:'<p class="s">Tidak ada item.</p>'}
+function dxItemRows(list,M){return list.length?`<div class="tscroll"><table class="lap dx-it"><thead><tr><th>Kode</th><th>Output</th><th>Tahapan</th><th>UIC</th><th>Jadwal</th><th>Status</th><th>Bukti</th></tr></thead><tbody>${list.map(w=>{const st=stOf(w,M);return `<tr><td class="dx-k">${esc(w.k)}</td><td>${esc(deliv(w))}</td><td>${esc(tahapOf(w).map(t=>thShort(t)).join(', ')||'—')}</td><td>${esc(uicU(w)||'—')}</td><td>${pgJadwal(w.s,w.f)}</td><td><span class="chip ${(DX_ST[st==='Selesai'?'Tercapai':st]||DX_ST.Terjadwal)[0]}">${esc(st)}</span></td><td>${esc(buktiSt(w))}</td></tr>`}).join('')}</tbody></table></div>`:'<p class="s">Tidak ada item.</p>'}
 function dxModPop(m){const n=dxTw(),cur=dxAt(m,n);const tws=[1,2,3,4].map(i=>({i,s:dxAt(m,i)}));
  const subs=Object.entries(m.subs);const inTw=m.a.filter(w=>+w.tm>=n*3-2&&+w.tm<=n*3).sort((a,b)=>String(a.f).localeCompare(String(b.f)));
  const body=`<div class="dx-mh"><div><span class="code">${esc(m.p.kode)}</span> <span class="s">${esc(m.p.nama)}</span><h3>${esc(m.n)}</h3><span class="s">UIC ${esc(m.x.uic)} · ${m.a.length} item WBS · jadwal ${pgFmtR(m.x.s,m.x.f)}</span></div><div class="dx-mk"><span class="chip ${DX_ST[cur.st][0]}">${esc(cur.st)}</span><b>${cur.pg}%</b><span class="s">tervalidasi s.d. TW ${ROM[n]}</span></div></div>
@@ -3909,6 +3928,58 @@ function favBlock(){const vis=pmoTabsVis().map(t=>t[0]).filter(k=>FAV_M[k]),L=fa
 ACT.favEdit=()=>{S.ui.favEdit=!S.ui.favEdit;save();render()};
 ACT.favTog=el=>{const k=el.dataset.v;let L=favList();if(L.includes(k))L=L.filter(x=>x!==k);else{if(L.length>=FAV_MAX){toast('Maksimal '+FAV_MAX+' menu favorit agar tetap satu baris. Lepas salah satu dulu.');return}L=L.concat([k])}S.ui.pmoFav=L;save();render()};
 ACT.favReset=()=>{S.ui.pmoFav=FAV_DEF.slice();save();render()};
+
+/* Capaian WBS: angka resmi saat cut-off (bahan DKRO) vs data terkini, lingkup Kemenkeu atau UE I.
+   Format [target TWn, realisasi TWn, target tahunan, capaian tahunan %]. */
+const CAP_RESMI={2026:{
+ 1:{cut:'2026-03-31',tot:[5618,5744,null,6.24],prog:{OA:[2610,2732,null,17.49],CORE:[2197,2197,null,3.29],TKD:[200,204,null,5.49],SP:[329,329,null,6.75],SD:[282,282,null,25.59]},
+  ue:{Setjen:[1890,2012,null,7.53],DJSEF:[1260,1382,null,11.19],DJA:[1679,1801,null,6.12],DJP:[1563,1689,null,10.93],DJBC:[1499,1621,null,11.65],DJPb:[1264,1390,null,12.64],DJKN:[2039,2161,null,8.77],DJPK:[2223,2349,null,7.53],DJPPR:[1260,1382,null,5.29],DJSPSK:[3007,3129,null,7.64],Itjen:[1710,1832,null,16.54],BaTii:[5618,5744,null,6.24],BPPK:[1440,1562,null,17.68],LNSW:[1499,1621,null,12.62]}},
+ 2:{cut:'2026-06-30',tot:[33664,34589,95885,36.07],prog:{OA:[6942,7392,16478,44.86],CORE:[25213,25688,63757,40.29],SP:[660,660,9070,7.28],SD:[616,616,1195,51.55],SSB:[233,233,5385,4.33]},
+  ue:{Setjen:[16111,16775,27857,60.22],DJSEF:[4450,5114,12504,40.90],DJA:[8656,9367,32942,28.43],DJP:[4327,4777,22558,21.18],DJBC:[4026,4690,18267,25.67],DJPb:[3633,4083,11920,34.25],DJKN:[7689,8139,28428,28.63],DJPK:[10199,10649,35078,30.36],DJPPR:[10785,11235,25711,43.70],DJSPSK:[16180,16630,43589,38.15],Itjen:[4512,4962,11902,41.69],BaTii:[33868,34793,95816,36.31],BPPK:[3907,4357,8990,48.46],LNSW:[4026,4476,17197,26.03]}},
+ 3:{cut:'2026-09-30',tot:[45800,47054,89303,52.69],prog:{OA:[10399,10767,16753,64.27],CORE:[29669,30555,63757,47.92],SP:[4208,4208,5982,70.34],SD:[797,797,1195,66.69],SSB:[727,727,1616,44.99]},
+  ue:{Setjen:[19886,20896,27948,74.77],DJSEF:[8705,9715,12411,78.28],DJA:[16527,17139,29761,57.59],DJP:[10737,11105,15608,71.15],DJBC:[9942,10952,15086,72.60],DJPb:[6403,6771,9592,70.59],DJKN:[15492,15860,25247,62.82],DJPK:[18161,18529,30396,60.96],DJPPR:[15227,15595,25618,60.88],DJSPSK:[26233,26601,40408,65.83],Itjen:[6880,7248,11809,61.38],BaTii:[45974,47228,89355,52.85],BPPK:[6597,6965,8897,78.28],LNSW:[9942,10310,14016,73.56]}}}};
+function capSnap(y,tw){const c=((S.cfg||{}).capSnap||{})[y+'-'+tw];return c||(CAP_RESMI[y]||{})[tw]||null}
+function capScope(){const u=curUnit();return u&&S.ui.capScope!=='kem'?'unit':'kem'}
+function capItems(sc,unit){const u=unit||curUnit();return pmoAllWbs().filter(w=>(!S.ui.prog||w.prog===S.ui.prog)&&(sc!=='unit'||!u||w.ue.includes(u)))}
+/* Total Kemenkeu mengikuti sheet Capaian T-Program: program berstatus Selesai yang realisasinya sudah 100% pada TW sebelumnya tidak dihitung lagi (mis. TKD sejak TW II). */
+function capTotItems(items,tw){if(tw<2)return items;const drop=new Set(S.programs.filter(p=>/selesai/i.test(p.status||'')).map(p=>p.akr).filter(k=>{const it=items.filter(w=>w.prog===k),v=capLive(it,tw-1);return it.length&&v.a>0&&v.r>=v.a}));return drop.size?items.filter(w=>!drop.has(w.prog)):items}
+function capLiveTot(items,tw){return capLive(capTotItems(items,tw),tw)}
+function capLive(items,tw){const x=sumTR(items,tw*3),a=sumTR(items,12).t;return {t:x.t,r:x.r,a,ct:a?x.r/a*100:null,src:'live'}}
+function capOff(kind,key,tw){const sn=capSnap(+S.ui.tahun,tw);if(!sn||!kind)return null;const v=kind==='tot'?sn.tot:(sn[kind]||{})[key];if(!v)return null;
+ return {t:v[0],r:v[1],a:v[2],ct:v[3]!=null?+v[3]:(v[2]?v[1]/v[2]*100:null),src:'resmi',cut:sn.cut,lock:sn.at?sn:null}}
+function capVal(kind,key,items,tw){const live=kind==='tot'?capLiveTot(items,tw):capLive(items,tw);if(S.ui.capSrc!=='live'){const o=capOff(kind,key,tw);if(o){o.live=live;return o}}return live}
+const capPct=(r,t)=>t?pct(r/t*100):'—';
+function capSel(){const sc=capScope(),u=curUnit(),pk=S.ui.prog;return {sc,u,pk,kind:sc==='unit'?(pk?null:'ue'):(pk?'prog':'tot'),key:sc==='unit'?u:pk}}
+function capCtl(){const {sc,u}=capSel(),src=S.ui.capSrc==='live'?'live':'resmi';
+ const seg=(k,cur,L)=>`<span class="cap-seg" role="group">${L.map(([v,l])=>`<button type="button" data-act="capSet" data-k="${k}" data-v="${v}" class="${cur===v?'on':''}" aria-pressed="${cur===v}">${esc(l)}</button>`).join('')}</span>`;
+ return `<div class="cap-ctl">${u?seg('capScope',sc==='unit'?'unit':'kem',[['kem','Kemenkeu'],['unit',u]]):''}${seg('capSrc',src,[['resmi','Angka resmi'],['live','Data terkini']])}</div>`}
+ACT.capSet=el=>{S.ui[el.dataset.k]=el.dataset.v;save();render()};
+function capLockBuild(y,tw){const all=pmoAllWbs(),L=it=>{const v=capLive(it,tw);return [v.t,v.r,v.a,v.ct==null?null:Math.round(v.ct*100)/100]};
+ const o={cut:twEnd(y,tw),at:TODAY,by:ME?ME.email:'-',tot:(v=>[v.t,v.r,v.a,v.ct==null?null:Math.round(v.ct*100)/100])(capLiveTot(all,tw)),prog:{},ue:{}};
+ S.programs.forEach(p=>{const it=all.filter(w=>w.prog===p.akr);if(it.length)o.prog[p.akr]=L(it)});UNITS.forEach(u=>{const it=all.filter(w=>w.ue.includes(u));if(it.length)o.ue[u]=L(it)});return o}
+ACT.capLock=el=>{const tw=+el.dataset.v,y=+S.ui.tahun;modal('Kunci angka resmi TW '+ROM[tw]+' '+y,`<p>Angka capaian TW ${ROM[tw]} dari data WBS saat ini akan disimpan sebagai <b>angka resmi (cut-off)</b> untuk seluruh T-Program dan UE I. Perubahan WBS sesudahnya tidak akan mengubah angka resmi ini, kecuali kunci dibuka.</p>`,()=>{S.cfg.capSnap=S.cfg.capSnap||{};S.cfg.capSnap[y+'-'+tw]=capLockBuild(y,tw);log('Kunci capaian','TW '+tw+' '+y);save();render();toast('Angka resmi TW '+ROM[tw]+' dikunci.');return true},'Kunci angka')};
+ACT.capUnlock=el=>{const tw=+el.dataset.v,y=+S.ui.tahun;if(S.cfg.capSnap){delete S.cfg.capSnap[y+'-'+tw]}log('Buka kunci capaian','TW '+tw+' '+y);save();render();toast('Kunci TW '+ROM[tw]+' dibuka.')};
+function capQuarter(quarters,num){const {sc,u,pk,kind,key}=capSel(),items=capItems(sc),cd=curTwDone(),y=+S.ui.tahun,adm=lv('lap').includes('U')&&!lockU();
+ const card=t=>{const st=t<=cd?'done':t===cd+1?'run':'plan',v=kind?capVal(kind,key,items,t):capLive(items,t);
+  const chip=v.src==='resmi'?`<span class="chip c-ok" title="Angka yang dilaporkan saat cut-off${v.lock?' (dikunci '+esc(v.lock.by)+' '+fmtD(v.lock.at)+')':''}">Resmi · cut-off ${fmtD(v.cut)}</span>`:st==='run'?'<span class="chip c-info">Berjalan · s.d. hari ini</span>':st==='plan'?'<span class="chip c-gray">Belum berjalan</span>':'<span class="chip c-warn">Data terkini</span>';
+  const big=st==='plan'?'—':capPct(v.r,v.t);
+  const lv2=v.live&&Math.abs((v.live.t?v.live.r/v.live.t:0)-(v.t?v.r/v.t:0))>.0005?`<span class="cap-l" title="Dihitung ulang dari WBS sekarang (realisasi susulan / CR setelah cut-off)">Data terkini: ${capPct(v.live.r,v.live.t)} (${num(v.live.r)} / ${num(v.live.t)})</span>`:'';
+  const sn=((S.cfg||{}).capSnap||{})[y+'-'+t];
+  const lk=adm&&st==='done'?(sn?`<button type="button" class="btn sm" data-act="capUnlock" data-v="${t}">Buka kunci TW ${ROM[t]}</button>`:!(CAP_RESMI[y]||{})[t]?`<button type="button" class="btn sm" data-act="capLock" data-v="${t}">🔒 Kunci angka TW ${ROM[t]}</button>`:''):'';
+  return `<div class="ov-q cap-q ${st}"><div class="cap-h"><small>TRIWULAN ${ROM[t]}</small>${chip}</div><b class="big">${big}</b><div class="bar"><i style="width:${st==='plan'?0:Math.min(100,v.t?v.r/v.t*100:0)}%;background:var(--blue)"></i></div><span>${st==='plan'?'Target '+num(v.t):num(v.r)+' realisasi / '+num(v.t)+' target'}</span><div class="cap-y"><span>Capaian tahunan${v.a?'<small style="display:block;font-weight:600;font-size:10.5px;letter-spacing:0;color:#6B7D96">target tahunan '+num(v.a)+'</small>':''}</span><b>${st==='plan'||v.ct==null?'—':pct(v.ct)}</b></div>${lv2}${lk}</div>`};
+ const scopeLab=sc==='unit'?'UE I '+u+' (kolom cakupan UE I = "Ya")':'Kemenkeu'+(pk?' · '+((progOf(pk)||{}).nama||pk):' · seluruh T-Program');
+ return `<div class="card"><div class="ch"><h3>Capaian per Triwulan</h3>${capCtl()}</div><div class="ov-qgrid">${quarters.map(card).join('')}</div>`+
+ `<div class="ov-filter-status"><b>Lingkup:</b> ${esc(scopeLab)} · ${esc(S.ui.capSrc==='live'?'Data terkini dari WBS':'Angka resmi untuk TW yang sudah cut-off')}${sc==='unit'&&pk?' · <i>angka resmi per UE I × program tidak tersedia, ditampilkan data terkini</i>':''}</div>`+
+ `<p class="cap-note"><b>Angka resmi</b> = angka yang dilaporkan saat cut-off (sheet Capaian TW 1-3 / bahan DKRO). <b>Data terkini</b> dihitung ulang dari WBS sekarang dengan rumus sheet Capaian T-Program dan Capaian per UE1: target = bobot (hari) item yang jatuh tempo s.d. akhir TW, kumulatif; realisasi = bobot item yang sudah 100% s.d. bulan itu dan tervalidasi. Keduanya bisa berbeda karena realisasi diisi susulan dan CR setelah cut-off. Capaian tahunan = realisasi TW ÷ target tahunan.</p></div>`}
+function capMatrix(kindTab,num){const {sc,u,pk}=capSel(),cd=Math.max(1,Math.min(4,curTwDone()||1)),all=pmoAllWbs().filter(w=>!pk||w.prog===pk);
+ let ent=[];
+ if(kindTab==='prog'){const base=sc==='unit'?all.filter(w=>w.ue.includes(u)):all;
+  ent=S.programs.filter(p=>base.some(w=>w.prog===p.akr)).map(p=>{const it=base.filter(w=>w.prog===p.akr);return {name:p.nama,tw:[1,2,3,4].map(t=>sc==='unit'?capLive(it,t):capVal('prog',p.akr,it,t))}});
+  if(!pk)ent.push({name:'Total'+(sc==='unit'?' '+u:''),tot:1,tw:[1,2,3,4].map(t=>sc==='unit'?capVal('ue',u,base,t):capVal('tot','',base,t))})}
+ else{const us=sc==='unit'?[u]:UNITS;ent=us.map(x=>{const it=all.filter(w=>w.ue.includes(x));return {name:x,me:x===u,tw:[1,2,3,4].map(t=>pk?capLive(it,t):capVal('ue',x,it,t))}}).filter(e=>e.tw.some(v=>v.t||v.r))}
+ const cell=(v,t)=>`<td class="num"><b>${t>cd+1?'—':capPct(v.r,v.t)}</b><span class="sm">${num(v.r)} / ${num(v.t)}</span>${v.src==='resmi'?'':t<=cd?'<span class="src">terkini</span>':''}</td>`;
+ const title=kindTab==='prog'?'Capaian T-Program':'Capaian per Unit Eselon I';
+ return `<div class="card ov-matrix"><div class="ch"><h3>${title}</h3>${capCtl()}</div><div class="tscroll"><table class="lap"><thead><tr><th>${kindTab==='prog'?'T-Program':'UE I'}</th>${[1,2,3,4].map(t=>`<th class="num">TW ${ROM[t]}</th>`).join('')}<th class="num">Target tahunan</th><th class="num">Capaian tahunan s.d. TW ${ROM[cd]}</th></tr></thead><tbody>${ent.map(e=>{const v=e.tw[cd-1];return `<tr${e.tot?' style="background:#F4F7FC"':''}><td><b>${esc(e.name)}</b>${e.me&&sc!=='unit'?' <span class="chip c-info">unit saya</span>':''}</td>${e.tw.map((x,i)=>cell(x,i+1)).join('')}<td class="num">${num(v.a)}</td><td class="num"><b>${v.ct==null?'—':pct(v.ct)}</b></td></tr>`}).join('')}</tbody></table></div><p class="cap-note">Sel TW: capaian (realisasi / target kumulatif). Label <b>terkini</b> = belum ada angka resmi untuk sel tersebut, dihitung dari WBS sekarang.</p></div>`}
 function pOverview(){
  const y=+S.ui.tahun,tab=['tw','kwide','tprog','ue'].includes(S.ui.overviewTab)?S.ui.overviewTab:'tw';
  const P=per(),data=lapData(),num=n=>Number(n||0).toLocaleString('id-ID');
@@ -3924,13 +3995,11 @@ function pOverview(){
  const ue=data.ue.map(x=>({name:x.u,tw:x.tw,a:x.a}));
  const kv=KWIDE_2026.map((x,i)=>({row:x,index:i})),twSum=t=>kv.filter(x=>x.row[0]===t).map(x=>x.row),kSumm=t=>({t:t,v:twSum(t),target:twSum(t).reduce((a,x)=>a+x[2],0),real:twSum(t).reduce((a,x)=>a+(x[3]||0),0)});
  const kTable=kwideView();
- const quarter='<div class="card"><div class="ch"><h3>Capaian per Triwulan</h3><span class="r s">'+esc(periodLabel)+' · '+S.ui.tahun+'</span></div>'+
- '<div class="ov-qgrid">'+selectedMeasures.map(({t,v})=>'<div class="ov-q"><small>TRIWULAN '+t+(P.pr==='r'?' · sesuai rentang':'')+'</small><b>'+(v.t?pct(v.r/v.t*100):'—')+'</b><div class="bar"><i style="width:'+Math.min(100,v.t?v.r/v.t*100:0)+'%;background:var(--blue)"></i></div><span>'+num(v.r)+' realisasi / '+num(v.t)+' target</span></div>').join('')+'</div>'+
- '<div class="ov-filter-status"><b>Filter aktif:</b> '+esc(S.ui.prog?progLabel(S.ui.prog):'Semua program')+' · '+esc(curUnit()||'Semua UE I')+' · '+esc(curUnit()?({'u':'UIC Utama','p':'UIC Pendukung','ue':'Cakupan UE I','up':'Utama/Pendukung'}[umOf()]||'Utama/Pendukung'):'Seluruh peran')+' · '+esc(periodLabel)+'</div></div>';
+ const quarter=capQuarter(periodQuarters,num);
  return vh('O','pmo','Overview','Capaian per triwulan, K-Wide, T-Program, dan per UE I sesuai struktur workbook WBS.')+pmoTabs('siklus')+favBlock()+
  '<div class="ov-tabs" role="tablist" aria-label="Jenis capaian">'+[['tw','Capaian per Triwulan'],['kwide','Capaian K-Wide'],['tprog','Capaian T-Program'],['ue','Capaian per UE I']].map(([v,l])=>'<button type="button" data-act="ovTab" data-v="'+v+'" role="tab" aria-selected="'+(tab===v)+'" class="'+(tab===v?'on':'')+'">'+l+'</button>').join('')+'</div>'+
  (tab==='tw'?quarter+(data.items.length?'':'<div class="note w">WBS tahun ini belum tersedia di aplikasi. Impor sheet Kompilasi untuk mengisi capaian WBS.</div>'):
-  tab==='kwide'?kTable:tab==='tprog'?matrix('Capaian T-Program',tprog):matrix('Capaian per Unit Eselon I',ue))+
+  tab==='kwide'?kTable:tab==='tprog'?capMatrix('prog',num):capMatrix('ue',num))+
  '<p class="s ov-source">Perhitungan capaian WBS mengikuti bobot, jadwal, realisasi dan status validasi pada aplikasi. K-Wide 2026 menggunakan angka output dari workbook rujukan, sehingga keduanya tidak boleh disamakan.</p>';
 }
 ACT.ovTab=el=>{S.ui.overviewTab=el.dataset.v;save();render()};
@@ -4548,7 +4617,7 @@ function tpModal(p,r,tab){const k=tpKey(p,r.n);p.closing=p.closing||{};const c=J
  const TABS=[['siap','Kesiapan'],['lap','Laporan Penyelesaian'],['ll','Lessons Learned'],['dok','Checklist Dokumen'],['aju','Pengajuan & Telaah']];
  const siap=`<div class="tp-ready"><div class="tp-rk"><b>${R.x.pg}%</b><span>Progres WBS tervalidasi</span></div><div class="tp-rk"><b>${R.K.length?R.kOk+'/'+R.K.length:'—'}</b><span>Kriteria penyelesaian</span></div><div class="tp-rk ${R.undone.length?'w':''}"><b>${R.undone.length}</b><span>Item belum selesai</span></div><div class="tp-rk ${R.bOpen?'w':''}"><b>${R.bOpen}</b><span>Bukti selesai belum valid</span></div><div class="tp-rk ${R.rOpen.length+R.dOpen.length+R.crOpen.length?'w':''}"><b>${R.rOpen.length+R.dOpen.length+R.crOpen.length}</b><span>Register/CR terbuka</span></div></div>
   <h4 class="tp-h">Kriteria penyelesaian (charter ${esc(p.kode)})</h4><div class="acl2">${R.K.map(({k,x},i)=>`<div class="acr2 ${x&&x.pg===100?'ok':''}"><span class="ai">${x&&x.pg===100?'✓':i+1}</span><div style="flex:1;min-width:0"><b>${esc(k.m)}</b>${(k.k||[]).map(t=>`<div class="s" style="margin-top:2px">• ${esc(t)}</div>`).join('')}</div><div class="ap">${x?`<div class="pg"><div class="bar"><i style="width:${x.pg}%;background:${x.pg===100?'var(--ok)':'var(--blue)'}"></i></div><b>${x.pg}%</b></div><span class="sm">${x.n} item WBS tertaut</span>`:'<span class="chip c-gray">Belum tertaut ke WBS</span>'}</div></div>`).join('')||'<p class="s">Charter program ini belum memiliki kriteria penyelesaian.</p>'}</div>
-  ${R.undone.length?`<h4 class="tp-h">Item WBS belum selesai (${R.undone.length})</h4><div class="tscroll"><table class="lap"><thead><tr><th>Kode</th><th>Output</th><th>UIC</th><th>Jadwal</th><th>Status</th></tr></thead><tbody>${R.undone.slice(0,30).map(w=>`<tr><td class="mono">${esc(w.k)}</td><td>${esc(deliv(w))}</td><td>${esc(uicU(w))}</td><td>${pgJadwal(w.s,w.f)}</td><td>${esc(stOf(w,12))}</td></tr>`).join('')}</tbody></table></div>`:''}`;
+  ${R.undone.length?`<h4 class="tp-h">Item WBS belum selesai (${R.undone.length})</h4><div class="tscroll"><table class="lap"><thead><tr><th>Kode</th><th>Output</th><th>UIC</th><th>Jadwal</th><th>Status</th></tr></thead><tbody>${R.undone.slice(0,30).map(w=>`<tr><td class="dx-k">${esc(w.k)}</td><td>${esc(deliv(w))}</td><td>${esc(uicU(w))}</td><td>${pgJadwal(w.s,w.f)}</td><td>${esc(stOf(w,12))}</td></tr>`).join('')}</tbody></table></div>`:''}`;
  const lap=`<div class="fgrid"><div class="fld"><label for="tp-al">Alasan penutupan</label><select class="sel" id="tp-al"${dis}>${opts([['','— pilih —'],...TP_ALASAN],c.alasan||'')}</select></div><div class="fld"><label for="tp-tgl">Tanggal penyelesaian</label>${inp('tp-tgl',c.tgl||'','', 'date')}</div>
   <div class="fld wide"><label for="tp-rg">Ringkasan hasil proyek</label>${ta('tp-rg',c.ringkas,'Apa yang dihasilkan proyek dan kondisi akhirnya',3)}</div>
   <div class="fld wide"><label for="tp-cp">Capaian output &amp; outcome</label>${ta('tp-cp',c.capaian,'Bandingkan dengan output/outcome pada charter',3)}</div>
