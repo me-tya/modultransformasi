@@ -1626,6 +1626,28 @@ body:has(.prj-overlay){overflow:hidden}
 .hp-card:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(11,31,69,.10);border-color:#C9D8EE}
 .hp-flow>li>.hp-go{min-width:150px}
 @media(max-width:640px){.fs-it{flex-direction:column;align-items:stretch}.fs-it .hp-go{min-width:0;width:100%}}
+
+/* Tahapan PMO & CMO — versi ringkas */
+.fs-wrap{gap:10px}
+.fs-st .fs-cols{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.fs-col{min-width:0}.fs-it{min-width:0}
+.fs-st{display:block;border-radius:12px}
+.fs-h{display:flex;align-items:center;gap:10px;padding:8px 14px;min-height:0}
+.fs-h:after{display:none}
+.fs-h i{width:24px;height:24px;font-size:12px;box-shadow:0 0 0 3px rgba(253,185,19,.25)}
+.fs-h b{display:inline;font-size:14px}
+.fs-h small{display:inline;font-size:12px;margin:0;color:#BFD0EA;padding-left:10px;border-left:1px solid rgba(255,255,255,.25)}
+.fs-cnt{margin-left:auto;font-size:11px;font-weight:800;color:#FFE29A;background:rgba(253,185,19,.14);border:1px solid rgba(253,185,19,.35);padding:2px 9px;border-radius:20px}
+.fs-cols{grid-template-columns:1fr 1fr}
+.fs-col{padding:8px 10px 10px;position:relative}
+.fs-col em{margin:0 0 6px;font-size:10px;padding:1px 8px}
+.fs-col ol{gap:6px}
+.fs-it{padding:6px 8px 6px 10px;border-radius:9px;gap:10px}
+.fs-it>div{min-width:0}
+.fs-it b{font-size:13px;line-height:1.35}
+.fs-it span{font-size:12px;line-height:1.4;margin-top:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fs-it .hp-go{flex:none;min-width:150px;max-width:190px;height:28px;font-size:12px}.fs-it .hp-go span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fs-it:hover{transform:translateX(2px)}
+@media(max-width:900px){.fs-cols{grid-template-columns:1fr}.fs-h small{display:none}.fs-it span{white-space:normal}}
 </style>
 
 <div id="root"></div>
@@ -4553,18 +4575,18 @@ const FLOW_ST=[
   cmo:[['Analisis Dampak Perubahan','As-is → to-be, dampak POSTeR, risiko, dan indikator keberhasilan per sub modul.','cmo-adp','ADP']]},
  {n:1,nm:'Perencanaan',sub:'T-1 s.d. awal TA',
   pmo:[['Susun charter','Isi Dokumen Proyek lewat wizard enam langkah, lalu ajukan ke PMO Pusat.','pmo-perencanaan','Dokumen Proyek'],['Susun WBS','Impor atau tambah item WBS dari rencana kerja charter.','pmo-wbsplan','WBS']],
-  cmo:[['Stakeholder management','Petakan stakeholder, nilai experience–support, dan tetapkan strategi pelibatan.','cmo-rencana','Perencanaan · Stakeholder','rencana:sh'],['Rencana komunikasi','Pesan, kanal T-House, frekuensi, jadwal, dan PIC komunikasi.','cmo-rencana','Perencanaan · Komunikasi','rencana:kom'],['Rencana pelatihan','Analisis kebutuhan pelatihan (TNA): kompetensi saat ini, kebutuhan, dan program.','cmo-rencana','Perencanaan · Pelatihan','rencana:pel'],['Kebutuhan jaringan pengelola perubahan','Jumlah T-Agent yang dibutuhkan per unit.','cmo-rencana','Perencanaan · Jejaring','rencana:jj']]},
+  cmo:[['Stakeholder management','Petakan stakeholder, nilai experience–support, dan tetapkan strategi pelibatan.','cmo-rencana','Stakeholder','rencana:sh'],['Rencana komunikasi','Pesan, kanal T-House, frekuensi, jadwal, dan PIC komunikasi.','cmo-rencana','Komunikasi','rencana:kom'],['Rencana pelatihan','Analisis kebutuhan pelatihan (TNA): kompetensi saat ini, kebutuhan, dan program.','cmo-rencana','Pelatihan','rencana:pel'],['Kebutuhan jaringan pengelola perubahan','Jumlah T-Agent yang dibutuhkan per unit.','cmo-rencana','Jejaring','rencana:jj']]},
  {n:2,nm:'Pelaksanaan',sub:'Sesuai rencana kerja',
   pmo:[['Laksanakan & unggah bukti','UIC mengerjakan item lalu mengunggah bukti dukung di WBS & progres.','pmo-wbs','WBS & progres'],['Validasi bukti','PMO Kemenkeu memvalidasi; capaian item menjadi 100.','pmo-bukti','Bukti Dukung'],['Ubah baseline bila perlu','Ajukan Change Request untuk jadwal, deliverable, atau UIC.','pmo-cr','Change Request'],['Tulis narasi capaian','Narasi per triwulan otomatis menjadi PPT laporan.','pmo-narasi','Narasi T-Program']],
-  cmo:[['Aktivasi jaringan pengelola perubahan','Tetapkan dan latih T-Agent, lalu catat statusnya.','cmo-rencana','Perencanaan · Jejaring','rencana:jj'],['Strategi komunikasi','Laksanakan kegiatan komunikasi dan laporkan realisasinya.','cmo-impl','Implementasi'],['Strategi pelatihan','Laksanakan pelatihan dan laporkan kehadiran serta buktinya.','cmo-impl','Implementasi']]},
+  cmo:[['Aktivasi jaringan pengelola perubahan','Tetapkan dan latih T-Agent, lalu catat statusnya.','cmo-rencana','Jejaring','rencana:jj'],['Strategi komunikasi','Laksanakan kegiatan komunikasi dan laporkan realisasinya.','cmo-impl','Implementasi'],['Strategi pelatihan','Laksanakan pelatihan dan laporkan kehadiran serta buktinya.','cmo-impl','Implementasi']]},
  {n:3,nm:'Pemantauan',sub:'Berkala',
   pmo:[['Pantau milestone','Lihat yang terlambat dan 30 hari ke depan.','pmo-milestone','Milestone'],['Kelola risiko & isu','Skor, mitigasi, PIC, dan tenggat.','pmo-risiko','Risiko & Isu'],['Laporkan capaian','Capaian T-Program per triwulan dan per UE I.','pmo-laporan','Capaian TW']],
   cmo:[['Monev CM','Penyesuaian RTL, kertas kerja monev (ADKAR), dan keberhasilan CM.','cmo-monev','Monev'],['Pantau adopsi','Pengguna aktif dan transaksi dibanding ekspektasi.','cmo-adopsi','Tingkat Adopsi']]},
  {n:4,nm:'Penutupan',sub:'Kriteria terpenuhi',
   pmo:[['Tutup proyek','Periksa kriteria penyelesaian terhadap WBS tervalidasi.','pmo-penutupan','Penutupan']],
   cmo:[['Closing CM','Transfer kepemilikan ke unit operasional.','cmo-closing','Closing CM']]}];
-function flowStagesHtml(){const it=(a,cls)=>'<li class="fs-it '+cls+'"><div><b>'+esc(a[0])+'</b><span>'+esc(a[1])+'</span></div>'+hpGo(a[2],a[3],a[4])+'</li>';
- return '<p class="hp-lead">Tahapan kerja PMO dan CMO dari persiapan sampai penutupan. Klik tombol menu untuk langsung pindah ke halaman terkait.</p><div class="fs-wrap">'+FLOW_ST.map(st=>'<section class="fs-st"><header class="fs-h"><i>'+(st.n||'0')+'</i><div><b>'+esc(st.nm)+'</b><small>'+esc(st.sub)+'</small></div></header><div class="fs-cols"><div class="fs-col pmo"><em>PMO</em><ol>'+st.pmo.map(a=>it(a,'pmo')).join('')+'</ol></div><div class="fs-col cmo"><em>CMO</em><ol>'+st.cmo.map(a=>it(a,'cmo')).join('')+'</ol></div></div></section>').join('')+'</div><p class="ko-src">Lihat juga tab <b>Alur Koordinasi</b> untuk siapa berkoordinasi dengan siapa di setiap fase.</p>'}
+function flowStagesHtml(){const it=(a,cls)=>'<li class="fs-it '+cls+'"><div title="'+esc(a[1])+'"><b>'+esc(a[0])+'</b><span>'+esc(a[1])+'</span></div>'+hpGo(a[2],a[3],a[4])+'</li>';
+ return '<p class="hp-lead">Tahapan kerja PMO dan CMO dari persiapan sampai penutupan. Klik tombol menu untuk langsung pindah ke halaman terkait.</p><div class="fs-wrap">'+FLOW_ST.map(st=>'<section class="fs-st"><header class="fs-h"><i>'+(st.n||'0')+'</i><b>'+esc(st.nm)+'</b><small>'+esc(st.sub)+'</small><span class="fs-cnt">'+st.pmo.length+' PMO · '+st.cmo.length+' CMO</span></header><div class="fs-cols"><div class="fs-col pmo"><em>PMO</em><ol>'+st.pmo.map(a=>it(a,'pmo')).join('')+'</ol></div><div class="fs-col cmo"><em>CMO</em><ol>'+st.cmo.map(a=>it(a,'cmo')).join('')+'</ol></div></div></section>').join('')+'</div><p class="ko-src">Lihat juga tab <b>Alur Koordinasi</b> untuk siapa berkoordinasi dengan siapa di setiap fase.</p>'}
 const FLOW_PMO=[
  ['Siapkan program','Tambah program dan UIC-nya.','pmo-portofolio','Portofolio'],
  ['Susun charter','Isi Dokumen Proyek lewat wizard enam langkah, ajukan ke PMO Pusat.','pmo-perencanaan','Dokumen Proyek'],
