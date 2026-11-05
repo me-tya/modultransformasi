@@ -1594,6 +1594,38 @@ body:has(.prj-overlay){overflow:hidden}
 .fs-it.pmo{border-left:3px solid #6E98CF}.fs-it.cmo{border-left:3px solid #E39A8C}
 .fs-it .hp-go{flex:none;margin-top:1px}
 @media(max-width:900px){.fs-st{grid-template-columns:1fr}.fs-cols{grid-template-columns:1fr}.fs-col+.fs-col{border-left:0;border-top:1px solid var(--line-2)}}
+
+/* ===== Pusat Bantuan: sentuhan elegan & interaktif ===== */
+.hp-go{position:relative;display:inline-flex;align-items:center;justify-content:space-between;gap:10px;height:32px;padding:0 10px 0 13px;border:1px solid #C9D8EE;border-radius:10px;background:linear-gradient(180deg,#FFFFFF,#F2F6FC);color:var(--navy-2);font-weight:800;font-size:12.5px;box-shadow:0 1px 2px rgba(11,31,69,.08);transition:background .18s,color .18s,border-color .18s,transform .18s,box-shadow .18s}
+.hp-go i{font-style:normal;display:grid;place-items:center;width:18px;height:18px;border-radius:6px;background:#E8F0FB;color:var(--navy-2);font-size:13px;transition:transform .18s,background .18s,color .18s}
+.hp-go:after{content:"";position:absolute;right:-3px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--yellow);border:2px solid #fff;opacity:0;transform:scale(.4);transition:opacity .18s,transform .18s}
+.hp-go:hover,.hp-go:focus-visible{background:linear-gradient(135deg,#0B1F45,#17457F);border-color:#0B1F45;color:var(--yellow);transform:translateY(-1px);box-shadow:0 6px 14px rgba(11,31,69,.22)}
+.hp-go:hover i,.hp-go:focus-visible i{background:var(--yellow);color:var(--navy);transform:translateX(2px)}
+.hp-go:hover:after,.hp-go:focus-visible:after{opacity:1;transform:scale(1)}
+.hp-tabs button{transition:background .18s,color .18s,transform .18s}
+.hp-tabs button:hover:not(.on){transform:translateY(-1px)}
+.hp-goal>i{box-shadow:0 0 0 4px rgba(253,185,19,.18);animation:hpPulse 2.6s ease-in-out infinite}
+@keyframes hpPulse{0%,100%{box-shadow:0 0 0 4px rgba(253,185,19,.18)}50%{box-shadow:0 0 0 8px rgba(253,185,19,.06)}}
+@media (prefers-reduced-motion:reduce){.hp-goal>i{animation:none}}
+/* tahapan */
+.fs-st{transition:box-shadow .2s,transform .2s;box-shadow:0 1px 3px rgba(11,31,69,.05)}
+.fs-st:hover{box-shadow:0 10px 26px rgba(11,31,69,.10)}
+.fs-h{position:relative;overflow:hidden}
+.fs-h:after{content:"";position:absolute;right:-30px;bottom:-40px;width:110px;height:110px;border-radius:50%;border:18px solid rgba(253,185,19,.10)}
+.fs-h i{box-shadow:0 0 0 4px rgba(253,185,19,.22);transition:transform .25s}
+.fs-st:hover .fs-h i{transform:scale(1.08) rotate(-6deg)}
+.fs-it{align-items:center;transition:transform .18s,box-shadow .18s,border-color .18s}
+.fs-it:hover{transform:translateX(3px);box-shadow:0 6px 16px rgba(11,31,69,.08);border-color:#D6E3F3}
+.fs-it .hp-go{min-width:176px}
+.fs-it.cmo .hp-go{border-color:#EFC9C0;background:linear-gradient(180deg,#FFFFFF,#FFF6F3)}
+.fs-it.cmo .hp-go i{background:#FBE5E0;color:#B5402F}
+.fs-it.cmo .hp-go:hover{background:linear-gradient(135deg,#0B1F45,#17457F);border-color:#0B1F45}
+.fs-it.cmo .hp-go:hover i{background:var(--yellow);color:var(--navy)}
+/* kartu peta menu & fase koordinasi */
+.hp-card{transition:transform .18s,box-shadow .18s,border-color .18s}
+.hp-card:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(11,31,69,.10);border-color:#C9D8EE}
+.hp-flow>li>.hp-go{min-width:150px}
+@media(max-width:640px){.fs-it{flex-direction:column;align-items:stretch}.fs-it .hp-go{min-width:0;width:100%}}
 </style>
 
 <div id="root"></div>
@@ -4518,21 +4550,21 @@ const GUIDE={
 const FLOW_ST=[
  {n:0,nm:'Persiapan',sub:'Sebelum tahun anggaran',
   pmo:[['Siapkan program','Daftarkan program, UIC, sponsor, dan periode.','pmo-portofolio','Portofolio']],
-  cmo:[['Modul CM terbentuk','Modul CM muncul otomatis dari item ADP di WBS; tidak perlu diisi manual.','cmo-siklus','Siklus CM']]},
+  cmo:[['Analisis Dampak Perubahan','As-is → to-be, dampak POSTeR, risiko, dan indikator keberhasilan per sub modul.','cmo-adp','ADP']]},
  {n:1,nm:'Perencanaan',sub:'T-1 s.d. awal TA',
   pmo:[['Susun charter','Isi Dokumen Proyek lewat wizard enam langkah, lalu ajukan ke PMO Pusat.','pmo-perencanaan','Dokumen Proyek'],['Susun WBS','Impor atau tambah item WBS dari rencana kerja charter.','pmo-wbsplan','WBS']],
-  cmo:[['Analisis Dampak Perubahan','As-is → to-be, dampak POSTeR, risiko, dan indikator keberhasilan per sub modul.','cmo-adp','ADP'],['Rencanakan CM','Stakeholder, komunikasi, pelatihan, dan jejaring T-Agent.','cmo-rencana','Perencanaan']]},
+  cmo:[['Stakeholder management','Petakan stakeholder, nilai experience–support, dan tetapkan strategi pelibatan.','cmo-rencana','Perencanaan · Stakeholder','rencana:sh'],['Rencana komunikasi','Pesan, kanal T-House, frekuensi, jadwal, dan PIC komunikasi.','cmo-rencana','Perencanaan · Komunikasi','rencana:kom'],['Rencana pelatihan','Analisis kebutuhan pelatihan (TNA): kompetensi saat ini, kebutuhan, dan program.','cmo-rencana','Perencanaan · Pelatihan','rencana:pel'],['Kebutuhan jaringan pengelola perubahan','Jumlah T-Agent yang dibutuhkan per unit.','cmo-rencana','Perencanaan · Jejaring','rencana:jj']]},
  {n:2,nm:'Pelaksanaan',sub:'Sesuai rencana kerja',
   pmo:[['Laksanakan & unggah bukti','UIC mengerjakan item lalu mengunggah bukti dukung di WBS & progres.','pmo-wbs','WBS & progres'],['Validasi bukti','PMO Kemenkeu memvalidasi; capaian item menjadi 100.','pmo-bukti','Bukti Dukung'],['Ubah baseline bila perlu','Ajukan Change Request untuk jadwal, deliverable, atau UIC.','pmo-cr','Change Request'],['Tulis narasi capaian','Narasi per triwulan otomatis menjadi PPT laporan.','pmo-narasi','Narasi T-Program']],
-  cmo:[['Laksanakan kegiatan CM','Laporkan pelaksanaan komunikasi dan pelatihan yang direncanakan.','cmo-impl','Implementasi']]},
+  cmo:[['Aktivasi jaringan pengelola perubahan','Tetapkan dan latih T-Agent, lalu catat statusnya.','cmo-rencana','Perencanaan · Jejaring','rencana:jj'],['Strategi komunikasi','Laksanakan kegiatan komunikasi dan laporkan realisasinya.','cmo-impl','Implementasi'],['Strategi pelatihan','Laksanakan pelatihan dan laporkan kehadiran serta buktinya.','cmo-impl','Implementasi']]},
  {n:3,nm:'Pemantauan',sub:'Berkala',
   pmo:[['Pantau milestone','Lihat yang terlambat dan 30 hari ke depan.','pmo-milestone','Milestone'],['Kelola risiko & isu','Skor, mitigasi, PIC, dan tenggat.','pmo-risiko','Risiko & Isu'],['Laporkan capaian','Capaian T-Program per triwulan dan per UE I.','pmo-laporan','Capaian TW']],
   cmo:[['Monev CM','Penyesuaian RTL, kertas kerja monev (ADKAR), dan keberhasilan CM.','cmo-monev','Monev'],['Pantau adopsi','Pengguna aktif dan transaksi dibanding ekspektasi.','cmo-adopsi','Tingkat Adopsi']]},
  {n:4,nm:'Penutupan',sub:'Kriteria terpenuhi',
   pmo:[['Tutup proyek','Periksa kriteria penyelesaian terhadap WBS tervalidasi.','pmo-penutupan','Penutupan']],
   cmo:[['Closing CM','Transfer kepemilikan ke unit operasional.','cmo-closing','Closing CM']]}];
-function flowStagesHtml(){const it=(a,cls)=>'<li class="fs-it '+cls+'"><div><b>'+esc(a[0])+'</b><span>'+esc(a[1])+'</span></div>'+hpGo(a[2],a[3])+'</li>';
- return '<p class="hp-lead">Alur kerja PMO dan CMO dikelompokkan per tahapan, sesuai urutan menu. Klik tombol menu untuk langsung pindah ke halaman terkait.</p><div class="fs-wrap">'+FLOW_ST.map(st=>'<section class="fs-st"><header class="fs-h"><i>'+(st.n||'•')+'</i><div><b>'+esc(st.nm)+'</b><small>'+esc(st.sub)+'</small></div></header><div class="fs-cols"><div class="fs-col pmo"><em>PMO</em><ol>'+st.pmo.map(a=>it(a,'pmo')).join('')+'</ol></div><div class="fs-col cmo"><em>CMO</em><ol>'+st.cmo.map(a=>it(a,'cmo')).join('')+'</ol></div></div></section>').join('')+'</div><p class="ko-src">Lihat juga tab <b>Alur Koordinasi</b> untuk siapa berkoordinasi dengan siapa di setiap fase.</p>'}
+function flowStagesHtml(){const it=(a,cls)=>'<li class="fs-it '+cls+'"><div><b>'+esc(a[0])+'</b><span>'+esc(a[1])+'</span></div>'+hpGo(a[2],a[3],a[4])+'</li>';
+ return '<p class="hp-lead">Tahapan kerja PMO dan CMO dari persiapan sampai penutupan. Klik tombol menu untuk langsung pindah ke halaman terkait.</p><div class="fs-wrap">'+FLOW_ST.map(st=>'<section class="fs-st"><header class="fs-h"><i>'+(st.n||'0')+'</i><div><b>'+esc(st.nm)+'</b><small>'+esc(st.sub)+'</small></div></header><div class="fs-cols"><div class="fs-col pmo"><em>PMO</em><ol>'+st.pmo.map(a=>it(a,'pmo')).join('')+'</ol></div><div class="fs-col cmo"><em>CMO</em><ol>'+st.cmo.map(a=>it(a,'cmo')).join('')+'</ol></div></div></section>').join('')+'</div><p class="ko-src">Lihat juga tab <b>Alur Koordinasi</b> untuk siapa berkoordinasi dengan siapa di setiap fase.</p>'}
 const FLOW_PMO=[
  ['Siapkan program','Tambah program dan UIC-nya.','pmo-portofolio','Portofolio'],
  ['Susun charter','Isi Dokumen Proyek lewat wizard enam langkah, ajukan ke PMO Pusat.','pmo-perencanaan','Dokumen Proyek'],
@@ -4555,7 +4587,7 @@ const GROLES=[['Super Admin (SA)','Akses penuh, termasuk Pengaturan.'],['PMO Kem
 /* ===== Mesin Pusat Bantuan ===== */
 let CURF=null;
 const HP_OK=g=>{try{return !g||/^modul-/.test(g)||allowedViews().includes(g)}catch(e){return true}};
-const hpGo=(g,l)=>g&&HP_OK(g)?`<button class="hp-go" data-hgo="${esc(g)}">${esc(l||'Buka')} ›</button>`:'';
+const hpGo=(g,l,sub)=>g&&HP_OK(g)?`<button class="hp-go" data-hgo="${esc(g)}"${sub?` data-hsub="${esc(sub)}"`:''}><span>${esc(l||'Buka')}</span><i aria-hidden="true">›</i></button>`:'';
 function hpGuideOf(v){
  let g=GUIDE[v];
  if(!g&&/^modul-/.test(v)){const tb=v.split('-t-')[1]||'siklus';g=GUIDE['cmo-'+tb]}
@@ -4600,7 +4632,7 @@ function hpSwitch(ov,key){ov.querySelectorAll('.hp-tabs button').forEach(b=>b.cl
 function hpWire(ov){
  ov.addEventListener('click',e=>{
   const t=e.target.closest('[data-hp]');if(t){hpSwitch(ov,t.dataset.hp);return}
-  const g=e.target.closest('[data-hgo]');if(g){const h=g.dataset.hgo;ov.remove();go(h);return}
+  const g=e.target.closest('[data-hgo]');if(g){const h=g.dataset.hgo,sb=g.dataset.hsub;if(sb){const [k,v]=sb.split(':');S.ui.sub=S.ui.sub||{};S.ui.sub[k]=v;save()}ov.remove();if(location.hash==='#'+h)render();else go(h);return}
   const f=e.target.closest('[data-hexf]');if(f){hpSwitch(ov,'isi');const d=ov.querySelector('#hpf-'+f.dataset.hexf);if(d){d.open=true;d.scrollIntoView({block:'nearest',behavior:'smooth'})}return}
  })}
 /* ===== Alur Koordinasi PMO–CMO (sumber: Pengaturan CM – RKMK/KEP 34) ===== */
@@ -4631,7 +4663,7 @@ const KO_PHASES=[
   ed:[['5.1','5.2','k'],['5.3','5.2','n'],['5.2','5.4','k'],['5.2','5.5','n'],['5.4','5.6','g']]}];
 const KO_COL={n:'#3E6FB0',k:'#7C5CC4',g:'#5E9E3C'};
 function koSvg(ph){
- const LW=138,LH=100,TOP=8,NW=160,NH=88,CW=Math.max(180,Math.floor(1060/ph.cols)),W=LW+ph.cols*CW+14,H=TOP+KO_LANES.length*LH+8;
+ const LW=138,LH=118,TOP=10,NW=160,NH=84,CW=Math.max(180,Math.floor(1060/ph.cols)),W=LW+ph.cols*CW+14,H=TOP+KO_LANES.length*LH+8;
  const li=k=>KO_LANES.findIndex(l=>l[0]===k),pos={};
  ph.st.forEach(s=>{const x=LW+s[2]*CW+(CW-NW)/2,y=TOP+li(s[1])*LH+(LH-NH)/2;pos[s[0]]={x,y,c:s[2],l:li(s[1])}});
  const band={gov:'#EEF5E7',pmo:'#E7F1FA',cmo:'#FDEEE6',pb:'#EDF3F6'};
@@ -4644,7 +4676,7 @@ function koSvg(ph){
  const outN={},inN={};ph.ed.forEach(e=>{outN[e[0]]=(outN[e[0]]||0)+1;inN[e[1]]=(inN[e[1]]||0)+1});
  const oi={},ii={};
  ph.ed.forEach(([a,b,k,bi])=>{const s=pos[a],t=pos[b];if(!s||!t)return;let pts;
-  if(s.c===t.c){const down=t.l>s.l,x=s.x+NW/2,y1=down?s.y+NH:s.y,y2=down?t.y:t.y+NH;if(Math.abs(y2-y1)<40){const my=(y1+y2)/2;g+='<line x1="'+x+'" x2="'+x+'" y1="'+y1+'" y2="'+y2+'" stroke="'+KO_COL[k]+'" stroke-width="2"/><circle cx="'+x+'" cy="'+my+'" r="11" fill="#fff" stroke="'+KO_COL[k]+'" stroke-width="1.8"/><text x="'+x+'" y="'+(my+4.5)+'" text-anchor="middle" font-size="13" font-weight="800" fill="'+KO_COL[k]+'">'+(bi?'⇅':down?'↓':'↑')+'</text>';return}pts=[[x,y1],[x,y2]]}
+  if(s.c===t.c){const down=t.l>s.l,x=s.x+NW/2,y1=down?s.y+NH:s.y,y2=down?t.y:t.y+NH;const pad=3;pts=[[x,y1+(down?pad:-pad)],[x,y2+(down?-pad:pad)]]}
   else if(t.c>s.c){oi[a]=(oi[a]||0)+1;ii[b]=(ii[b]||0)+1;
    const sy=s.y+NH/2+((oi[a]-(outN[a]+1)/2)*10),ty=t.y+NH/2+((ii[b]-(inN[b]+1)/2)*10),sx=s.x+NW,tx=t.x,mx=sx+(CW-NW)/2+(s.l-3)*5+(t.c-s.c>1&&s.l!==t.l?CW*(t.c-s.c-1):0);
    pts=s.l===t.l&&Math.abs(sy-ty)<1?[[sx,sy],[tx,ty]]:[[sx,sy],[Math.min(mx,tx-12),sy],[Math.min(mx,tx-12),ty],[tx,ty]]}
@@ -4656,7 +4688,7 @@ function koSvg(ph){
 function koSteps(ph){const lab=k=>(KO_LANES.find(l=>l[0]===k)||[])[1]||k;
  return '<ol class="ko-steps">'+ph.st.slice().sort((a,b)=>parseFloat(a[0].split('.')[1])-parseFloat(b[0].split('.')[1])).map(s=>{const nx=ph.ed.filter(e=>e[0]===s[0]).map(e=>e[1]);return '<li><i>'+esc(s[0])+'</i><div><b>'+esc(s[3])+(s[4]?' <em>usulan</em>':'')+'</b><span>'+esc(lab(s[1]))+(nx.length?' → lanjut ke '+nx.join(', '):'')+'</span></div></li>'}).join('')+'</ol>'}
 function koHtml(){
- const leg='<div class="ko-leg"><span><i style="background:'+KO_COL.k+'"></i>Koordinasi PMO–CMO</span><span><i style="background:'+KO_COL.g+'"></i>Tata kelola (Pengarah/Sponsor)</span><span><i style="background:'+KO_COL.n+'"></i>Alur kerja</span><span><b class="ko-usb"></b>Usulan</span><span><b class="ko-bi">⇄</b>Dua arah</span></div>';
+ const leg='<div class="ko-leg"><span><i style="background:'+KO_COL.k+'"></i>Koordinasi PMO–CMO</span><span><i style="background:'+KO_COL.g+'"></i>Tata kelola (Pengarah/Sponsor)</span><span><i style="background:'+KO_COL.n+'"></i>Alur kerja</span><span><b class="ko-usb"></b>Usulan</span><span><svg width="26" height="10" viewBox="0 0 26 10" aria-hidden="true"><path d="M4 5H22" stroke="'+KO_COL.k+'" stroke-width="2"/><path d="M1 5L6 1.5V8.5Z M25 5L20 1.5V8.5Z" fill="'+KO_COL.k+'"/></svg>Dua arah</span></div>';
  const over='<div class="ko-over">'+
   '<div class="ko-row"><span class="ko-rl">Tata kelola</span><div class="ko-g4">'+['Penetapan arah & prioritas','Keputusan CR & penutupan','Review berkala & eskalasi','Kepemimpinan oleh Pengarah'].map(t=>'<div class="ko-gov">'+esc(t)+'</div>').join('')+'</div></div>'+
   '<div class="ko-row"><span class="ko-rl">Proses inti</span><div class="ko-g5">'+[
@@ -4688,7 +4720,7 @@ function showGuideHome(){
  const gl=`<table class="hp-tbl"><tbody>${GLOSS.map(([a,b])=>`<tr><td><span class="hp-key">${esc(a)}</span></td><td>${esc(b)}</td></tr>`).join('')}</tbody></table>`;
  const rl=`<table class="hp-tbl" style="margin-top:12px"><thead><tr><th>Peran</th><th>Tugas utama</th></tr></thead><tbody>${GROLES.map(([a,b])=>`<tr><td><span class="hp-key">${esc(a)}</span></td><td>${esc(b)}</td></tr>`).join('')}</tbody></table>`;
  const panels=[
-  ['alur','Alur PMO & CMO',flowStagesHtml()],
+  ['alur','Tahapan PMO dan CMO',flowStagesHtml()],
   ['koord','Alur Koordinasi',koHtml()],
   ['peta','Peta Menu',`<p class="hp-lead">Semua menu yang boleh Anda buka. Tombol <b>Panduan</b> menampilkan penjelasan lengkap halaman itu.</p>${peta}`],
   ['gl','Istilah & Peran',`${gl}${rl}`]
