@@ -2532,6 +2532,8 @@ function importT_old(id,file){const o=T[id];if(o.imp2)return o.imp2(file);if(!wi
 /* ======================== routing ======================== */
 let VIEW='beranda';
 const go=h=>{location.hash=h};
+const TASK_PRE={'pmo-bukti':{bseg:'Menunggu validasi'},'pmo-cr':{crseg:'open'},'pmo-milestone':{mseg:'late'}};
+const goTask=h=>{const p=TASK_PRE[h];if(p){Object.assign(S.ui,p,{prog:''});save()}go(h)};
 window.addEventListener('hashchange',()=>{readHash();render();window.scrollTo(0,0)});
 function readHash(){VIEW=(location.hash||'').slice(1)||'beranda'}
 
@@ -2644,7 +2646,7 @@ function bellMenu(btn,tk){const draw=()=>{const h=BELL.hidden(),vis=BELL.vis(tk)
  m.onclick=e=>{const b=e.target.closest('[data-bl]');if(b){e.preventDefault();e.stopPropagation();const o=BELL.get(),h=o.h||[],a=b.dataset.bl;
    if(a==='hide'&&!h.includes(b.dataset.t))h.push(b.dataset.t);else if(a==='show')h.splice(h.indexOf(b.dataset.t),1);else if(a==='all')BELL.vis(tk).forEach(t=>h.push(t[1]));
    o.h=h;BELL.set(o);o.s=BELL.sig(BELL.vis(tk));BELL.set(o);m.innerHTML=draw();const n=BELL.vis(tk).length,bi=document.querySelector('#bell i');if(bi){n?bi.textContent=n:bi.remove()}return}
-  const g=e.target.closest('[data-go]');if(g){m.remove();go(g.dataset.go)}}}
+  const g=e.target.closest('[data-go]');if(g){m.remove();goTask(g.dataset.go)}}}
 function userMenu(btn){const m=popMenu(btn,`<div class="hd"><b>${esc(ME.nama)}</b><br>${esc(ME.email)}<br>${roleN(ME.role)} · cakupan ${esc(scope())}</div><div class="it" data-m="pw">Ubah kata sandi</div><div class="it" data-m="out">Keluar</div>`);
  m.onclick=e=>{const k=e.target.dataset.m;if(!k)return;m.remove();if(k==='out'){log('Keluar','');save();if(FB.on){const go2=()=>{FB.unsub.forEach(u=>u());FB.unsub=[];FB.ready=false;FB.last={};S=fsBlank();ME=null;location.hash='';render()};setTimeout(()=>FB.auth.signOut().then(go2,go2),700);return}ME=null;setSess(null);location.hash='';render()}
   if(k==='pw')modal('Ubah kata sandi',`<div class="fgrid"><div class="fld wide"><label for="np">Kata sandi baru (min. 8 karakter)</label><input id="np" type="password"></div></div>`,'Simpan',()=>{const v=$('#np').value;if(v.length<8){toast('Minimal 8 karakter.');return false}if(FB.on){FB.auth.currentUser.updatePassword(v).then(()=>{log('Ubah kata sandi','');save();toast('Kata sandi diperbarui.')},e=>toast(fbErr(e)));return}ME.pw=v;log('Ubah kata sandi','');save();toast('Kata sandi diperbarui.')},{size:'sm'})}}
@@ -2658,7 +2660,7 @@ document.addEventListener('click',e=>{
  const a=e.target.closest('a[href^="#"]');if(a&&innerWidth<=900){const sd=$('#side');sd&&sd.classList.remove('open')}
  const pg=e.target.closest('[data-pg]');if(pg){if(pg.disabled)return;PG[pg.dataset.pg]=+pg.dataset.n;redrawT(pg.dataset.pg);return}
  const sg=e.target.closest('[data-seg]');if(sg){S.ui[sg.dataset.seg]=sg.dataset.v;Object.keys(PG).forEach(k=>PG[k]=0);save();render();return}
- const gg=e.target.closest('[data-go]');if(gg&&!e.target.closest('.menu')){go(gg.dataset.go);return}
+ const gg=e.target.closest('[data-go]');if(gg&&!e.target.closest('.menu')){goTask(gg.dataset.go);return}
  const proj=e.target.closest('.pm-project-click');if(proj&&!e.target.closest('a,button,input,select,label')){ACT.prjOpen({dataset:{scope:projectKey(proj.dataset.prog,proj.dataset.project),tab:'ringkasan'}});return}
  const el=e.target.closest('[data-act]');if(!el)return;const act=el.dataset.act,id=el.dataset.t,o=T[id];
  if(act==='open'&&e.target.closest('button,input,select,a,label'))return;
