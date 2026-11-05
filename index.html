@@ -1801,6 +1801,12 @@ td .nt-chip span{display:inline!important;margin:0!important;font-size:12px!impo
 .fav-c span{color:#B8C3D6}.fav-c.on{border-color:#F1D48A;background:#FFFBEF;color:var(--navy)}.fav-c.on span{color:#E3A400}
 .fav-pa{display:flex;gap:6px;justify-content:flex-end}
 @media(max-width:900px){.fav-g{grid-template-columns:repeat(auto-fit,minmax(104px,1fr))}.one-pill{max-width:100%}}
+
+/* header PMO: nama grup menu + nama halaman */
+.vh-sub{color:var(--navy);font-weight:800}.vh-dot{margin:0 6px;color:#9AA6BC}
+/* filter tertutup: satu baris ringkas */
+.flt.pmo-unified:not(.open) .lp{padding-top:6px;padding-bottom:6px;align-items:center}
+.flt.pmo-unified:not(.open) .ftop{min-height:0;padding-top:6px;padding-bottom:6px}
 </style>
 
 <div id="root"></div>
@@ -2432,7 +2438,7 @@ function onChange(el){const k=el.dataset.on,v=el.value;if(k==='impwbs')return;
  else if(k==='kepf'){const f=el.files[0];if(!f)return;if(f.size>(FB.on?7e5:1.5e6)){toast(FB.on?'Ukuran KEP maksimal 700 KB pada mode Firestore.':'Ukuran KEP maksimal 1,5 MB pada prototipe.');return}const rd=new FileReader();rd.onload=()=>{const j=jjm(el.dataset.m);j.kepFile=rd.result;j.kepName=f.name;log('Unggah KEP',f.name);save();toast('KEP terunggah.');render()};rd.readAsDataURL(f);return}
  save();render()}
 const jjm=mk=>S.jjMod[mk]||(S.jjMod[mk]={link:'',kepNo:'',kepTgl:'',kepFile:'',kepName:'',aktif:'Belum'});
-function vh(ic,cls,title,desc,acts){const tt=esc(String(title).replace(/<[^>]+>/g,''));if(cls==='pmo'&&typeof oneBadge==='function'){const ob=oneBadge();if(ob)acts=ob+(acts||'')}return `<div class="vh"><div class="pic ${cls}">${ic}</div><div style="min-width:0"><h1>${title}<button class="hlp" data-act="help" data-v="${esc(typeof VIEW!=='undefined'?VIEW:'')}" data-t="${tt}" title="Panduan cara mengisi" aria-label="Panduan cara mengisi ${tt}">?</button></h1><p title="${esc(desc)}">${desc}</p></div>${acts?`<div class="acts">${acts}</div>`:''}</div><!--vh-->`}
+function vh(ic,cls,title,desc,acts){if(cls==='pmo'&&typeof VIEW!=='undefined'&&VIEW.startsWith('pmo-')&&typeof PMG!=='undefined'){let k=VIEW.slice(4);if(k==='charter')k='perencanaan';const g=PMG.find(x=>x[3].includes(k));if(g&&g[1]!==String(title).replace(/<[^>]+>/g,'')){const pt=String(title).replace(/<[^>]+>/g,'');desc=`<b class="vh-sub">${esc(pt)}</b><span class="vh-dot">·</span>${desc}`;title=g[1]}if(g)ic=g[2]?String(g[2]):g[1].charAt(0)}const tt=esc(String(title).replace(/<[^>]+>/g,''));if(cls==='pmo'&&typeof oneBadge==='function'){const ob=oneBadge();if(ob)acts=ob+(acts||'')}return `<div class="vh"><div class="pic ${cls}">${ic}</div><div style="min-width:0"><h1>${title}<button class="hlp" data-act="help" data-v="${esc(typeof VIEW!=='undefined'?VIEW:'')}" data-t="${tt}" title="Panduan cara mengisi" aria-label="Panduan cara mengisi ${tt}">?</button></h1><p title="${esc(String(desc).replace(/<[^>]+>/g,''))}">${desc}</p></div>${acts?`<div class="acts">${acts}</div>`:''}</div><!--vh-->`}
 function setTabs(){return `<nav class="ptabs" aria-label="Pengaturan">${STN.filter(t=>lv(t[2])!=='-').map(([k,l])=>`<a href="#${k}" class="${k===VIEW?'on':''}"><span>${l}</span></a>`).join('')}</nav>`}
 function subNav(key,list,def){const cur=S.ui.sub[key]||def;return `<div class="subt" role="tablist">${list.map(([k,l])=>`<a data-act="sub" data-k="${key}" data-v="${k}" class="${cur===k?'on':''}" role="tab" aria-selected="${cur===k}">${l}</a>`).join('')}</div>`}
 ACT.tsort=el=>{const id=el.dataset.t,k=el.dataset.k;S.ui.sort=S.ui.sort||{};const cur=sortOf(id);S.ui.sort[id]=cur&&cur.k===k?(cur.d==='asc'?{k,d:'desc'}:{k:'',d:''}):{k,d:'asc'};if(!S.ui.sort[id].k)S.ui.sort[id]={k:'_none',d:''};PG[id]=0;save();redrawT(id);const sel=document.querySelector(`[data-wsort="${id}"]`);if(sel)sel.value=sortVal(id)};
@@ -2873,7 +2879,7 @@ function fltHead(open,title,chips,n,reset,res){const act=chips.filter(c=>typeof 
  const ch=act.length?act.map(c=>`<span class="c1">${esc(c.t)}<button class="fx" data-act="fclr" data-k="${c.k}" data-v="${esc(c.v||'')}" aria-label="Hapus filter ${esc(c.t)}" title="Hapus filter ini">×</button></span>`).join(''):`<span class="none">Belum ada — ${open?'menampilkan semua data':'semua data'}</span>`;
  const pc=res&&res[1]?Math.round(res[0]/res[1]*100):100;
  const lp=open?`<div class="lp" data-act="ftog" title="Klik untuk menyembunyikan filter"><div class="lt"><span class="gi">${ico}</span><span><b>${title}</b><small>${esc(sub)}</small></span></div>${res?`<hr><div class="res"><span>Hasil sesuai filter</span><b>${rp(res[0])}</b><small>dari ${rp(res[1])} ${res[2]}</small><span class="mb"><span style="width:${pc}%"></span></span>${n?`<div class="nar"><em class="na">${n} filter aktif</em>${reset}</div>`:''}</div>`:''}${n&&!res?reset:''}</div>`
-  :`<div class="lp" data-act="ftog"><span class="gi">${ico}</span><div class="lt"><span><b>${title}</b><small>${esc(sub)}</small></span></div></div>`;
+  :`<div class="lp" data-act="ftog"><span class="gi">${ico}</span><div class="lt"><span><b>${title}</b></span></div></div>`;
  return lp+`<div class="rp"><div class="ftop" data-act="ftog" role="button" tabindex="0" aria-expanded="${open}" title="Klik untuk ${open?'menyembunyikan':'menampilkan'} filter"><span class="tl">Filter aktif</span>${ch}${!open&&res?`<span class="rs2"><b>${rp(res[0])}</b> dari ${rp(res[1])} ${res[2]}</span>`:''}${!open&&n?reset.replace('class="freset"','class="freset rsm"'):''}<span class="fcar" aria-hidden="true"><svg class="fcar-tri${window.FCAR_ANIM?' anim':''}" viewBox="0 0 12 12" width="12" height="12"><path d="M2.2 3.8h7.6L6 8.6z" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/></svg></span></div>`}
 
 function perSeg(key,cur){const L=[['all','Setahun'],['1','TW 1'],['2','TW 2'],['3','TW 3'],['4','TW 4'],['r','Rentang']];return `<span class="fg w2${key==='pr'&&VIEW.startsWith('pmo-')?' pm-period':''}"><label>Periode</label><span class="seg pseg" role="group" aria-label="Periode">${L.map(([v,l])=>`<button type="button" data-seg="${key}" data-v="${v}" class="${cur===v?'on':''}" aria-pressed="${cur===v}">${l}</button>`).join('')}</span></span>`}
