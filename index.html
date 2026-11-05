@@ -1126,6 +1126,9 @@ body:has(.prj-overlay){overflow:hidden}
 .prj-form-instruction>small{display:block;color:#54708E;font-size:11px;line-height:1.5}
 .prj-form-instruction .hlp{vertical-align:middle}
 .prj-field .hlp{display:inline-grid}
+
+/* Workspace action — consistent with Transformasi palette */
+.pm-project-table .pm-ws-action{width:64px!important;text-align:center}.pm-ws-icon{display:inline-grid;place-items:center;width:34px;height:34px;border:1px solid #E6B635;border-radius:9px;background:#FFF2C5;color:#103463;font-size:21px;line-height:1;cursor:pointer;box-shadow:0 2px 5px rgba(12,40,81,.11);transition:background .15s,transform .15s}.pm-ws-icon:hover{background:#FDB913;transform:translateY(-1px)}
 </style>
 
 <div id="root"></div>
@@ -3214,16 +3217,10 @@ function pProgram(){
    <div class="pm-program-detail" id="${id}" ${closed?'hidden':''}>
     ${!P.length?`<p class="pm-program-empty">Belum ada item WBS untuk tahun ${S.ui.tahun}. Rincian proyek muncul setelah WBS diimpor melalui <a href="#pmo-wbsplan">Susun WBS</a>.</p>`:
     `<div class="pm-program-detail-label"><span>RINCIAN PROYEK</span><span>${P.length} proyek · WBS Level 4</span></div>
-     <div class="tscroll pm-project-scroll"><table class="lap pm-project-table"><thead><tr><th>Proyek (WBS Level 4)</th><th>UIC Utama</th><th>Jadwal</th><th class="num">Item WBS</th><th>Progres Tervalidasi</th><th class="num" title="Jumlah item WBS yang melewati batas waktu dan belum selesai">Item Terlambat</th></tr></thead>
-     <tbody>${P.map(r=>`<tr class="pm-project-click" data-prog="${esc(p.akr)}" data-project="${esc(r.n)}" tabindex="0" role="button" title="Klik untuk membuka popup Workspace Proyek"><td><strong>${esc(r.n)}</strong><div class="prj-scope-actions">
- <button data-act="prjOpen" data-scope="${esc(projectKey(p.akr,r.n))}" data-tab="ringkasan">Workspace</button>
- <button data-act="prjOpen" data-scope="${esc(projectKey(p.akr,r.n))}" data-tab="risiko">Risiko</button>
- <button data-act="prjOpen" data-scope="${esc(projectKey(p.akr,r.n))}" data-tab="stakeholder">Stakeholder</button>
- </div>${r.subItems&&r.subItems.length? `<span class="sm">${r.subItems.length} subproyek · ${S.ui.pgSubs?'ditampilkan':'centang Buka Subproyek'}</span>`:''}</td><td>${esc(r.uic)}</td><td class="s">${r.s?fmtD(r.s):'—'} – ${r.f?fmtD(r.f):'—'}</td><td class="num">${r.a.length}</td><td><div class="pg"><div class="bar"><i style="width:${r.pg}%;background:${r.pg===100?'var(--ok)':'var(--blue)'}"></i></div><b>${r.pg}%</b></div></td><td class="num">${r.late?`<span class="chip c-bad" title="${r.late} item WBS terlambat">${r.late}</span>`:'<span class="s">0</span>'}</td></tr>${S.ui.pgSubs?r.subItems.map(x=>`<tr class="prj-subrow"><td><span class="prj-subname">↳ ${esc(x.name)}</span>
-<div class="prj-scope-actions"><button data-act="prjOpen" data-scope="${esc(projectKey(p.akr,r.n,x.name))}" data-tab="ringkasan">Workspace</button>
-<button data-act="prjOpen" data-scope="${esc(projectKey(p.akr,r.n,x.name))}" data-tab="risiko">Risiko</button>
-<button data-act="prjOpen" data-scope="${esc(projectKey(p.akr,r.n,x.name))}" data-tab="stakeholder">Stakeholder</button></div>
-</td><td class="s" colspan="2">Subproyek sesuai WBS</td><td class="num">${x.count}</td><td colspan="2">Kelola WBS, risiko, dan stakeholder melalui Workspace.</td></tr>`).join(''):''}`).join('')}</tbody></table></div>`}
+     <div class="tscroll pm-project-scroll"><table class="lap pm-project-table"><thead><tr><th>Proyek (WBS Level 4)</th><th>UIC Utama</th><th>Jadwal</th><th class="num">Item WBS</th><th>Progres Tervalidasi</th><th class="num" title="Jumlah item WBS yang melewati batas waktu dan belum selesai">Item Terlambat</th><th class="pm-ws-action">Aksi</th></tr></thead>
+     <tbody>${P.map(r=>`<tr class="pm-project-click" data-prog="${esc(p.akr)}" data-project="${esc(r.n)}" tabindex="0" role="button" title="Klik untuk membuka popup Workspace Proyek"><td><strong>${esc(r.n)}</strong>${r.subItems&&r.subItems.length? `<span class="sm">${r.subItems.length} subproyek · ${S.ui.pgSubs?'ditampilkan':'centang Buka Subproyek'}</span>`:''}</td><td>${esc(r.uic)}</td><td class="s">${r.s?fmtD(r.s):'—'} – ${r.f?fmtD(r.f):'—'}</td><td class="num">${r.a.length}</td><td><div class="pg"><div class="bar"><i style="width:${r.pg}%;background:${r.pg===100?'var(--ok)':'var(--blue)'}"></i></div><b>${r.pg}%</b></div></td><td class="num">${r.late?`<span class="chip c-bad" title="${r.late} item WBS terlambat">${r.late}</span>`:'<span class="s">0</span>'}</td><td class="pm-ws-action"><button type="button" class="pm-ws-icon" data-act="prjOpen" data-scope="${esc(projectKey(p.akr,r.n))}" data-tab="ringkasan" title="Buka Workspace Proyek" aria-label="Buka Workspace Proyek ${esc(r.n)}">▣</button></td></tr>${S.ui.pgSubs?r.subItems.map(x=>`<tr class="prj-subrow"><td><span class="prj-subname">↳ ${esc(x.name)}</span>
+
+</td><td class="s" colspan="2">Subproyek sesuai WBS</td><td class="num">${x.count}</td><td colspan="2">Kelola WBS, risiko, dan stakeholder melalui Workspace.</td><td class="pm-ws-action"><button type="button" class="pm-ws-icon" data-act="prjOpen" data-scope="${esc(projectKey(p.akr,r.n,x.name))}" data-tab="ringkasan" title="Buka Workspace Subproyek" aria-label="Buka Workspace Subproyek ${esc(x.name)}">▣</button></td></tr>`).join(''):''}`).join('')}</tbody></table></div>`}
    </div>
   </section>`;
  }).join('');
