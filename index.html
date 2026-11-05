@@ -1576,6 +1576,24 @@ body:has(.prj-overlay){overflow:hidden}
 .kw-tbl{table-layout:fixed;min-width:1080px}.kw-act{vertical-align:top!important;text-align:right}.kw-ev{align-items:flex-start}
 .kw-tbl tfoot td{font-size:12.5px}
 .kw-more{font-size:12.5px}
+
+/* Alur PMO & CMO per tahapan */
+.fs-wrap{display:flex;flex-direction:column;gap:12px;position:relative}
+.fs-st{display:grid;grid-template-columns:190px minmax(0,1fr);border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}
+.fs-h{display:flex;gap:12px;align-items:center;padding:14px 16px;background:linear-gradient(135deg,#0B1F45,#17457F);color:#fff}
+.fs-h i{flex:none;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--yellow);color:var(--navy);font-style:normal;font-weight:900;font-size:14px}
+.fs-h b{display:block;font-size:14.5px}.fs-h small{display:block;font-size:12px;color:#C9D7EE;margin-top:1px}
+.fs-cols{display:grid;grid-template-columns:1fr 1fr}
+.fs-col{padding:12px 14px}.fs-col+.fs-col{border-left:1px solid var(--line-2)}
+.fs-col.pmo{background:#F7FAFE}.fs-col.cmo{background:#FFF9F7}
+.fs-col em{display:inline-block;font-style:normal;font-size:10.5px;font-weight:900;letter-spacing:.8px;padding:2px 9px;border-radius:20px;margin-bottom:8px}
+.fs-col.pmo em{background:#E2ECF9;color:#2F5E9E}.fs-col.cmo em{background:#FBE5E0;color:#B5402F}
+.fs-col ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.fs-it{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding:9px 11px;border-radius:10px;background:#fff;border:1px solid var(--line-2)}
+.fs-it b{display:block;font-size:13.5px;color:var(--ink)}.fs-it span{display:block;font-size:12.5px;color:var(--ink-3);line-height:1.5;margin-top:1px}
+.fs-it.pmo{border-left:3px solid #6E98CF}.fs-it.cmo{border-left:3px solid #E39A8C}
+.fs-it .hp-go{flex:none;margin-top:1px}
+@media(max-width:900px){.fs-st{grid-template-columns:1fr}.fs-cols{grid-template-columns:1fr}.fs-col+.fs-col{border-left:0;border-top:1px solid var(--line-2)}}
 </style>
 
 <div id="root"></div>
@@ -4495,6 +4513,26 @@ const GUIDE={
 'set-db':{tujuan:'Status database dan pencadangan data aplikasi.',siapa:'Hanya Super Admin.',alur:[['Periksa status','Lihat status sinkron Firestore.'],['Cadangkan','Unduh cadangan secara berkala.']]}
 };
 /* Alur menyeluruh PMO dan CMO untuk Pusat Bantuan */
+
+/* Alur PMO & CMO per tahapan (mengikuti urutan menu) */
+const FLOW_ST=[
+ {n:0,nm:'Persiapan',sub:'Sebelum tahun anggaran',
+  pmo:[['Siapkan program','Daftarkan program, UIC, sponsor, dan periode.','pmo-portofolio','Portofolio']],
+  cmo:[['Modul CM terbentuk','Modul CM muncul otomatis dari item ADP di WBS; tidak perlu diisi manual.','cmo-siklus','Siklus CM']]},
+ {n:1,nm:'Perencanaan',sub:'T-1 s.d. awal TA',
+  pmo:[['Susun charter','Isi Dokumen Proyek lewat wizard enam langkah, lalu ajukan ke PMO Pusat.','pmo-perencanaan','Dokumen Proyek'],['Susun WBS','Impor atau tambah item WBS dari rencana kerja charter.','pmo-wbsplan','WBS']],
+  cmo:[['Analisis Dampak Perubahan','As-is → to-be, dampak POSTeR, risiko, dan indikator keberhasilan per sub modul.','cmo-adp','ADP'],['Rencanakan CM','Stakeholder, komunikasi, pelatihan, dan jejaring T-Agent.','cmo-rencana','Perencanaan']]},
+ {n:2,nm:'Pelaksanaan',sub:'Sesuai rencana kerja',
+  pmo:[['Laksanakan & unggah bukti','UIC mengerjakan item lalu mengunggah bukti dukung di WBS & progres.','pmo-wbs','WBS & progres'],['Validasi bukti','PMO Kemenkeu memvalidasi; capaian item menjadi 100.','pmo-bukti','Bukti Dukung'],['Ubah baseline bila perlu','Ajukan Change Request untuk jadwal, deliverable, atau UIC.','pmo-cr','Change Request'],['Tulis narasi capaian','Narasi per triwulan otomatis menjadi PPT laporan.','pmo-narasi','Narasi T-Program']],
+  cmo:[['Laksanakan kegiatan CM','Laporkan pelaksanaan komunikasi dan pelatihan yang direncanakan.','cmo-impl','Implementasi']]},
+ {n:3,nm:'Pemantauan',sub:'Berkala',
+  pmo:[['Pantau milestone','Lihat yang terlambat dan 30 hari ke depan.','pmo-milestone','Milestone'],['Kelola risiko & isu','Skor, mitigasi, PIC, dan tenggat.','pmo-risiko','Risiko & Isu'],['Laporkan capaian','Capaian T-Program per triwulan dan per UE I.','pmo-laporan','Capaian TW']],
+  cmo:[['Monev CM','Penyesuaian RTL, kertas kerja monev (ADKAR), dan keberhasilan CM.','cmo-monev','Monev'],['Pantau adopsi','Pengguna aktif dan transaksi dibanding ekspektasi.','cmo-adopsi','Tingkat Adopsi']]},
+ {n:4,nm:'Penutupan',sub:'Kriteria terpenuhi',
+  pmo:[['Tutup proyek','Periksa kriteria penyelesaian terhadap WBS tervalidasi.','pmo-penutupan','Penutupan']],
+  cmo:[['Closing CM','Transfer kepemilikan ke unit operasional.','cmo-closing','Closing CM']]}];
+function flowStagesHtml(){const it=(a,cls)=>'<li class="fs-it '+cls+'"><div><b>'+esc(a[0])+'</b><span>'+esc(a[1])+'</span></div>'+hpGo(a[2],a[3])+'</li>';
+ return '<p class="hp-lead">Alur kerja PMO dan CMO dikelompokkan per tahapan, sesuai urutan menu. Klik tombol menu untuk langsung pindah ke halaman terkait.</p><div class="fs-wrap">'+FLOW_ST.map(st=>'<section class="fs-st"><header class="fs-h"><i>'+(st.n||'•')+'</i><div><b>'+esc(st.nm)+'</b><small>'+esc(st.sub)+'</small></div></header><div class="fs-cols"><div class="fs-col pmo"><em>PMO</em><ol>'+st.pmo.map(a=>it(a,'pmo')).join('')+'</ol></div><div class="fs-col cmo"><em>CMO</em><ol>'+st.cmo.map(a=>it(a,'cmo')).join('')+'</ol></div></div></section>').join('')+'</div><p class="ko-src">Lihat juga tab <b>Alur Koordinasi</b> untuk siapa berkoordinasi dengan siapa di setiap fase.</p>'}
 const FLOW_PMO=[
  ['Siapkan program','Tambah program dan UIC-nya.','pmo-portofolio','Portofolio'],
  ['Susun charter','Isi Dokumen Proyek lewat wizard enam langkah, ajukan ke PMO Pusat.','pmo-perencanaan','Dokumen Proyek'],
@@ -4650,8 +4688,7 @@ function showGuideHome(){
  const gl=`<table class="hp-tbl"><tbody>${GLOSS.map(([a,b])=>`<tr><td><span class="hp-key">${esc(a)}</span></td><td>${esc(b)}</td></tr>`).join('')}</tbody></table>`;
  const rl=`<table class="hp-tbl" style="margin-top:12px"><thead><tr><th>Peran</th><th>Tugas utama</th></tr></thead><tbody>${GROLES.map(([a,b])=>`<tr><td><span class="hp-key">${esc(a)}</span></td><td>${esc(b)}</td></tr>`).join('')}</tbody></table>`;
  const panels=[
-  ['alur','Alur PMO',`<p class="hp-lead">Dari program sampai penutupan. Klik <b>Buka</b> untuk langsung pindah ke menu terkait.</p>${flow(FLOW_PMO)}`],
-  ['cmo','Alur CMO',`<p class="hp-lead">Change Management mengikuti lima tahap per modul.</p>${flow(FLOW_CMO)}`],
+  ['alur','Alur PMO & CMO',flowStagesHtml()],
   ['koord','Alur Koordinasi',koHtml()],
   ['peta','Peta Menu',`<p class="hp-lead">Semua menu yang boleh Anda buka. Tombol <b>Panduan</b> menampilkan penjelasan lengkap halaman itu.</p>${peta}`],
   ['gl','Istilah & Peran',`${gl}${rl}`]
