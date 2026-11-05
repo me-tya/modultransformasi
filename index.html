@@ -1263,6 +1263,22 @@ body:has(.prj-overlay){overflow:hidden}
 .pm-ws-icon:after{content:"";position:absolute;right:-3px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--yellow);border:2px solid #fff;opacity:0;transform:scale(.4);transition:opacity .18s,transform .18s}
 .pm-ws-icon:hover,.pm-ws-icon:focus-visible{background:linear-gradient(135deg,#0B1F45,#17457F);border-color:#0B1F45;color:var(--yellow);transform:translateY(-1px);box-shadow:0 6px 14px rgba(11,31,69,.22)}
 .pm-ws-icon:hover:after,.pm-ws-icon:focus-visible:after{opacity:1;transform:scale(1)}
+
+/* Toolbar Program: satu baris tipis */
+.pm-tb1{display:flex;align-items:center;gap:10px;height:48px;padding:0 6px 0 14px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgba(11,31,69,.04)}
+.pm-tb-search{display:flex;align-items:center;gap:8px;flex:1;min-width:0;height:34px;color:var(--ink-4)}
+.pm-tb-search input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:13px;font-weight:600;color:var(--ink)}
+.pm-tb-search:focus-within{color:var(--navy-2)}
+.pm-tb-count{font-size:12px;color:var(--ink-3);white-space:nowrap}.pm-tb-count b{color:var(--navy);font-weight:800}
+.pm-tb-sep{width:1px;height:24px;background:var(--line);flex:none}
+.pm-tb-sw{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 12px 0 8px;border-radius:9px;font-size:12px;font-weight:700;color:var(--ink-2);cursor:pointer;white-space:nowrap;position:relative}
+.pm-tb-sw:hover{background:#F2F6FC}
+.pm-tb-sw input{position:absolute;opacity:0;width:0;height:0}
+.pm-tb-sw i{position:relative;width:30px;height:18px;border-radius:10px;background:#D6DEEA;transition:background .2s;flex:none}
+.pm-tb-sw i:after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .2s,background .2s}
+.pm-tb-sw input:checked+i{background:var(--navy)}.pm-tb-sw input:checked+i:after{transform:translateX(12px);background:var(--yellow)}
+.pm-tb-sw input:focus-visible+i{outline:2px solid var(--yellow);outline-offset:2px}
+@media(max-width:760px){.pm-tb1{height:auto;flex-wrap:wrap;padding:8px 10px;gap:6px}.pm-tb-search{flex:1 1 100%}.pm-tb-sep{display:none}}
 </style>
 
 <div id="root"></div>
@@ -3422,11 +3438,11 @@ function pProgram(){
   </section>`;
  }).join('');
  return vh('G','pmo','Program','Daftar program dan rincian proyek berdasarkan WBS Level 4.')+pmoTabs('program')+
- `<div class="card pm-program-toolbar"><div class="pad pm-program-toolbar-inner">
-  <div class="pm-program-search"><input id="pm-program-query" class="inp" data-on="pgq" value="${esc(S.ui.pgq||'')}" placeholder="Cari program atau proyek..." aria-label="Cari program atau proyek"></div>
-  <label class="pm-program-check"><input type="checkbox" data-on="pgsubs" ${S.ui.pgSubs?"checked":""} aria-label="Buka semua subproyek"><span>Buka Subproyek</span></label>
-  <label class="pm-program-check"><input type="checkbox" data-on="pgall" ${allOpen?'checked':''} aria-label="Tampilkan rincian seluruh program yang ditampilkan"><span>Tampilkan Semua Rincian</span></label>
-  <span class="pm-program-total">${groups.length} program · ${totalProjects} proyek</span>
+ `<div class="pm-program-toolbar"><div class="pm-tb1">
+  <label class="pm-tb-search"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><input id="pm-program-query" data-on="pgq" value="${esc(S.ui.pgq||'')}" placeholder="Cari program atau proyek…" aria-label="Cari program atau proyek"></label>
+  <span class="pm-tb-count"><b>${groups.length}</b> program · <b>${totalProjects}</b> proyek</span><span class="pm-tb-sep"></span>
+  <label class="pm-tb-sw"><input type="checkbox" data-on="pgsubs" ${S.ui.pgSubs?"checked":""} aria-label="Buka semua subproyek"><i></i><span>Buka Subproyek</span></label>
+  <label class="pm-tb-sw"><input type="checkbox" data-on="pgall" ${allOpen?'checked':''} aria-label="Tampilkan rincian seluruh program yang ditampilkan"><i></i><span>Semua Rincian</span></label>
  </div></div>`+
  (groups.length?`<div class="pm-program-list">${cards}</div>`:'<div class="card"><div class="pad s">Tidak ada program atau proyek yang sesuai dengan pencarian dan filter.</div></div>')+projectWorkspace();
 }
