@@ -1874,6 +1874,19 @@ td .nt-chip span{display:inline!important;margin:0!important;font-size:12px!impo
 .top .av{width:var(--tbh)!important;border-radius:10px!important;background:#E8EEF8!important;color:var(--navy)!important;font-size:12px!important;border:1px solid #E8EEF8!important}
 @media(max-width:900px){.top .hbtn span{display:none!important}.top .hbtn{padding:0 6px!important}.top .tsel span{display:none}}
 @media(prefers-reduced-motion:reduce){.top .ibtn.bell-on svg,.top .ibtn.bell-on:after{animation:none}}
+
+/* Sub-tab PMO sebagai tab konten di bawah filter */
+.subt.ctabs{display:flex!important;align-items:flex-end;gap:2px;width:auto!important;max-width:100%;margin:0!important;padding:0!important;background:transparent!important;border:0!important;border-bottom:2px solid #DCE3EF!important;border-radius:0!important;box-shadow:none!important;overflow-x:auto;min-height:0}
+.subt.ctabs a{padding:8px 14px 9px!important;min-height:0!important;border-radius:9px 9px 0 0!important;font-weight:800!important;font-size:13px!important;color:var(--ink-3)!important;background:transparent!important;box-shadow:none!important;position:relative;white-space:nowrap}
+.subt.ctabs a:before{display:none!important}
+.subt.ctabs a:hover{color:var(--navy)!important;background:#F5F8FD!important}
+.subt.ctabs a.on{color:var(--navy)!important;background:#fff!important;box-shadow:0 0 0 1px #DCE3EF!important}
+.subt.ctabs a.on:after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:3px;background:var(--yellow)}
+.subt.ctabs a .sb{font-size:11px;background:var(--line-2,#EEF1F6);color:var(--ink-3);border-radius:999px;padding:1px 7px;margin-left:4px}
+.subt.ctabs a.on .sb{background:var(--yellow);color:var(--navy)}
+/* 1-on-1 selalu paling kanan header */
+.vh .acts{align-items:center}.one-slot{display:flex;justify-content:flex-end;min-width:228px;order:99}
+@media(max-width:900px){.one-slot{min-width:0}}
 </style>
 
 <div id="root"></div>
@@ -2505,7 +2518,7 @@ function onChange(el){const k=el.dataset.on,v=el.value;if(k==='impwbs')return;
  else if(k==='kepf'){const f=el.files[0];if(!f)return;if(f.size>(FB.on?7e5:1.5e6)){toast(FB.on?'Ukuran KEP maksimal 700 KB pada mode Firestore.':'Ukuran KEP maksimal 1,5 MB pada prototipe.');return}const rd=new FileReader();rd.onload=()=>{const j=jjm(el.dataset.m);j.kepFile=rd.result;j.kepName=f.name;log('Unggah KEP',f.name);save();toast('KEP terunggah.');render()};rd.readAsDataURL(f);return}
  save();render()}
 const jjm=mk=>S.jjMod[mk]||(S.jjMod[mk]={link:'',kepNo:'',kepTgl:'',kepFile:'',kepName:'',aktif:'Belum'});
-function vh(ic,cls,title,desc,acts){if(cls==='pmo'&&typeof VIEW!=='undefined'&&VIEW.startsWith('pmo-')&&typeof PMG!=='undefined'){let k=VIEW.slice(4);if(k==='charter')k='perencanaan';const g=PMG.find(x=>x[3].includes(k));if(g&&g[1]!==String(title).replace(/<[^>]+>/g,'')){const pt=String(title).replace(/<[^>]+>/g,'');desc=`<b class="vh-sub">${esc(pt)}</b><span class="vh-dot">·</span>${desc}`;title=g[1]}if(g)ic=g[2]?String(g[2]):g[1].charAt(0)}const tt=esc(String(title).replace(/<[^>]+>/g,''));if(cls==='pmo'&&typeof oneBadge==='function'){const ob=oneBadge();if(ob)acts=ob+(acts||'')}return `<div class="vh"><div class="pic ${cls}">${ic}</div><div style="min-width:0"><h1>${title}<button class="hlp" data-act="help" data-v="${esc(typeof VIEW!=='undefined'?VIEW:'')}" data-t="${tt}" title="Panduan cara mengisi" aria-label="Panduan cara mengisi ${tt}">?</button></h1><p title="${esc(String(desc).replace(/<[^>]+>/g,''))}">${desc}</p></div>${acts?`<div class="acts">${acts}</div>`:''}</div><!--vh-->`}
+function vh(ic,cls,title,desc,acts){if(cls==='pmo'&&typeof VIEW!=='undefined'&&VIEW.startsWith('pmo-')&&typeof PMG!=='undefined'){let k=VIEW.slice(4);if(k==='charter')k='perencanaan';const g=PMG.find(x=>x[3].includes(k));if(g&&g[1]!==String(title).replace(/<[^>]+>/g,'')){const pt=String(title).replace(/<[^>]+>/g,'');desc=`<b class="vh-sub">${esc(pt)}</b><span class="vh-dot">·</span>${desc}`;title=g[1]}if(g)ic=g[2]?String(g[2]):g[1].charAt(0)}const tt=esc(String(title).replace(/<[^>]+>/g,''));if(cls==='pmo'&&typeof oneBadge==='function'){const ob=oneBadge();if(ob)acts=(acts||'')+'<span class="one-slot">'+ob+'</span>'}return `<div class="vh"><div class="pic ${cls}">${ic}</div><div style="min-width:0"><h1>${title}<button class="hlp" data-act="help" data-v="${esc(typeof VIEW!=='undefined'?VIEW:'')}" data-t="${tt}" title="Panduan cara mengisi" aria-label="Panduan cara mengisi ${tt}">?</button></h1><p title="${esc(String(desc).replace(/<[^>]+>/g,''))}">${desc}</p></div>${acts?`<div class="acts">${acts}</div>`:''}</div><!--vh-->`}
 function setTabs(){return `<nav class="ptabs" aria-label="Pengaturan">${STN.filter(t=>lv(t[2])!=='-').map(([k,l])=>`<a href="#${k}" class="${k===VIEW?'on':''}"><span>${l}</span></a>`).join('')}</nav>`}
 function subNav(key,list,def){const cur=S.ui.sub[key]||def;return `<div class="subt" role="tablist">${list.map(([k,l])=>`<a data-act="sub" data-k="${key}" data-v="${k}" class="${cur===k?'on':''}" role="tab" aria-selected="${cur===k}">${l}</a>`).join('')}</div>`}
 ACT.tsort=el=>{const id=el.dataset.t,k=el.dataset.k;S.ui.sort=S.ui.sort||{};const cur=sortOf(id);S.ui.sort[id]=cur&&cur.k===k?(cur.d==='asc'?{k,d:'desc'}:{k:'',d:''}):{k,d:'asc'};if(!S.ui.sort[id].k)S.ui.sort[id]={k:'_none',d:''};PG[id]=0;save();redrawT(id);const sel=document.querySelector(`[data-wsort="${id}"]`);if(sel)sel.value=sortVal(id)};
@@ -3133,8 +3146,8 @@ function pmoTabs(cur0){let cur=VIEW.startsWith('pmo-')?VIEW.slice(4):cur0;if(cur
  const vis=new Set(pmoTabsVis().map(t=>t[0]));const L=k=>(PMT.find(t=>t[0]===k)||[k,k])[1];
  const G=PMG.map(g=>({g,ks:g[3].filter(k=>vis.has(k))})).filter(x=>x.ks.length);const on=G.find(x=>x.ks.includes(cur))||G[0];
  const gc=x=>x.ks.reduce((a,k)=>a+(+cnt[k]||0),0);
- const sub=on&&on.ks.length>1?`<div class="subt" role="tablist" aria-label="${esc(on.g[1])}">${on.ks.map(k=>`<a href="#pmo-${k}" class="${k===cur?'on':''}" role="tab" aria-selected="${k===cur}">${L(k)}${cnt[k]!==''&&cnt[k]!=null&&+cnt[k]>0?` <b class="sb">${cnt[k]}</b>`:''}</a>`).join('')}</div>`:'';
- return `<nav class="ptabs" aria-label="Tab PMO">${G.map(x=>{const n=x.g[2];const c=x.ks.length>1?gc(x):cnt[x.ks[0]];const tgt=x.ks.includes(cur)?cur:x.ks[0];return `<a href="#pmo-${tgt}" class="${x===on?'on':''}"><span>${n?`<em>${n}</em> `:''}${x.g[1]}</span>${c!==''&&c!=null&&+c>0?` <b>${c}</b>`:''}</a>`}).join('')}</nav>${sub}`+pmoFilterPanel(cur)}
+ const sub=on&&on.ks.length>1?`<div class="subt ctabs" role="tablist" aria-label="${esc(on.g[1])}">${on.ks.map(k=>`<a href="#pmo-${k}" class="${k===cur?'on':''}" role="tab" aria-selected="${k===cur}">${L(k)}${cnt[k]!==''&&cnt[k]!=null&&+cnt[k]>0?` <b class="sb">${cnt[k]}</b>`:''}</a>`).join('')}</div>`:'';
+ return `<nav class="ptabs" aria-label="Tab PMO">${G.map(x=>{const n=x.g[2];const c=x.ks.length>1?gc(x):cnt[x.ks[0]];const tgt=x.ks.includes(cur)?cur:x.ks[0];return `<a href="#pmo-${tgt}" class="${x===on?'on':''}"><span>${n?`<em>${n}</em> `:''}${x.g[1]}</span>${c!==''&&c!=null&&+c>0?` <b>${c}</b>`:''}</a>`}).join('')}</nav>`+pmoFilterPanel(cur)+sub}
 function viewPmo(tab){const f={charter:pCharter,siklus:pOverview,portofolio:pPorto,program:pProgram,perencanaan:pPerencanaan,wbsplan:pWbs,wbs:pWbs,oneonone:pOneOnOne,milestone:pMilestone,risiko:pRisiko,cr:pCr,bukti:pBukti,laporan:pLaporan,narasi:pNarasi,penutupan:pPenutupan,referensi:pRef}[tab];return f?f():''}
 /* --- Portofolio --- */
 function pbChart(PV,items,M,tw,jenis='Berkelanjutan'){
