@@ -1887,6 +1887,62 @@ td .nt-chip span{display:inline!important;margin:0!important;font-size:12px!impo
 /* 1-on-1 selalu paling kanan header */
 .vh .acts{align-items:center}.one-slot{display:flex;justify-content:flex-end;min-width:228px;order:99}
 @media(max-width:900px){.one-slot{min-width:0}}
+
+/* ===== Dashboard Eksekutif ===== */
+.dx-tabs{margin:0}.dx-badge{display:inline-block;margin-left:6px;font-size:11px;background:#E5484D;color:#fff;border-radius:999px;padding:0 7px;line-height:18px}
+.dx-kpis{grid-template-columns:repeat(5,minmax(0,1fr))}
+.dx-kc{text-align:left;font:inherit;cursor:pointer;border:1px solid var(--line);transition:border-color .15s,box-shadow .15s}
+.dx-kc:hover{border-color:var(--yellow);box-shadow:0 6px 16px -12px rgba(11,36,71,.6)}.dx-kc.on{border-color:var(--navy);box-shadow:0 0 0 2px var(--navy) inset}
+.dx-card-wrap{padding:0;overflow:hidden}
+.dx-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,#0B2447,#163A6B);color:#fff}
+.dx-bar>div:first-child{display:flex;flex-direction:column;min-width:0;flex:1 1 300px}.dx-ttl{font-size:16px;font-weight:900}.dx-bar .s{color:#C9D6EC}
+.dx-bar2{border-radius:14px;border:0}
+.dx-twseg{display:inline-flex;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:3px;gap:2px}
+.dx-twseg button{border:0;background:transparent;color:#DCE6F5;font:inherit;font-weight:800;font-size:13px;padding:6px 12px;border-radius:8px;cursor:pointer}
+.dx-twseg button.on{background:var(--yellow);color:var(--navy)}
+.dx-q{display:flex;align-items:center;gap:6px;height:36px;padding:0 10px;border-radius:10px;background:#fff;color:var(--ink-3);min-width:240px}.dx-q input{border:0;outline:0;font:inherit;font-size:13px;width:100%;background:transparent;color:var(--ink)}
+.dx-body{padding:6px 16px 4px}
+.dx-sec{padding:12px 0 14px;border-bottom:1px dashed var(--line)}.dx-sec:last-child{border-bottom:0}
+.dx-sh{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.dx-sh b{font-size:14px;font-weight:900;color:var(--navy);text-transform:uppercase;letter-spacing:.3px}
+.dx-num{min-width:26px;height:26px;border-radius:8px;background:var(--navy);color:var(--yellow);font-weight:900;font-size:13px;display:grid;place-items:center;padding:0 6px}
+.dx-sh .lnk{margin-left:auto}
+.dx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:10px}
+.dx-card{position:relative;display:flex;flex-direction:column;gap:6px;text-align:left;font:inherit;color:var(--ink);background:#fff;border:1px solid var(--line);border-top:5px solid var(--c);border-radius:12px;padding:10px 12px 10px;cursor:pointer;min-width:0;transition:transform .15s,box-shadow .15s,border-color .15s}
+.dx-card:hover,.dx-card:focus-visible{transform:translateY(-2px);box-shadow:0 12px 24px -16px rgba(11,36,71,.7);border-color:#C9D6EA;border-top-color:var(--c)}
+.dx-top{display:flex;align-items:center;gap:6px;justify-content:space-between}
+.dx-st{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:800;color:var(--s)}.dx-st:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--s)}
+.dx-cm{font-size:11px;font-weight:900;color:#9A6A12;background:#FFF3D6;border-radius:999px;padding:1px 7px}
+.dx-name{font-size:14px;line-height:1.3;font-weight:900;color:var(--navy);text-wrap:balance;min-height:36px}
+.dx-sub{font-size:12px;color:var(--ink-3);margin-top:-4px}
+.dx-uic{font-size:12px;font-weight:700;color:var(--ink-2);background:#F2F5FA;border:1px solid #E1E7F0;border-radius:7px;padding:2px 8px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dx-tgt{display:flex;align-items:center;justify-content:space-between;gap:6px;background:#FFF8E6;border:1px solid #F1D48A;border-radius:7px;padding:3px 8px;font-size:12px}
+.dx-tgt em{font-style:normal;font-weight:700;color:#8A5A00;white-space:nowrap}.dx-tgt b{font-weight:900;color:var(--navy);text-align:right}
+.dx-pg{display:block;height:5px;border-radius:3px;background:#EEF1F6;overflow:hidden}.dx-pg i{display:block;height:100%}
+.dx-meta{font-size:11.5px;color:var(--ink-3);line-height:1.35}
+.dx-lgd{display:flex;gap:14px;flex-wrap:wrap;align-items:center;padding:10px 16px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-2)}
+.dx-lgd span{display:inline-flex;align-items:center;gap:5px}.dx-lgd i{width:9px;height:9px;border-radius:50%;display:inline-block}.dx-lgd .s{margin-left:auto}
+.dx-mh{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}.dx-mh h3{margin:4px 0 2px;font-size:18px;color:var(--navy)}
+.dx-mk{display:flex;flex-direction:column;align-items:flex-end;gap:2px}.dx-mk b{font-size:24px;color:var(--navy)}
+.dx-tl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.dx-tlc{border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:4px;background:#FAFBFE}.dx-tlc.on{border-color:var(--yellow);background:#FFF8E6}
+.dx-tlc em{font-style:normal;font-size:12px;font-weight:900;color:var(--ink-3)}.dx-tlc b{font-size:14px;color:var(--navy)}.dx-tlc .chip{align-self:flex-start}.dx-tlc small{font-size:11.5px;color:var(--ink-3)}
+.dx-row{cursor:pointer}.dx-row:hover td{background:#F5F8FD}
+.dx-click{cursor:pointer}.kpi.dx-click:hover{border-color:var(--yellow)}
+.dx-thon{background:#FFF8E6!important}
+.dx-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.dx-ag{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px;margin-top:12px}
+.dx-ab .ch{gap:8px}
+.dx-al{display:flex;flex-direction:column;gap:6px}
+.dx-ai{display:flex;flex-direction:column;gap:2px;text-align:left;font:inherit;color:var(--ink);background:#FAFBFE;border:1px solid var(--line);border-radius:10px;padding:8px 10px;cursor:pointer}
+.dx-ai:hover{border-color:var(--yellow);background:#fff}.dx-ai b{font-size:13px}.dx-ai .mono,.dx-ai .code{align-self:flex-start;font-size:11px}
+div.dx-ai{cursor:default}
+.dx-empty{padding:6px 0}
+.dx-it td{font-size:12.5px}
+@media(max-width:1100px){.dx-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.dx-tl{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.dx-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dx-q{min-width:0;flex:1 1 100%}.dx-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
+@media(prefers-reduced-motion:reduce){.dx-card{transition:none}.dx-card:hover{transform:none}}
+.dx-tgt.old{background:#F5F7FB;border-color:#E1E7F0}.dx-tgt.old em{color:var(--ink-3)}.dx-tgt b small{font-weight:700;color:var(--ink-3);font-size:11px}
 </style>
 
 <div id="root"></div>
@@ -2505,7 +2561,7 @@ function onChange(el){const k=el.dataset.on,v=el.value;if(k==='impwbs')return;
  if(['tahun','prog','unit','umode','lvm','wcm','wth','wst','mod','pr','d1','d2','cunit','crole','cpr','cd1','cd2','cprog','cth'].includes(k)){S.ui[k]=k==='tahun'?+v:v;Object.keys(PG).forEach(x=>PG[x]=0)}
  else if(k==='ltw'){S.ui.ltw=+v}
  else if(k==='planYear'){S.ui.planYear=v;Object.keys(PG).forEach(x=>PG[x]=0)}
- else if(k==='pgq')S.ui.pgq=v;else if(k==='nprev')S.ui.nprev=el.checked;
+ else if(k==='dxq')S.ui.dxq=v;else if(k==='pgq')S.ui.pgq=v;else if(k==='nprev')S.ui.nprev=el.checked;
  else if(k==='lvn')S.ui.lvn=+v;
  else if(k==='adpst'){S.modMeta[el.dataset.m]=S.modMeta[el.dataset.m]||{};S.modMeta[el.dataset.m].adp=v;log('Status ADP',el.dataset.m+' → '+v)}
  else if(k==='impst'){const im=S.impl[el.dataset.k];im.status=v;if(v==='Terlaksana'&&!im.tgl)im.tgl=TODAY;log('Status implementasi',v)}
@@ -2958,7 +3014,7 @@ function fltHead(open,title,chips,n,reset,res){const act=chips.filter(c=>typeof 
  const ico=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg>`;
  const ch=act.length?act.map(c=>`<span class="c1">${esc(c.t)}<button class="fx" data-act="fclr" data-k="${c.k}" data-v="${esc(c.v||'')}" aria-label="Hapus filter ${esc(c.t)}" title="Hapus filter ini">×</button></span>`).join(''):`<span class="none">Belum ada — ${open?'menampilkan semua data':'semua data'}</span>`;
  const pc=res&&res[1]?Math.round(res[0]/res[1]*100):100;
- const pu=typeof VIEW!=='undefined'&&VIEW.startsWith('pmo-');
+ const pu=typeof VIEW!=='undefined'&&(VIEW.startsWith('pmo-')||VIEW==='dashboard');
  const lp=open&&!pu?`<div class="lp" data-act="ftog" title="Klik untuk menyembunyikan filter"><div class="lt"><span class="gi">${ico}</span><span><b>${title}</b><small>${esc(sub)}</small></span></div>${res?`<hr><div class="res"><span>Hasil sesuai filter</span><b>${rp(res[0])}</b><small>dari ${rp(res[1])} ${res[2]}</small><span class="mb"><span style="width:${pc}%"></span></span>${n?`<div class="nar"><em class="na">${n} filter aktif</em>${reset}</div>`:''}</div>`:''}${n&&!res?reset:''}</div>`
   :`<div class="lp" data-act="ftog"><span class="gi">${ico}</span><div class="lt"><span><b>${title}</b></span></div></div>`;
  return lp+`<div class="rp"><div class="ftop" data-act="ftog" role="button" tabindex="0" aria-expanded="${open}" title="Klik untuk ${open?'menyembunyikan':'menampilkan'} filter"><span class="tl">Filter aktif</span>${ch}${(!open||pu)&&res?`<span class="rs2"><b>${rp(res[0])}</b> dari ${rp(res[1])} ${res[2]}${pu?`<span class="rs2m"><i style="width:${pc}%"></i></span>`:''}</span>`:''}${(!open||pu)&&n?reset.replace('class="freset"','class="freset rsm"'):''}<span class="fcar" aria-hidden="true"><svg class="fcar-tri${window.FCAR_ANIM?' anim':''}" viewBox="0 0 12 12" width="12" height="12"><path d="M2.2 3.8h7.6L6 8.6z" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/></svg></span></div>`}
@@ -2972,7 +3028,7 @@ function fltBar(o={}){const P=per();const open=S.ui.fopen===1;const pv=progVis()
   ...(o.umode&&curUnit()?[umOf()!==umDef()?{t:'sebagai '+UML[umOf()],k:lockU()?'umodeL':'umode',v:lockU()?'':'up'}:'sebagai '+UML[umOf()]]:[]),
   ...(isW&&S.ui.wth?[{t:'Tahapan: '+tahapLab(S.ui.wth),k:'wth'}]:[]),...(isW&&(lvn!=10||lvm!=='sd')?[{t:(lvm==='eq'?'Hanya Lv ':'s.d. Lv ')+lvn,k:'lvn'}]:[]),...(isW&&S.ui.wst?[{t:'Status: '+S.ui.wst,k:'wst'}]:[]),...(o.chips||[])];
  const nAct=chips.filter(c=>typeof c!=='string').length;
- return `<section class="flt fx2${VIEW.startsWith('pmo-')?' pmo-unified':''}${open?' open':''}" aria-label="Filter">${fltHead(open,'Filter',chips,nAct,'<button class="freset" data-act="freset">↺ Atur ulang</button>',o.res)}
+ return `<section class="flt fx2${VIEW.startsWith('pmo-')||VIEW==='dashboard'?' pmo-unified':''}${open?' open':''}" aria-label="Filter">${fltHead(open,'Filter',chips,nAct,'<button class="freset" data-act="freset">↺ Atur ulang</button>',o.res)}
  <div class="fbar"${open?'':' hidden'}>
  <span class="fg pm-year"><label for="f-th">Tahun</label><select class="sel" id="f-th" data-on="tahun">${yearsOpt().map(y=>`<option ${S.ui.tahun==y?'selected':''}>${y}</option>`).join('')}</select></span>
  ${perSeg('pr',P.pr||'all')}
@@ -3037,6 +3093,81 @@ function portoAuditNote(items){
  if(!parts.length)return `<div class="note i"><span><b>Data WBS terbaca:</b> ${q.total} item, ${q.valid} item selesai dan tervalidasi. Capaian dihitung dari bobot WBS tervalidasi.</span></div>`;
  return `<div class="note w"><span><b>Pemeriksaan data capaian:</b> ${q.total} item WBS ditemukan; ${parts.join('; ')}. Capaian 0% tidak otomatis berarti belum ada pekerjaan: hanya penyelesaian yang telah divalidasi PMO yang masuk realisasi. <a href="#pmo-wbs">Periksa WBS &amp; Progres</a>.</span></div>`;
 }
+/* ===== Dashboard Eksekutif: Peta Modul per Triwulan, Perlu Perhatian, drill-down pop-up ===== */
+const DX_COL=['#1F3F86','#1E6B4F','#8E2430','#9A6A12','#5B3A8C','#16606B','#6B4423','#2F5BD3'];
+const DX_IC={grid:'<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M9 9v11"/>',gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>',flag:'<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>'};
+const thShort=t=>{if(!t)return '';const m=/\(([^)]+)\)/.exec(t.nama||'');if(m)return m[1];return String(t.nama||'').replace(/^Pengembangan Sistem Informasi$/,'Pengembangan SI').replace(/^Analisis dan Perancangan$/,'Analisis & Desain').replace(/^Implementasi Strategi /,'').replace(/ s\.d /i,' s.d. ')};
+function dxTw(){const P=per();if(P.tw)return +P.tw;const y=+S.ui.tahun,ty=+TODAY.slice(0,4);return y<ty?4:y>ty?1:Math.ceil(+TODAY.slice(5,7)/3)}
+function dxItems(){return wbsFilt({mode:'ue'})}
+/* Kelompokkan item WBS menjadi modul (proyek WBS L4) per program */
+function dxModules(items){const out=[];const progs=progVis().filter(p=>!S.ui.prog||p.akr===S.ui.prog);
+ progs.forEach(p=>{const g={};items.filter(w=>w.prog===p.akr).forEach(w=>{const core=p.akr==='CORE'&&/pengembangan integrated core system apbn kemenkeu/i.test(w.p[2]||'')&&w.p[3];const name=core?w.p[3]:(w.p[2]||w.p[1]||'(tanpa kelompok)');const sub=core?(w.p[4]||w.p[5]||''):(w.p[3]||'');const e=g[name]||(g[name]={n:name,a:[],subs:{}});e.a.push(w);if(sub&&sub!==name){(e.subs[sub]=e.subs[sub]||[]).push(w)}});
+  const mods=Object.values(g).map(m=>Object.assign(m,{p,x:pgStat(m.a)}));if(mods.length)out.push({p,mods})});return out}
+const dxIsCM=t=>t&&t.kel===TK[2];
+/* Target tahap & status modul s.d. triwulan n */
+function dxAt(m,n){const a=m.a,M=n*3,inTw=a.filter(w=>+w.tm>=M-2&&+w.tm<=M),cum=a.filter(w=>+w.tm>=1&&+w.tm<=M);
+ const pick=list=>{let best=null;list.forEach(w=>tahapOf(w).forEach(t=>{const pr=dxIsCM(t)?0:1;if(!best||pr>best.pr||(pr===best.pr&&(t.urut||0)>(best.t.urut||0)))best={t,pr}}));return best?best.t:null};
+ const t=pick(inTw.length?inTw:cum);const done=cum.filter(w=>doneAt(w,M)).length,valid=cum.filter(w=>doneAt(w,M)&&w.v).length,late=cum.filter(w=>stOf(w,M)==='Terlambat').length;
+ const curM=(+S.ui.tahun<+TODAY.slice(0,4))?12:(+S.ui.tahun>+TODAY.slice(0,4)?0:+TODAY.slice(5,7));
+ const st=!cum.length?'Belum ada target':done===cum.length?'Tercapai':late?'Terlambat':(M-2>curM?'Terjadwal':'Berjalan');
+ const w=cum.reduce((s,x)=>s+(+x.w||0),0),wd=cum.filter(x=>doneAt(x,M)&&x.v).reduce((s,x)=>s+(+x.w||0),0);
+ return {t,lab:t?thShort(t):(cum.length?'Lanjutan':'—'),inTw:inTw.length,cum:cum.length,done,valid,late,st,pg:w?Math.round(wd/w*100):0,cm:a.some(w=>tahapOf(w).some(dxIsCM))}}
+const DX_ST={Tercapai:['c-ok','#13875F'],Berjalan:['c-info','#1565C0'],Terjadwal:['c-gray','#7C8DB5'],Terlambat:['c-bad','#BF3434'],'Belum ada target':['c-gray','#98A2B3']};
+function dxTabs(){const t=S.ui.dashTab||'peta';return '<div class="ov-tabs dx-tabs" role="tablist" aria-label="Tampilan dashboard">'+[['peta','Peta Modul per Triwulan'],['perhatian','Perlu Perhatian'],['ringkas','Ringkasan Capaian']].map(([v,l])=>`<button type="button" data-act="dxTab" data-v="${v}" role="tab" aria-selected="${t===v}" class="${t===v?'on':''}">${l}${v==='perhatian'?dxAttnBadge():''}</button>`).join('')+'</div>'}
+ACT.dxTab=el=>{S.ui.dashTab=el.dataset.v;save();render()};
+function dxAttnBadge(){try{const n=dxItems().filter(w=>stOf(w,12)==='Terlambat').length;return n?` <b class="dx-badge">${n}</b>`:''}catch(e){return ''}}
+function dxTwBar(n){return `<div class="dx-twseg" role="group" aria-label="Pilih triwulan">${[1,2,3,4].map(i=>`<button type="button" data-act="dxTw" data-v="${i}" class="${i===n?'on':''}" aria-pressed="${i===n}">TW ${ROM[i]}</button>`).join('')}</div>`}
+ACT.dxTw=el=>{S.ui.pr=String(el.dataset.v);save();render()};
+function dxPeta(items){const n=dxTw(),G=dxModules(items),q=(S.ui.dxq||'').trim().toLowerCase(),fs=S.ui.dxSt||'';
+ const all=[].concat(...G.map(g=>g.mods.map(m=>({g,m,s:dxAt(m,n)}))));const cnt=k=>all.filter(x=>x.s.st===k).length;
+ const vis=x=>(!q||(x.m.n+' '+x.g.p.nama+' '+x.m.x.uic+' '+Object.keys(x.m.subs).join(' ')).toLowerCase().includes(q))&&(!fs||x.s.st===fs);
+ const kpi=`<div class="kpis dx-kpis">${[['','Modul dipantau',all.length,'dk'],['Tercapai','Target tercapai',cnt('Tercapai'),''],['Berjalan','Sedang berjalan',cnt('Berjalan'),''],['Terlambat','Terlambat',cnt('Terlambat'),''],['Terjadwal','Terjadwal',cnt('Terjadwal')+cnt('Belum ada target'),'']].map(([k,l,v,c])=>`<button type="button" class="kpi dx-kc ${c}${fs===k&&k?' on':''}" data-act="dxSt" data-v="${k}"><div class="l">${l}</div><div class="v"${k&&DX_ST[k]?` style="color:${DX_ST[k][1]}"`:''}>${v}<small>modul</small></div><div class="d">${k?(fs===k?'Klik lagi untuk semua':'Klik untuk saring'):'s.d. TW '+ROM[n]+' '+S.ui.tahun}</div></button>`).join('')}</div>`;
+ const head=`<div class="dx-bar"><div><b class="dx-ttl">Target modul s.d. Triwulan ${ROM[n]} ${S.ui.tahun}</b><span class="s">Tahap yang ditargetkan tiap modul pada triwulan terpilih, diambil dari tahapan item WBS.</span></div>${dxTwBar(n)}<label class="dx-q"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><input id="dx-q" data-on="dxq" value="${esc(S.ui.dxq||'')}" placeholder="Cari modul, sub modul, atau UIC…" aria-label="Cari modul"></label></div>`;
+ const sec=G.map((g,gi)=>{const ms=g.mods.map(m=>({g,m,s:dxAt(m,n)})).filter(vis);if(!ms.length)return '';
+  return `<section class="dx-sec"><div class="dx-sh"><span class="dx-num">${g.mods.length}</span><b>${esc(g.p.nama)}</b><span class="code">${esc(g.p.kode)}</span><span class="s">${esc(g.p.jenis||'')} · UIC Utama ${esc(g.p.uic||'—')}</span><button type="button" class="lnk" data-act="dxProg" data-p="${esc(g.p.akr)}">Detail program ›</button></div>
+   <div class="dx-grid">${ms.map(({m,s},i)=>{const c=DX_COL[(gi*3+i)%DX_COL.length],ns=Object.keys(m.subs).length;return `<button type="button" class="dx-card" data-act="dxMod" data-p="${esc(g.p.akr)}" data-j="${esc(m.n)}" style="--c:${c}" title="Klik untuk detail ${esc(m.n)}">
+    <span class="dx-top"><span class="dx-st" style="--s:${DX_ST[s.st][1]}">${esc(s.st)}</span>${s.cm?'<span class="dx-cm" title="Ada kegiatan change management tahun ini">★ CM</span>':''}</span>
+    <b class="dx-name">${esc(m.n)}</b>${ns?`<span class="dx-sub">${ns} sub modul</span>`:''}
+    <span class="dx-uic">UIC: ${esc(m.x.uic)}</span>
+    <span class="dx-tgt${s.inTw||!s.cum?'':' old'}" title="${s.inTw?s.inTw+' item jatuh tempo di TW '+ROM[n]:'Tidak ada target baru di TW '+ROM[n]+'; menampilkan tahap terakhir yang ditargetkan'}"><em>TW ${ROM[n]} ${S.ui.tahun}</em><b>${esc(s.lab)}${s.inTw||!s.cum?'':' <small>(lanjutan)</small>'}</b></span>
+    <span class="dx-pg"><i style="width:${s.pg}%;background:${DX_ST[s.st][1]}"></i></span><span class="dx-meta">${s.done}/${s.cum} item selesai · ${s.pg}% tervalidasi${s.late?` · <b style="color:#BF3434">${s.late} terlambat</b>`:''}</span></button>`}).join('')}</div></section>`}).join('');
+ return kpi+`<div class="card dx-card-wrap">${head}<div class="dx-body">${sec||'<p class="s" style="padding:16px">Tidak ada modul yang sesuai filter.</p>'}</div><div class="dx-lgd"><span><i style="background:#13875F"></i>Tercapai</span><span><i style="background:#1565C0"></i>Berjalan</span><span><i style="background:#BF3434"></i>Terlambat</span><span><i style="background:#7C8DB5"></i>Terjadwal</span><span>★ CM = ada kegiatan change management</span><span class="s">Sumber: WBS T-Program ${S.ui.tahun}</span></div></div>`}
+ACT.dxSt=el=>{const v=el.dataset.v||'';S.ui.dxSt=S.ui.dxSt===v?'':v;save();render()};
+/* ---- Pop-up detail modul ---- */
+ACT.dxMod=el=>{const p=S.programs.find(x=>x.akr===el.dataset.p);const m=dxModules(dxItems()).flatMap(g=>g.mods).find(x=>x.p.akr===el.dataset.p&&x.n===el.dataset.j);if(!m){toast('Data modul tidak ditemukan.');return}dxModPop(m)};
+function dxItemRows(list,M){return list.length?`<div class="tscroll"><table class="lap dx-it"><thead><tr><th>Kode</th><th>Output</th><th>Tahapan</th><th>UIC</th><th>Jadwal</th><th>Status</th><th>Bukti</th></tr></thead><tbody>${list.map(w=>{const st=stOf(w,M);return `<tr><td class="mono">${esc(w.k)}</td><td>${esc(deliv(w))}</td><td>${esc(tahapOf(w).map(t=>thShort(t)).join(', ')||'—')}</td><td>${esc(uicU(w)||'—')}</td><td>${pgJadwal(w.s,w.f)}</td><td><span class="chip ${(DX_ST[st==='Selesai'?'Tercapai':st]||DX_ST.Terjadwal)[0]}">${esc(st)}</span></td><td>${esc(buktiSt(w))}</td></tr>`}).join('')}</tbody></table></div>`:'<p class="s">Tidak ada item.</p>'}
+function dxModPop(m){const n=dxTw(),cur=dxAt(m,n);const tws=[1,2,3,4].map(i=>({i,s:dxAt(m,i)}));
+ const subs=Object.entries(m.subs);const inTw=m.a.filter(w=>+w.tm>=n*3-2&&+w.tm<=n*3).sort((a,b)=>String(a.f).localeCompare(String(b.f)));
+ const body=`<div class="dx-mh"><div><span class="code">${esc(m.p.kode)}</span> <span class="s">${esc(m.p.nama)}</span><h3>${esc(m.n)}</h3><span class="s">UIC ${esc(m.x.uic)} · ${m.a.length} item WBS · jadwal ${pgFmtR(m.x.s,m.x.f)}</span></div><div class="dx-mk"><span class="chip ${DX_ST[cur.st][0]}">${esc(cur.st)}</span><b>${cur.pg}%</b><span class="s">tervalidasi s.d. TW ${ROM[n]}</span></div></div>
+  <h4 class="tp-h">Target tahap per triwulan</h4><div class="dx-tl">${tws.map(({i,s})=>`<div class="dx-tlc${i===n?' on':''}"><em>TW ${ROM[i]}</em><b>${esc(s.lab)}</b><span class="chip ${DX_ST[s.st][0]}">${esc(s.st)}</span><small>${s.inTw} item jatuh tempo · ${s.done}/${s.cum} selesai kumulatif</small></div>`).join('')}</div>
+  ${subs.length?`<h4 class="tp-h">Sub modul (${subs.length})</h4><div class="tscroll"><table class="lap"><thead><tr><th>Sub modul</th><th>Target TW ${ROM[n]}</th><th>Status</th><th class="num">Item</th><th>Progres tervalidasi</th></tr></thead><tbody>${subs.map(([k,a])=>{const s=dxAt({a},n),x=pgStat(a);return `<tr><td><b>${esc(k)}</b></td><td>${esc(s.lab)}</td><td><span class="chip ${DX_ST[s.st][0]}">${esc(s.st)}</span></td><td class="num">${a.length}</td><td><div class="pg"><div class="bar"><i style="width:${x.pg}%"></i></div><b>${x.pg}%</b></div></td></tr>`}).join('')}</tbody></table></div>`:''}
+  <h4 class="tp-h">Item WBS jatuh tempo TW ${ROM[n]} (${inTw.length})</h4>${dxItemRows(inTw,n*3)}`;
+ modal(`<span class="exh">${esc(m.n)}</span>`,body,null,null,{cancel:'Tutup',size:'wide',extra:'<button class="btn" data-mx="all">Semua item WBS</button><button class="btn pri" data-mx="wbs">Buka di WBS ›</button>',onExtra:(k,ov)=>{
+   if(k==='wbs'){S.ui.prog=m.p.akr;save();location.hash='#pmo-wbs';return true}
+   if(k==='all'){const sec=ov.querySelector('.bd');const h=document.createElement('div');h.innerHTML=`<h4 class="tp-h">Semua item WBS (${m.a.length})</h4>`+dxItemRows(m.a.slice().sort((a,b)=>String(a.f).localeCompare(String(b.f))),n*3);sec.appendChild(h);h.scrollIntoView({behavior:'smooth'});return false}return false}})}
+ACT.dxProg=el=>{const g=dxModules(dxItems()).find(x=>x.p.akr===el.dataset.p);if(!g){toast('Program tidak memiliki item WBS pada filter ini.');return}const n=dxTw(),p=g.p,a=[].concat(...g.mods.map(m=>m.a)),x=pgStat(a);
+ const body=`<div class="dx-mh"><div><span class="code">${esc(p.kode)}</span> <span class="s">${esc(p.jenis||'')}</span><h3>${esc(p.nama)}</h3><span class="s">UIC Utama ${esc(p.uic||'—')} · ${g.mods.length} modul · ${a.length} item WBS</span></div><div class="dx-mk"><b>${x.pg}%</b><span class="s">progres tervalidasi tahunan</span></div></div>
+ <div class="tscroll"><table class="lap"><thead><tr><th>Modul</th><th>UIC</th>${[1,2,3,4].map(i=>`<th class="${i===n?'dx-thon':''}">TW ${ROM[i]}</th>`).join('')}<th>Progres</th></tr></thead><tbody>${g.mods.map(m=>`<tr class="dx-row" data-act="dxMod" data-p="${esc(p.akr)}" data-j="${esc(m.n)}"><td><b>${esc(m.n)}</b></td><td>${esc(m.x.uic)}</td>${[1,2,3,4].map(i=>{const s=dxAt(m,i);return `<td class="${i===n?'dx-thon':''}"><span class="dx-dot" style="background:${DX_ST[s.st][1]}"></span>${esc(s.lab)}</td>`}).join('')}<td><div class="pg"><div class="bar"><i style="width:${m.x.pg}%"></i></div><b>${m.x.pg}%</b></div></td></tr>`).join('')}</tbody></table></div><p class="s" style="margin-top:8px">Klik baris modul untuk melihat detail. Titik warna menunjukkan status pada triwulan tersebut.</p>`;
+ modal(`<span class="exh">${esc(p.kode)} · ${esc(p.nama)}</span>`,body,null,null,{cancel:'Tutup',size:'wide'})};
+/* ---- Perlu Perhatian ---- */
+function dxAttn(items){const n=dxTw(),M=n*3,G=dxModules(items);const mods=[].concat(...G.map(g=>g.mods));const owner=w=>mods.find(m=>m.a.includes(w));
+ const late=items.filter(w=>stOf(w,M)==='Terlambat').sort((a,b)=>String(a.f).localeCompare(String(b.f)));
+ const wait=items.filter(w=>buktiSt(w)==='Menunggu validasi');
+ const d30=new Date(TODAY+'T00:00:00');d30.setDate(d30.getDate()+30);const t30=d30.toISOString().slice(0,10);
+ const soon=items.filter(w=>!doneAt(w,12)&&w.f&&w.f>=TODAY&&w.f<=t30).sort((a,b)=>String(a.f).localeCompare(String(b.f)));
+ projectStores();const progs=new Set(G.map(g=>g.p.akr));const risk=S.projectRisks.filter(r=>r.status!=='Ditutup'&&(+r.likelihood||0)*(+r.severity||0)>=15&&progs.has(decodeURIComponent(String(r.scope||'').split('|')[0])));
+ const lateMods=mods.map(m=>({m,s:dxAt(m,n)})).filter(x=>x.s.st==='Terlambat').sort((a,b)=>b.s.late-a.s.late);
+ const list=(arr,empty)=>arr.length?`<div class="dx-al">${arr.slice(0,8).map(w=>{const m=owner(w);return `<button type="button" class="dx-ai" ${m?`data-act="dxMod" data-p="${esc(m.p.akr)}" data-j="${esc(m.n)}"`:''}><span class="mono">${esc(w.k)}</span><b>${esc(deliv(w))}</b><span class="s">${esc(m?m.n:'')} · ${esc(uicU(w)||'—')} · ${fmtD(w.f)}</span></button>`}).join('')}${arr.length>8?`<p class="s">…dan ${arr.length-8} item lainnya.</p>`:''}</div>`:`<p class="s dx-empty">${empty}</p>`;
+ const box=(t,c,v,sub,inner)=>`<div class="card dx-ab"><div class="ch"><h3>${t}</h3><span class="chip ${c}">${v}</span></div><div class="pad">${sub?`<p class="s" style="margin:0 0 8px">${sub}</p>`:''}${inner}</div></div>`;
+ return `<div class="dx-bar dx-bar2"><div><b class="dx-ttl">Perlu perhatian pimpinan s.d. Triwulan ${ROM[n]} ${S.ui.tahun}</b><span class="s">Daftar pengecualian: hanya hal yang menuntut keputusan atau tindak lanjut.</span></div>${dxTwBar(n)}</div>
+ <div class="dx-ag">${box('Modul terlambat','c-bad',lateMods.length,'Modul yang memiliki item jatuh tempo belum selesai s.d. triwulan terpilih.',lateMods.length?`<div class="dx-al">${lateMods.slice(0,8).map(({m,s})=>`<button type="button" class="dx-ai" data-act="dxMod" data-p="${esc(m.p.akr)}" data-j="${esc(m.n)}"><span class="code">${esc(m.p.kode)}</span><b>${esc(m.n)}</b><span class="s">Target ${esc(s.lab)} · ${s.late} item terlambat · UIC ${esc(m.x.uic)}</span></button>`).join('')}</div>`:'<p class="s dx-empty">Tidak ada modul terlambat.</p>')}
+ ${box('Item WBS terlambat','c-bad',late.length,'',list(late,'Tidak ada item terlambat.'))}
+ ${box('Jatuh tempo 30 hari ke depan','c-warn',soon.length,'Belum selesai, tenggat s.d. '+fmtD(t30)+'.',list(soon,'Tidak ada tenggat dalam 30 hari.'))}
+ ${box('Bukti menunggu validasi PMO','c-info',wait.length,'',list(wait,'Tidak ada bukti yang menunggu validasi.'))}
+ ${box('Risiko tinggi terbuka','c-bad',risk.length,'Skor kemungkinan × dampak ≥ 15.',risk.length?`<div class="dx-al">${risk.slice(0,8).map(r=>`<div class="dx-ai"><b>${esc(r.title)}</b><span class="s">${esc(rptScopeLab(r.scope)||'')} · PIC ${esc(r.owner||'—')} · ${r.due?fmtD(r.due):'tanpa tenggat'}</span></div>`).join('')}</div>`:'<p class="s dx-empty">Tidak ada risiko tinggi terbuka.</p>')}</div>`}
+/* ---- Ringkasan: buat baris & bar bisa diklik ---- */
+ACT.dxUnit=el=>{const u=el.dataset.v,P=per(),items=dxItems().filter(w=>w.ue.includes(u)&&inP(w,P));const body=`<p class="s" style="margin:0 0 8px">${items.length} item jatuh tempo pada ${esc(P.lab)} untuk ${esc(u)}.</p>`+dxItemRows(items.sort((a,b)=>String(a.f).localeCompare(String(b.f))),P.b);modal(`<span class="exh">${esc(u)} · ${esc(P.lab)}</span>`,body,null,null,{cancel:'Tutup',size:'wide'})};
+ACT.dxDue=()=>{const P=per(),items=dxItems().filter(w=>inP(w,P)&&w.w&&!doneAt(w,P.b));modal(`<span class="exh">Item belum selesai · ${esc(P.lab)}</span>`,dxItemRows(items.sort((a,b)=>String(a.f).localeCompare(String(b.f))),P.b),null,null,{cancel:'Tutup',size:'wide'})};
 function viewDash(){const P=per();const items=wbsFilt({mode:'ue'});
  const progs=progVis().filter(p=>!S.ui.prog||p.akr===S.ui.prog);const tot=sumP(items,P);
  const dueItems=items.filter(w=>inP(w,P)&&w.w);const done=dueItems.filter(w=>doneAt(w,P.b)).length;
@@ -3046,16 +3177,16 @@ function viewDash(){const P=per();const items=wbsFilt({mode:'ue'});
   return {u,n:it.filter(w=>inP(w,P)).length,...s,mod:mu.length,keg:iu.length?`${iu.filter(x=>x.status==='Terlaksana').length}/${iu.length}`:'—',idx:ix.length?ix.reduce((a,b)=>a+b,0)/ix.length:null}}).filter(r=>r.n||r.mod||r.a);
  const twv=[1,2,3,4].map(n=>sumP(items,perTW(n)));const mx=Math.max(1,...twv.map(x=>Math.max(x.t,x.r)));
  const cap=(r,t)=>t?r/t*100:null;const capChip=v=>v==null?'—':`<span class="chip ${v>=100?'c-ok':v>=90?'c-warn':'c-bad'}">${pct(v)}</span>`;
- return vh('ED','dash','Dashboard Eksekutif','Capaian program per periode, per program, dan per unit Eselon I.',`<button class="btn" data-act="lapexp">Ekspor laporan</button>`)+fltBar({res:[items.filter(w=>inP(w,P)).length,items.length,'item']})+
+ return vh('ED','dash','Dashboard Eksekutif','Capaian program per periode, per program, dan per unit Eselon I.',`<button class="btn" data-act="lapexp">Ekspor laporan</button>`)+fltBar({res:[items.filter(w=>inP(w,P)).length,items.length,'item']})+dxTabs()+((S.ui.dashTab||'peta')==='peta'?dxPeta(items):(S.ui.dashTab==='perhatian'?dxAttn(items):
  `<div class="kpis"><div class="kpi dk"><div class="l">Program dipantau · ${S.ui.tahun}</div><div class="v">${progs.length}<small>program</small></div><div class="d">${progs.filter(p=>p.jenis==='Berkelanjutan').length} berkelanjutan · ${progs.filter(p=>p.jenis==='Tematik').length} tematik</div></div>
  <div class="kpi"><div class="l">Capaian ${esc(P.lab)}</div><div class="v">${pct(cap(tot.r,tot.t))}</div><div class="bar"><i style="width:${Math.min(100,cap(tot.r,tot.t)||0)}%"></i></div><div class="d">${rp(tot.r)} / ${rp(tot.t)} poin jatuh tempo periode ini</div></div>
  <div class="kpi"><div class="l">Capaian tahunan s.d. ${fmtD(P.d2)}</div><div class="v">${pct(cap(tot.c,tot.a))}</div><div class="bar"><i style="width:${cap(tot.c,tot.a)||0}%;background:var(--ok)"></i></div><div class="d">${rp(tot.c)} / ${rp(tot.a)} poin tahunan</div></div>
- <div class="kpi"><div class="l">Item jatuh tempo ${esc(P.lab)}</div><div class="v">${done}<small>/ ${dueItems.length} selesai</small></div><div class="d"><span class="chip c-bad">${dueItems.length-done} belum selesai</span></div></div>
+ <div class="kpi dx-click" data-act="dxDue" role="button" tabindex="0" title="Lihat item yang belum selesai"><div class="l">Item jatuh tempo ${esc(P.lab)}</div><div class="v">${done}<small>/ ${dueItems.length} selesai</small></div><div class="d"><span class="chip c-bad">${dueItems.length-done} belum selesai</span></div></div>
  <div class="kpi"><div class="l">Modul CM · indeks keberhasilan</div><div class="v">${ms.length}<small>modul</small></div><div class="d">Indeks ${pct(idx.length?idx.reduce((a,b)=>a+b,0)/idx.length:null)} · kegiatan ${im.filter(x=>x.status==='Terlaksana').length}/${im.length}</div></div>
  <div class="kpi"><div class="l">Tingkat adopsi pengguna</div><div class="v">${pct(ad.length?ad.reduce((a,b)=>a+b.p,0)/ad.length:null)}</div><div class="d">${ad.length} modul terukur</div></div></div>
- <div class="g21"><div class="card"><div class="ch"><h3>Capaian per Program</h3><span class="r s">${esc(P.lab)} · poin bobot WBS</span></div><div class="tscroll"><table><thead><tr><th>Program</th><th>Jenis</th><th class="num">Target periode</th><th class="num">Realisasi</th><th>Capaian periode</th><th>Capaian tahunan s.d. ${fmtD(P.d2)}</th></tr></thead><tbody>${progs.map(p=>{const s=sumP(items.filter(w=>w.prog===p.akr),P);const ca=cap(s.c,s.a);return `<tr><td><span class="code">${p.kode}</span><span class="sm">${esc(p.nama)}</span></td><td>${p.jenis==='Tematik'?'<span class="chip c-info">Tematik</span>':'<span class="chip c-gold">Berkelanjutan</span>'}</td><td class="num">${rp(s.t)}</td><td class="num">${rp(s.r)}</td><td>${s.t?capChip(cap(s.r,s.t)):'<span class="s">tidak ada target</span>'}</td><td><div class="pg"><div class="bar"><i style="width:${Math.min(100,ca||0)}%;background:${ca>=60?'var(--ok)':'var(--warn)'}"></i></div><b>${pct(ca)}</b></div></td></tr>`}).join('')}<tr style="font-weight:800"><td>Total</td><td></td><td class="num">${rp(tot.t)}</td><td class="num">${rp(tot.r)}</td><td>${capChip(cap(tot.r,tot.t))}</td><td><b>${pct(cap(tot.c,tot.a))}</b></td></tr></tbody></table></div></div>
- <div class="card"><div class="ch"><h3>Per Triwulan</h3><span class="r s">${S.ui.tahun} · per TW, bukan kumulatif</span></div><div class="pad"><div class="lgd"><span><i style="background:#C9D3E8"></i>Target TW</span><span><i style="background:var(--navy-2)"></i>Realisasi</span><span><i style="background:var(--yellow)"></i>TW dipilih</span></div><div class="cols">${twv.map((x,i)=>`<div class="c"><i style="height:${x.t/mx*100}%;background:#C9D3E8"><span>${rp(x.t)}</span></i><i style="height:${Math.max(x.r/mx*100,.5)}%;background:${i+1===P.tw?'var(--yellow)':'var(--navy-2)'}"><span>${rp(x.r)}</span></i></div>`).join('')}</div><div class="colx"><span>TW1</span><span>TW2</span><span>TW3</span><span>TW4</span></div><p class="s" style="margin:10px 0 0">Target TW = poin item yang jatuh tempo pada TW tersebut; realisasi = item tersebut yang sudah selesai dan tervalidasi. Laporan s.d. ${MON[REP()-1]}.</p></div></div></div>
- <div class="card"><div class="ch"><h3>Capaian per Unit Eselon I</h3><span class="r s">kolom cakupan UE I (Setjen–LNSW) · ${esc(P.lab)}</span></div><div class="tscroll"><table><thead><tr><th>Unit</th><th class="num">Item jatuh tempo</th><th class="num">Target periode</th><th class="num">Realisasi</th><th>Capaian periode</th><th>Capaian tahunan</th><th class="num">Modul CM (UIC)</th><th>Kegiatan CM</th><th>Indeks CM</th></tr></thead><tbody>${unitRows.map(r=>`<tr><td><b>${r.u}</b></td><td class="num">${rp(r.n)}</td><td class="num">${rp(r.t)}</td><td class="num">${rp(r.r)}</td><td>${r.t?capChip(cap(r.r,r.t)):'—'}</td><td><div class="pg"><div class="bar"><i style="width:${Math.min(100,cap(r.c,r.a)||0)}%"></i></div><b>${pct(cap(r.c,r.a))}</b></div></td><td class="num">${r.mod}</td><td>${r.keg}</td><td>${r.idx==null?'—':capChip(r.idx)}</td></tr>`).join('')}</tbody></table></div></div>`}
+ <div class="g21"><div class="card"><div class="ch"><h3>Capaian per Program</h3><span class="r s">${esc(P.lab)} · poin bobot WBS</span></div><div class="tscroll"><table><thead><tr><th>Program</th><th>Jenis</th><th class="num">Target periode</th><th class="num">Realisasi</th><th>Capaian periode</th><th>Capaian tahunan s.d. ${fmtD(P.d2)}</th></tr></thead><tbody>${progs.map(p=>{const s=sumP(items.filter(w=>w.prog===p.akr),P);const ca=cap(s.c,s.a);return `<tr class="dx-row" data-act="dxProg" data-p="${esc(p.akr)}" title="Klik untuk detail modul program"><td><span class="code">${p.kode}</span><span class="sm">${esc(p.nama)}</span></td><td>${p.jenis==='Tematik'?'<span class="chip c-info">Tematik</span>':'<span class="chip c-gold">Berkelanjutan</span>'}</td><td class="num">${rp(s.t)}</td><td class="num">${rp(s.r)}</td><td>${s.t?capChip(cap(s.r,s.t)):'<span class="s">tidak ada target</span>'}</td><td><div class="pg"><div class="bar"><i style="width:${Math.min(100,ca||0)}%;background:${ca>=60?'var(--ok)':'var(--warn)'}"></i></div><b>${pct(ca)}</b></div></td></tr>`}).join('')}<tr style="font-weight:800"><td>Total</td><td></td><td class="num">${rp(tot.t)}</td><td class="num">${rp(tot.r)}</td><td>${capChip(cap(tot.r,tot.t))}</td><td><b>${pct(cap(tot.c,tot.a))}</b></td></tr></tbody></table></div></div>
+ <div class="card"><div class="ch"><h3>Per Triwulan</h3><span class="r s">${S.ui.tahun} · per TW, bukan kumulatif</span></div><div class="pad"><div class="lgd"><span><i style="background:#C9D3E8"></i>Target TW</span><span><i style="background:var(--navy-2)"></i>Realisasi</span><span><i style="background:var(--yellow)"></i>TW dipilih</span></div><div class="cols">${twv.map((x,i)=>`<div class="c dx-click" data-act="dxTw" data-v="${i+1}" title="Tampilkan TW ${i+1}"><i style="height:${x.t/mx*100}%;background:#C9D3E8"><span>${rp(x.t)}</span></i><i style="height:${Math.max(x.r/mx*100,.5)}%;background:${i+1===P.tw?'var(--yellow)':'var(--navy-2)'}"><span>${rp(x.r)}</span></i></div>`).join('')}</div><div class="colx"><span>TW1</span><span>TW2</span><span>TW3</span><span>TW4</span></div><p class="s" style="margin:10px 0 0">Target TW = poin item yang jatuh tempo pada TW tersebut; realisasi = item tersebut yang sudah selesai dan tervalidasi. Laporan s.d. ${MON[REP()-1]}.</p></div></div></div>
+ <div class="card"><div class="ch"><h3>Capaian per Unit Eselon I</h3><span class="r s">kolom cakupan UE I (Setjen–LNSW) · ${esc(P.lab)}</span></div><div class="tscroll"><table><thead><tr><th>Unit</th><th class="num">Item jatuh tempo</th><th class="num">Target periode</th><th class="num">Realisasi</th><th>Capaian periode</th><th>Capaian tahunan</th><th class="num">Modul CM (UIC)</th><th>Kegiatan CM</th><th>Indeks CM</th></tr></thead><tbody>${unitRows.map(r=>`<tr class="dx-row" data-act="dxUnit" data-v="${esc(r.u)}" title="Klik untuk daftar item"><td><b>${r.u}</b></td><td class="num">${rp(r.n)}</td><td class="num">${rp(r.t)}</td><td class="num">${rp(r.r)}</td><td>${r.t?capChip(cap(r.r,r.t)):'—'}</td><td><div class="pg"><div class="bar"><i style="width:${Math.min(100,cap(r.c,r.a)||0)}%"></i></div><b>${pct(cap(r.c,r.a))}</b></div></td><td class="num">${r.mod}</td><td>${r.keg}</td><td>${r.idx==null?'—':capChip(r.idx)}</td></tr>`).join('')}</tbody></table></div></div>`))}
 ACT.lapexp=()=>exportLaporan();
 
 /* ======================== PMO ======================== */
