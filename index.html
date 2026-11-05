@@ -1827,7 +1827,7 @@ td .nt-chip span{display:inline!important;margin:0!important;font-size:12px!impo
 .flt.pmo-unified .fcar{width:32px!important;height:32px!important}
 .flt.pmo-unified .fbar{grid-row:2!important;grid-column:1/-1!important;display:flex!important;flex-wrap:wrap!important;gap:8px 12px!important;align-items:flex-end!important;padding:8px 14px 10px!important;margin:0!important;border-top:1px solid #D4E0F2;background:#F7FAFE!important}
 .flt.pmo-unified .fbar[hidden]{display:none!important}
-.flt.pmo-unified .fbar>.fg{width:auto!important;min-width:0;flex:0 1 170px!important;grid-column:auto!important;gap:3px!important;margin:0!important}
+.flt.pmo-unified .fbar>.fg{width:auto!important;min-width:0;max-width:240px;flex:1 1 140px!important;grid-column:auto!important;gap:3px!important;margin:0!important}
 .flt.pmo-unified .fbar>.fg>label{font-size:11px!important;letter-spacing:.5px;margin:0!important}
 .flt.pmo-unified .fbar>.fg.pm-year{flex:0 0 84px!important}
 .flt.pmo-unified .fbar>.fg:has(.seg:not(.pseg)),.flt.pmo-unified .fbar>.fg:has(.lvw){flex:0 0 auto!important}
@@ -1845,6 +1845,10 @@ td .nt-chip span{display:inline!important;margin:0!important;font-size:12px!impo
  .flt.pmo-unified .fbar>.fg,.flt.pmo-unified .fbar>.fg.pm-period,.flt.pmo-unified .fbar>.fg.pm-program,.flt.pmo-unified .fbar>.fg.pm-unit,.flt.pmo-unified .fbar>.fg.pm-role{flex:1 1 100%!important;min-width:0}
  .flt.pmo-unified .fbar .pseg{display:grid!important;grid-template-columns:repeat(3,1fr);height:auto!important}
 }
+.porto-nowbs{display:inline-block;margin:3px 0 2px;font-size:11px}
+.flt.pmo-unified .fbar>.fg.pm-fmore{flex:0 0 auto!important}.flt.pmo-unified .fbar>.fg.pm-fmore .btn{height:34px;white-space:nowrap}
+.flt.pmo-unified .fbar>.fg.pm-period,.flt.pmo-unified .fbar>.fg.pm-program{max-width:none}
+@media(max-width:760px){.flt.pmo-unified .fbar>.fg{max-width:none}}
 </style>
 
 <div id="root"></div>
@@ -3068,8 +3072,8 @@ function pmoFilterPanel(tab){const P=per(),all=pmoAllWbs(),base=pmoScopedWbs(),p
    pf('status','Status program',[['','Semua status'],...statuses])+
    pf('charter','Project Charter',[['','Semua charter'],['belum','Belum dibuat'],['ada','Sudah dibuat'],['draft','Draft / reviu'],['sah','Disahkan']])+
    pf('cap','Kinerja',[['','Semua capaian'],['none','Belum ada target'],['zero','Realisasi 0%'],['under','Di bawah target'],['meet','Sesuai target']])+
-   `<span class="fg pm-fmore"><button class="btn sm" type="button" data-act="portoAdv" aria-expanded="${!!S.ui.portoAdvanced}">${S.ui.portoAdvanced?'− Filter lanjutan':'＋ Filter lanjutan'}</button></span>`+
-   (S.ui.portoAdvanced? pf('uic','UIC utama',[['','Semua unit'],...UNITS])+pf('pend','UIC pendukung',[['','Semua unit'],...UNITS])+pf('klaster','Klaster transformasi',[['','Semua klaster'],...clusters])+pf('wbs','Ketersediaan WBS',[['','Semua'],['ada','Ada WBS'],['tidak','Tanpa WBS']])+pf('mulai','Tahun mulai',[['','Semua'],...([...new Set(ps.map(p=>String(p.mulai)))].filter(Boolean))]):'');
+   (S.ui.portoAdvanced? pf('uic','UIC utama',[['','Semua unit'],...UNITS])+pf('pend','UIC pendukung',[['','Semua unit'],...UNITS])+pf('klaster','Klaster transformasi',[['','Semua klaster'],...clusters]):'')+
+   `<span class="fg pm-fmore"><button class="btn sm" type="button" data-act="portoAdv" aria-expanded="${!!S.ui.portoAdvanced}">${S.ui.portoAdvanced?'− Filter lanjutan':'＋ Filter lanjutan'}</button></span>`;
   if(S.ui.seg)chips.push({t:'Jenis: '+S.ui.seg,k:'seg'});
   Object.entries(f).filter(([,v])=>v).forEach(([key,v])=>chips.push({t:({'status':'Status','charter':'Charter','cap':'Kinerja','uic':'UIC Utama','pend':'UIC Pendukung','klaster':'Klaster','wbs':'WBS','mulai':'Tahun mulai'}[key]||key)+': '+v,k:'pf_'+key}));
   break;}
@@ -3133,12 +3137,12 @@ function portoMetrics(p,items,M){
  return {t,yearItems,allCount,charter,hasTarget:t.a>0&&t.t>0,cap:t.a>0&&t.t>0?t.r/t.a*100:null};
 }
 function portoMatch(p,items,M){
+ if(S.ui.portoF){delete S.ui.portoF.wbs;delete S.ui.portoF.mulai}
  const f=S.ui.portoF||{},x=portoMetrics(p,items,M);
  if(f.uic&&!unitsOf(p.uic).includes(f.uic))return false;
  if(f.pend&&!unitsOf(p.pend).includes(f.pend))return false;
  if(f.status&&p.status!==f.status)return false;
  if(f.klaster&&p.lv2!==f.klaster)return false;
- if(f.mulai&&String(p.mulai)!==String(f.mulai))return false;
  if(f.charter==='belum'&&x.charter)return false;
  if(f.charter==='ada'&&!x.charter)return false;
  if(f.charter==='draft'&&(!x.charter||!['Draft','Reviu'].includes(x.charter.st)))return false;
@@ -3147,8 +3151,6 @@ function portoMatch(p,items,M){
  if(f.cap==='zero'&&(!x.hasTarget||x.t.r>0))return false;
  if(f.cap==='under'&&(!x.hasTarget||x.t.r>=x.t.t))return false;
  if(f.cap==='meet'&&(!x.hasTarget||x.t.r<x.t.t))return false;
- if(f.wbs==='ada'&&!x.yearItems.length)return false;
- if(f.wbs==='tidak'&&x.yearItems.length)return false;
  return true;
 }
 function portoFilterBar(ps,items,M){
@@ -3180,7 +3182,7 @@ function pPorto(){const P=per(),M=P.b,tw=P.lab;const seg=S.ui.seg||'';const PV=p
  return vh('P','pmo','Portofolio Program','Program transformasi berkelanjutan dan tematik beserta capaiannya.',`<button class="btn" data-act="tmpl">Template</button>`)+pmoTabs('portofolio')+portoAuditNote(items)+
  `<div class="kpis"><div class="kpi dk"><div class="l">Total program${lockU()?' · '+esc(lockU()):''}</div><div class="v">${PV.length}</div><div class="d">${PV.filter(p=>p.jenis==='Berkelanjutan').length} berkelanjutan · ${PV.filter(p=>p.jenis==='Tematik').length} tematik</div></div>
  <div class="kpi"><div class="l">Capaian tahunan s.d. ${tw}</div><div class="v">${pct(tot.t>0&&tot.a>0?tot.r/tot.a*100:null)}</div><div class="bar"><i style="width:${tot.t>0&&tot.a>0?tot.r/tot.a*100:0}%;background:var(--ok)"></i></div></div>
- <div class="kpi"><div class="l">Deliverable WBS ${S.ui.tahun}</div><div class="v">${audit.valid}<small>/ ${items.length} tervalidasi</small></div></div>
+ <div class="kpi"><div class="l">Deliverable WBS ${S.ui.tahun}</div><div class="v">${audit.valid}<small>/ ${items.length} tervalidasi</small></div>${(()=>{const n=PV.filter(p=>!S.wbs.some(w=>!w.arsip&&w.prog===p.akr&&yrOf(w)===S.ui.tahun)).length;return n?`<div class="d"><span class="chip c-warn">${n} program belum ada WBS</span></div>`:'<div class="d">Semua program sudah memiliki WBS</div>'})()}</div>
  <div class="kpi"><div class="l">Milestone 30 hari</div><div class="v">${up.length}</div><div class="d"><span class="chip c-bad">${late.length} terlambat</span></div></div>
  <div class="kpi"><div class="l">Risiko & isu terbuka</div><div class="v">${S.risks.filter(r=>r.st!=='Ditutup'&&riskVis(r)).length}</div></div></div>
  <div class="porto-view-tabs" role="tablist" aria-label="Tampilan Portofolio">${[['daftar','Daftar Program'],['capaian','Capaian Program Transformasi'],['milestone','Milestone Mendatang']].map(([k,l])=>`<button type="button" role="tab" aria-selected="${portoTab===k}" class="porto-view-tab ${portoTab===k?'on':''}" data-act="portoTab" data-v="${k}">${l}</button>`).join('')}</div>`+
@@ -3190,7 +3192,7 @@ function pPorto(){const P=per(),M=P.b,tw=P.lab;const seg=S.ui.seg||'';const PV=p
   canAdd:()=>lv('porto').includes('C'),canEdit:p=>canW('porto','U',p.uic),canDel:p=>canW('porto','D',p.uic)&&!S.wbs.some(w=>w.prog===p.akr),list:()=>S.programs,rows:()=>ps.filter(p=>portoMatch(p,items,M)),label:p=>p.kode,
   validate:(d,row)=>{d.akr=String(d.akr||'').toUpperCase().replace(/[^A-Z]/g,'');d.sing=String(d.sing||'').toUpperCase().trim()||(row?psing(row):'')||d.akr;if(d.akr.length<2||d.akr.length>6){toast('Akronim 2–6 huruf kapital.');return false}const kode=(d.jenis==='Tematik'?'T':'B')+String(d.mulai||S.ui.tahun).slice(-2)+'-'+d.akr;if(S.programs.some(p=>p!==row&&(p.kode===kode||p.akr===d.akr))){toast(`Kode ${kode} atau akronim ${d.akr} sudah dipakai.`);return false}if(row&&row.akr!==d.akr&&S.wbs.some(w=>w.prog===row.akr)){toast('Akronim terkunci karena program sudah memiliki item WBS.');return false}d.kode=kode},
   cols:[{k:'kode',l:'Kode',frm:false,r:p=>`<a class="code porto-code" href="#pmo-wbs" data-act="gowbs" data-p="${esc(p.akr)}" title="Buka WBS ${esc(p.nama)}">${esc(p.kode)}</a><a class="porto-wbs-code" href="#pmo-wbs" data-act="gowbs" data-p="${esc(p.akr)}" title="Lihat kode WBS yang berawalan ${esc(p.akr)}-">WBS: ${esc(p.akr)}-*</a>`},{k:'jenis',l:'Jenis',t:'sel',o:['Berkelanjutan','Tematik'],r:p=>p.jenis==='Tematik'?'<span class="chip c-info porto-kind">Tematik</span>':'<span class="chip c-gold porto-kind">Berkelanjutan</span>'},{k:'akr',l:'Akronim kode',req:true,tbl:false,hint:'2–6 huruf; menjadi prefiks item WBS'},{k:'sing',l:'Singkatan program',tbl:false,req:true,def:'',hint:'Ditampilkan di daftar program WBS, mis. DCS, DOA, SDK'},{k:'mulai',l:'Tahun mulai',t:'num',req:true,tbl:false,def:()=>S.ui.tahun},
-   {k:'nama',l:'Program / proyek',req:true,w:1,r:p=>`<b class="porto-title">${esc(p.nama)}</b><span class="porto-meta" title="${esc(p.lv2||'')} · ${esc(p.periode||'')}">${esc(p.lv2||'')} · ${esc(p.periode||'')}</span>`},{k:'lv2',l:'Klaster (Lv 2)',tbl:false},{k:'sponsor',l:'Sponsor',tbl:false},
+   {k:'nama',l:'Program / proyek',req:true,w:1,r:p=>`<b class="porto-title">${esc(p.nama)}</b>${S.wbs.some(w=>!w.arsip&&w.prog===p.akr&&yrOf(w)===S.ui.tahun)?'':`<span class="chip c-warn porto-nowbs" title="Program ini belum memiliki item WBS untuk tahun ${S.ui.tahun}">Belum ada WBS ${S.ui.tahun}</span>`}<span class="porto-meta" title="${esc(p.lv2||'')} · ${esc(p.periode||'')}">${esc(p.lv2||'')} · ${esc(p.periode||'')}</span>`},{k:'lv2',l:'Klaster (Lv 2)',tbl:false},{k:'sponsor',l:'Sponsor',tbl:false},
    {k:'uic',l:'UIC Utama',req:true,r:p=>esc(p.uic)},{k:'pend',l:'UIC Pendukung',r:p=>`<span class="porto-pend" title="${esc(p.pend||'—')}">${esc(p.pend||'—')}</span>`},{k:'periode',l:'Periode',tbl:false},
    {k:'_p',l:`Capaian ${S.ui.tahun}`,frm:false,r:p=>portoCap(p,items,M),x:p=>{const x=portoMetrics(p,items,M);return x.hasTarget?Math.round(x.cap*10)/10:''}},
    {k:'_ch',l:'Project Charter',frm:false,nosort:1,r:p=>chCell(p),x:p=>{const c=chCur(p.akr);return c?CHST[c.st][0]+' v'+c.ver:'Belum dibuat'}},
