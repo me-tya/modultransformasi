@@ -1774,6 +1774,33 @@ td .nt-chip span{display:inline!important;margin:0!important;font-size:12px!impo
 .one-tim span{display:block;font-size:12.5px;line-height:1.4}.one-tim b{font-weight:700}.one-table td .chip{white-space:nowrap}
 .one-table td .sm{display:block;margin-top:2px}
 .one-table{min-width:0;width:100%}.one-table th{white-space:normal;min-width:0}.one-table td:nth-child(4),.one-table td:nth-child(9){min-width:0}.one-table td:nth-child(3){min-width:180px}.one-table td{font-size:12.5px}
+
+/* Pengingat 1-on-1 ringkas di header PMO */
+.one-pill{display:inline-flex;align-items:stretch;border:1px solid #F1D48A;background:linear-gradient(90deg,#FFF4D6,#FFFBEF);border-radius:11px;overflow:hidden;max-width:420px;min-width:0}
+.one-pill.today{border-color:#E9B949;background:linear-gradient(90deg,#FFE7A3,#FFF4D6)}
+.one-pill.mute{background:#fff;border-color:var(--line)}
+.one-pa{display:flex;align-items:center;gap:8px;padding:5px 10px 5px 6px;text-decoration:none;color:var(--ink);min-width:0}
+.one-pi{width:30px;height:30px;border-radius:8px;background:var(--navy);color:var(--yellow);display:grid;place-items:center;flex:none}
+.one-pt{display:flex;flex-direction:column;line-height:1.2;min-width:0}.one-pt small{font-size:11px;font-weight:900;letter-spacing:.3px;text-transform:uppercase;color:#8A5A00}.one-pill.mute .one-pt small{color:var(--ink-3)}
+.one-pt b{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.one-pj{display:flex;align-items:center;padding:0 12px;background:var(--navy);color:#fff;font-weight:800;font-size:12px;text-decoration:none}.one-pj:hover{background:var(--navy-2)}
+.vh .acts{align-items:center}
+/* Akses cepat */
+.fav{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px}
+.fav-h{display:flex;align-items:center;gap:10px}.fav-h h3{margin:0;font-size:13px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;color:var(--navy)}.fav-h .btn{margin-left:auto}
+.fav-g{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:8px}
+.fav-t{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:84px;padding:10px 8px;border-radius:10px;background:var(--navy);color:#fff;text-decoration:none;text-align:center;border:0;border-bottom:3px solid transparent;cursor:pointer;font:inherit;transition:background .15s,border-color .15s}
+.fav-t:hover,.fav-t:focus-visible{background:var(--navy-2);border-bottom-color:var(--yellow)}
+.fav-t b{font-size:12.5px;line-height:1.25;font-weight:800;text-wrap:balance}
+.fav-i{color:var(--yellow);display:grid;place-items:center}
+.fav-t i{position:absolute;top:6px;right:6px;font-style:normal;font-size:11px;font-weight:900;background:var(--yellow);color:var(--navy);border-radius:6px;padding:1px 6px}
+.fav-t.add{background:#fff;color:var(--navy);border:1.5px dashed #AEBBD1}.fav-t.add .fav-i{color:var(--navy)}.fav-t.add:hover{border-color:var(--navy);background:#F5F8FD}
+.fav-pick{border-top:1px dashed var(--line);padding-top:8px;display:flex;flex-direction:column;gap:8px}
+.fav-chips{display:flex;flex-wrap:wrap;gap:6px}
+.fav-c{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#FAFBFE;border-radius:999px;padding:5px 11px;font:inherit;font-size:12.5px;font-weight:700;color:var(--ink-2);cursor:pointer}
+.fav-c span{color:#B8C3D6}.fav-c.on{border-color:#F1D48A;background:#FFFBEF;color:var(--navy)}.fav-c.on span{color:#E3A400}
+.fav-pa{display:flex;gap:6px;justify-content:flex-end}
+@media(max-width:900px){.fav-g{grid-template-columns:repeat(auto-fit,minmax(104px,1fr))}.one-pill{max-width:100%}}
 </style>
 
 <div id="root"></div>
@@ -1801,7 +1828,7 @@ const UNREAD_SCOPED=['dash','porto','wbs','mil','risk','cr','crok','bukti','vali
 const CMT=[['siklus','Siklus CM'],['adopsi','Tingkat Adopsi'],['adp','ADP'],['rencana','Perencanaan'],['impl','Implementasi'],['monev','Monev'],['closing','Closing CM']];
 const PMT=[['siklus','Overview','porto'],['portofolio','Portofolio','porto'],['program','Program','porto'],['perencanaan','Dokumen Proyek','charter'],['wbsplan','WBS','wbs'],['wbs','WBS & progres','wbs'],['bukti','Bukti Dukung','bukti'],['cr','Change Request','cr'],['milestone','Milestone','mil'],['risiko','Risiko & Isu','risk'],['laporan','Capaian TW','lap'],['narasi','Narasi T-Program','lap'],['oneonone','Jadwal 1-on-1','wbs'],['penutupan','Penutupan','porto'],['referensi','Referensi Kode','ref']];
 /* kelompok tab PMO mengikuti alur Draft KEP Kepala BaTii: perencanaan → pelaksanaan → pemantauan → penutupan */
-const PMG=[['siklus','Overview',0,['siklus']],['portofolio','Portofolio',0,['portofolio']],['program','Program',0,['program']],['plan','Perencanaan',1,['perencanaan','wbsplan']],['exec','Pelaksanaan',2,['wbs','narasi','bukti','oneonone','cr']],['mon','Pemantauan',3,['milestone','risiko','laporan']],['close','Penutupan',4,['penutupan']],['ref','Referensi',0,['referensi']]];
+const PMG=[['siklus','Overview',0,['siklus']],['portofolio','Portofolio',0,['portofolio']],['program','Program',0,['program']],['plan','Perencanaan',1,['perencanaan','wbsplan']],['exec','Pelaksanaan',2,['wbs','narasi','bukti','cr']],['mon','Pemantauan',3,['milestone','risiko','laporan','oneonone']],['close','Penutupan',4,['penutupan']],['ref','Referensi',0,['referensi']]];
 const STN=[['set-pengguna','Pengguna','user'],['set-akses','Hak Akses Peran','akses'],['set-sinkron','Aturan Sinkron CM','sinkron'],['set-log','Log Aktivitas','log'],['set-db','Database','user']];
 const LV_UB=['—','Minor','Moderate','Significant'], LV_RS=['—','Rendah','Sedang','Tinggi'];
 const DIMS=[['P','Proses Bisnis'],['O','Organisasi'],['S','SDM'],['T','Teknologi'],['R','Regulasi']];
@@ -2303,7 +2330,7 @@ function navTree(){
  const ct=cmoTabsVis();if(ct.length)trans.kids.push({l:'CMO',h:'cmo-'+ct[0][0],pre:'cmo-'});
  const st=STN.filter(t=>lv(t[2])!=='-');if(st.length)trans.kids.push({l:'Pengaturan',h:st[0][0],pre:'set-'});
  return [{l:'Beranda',h:'beranda',ic:'⌂'},ext('kolab','Kolaborasi','⚇',['Nadine','My Task','Tim','Rapat','Inovasi','Kemenkeu Drive','Email','Perjalanan Dinas 2']),ext('fas','Fasilitas','▣',['Ruang Rapat','Kendaraan Dinas','Klinik']),ext('pd','Pengembangan Diri','✎',['Learning Center','Pustaka']),ext('perf','Performa','↗',['Kinerja','Presensi']),
-  {id:'lainnya',l:'Lainnya',ic:'⋯',kids:['Digitalisasi Hukum','EKSIS','Digitalisasi Aset','Shortlink','Kemenkeu Hub','Saluran Aspirasi'].map(k=>({l:k,ext:1})).concat([trans])},ext('peg','Kepegawaian','☰',['Profil Pegawai','Cuti'])]}
+  {id:'lainnya',l:'Lainnya',ic:'⋯',kids:[trans].concat(['Digitalisasi Hukum','EKSIS','Digitalisasi Aset','Shortlink','Kemenkeu Hub','Saluran Aspirasi'].map(k=>({l:k,ext:1})))},ext('peg','Kepegawaian','☰',['Profil Pegawai','Cuti'])]}
 function curKey(){const m=VIEW.match(/^modul-(.+)-t-(\w+)$/);return m?'cmo-'+m[2]:VIEW}
 const isOn=(n,cur)=>n.h===cur||(n.pre&&cur.startsWith(n.pre));
 function hasActive(n,cur){return isOn(n,cur)||(n.kids||[]).some(k=>hasActive(k,cur))}
@@ -2405,7 +2432,7 @@ function onChange(el){const k=el.dataset.on,v=el.value;if(k==='impwbs')return;
  else if(k==='kepf'){const f=el.files[0];if(!f)return;if(f.size>(FB.on?7e5:1.5e6)){toast(FB.on?'Ukuran KEP maksimal 700 KB pada mode Firestore.':'Ukuran KEP maksimal 1,5 MB pada prototipe.');return}const rd=new FileReader();rd.onload=()=>{const j=jjm(el.dataset.m);j.kepFile=rd.result;j.kepName=f.name;log('Unggah KEP',f.name);save();toast('KEP terunggah.');render()};rd.readAsDataURL(f);return}
  save();render()}
 const jjm=mk=>S.jjMod[mk]||(S.jjMod[mk]={link:'',kepNo:'',kepTgl:'',kepFile:'',kepName:'',aktif:'Belum'});
-function vh(ic,cls,title,desc,acts){const tt=esc(String(title).replace(/<[^>]+>/g,''));return `<div class="vh"><div class="pic ${cls}">${ic}</div><div style="min-width:0"><h1>${title}<button class="hlp" data-act="help" data-v="${esc(typeof VIEW!=='undefined'?VIEW:'')}" data-t="${tt}" title="Panduan cara mengisi" aria-label="Panduan cara mengisi ${tt}">?</button></h1><p title="${esc(desc)}">${desc}</p></div>${acts?`<div class="acts">${acts}</div>`:''}</div><!--vh-->`}
+function vh(ic,cls,title,desc,acts){const tt=esc(String(title).replace(/<[^>]+>/g,''));if(cls==='pmo'&&typeof oneBadge==='function'){const ob=oneBadge();if(ob)acts=ob+(acts||'')}return `<div class="vh"><div class="pic ${cls}">${ic}</div><div style="min-width:0"><h1>${title}<button class="hlp" data-act="help" data-v="${esc(typeof VIEW!=='undefined'?VIEW:'')}" data-t="${tt}" title="Panduan cara mengisi" aria-label="Panduan cara mengisi ${tt}">?</button></h1><p title="${esc(desc)}">${desc}</p></div>${acts?`<div class="acts">${acts}</div>`:''}</div><!--vh-->`}
 function setTabs(){return `<nav class="ptabs" aria-label="Pengaturan">${STN.filter(t=>lv(t[2])!=='-').map(([k,l])=>`<a href="#${k}" class="${k===VIEW?'on':''}"><span>${l}</span></a>`).join('')}</nav>`}
 function subNav(key,list,def){const cur=S.ui.sub[key]||def;return `<div class="subt" role="tablist">${list.map(([k,l])=>`<a data-act="sub" data-k="${key}" data-v="${k}" class="${cur===k?'on':''}" role="tab" aria-selected="${cur===k}">${l}</a>`).join('')}</div>`}
 ACT.tsort=el=>{const id=el.dataset.t,k=el.dataset.k;S.ui.sort=S.ui.sort||{};const cur=sortOf(id);S.ui.sort[id]=cur&&cur.k===k?(cur.d==='asc'?{k,d:'desc'}:{k:'',d:''}):{k,d:'asc'};if(!S.ui.sort[id].k)S.ui.sort[id]={k:'_none',d:''};PG[id]=0;save();redrawT(id);const sel=document.querySelector(`[data-wsort="${id}"]`);if(sel)sel.value=sortVal(id)};
@@ -3026,13 +3053,14 @@ function pmoFilterPanel(tab){const P=per(),all=pmoAllWbs(),base=pmoScopedWbs(),p
  }
  return fltBar({umode:true,res,extra,chips});
 }
+function pmoCnt(){const u=curUnit(),W=S.wbs.filter(w=>!w.arsip&&unitMatch(w,u,lockM()||'up'));const WY=W.filter(w=>yrOf(w)===S.ui.tahun);return {portofolio:progVis().length,program:progVis().length,wbs:W.length,wbsplan:'',milestone:WY.filter(w=>stOf(w,12)==='Terlambat').length,risiko:S.risks.filter(r=>r.st!=='Ditutup'&&riskVis(r)).length,cr:S.crs.filter(c=>crVis(c)&&['Diajukan','Telaah PMO Pusat'].includes(c.st)).length,bukti:W.filter(w=>buktiSt(w)==='Menunggu validasi').length,laporan:'',narasi:narPending(),penutupan:'',perencanaan:'',oneonone:'',siklus:'',referensi:S.usul.filter(x=>x.st==='Diajukan').length}}
 function pmoTabs(cur0){let cur=VIEW.startsWith('pmo-')?VIEW.slice(4):cur0;if(cur==='charter')cur='perencanaan';const u=curUnit(),W=S.wbs.filter(w=>!w.arsip&&unitMatch(w,u,lockM()||'up'));const WY=W.filter(w=>yrOf(w)===S.ui.tahun);
- const cnt={portofolio:progVis().length,program:progVis().length,wbs:W.length,wbsplan:'',milestone:WY.filter(w=>stOf(w,12)==='Terlambat').length,risiko:S.risks.filter(r=>r.st!=='Ditutup'&&riskVis(r)).length,cr:S.crs.filter(c=>crVis(c)&&['Diajukan','Telaah PMO Pusat'].includes(c.st)).length,bukti:W.filter(w=>buktiSt(w)==='Menunggu validasi').length,laporan:'',narasi:narPending(),penutupan:'',perencanaan:'',oneonone:'',siklus:'',referensi:S.usul.filter(x=>x.st==='Diajukan').length};
+ const cnt=pmoCnt();
  const vis=new Set(pmoTabsVis().map(t=>t[0]));const L=k=>(PMT.find(t=>t[0]===k)||[k,k])[1];
  const G=PMG.map(g=>({g,ks:g[3].filter(k=>vis.has(k))})).filter(x=>x.ks.length);const on=G.find(x=>x.ks.includes(cur))||G[0];
  const gc=x=>x.ks.reduce((a,k)=>a+(+cnt[k]||0),0);
  const sub=on&&on.ks.length>1?`<div class="subt" role="tablist" aria-label="${esc(on.g[1])}">${on.ks.map(k=>`<a href="#pmo-${k}" class="${k===cur?'on':''}" role="tab" aria-selected="${k===cur}">${L(k)}${cnt[k]!==''&&cnt[k]!=null&&+cnt[k]>0?` <b class="sb">${cnt[k]}</b>`:''}</a>`).join('')}</div>`:'';
- return oneStrip(cur)+pmoFilterPanel(cur)+`<nav class="ptabs" aria-label="Tab PMO">${G.map(x=>{const n=x.g[2];const c=x.ks.length>1?gc(x):cnt[x.ks[0]];const tgt=x.ks.includes(cur)?cur:x.ks[0];return `<a href="#pmo-${tgt}" class="${x===on?'on':''}"><span>${n?`<em>${n}</em> `:''}${x.g[1]}</span>${c!==''&&c!=null&&+c>0?` <b>${c}</b>`:''}</a>`}).join('')}</nav>${sub}`}
+ return `<nav class="ptabs" aria-label="Tab PMO">${G.map(x=>{const n=x.g[2];const c=x.ks.length>1?gc(x):cnt[x.ks[0]];const tgt=x.ks.includes(cur)?cur:x.ks[0];return `<a href="#pmo-${tgt}" class="${x===on?'on':''}"><span>${n?`<em>${n}</em> `:''}${x.g[1]}</span>${c!==''&&c!=null&&+c>0?` <b>${c}</b>`:''}</a>`}).join('')}</nav>${sub}`+pmoFilterPanel(cur)}
 function viewPmo(tab){const f={charter:pCharter,siklus:pOverview,portofolio:pPorto,program:pProgram,perencanaan:pPerencanaan,wbsplan:pWbs,wbs:pWbs,oneonone:pOneOnOne,milestone:pMilestone,risiko:pRisiko,cr:pCr,bukti:pBukti,laporan:pLaporan,narasi:pNarasi,penutupan:pPenutupan,referensi:pRef}[tab];return f?f():''}
 /* --- Portofolio --- */
 function pbChart(PV,items,M,tw,jenis='Berkelanjutan'){
@@ -3150,14 +3178,14 @@ const ONE_DAYS=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
 function oneSt(x){if(!x.tgl)return ['Belum dijadwalkan','c-gray'];if(x.tgl<TODAY)return [x.notula&&notulaChip(x.notula,1)?'Selesai · notula ada':'Selesai','c-ok'];if(x.tgl===TODAY)return ['Hari ini','c-warn'];return ['Terjadwal','c-info']}
 const oneDate=x=>{if(!x.tgl)return 'Belum ditetapkan';const d=new Date(x.tgl+'T00:00:00');return (isNaN(d)?'':ONE_DAYS[d.getDay()]+', ')+rptLongDate(x.tgl)};
 let ONE_HIDE=false;
-function oneStrip(cur){if(cur==='oneonone'||ONE_HIDE)return '';let rows;try{rows=getOneOnOne()}catch(e){return ''}if(!rows.length)return '';
- const up=rows.filter(x=>x.tgl&&x.tgl>=TODAY).sort((a,b)=>(a.tgl+(a.jam||'')).localeCompare(b.tgl+(b.jam||''))),un=rows.filter(x=>!x.tgl).length;const can=lv('wbs').includes('U')||lv('wbs').includes('C');
- if(!up.length&&!(un&&can))return '';const n=up[0];const days=n?Math.round((new Date(n.tgl+'T00:00:00')-new Date(TODAY+'T00:00:00'))/864e5):null;
- const when=n?(days===0?'<b class="one-today">Hari ini</b>':days===1?'<b>Besok</b>':`<b>${days} hari lagi</b>`):'';
- return `<div class="one-strip${n&&days===0?' today':''}" role="status"><span class="one-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/><path d="M8 14h3v3H8z"/></svg></span>
-  ${n?`<div class="one-main"><span class="one-k">1-on-1 berikutnya · ${when}</span><span class="one-t"><b>${esc(n.program)}</b> · ${esc(oneDate(n))}${n.jam?' · '+esc(n.jam):''}${n.katim?' · Katim '+esc(n.katim):''}</span></div>${/^https?:/i.test(n.lokasi||'')?`<a class="btn sm pri" href="${esc(n.lokasi)}" target="_blank" rel="noopener">Gabung Teams</a>`:n.lokasi?`<span class="chip c-gray">${esc(n.lokasi)}</span>`:''}${up.length>1?`<span class="one-more">+${up.length-1} agenda terjadwal</span>`:''}`:`<div class="one-main"><span class="one-k">Jadwal 1-on-1</span><span class="one-t"><b>${un} agenda</b> belum memiliki tanggal</span></div>`}
-  ${n&&un&&can?`<span class="one-more">${un} belum dijadwalkan</span>`:''}<a class="btn sm" href="#pmo-oneonone">${n?'Lihat jadwal':'Atur jadwal'} ›</a><button type="button" class="one-x" data-act="oneHide" aria-label="Sembunyikan pengingat 1-on-1">×</button></div>`}
-ACT.oneHide=()=>{ONE_HIDE=true;render()};
+function oneBadge(){if(typeof VIEW==='undefined'||!VIEW.startsWith('pmo-')||VIEW==='pmo-oneonone')return '';let rows;try{rows=getOneOnOne()}catch(e){return ''}if(!rows.length)return '';
+ const up=rows.filter(x=>x.tgl&&x.tgl>=TODAY).sort((a,b)=>(a.tgl+(a.jam||'')).localeCompare(b.tgl+(b.jam||''))),un=rows.filter(x=>!x.tgl).length,can=lv('wbs').includes('U')||lv('wbs').includes('C');
+ const cal='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>';
+ if(up.length){const n=up[0],d=Math.round((new Date(n.tgl+'T00:00:00')-new Date(TODAY+'T00:00:00'))/864e5),dt=new Date(n.tgl+'T00:00:00'),M=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  const when=d===0?'hari ini':d===1?'besok':d+' hari lagi',tgl=ONE_DAYS[dt.getDay()].slice(0,3)+', '+dt.getDate()+' '+M[dt.getMonth()];
+  return `<span class="one-pill${d===0?' today':''}"><a class="one-pa" href="#pmo-oneonone" title="Buka Jadwal 1-on-1${up.length>1?' ('+(up.length-1)+' agenda lain terjadwal)':''}"><span class="one-pi">${cal}</span><span class="one-pt"><small>1-on-1 · ${when}</small><b>${esc(n.program)} · ${tgl}${n.jam?' · '+esc(n.jam):''}</b></span></a>${/^https?:/i.test(n.lokasi||'')?`<a class="one-pj" href="${esc(n.lokasi)}" target="_blank" rel="noopener" title="Gabung rapat Teams">Gabung</a>`:''}</span>`}
+ if(un&&can)return `<span class="one-pill mute"><a class="one-pa" href="#pmo-oneonone" title="Atur tanggal agenda 1-on-1"><span class="one-pi">${cal}</span><span class="one-pt"><small>Jadwal 1-on-1</small><b>${un} agenda belum bertanggal</b></span></a></span>`;
+ return ''}
 ACT.oneDel=el=>{const x=(S.oneonone||[]).find(v=>v.id===el.dataset.id);if(!x)return;confirmDel('Jadwal 1-on-1 '+(x.program||''),()=>{S.oneonone=S.oneonone.filter(v=>v.id!==x.id);log('Hapus Jadwal 1-on-1',x.program||'');save();render();toast('Jadwal dihapus.')})};
 function pOneOnOne(){
  const rows=getOneOnOne(),scheduled=rows.filter(x=>x.tgl&&x.jam).length,online=rows.filter(x=>/^https?:/i.test(x.lokasi||'')).length;
@@ -3649,6 +3677,22 @@ ACT.kwOpen=el=>{const e=kwEv(+el.dataset.index),x=e.row;kwClose();
 ACT.kwXls=el=>{const e=kwEv(+el.dataset.index);xlsxSave(e.ws.map(w=>({'Kode WBS':w.k,'Deliverable':deliv(w),'Status bukti':buktiSt(w),'Tautan':(S.bukti[w.k]||{}).link||'','Nama berkas':(S.bukti[w.k]||{}).nama||''})),'Bukti_KWide_TW'+e.row[0]+'_'+e.row[1].replace(/[^A-Za-z0-9]+/g,'_')+'.xlsx','Bukti')};
 
 
+/* Akses cepat (menu favorit) di Overview: ubin kotak, maksimal 7 agar selalu satu baris saat menu samping tampil */
+const FAV_MAX=7,FAV_DEF=['wbs','narasi','bukti','perencanaan','oneonone'];
+const FAV_I={doc:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M8.5 12h7M8.5 15h7M8.5 18h4"/>',grid:'<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M9 9v11M12.5 13.5h5M12.5 16.5h3"/>',ok:'<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16.5 9.5"/>',bar:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 17v-4M12 17V9M15 17v-6"/>',cal:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18M13 13l-2 3h3l-2 3"/>',swap:'<path d="M4 7h11l-3-3M20 17H9l3 3"/>',warn:'<path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/>',flag:'<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',pie:'<path d="M12 3v9h9"/><circle cx="12" cy="12" r="9"/>',close:'<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/>',layer:'<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>',tree:'<rect x="9" y="3" width="6" height="5" rx="1"/><rect x="3" y="16" width="6" height="5" rx="1"/><rect x="15" y="16" width="6" height="5" rx="1"/><path d="M12 8v4M6 16v-2h12v2"/>',book:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M8 7h7"/>',home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>'};
+const FAV_M={wbs:['Isi WBS T-Program','grid'],narasi:['Isi Narasi T-Program','doc'],bukti:['Bukti Accept Criteria','ok'],perencanaan:['Charter T-Program','bar'],oneonone:['Jadwal 1-on-1','cal'],cr:['Change Request','swap'],risiko:['Risiko & Isu','warn'],milestone:['Milestone','flag'],laporan:['Capaian TW','pie'],penutupan:['Penutupan Proyek','close'],program:['Program & Laporan','layer'],portofolio:['Portofolio','home'],wbsplan:['Susun WBS','tree'],referensi:['Referensi Kode','book']};
+const favSvg=(k,s=26)=>`<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${FAV_I[(FAV_M[k]||[])[1]]||FAV_I.doc}</svg>`;
+function favList(){const vis=new Set(pmoTabsVis().map(t=>t[0]));const L=(Array.isArray(S.ui.pmoFav)?S.ui.pmoFav:FAV_DEF).filter(k=>FAV_M[k]&&vis.has(k));return L.slice(0,FAV_MAX)}
+function favBlock(){const vis=pmoTabsVis().map(t=>t[0]).filter(k=>FAV_M[k]),L=favList(),cnt=pmoCnt(),ed=!!S.ui.favEdit;
+ const nx=(()=>{try{const r=getOneOnOne().filter(x=>x.tgl&&x.tgl>=TODAY).sort((a,b)=>a.tgl.localeCompare(b.tgl))[0];if(!r)return '';const d=new Date(r.tgl+'T00:00:00');return d.getDate()+' '+['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][d.getMonth()]}catch(e){return ''}})();
+ const badge=k=>k==='oneonone'?nx:(['wbs','portofolio','program','wbsplan'].includes(k)?'':(+cnt[k]>0?cnt[k]:''));
+ const tiles=L.map(k=>{const b=badge(k);const lab=k==='oneonone'?'Jadwal 1-on-1 T-Program':FAV_M[k][0];return `<a class="fav-t" href="#pmo-${k}" title="${esc((PMT.find(t=>t[0]===k)||[])[1]||'')}"><span class="fav-i">${favSvg(k)}</span><b>${esc(lab)}</b>${b!==''?`<i>${esc(b)}</i>`:''}</a>`}).join('')+(L.length<FAV_MAX?`<button type="button" class="fav-t add" data-act="favEdit"><span class="fav-i">${favSvg('x',24).replace(FAV_I.doc,'<path d="M12 5v14M5 12h14"/>')}</span><b>Tambah</b></button>`:'');
+ const n=L.length+(L.length<FAV_MAX?1:0);
+ const pick=ed?`<div class="fav-pick"><span class="s">Pilih maksimal ${FAV_MAX} menu (${L.length}/${FAV_MAX} terpakai) agar tetap satu baris.</span><div class="fav-chips">${vis.map(k=>{const on=L.includes(k);return `<button type="button" class="fav-c${on?' on':''}" data-act="favTog" data-v="${k}" aria-pressed="${on}">${favSvg(k,16)}${esc(FAV_M[k][0])}<span aria-hidden="true">${on?'★':'☆'}</span></button>`}).join('')}</div><div class="fav-pa"><button type="button" class="btn sm" data-act="favReset">Kembalikan bawaan</button><button type="button" class="btn sm pri" data-act="favEdit">Selesai</button></div></div>`:'';
+ return `<section class="fav" aria-label="Akses cepat"><div class="fav-h"><h3>Akses cepat</h3><span class="s">${L.length} dari ${FAV_MAX} menu favorit</span>${ed?'':'<button type="button" class="btn sm" data-act="favEdit">Atur favorit</button>'}</div><div class="fav-g" style="--n:${n}">${tiles}</div>${pick}</section>`}
+ACT.favEdit=()=>{S.ui.favEdit=!S.ui.favEdit;save();render()};
+ACT.favTog=el=>{const k=el.dataset.v;let L=favList();if(L.includes(k))L=L.filter(x=>x!==k);else{if(L.length>=FAV_MAX){toast('Maksimal '+FAV_MAX+' menu favorit agar tetap satu baris. Lepas salah satu dulu.');return}L=L.concat([k])}S.ui.pmoFav=L;save();render()};
+ACT.favReset=()=>{S.ui.pmoFav=FAV_DEF.slice();save();render()};
 function pOverview(){
  const y=+S.ui.tahun,tab=['tw','kwide','tprog','ue'].includes(S.ui.overviewTab)?S.ui.overviewTab:'tw';
  const P=per(),data=lapData(),num=n=>Number(n||0).toLocaleString('id-ID');
@@ -3667,7 +3711,7 @@ function pOverview(){
  const quarter='<div class="card"><div class="ch"><h3>Capaian per Triwulan</h3><span class="r s">'+esc(periodLabel)+' · '+S.ui.tahun+'</span></div>'+
  '<div class="ov-qgrid">'+selectedMeasures.map(({t,v})=>'<div class="ov-q"><small>TRIWULAN '+t+(P.pr==='r'?' · sesuai rentang':'')+'</small><b>'+(v.t?pct(v.r/v.t*100):'—')+'</b><div class="bar"><i style="width:'+Math.min(100,v.t?v.r/v.t*100:0)+'%;background:var(--blue)"></i></div><span>'+num(v.r)+' realisasi / '+num(v.t)+' target</span></div>').join('')+'</div>'+
  '<div class="ov-filter-status"><b>Filter aktif:</b> '+esc(S.ui.prog?progLabel(S.ui.prog):'Semua program')+' · '+esc(curUnit()||'Semua UE I')+' · '+esc(curUnit()?({'u':'UIC Utama','p':'UIC Pendukung','ue':'Cakupan UE I','up':'Utama/Pendukung'}[umOf()]||'Utama/Pendukung'):'Seluruh peran')+' · '+esc(periodLabel)+'</div></div>';
- return vh('O','pmo','Overview','Capaian per triwulan, K-Wide, T-Program, dan per UE I sesuai struktur workbook WBS.')+pmoTabs('siklus')+
+ return vh('O','pmo','Overview','Capaian per triwulan, K-Wide, T-Program, dan per UE I sesuai struktur workbook WBS.')+pmoTabs('siklus')+favBlock()+
  '<div class="ov-tabs" role="tablist" aria-label="Jenis capaian">'+[['tw','Capaian per Triwulan'],['kwide','Capaian K-Wide'],['tprog','Capaian T-Program'],['ue','Capaian per UE I']].map(([v,l])=>'<button type="button" data-act="ovTab" data-v="'+v+'" role="tab" aria-selected="'+(tab===v)+'" class="'+(tab===v?'on':'')+'">'+l+'</button>').join('')+'</div>'+
  (tab==='tw'?quarter+(data.items.length?'':'<div class="note w">WBS tahun ini belum tersedia di aplikasi. Impor sheet Kompilasi untuk mengisi capaian WBS.</div>'):
   tab==='kwide'?kTable:tab==='tprog'?matrix('Capaian T-Program',tprog):matrix('Capaian per Unit Eselon I',ue))+
@@ -6088,7 +6132,7 @@ document.addEventListener('change',async e=>{
 </script>
 <script>
 /* Tooltip navigasi memakai tujuan menu, bukan teks tombol. */
-const DESTINASI_PMO={siklus:'Overview',oneonone:'Pelaksanaan - Jadwal 1-on-1',portofolio:'Portofolio',program:'Program',perencanaan:'Perencanaan - Dokumen Proyek',charter:'Perencanaan - Dokumen Proyek',wbsplan:'Perencanaan - WBS',wbs:'Pelaksanaan - WBS & Progres',bukti:'Pelaksanaan - Bukti Dukung',cr:'Pelaksanaan - Change Request',milestone:'Pemantauan - Milestone',risiko:'Pemantauan - Risiko & Isu',laporan:'Pemantauan - Capaian Triwulanan',narasi:'Pelaksanaan - Narasi T-Program',penutupan:'Penutupan Proyek',referensi:'Referensi Kode'};
+const DESTINASI_PMO={siklus:'Overview',oneonone:'Pemantauan - Jadwal 1-on-1',portofolio:'Portofolio',program:'Program',perencanaan:'Perencanaan - Dokumen Proyek',charter:'Perencanaan - Dokumen Proyek',wbsplan:'Perencanaan - WBS',wbs:'Pelaksanaan - WBS & Progres',bukti:'Pelaksanaan - Bukti Dukung',cr:'Pelaksanaan - Change Request',milestone:'Pemantauan - Milestone',risiko:'Pemantauan - Risiko & Isu',laporan:'Pemantauan - Capaian Triwulanan',narasi:'Pelaksanaan - Narasi T-Program',penutupan:'Penutupan Proyek',referensi:'Referensi Kode'};
 const DESTINASI_CMO={adp:'Perencanaan - Analisis Dampak Perubahan',rencana:'Perencanaan - Rencana Manajemen Perubahan',impl:'Implementasi Manajemen Perubahan',monev:'Monitoring dan Evaluasi',closing:'Penutupan Manajemen Perubahan'};
 function tujuanMenu(href){const dest=String(href||'').replace(/^#/,'');if(dest.startsWith('pmo-'))return DESTINASI_PMO[dest.slice(4)]||'PMO - '+dest.slice(4);if(dest.startsWith('cmo-'))return DESTINASI_CMO[dest.slice(4)]||'CMO - '+dest.slice(4);if(dest==='dashboard')return 'Dashboard Eksekutif';return ''}
 document.addEventListener('mouseover',function(e){const el=e.target.closest('a[href^="#"],button[data-act],button[data-seg]');if(!el)return;let h=el.getAttribute('href')||'';const action=el.dataset.act||'';if(!h){if(action==='gowbs')h='#pmo-wbs';else if(action==='pchipgo')h='#pmo-wbs';else if(action==='chopen')h='#pmo-perencanaan';else if(action==='portoTab'){el.title='Tampilkan tab '+(el.textContent||'').trim();return}else return}
