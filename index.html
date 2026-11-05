@@ -1956,6 +1956,7 @@ td.dx-k{white-space:nowrap;font:inherit;font-size:12.5px;font-weight:800;color:v
 .cap-q .cap-y{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding-top:8px;border-top:1px dashed #D5DEEC}
 .cap-q .cap-y span{font-size:11.5px;color:#4A5E7C;font-weight:700}
 .cap-q .cap-y b{font-size:15px}
+.cap-q .cap-b{font-size:11px;color:#4A5E7C;line-height:1.45}.cap-q .cap-b b{font-size:11px;color:#203E65}
 .cap-q .cap-l{font-size:11px;color:#8A6A12;background:#FFF7DC;border-radius:6px;padding:3px 7px}
 .cap-q.plan b.big{color:#9AA7BC}
 .cap-q b.big{font-size:26px;color:#0B2447;line-height:1.2}
@@ -3929,57 +3930,62 @@ ACT.favEdit=()=>{S.ui.favEdit=!S.ui.favEdit;save();render()};
 ACT.favTog=el=>{const k=el.dataset.v;let L=favList();if(L.includes(k))L=L.filter(x=>x!==k);else{if(L.length>=FAV_MAX){toast('Maksimal '+FAV_MAX+' menu favorit agar tetap satu baris. Lepas salah satu dulu.');return}L=L.concat([k])}S.ui.pmoFav=L;save();render()};
 ACT.favReset=()=>{S.ui.pmoFav=FAV_DEF.slice();save();render()};
 
-/* Capaian WBS: angka resmi saat cut-off (bahan DKRO) vs data terkini, lingkup Kemenkeu atau UE I.
-   Format [target TWn, realisasi TWn, target tahunan, capaian tahunan %]. */
-const CAP_RESMI={2026:{
- 1:{cut:'2026-03-31',tot:[5618,5744,null,6.24],prog:{OA:[2610,2732,null,17.49],CORE:[2197,2197,null,3.29],TKD:[200,204,null,5.49],SP:[329,329,null,6.75],SD:[282,282,null,25.59]},
-  ue:{Setjen:[1890,2012,null,7.53],DJSEF:[1260,1382,null,11.19],DJA:[1679,1801,null,6.12],DJP:[1563,1689,null,10.93],DJBC:[1499,1621,null,11.65],DJPb:[1264,1390,null,12.64],DJKN:[2039,2161,null,8.77],DJPK:[2223,2349,null,7.53],DJPPR:[1260,1382,null,5.29],DJSPSK:[3007,3129,null,7.64],Itjen:[1710,1832,null,16.54],BaTii:[5618,5744,null,6.24],BPPK:[1440,1562,null,17.68],LNSW:[1499,1621,null,12.62]}},
- 2:{cut:'2026-06-30',tot:[33664,34589,95885,36.07],prog:{OA:[6942,7392,16478,44.86],CORE:[25213,25688,63757,40.29],SP:[660,660,9070,7.28],SD:[616,616,1195,51.55],SSB:[233,233,5385,4.33]},
-  ue:{Setjen:[16111,16775,27857,60.22],DJSEF:[4450,5114,12504,40.90],DJA:[8656,9367,32942,28.43],DJP:[4327,4777,22558,21.18],DJBC:[4026,4690,18267,25.67],DJPb:[3633,4083,11920,34.25],DJKN:[7689,8139,28428,28.63],DJPK:[10199,10649,35078,30.36],DJPPR:[10785,11235,25711,43.70],DJSPSK:[16180,16630,43589,38.15],Itjen:[4512,4962,11902,41.69],BaTii:[33868,34793,95816,36.31],BPPK:[3907,4357,8990,48.46],LNSW:[4026,4476,17197,26.03]}},
- 3:{cut:'2026-09-30',tot:[45800,47054,89303,52.69],prog:{OA:[10399,10767,16753,64.27],CORE:[29669,30555,63757,47.92],SP:[4208,4208,5982,70.34],SD:[797,797,1195,66.69],SSB:[727,727,1616,44.99]},
-  ue:{Setjen:[19886,20896,27948,74.77],DJSEF:[8705,9715,12411,78.28],DJA:[16527,17139,29761,57.59],DJP:[10737,11105,15608,71.15],DJBC:[9942,10952,15086,72.60],DJPb:[6403,6771,9592,70.59],DJKN:[15492,15860,25247,62.82],DJPK:[18161,18529,30396,60.96],DJPPR:[15227,15595,25618,60.88],DJSPSK:[26233,26601,40408,65.83],Itjen:[6880,7248,11809,61.38],BaTii:[45974,47228,89355,52.85],BPPK:[6597,6965,8897,78.28],LNSW:[9942,10310,14016,73.56]}}}};
-function capSnap(y,tw){const c=((S.cfg||{}).capSnap||{})[y+'-'+tw];return c||(CAP_RESMI[y]||{})[tw]||null}
+/* Capaian WBS — seluruh angka dihitung dari WBS di database (tanpa angka tertanam).
+   Kunci cut-off: salinan hitungan WBS pada batas pengisian TW disimpan di database (S.cfg.capSnap),
+   dibuat otomatis oleh sistem saat batas pengisian lewat, atau manual oleh PMO Kemenkeu. */
+const CAP_AUTO_FROM='2026-11-06';/* kunci otomatis hanya untuk batas pengisian sejak fitur ini aktif */
+const capCutHK=()=>+((S.cfg||{}).capCutHK)||3;/* batas pengisian realisasi: n hari kerja setelah TW berakhir (TW III 2026: Senin 5 Okt) */
+const capDeadline=(y,tw)=>addWD(twEnd(y,tw),capCutHK());
+function capSnap(y,tw){return ((S.cfg||{}).capSnap||{})[y+'-'+tw]||null}
 function capScope(){const u=curUnit();return u&&S.ui.capScope!=='kem'?'unit':'kem'}
 function capItems(sc,unit){const u=unit||curUnit();return pmoAllWbs().filter(w=>(!S.ui.prog||w.prog===S.ui.prog)&&(sc!=='unit'||!u||w.ue.includes(u)))}
 /* Total Kemenkeu mengikuti sheet Capaian T-Program: program berstatus Selesai yang realisasinya sudah 100% pada TW sebelumnya tidak dihitung lagi (mis. TKD sejak TW II). */
 function capTotItems(items,tw){if(tw<2)return items;const drop=new Set(S.programs.filter(p=>/selesai/i.test(p.status||'')).map(p=>p.akr).filter(k=>{const it=items.filter(w=>w.prog===k),v=capLive(it,tw-1);return it.length&&v.a>0&&v.r>=v.a}));return drop.size?items.filter(w=>!drop.has(w.prog)):items}
+function capLive(items,tw){const M=tw*3,x=sumTR(items,M),a=sumTR(items,12).t;let on=0,ont=0,nOn=0,nT=0,nE=0;
+ items.forEach(w=>{const b=+w.w||0;if(tgtAt(w,M)){ont+=b;nT++;if(realV(w,M)){on+=b;nOn++}}else if(realV(w,M))nE++});
+ return {t:x.t,r:x.r,a,ct:a?x.r/a*100:null,on,early:x.r-on,nT,nOn,nE,src:'live'}}
 function capLiveTot(items,tw){return capLive(capTotItems(items,tw),tw)}
-function capLive(items,tw){const x=sumTR(items,tw*3),a=sumTR(items,12).t;return {t:x.t,r:x.r,a,ct:a?x.r/a*100:null,src:'live'}}
 function capOff(kind,key,tw){const sn=capSnap(+S.ui.tahun,tw);if(!sn||!kind)return null;const v=kind==='tot'?sn.tot:(sn[kind]||{})[key];if(!v)return null;
- return {t:v[0],r:v[1],a:v[2],ct:v[3]!=null?+v[3]:(v[2]?v[1]/v[2]*100:null),src:'resmi',cut:sn.cut,lock:sn.at?sn:null}}
+ return {t:v[0],r:v[1],a:v[2],ct:v[3]!=null?+v[3]:(v[2]?v[1]/v[2]*100:null),on:v[4],early:v[4]!=null?v[1]-v[4]:null,nT:v[5],nOn:v[6],nE:v[7],src:'lock',cut:sn.cut,lock:sn}}
 function capVal(kind,key,items,tw){const live=kind==='tot'?capLiveTot(items,tw):capLive(items,tw);if(S.ui.capSrc!=='live'){const o=capOff(kind,key,tw);if(o){o.live=live;return o}}return live}
 const capPct=(r,t)=>t?pct(r/t*100):'—';
 function capSel(){const sc=capScope(),u=curUnit(),pk=S.ui.prog;return {sc,u,pk,kind:sc==='unit'?(pk?null:'ue'):(pk?'prog':'tot'),key:sc==='unit'?u:pk}}
-function capCtl(){const {sc,u}=capSel(),src=S.ui.capSrc==='live'?'live':'resmi';
- const seg=(k,cur,L)=>`<span class="cap-seg" role="group">${L.map(([v,l])=>`<button type="button" data-act="capSet" data-k="${k}" data-v="${v}" class="${cur===v?'on':''}" aria-pressed="${cur===v}">${esc(l)}</button>`).join('')}</span>`;
- return `<div class="cap-ctl">${u?seg('capScope',sc==='unit'?'unit':'kem',[['kem','Kemenkeu'],['unit',u]]):''}${seg('capSrc',src,[['resmi','Angka resmi'],['live','Data terkini']])}</div>`}
+function capCtl(){const {sc,u}=capSel(),src=S.ui.capSrc==='live'?'live':'lock';
+ const seg=(k,cur,L)=>`<span class="cap-seg" role="group">${L.map(([v,l,t])=>`<button type="button" data-act="capSet" data-k="${k}" data-v="${v}" class="${cur===v?'on':''}" aria-pressed="${cur===v}" title="${esc(t||'')}">${esc(l)}</button>`).join('')}</span>`;
+ return `<div class="cap-ctl">${u?seg('capScope',sc==='unit'?'unit':'kem',[['kem','Kemenkeu'],['unit',u]]):''}${seg('capSrc',src,[['lock','Kunci cut-off','Pakai angka yang dikunci saat batas pengisian; TW yang belum dikunci tetap dihitung langsung dari WBS'],['live','Data terkini','Hitung ulang seluruh TW dari WBS saat ini']])}</div>`}
 ACT.capSet=el=>{S.ui[el.dataset.k]=el.dataset.v;save();render()};
-function capLockBuild(y,tw){const all=pmoAllWbs(),L=it=>{const v=capLive(it,tw);return [v.t,v.r,v.a,v.ct==null?null:Math.round(v.ct*100)/100]};
- const o={cut:twEnd(y,tw),at:TODAY,by:ME?ME.email:'-',tot:(v=>[v.t,v.r,v.a,v.ct==null?null:Math.round(v.ct*100)/100])(capLiveTot(all,tw)),prog:{},ue:{}};
- S.programs.forEach(p=>{const it=all.filter(w=>w.prog===p.akr);if(it.length)o.prog[p.akr]=L(it)});UNITS.forEach(u=>{const it=all.filter(w=>w.ue.includes(u));if(it.length)o.ue[u]=L(it)});return o}
-ACT.capLock=el=>{const tw=+el.dataset.v,y=+S.ui.tahun;modal('Kunci angka resmi TW '+ROM[tw]+' '+y,`<p>Angka capaian TW ${ROM[tw]} dari data WBS saat ini akan disimpan sebagai <b>angka resmi (cut-off)</b> untuk seluruh T-Program dan UE I. Perubahan WBS sesudahnya tidak akan mengubah angka resmi ini, kecuali kunci dibuka.</p>`,()=>{S.cfg.capSnap=S.cfg.capSnap||{};S.cfg.capSnap[y+'-'+tw]=capLockBuild(y,tw);log('Kunci capaian','TW '+tw+' '+y);save();render();toast('Angka resmi TW '+ROM[tw]+' dikunci.');return true},'Kunci angka')};
-ACT.capUnlock=el=>{const tw=+el.dataset.v,y=+S.ui.tahun;if(S.cfg.capSnap){delete S.cfg.capSnap[y+'-'+tw]}log('Buka kunci capaian','TW '+tw+' '+y);save();render();toast('Kunci TW '+ROM[tw]+' dibuka.')};
-function capQuarter(quarters,num){const {sc,u,pk,kind,key}=capSel(),items=capItems(sc),cd=curTwDone(),y=+S.ui.tahun,adm=lv('lap').includes('U')&&!lockU();
+function capLockBuild(y,tw,how){const all=S.wbs.filter(w=>!w.arsip&&yrOf(w)===y),L=v=>[v.t,v.r,v.a,v.ct==null?null:Math.round(v.ct*100)/100,v.on,v.nT,v.nOn,v.nE];
+ const o={cut:capDeadline(y,tw),at:new Date().toISOString().slice(0,16).replace('T',' '),by:how==='auto'?'Sistem (otomatis)':(ME?ME.email:'-'),how:how||'manual',n:all.length,tot:L(capLiveTot(all,tw)),prog:{},ue:{}};
+ S.programs.forEach(p=>{const it=all.filter(w=>w.prog===p.akr);if(it.length)o.prog[p.akr]=L(capLive(it,tw))});UNITS.forEach(u=>{const it=all.filter(w=>w.ue.includes(u));if(it.length)o.ue[u]=L(capLive(it,tw))});return o}
+/* Kunci otomatis: dijalankan saat PMO Kemenkeu/Superadmin membuka aplikasi setelah batas pengisian TW lewat. */
+function capAutoLock(){try{if(!ME||lockU()||!lv('lap').includes('U'))return;if(FB.on&&!FB.ready)return;const y=+TODAY.slice(0,4);let ch=0;
+ [y-1,y].forEach(yy=>[1,2,3,4].forEach(tw=>{const dl=capDeadline(yy,tw);if(dl>=TODAY||dl<CAP_AUTO_FROM||capSnap(yy,tw))return;if(!S.wbs.some(w=>!w.arsip&&yrOf(w)===yy))return;
+  S.cfg.capSnap=S.cfg.capSnap||{};S.cfg.capSnap[yy+'-'+tw]=capLockBuild(yy,tw,'auto');log('Kunci capaian otomatis','TW '+tw+' '+yy+' (batas pengisian '+dl+')');ch=1}));
+ if(ch)save()}catch(e){}}
+ACT.capLock=el=>{const tw=+el.dataset.v,y=+S.ui.tahun,dl=capDeadline(y,tw),late=TODAY>dl;modal('Kunci capaian TW '+ROM[tw]+' '+y,`<p style="margin:0 0 8px">Hitungan capaian TW ${ROM[tw]} dari WBS <b>saat ini</b> akan disimpan di database sebagai angka cut-off untuk seluruh T-Program dan UE I. Perubahan WBS sesudahnya tidak mengubah angka ini, kecuali kunci dibuka.</p>${late?`<div class="note w" style="margin:0"><span>Batas pengisian TW ini sudah lewat (${fmtD(dl)}). Bila sejak itu ada realisasi susulan atau CR, angka yang dikunci sekarang ikut memuatnya.</span></div>`:''}`,'Kunci angka',()=>{S.cfg.capSnap=S.cfg.capSnap||{};S.cfg.capSnap[y+'-'+tw]=capLockBuild(y,tw,'manual');log('Kunci capaian','TW '+tw+' '+y);save();render();toast('Capaian TW '+ROM[tw]+' dikunci.')})};
+ACT.capUnlock=el=>{const tw=+el.dataset.v,y=+S.ui.tahun;modal('Buka kunci TW '+ROM[tw]+' '+y,'<p style="margin:0">Angka cut-off TW '+ROM[tw]+' dihapus dari database. Capaian TW ini kembali dihitung langsung dari WBS terkini.</p>','Buka kunci',()=>{if(S.cfg.capSnap)delete S.cfg.capSnap[y+'-'+tw];log('Buka kunci capaian','TW '+tw+' '+y);save();render();toast('Kunci TW '+ROM[tw]+' dibuka.')})};
+function capQuarter(quarters,num){capAutoLock();const {sc,u,pk,kind,key}=capSel(),items=capItems(sc),cd=curTwDone(),y=+S.ui.tahun,adm=lv('lap').includes('U')&&!lockU();
  const card=t=>{const st=t<=cd?'done':t===cd+1?'run':'plan',v=kind?capVal(kind,key,items,t):capLive(items,t);
-  const chip=v.src==='resmi'?`<span class="chip c-ok" title="Angka yang dilaporkan saat cut-off${v.lock?' (dikunci '+esc(v.lock.by)+' '+fmtD(v.lock.at)+')':''}">Resmi · cut-off ${fmtD(v.cut)}</span>`:st==='run'?'<span class="chip c-info">Berjalan · s.d. hari ini</span>':st==='plan'?'<span class="chip c-gray">Belum berjalan</span>':'<span class="chip c-warn">Data terkini</span>';
+  const chip=v.src==='lock'?`<span class="chip c-ok" title="Dikunci ${esc(v.lock.by)} · ${esc(v.lock.at)}">🔒 Cut-off ${fmtD(v.cut)}</span>`:st==='run'?'<span class="chip c-info">Berjalan · s.d. hari ini</span>':st==='plan'?'<span class="chip c-gray">Belum berjalan</span>':`<span class="chip c-warn" title="Belum ada kunci cut-off; dihitung langsung dari WBS saat ini">Dari WBS terkini</span>`;
   const big=st==='plan'?'—':capPct(v.r,v.t);
-  const lv2=v.live&&Math.abs((v.live.t?v.live.r/v.live.t:0)-(v.t?v.r/v.t:0))>.0005?`<span class="cap-l" title="Dihitung ulang dari WBS sekarang (realisasi susulan / CR setelah cut-off)">Data terkini: ${capPct(v.live.r,v.live.t)} (${num(v.live.r)} / ${num(v.live.t)})</span>`:'';
-  const sn=((S.cfg||{}).capSnap||{})[y+'-'+t];
-  const lk=adm&&st==='done'?(sn?`<button type="button" class="btn sm" data-act="capUnlock" data-v="${t}">Buka kunci TW ${ROM[t]}</button>`:!(CAP_RESMI[y]||{})[t]?`<button type="button" class="btn sm" data-act="capLock" data-v="${t}">🔒 Kunci angka TW ${ROM[t]}</button>`:''):'';
-  return `<div class="ov-q cap-q ${st}"><div class="cap-h"><small>TRIWULAN ${ROM[t]}</small>${chip}</div><b class="big">${big}</b><div class="bar"><i style="width:${st==='plan'?0:Math.min(100,v.t?v.r/v.t*100:0)}%;background:var(--blue)"></i></div><span>${st==='plan'?'Target '+num(v.t):num(v.r)+' realisasi / '+num(v.t)+' target'}</span><div class="cap-y"><span>Capaian tahunan${v.a?'<small style="display:block;font-weight:600;font-size:10.5px;letter-spacing:0;color:#6B7D96">target tahunan '+num(v.a)+'</small>':''}</span><b>${st==='plan'||v.ct==null?'—':pct(v.ct)}</b></div>${lv2}${lk}</div>`};
+  const brk=st!=='plan'&&v.on!=null&&v.early>0?`<span class="cap-b"><b>${num(v.on)}</b> dari task yang jatuh tempo s.d. TW ${ROM[t]}${v.nT!=null?' ('+v.nOn+'/'+v.nT+' task)':''} + <b>${num(v.early)}</b> dari ${v.nE!=null?v.nE+' ':''}task yang selesai lebih cepat dari jadwal</span>`:st!=='plan'&&v.nT!=null?`<span class="cap-b">${v.nOn}/${v.nT} task jatuh tempo s.d. TW ${ROM[t]} selesai &amp; tervalidasi</span>`:'';
+  const lv2=v.live&&Math.abs((v.live.t?v.live.r/v.live.t:0)-(v.t?v.r/v.t:0))>.0005?`<span class="cap-l" title="Dihitung ulang dari WBS sekarang">WBS terkini: ${capPct(v.live.r,v.live.t)} (${num(v.live.r)} / ${num(v.live.t)})</span>`:'';
+  const sn=capSnap(y,t);
+  const lk=adm&&st==='done'?(sn?`<button type="button" class="btn sm" data-act="capUnlock" data-v="${t}">Buka kunci</button>`:`<button type="button" class="btn sm" data-act="capLock" data-v="${t}">🔒 Kunci TW ${ROM[t]}</button>`):'';
+  return `<div class="ov-q cap-q ${st}"><div class="cap-h"><small>TRIWULAN ${ROM[t]}</small>${chip}</div><b class="big">${big}</b><div class="bar"><i style="width:${st==='plan'?0:Math.min(100,v.t?v.r/v.t*100:0)}%;background:var(--blue)"></i></div><span>${st==='plan'?'Target '+num(v.t):num(v.r)+' realisasi / '+num(v.t)+' target'}</span>${brk}<div class="cap-y"><span>Capaian tahunan${v.a?'<small style="display:block;font-weight:600;font-size:10.5px;letter-spacing:0;color:#6B7D96">target tahunan '+num(v.a)+'</small>':''}</span><b>${st==='plan'||v.ct==null?'—':pct(v.ct)}</b></div>${lv2}${lk}</div>`};
  const scopeLab=sc==='unit'?'UE I '+u+' (kolom cakupan UE I = "Ya")':'Kemenkeu'+(pk?' · '+((progOf(pk)||{}).nama||pk):' · seluruh T-Program');
  return `<div class="card"><div class="ch"><h3>Capaian per Triwulan</h3>${capCtl()}</div><div class="ov-qgrid">${quarters.map(card).join('')}</div>`+
- `<div class="ov-filter-status"><b>Lingkup:</b> ${esc(scopeLab)} · ${esc(S.ui.capSrc==='live'?'Data terkini dari WBS':'Angka resmi untuk TW yang sudah cut-off')}${sc==='unit'&&pk?' · <i>angka resmi per UE I × program tidak tersedia, ditampilkan data terkini</i>':''}</div>`+
- `<p class="cap-note"><b>Angka resmi</b> = angka yang dilaporkan saat cut-off (sheet Capaian TW 1-3 / bahan DKRO). <b>Data terkini</b> dihitung ulang dari WBS sekarang dengan rumus sheet Capaian T-Program dan Capaian per UE1: target = bobot (hari) item yang jatuh tempo s.d. akhir TW, kumulatif; realisasi = bobot item yang sudah 100% s.d. bulan itu dan tervalidasi. Keduanya bisa berbeda karena realisasi diisi susulan dan CR setelah cut-off. Capaian tahunan = realisasi TW ÷ target tahunan.</p></div>`}
-function capMatrix(kindTab,num){const {sc,u,pk}=capSel(),cd=Math.max(1,Math.min(4,curTwDone()||1)),all=pmoAllWbs().filter(w=>!pk||w.prog===pk);
+ `<div class="ov-filter-status"><b>Lingkup:</b> ${esc(scopeLab)} · ${esc(S.ui.capSrc==='live'?'Data terkini dari WBS':'Angka kunci cut-off bila ada, selain itu dari WBS')}${sc==='unit'&&pk?' · <i>kunci cut-off per UE I × program tidak tersedia, ditampilkan data terkini</i>':''}</div>`+
+ `<p class="cap-note">Semua angka dihitung dari item WBS di database dengan rumus sheet Capaian T-Program dan Capaian per UE1: <b>target</b> = bobot (hari) task yang jatuh tempo s.d. akhir TW, kumulatif; <b>realisasi</b> = bobot task yang sudah ditandai 100% s.d. bulan itu dan buktinya tervalidasi, termasuk task yang selesai lebih cepat dari jadwal. <b>Kunci cut-off</b> dibuat otomatis oleh sistem ${capCutHK()} hari kerja setelah TW berakhir (batas pengisian realisasi), agar angka yang dilaporkan tidak berubah oleh realisasi susulan atau CR.</p></div>`}
+function capMatrix(kindTab,num){capAutoLock();const {sc,u,pk}=capSel(),cd=Math.max(1,Math.min(4,curTwDone()||1)),all=pmoAllWbs().filter(w=>!pk||w.prog===pk);
  let ent=[];
  if(kindTab==='prog'){const base=sc==='unit'?all.filter(w=>w.ue.includes(u)):all;
   ent=S.programs.filter(p=>base.some(w=>w.prog===p.akr)).map(p=>{const it=base.filter(w=>w.prog===p.akr);return {name:p.nama,tw:[1,2,3,4].map(t=>sc==='unit'?capLive(it,t):capVal('prog',p.akr,it,t))}});
   if(!pk)ent.push({name:'Total'+(sc==='unit'?' '+u:''),tot:1,tw:[1,2,3,4].map(t=>sc==='unit'?capVal('ue',u,base,t):capVal('tot','',base,t))})}
  else{const us=sc==='unit'?[u]:UNITS;ent=us.map(x=>{const it=all.filter(w=>w.ue.includes(x));return {name:x,me:x===u,tw:[1,2,3,4].map(t=>pk?capLive(it,t):capVal('ue',x,it,t))}}).filter(e=>e.tw.some(v=>v.t||v.r))}
- const cell=(v,t)=>`<td class="num"><b>${t>cd+1?'—':capPct(v.r,v.t)}</b><span class="sm">${num(v.r)} / ${num(v.t)}</span>${v.src==='resmi'?'':t<=cd?'<span class="src">terkini</span>':''}</td>`;
+ const cell=(v,t)=>`<td class="num"><b>${t>cd+1?'—':capPct(v.r,v.t)}</b><span class="sm">${num(v.r)} / ${num(v.t)}</span>${v.src==='lock'?'<span class="src">🔒 cut-off</span>':''}</td>`;
  const title=kindTab==='prog'?'Capaian T-Program':'Capaian per Unit Eselon I';
- return `<div class="card ov-matrix"><div class="ch"><h3>${title}</h3>${capCtl()}</div><div class="tscroll"><table class="lap"><thead><tr><th>${kindTab==='prog'?'T-Program':'UE I'}</th>${[1,2,3,4].map(t=>`<th class="num">TW ${ROM[t]}</th>`).join('')}<th class="num">Target tahunan</th><th class="num">Capaian tahunan s.d. TW ${ROM[cd]}</th></tr></thead><tbody>${ent.map(e=>{const v=e.tw[cd-1];return `<tr${e.tot?' style="background:#F4F7FC"':''}><td><b>${esc(e.name)}</b>${e.me&&sc!=='unit'?' <span class="chip c-info">unit saya</span>':''}</td>${e.tw.map((x,i)=>cell(x,i+1)).join('')}<td class="num">${num(v.a)}</td><td class="num"><b>${v.ct==null?'—':pct(v.ct)}</b></td></tr>`}).join('')}</tbody></table></div><p class="cap-note">Sel TW: capaian (realisasi / target kumulatif). Label <b>terkini</b> = belum ada angka resmi untuk sel tersebut, dihitung dari WBS sekarang.</p></div>`}
+ return `<div class="card ov-matrix"><div class="ch"><h3>${title}</h3>${capCtl()}</div><div class="tscroll"><table class="lap"><thead><tr><th>${kindTab==='prog'?'T-Program':'UE I'}</th>${[1,2,3,4].map(t=>`<th class="num">TW ${ROM[t]}</th>`).join('')}<th class="num">Target tahunan</th><th class="num">Capaian tahunan s.d. TW ${ROM[cd]}</th></tr></thead><tbody>${ent.map(e=>{const v=e.tw[cd-1];return `<tr${e.tot?' style="background:#F4F7FC"':''}><td><b>${esc(e.name)}</b>${e.me&&sc!=='unit'?' <span class="chip c-info">unit saya</span>':''}</td>${e.tw.map((x,i)=>cell(x,i+1)).join('')}<td class="num">${num(v.a)}</td><td class="num"><b>${v.ct==null?'—':pct(v.ct)}</b></td></tr>`}).join('')}</tbody></table></div><p class="cap-note">Sel TW: capaian (realisasi / target kumulatif) dihitung dari WBS. Label <b>🔒 cut-off</b> = angka yang dikunci saat batas pengisian; tanpa label = dihitung langsung dari WBS saat ini.</p></div>`}
 function pOverview(){
  const y=+S.ui.tahun,tab=['tw','kwide','tprog','ue'].includes(S.ui.overviewTab)?S.ui.overviewTab:'tw';
  const P=per(),data=lapData(),num=n=>Number(n||0).toLocaleString('id-ID');
