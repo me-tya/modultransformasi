@@ -1648,6 +1648,27 @@ body:has(.prj-overlay){overflow:hidden}
 .fs-it .hp-go{flex:none;min-width:150px;max-width:190px;height:28px;font-size:12px}.fs-it .hp-go span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fs-it:hover{transform:translateX(2px)}
 @media(max-width:900px){.fs-cols{grid-template-columns:1fr}.fs-h small{display:none}.fs-it span{white-space:normal}}
+
+/* Notula */
+.nt-fld{grid-column:1/-1}
+.nt-opt{font-size:10.5px;font-weight:700;color:var(--ink-3);background:var(--line-2);padding:0 7px;border-radius:10px;margin-left:4px}
+.nt-in{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.nt-in input[type=url]{flex:1;min-width:240px}
+.nt-or{font-size:12px;color:var(--ink-3);font-weight:700}
+.nt-file{cursor:pointer}
+.nt-in small{flex-basis:100%;font-size:12px;color:var(--ink-3)}
+.nt-cur{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.nt-chip{display:inline-flex;align-items:center;gap:7px;max-width:100%;padding:5px 11px 5px 6px;border:1px solid #C9D8EE;border-radius:20px;background:linear-gradient(180deg,#fff,#F2F6FC);color:var(--navy-2);font-weight:800;font-size:12.5px;text-decoration:none;transition:background .18s,color .18s,transform .18s,box-shadow .18s}
+.nt-chip i{font-style:normal;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#E8F0FB;color:var(--navy-2);font-size:11px}
+.nt-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nt-chip:hover{background:linear-gradient(135deg,#0B1F45,#17457F);color:var(--yellow);transform:translateY(-1px);box-shadow:0 6px 14px rgba(11,31,69,.2)}
+.nt-chip:hover i{background:var(--yellow);color:var(--navy)}
+.nt-chip.sm{font-size:12px;padding:3px 10px 3px 4px}.nt-chip.sm i{width:18px;height:18px}
+
+.ws-table .nt-chip,.one-table .nt-chip,.tw .nt-chip,td .nt-chip{display:inline-flex!important;flex-direction:row!important;align-items:center;white-space:nowrap;width:auto!important;min-height:0}
+td .nt-chip i{display:grid!important;margin:0!important;font-size:11px!important}
+td .nt-chip span{display:inline!important;margin:0!important;font-size:12px!important;color:inherit!important;font-weight:800!important}
+.sm .nt-chip{margin-top:4px}
 </style>
 
 <div id="root"></div>
@@ -3024,16 +3045,16 @@ function pOneOnOne(){
  return vh('1','pmo','Jadwal 1-on-1','Jadwal pembahasan capaian WBS dan milestone T-Program, termasuk PIC dan tautan rapat.',exportBtn+addBtn)+pmoTabs('oneonone')+
  '<div class="note i"><span><b>Rujukan jadwal TW II 2026:</b> 29 Juni s.d. 2 Juli 2026. Tanggal atau jam yang belum terisi pada file sumber tidak diasumsikan sudah terjadwal. Perubahan di aplikasi perlu diperbarui oleh PMO terkait.</span></div>'+
  '<div class="kpis"><div class="kpi dk"><div class="l">Agenda 1-on-1</div><div class="v">'+rows.length+'</div><div class="d">Tahun '+S.ui.tahun+'</div></div><div class="kpi"><div class="l">Tanggal dan jam lengkap</div><div class="v">'+scheduled+'</div></div><div class="kpi"><div class="l">Tautan online terisi</div><div class="v">'+online+'</div></div></div>'+
- '<div class="card"><div class="ch"><h3>Jadwal Pembahasan Progres T-Program</h3><span class="r s">Diadaptasi dari sheet Jadwal 1on1 TW II</span></div><div class="tscroll"><table class="lap one-table"><thead><tr><th>No.</th><th>Hari/Tanggal</th><th>Jam</th><th>Nama Program Transformasi</th><th>Tema</th><th>UIC Utama</th><th>SPV</th><th>Katim</th><th>Anggota</th><th>Teams / Lokasi</th>'+(editable?'<th>Tindakan</th>':'')+'</tr></thead><tbody>'+
- rows.map(x=>'<tr><td>'+esc(x.no)+'</td><td><b>'+(x.tgl?fmtD(x.tgl):'Belum ditetapkan')+'</b></td><td>'+(x.jam?esc(x.jam):'—')+'</td><td><b>'+esc(x.program)+'</b></td><td>'+esc(x.tema)+'</td><td>'+esc(x.uic)+'</td><td>'+esc(x.spv)+'</td><td>'+esc(x.katim)+'</td><td>'+esc(x.anggota)+'</td><td>'+(x.lokasi?/^https?:/i.test(x.lokasi)?'<a href="'+esc(x.lokasi)+'" target="_blank" rel="noopener">Buka Teams</a>':esc(x.lokasi):'—')+'</td>'+(editable?'<td><button class="btn sm" data-act="oneEdit" data-id="'+esc(x.id)+'">Edit</button></td>':'')+'</tr>').join('')+
+ '<div class="card"><div class="ch"><h3>Jadwal Pembahasan Progres T-Program</h3><span class="r s">Diadaptasi dari sheet Jadwal 1on1 TW II</span></div><div class="tscroll"><table class="lap one-table"><thead><tr><th>No.</th><th>Hari/Tanggal</th><th>Jam</th><th>Nama Program Transformasi</th><th>Tema</th><th>UIC Utama</th><th>SPV</th><th>Katim</th><th>Anggota</th><th>Teams / Lokasi</th><th>Notula</th>'+(editable?'<th>Tindakan</th>':'')+'</tr></thead><tbody>'+
+ rows.map(x=>'<tr><td>'+esc(x.no)+'</td><td><b>'+(x.tgl?fmtD(x.tgl):'Belum ditetapkan')+'</b></td><td>'+(x.jam?esc(x.jam):'—')+'</td><td><b>'+esc(x.program)+'</b></td><td>'+esc(x.tema)+'</td><td>'+esc(x.uic)+'</td><td>'+esc(x.spv)+'</td><td>'+esc(x.katim)+'</td><td>'+esc(x.anggota)+'</td><td>'+(x.lokasi?/^https?:/i.test(x.lokasi)?'<a href="'+esc(x.lokasi)+'" target="_blank" rel="noopener">Buka Teams</a>':esc(x.lokasi):'—')+'</td><td>'+(notulaChip(x.notula,1)||'<span class="s">—</span>')+'</td>'+(editable?'<td><button class="btn sm" data-act="oneEdit" data-id="'+esc(x.id)+'">Edit</button></td>':'')+'</tr>').join('')+
  '</tbody></table></div></div>';
 }
 function editOneOnOne(item){
  if(!lv('wbs').includes('U')&&!lv('wbs').includes('C')){toast('Tidak memiliki izin mengubah jadwal.');return}
  const labels=[['tgl','Tanggal rapat','date'],['jam','Jam / rentang waktu','text'],['program','Nama program transformasi','text'],['tema','Tema','text'],['uic','UIC Utama','text'],['spv','Supervisor','text'],['katim','Ketua tim','text'],['anggota','Anggota','text'],['lokasi','Link Teams / lokasi rapat','text']];
  const f=labels.map(([k,label,type])=>'<div class="fld"><label for="one-'+k+'">'+label+'</label><input id="one-'+k+'" type="'+type+'" value="'+esc(item[k]||'')+'" '+(k==='program'?'required':'')+'></div>').join('');
- modal('Ubah Jadwal 1-on-1','<div class="fgrid">'+f+'</div>','Simpan',()=>{
-  const oldName=item.program;
+ notulaReset('one');modal('Ubah Jadwal 1-on-1','<div class="fgrid">'+f+notulaField('one',item.notula,'Notula rapat 1-on-1')+'</div>','Simpan',()=>{
+  const oldName=item.program;const nt=notulaCollect('one',item.notula);if(nt===false)return false;item.notula=nt;notulaReset('one');
   labels.forEach(([k])=>item[k]=String($('#one-'+k).value||'').trim());
   if(!item.program){toast('Nama program wajib diisi.');return false}
   if(!S.oneonone.some(x=>x.id===item.id))S.oneonone.push(item);
@@ -3255,16 +3276,16 @@ function pCr(){const seg=S.ui.crseg||'';const CS=pmoCrList();const rows=CS.filte
   tools:`<div class="seg">${[['','Semua'],['open','Terbuka'],['done','Selesai']].map(([v,l])=>`<button data-seg="crseg" data-v="${v}" class="${seg===v?'on':''}">${l}</button>`).join('')}</div>`,
   rowAct:c=>`${lv('crok').includes('U')&&['Diajukan','Telaah PMO Pusat'].includes(c.st)?`<button data-act="crdec" data-i="${c.id}" title="Putuskan">⚖</button>`:''}${c.st==='Dikembalikan'&&c.unit===ME.unit&&lv('cr').includes('U')?`<button data-act="crre" data-i="${c.id}" title="Ajukan ulang">↻</button>`:''}`,
   cols:[{k:'kode',l:'Kode',r:c=>`<span class="code">${c.kode}</span>`},{k:'jenis',l:'Jenis'},{k:'item',l:'Item WBS',r:c=>{const it=wbsBy(c.item);const m=it&&modOfItem(it);return `<span class="code">${esc(c.item)}</span><span class="sm">${esc(short(it?deliv(it):'',50))}</span>${m?`<span class="sm">Modul CMO: ${esc(short(m.nama,40))}</span>`:''}`}},
-   {k:'ch',l:'Perubahan',w:1,r:c=>crChanges(c,true),x:c=>crChanges(c)},{k:'d',l:'Dampak',r:c=>chipSt(crDampak(c)),x:c=>crDampak(c)},{k:'pengaju',l:'Pengaju',r:c=>`${esc(c.pengaju)}<span class="sm">${esc(c.unit||'')} · ${fmtD(c.tgl)}</span>`},{k:'st',l:'Status',r:c=>chipSt(c.st)+(sla(c)?' <span class="chip c-bad">SLA</span>':'')}]})}
+   {k:'ch',l:'Perubahan',w:1,r:c=>crChanges(c,true),x:c=>crChanges(c)},{k:'d',l:'Dampak',r:c=>chipSt(crDampak(c)),x:c=>crDampak(c)},{k:'pengaju',l:'Pengaju',r:c=>`${esc(c.pengaju)}<span class="sm">${esc(c.unit||'')} · ${fmtD(c.tgl)}</span>${c.dasar?`<span class="sm">${notulaChip(c.dasar,1)}</span>`:''}`},{k:'st',l:'Status',r:c=>chipSt(c.st)+(sla(c)?' <span class="chip c-bad">SLA</span>':'')}]})}
 ACT.crnew=()=>crNew('');
 ACT.crre=el=>{const c=S.crs.find(x=>x.id===el.dataset.i);c.st='Diajukan';c.tgl=TODAY;log('Ajukan ulang CR',c.kode);save();render()};
-function crNew(item){const its=S.wbs.filter(w=>!w.arsip&&canW('cr','C',w.u,w));
+function crNew(item){notulaReset('cr');const its=S.wbs.filter(w=>!w.arsip&&canW('cr','C',w.u,w));
  const ov=modal('Ajukan Change Request',`<div class="fgrid"><div class="fld"><label for="c-i">Kode WBS <i>*</i></label>${comboHTML('c-i','Pilih atau cari kode / nama item…',item)}<small>${lockU()?`Item yang ${esc(lockU())} pegang sebagai UIC Utama (${its.length} item).`:`${its.length} item tersedia.`}</small></div>
  <div class="fld"><label for="c-j">Jenis perubahan</label><select id="c-j">${opts([['Ubah item','Ubah komponen item (deadline, tanggal, deliverable, bobot, UIC, dokumen)'],['Tambah item','Tambah item baru di bawah induk yang sama'],['Hapus/arsip item','Hapus / arsipkan item']])}</select></div>
  <div class="wide" id="c-box" style="grid-column:1/-1"></div>
- <div class="fld wide"><label for="c-a">Alasan dan dasar <i>*</i></label><textarea id="c-a" placeholder="Alasan perubahan, rujukan nota dinas/notulen"></textarea></div><div class="fld"><label for="c-e">Tanggal efektif</label><input id="c-e" type="date" value="${TODAY}"></div><div class="fld"><label>Pihak yang diberi tahu</label><small>PMO Pusat, UIC Pendukung, CMO Unit modul terkait, dan Pendamping CM (Pusmantap, advisory).</small></div></div>`,'Ajukan',()=>{
+ <div class="fld wide"><label for="c-a">Alasan dan dasar <i>*</i></label><textarea id="c-a" placeholder="Alasan perubahan, rujukan nota dinas/notulen"></textarea></div>${notulaField('cr',null,'Dokumen dasar (nota dinas / notula rapat)')}<div class="fld"><label for="c-e">Tanggal efektif</label><input id="c-e" type="date" value="${TODAY}"></div><div class="fld"><label>Pihak yang diberi tahu</label><small>PMO Pusat, UIC Pendukung, CMO Unit modul terkait, dan Pendamping CM (Pusmantap, advisory).</small></div></div>`,'Ajukan',()=>{
   const it=wbsBy($('#c-i').value.trim().toUpperCase());if(!it){toast('Kode WBS tidak ditemukan.');return false}if(!its.includes(it)){toast('Item ini di luar cakupan unit Anda (bukan UIC Utama).');return false}
-  const c=draft();if(!c)return false;c.alasan=$('#c-a').value.trim();c.efektif=$('#c-e').value;if(!c.alasan){toast('Alasan wajib diisi.');return false}
+  const c=draft();if(!c)return false;const nt=notulaCollect('cr',null);if(nt===false)return false;c.dasar=nt;notulaReset('cr');c.alasan=$('#c-a').value.trim();c.efektif=$('#c-e').value;if(!c.alasan){toast('Alasan wajib diisi.');return false}
   c.id=uid();c.kode='CR-'+String(S.ui.tahun).slice(-2)+'-'+String(S.crs.length+1).padStart(3,'0');c.st='Diajukan';c.pengaju=ME.nama;c.unit=ME.unit;c.tgl=TODAY;c.cat='';
   S.crs.push(c);log('Ajukan CR',c.kode+' '+c.item+' · '+crChanges(c));save();toast(`${c.kode} diajukan · dampak ${crDampak(c)}.`);if(VIEW!=='pmo-cr')go('pmo-cr');else render()},{size:'wide'});
  let last=null;
@@ -3290,7 +3311,7 @@ function comboBind(root,id,items,onPick){const inp=root.querySelector('#'+id),li
  list.addEventListener('mousedown',e=>{const o=e.target.closest('.cbo[data-v]');if(o){e.preventDefault();pick(o.dataset.v)}});
  inp.addEventListener('blur',()=>setTimeout(()=>{list.hidden=true},150));
  inp.parentNode.querySelector('.cbc').addEventListener('mousedown',e=>{e.preventDefault();if(document.activeElement===inp&&!list.hidden){list.hidden=true}else{inp.focus();draw()}})}
-function crView(c){const it=wbsBy(c.item);const m=it&&modOfItem(it);modal(`<span class="code">${c.kode}</span> ${esc(c.jenis)}`,`<div class="kv"><span>Item</span><div><span class="code">${esc(c.item)}</span> ${esc(it?deliv(it):'')}</div><span>Perubahan</span><div>${crChanges(c,true)}</div><span>Dampak</span><div>${chipSt(crDampak(c))} ${crDampak(c)==='Besar'?'· perlu keputusan Sponsor setelah PMO Pusat':''}</div><span>Modul CMO terdampak</span><div>${m?`${esc(m.nama)}${cmType(it)==='ADP'||(c.ch&&(c.ch.u||c.ch.dl))?' · <span class="chip c-warn">perlu tinjau ulang ADP</span>':''}`:'—'}</div><span>Alasan</span><div>${esc(c.alasan)}</div><span>Efektif</span><div>${fmtD(c.efektif)}</div><span>Pengaju</span><div>${esc(c.pengaju)} (${esc(c.unit||'')}) · ${fmtD(c.tgl)}</div><span>Status</span><div>${chipSt(c.st)} ${esc(c.cat||'')}</div></div>
+function crView(c){const it=wbsBy(c.item);const m=it&&modOfItem(it);modal(`<span class="code">${c.kode}</span> ${esc(c.jenis)}`,`<div class="kv"><span>Item</span><div><span class="code">${esc(c.item)}</span> ${esc(it?deliv(it):'')}</div>${c.dasar?`<span>Dokumen dasar</span><div>${notulaChip(c.dasar)}</div>`:''}<span>Perubahan</span><div>${crChanges(c,true)}</div><span>Dampak</span><div>${chipSt(crDampak(c))} ${crDampak(c)==='Besar'?'· perlu keputusan Sponsor setelah PMO Pusat':''}</div><span>Modul CMO terdampak</span><div>${m?`${esc(m.nama)}${cmType(it)==='ADP'||(c.ch&&(c.ch.u||c.ch.dl))?' · <span class="chip c-warn">perlu tinjau ulang ADP</span>':''}`:'—'}</div><span>Alasan</span><div>${esc(c.alasan)}</div><span>Efektif</span><div>${fmtD(c.efektif)}</div><span>Pengaju</span><div>${esc(c.pengaju)} (${esc(c.unit||'')}) · ${fmtD(c.tgl)}</div><span>Status</span><div>${chipSt(c.st)} ${esc(c.cat||'')}</div></div>
  <div class="s" style="margin-top:10px">Alur: Diajukan → cek otomatis → telaah dan keputusan PMO Pusat (SLA 5 hari kerja) → keputusan Sponsor bila dampak Besar → diterapkan ke WBS; nilai lama tersimpan di riwayat CR.</div>`,null,null,{cancel:'Tutup',extra:lv('crok').includes('U')&&['Diajukan','Telaah PMO Pusat'].includes(c.st)?'<button class="btn pri" data-mx="d">Putuskan</button>':'',onExtra:()=>{crDecide(c)}})}
 ACT.crdec=el=>crDecide(S.crs.find(c=>c.id===el.dataset.i));
 function crDecide(c){modal(`Keputusan ${c.kode}`,`<p style="margin:0 0 8px">${esc(c.jenis)} · <span class="code">${esc(c.item)}</span> · dampak ${chipSt(crDampak(c))}</p><div style="margin-bottom:8px;font-size:12.5px">${crChanges(c,true)}</div>${crDampak(c)==='Besar'?'<div class="note w" style="margin-bottom:8px"><span>Dampak Besar: lampirkan disposisi Sponsor pada catatan.</span></div>':''}<div class="fld"><label for="dc">Catatan keputusan <i>*</i></label><textarea id="dc"></textarea></div>`,'Setujui & terapkan',()=>{const n=$('#dc').value.trim();if(!n){toast('Catatan wajib diisi.');return false}crApply(c);c.st='Diterapkan';c.cat=n+' · '+ME.nama;log('Setujui CR',c.kode+' · '+crChanges(c));save();toast(`${c.kode} disetujui dan diterapkan ke WBS.`);render()},
@@ -3687,6 +3708,24 @@ function projectCopy(scope,type){
 }
 
 /* Decision log: keputusan ditautkan langsung ke ruang lingkup proyek/subproyek. */
+/* ===== Notula / dokumen pendukung rapat (dipakai di Decision Log, Jadwal 1-on-1, Change Request) ===== */
+const NOT_MAX=300*1024,NOT_TMP={};
+function notulaField(p,cur,label){cur=cur||{};const has=cur.data||cur.link;
+ return '<div class="fld wide nt-fld" data-nt="'+p+'"><label>'+esc(label||'Notula rapat')+' <span class="nt-opt">opsional</span></label>'+
+  (has?'<div class="nt-cur" id="nt-cur-'+p+'">'+notulaChip(cur)+'<button type="button" class="btn sm" data-ntdel="'+p+'">Ganti / hapus</button></div>':'')+
+  '<div class="nt-in" id="nt-in-'+p+'"'+(has?' hidden':'')+'><input id="nt-link-'+p+'" type="url" placeholder="Tempel tautan SharePoint / OneDrive…" value="'+esc(cur.link||'')+'"><span class="nt-or">atau</span><label class="btn sm nt-file">⇪ Unggah berkas<input type="file" data-ntfile="'+p+'" accept=".pdf,.doc,.docx,.odt,.jpg,.jpeg,.png" hidden></label><small id="nt-msg-'+p+'">PDF/Word/gambar maks. 300 KB disimpan langsung; berkas lebih besar unggah ke SharePoint lalu tempel tautannya.</small></div></div>'}
+function notulaChip(n,sm){if(!n||!(n.data||n.link))return '';const nm=n.nama||(n.link?'Tautan notula':'Notula');
+ const href=n.data||n.link;return '<a class="nt-chip'+(sm?' sm':'')+'" href="'+esc(href)+'" '+(n.data?'download="'+esc(nm)+'"':'target="_blank" rel="noopener"')+' title="'+(n.data?'Unduh ':'Buka ')+esc(nm)+'"><i>'+(n.data?'⬇':'↗')+'</i><span>'+esc(sm?(n.data?'Unduh notula':'Buka notula'):nm)+'</span></a>'}
+function notulaCollect(p,old){const del=NOT_TMP[p+'_del'],t=NOT_TMP[p];const link=(document.getElementById('nt-link-'+p)||{}).value?.trim()||'';
+ if(t)return {nama:t.nama,data:t.data,link:'',tgl:TODAY,by:ME.nama};
+ if(link){if(!/^https?:\/\//i.test(link)){toast('Tautan notula harus diawali http:// atau https://');return false}return {nama:(old&&old.link===link&&old.nama)||'',link,tgl:TODAY,by:ME.nama}}
+ if(del||!old)return null;return old}
+function notulaReset(p){delete NOT_TMP[p];delete NOT_TMP[p+'_del']}
+document.addEventListener('change',e=>{const f=e.target.closest('[data-ntfile]');if(!f)return;const p=f.dataset.ntfile,file=f.files[0];if(!file)return;const msg=document.getElementById('nt-msg-'+p);
+ if(file.size>NOT_MAX){msg&&(msg.innerHTML='<b style="color:var(--bad)">Berkas '+(file.size/1024|0)+' KB melebihi 300 KB.</b> Unggah ke SharePoint lalu tempel tautannya.');f.value='';return}
+ const rd=new FileReader();rd.onload=()=>{NOT_TMP[p]={nama:file.name,data:rd.result};msg&&(msg.innerHTML='<b style="color:var(--ok)">✔ '+esc(file.name)+'</b> ('+(file.size/1024|0)+' KB) siap disimpan.');const l=document.getElementById('nt-link-'+p);if(l)l.value=''};rd.readAsDataURL(file)});
+document.addEventListener('click',e=>{const d=e.target.closest('[data-ntdel]');if(!d)return;const p=d.dataset.ntdel;NOT_TMP[p+'_del']=1;delete NOT_TMP[p];const c=document.getElementById('nt-cur-'+p),i=document.getElementById('nt-in-'+p);if(c)c.hidden=true;if(i){i.hidden=false;const l=document.getElementById('nt-link-'+p);if(l)l.value=''}});
+
 function projectDecisionEdit(scope,id){
  projectStores();const o=S.projectDecisions.find(x=>x.id===id);
  if(!lv('porto').includes('U')&&!lv('porto').includes('C')){toast('Tidak ada hak mengubah catatan keputusan.');return}
@@ -3698,10 +3737,11 @@ function projectDecisionEdit(scope,id){
  projectField('impact','Implikasi / alasan',o?.impact||'')+
  projectField('owner','PIC tindak lanjut',o?.owner||'')+
  projectField('due','Batas waktu',o?.due||'','date')+
- '<label class="prj-field"><span>Status tindak lanjut</span><select id="prj-status">'+['Belum dimulai','Berjalan','Selesai','Ditunda'].map(v=>'<option '+((o?.status||'Belum dimulai')===v?'selected':'')+'>'+v+'</option>').join('')+'</select></label></div>';
+ '<label class="prj-field"><span>Status tindak lanjut</span><select id="prj-status">'+['Belum dimulai','Berjalan','Selesai','Ditunda'].map(v=>'<option '+((o?.status||'Belum dimulai')===v?'selected':'')+'>'+v+'</option>').join('')+'</select></label>'+notulaField('dec',o?.notula,'Notula rapat / dasar keputusan')+'</div>';notulaReset('dec');
  modal((o?'Edit Decision Log':'Tambah Keputusan')+projectHelp('decision',true),projectDecorateInputs(body,'decision'),'Simpan',()=>{
   if(!$('#prj-title').value.trim()){toast('Keputusan wajib diisi.');return false}
-  const d=o||{id:uid(),scope};
+  const nt=notulaCollect('dec',o?.notula);if(nt===false)return false;
+  const d=o||{id:uid(),scope};d.notula=nt;notulaReset('dec');
   Object.assign(d,{date:$('#prj-date').value,title:$('#prj-title').value.trim(),by:$('#prj-by').value,
    impact:$('#prj-impact').value,owner:$('#prj-owner').value,due:$('#prj-due').value,status:$('#prj-status').value});
   if(!o)S.projectDecisions.push(d);log('Decision Log Proyek',d.title);save();render();
@@ -3808,7 +3848,7 @@ function projectWorkspace(){
  const stakeTable=r=>tbl([['Stakeholder'],['Unit / Instansi'],['Pengaruh · Kepentingan'],['Dukungan'],['Strategi Engagement'],['CMO'],['Tindakan','ws-td-act']],r.map(stakeRow).join(''));
  const wbsCode=w=>'<button type="button" class="ws-code" data-act="kwWbs" data-k="'+esc(w.k)+'" title="Buka detail WBS">'+esc(w.k)+'</button>';
  const wbsTable=r=>tbl([['Kode WBS'],['Target Output / Deliverable'],['PIC / UIC'],['Target'],['Capaian'],['Bukti'],['Aksi','ws-td-act']],r.map(w=>'<tr><td>'+wbsCode(w)+'</td><td class="ws-td-wide">'+esc(deliv(w))+'</td><td>'+esc(uicU(w)||'—')+'</td><td class="ws-nowrap">'+fmtD(w.f)+'</td><td>'+chipSt(stOf(w,12))+'</td><td>'+chipSt(buktiSt(w))+'</td><td class="ws-td-act"><button type="button" class="btn sm" data-act="kwWbs" data-k="'+esc(w.k)+'">Buka WBS</button></td></tr>').join(''));
- const decisionTable=r=>tbl([['Tanggal'],['Keputusan'],['Pengambil Keputusan'],['PIC & Tenggat'],['Status'],['Tindakan','ws-td-act']],r.map(x=>'<tr><td class="ws-nowrap">'+fmtD(x.date)+'</td><td class="ws-td-main ws-td-wide"><b>'+esc(x.title)+'</b><small>'+esc(x.impact||'')+'</small></td><td>'+esc(x.by||'—')+'</td><td>'+esc(x.owner||'—')+'<small class="ws-sub">'+fmtD(x.due)+'</small></td><td>'+chipSt(x.status||'—')+'</td><td class="ws-td-act">'+(editStake?btn('prjDecisionEdit',x.id,'Edit')+btn('prjDecisionDel',x.id,'Hapus','dng'):'<span class="ws-dash">—</span>')+'</td></tr>').join(''));
+ const decisionTable=r=>tbl([['Tanggal'],['Keputusan'],['Pengambil Keputusan'],['PIC & Tenggat'],['Status'],['Notula'],['Tindakan','ws-td-act']],r.map(x=>'<tr><td class="ws-nowrap">'+fmtD(x.date)+'</td><td class="ws-td-main ws-td-wide"><b>'+esc(x.title)+'</b><small>'+esc(x.impact||'')+'</small></td><td>'+esc(x.by||'—')+'</td><td>'+esc(x.owner||'—')+'<small class="ws-sub">'+fmtD(x.due)+'</small></td><td>'+chipSt(x.status||'—')+'</td><td>'+(notulaChip(x.notula,1)||'<span class="ws-dash">—</span>')+'</td><td class="ws-td-act">'+(editStake?btn('prjDecisionEdit',x.id,'Edit')+btn('prjDecisionDel',x.id,'Hapus','dng'):'<span class="ws-dash">—</span>')+'</td></tr>').join(''));
  const issueTable=r=>tbl([['Isu'],['PIC'],['Tindak Lanjut'],['Tenggat'],['Status']],r.map(x=>'<tr><td class="ws-td-main"><b>'+esc(x.title)+'</b></td><td>'+esc(x.owner||'—')+'</td><td class="ws-td-wide">'+esc(x.mit||'—')+'</td><td class="ws-nowrap">'+fmtD(x.due)+'</td><td>'+chipSt(x.status||'—')+'</td></tr>').join(''));
  const search=(n,label)=>'<div class="ws-toolbar"><label class="ws-search">'+wsIco('search',16)+'<input type="search" data-on="prjSearch" value="'+esc(S.ui.prjSearch||'')+'" placeholder="Cari '+label+'… (tekan Enter)" aria-label="Cari dalam tab"></label><span class="ws-count"><b>'+n+'</b> data ditemukan</span></div>';
  /* ---------- Ringkasan ---------- */
@@ -4284,7 +4324,8 @@ const FORMEX={
   ['','Jenis perubahan',0,'Ubah item, Tambah item baru, atau Hapus/arsip item.','Ubah item'],
   ['','Komponen yang diubah',0,'Isi hanya komponen yang berubah.','Selesai: 30/11/2026 (semula 30/09/2026)'],
   ['','Alasan dan dasar',1,'Tulis alasan dan rujukan nota dinas/notulen.','API SIASN versi baru dari BKN baru tersedia Oktober 2026, sesuai notulen rapat teknis 12/10/2026.'],
-  ['','Tanggal efektif',0,'Tanggal perubahan mulai berlaku.','2026-11-05']]},
+  ['','Tanggal efektif',0,'Tanggal perubahan mulai berlaku.','2026-11-05'],
+  ['','Dokumen dasar',0,'Lampirkan nota dinas atau notula rapat yang menjadi dasar perubahan (tautan atau berkas maks. 300 KB).','Notulen Rapat Teknis BKN-Setjen 12-10-2026.pdf']]},
  bukti_up:{title:'Unggah bukti dukung',tujuan:'Mengirim dokumen bukti bahwa deliverable selesai. Capaian dihitung 100 setelah PMO Kemenkeu memvalidasi.',f:[
   ['','Tanggal selesai aktual',1,'Tanggal deliverable benar-benar selesai (tidak boleh melewati hari ini).','2026-09-26'],
   ['','Tautan SharePoint / berkas',0,'Tempel tautan dokumen. Wajib isi tautan atau pilih berkas.','https://kemenkeu.sharepoint.com/…/OA-112_BA UAT Interkoneksi HRIS-SIASN.pdf'],
@@ -4326,7 +4367,8 @@ const FORMEX={
   ['','Implikasi / alasan',0,'Alasan atau akibat keputusan.','Memberi waktu BKN merilis API baru dan pengelola kepegawaian berlatih.'],
   ['','PIC tindak lanjut',0,'Siapa yang menjalankan.','Biro SDM Setjen'],
   ['','Batas waktu',0,'Batas tindak lanjut.','2026-12-31'],
-  ['','Status tindak lanjut',0,'Belum dimulai / Berjalan / Selesai / Ditunda.','Berjalan']]},
+  ['','Status tindak lanjut',0,'Belum dimulai / Berjalan / Selesai / Ditunda.','Berjalan'],
+  ['','Notula rapat / dasar keputusan',0,'Tempel tautan SharePoint notula, atau unggah berkas PDF/Word maks. 300 KB. Notula bisa diunduh dari kolom Notula.','Notula_Rapat SC HRIS_12-10-2026.pdf']]},
  prjCopy:{title:'Workspace — Salin dari modul lain',tujuan:'Menyalin risiko atau stakeholder dari proyek/subproyek lain sebagai data baru yang bisa diedit, tanpa mengubah sumbernya.',f:[
   ['','Salin dari',1,'Pilih lingkup sumber yang datanya mirip.','HRIS Satu Kemenkeu › Modul Pengelolaan Pemberhentian dan Pensiun › Integrasi HRIS–TOOS (Taspen)'],
   ['','Setelah disalin',0,'Tinjau ulang tiap baris: sesuaikan nama pihak, PIC, dan centang ulang penanda CMO bila perlu.','Ganti "PT Taspen" menjadi "BKN" pada stakeholder mitra integrasi.']]}
