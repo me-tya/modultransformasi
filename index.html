@@ -1279,6 +1279,86 @@ body:has(.prj-overlay){overflow:hidden}
 .pm-tb-sw input:checked+i{background:var(--navy)}.pm-tb-sw input:checked+i:after{transform:translateX(12px);background:var(--yellow)}
 .pm-tb-sw input:focus-visible+i{outline:2px solid var(--yellow);outline-offset:2px}
 @media(max-width:760px){.pm-tb1{height:auto;flex-wrap:wrap;padding:8px 10px;gap:6px}.pm-tb-search{flex:1 1 100%}.pm-tb-sep{display:none}}
+
+/* ===== Pusat Bantuan (panduan halaman) ===== */
+.md.hp{max-width:1040px}
+.md.hp>h3{padding:16px 22px 12px}
+.md.hp .bd{padding:0 22px 16px}
+.hp-goal{display:flex;gap:12px;align-items:flex-start;padding:13px 16px;margin:0 0 14px;background:linear-gradient(112deg,#F1F6FD,#FFFFFF 70%);border:1px solid #D6E3F3;border-left:4px solid var(--yellow);border-radius:12px;font-size:13.5px;line-height:1.6;color:var(--ink-2)}
+.hp-goal>i{flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:var(--navy);color:var(--yellow);font-style:normal;font-weight:800;font-size:15px}
+.hp-goal b{display:block;font-size:11px;letter-spacing:.7px;text-transform:uppercase;color:var(--ink-3);margin-bottom:2px}
+.hp-who{margin:8px 0 0;font-size:12.5px;color:var(--ink-3)}
+.hp-tabs{position:sticky;top:0;z-index:2;display:flex;gap:4px;padding:5px;margin:0 0 14px;background:#F3F6FB;border:1px solid var(--line);border-radius:12px;overflow-x:auto}
+.hp-tabs button{flex:1 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:7px;height:38px;padding:0 14px;border:0;border-radius:9px;background:transparent;color:var(--ink-3);font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap}
+.hp-tabs button:hover:not(.on){background:#E8EFF9;color:var(--navy)}
+.hp-tabs button.on{background:linear-gradient(135deg,#0B1F45,#17457F);color:#fff;box-shadow:0 4px 10px rgba(11,31,69,.2)}
+.hp-tabs button b{font-family:var(--mono);font-size:10.5px;font-weight:700;background:var(--line-2);color:var(--ink-3);border-radius:10px;padding:1px 7px}
+.hp-tabs button.on b{background:var(--yellow);color:var(--navy)}
+.hp-p{display:none}.hp-p.on{display:block}
+.hp-lead{margin:0 0 12px;font-size:13.5px;color:var(--ink-2);line-height:1.6}
+.hp-go{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 11px;border:1px solid #C9D8EE;border-radius:8px;background:#fff;color:var(--navy-2);font:inherit;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;text-decoration:none}
+.hp-go:hover{background:var(--navy);border-color:var(--navy);color:var(--yellow)}
+/* alur */
+.hp-flow{list-style:none;margin:0;padding:0;counter-reset:hp}
+.hp-flow>li{position:relative;display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:12px;align-items:start;padding:0 0 16px}
+.hp-flow>li:before{counter-increment:hp;content:counter(hp);display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--navy);color:var(--yellow);font-weight:800;font-size:14px;position:relative;z-index:1}
+.hp-flow>li:after{content:"";position:absolute;left:16px;top:34px;bottom:0;width:2px;background:var(--line)}
+.hp-flow>li:last-child{padding-bottom:0}.hp-flow>li:last-child:after{display:none}
+.hp-flow b{display:block;font-size:14px;color:var(--navy);margin-bottom:2px}
+.hp-flow span{display:block;font-size:13.5px;color:var(--ink-2);line-height:1.6}
+.hp-flow em{font-style:normal;display:inline-block;margin-top:5px;padding:2px 9px;border-radius:20px;background:#FFF4D2;color:#7A5A06;font-size:12px;font-weight:700}
+/* kartu tab */
+.hp-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
+.hp-card{display:flex;flex-direction:column;gap:6px;padding:13px 15px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.hp-card b{font-size:14px;color:var(--navy)}
+.hp-card span{font-size:13px;color:var(--ink-2);line-height:1.55;flex:1}
+.hp-card .hp-go{align-self:flex-start;margin-top:4px}
+.hp-card.cur{border-color:var(--navy);box-shadow:inset 0 0 0 1px var(--navy);background:#F5F9FF}
+.hp-card.cur b:after{content:"Anda di sini";margin-left:8px;font-size:10.5px;font-weight:800;background:var(--yellow);color:var(--navy);padding:1px 8px;border-radius:20px;vertical-align:1px}
+/* tombol */
+.hp-tbl{width:100%;border:1px solid var(--line);border-radius:12px;border-collapse:separate;border-spacing:0;overflow:hidden}
+.hp-tbl th{background:#F7F9FC;font-size:11.5px;padding:9px 12px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-3);border-bottom:1px solid var(--line)}
+.hp-tbl td{padding:11px 12px;font-size:13.5px;line-height:1.55;vertical-align:top;border-bottom:1px solid var(--line-2);color:var(--ink-2)}
+.hp-tbl tr:last-child td{border-bottom:0}
+.hp-tbl td:first-child{width:30%}
+.hp-key{display:inline-flex;align-items:center;min-height:28px;padding:3px 11px;border-radius:8px;border:1px solid #C9D8EE;background:#F5F9FF;color:var(--navy);font-weight:800;font-size:12.5px}
+.hp-dest{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.hp-dest small{font-size:12.5px;color:var(--ink-3)}
+.hp-dest .pop{display:inline-block;padding:1px 9px;border-radius:20px;background:#E8F1FC;color:var(--navy-2);font-size:11.5px;font-weight:800}
+.hp-dest .menu{display:inline-block;padding:1px 9px;border-radius:20px;background:#FFF4D2;color:#7A5A06;font-size:11.5px;font-weight:800}
+/* contoh isian */
+.hp-forms{display:flex;flex-direction:column;gap:10px}
+.hp-form{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
+.hp-form>summary{display:flex;align-items:center;gap:10px;padding:12px 15px;cursor:pointer;font-weight:800;font-size:14px;color:var(--navy);list-style:none;background:#F7F9FC}
+.hp-form>summary::-webkit-details-marker{display:none}
+.hp-form>summary:before{content:"›";display:inline-block;transition:transform .2s;font-size:18px;line-height:1;color:var(--ink-3)}
+.hp-form[open]>summary:before{transform:rotate(90deg)}
+.hp-form>summary small{margin-left:auto;font-weight:700;color:var(--ink-3);font-size:12px}
+.hp-ftbl{width:100%;border-collapse:collapse}
+.hp-ftbl th{font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-3);text-align:left;padding:8px 12px;border-bottom:1px solid var(--line)}
+.hp-ftbl td{padding:10px 12px;font-size:13.5px;line-height:1.55;vertical-align:top;border-bottom:1px solid var(--line-2);color:var(--ink-2)}
+.hp-ftbl tr:last-child td{border-bottom:0}
+.hp-ftbl td:first-child{font-weight:800;color:var(--ink);width:24%}
+.hp-ftbl td:last-child{width:34%}
+.hp-req{display:inline-block;margin-left:5px;padding:0 7px;border-radius:20px;background:var(--bad-bg);color:var(--bad);font-size:10.5px;font-weight:800;vertical-align:1px}
+.hp-opt{display:inline-block;margin-left:5px;padding:0 7px;border-radius:20px;background:var(--line-2);color:var(--ink-3);font-size:10.5px;font-weight:800;vertical-align:1px}
+.hp-ex{display:inline-block;padding:3px 9px;border-radius:7px;background:#FFF7DB;border:1px solid #F6DB81;color:#4E4B3E;font-size:13px}
+.hp-tips{margin:14px 0 0;padding:12px 16px;background:#F3FAF6;border:1px solid #CDE8DA;border-radius:12px;font-size:13.5px;line-height:1.6;color:#1E5A40}
+.hp-tips b{display:block;margin-bottom:3px}
+.hp-tips ul{margin:0;padding-left:18px}
+.hp-empty{padding:18px;border:1px dashed #CBD6E6;border-radius:12px;color:var(--ink-3);text-align:center;font-size:13.5px}
+/* contoh inline di form */
+.fld small.fex{display:block;margin-top:3px;color:#7A5A06;font-size:12px}
+.fld small.fex:before{content:"Contoh: ";font-weight:800}
+.hp-btn-ex{margin-right:auto}
+/* tombol Bantuan di topbar */
+.hbtn{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 13px;border-radius:20px;border:1px solid rgba(253,185,19,.6);background:rgba(253,185,19,.14);color:#FFE29A;font-weight:800;font-size:12px;cursor:pointer;white-space:nowrap}
+.hbtn:hover{background:var(--yellow);color:var(--navy)}
+.hbtn i{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--yellow);color:var(--navy);font-style:normal;font-size:11px;font-weight:900}
+.hbtn:hover i{background:var(--navy);color:var(--yellow)}
+@media(max-width:900px){.hbtn span{display:none}.hbtn{padding:0 9px}}
+@media(max-width:640px){.hp-flow>li{grid-template-columns:34px minmax(0,1fr)}.hp-flow>li>.hp-go{grid-column:2}.hp-tbl td:first-child,.hp-ftbl td:first-child,.hp-ftbl td:last-child{width:auto}.md.hp .bd{padding:0 12px 12px}}
+
 </style>
 
 <div id="root"></div>
@@ -1694,7 +1774,7 @@ function field(c,row){const v=row?row[c.k]:(c.def!=null?(typeof c.def==='functio
  else if(c.t==='multi'){const arr=typeof c.o==='function'?c.o():c.o;const vs=v||[];inp=`<div class="multi" id="${id}">${arr.map(x=>{const [val,lab]=Array.isArray(x)?x:[x,x];return `<label><input type="checkbox" value="${esc(val)}"${vs.includes(val)?' checked':''}${dis}> ${esc(lab)}</label>`}).join('')||'<small>Tidak ada pilihan</small>'}</div>`}
  else if(c.t==='dl'){const arr=typeof c.o==='function'?c.o():c.o;inp=`<input id="${id}" list="${id}_l" value="${esc(v)}"${dis}><datalist id="${id}_l">${arr.map(x=>{const [val,lab]=Array.isArray(x)?x:[x,x];return `<option value="${esc(val)}">${esc(lab)}</option>`}).join('')}</datalist>`}
  else inp=`<input id="${id}" type="${c.t==='num'?'number':c.t==='date'?'date':c.t==='month'?'month':c.t==='pw'?'password':c.t==='email'?'email':'text'}" ${c.t==='num'?'step="any"':''} value="${esc(v)}"${dis}>`;
- return `<div class="fld${c.wide||c.t==='ta'||c.t==='multi'?' wide':''}"><label for="${id}">${c.l}${c.req?' <i>*</i>':''}</label>${inp}${c.hint?`<small>${c.hint}</small>`:''}</div>`}
+ return `<div class="fld${c.wide||c.t==='ta'||c.t==='multi'?' wide':''}"><label for="${id}">${c.l}${c.req?' <i>*</i>':''}</label>${inp}${c.hint?`<small>${c.hint}</small>`:''}${(()=>{const e=(c.t==='sel'||c.t==='chk'||c.t==='multi')?'':fexOf(c);return e?`<small class="fex">${esc(e)}</small>`:''})()}</div>`}
 function collect(cols){const d={};for(const c of cols){if(c.t==='sec'||c.ro||c.frm===false)continue;const el=document.getElementById('f_'+c.k);if(!el)continue;
  if(c.t==='chk')d[c.k]=el.checked;else if(c.t==='multi')d[c.k]=[...el.querySelectorAll('input:checked')].map(i=>i.value);else if(c.t==='num'){d[c.k]=el.value===''?'':Number(el.value)}else d[c.k]=el.value.trim();
  if(c.req&&(d[c.k]===''||d[c.k]==null)){el.focus();toast(`${c.l} wajib diisi.`);return null}}return d}
@@ -1703,9 +1783,10 @@ function modal(title,body,ok,onOk,o={}){const ov=document.createElement('div');o
  const f=ov.querySelector('input:not([disabled]):not([type=checkbox]),select,textarea');f&&f.focus();return ov}
 function confirmDel(what,fn,o){o=o||{};modal(o.delHead||'Hapus data?',o.delMsg?o.delMsg(what):`<p style="margin:0">Data <b>${esc(what)}</b> akan dihapus dan tercatat di log aktivitas.</p>`,o.delBtn||'Hapus',()=>{fn()},{danger:true,size:'sm'})}
 function formModal(id,row){const o=T[id];const cols=o.cols.filter(c=>c.frm!==false&&(row||!c.editOnly)&&(!c.fshow||c.fshow(row)));
- modal(row?(o.editTitle||'Ubah data'):(o.addTitle||'Tambah data'),`<div class="fgrid">${cols.map(c=>field(c,row)).join('')}</div>`,'Simpan',()=>{const d=collect(cols);if(!d)return false;if(o.validate&&o.validate(d,row)===false)return false;
+ CURF=id;let fbody;try{fbody=`<div class="fgrid">${cols.map(c=>field(c,row)).join('')}</div>`}finally{CURF=null}
+ modal(row?(o.editTitle||'Ubah data'):(o.addTitle||'Tambah data'),fbody,'Simpan',()=>{const d=collect(cols);if(!d)return false;if(o.validate&&o.validate(d,row)===false)return false;
   if(row){Object.assign(row,d);o.onSave&&o.onSave(row,false);log('Ubah '+(o.ent||id),o.label?o.label(row):'')}else{const nr=Object.assign({id:uid()},d);o.onAdd?o.onAdd(nr):o.list().push(nr);o.onSave&&o.onSave(nr,true);log('Tambah '+(o.ent||id),o.label?o.label(nr):'')}
-  save();toast('Tersimpan.');render()},{size:o.wide?'wide':''});
+  save();toast('Tersimpan.');render()},{size:o.wide?'wide':'',extra:FORMEX[id]?'<button class="btn hp-btn-ex" data-mx="hex">💡 Contoh pengisian</button>':'',onExtra:k=>{if(k==='hex'){showFormEx(id);return false}}});
  cols.filter(c=>c.dep&&c.od).forEach(c=>{const src=document.getElementById('f_'+c.dep),el=document.getElementById('f_'+c.k);if(!src||!el)return;const up=()=>{const cur=el.value;el.innerHTML=opts(c.od(src.value),cur);if(![...el.options].some(x=>x.value===cur))el.value=el.options[0]?el.options[0].value:''};src.addEventListener('change',up);up()})}
 const TPLX='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';
 function xlsxSave(rows,name,sheet){if(!window.XLSX){toast('Pustaka Excel belum termuat. Periksa koneksi internet.');return}try{const wb=XLSX.utils.book_new();(Array.isArray(rows[0])&&rows.length&&rows[0].sheet?rows:[{sheet:sheet||'Data',rows}]).forEach(s=>XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(s.rows),s.sheet.slice(0,31)));XLSX.writeFile(wb,name);toast('Ekspor dijalankan. Jika unduhan tidak muncul (mode pratinjau), buka berkas HTML langsung di peramban.');log('Ekspor',name)}catch(e){toast('Ekspor gagal: '+e.message)}}
@@ -1839,7 +1920,7 @@ function render(){try{ensureBkFlow()}catch(e){}
  <div class="main"><header class="top"><button class="hamb" id="hamb" aria-label="Tampilkan/sembunyikan menu">☰</button><div class="crumb">${crumbOf()}</div>
  <label class="tsel"><span>Tahun Anggaran</span><select id="yr" aria-label="Tahun anggaran">${yearsOpt().map(y=>`<option ${S.ui.tahun==y?'selected':''}>${y}</option>`).join('')}</select></label>
  <span class="role">${meLab()}</span>
- ${FB.on?`<span class="dbb" id="dbb" title="Status sinkron Firestore">${FB.st==="Gagal menyimpan"?"⚠ ":"● "}${esc(FB.st||"Firestore")}</span>`:""}<button class="ibtn" id="bell" aria-label="Notifikasi">🔔${tk.length?`<i>${tk.length}</i>`:''}</button>
+ ${FB.on?`<span class="dbb" id="dbb" title="Status sinkron Firestore">${FB.st==="Gagal menyimpan"?"⚠ ":"● "}${esc(FB.st||"Firestore")}</span>`:""}<button class="hbtn" data-act="helphome" title="Pusat Bantuan: alur, peta menu, dan istilah"><i>?</i><span>Bantuan</span></button><button class="ibtn" id="bell" aria-label="Notifikasi">🔔${tk.length?`<i>${tk.length}</i>`:''}</button>
  <button class="av" id="av" aria-label="Akun">${esc(ME.nama.split(' ').map(w=>w[0]).slice(0,2).join(''))}</button></header>
  <main class="view" id="view"></main></div></div>`;
  $('#hamb').onclick=()=>{if(innerWidth<=900)$('#side').classList.toggle('open');else{S.ui.side=S.ui.side===0?1:0;save();$('#app').classList.toggle('collapsed')}};
@@ -2384,7 +2465,7 @@ function viewHome(tk){const h=new Date().getHours();const salam=h<11?'Selamat pa
  const due=S.wbs.filter(w=>!w.arsip&&!doneAt(w,12)&&w.f>=TODAY&&w.f<=addDays(TODAY,7)).length;const late=S.wbs.filter(w=>!w.arsip&&yrOf(w)===S.ui.tahun&&stOf(w,12)==='Terlambat').length;
  const ag=[];implRows(()=>true).filter(r=>['Terjadwal','Disiapkan'].includes(r.status)&&r.rencana).forEach(r=>ag.push({d:r.rencana,k:r.modul,t:r.keg,j:'CMO'}));
  S.wbs.filter(w=>!w.arsip&&!doneAt(w,12)&&w.f>=TODAY&&w.f<=addDays(TODAY,45)).slice(0,8).forEach(w=>ag.push({d:w.f,k:w.k,t:deliv(w),j:'PMO'}));ag.sort((a,b)=>a.d<b.d?-1:1);
- return `<div class="card" style="background:linear-gradient(110deg,#fff 55%,#FFF6DC);"><div class="pad" style="display:flex;gap:16px;flex-wrap:wrap;align-items:center"><div style="min-width:0;flex:1"><h1 style="margin:0;font-size:24px;font-weight:800">${salam}, ${esc(ME.nama.split(' ')[0])}!</h1><p class="s" style="margin:4px 0 0">${new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'})} · ${tk.length} tugas transformasi menunggu Anda</p></div>
+ return `<div class="card" style="background:linear-gradient(110deg,#fff 55%,#FFF6DC);"><div class="pad" style="display:flex;gap:16px;flex-wrap:wrap;align-items:center"><div style="min-width:0;flex:1"><h1 style="margin:0;font-size:24px;font-weight:800">${salam}, ${esc(ME.nama.split(' ')[0])}!</h1><p class="s" style="margin:4px 0 0">${new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'})} · ${tk.length} tugas transformasi menunggu Anda</p><button class="btn sm" style="margin-top:10px" data-act="helphome">📖 Pusat Bantuan: alur & peta menu</button></div>
  <div style="display:flex;gap:8px;flex-wrap:wrap">${lv('dash')!=='-'?'<a class="btn" href="#dashboard">Dashboard Eksekutif</a>':''}${pmoTabsVis().length?'<a class="btn" href="#pmo-wbs">WBS</a>':''}${cmoTabsVis().length?'<a class="btn" href="#cmo-siklus">Siklus CM</a>':''}</div></div></div>
  <div class="g3"><div class="card"><div class="ch"><h3>Transformasi Saya</h3><span class="r chip c-gold">BARU</span></div><div class="pad" style="display:flex;flex-direction:column;gap:10px">
  <div style="display:flex;gap:10px;align-items:center"><div class="pic pmo" style="width:40px;height:40px;border-radius:10px;display:grid;place-items:center;color:#fff;font-weight:800">P</div><div style="flex:1;min-width:0"><b>PMO</b><div class="s">${S.programs.length} program · capaian tahunan ${pct(T_?R_/T_*100:null)} s.d. ${fmtD(P.d2)}</div></div><a class="btn sm" href="#pmo-portofolio">Buka ›</a></div>
@@ -3586,11 +3667,560 @@ const HELP={
  'cmo-closing':{d:'Penutupan CM per modul setelah indikator keberhasilan tercapai.',c:['Pastikan seluruh kegiatan terlaksana dan indikator tercapai sebelum closing.'],e:[]}
 };
 function helpOf(v){let h=HELP[v];if(h&&h.ref)h=HELP[h.ref];if(!h&&/^modul-/.test(v))h=HELP['cmo-'+(v.split('-t-')[1]||'siklus')];return h}
-function showHelp(v,title){const h=helpOf(v)||{d:'Halaman ini menampilkan data sesuai peran Anda.',c:['Gunakan filter di bagian atas untuk mempersempit data.','Tombol tambah/ubah hanya muncul bila peran Anda memiliki hak tersebut.'],e:[]};
+function showHelpLegacy(v,title){const h=helpOf(v)||{d:'Halaman ini menampilkan data sesuai peran Anda.',c:['Gunakan filter di bagian atas untuk mempersempit data.','Tombol tambah/ubah hanya muncul bila peran Anda memiliki hak tersebut.'],e:[]};
  modal(`<span class="exh"><span class="hlp sm" aria-hidden="true">?</span>Panduan · ${esc(title||'')}</span>`,`<p style="margin:0 0 12px">${esc(h.d)}</p><h4 class="hh">Cara mengisi</h4><ol class="hst">${h.c.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>
  ${h.e&&h.e.length?`<h4 class="hh">Contoh dari program Digitalisasi Office Automation</h4><div class="exw">${h.e.map(([l,t])=>exF(esc(l),esc(t))).join('')}</div>`:''}
  ${h.x?`<h4 class="hh">Contoh pengisian lengkap</h4><div class="hxb">${h.x.map(k=>`<button class="btn sm" data-act="chex" data-k="${k}">💡 ${EXTT[k]}</button>`).join('')}</div>`:''}`,'',null,{size:'wide',cancel:'Tutup'})}
+/* ===== Contoh isian per formulir (key, label, wajib, cara mengisi, contoh) ===== */
+const FORMEX={
+ porto:{title:'Program (Tambah / Ubah)',f:[
+  ['jenis','Jenis',0,'Berkelanjutan = program multitahun; Tematik = program dengan tema khusus.','Berkelanjutan'],
+  ['akr','Akronim kode',1,'2–6 huruf; menjadi awalan kode item WBS, jadi pilih yang singkat dan tidak berubah.','OA'],
+  ['sing','Singkatan program',1,'Muncul di tombol filter program pada halaman WBS.','DOA'],
+  ['mulai','Tahun mulai',1,'Tahun program mulai berjalan; ikut membentuk kode program (B25-…, T26-…).','2025'],
+  ['nama','Program / proyek',1,'Nama resmi program, tulis lengkap.','Digitalisasi Office Automation'],
+  ['lv2','Klaster (Lv 2)',0,'Kelompok level 2 pada struktur WBS, bila ada.','Digitalisasi Office Automation'],
+  ['sponsor','Sponsor',0,'Pimpinan yang menjadi sponsor program.','Sekretaris Jenderal'],
+  ['uic','UIC Utama',1,'Satu unit penanggung jawab utama.','BaTii'],
+  ['pend','UIC Pendukung',0,'Unit yang membantu. Boleh lebih dari satu, pisahkan dengan koma.','Setjen, DJPb, BPPK, Itjen'],
+  ['periode','Periode',0,'Rentang tahun pelaksanaan.','2025–2028'],
+  ['status','Status',0,'Kondisi terkini program; diperbarui PMO secara berkala.','On track'],
+  ['ket','Latar belakang & tujuan',0,'Satu-dua kalimat: mengapa program ada dan apa hasil akhirnya.','Menyatukan layanan perkantoran dalam satu platform agar proses lebih cepat dan terpantau.']]},
+ wbs:{title:'Item WBS (Tambah / Ubah)',f:[
+  ['k','Kode',1,'Akronim program + nomor urut. Cek kode berikutnya di Referensi Kode agar tidak bentrok.','OA-148'],
+  ['u','UIC Utama',0,'Unit penanggung jawab item.','BaTii'],
+  ['d','UIC Pendukung',0,'Unit pendukung, pisahkan dengan koma.','Setjen, DJPb'],
+  ['w','Bobot',0,'Kosongkan bila ingin dihitung otomatis dari lama pekerjaan (Finish − Start + 1 hari).','90'],
+  ['prog','Program',0,'Pilih program induk item ini.','Digitalisasi Office Automation'],
+  ['pth','Jalur Lv 2 – deliverable',1,'Tulis dari level atas sampai deliverable, dipisah tanda ">".','Digitalisasi Office Automation > Aplikasi PENA JFKN > Penyusunan probis to-be Sub Modul Pembinaan'],
+  ['s','Mulai',0,'Tanggal mulai pekerjaan.','2026-01-01'],
+  ['f','Selesai',0,'Tanggal target selesai (Finish); menjadi tenggat item.','2026-03-31'],
+  ['j','Jenis dokumen pendukung',0,'Dokumen yang nanti diunggah sebagai bukti selesai.','Nota dinas dan notula rapat'],
+  ['tm','Bulan target',0,'Bulan ketika poin item dihitung masuk target; biasanya sama dengan bulan Finish.','Maret'],
+  ['ue','Cakupan UE I',0,'Centang unit Eselon I yang tercakup oleh item ini.','Setjen, DJPb'],
+  ['cm','Jenis item CM',0,'Isi bila item ini bagian dari Change Management. ADP membentuk satu modul CM; pilih Bukan bila item biasa.','ADP'],
+  ['v','Status validasi',0,'Terisi otomatis oleh validasi bukti oleh PMO Kemenkeu. Biasanya tidak perlu diubah manual.','0 = belum valid, 1 = valid']]},
+ risk:{title:'Risiko / Isu (PMO)',f:[
+  ['jenis','Jenis',0,'Risiko = baru kemungkinan; Isu = sudah terjadi.','Risiko'],
+  ['uraian','Uraian',1,'Satu kalimat jelas tentang kejadian yang dikhawatirkan atau sudah terjadi.','Keterlambatan integrasi data antarsistem'],
+  ['prog','Program',0,'Program yang terdampak.','Digitalisasi Office Automation'],
+  ['item','Modul terkait',0,'Risiko melekat ke program atau modul, tidak sampai item WBS.','Aplikasi PENA JFKN'],
+  ['keCmo','Bawa ke CMO',0,'Centang bila risiko menyangkut kesiapan atau adopsi pengguna; risiko akan tampil di CMO.','Dicentang'],
+  ['jcm','Jenis risiko CM',0,'Hanya diisi bila dibawa ke CMO.','Resistensi'],
+  ['kat','Kategori',0,'Pilih yang paling dekat dengan sumber risiko.','Integrasi'],
+  ['kem','Kemungkinan (1–5)',0,'1 = jarang terjadi, 5 = hampir pasti terjadi.','4'],
+  ['dmp','Dampak (1–5)',0,'1 = ringan, 5 = sangat berat. Skor = kemungkinan × dampak.','3'],
+  ['pemilik','Pemilik (UIC)',0,'Unit Eselon I yang bertanggung jawab mengelola risiko.','DJPb'],
+  ['sebab','Penyebab',0,'Mengapa risiko bisa terjadi.','Penyedia data belum menyiapkan API.'],
+  ['mit','Rencana mitigasi',0,'Langkah mencegah atau mengurangi dampak.','Koordinasi mingguan dan rencana cadangan.'],
+  ['tenggat','Tenggat mitigasi',0,'Tanggal mitigasi harus selesai.','2026-12-15'],
+  ['st','Status',0,'Terbuka → Dimitigasi → Ditutup. Pilih Menjadi isu bila risiko sudah terjadi.','Terbuka']]},
+ kw:{title:'Output IKU K-Wide (Tambah / Ubah)',f:[
+  ['tw','TW',0,'Triwulan pelaporan.','3'],
+  ['prog','Program Transformasi',1,'Nama program yang melapor.','Digitalisasi Office Automation'],
+  ['out','Target output',0,'Output yang ditargetkan pada triwulan itu.','Dokumen sistem tahap 3'],
+  ['t','Jumlah target',0,'Angka target output.','1'],
+  ['r','Jumlah realisasi',0,'Angka realisasi sampai triwulan itu.','1']]},
+ tahap:{title:'Tahapan (Referensi)',f:[
+  ['urut','Urut',1,'Nomor urut tahapan.','3'],
+  ['kode','Kode',1,'Kode singkat tahapan.','T3'],
+  ['kel','Kelompok',1,'Pilih kelompok yang sudah ada atau ketik kelompok baru.','Pengembangan'],
+  ['nama','Tahapan',1,'Nama tahapan yang tampil.','Pengembangan sistem'],
+  ['kw','Kata kunci pencocokan',1,'Kata yang dipakai sistem untuk mengenali item WBS yang termasuk tahapan ini; pisahkan dengan koma.','pengembangan, coding, build'],
+  ['ket','Keterangan',0,'Penjelasan singkat bila perlu.','Mencakup pembangunan dan uji sistem.']]},
+ usul:{title:'Usulan item ke PMO',f:[
+  ['modul','Modul / item acuan',1,'Pilih modul atau item WBS yang menjadi acuan usulan.','Aplikasi PENA JFKN'],
+  ['jenis','Jenis usulan',0,'Pilih item yang diusulkan ditambah atau jadwalnya diubah.','Tambah item Monev'],
+  ['uraian','Uraian',1,'Sebut nama item, perkiraan jadwal, dan UIC agar PMO mudah menelaah.','Penyusunan kertas kerja monev adopsi TW 3, selesai 30/09/2026, UIC BaTii.']]},
+ users:{title:'Pengguna (Tambah / Ubah)',f:[
+  ['nama','Nama',1,'Nama lengkap pengguna.','Siti Rahma'],
+  ['email','Email Kemenkeu',1,'Harus berakhiran @kemenkeu.go.id.','siti.rahma@kemenkeu.go.id'],
+  ['pw','Kata sandi awal',0,'Kosongkan agar memakai sandi default; pengguna menggantinya sendiri.','(dikosongkan)'],
+  ['role','Peran',0,'Menentukan menu dan hak akses pengguna.','PMO Unit Eselon I'],
+  ['unit','Unit Eselon I',0,'Unit Eselon I tempat pengguna bekerja; membatasi data yang terlihat.','DJPb'],
+  ['sub','Unit Eselon II / tim',0,'Untuk Tim CM Proyek: Pusakti, Pusilki, Puspensi, atau Pusdatin.','Direktorat Sistem Perbendaharaan'],
+  ['modules','Modul ditugaskan',0,'Untuk peran bercakupan Modul (Tim CM Proyek): centang modul yang ditangani.','Modul Perjalanan Dinas'],
+  ['aktif','Status',0,'Hapus centang bila pengguna tidak lagi bertugas.','Aktif']]},
+ adp:{title:'ADP — sub modul',f:[
+  ['nama','Sub modul',1,'Nama bagian modul yang dianalisis.','Pembinaan JF KN'],
+  ['asis','Kondisi As-Is',0,'Cara kerja atau sistem saat ini.','Pembinaan dicatat manual lewat surat dan rekap Excel.'],
+  ['tobe','Kondisi To-Be',0,'Cara kerja setelah perubahan.','Pembinaan dan formasi dilakukan dalam satu aplikasi.'],
+  ['P','Proses Bisnis — tingkat',0,'Seberapa besar dampak pada proses bisnis: — / Minor / Moderate / Significant.','Significant'],
+  ['Pk','Proses Bisnis — uraian',0,'Jelaskan alasan tingkat dampak.','Alur pembinaan berubah dari manual menjadi digital.'],
+  ['O','Organisasi — tingkat',0,'Dampak pada struktur atau pembagian tugas.','Minor'],
+  ['Ok','Organisasi — uraian',0,'Jelaskan alasan.','Penambahan peran admin aplikasi di unit pembina.'],
+  ['S','SDM — tingkat',0,'Dampak pada kompetensi atau perilaku pegawai.','Moderate'],
+  ['Sk','SDM — uraian',0,'Jelaskan alasan.','Pejabat fungsional perlu pelatihan penggunaan aplikasi.'],
+  ['T','Teknologi — tingkat',0,'Dampak pada sistem dan infrastruktur.','Significant'],
+  ['Tk','Teknologi — uraian',0,'Jelaskan alasan.','Integrasi dengan sistem kepegawaian.'],
+  ['R','Regulasi — tingkat',0,'Dampak pada aturan atau kebijakan.','Minor'],
+  ['Rk','Regulasi — uraian',0,'Jelaskan alasan.','Penyesuaian juknis pembinaan.'],
+  ['rr','Risiko Resistensi — tingkat',0,'Seberapa besar kemungkinan penolakan pengguna.','Moderate'],
+  ['rrk','Risiko Resistensi — uraian',0,'Jelaskan penyebabnya.','Sebagian pegawai terbiasa dengan cara manual.'],
+  ['ro','Risiko Operasional — tingkat',0,'Risiko gangguan operasional saat transisi.','Minor'],
+  ['rok','Risiko Operasional — uraian',0,'Jelaskan penyebabnya.','Layanan manual tetap tersedia sebagai cadangan.'],
+  ['rk','Risiko Ketergantungan — tingkat',0,'Risiko karena bergantung pada pihak/sistem lain.','Significant'],
+  ['rkk','Risiko Ketergantungan — uraian',0,'Jelaskan pihak/sistem yang menjadi ketergantungan.','Bergantung pada kesiapan API sistem mitra.'],
+  ['rl','Risiko Lainnya — tingkat',0,'Risiko di luar tiga jenis di atas.','—'],
+  ['rlk','Risiko Lainnya — uraian',0,'Jelaskan bila ada.','']]},
+ ind:{title:'Indikator Keberhasilan CM',f:[
+  ['nama','Indikator keberhasilan',1,'Hal yang diukur untuk menyatakan perubahan berhasil. Harus bisa diukur saat Monev.','Persentase pegawai yang aktif memakai aplikasi'],
+  ['baseline','Baseline',0,'Nilai awal sebelum perubahan.','0%'],
+  ['tg','Target',0,'Nilai yang ingin dicapai.','80%'],
+  ['sat','Satuan',0,'Satuan ukur.','%'],
+  ['arah','Arah',0,'↑ makin besar makin baik; ↓ makin kecil makin baik.','↑'],
+  ['metode','Metode / alat ukur',0,'Cara mengukur.','T-Survey'],
+  ['waktu','Waktu pengukuran',0,'Kapan diukur.','TW 4 2026'],
+  ['pic','PIC',0,'Penanggung jawab pengukuran.','Tim CM Proyek'],
+  ['bobot','Bobot (%)',1,'Total bobot semua indikator pada satu modul sebaiknya 100%.','25']]},
+ sh:{title:'Stakeholder (Perencanaan CM)',f:[
+  ['kat','Kategori',0,'Internal = dalam Kemenkeu; Eksternal = di luar Kemenkeu.','Internal'],
+  ['kel','Kelompok',1,'Pilih kelompok yang paling sesuai dengan posisi stakeholder.','Pegawai'],
+  ['rin','Rincian stakeholder',1,'Kelompok atau pihak yang terdampak/berpengaruh.','Pegawai Direktorat Sistem Perbendaharaan'],
+  ['unit','Nama unit',0,'Unit asal stakeholder.','DJPb (Dit. SP)'],
+  ['peran','Peran dalam perubahan',0,'Pilih peran stakeholder (pengguna, pengambil keputusan, dsb.).','Pengguna'],
+  ['jml','Jumlah',0,'Perkiraan jumlah orang.','120'],
+  ['ex','Experience',0,'High = sudah berpengalaman dengan perubahan sejenis; Low = belum.','Low'],
+  ['ketEx','Keterangan experience',0,'Alasan penilaian experience.','Belum pernah memakai aplikasi sejenis.'],
+  ['su','Support',0,'High = mendukung perubahan; Low = belum mendukung.','High'],
+  ['ketSu','Keterangan support',0,'Alasan penilaian support.','Pimpinan unit mendukung penuh.'],
+  ['strat','Rencana strategi',0,'Cara melibatkan stakeholder sesuai posisinya di matriks.','Pelatihan klasikal dan klinik pengguna setiap bulan.'],
+  ['kom','Duplikasi ke Komunikasi',0,'Centang agar baris ini otomatis muncul di tab Komunikasi.','Dicentang'],
+  ['pel','Duplikasi ke Pelatihan',0,'Centang agar baris ini otomatis muncul di tab Pelatihan.','Dicentang']]},
+ jj:{title:'Jejaring (T-Agent per unit)',f:[
+  ['unit','Unit',1,'Unit yang membentuk jejaring agen perubahan.','DJPb'],
+  ['keb','Kebutuhan',0,'Jumlah agen yang dibutuhkan.','10'],
+  ['tet','Ditetapkan',0,'Jumlah agen yang sudah ditetapkan.','8'],
+  ['lat','Terlatih',0,'Jumlah agen yang sudah dilatih.','5'],
+  ['st','Status',0,'Belum → Proses → Aktif.','Proses']]},
+ impl:{title:'Implementasi (Ubah status)',f:[
+  ['status','Status',0,'Terjadwal → Terlaksana. Pilih Ditunda/Batal bila berubah.','Terlaksana'],
+  ['tgl','Realisasi',0,'Tanggal kegiatan benar-benar dilaksanakan.','2026-09-15'],
+  ['hadir','Kehadiran / jangkauan',0,'Jumlah peserta atau penerima pesan.','85 peserta'],
+  ['bukti','Bukti dukung',0,'Tautan dokumentasi (daftar hadir, foto, notula).','https://kemenkeu.sharepoint.com/…'],
+  ['cat','Catatan',0,'Hal penting yang perlu dicatat.','Peserta aktif bertanya tentang alur pelaporan.']]},
+ lak:{title:'Penyesuaian RTL (Pelaksanaan)',f:[
+  ['dev','Deviasi',0,'Selisih antara rencana dan kenyataan.','Jadwal mundur satu bulan.'],
+  ['sebab','Penyebab',0,'Mengapa terjadi deviasi.','Menunggu link API dari sistem mitra.'],
+  ['rtl','Penyesuaian RTL',0,'Rencana tindak lanjut yang baru.','Pelatihan digeser ke November 2026.'],
+  ['tglBaru','Jadwal baru',0,'Tanggal pelaksanaan yang baru.','2026-11-30'],
+  ['picRtl','PIC RTL',0,'Penanggung jawab tindak lanjut.','Tim CM Proyek']]},
+ pan:{title:'Kertas Kerja Monev (Pemantauan)',f:[
+  ['keg','Kegiatan / program',0,'Kegiatan yang dipantau.','Training of Master Trainer'],
+  ['fok','Fokus monev (ADKAR)',0,'Aspek yang diukur: Awareness, Desire, Knowledge, Ability, Reinforcement.','Knowledge'],
+  ['ik','Indikator kinerja',0,'Ukuran keberhasilan kegiatan.','Peserta lulus kuis dengan nilai ≥ 80'],
+  ['met','Metode monev',0,'Cara mengumpulkan data.','T-Quiz'],
+  ['sum','Sumber data',0,'Dari mana data diambil.','Hasil T-Quiz'],
+  ['st','Status',0,'On Track / Required Action / Off Track.','On Track'],
+  ['tem','Temuan & tindak lanjut',0,'Hal yang ditemukan dan langkah berikutnya.','Materi modul 2 perlu diulang.'],
+  ['sar','Saran perbaikan',0,'Usulan perbaikan.','Tambahkan studi kasus pada materi.'],
+  ['tl','Tindak lanjut',0,'Langkah yang akan dilakukan.','Sesi ulang dijadwalkan pekan depan.']]},
+ ado:{title:'Data Adopsi per Periode',f:[
+  ['per','Periode',1,'Triwulan pengukuran.','TW3 2026'],
+  ['tu','Ekspektasi pengguna',0,'Jumlah pengguna yang diharapkan memakai modul.','1000'],
+  ['au','Pengguna aktif',0,'Jumlah pengguna yang benar-benar aktif.','640'],
+  ['tt','Ekspektasi transaksi',0,'Jumlah transaksi yang diharapkan.','5000'],
+  ['at','Realisasi transaksi',0,'Jumlah transaksi sesungguhnya.','3200'],
+  ['cat','Catatan',0,'Konteks angka.','Lonjakan transaksi setelah pelatihan.']]},
+ kcm:{title:'Keberhasilan CM (Realisasi indikator)',f:[
+  ['real','Realisasi',0,'Nilai capaian indikator pada periode ukur.','72%'],
+  ['per','Periode ukur',0,'Triwulan pengukuran.','TW3 2026'],
+  ['cat','Catatan',0,'Penjelasan capaian.','Survei diikuti 310 responden.']]},
+ tr:{title:'Transfer Kepemilikan (Closing)',f:[
+  ['area','Area perubahan',1,'Sistem/Aplikasi, Proses Bisnis Baru, Jaringan Perubahan, atau Lainnya.','Sistem / Aplikasi'],
+  ['dari','Dari (tim program)',0,'Tim yang menyerahkan.','Tim Program PENA JFKN'],
+  ['kpd','Kepada (pemilik operasional)',0,'Unit yang menerima dan mengoperasikan.','Direktorat Pembinaan JF KN'],
+  ['krit','Kriteria siap transfer',0,'Syarat yang harus terpenuhi sebelum serah terima.','Sistem stabil tiga bulan tanpa insiden berat.'],
+  ['dok','Dokumen diserahterimakan',0,'Dokumen yang ikut diserahkan.','Manual pengguna, SOP, dan berita acara serah terima.'],
+  ['st','Status',0,'Belum → Proses → Selesai.','Proses'],
+  ['tgl','Tanggal transfer',0,'Tanggal serah terima.','2026-12-15'],
+  ['ttd','Penerima (TTD)',0,'Nama pejabat penerima.','Direktur Pembinaan JF KN']]},
+ cr:{title:'Ajukan Change Request',f:[
+  ['','Kode WBS',1,'Ketik atau pilih item yang akan diubah. Hanya item yang unit Anda pegang sebagai UIC Utama.','OA-47'],
+  ['','Jenis perubahan',0,'Ubah item (jadwal, deliverable, bobot, UIC, dokumen), Tambah item baru, atau Hapus/arsip item.','Ubah item'],
+  ['','Komponen yang diubah',0,'Muncul setelah memilih jenis. Isi hanya komponen yang berubah; yang tidak diubah biarkan.','Selesai: 30/11/2026'],
+  ['','Alasan dan dasar',1,'Tulis alasan dan rujukan nota dinas atau notulen.','Penetapan SK pensiun melalui tanda tangan elektronik menunggu link API dari BKN, sesuai notulen rapat 12/10/2026.'],
+  ['','Tanggal efektif',0,'Tanggal perubahan mulai berlaku.','2026-11-05']]},
+ bukti_up:{title:'Unggah bukti dukung',f:[
+  ['','Tanggal selesai aktual',1,'Tanggal deliverable benar-benar selesai (boleh mundur, tidak boleh melewati hari ini). Dipakai untuk menghitung bulan capaian.','2026-03-10'],
+  ['','Tautan SharePoint / berkas',0,'Tempel tautan dokumen. Wajib isi tautan atau pilih berkas.','https://kemenkeu.sharepoint.com/…/OA-47_BA-UAT.pdf'],
+  ['','Nama berkas',0,'Format: Kode WBS_Nama File.','OA-47_BA UAT Modul Pembinaan'],
+  ['','Atau pilih berkas',0,'Pilih berkas dari komputer; yang dicatat hanya namanya.','OA-47_BA UAT Modul Pembinaan.pdf'],
+  ['','Catatan',0,'Informasi tambahan untuk validator.','BA ditandatangani Direktur pada 10/03/2026.']]},
+ validasi:{title:'Validasi bukti dukung (PMO Kemenkeu)',f:[
+  ['','Daftar periksa',1,'Centang keempatnya sebelum menekan Valid: nama berkas sesuai kode WBS, jenis dokumen sesuai, periode sesuai, dan sudah disahkan/ditandatangani.','Semua dicentang'],
+  ['','Catatan untuk UIC',0,'Wajib diisi bila menolak: jelaskan apa yang harus diperbaiki.','Berita acara belum ditandatangani; mohon unggah versi bertanda tangan.']]},
+ addrev:{title:'Catatan reviu CMO Kementerian',f:[
+  ['','Tab',0,'Tahap modul yang direviu.','ADP'],
+  ['','Catatan',1,'Hasil reviu dan hal yang perlu diperbaiki pemilik modul.','Uraian dampak SDM belum menyebut kebutuhan pelatihan.']]},
+ prjRisk:{title:'Workspace — Risk Register / Issue Log',f:[
+  ['','Jenis',0,'Risiko proyek, Risiko perubahan, atau Isu (sudah terjadi).','Risiko proyek'],
+  ['','Kategori Risiko',0,'Pilih kategori terdekat.','Teknis'],
+  ['','Uraian risiko / isu',1,'Satu kalimat jelas.','Keterlambatan integrasi data antarsistem.'],
+  ['','Penyebab',0,'Mengapa terjadi.','Penyedia data belum menyiapkan API.'],
+  ['','Dampak',0,'Akibat bila terjadi.','Jadwal UAT mundur.'],
+  ['','Kemungkinan 1–5 / Dampak 1–5',0,'Skor = kemungkinan × dampak.','4 dan 3 (skor 12)'],
+  ['','Pemilik risiko (PIC)',0,'Penanggung jawab.','Tim Data'],
+  ['','Target mitigasi',0,'Tanggal mitigasi selesai.','2026-12-15'],
+  ['','Rencana mitigasi',0,'Langkah pencegahan.','Koordinasi mingguan, eskalasi hambatan, dan rencana cadangan.'],
+  ['','Status',0,'Terbuka / Dimitigasi / Menjadi isu / Ditutup.','Terbuka'],
+  ['','Risiko CM',0,'Centang bila menyangkut kesiapan/adopsi; akan disinkronkan ke CMO.','Dicentang']]},
+ prjStake:{title:'Workspace — Stakeholder Register',f:[
+  ['','Nama stakeholder / kelompok',1,'Pihak yang terdampak atau berpengaruh.','Direktorat Sistem Perbendaharaan'],
+  ['','Unit / instansi',0,'Asal pihak tersebut.','DJPb'],
+  ['','Peran / tanggung jawab',0,'Perannya terhadap proyek.','Pemilik data dan penerima manfaat'],
+  ['','Internal / Eksternal',0,'Dalam atau luar Kemenkeu.','Internal'],
+  ['','Pengaruh / Kepentingan',0,'High atau Low.','High / High'],
+  ['','Dukungan',0,'Support, Neutral, atau Resisten.','Neutral'],
+  ['','Strategi pelibatan / komunikasi',0,'Cara melibatkan stakeholder.','FGD kebutuhan dan pembaruan progres tiap dua minggu.'],
+  ['','PIC hubungan stakeholder',0,'Yang menjaga komunikasi.','PIC komunikasi DJPb']]},
+ prjDec:{title:'Workspace — Decision Log',f:[
+  ['','Keputusan',1,'Apa yang diputuskan.','Menetapkan piloting secara bertahap di dua unit.'],
+  ['','Tanggal',0,'Tanggal keputusan diambil.','2026-11-05'],
+  ['','Pengambil keputusan',0,'Siapa yang memutuskan.','Ketua Steering Committee'],
+  ['','Dampak',0,'Alasan atau akibat keputusan.','Memastikan kesiapan sebelum implementasi luas.'],
+  ['','PIC tindak lanjut',0,'Siapa yang menjalankan.','PMO UE I'],
+  ['','Tenggat',0,'Batas tindak lanjut.','2026-11-30'],
+  ['','Status',0,'Status pelaksanaan keputusan.','Berjalan']]}
+};
+
+/* ===== Isi panduan per halaman ===== */
+/* alur:[judul,isi,tujuan?,label?]  tab:[nama,isi,tujuan?]  btn:[tombol,fungsi,menuju,tujuan?]  isi:[id FORMEX]  */
+const GUIDE={
+'beranda':{
+ tujuan:'Pintu masuk Anda. Menampilkan tugas, agenda terdekat, dan pintasan ke halaman yang paling sering dipakai sesuai peran.',
+ alur:[
+  ['Baca kartu sambutan','Kartu paling atas merangkum jumlah item yang perlu perhatian (jatuh tempo, terlambat, menunggu reviu).'],
+  ['Klik kartu atau agenda','Setiap kartu dan baris agenda membuka halaman terkait, jadi Anda tidak perlu mencari menu.'],
+  ['Gunakan menu kiri untuk pekerjaan rutin','Menu kiri dikelompokkan: Overview → Portofolio → Program → Perencanaan → Pelaksanaan → Pemantauan → Penutupan → Referensi (PMO), serta menu CMO dan Pengaturan.'],
+  ['Butuh peta lengkap?','Tombol Bantuan di bilah atas membuka Pusat Bantuan: alur dari awal sampai akhir, peta menu, dan istilah.']],
+ btn:[['🔔 Notifikasi','Daftar tugas dan pemberitahuan untuk peran Anda.','Panel notifikasi (pop-up)'],['Bantuan (bilah atas)','Membuka Pusat Bantuan dengan peta semua menu.','Pop-up Pusat Bantuan'],['Tahun Anggaran','Mengganti tahun data di seluruh aplikasi.','Halaman yang sama']],
+ tips:['Menu yang tidak terlihat berarti peran Anda tidak memiliki hak akses ke menu itu.']},
+
+'dashboard':{
+ tujuan:'Ringkasan eksekutif capaian program transformasi untuk pimpinan, hanya untuk dibaca.',
+ alur:[['Pilih tahun','Pilih Tahun Anggaran di bilah atas.'],['Baca kartu dan grafik','Kartu atas menunjukkan capaian keseluruhan; grafik menunjukkan perkembangan dan perbandingan.'],['Telusuri','Klik kartu atau nama program untuk membuka rincian di menu PMO.','pmo-siklus','Buka Overview']],
+ tips:['Angka dihitung dari item WBS yang sudah divalidasi PMO Kemenkeu.']},
+
+'pmo-siklus':{
+ tujuan:'Overview capaian program transformasi: seberapa jauh target tercapai menurut triwulan, K-Wide, T-Program, dan unit Eselon I. Halaman ini hanya untuk dibaca.',
+ alur:[
+  ['Pilih periode','Gunakan filter Tahun dan periode di bagian atas (bulan, triwulan, atau rentang tanggal).'],
+  ['Pilih tab capaian','Pindah antara Per Triwulan, K-Wide, T-Program, dan Per UE I sesuai sudut pandang yang dibutuhkan.'],
+  ['Telusuri angka yang rendah','Bila ada capaian rendah, buka WBS & progres untuk melihat item mana yang belum selesai.','pmo-wbs','Buka WBS & progres']],
+ tab:[['Per Triwulan','Capaian kumulatif tiap triwulan dibanding target tahunan.'],['K-Wide','Capaian output IKU K-Wide (indikator Kementerian) per program.'],['T-Program','Capaian kelompok program transformasi (T-Program) yang dilaporkan.'],['Per UE I','Capaian dipecah per unit Eselon I untuk melihat unit yang tertinggal.']],
+ btn:[['Filter periode','Mengubah rentang waktu yang dihitung.','Halaman yang sama'],['Nama program / unit','Membuka rincian di halaman terkait.','Halaman rincian']],
+ tips:['Realisasi hanya naik setelah bukti dukung divalidasi (lihat Bukti Dukung).']},
+
+'pmo-portofolio':{
+ tujuan:'Daftar induk seluruh program transformasi (kode, UIC, sponsor, periode, status). Dari sini Anda menambah program dan membuat charter.',
+ siapa:'Mengubah data: PMO Pusat / Admin. Peran lain hanya melihat.',
+ alur:[
+  ['Tambah program','Klik + Program Baru, isi kode, nama, UIC utama, lalu Simpan.',null,null,'porto'],
+  ['Atau impor sekaligus','Unduh Template, isi di Excel, lalu klik ⇅ Excel untuk mengimpor banyak program.'],
+  ['Saring bila perlu','Gunakan Filter lanjutan (jenis, UIC, status) atau kolom cari.'],
+  ['Buat charter','Pada baris program klik + Buat charter; Anda dibawa ke Dokumen Proyek.','pmo-perencanaan','Buka Dokumen Proyek']],
+ tab:[['Daftar Program','Tabel induk program: tempat menambah, mengubah, dan menghapus program.'],['Capaian Program Transformasi','Progres tiap program dihitung dari WBS tervalidasi.'],['Milestone Mendatang','Milestone yang jatuh tempo dalam waktu dekat; berguna sebagai agenda pemantauan.','pmo-milestone']],
+ btn:[['+ Program Baru','Membuka formulir program baru.','Formulir (pop-up)'],['Template','Mengunduh template Excel program.','Mengunduh berkas'],['⇅ Excel','Impor / ekspor daftar program.','Pop-up impor / unduhan'],['＋ Filter lanjutan','Membuka filter bertingkat.','Halaman yang sama'],['👁 / ✎ / 🗑','Lihat rincian, ubah, atau hapus program.','Pop-up'],['+ Buat charter','Membuat Dokumen Proyek untuk program ini.','Dokumen Proyek','pmo-perencanaan']],
+ isi:['porto'],
+ tips:['Akronim kode dipakai sebagai awalan kode WBS; pilih yang singkat dan jangan diubah setelah WBS dibuat.']},
+
+'pmo-program':{
+ tujuan:'Melihat isi tiap program: proyek-proyeknya, UIC, progres, dan tombol untuk membuka Workspace Proyek.',
+ alur:[
+  ['Cari program','Gunakan kolom cari atau filter di toolbar tipis di bagian atas.'],
+  ['Buka kartu program','Klik tanda panah pada kartu program untuk melihat proyek di dalamnya.'],
+  ['Pilih mode tampilan','Switch Buka Subproyek membuka semua proyek; Semua Rincian menampilkan kolom lengkap.'],
+  ['Kelola proyek','Klik Kelola Proyek › untuk membuka Workspace Proyek (ringkasan, WBS, bukti dukung, risiko, stakeholder, keputusan, dokumen).'],
+  ['Lihat dokumen perencanaan','Lihat Charter membuka charter program bila sudah dibuat.','pmo-perencanaan','Buka Dokumen Proyek']],
+ tab:[['Ringkasan (Workspace)','Gambaran proyek: progres, UIC, jadwal, dan jumlah risiko.'],['WBS','Item WBS proyek beserta status.'],['Bukti Dukung','Unggah dan pantau bukti per item; alurnya dua langkah: unggah → validasi PMO Kemenkeu.'],['Risk Register / Issue Log','Risiko dan isu proyek.'],['Stakeholder','Daftar pihak terkait dan strategi pelibatannya.'],['Decision Log','Catatan keputusan penting proyek.'],['Dokumen','Tautan dokumen pendukung proyek.']],
+ btn:[['Buka Subproyek','Membuka/menutup semua proyek dalam program.','Halaman yang sama'],['Semua Rincian','Menampilkan kolom lengkap.','Halaman yang sama'],['Kelola Proyek ›','Membuka Workspace Proyek.','Pop-up Workspace'],['Lihat Charter','Menuju charter program.','Dokumen Proyek','pmo-perencanaan'],['WBS ›','Membuka WBS program tersebut.','WBS & progres','pmo-wbs']],
+ isi:['prjRisk','prjStake','prjDec'],
+ tips:['Di dalam Workspace, tab Bukti Dukung punya tombol unggah per item. Bukti baru dihitung setelah divalidasi.']},
+
+'pmo-perencanaan':{
+ tujuan:'Menyusun Dokumen Proyek (charter) tiap program lewat wizard enam langkah, lalu mengajukannya untuk disahkan.',
+ alur:[
+  ['Pilih program','Cari program pada daftar. Program tanpa charter menampilkan + Buat; yang sudah ada menampilkan Buka.'],
+  ['Klik + Buat atau Buka','Wizard terbuka dengan enam langkah.'],
+  ['Langkah 1: Kondisi & perbandingan','Isi kondisi saat ini (as-is), kondisi diharapkan (to-be), dan perbandingan.',null,null,null,['asis','tobe','cs']],
+  ['Langkah 2: Charter','Isi identitas dan isi charter: latar belakang, tujuan, ruang lingkup.',null,null,null,['id','isi']],
+  ['Langkah 3: Kriteria','Tulis kriteria penyelesaian yang terukur.',null,null,null,['kp']],
+  ['Langkah 4: Manfaat','Tulis manfaat proyek.',null,null,null,['mf']],
+  ['Langkah 5: Rencana kerja','Susun rencana kerja; menjadi dasar WBS.',null,null,null,['rk']],
+  ['Langkah 6: Tinjau','Periksa ringkasan, lalu simpan atau ajukan.'],
+  ['Ajukan ke PMO Pusat','Setelah lengkap, klik Ajukan ke PMO Pusat. Status berpindah Draf → Diajukan → Disahkan.'],
+  ['Lanjut ke WBS','Charter disahkan → susun WBS dari rencana kerja.','pmo-wbsplan','Buka WBS']],
+ btn:[['+ Buat / Buka','Membuka wizard charter.','Wizard (pop-up)'],['Import Charter (PPTX)','Mengisi charter dari berkas PowerPoint.','Pop-up impor'],['Ajukan ke PMO Pusat','Mengirim charter untuk disahkan.','Status berubah'],['Pilih versi','Berganti antarversi charter (per tahun).','Halaman yang sama'],['💡 Contoh pengisian','Melihat contoh isian lengkap untuk langkah yang dibuka.','Pop-up contoh']],
+ x:['asis','tobe','cs','id','isi','kp','mf','rk','ms'],
+ tips:['Perhatikan nama kriteria penyelesaian: harus sama dengan nama kelompok WBS agar progres penutupan terhubung otomatis.']},
+
+'pmo-wbsplan':{
+ tujuan:'Menyusun WBS (rencana kerja rinci) untuk tahun berjalan: unduh template, isi, impor, atau tambah item satu per satu.',
+ alur:[
+  ['Pilih program dan tahun','Gunakan pilihan program di atas tabel.'],
+  ['Unduh Template WBS','Klik Template WBS untuk berkas Excel dengan kolom yang benar.'],
+  ['Isi di Excel','Satu sheet per program. Kolom wajib: Code, Start, Finish. Bobot dihitung otomatis dari lama pekerjaan.'],
+  ['Import WBS','Klik Import WBS dan pilih berkas; periksa hasil impor di tabel.'],
+  ['Tambah / ubah manual','Klik + Item WBS untuk satu item baru, atau ✎ untuk mengubah.',null,null,'wbs'],
+  ['Pelaksanaan','Setelah WBS siap, progres dipantau di WBS & progres.','pmo-wbs','Buka WBS & progres']],
+ btn:[['Template WBS','Unduh template Excel.','Unduhan'],['Import WBS','Mengisi WBS dari Excel.','Pop-up impor'],['Export','Mengunduh WBS dalam format Kompilasi.','Unduhan'],['Change Request','Mengajukan perubahan item yang sudah baseline.','Change Request','pmo-cr'],['+ Item WBS','Menambah item secara manual.','Formulir (pop-up)']],
+ isi:['wbs'],
+ tips:['Gunakan kode berikutnya dari Referensi Kode agar tidak bentrok.','Item yang sudah baseline hanya bisa berubah lewat Change Request.']},
+
+'pmo-wbs':{
+ tujuan:'Memantau pelaksanaan WBS: status tiap item, realisasi bulanan, dan bukti dukungnya.',
+ alur:[
+  ['Saring','Pilih Program, Unit, Level, Periode, atau cari kode item.'],
+  ['Lihat status','Status item: Selesai, Dalam proses, Terlambat, atau Belum mulai (dihitung dari tanggal dan validasi).'],
+  ['Unggah bukti dukung','Pada item yang selesai klik ⇪ lalu isi tanggal selesai dan tautan dokumen.',null,null,'bukti_up'],
+  ['Menunggu validasi','Status item menjadi Menunggu validasi. PMO Kemenkeu memeriksa dokumen.'],
+  ['Hasil','Valid → capaian item 100 dan masuk ke realisasi. Ditolak → capaian 0 sampai bukti diperbaiki.'],
+  ['Perlu mengubah jadwal?','Ajukan Change Request.','pmo-cr','Buka Change Request']],
+ btn:[['⇪ Unggah bukti','Membuka formulir bukti dukung.','Pop-up unggah'],['✔ Validasi','Hanya PMO Kemenkeu: memeriksa dan memvalidasi bukti.','Pop-up validasi'],['Filter','Menyaring item.','Halaman yang sama'],['Export','Mengunduh tabel.','Unduhan']],
+ isi:['bukti_up','validasi'],
+ tips:['Tidak ada lagi tombol Tandai 100%. Capaian 100 muncul hanya setelah bukti divalidasi.']},
+
+'pmo-bukti':{
+ tujuan:'Satu tempat untuk seluruh bukti dukung: mengunggah, melihat statusnya, dan (untuk PMO Kemenkeu) memvalidasi.',
+ alur:[
+  ['Cari item','Saring status (Belum diunggah, Menunggu validasi, Valid, Ditolak) atau cari kode.'],
+  ['Unggah bukti','PMO/CMO Unit maupun PMO/CMO Kemenkeu dapat mengunggah. Klik ⇪, isi tanggal selesai dan tautan.',null,null,'bukti_up'],
+  ['Validasi (PMO Kemenkeu)','Klik ✔ Validasi. Centang daftar periksa lalu Valid; atau Tolak dengan catatan untuk UIC.',null,null,'validasi'],
+  ['Tindak lanjut bila ditolak','UIC membaca catatan penolakan, memperbaiki, dan mengunggah ulang.'],
+  ['Hasil','Valid → capaian item 100 (kolom Capaian di WBS & progres).','pmo-wbs','Buka WBS & progres']],
+ btn:[['⇪ Unggah','Mengirim bukti untuk item.','Pop-up unggah'],['✔ Validasi','Menilai bukti.','Pop-up validasi'],['Tautan dokumen','Membuka dokumen bukti.','Tab baru']],
+ isi:['bukti_up','validasi'],
+ tips:['Nama berkas mengikuti pola Kode WBS_Nama File.','Tanggal selesai tidak boleh melewati hari ini.']},
+
+'pmo-cr':{
+ tujuan:'Mengajukan dan menelaah perubahan terhadap item WBS yang sudah menjadi baseline (jadwal, deliverable, bobot, UIC, atau item baru/dihapus).',
+ alur:[
+  ['Ajukan (UIC)','Klik + Ajukan CR, isi kode WBS, jenis perubahan, komponen yang diubah, alasan, dan tanggal efektif.',null,null,'cr'],
+  ['Telaah (PMO Kemenkeu)','PMO Kemenkeu menelaah pengajuan, maksimal 15 hari kerja.'],
+  ['Keputusan','Disetujui atau ditolak; keputusan tercatat.'],
+  ['Hasil','Bila disetujui, item di WBS berubah sesuai CR dan riwayat tersimpan.','pmo-wbs','Buka WBS & progres']],
+ btn:[['+ Ajukan CR','Membuka formulir pengajuan.','Pop-up'],['Setujui / Tolak','Hanya peran penelaah.','Pop-up keputusan']],
+ isi:['cr'],
+ tips:['Alasan wajib disertai dasar, misalnya nomor nota dinas atau notulen rapat.']},
+
+'pmo-milestone':{
+ tujuan:'Memantau milestone program yang diambil dari charter dan item WBS penanda.',
+ alur:[['Saring','Pilih Terlambat atau 30 hari ke depan untuk melihat yang perlu perhatian.'],['Baca progres','Progres tiap milestone dihitung otomatis dari kelompok WBS yang ditautkan di charter.'],['Telusuri','Buka WBS & progres untuk item yang tertinggal.','pmo-wbs','Buka WBS & progres']],
+ tips:['Bila progres milestone 0, periksa penautan milestone ke kelompok WBS di Dokumen Proyek.']},
+
+'pmo-risiko':{
+ tujuan:'Register risiko dan isu program: apa yang dikhawatirkan, seberapa besar, siapa yang menangani, dan kapan selesai.',
+ alur:[
+  ['Tambah','Klik + Risiko dan isi jenis, uraian, kemungkinan, dampak, mitigasi, pemilik, dan tenggat.',null,null,'risk'],
+  ['Bawa ke CMO (opsional)','Centang Bawa ke CMO bila risiko menyangkut kesiapan atau adopsi pengguna.'],
+  ['Pantau','Skor risiko = kemungkinan × dampak; urutkan agar yang tertinggi di atas.'],
+  ['Perbarui status','Terbuka → Dimitigasi → Ditutup. Bila sudah terjadi, ubah jenis menjadi Isu.']],
+ btn:[['+ Risiko','Menambah risiko / isu.','Pop-up'],['✎ / 🗑','Ubah atau hapus.','Pop-up'],['Filter','Menyaring berdasarkan program, status, atau jenis.','Halaman yang sama']],
+ isi:['risk'],
+ tips:['Risiko dari charter dapat ikut masuk ke register ini.']},
+
+'pmo-laporan':{
+ tujuan:'Capaian T-Program per triwulan, per unit Eselon I, serta pengisian output IKU K-Wide.',
+ alur:[['Pilih TW','Pilih triwulan untuk melihat capaian kumulatif tahun berjalan.'],['Baca capaian','Angka dihitung dari WBS yang sudah tervalidasi.'],['Isi output K-Wide','Pada tabel K-Wide klik + Output dan isi target serta realisasi.',null,null,'kw'],['Susun narasi','Lanjutkan ke Narasi T-Program untuk laporan.','pmo-narasi','Buka Narasi']],
+ btn:[['Pilih TW','Mengganti triwulan.','Halaman yang sama'],['+ Output K-Wide','Menambah output.','Pop-up'],['Export','Mengunduh tabel capaian.','Unduhan']],
+ isi:['kw']},
+
+'pmo-narasi':{
+ tujuan:'Menulis narasi capaian tiap program per triwulan yang otomatis menjadi PPT Laporan Implementasi Program Transformasi.',
+ alur:[['Pilih TW','Pilih triwulan laporan.'],['Pilih program','Klik program pada daftar kiri.'],['Isi narasi','Isi satu butir per baris pada setiap kotak; pratinjau slide langsung berubah.'],['Unduh PPT','Klik tombol unduh untuk mendapatkan PPT laporan.']],
+ x:['nar'],
+ tips:['Gunakan kalimat singkat berbasis fakta dan angka agar mudah dibaca pimpinan.']},
+
+'pmo-oneonone':{
+ tujuan:'Menjadwalkan dan mencatat pertemuan 1-on-1 PMO dengan unit pelaksana untuk menjaga progres.',
+ alur:[['Lihat jadwal','Daftar pertemuan per unit dan tanggalnya.'],['Siapkan bahan','Gunakan WBS & progres dan Risiko & Isu sebagai bahan diskusi.','pmo-wbs','Buka WBS & progres'],['Catat hasil','Catat kesepakatan dan tindak lanjut setelah pertemuan.']],
+ tips:['Prioritaskan unit yang memiliki item terlambat.']},
+
+'pmo-penutupan':{
+ tujuan:'Menilai kesiapan penutupan proyek: kriteria penyelesaian di charter dibandingkan dengan WBS yang sudah divalidasi.',
+ alur:[['Pilih program','Buka kartu program.'],['Periksa kriteria','Kriteria terpenuhi bila seluruh item WBS yang tertaut sudah divalidasi (100%).'],['Kriteria belum tertaut?','Samakan nama kriteria dengan nama kelompok WBS di Dokumen Proyek.','pmo-perencanaan','Buka Dokumen Proyek'],['Tutup proyek','Bila semua terpenuhi, lanjutkan proses penutupan sesuai ketentuan.']]},
+
+'pmo-referensi':{
+ tujuan:'Referensi kode WBS yang sudah dipakai, tahapan, dan usulan item dari CMO. Gunakan sebelum menambah item agar kode tidak bentrok.',
+ alur:[['Cari kode berikutnya','Lihat Kode berikut untuk akronim program (mis. OA-148).'],['Kelola tahapan','Tahapan dipakai sistem untuk mengelompokkan item. Ubah lewat + Tahapan.',null,null,'tahap'],['Tinjau usulan CMO','Usulan item dari CMO ditelaah PMO sebelum masuk WBS.',null,null,'usul'],['Tambah item','Setelah kode ada, tambahkan di WBS.','pmo-wbsplan','Buka WBS']],
+ btn:[['+ Tahapan','Menambah tahapan.','Pop-up'],['WBS ›','Membuka WBS program.','WBS & progres','pmo-wbs'],['Terima / Tolak usulan','Menanggapi usulan CMO.','Halaman yang sama']],
+ isi:['tahap','usul']},
+
+'cmo-siklus':{
+ tujuan:'Daftar modul Change Management (CM) dan tahapannya. Satu modul terbentuk dari satu item ADP di WBS.',
+ alur:[
+  ['Pilih modul','Klik kartu modul untuk membuka ruang kerjanya.'],
+  ['Ikuti pipeline','ADP → Perencanaan → Implementasi → Monev → Closing. Status tiap tahap terlihat di kartu.'],
+  ['Item WBS modul per tahap','Ruang kerja menampilkan item WBS yang berkaitan dengan tahap tersebut.'],
+  ['Usulkan item ke PMO','Bila perlu item baru, klik Usulkan ke PMO.',null,null,'usul'],
+  ['Reviu CMO Kementerian','Catatan Reviu: CMO Kementerian dapat memberi catatan per tab yang harus ditindaklanjuti pemilik modul.',null,null,'addrev']],
+ btn:[['Kartu modul','Membuka ruang kerja modul.','Ruang kerja modul'],['Usulkan ke PMO','Mengirim usulan item.','Pop-up'],['+ Catatan','Menambah catatan reviu.','Pop-up']],
+ isi:['usul','addrev']},
+
+'cmo-adopsi':{
+ tujuan:'Melihat tingkat adopsi pengguna per modul: target dibanding realisasi.',
+ alur:[['Pilih modul','Pilih modul pada daftar.'],['Bandingkan','Lihat pengguna aktif dan transaksi dibanding ekspektasi.'],['Isi data','Data per periode diisi di Monev (tab Adopsi).','cmo-monev','Buka Monev']],
+ isi:['ado']},
+
+'cmo-adp':{
+ tujuan:'Analisis Dampak Perubahan (ADP) per modul: apa yang berubah, seberapa besar dampaknya, risikonya, dan indikator keberhasilannya.',
+ alur:[
+  ['Pilih modul dan sub modul','Pilih modul lalu klik + Sub modul.'],
+  ['Tab Dampak','Isi kondisi as-is, to-be, dan tingkat dampak POSTeR (Proses, Organisasi, SDM, Teknologi, Regulasi) beserta risiko.',null,null,'adp'],
+  ['Tab Poster','Ringkasan dampak dalam satu halaman.'],
+  ['Tab Registrasi','Registrasi sub modul dan statusnya.'],
+  ['Tab Indikator','Tetapkan indikator keberhasilan dan bobotnya (total 100%).',null,null,'ind'],
+  ['Kirim reviu','Setelah lengkap, status ADP berpindah ke Review CMO.']],
+ tab:[['Dampak','Analisis as-is/to-be dan tingkat dampak POSTeR.'],['Poster','Visual ringkas dampak untuk komunikasi.'],['Registrasi','Daftar sub modul yang diregistrasi.'],['Indikator','Indikator keberhasilan CM beserta baseline, target, dan bobot.']],
+ isi:['adp','ind'],
+ tips:['Tingkat dampak: — (tidak ada), Minor, Moderate, Significant.','Uraian sebaiknya menyebut siapa yang terdampak dan apa yang berubah.']},
+
+'cmo-rencana':{
+ tujuan:'Perencanaan CM: siapa stakeholder, bagaimana berkomunikasi, bagaimana melatih, dan siapa jejaring agen perubahan.',
+ alur:[
+  ['Tab Stakeholder','Daftarkan stakeholder, nilai experience dan support. Centang duplikasi ke Komunikasi/Pelatihan.',null,null,'sh'],
+  ['Tab ESM','Peta stakeholder pada matriks Experience–Support untuk memilih strategi.'],
+  ['Tab Komunikasi','Rencana kegiatan komunikasi (tanggal, saluran, PIC).'],
+  ['Tab Pelatihan','Rencana kegiatan pelatihan.'],
+  ['Tab Jejaring','Kebutuhan, penetapan, dan pelatihan T-Agent per unit.',null,null,'jj'],
+  ['Selanjutnya','Kegiatan yang direncanakan dilaksanakan dan dilaporkan di Implementasi.','cmo-impl','Buka Implementasi']],
+ tab:[['Stakeholder (sh)','Daftar pihak terdampak dengan penilaian experience dan support.'],['ESM','Matriks otomatis dari penilaian stakeholder.'],['Komunikasi (kom)','Rencana komunikasi.'],['Pelatihan (pel)','Rencana pelatihan.'],['Jejaring (jj)','Agen perubahan (T-Agent) per unit.']],
+ isi:['sh','jj']},
+
+'cmo-impl':{
+ tujuan:'Melaporkan pelaksanaan kegiatan komunikasi dan pelatihan yang direncanakan.',
+ alur:[['Cari kegiatan','Kegiatan disalin dari Perencanaan.'],['Ubah status','Klik ✎ lalu ubah status menjadi Terlaksana dan isi tanggal realisasi, jangkauan, serta bukti.',null,null,'impl'],['Monev','Hasil pelaksanaan dipantau di Monev.','cmo-monev','Buka Monev']],
+ isi:['impl']},
+
+'cmo-monev':{
+ tujuan:'Memantau efektivitas CM: penyesuaian RTL, kertas kerja monev, adopsi, dan keberhasilan CM.',
+ alur:[
+  ['Tab Pelaksanaan (lak)','Catat deviasi antara rencana dan kenyataan beserta penyesuaian RTL.',null,null,'lak'],
+  ['Tab Pemantauan (pan)','Kertas kerja monev berbasis ADKAR.',null,null,'pan'],
+  ['Tab Adopsi (ado)','Isi data adopsi per periode.',null,null,'ado'],
+  ['Tab Keberhasilan CM (kcm)','Isi realisasi indikator keberhasilan dari ADP.',null,null,'kcm']],
+ tab:[['Pelaksanaan','Deviasi dan penyesuaian RTL.'],['Pemantauan','Kertas kerja monev (ADKAR).'],['Adopsi','Data adopsi pengguna.'],['Keberhasilan CM','Realisasi indikator keberhasilan.']],
+ isi:['lak','pan','ado','kcm']},
+
+'cmo-closing':{
+ tujuan:'Menutup CM per modul: memastikan indikator tercapai dan kepemilikan perubahan diserahkan ke unit operasional.',
+ alur:[['Periksa kesiapan','Pastikan kegiatan terlaksana dan indikator tercapai.','cmo-monev','Buka Monev'],['Isi transfer kepemilikan','Klik + Transfer untuk menetapkan area, penerima, dan dokumen.',null,null,'tr'],['Selesaikan','Ubah status transfer menjadi Selesai setelah serah terima.']],
+ isi:['tr']},
+
+'set-pengguna':{
+ tujuan:'Mengelola akun pengguna dan perannya.',
+ siapa:'Hanya Super Admin.',
+ alur:[['Tambah pengguna','Klik + Pengguna lalu isi nama, email Kemenkeu, peran, dan unit.',null,null,'users'],['Atur akses','Tentukan hak peran di Hak Akses Peran.','set-akses','Buka Hak Akses'],['Nonaktifkan','Hapus centang Aktif bila pengguna tidak lagi bertugas.']],
+ isi:['users']},
+'set-akses':{tujuan:'Mengatur hak setiap peran terhadap setiap fitur (tidak ada, lihat, ubah).',siapa:'Hanya Super Admin.',alur:[['Pilih peran','Cari baris peran.'],['Atur hak','Ubah pilihan hak pada tiap fitur.'],['Simpan','Perubahan langsung berlaku bagi pengguna peran itu.']],tips:['Hati-hati mengubah hak peran Super Admin.']},
+'set-sinkron':{tujuan:'Aturan sinkronisasi data antara PMO dan CMO (mis. risiko CM dan item ADP).',siapa:'Hanya Super Admin.',alur:[['Baca aturan','Setiap aturan menjelaskan data apa yang berpindah dan arahnya.'],['Aktif/nonaktifkan','Atur sesuai kebutuhan.']]},
+'set-log':{tujuan:'Riwayat aktivitas: siapa mengubah apa dan kapan.',alur:[['Cari','Gunakan filter pengguna atau jenis aktivitas.'],['Telusuri','Gunakan log untuk memeriksa perubahan data penting.']]},
+'set-db':{tujuan:'Status database dan pencadangan data aplikasi.',siapa:'Hanya Super Admin.',alur:[['Periksa status','Lihat status sinkron Firestore.'],['Cadangkan','Unduh cadangan secara berkala.']]}
+};
+/* Alur menyeluruh PMO dan CMO untuk Pusat Bantuan */
+const FLOW_PMO=[
+ ['Siapkan program','Tambah program dan UIC-nya.','pmo-portofolio','Portofolio'],
+ ['Susun charter','Isi Dokumen Proyek lewat wizard enam langkah, ajukan ke PMO Pusat.','pmo-perencanaan','Dokumen Proyek'],
+ ['Susun WBS','Impor atau tambah item WBS dari rencana kerja.','pmo-wbsplan','WBS'],
+ ['Laksanakan dan unggah bukti','UIC mengerjakan item lalu mengunggah bukti dukung.','pmo-wbs','WBS & progres'],
+ ['Validasi','PMO Kemenkeu memvalidasi bukti; capaian item menjadi 100.','pmo-bukti','Bukti Dukung'],
+ ['Ubah baseline bila perlu','Gunakan Change Request.','pmo-cr','Change Request'],
+ ['Pantau','Milestone, risiko, dan capaian triwulan.','pmo-milestone','Milestone'],
+ ['Laporkan','Isi narasi dan unduh PPT laporan.','pmo-narasi','Narasi T-Program'],
+ ['Tutup proyek','Periksa kriteria penyelesaian.','pmo-penutupan','Penutupan']];
+const FLOW_CMO=[
+ ['ADP','Analisis dampak perubahan dan indikator keberhasilan.','cmo-adp','ADP'],
+ ['Perencanaan','Stakeholder, komunikasi, pelatihan, jejaring.','cmo-rencana','Perencanaan'],
+ ['Implementasi','Laksanakan dan laporkan kegiatan.','cmo-impl','Implementasi'],
+ ['Monev','Pantau efektivitas dan adopsi.','cmo-monev','Monev'],
+ ['Closing','Transfer kepemilikan dan penutupan CM.','cmo-closing','Closing CM']];
+const GLOSS=[['UIC','Unit Instansi Penanggung jawab: unit yang bertanggung jawab atas item/program.'],['WBS','Work Breakdown Structure: rincian pekerjaan menjadi item yang punya jadwal dan bobot.'],['Charter','Dokumen proyek yang memuat latar belakang, tujuan, ruang lingkup, dan kriteria.'],['ADP','Analisis Dampak Perubahan.'],['POSTeR','Proses bisnis, Organisasi, SDM, Teknologi, Regulasi: lima aspek dampak.'],['CM / CMO','Change Management / Change Management Office.'],['CR','Change Request: pengajuan perubahan item yang sudah baseline.'],['T-Program','Kelompok program transformasi yang dilaporkan.'],['K-Wide','IKU Kementerian yang dikaitkan dengan program transformasi.'],['TW','Triwulan.'],['RTL','Rencana Tindak Lanjut.'],['ADKAR','Awareness, Desire, Knowledge, Ability, Reinforcement: kerangka perubahan perilaku.'],['Valid','Status bukti dukung yang sudah diperiksa dan diterima PMO Kemenkeu.']];
+const GROLES=[['Super Admin (SA)','Akses penuh, termasuk Pengaturan.'],['PMO Kemenkeu (PMOK)','Memvalidasi bukti, menelaah CR, mengesahkan charter.'],['CMO Kemenkeu (CMOK)','Mereviu pekerjaan CM seluruh modul.'],['PMO Unit (PMOU)','Mengelola program dan WBS unit Eselon I-nya.'],['CMO Unit (CMOU)','Mengelola CM modul unitnya.'],['Tim CM Proyek (TIM)','Mengisi tahap CM untuk modul yang ditugaskan.']];
+
+/* ===== Mesin Pusat Bantuan ===== */
+let CURF=null;
+const HP_OK=g=>{try{return !g||/^modul-/.test(g)||allowedViews().includes(g)}catch(e){return true}};
+const hpGo=(g,l)=>g&&HP_OK(g)?`<button class="hp-go" data-hgo="${esc(g)}">${esc(l||'Buka')} ›</button>`:'';
+function hpGuideOf(v){
+ let g=GUIDE[v];
+ if(!g&&/^modul-/.test(v)){const tb=v.split('-t-')[1]||'siklus';g=GUIDE['cmo-'+tb]}
+ if(!g&&v==='pmo-charter')g=GUIDE['pmo-perencanaan'];
+ if(g)return g;
+ const h=helpOf(v);
+ if(h)return{tujuan:h.d,alur:(h.c||[]).map(x=>['Langkah',x]),x:h.x,tips:[]};
+ return{tujuan:'Halaman ini menampilkan data sesuai peran Anda.',alur:[['Gunakan filter','Persempit data dengan filter di bagian atas.'],['Tombol aksi','Tombol tambah/ubah hanya muncul bila peran Anda berhak.']]}
+}
+function hpAlur(g){
+ if(!g.alur||!g.alur.length)return '';
+ return `<ol class="hp-flow">${g.alur.map(a=>{const [j,i,go,lb,fid,wz]=a;
+  const ex=fid&&FORMEX[fid]?`<em>Contoh isian tersedia</em>`:'';
+  const wzb=wz?`<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">${wz.map(k=>EXTT[k]?`<button class="hp-go" data-act="chex" data-k="${k}">💡 ${esc(EXTT[k])}</button>`:'').join('')}</div>`:'';
+  return `<li><div><b>${esc(j)}</b><span>${esc(i)}</span>${ex?`<button class="hp-go" style="margin-top:6px" data-hexf="${fid}">💡 Lihat contoh isian</button>`:''}${wzb}</div>${hpGo(go,lb)}</li>`}).join('')}</ol>`}
+function hpTabs(g){
+ if(!g.tab||!g.tab.length)return '';
+ return `<div class="hp-cards">${g.tab.map(([n,i,go])=>`<div class="hp-card"><b>${esc(n)}</b><span>${esc(i)}</span>${hpGo(go,'Buka')}</div>`).join('')}</div>`}
+function hpBtn(g){
+ if(!g.btn||!g.btn.length)return '';
+ return `<table class="hp-tbl"><thead><tr><th>Tombol / menu</th><th>Fungsinya</th><th>Menuju</th></tr></thead><tbody>${g.btn.map(([t,f,m,go])=>`<tr><td><span class="hp-key">${esc(t)}</span></td><td>${esc(f)}</td><td><div class="hp-dest"><span class="${go?'menu':'pop'}">${esc(m)}</span>${hpGo(go,'Buka')}</div></td></tr>`).join('')}</tbody></table>`}
+function hpFormsHtml(ids,open){
+ return `<div class="hp-forms">${ids.map(id=>{const fx=FORMEX[id];if(!fx)return '';
+  return `<details class="hp-form" id="hpf-${id}"${(open===id||ids.length<=2)?' open':''}><summary>${esc(fx.title)}<small>${fx.f.length} isian</small></summary><table class="hp-ftbl"><thead><tr><th>Isian</th><th>Cara mengisi</th><th>Contoh</th></tr></thead><tbody>${fx.f.map(([k,l,r,c,e])=>`<tr><td>${esc(l)}${r?'<span class="hp-req">wajib</span>':'<span class="hp-opt">opsional</span>'}</td><td>${esc(c)}</td><td>${e?`<span class="hp-ex">${esc(e)}</span>`:'—'}</td></tr>`).join('')}</tbody></table></details>`}).join('')}</div>`}
+function hpIsiIds(g){
+ const s=[];(g.isi||[]).forEach(x=>{if(FORMEX[x]&&!s.includes(x))s.push(x)});
+ (g.alur||[]).forEach(a=>{if(a[4]&&FORMEX[a[4]]&&!s.includes(a[4]))s.push(a[4])});return s}
+function showHelp(v,title){
+ const g=hpGuideOf(v);const ids=hpIsiIds(g);
+ const wiz=(g.x&&g.x.length)?`<div class="hp-tips" style="background:#F5F9FF;border-color:#D6E3F3;color:var(--ink-2)"><b>Contoh pengisian lengkap (wizard)</b><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${g.x.map(k=>EXTT[k]?`<button class="hp-go" data-act="chex" data-k="${k}">💡 ${esc(EXTT[k])}</button>`:'').join('')}</div></div>`:'';
+ const panels=[
+  ['ring','Ringkasan',`<div class="hp-goal"><i>?</i><div><b>Tujuan halaman</b>${esc(g.tujuan)}${g.siapa?`<div class="hp-who">Siapa: ${esc(g.siapa)}</div>`:''}</div></div>${g.tips&&g.tips.length?`<div class="hp-tips"><b>Tips</b><ul>${g.tips.map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div>`:''}`,0],
+  ['alur','Alur',hpAlur(g),(g.alur||[]).length],
+  ['tab','Tab & Fitur',hpTabs(g),(g.tab||[]).length],
+  ['btn','Tombol & Pindah Menu',hpBtn(g),(g.btn||[]).length],
+  ['isi','Contoh Isian',(ids.length?hpFormsHtml(ids):'')+wiz,ids.length+((g.x&&g.x.length)?g.x.length:0)]
+ ].filter(p=>p[0]==='ring'||p[2]);
+ const body=`<div class="hp-tabs" role="tablist">${panels.map((p,i)=>`<button role="tab" data-hp="${p[0]}" class="${i?'':'on'}">${p[1]}${p[3]?`<b>${p[3]}</b>`:''}</button>`).join('')}</div>${panels.map((p,i)=>`<div class="hp-p${i?'':' on'}" data-hpp="${p[0]}">${p[2]}</div>`).join('')}`;
+ const ov=modal(`<span class="exh"><span class="hlp sm" aria-hidden="true">?</span>Panduan · ${esc(title||'')}</span>`,body,'',null,{size:'wide hp',cancel:'Tutup',extra:`<button class="btn hp-btn-ex" data-mx="home">📖 Pusat Bantuan (semua menu)</button>`,onExtra:k=>{if(k==='home'){setTimeout(showGuideHome,0)}}});
+ hpWire(ov);return ov}
+function hpSwitch(ov,key){ov.querySelectorAll('.hp-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.hp===key));ov.querySelectorAll('.hp-p').forEach(p=>p.classList.toggle('on',p.dataset.hpp===key))}
+function hpWire(ov){
+ ov.addEventListener('click',e=>{
+  const t=e.target.closest('[data-hp]');if(t){hpSwitch(ov,t.dataset.hp);return}
+  const g=e.target.closest('[data-hgo]');if(g){const h=g.dataset.hgo;ov.remove();go(h);return}
+  const f=e.target.closest('[data-hexf]');if(f){hpSwitch(ov,'isi');const d=ov.querySelector('#hpf-'+f.dataset.hexf);if(d){d.open=true;d.scrollIntoView({block:'nearest',behavior:'smooth'})}return}
+ })}
+/* Pusat Bantuan global */
+function showGuideHome(){
+ const cur=typeof VIEW!=='undefined'?VIEW:'';
+ const flow=(arr)=>`<ol class="hp-flow">${arr.map(([j,i,g,l])=>`<li><div><b>${esc(j)}</b><span>${esc(i)}</span></div>${hpGo(g,l)}</li>`).join('')}</ol>`;
+ const menus=[];
+ PMG.forEach(([k,n,,tabs])=>tabs.forEach(t=>{const p=PMT.find(x=>x[0]===t);if(p)menus.push(['pmo-'+p[0],'PMO · '+p[1]])}));
+ CMT.forEach(c=>menus.push(['cmo-'+c[0],'CMO · '+c[1]]));
+ STN.forEach(s=>menus.push([s[0],'Pengaturan · '+s[1]]));
+ menus.unshift(['dashboard','Dashboard Eksekutif']);menus.unshift(['beranda','Beranda']);
+ const visible=menus.filter(m=>HP_OK(m[0]));
+ const peta=`<div class="hp-cards">${visible.map(([v,n])=>{const g=GUIDE[v]||{};return `<div class="hp-card${v===cur?' cur':''}"><b>${esc(n)}</b><span>${esc(g.tujuan||'')}</span><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="hp-go" data-hgo="${esc(v)}">Buka ›</button><button class="hp-go" data-hhelp="${esc(v)}" data-t="${esc(n)}">Panduan ›</button></div></div>`}).join('')}</div>`;
+ const gl=`<table class="hp-tbl"><tbody>${GLOSS.map(([a,b])=>`<tr><td><span class="hp-key">${esc(a)}</span></td><td>${esc(b)}</td></tr>`).join('')}</tbody></table>`;
+ const rl=`<table class="hp-tbl" style="margin-top:12px"><thead><tr><th>Peran</th><th>Tugas utama</th></tr></thead><tbody>${GROLES.map(([a,b])=>`<tr><td><span class="hp-key">${esc(a)}</span></td><td>${esc(b)}</td></tr>`).join('')}</tbody></table>`;
+ const panels=[
+  ['alur','Alur PMO',`<p class="hp-lead">Dari program sampai penutupan. Klik <b>Buka</b> untuk langsung pindah ke menu terkait.</p>${flow(FLOW_PMO)}`],
+  ['cmo','Alur CMO',`<p class="hp-lead">Change Management mengikuti lima tahap per modul.</p>${flow(FLOW_CMO)}`],
+  ['peta','Peta Menu',`<p class="hp-lead">Semua menu yang boleh Anda buka. Tombol <b>Panduan</b> menampilkan penjelasan lengkap halaman itu.</p>${peta}`],
+  ['gl','Istilah & Peran',`${gl}${rl}`]
+ ];
+ const body=`<div class="hp-goal"><i>?</i><div><b>Pusat Bantuan</b>Ikuti alur di bawah, atau buka Peta Menu untuk melihat fungsi tiap halaman. Di setiap halaman ada tombol <strong>?</strong> di judul untuk panduan khusus halaman tersebut, dan tombol <strong>💡 Contoh pengisian</strong> di setiap formulir.</div></div><div class="hp-tabs" role="tablist">${panels.map((p,i)=>`<button role="tab" data-hp="${p[0]}" class="${i?'':'on'}">${p[1]}</button>`).join('')}</div>${panels.map((p,i)=>`<div class="hp-p${i?'':' on'}" data-hpp="${p[0]}">${p[2]}</div>`).join('')}`;
+ const ov=modal('<span class="exh"><span class="hlp sm" aria-hidden="true">?</span>Pusat Bantuan Modul Transformasi</span>',body,'',null,{size:'wide hp',cancel:'Tutup'});
+ hpWire(ov);
+ ov.addEventListener('click',e=>{const h=e.target.closest('[data-hhelp]');if(h){ov.remove();showHelp(h.dataset.hhelp,h.dataset.t)}});
+ return ov}
+/* Contoh isian pada formulir */
+function showFormEx(id){
+ const fx=FORMEX[id];if(!fx){toast('Contoh untuk formulir ini belum tersedia.');return}
+ modal(`<span class="exh"><span class="hlp sm" aria-hidden="true">?</span>Contoh isian · ${esc(fx.title)}</span>`,hpFormsHtml([id],id),'',null,{size:'wide hp',cancel:'Tutup'})}
 ACT.help=el=>showHelp(el.dataset.v,el.dataset.t);
+ACT.helphome=()=>showGuideHome();
+function fexOf(c){if(!CURF||!FORMEX[CURF])return '';const f=FORMEX[CURF].f.find(x=>x[0]===c.k);return f&&f[4]?f[4]:''}
+
 
 /* --- Referensi kode & usulan --- */
 function pRef(){return vh('K','pmo','Referensi Kode & Usulan dari CMO','Master kode program dan usulan item WBS dari CMO.')+pmoTabs('referensi')+
@@ -3657,7 +4287,7 @@ function viewCmo(tab,mk){const f=tab==='siklus'?'adp':tab;
  return head+cmoTabs(tab,mk)+(mk?'':cmoFlt(f,tab))+body}
 function modHead(mk){const m=modOf(mk);if(!m)return `<div class="card empty">Modul ${esc(mk)} tidak ditemukan (item ADP mungkin diarsipkan).</div>`;const sm=S.sub.filter(s=>s.modul===mk);
  return `<div class="vh"><a href="#cmo-siklus" class="btn sm">‹ Semua modul</a></div><div class="mhead"><div class="pic cmo" style="width:44px;height:44px;border-radius:11px;display:grid;place-items:center;color:#fff;font-weight:800">M</div>
- <div style="min-width:0"><div class="s">${esc(m.aplikasi)} › Modul</div><h1 style="font-size:19px;margin:0;font-weight:800">${esc(m.nama)} <span class="code">${m.kode}</span></h1><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">${sm.map((s,i)=>`<span class="smc"><i>${m.kode}.${i+1}</i>${esc(s.nama)}</span>`).join('')||'<span class="chip c-warn">Sub modul belum diisi di ADP</span>'}</div></div>
+ <div style="min-width:0"><div class="s">${esc(m.aplikasi)} › Modul</div><h1 style="font-size:19px;margin:0;font-weight:800">${esc(m.nama)} <span class="code">${m.kode}</span><button class="hlp" data-act="help" data-v="${esc(VIEW)}" data-t="Ruang kerja modul" title="Panduan ruang kerja modul" aria-label="Panduan ruang kerja modul">?</button></h1><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">${sm.map((s,i)=>`<span class="smc"><i>${m.kode}.${i+1}</i>${esc(s.nama)}</span>`).join('')||'<span class="chip c-warn">Sub modul belum diisi di ADP</span>'}</div></div>
  <div class="kvs"><div><span>Program</span>${progLabel(m.prog)}</div><div><span>UIC Utama</span>${esc(short(m.uic,50))}</div><div><span>Pendamping CM</span>Pusmantap (advisory)</div><div><span>Status ADP</span>${chipSt(adpSt(mk))}</div>${relChip(m)?`<div><span>Peran unit Anda</span>${relChip(m)}</div>`:''}</div></div>`}
 /* --- Siklus --- */
 function stgBar(m,s){const it=m.st[s];if(!it.length)return `<span title="${s}: belum ada item WBS" style="background:repeating-linear-gradient(135deg,#FCF1DC 0 3px,#F2D9A6 3px 6px)"></span>`;const d=it.filter(w=>doneAt(w,12)).length;return `<span title="${s}: ${d}/${it.length} selesai"><i style="width:${d/it.length*100}%"></i></span>`}
