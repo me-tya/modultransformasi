@@ -1346,6 +1346,7 @@ body:has(.prj-overlay){overflow:hidden}
 .hp-tips{margin:14px 0 0;padding:12px 16px;background:#F3FAF6;border:1px solid #CDE8DA;border-radius:12px;font-size:13.5px;line-height:1.6;color:#1E5A40}
 .hp-tips b{display:block;margin-bottom:3px}
 .hp-tips ul{margin:0;padding-left:18px}
+.hp-ftuj{margin:0;padding:10px 15px;font-size:13.5px;line-height:1.55;color:var(--ink-2);border-bottom:1px solid var(--line-2)}.hp-h{margin:4px 0 10px;font-size:14px;color:var(--navy)}
 .hp-empty{padding:18px;border:1px dashed #CBD6E6;border-radius:12px;color:var(--ink-3);text-align:center;font-size:13.5px}
 /* contoh inline di form */
 .fld small.fex{display:block;margin-top:3px;color:#7A5A06;font-size:12px}
@@ -1439,6 +1440,30 @@ body:has(.prj-overlay){overflow:hidden}
 .kw-lite{border-style:dashed}
 @media(max-width:1100px){.kw-sum{grid-template-columns:repeat(2,minmax(0,1fr))}.kw-lead{grid-column:1/-1}.kw-tw{border-top:1px solid var(--line)}}
 @media(max-width:640px){.kw-q{width:100%}.kw-kpi{grid-template-columns:1fr}.kw-it{grid-template-columns:1fr}.kw-it .acts{grid-row:auto;grid-column:auto}}
+
+/* Rincian proyek: hierarki proyek vs subproyek */
+.pm-project-table{font-family:inherit}
+.pm-project-table th{font-size:11.5px;font-weight:800;letter-spacing:.4px;color:#5E6E86;padding:10px 12px}
+.pm-project-table td{font-size:13.5px;color:#33425A;font-weight:400}
+.pm-project-table tbody tr:nth-child(2n){background:transparent}
+.pm-project-table tbody tr.prj-mainrow{background:#fff}
+.pm-project-table tbody tr.prj-mainrow td{border-top:1px solid #DCE4EF}
+.pm-project-table tbody tr.prj-mainrow td:first-child{border-left:3px solid #0B2447}
+.pm-project-table tbody tr.prj-mainrow td strong{font-size:14px;font-weight:800;color:#0B2447;display:block;line-height:1.4}
+.pm-project-table tbody tr.prj-mainrow td .sm{font-size:12px;color:#5E6E86;font-weight:600;margin-top:2px}
+.pm-project-table tbody tr.prj-mainrow:hover{background:#F2F7FE}
+.pm-project-table .pg b{font-size:13px;font-weight:800;color:#0B2447;font-family:inherit}
+.pm-project-table td.num{font-variant-numeric:tabular-nums;font-family:inherit}
+.prj-subrow{background:#F9FBFE}
+.prj-subrow td{border-top:1px solid #EDF1F7!important;font-size:13px!important;color:#5E6E86!important;padding-top:8px;padding-bottom:8px}
+.prj-subrow td:first-child{border-left:3px solid #C9D8EE!important;padding-left:12px}
+.prj-subrow:hover{background:#F2F7FE}
+.prj-subname{display:flex;align-items:center;gap:10px;padding-left:14px;font-weight:600;color:#33425A;font-size:13px;line-height:1.45}
+.prj-subname i{flex:none;width:12px;height:12px;border-left:1.5px solid #A9BBD4;border-bottom:1.5px solid #A9BBD4;border-bottom-left-radius:4px;margin-top:-6px}
+.prj-subrow .pg b{font-weight:700;color:#5E6E86}
+.prj-subrow .pg .bar{background:#E9EEF5}
+.pm-ws-icon.sub{width:34px;height:34px;opacity:.85}
+.pm-ws-icon.sub svg{width:16px;height:16px}
 </style>
 
 <div id="root"></div>
@@ -3331,9 +3356,10 @@ function progProjects(p){
    ent.a.push(w);if(sub&&sub!==name)(ent.subs[sub]=ent.subs[sub]||[]).push(w);
  });
  return Object.entries(g).map(([n,v])=>{
-  const a=v.a;let t=0,d=0;const u={};a.forEach(w=>{const b=+w.w||0;t+=b;if(doneAt(w,12)&&w.v)d+=b;const k=String(w.u||'').split(/[,(]/)[0].trim();if(k)u[k]=(u[k]||0)+1});
-  const uic=Object.entries(u).sort((a,b)=>b[1]-a[1])[0];
-  return {n,a,uic:uic?uic[0]:'—',pg:t?Math.round(d/t*100):0,late:a.filter(w=>stOf(w,12)==='Terlambat').length,sub:Object.keys(v.subs),subItems:Object.entries(v.subs).map(([name,rows])=>({name,count:rows.length})),s:a.reduce((m,w)=>!m||w.s<m?w.s:m,''),f:a.reduce((m,w)=>w.f>m?w.f:m,'')};
+  const stat=a=>{let t=0,d=0;const u={};a.forEach(w=>{const b=+w.w||0;t+=b;if(doneAt(w,12)&&w.v)d+=b;const k=String(w.u||'').split(/[,(]/)[0].trim();if(k)u[k]=(u[k]||0)+1});
+   const uic=Object.entries(u).sort((a,b)=>b[1]-a[1])[0];return {uic:uic?uic[0]:'—',pg:t?Math.round(d/t*100):0,late:a.filter(w=>stOf(w,12)==='Terlambat').length,s:a.reduce((m,w)=>!m||w.s<m?w.s:m,''),f:a.reduce((m,w)=>w.f>m?w.f:m,'')}};
+  const a=v.a;
+  return Object.assign({n,a,sub:Object.keys(v.subs),subItems:Object.entries(v.subs).map(([name,rows])=>Object.assign({name,count:rows.length},stat(rows)))},stat(a));
  });
 }
 
@@ -3353,23 +3379,23 @@ function projectCmoModule(k){
 }
 
 const PROJECT_EXAMPLES={
- 'risiko.title':'Contoh: Risiko keterlambatan data dari mitra integrasi.',
- 'risiko.cause':'Contoh: Kesepakatan pertukaran data belum selesai.',
- 'risiko.impact':'Contoh: Jadwal UAT FRSW mundur dua minggu.',
- 'risiko.owner':'Contoh: Ketua Tim Integrasi Data.',
- 'risiko.due':'Contoh: 2026-11-30',
- 'risiko.mit':'Contoh: Koordinasi mingguan, eskalasi hambatan, dan rencana cadangan.',
- 'stakeholder.name':'Contoh: Direktorat Sistem Perbendaharaan.',
- 'stakeholder.unit':'Contoh: DJPb, Kementerian Keuangan.',
- 'stakeholder.role':'Contoh: Pemilik data atau penerima manfaat.',
- 'stakeholder.engage':'Contoh: FGD kebutuhan dan pembaruan progres tiap dua minggu.',
- 'stakeholder.owner':'Contoh: PIC komunikasi DJPb.',
- 'decision.title':'Contoh: Menetapkan piloting secara bertahap di dua unit.',
- 'decision.by':'Contoh: Ketua Steering Committee.',
- 'decision.impact':'Contoh: Memastikan kesiapan sebelum implementasi luas.',
- 'decision.owner':'Contoh: PMO UE I.',
- 'decision.date':'Contoh: 2026-11-05',
- 'decision.due':'Contoh: 2026-11-30'
+ 'risiko.title':'Contoh: Keterlambatan API SIASN BKN untuk interkoneksi pengajuan pensiun.',
+ 'risiko.cause':'Contoh: BKN sedang merilis API SIASN versi baru.',
+ 'risiko.impact':'Contoh: UAT mundur dan cut-over Januari 2027 berisiko tertunda.',
+ 'risiko.owner':'Contoh: Tim Integrasi Setjen–BaTii.',
+ 'risiko.due':'Contoh: 2026-10-31',
+ 'risiko.mit':'Contoh: Rapat teknis dua mingguan dengan BKN; siapkan unggah berkas manual sebagai cadangan.',
+ 'stakeholder.name':'Contoh: Direktorat Pengembangan Sistem SIASN.',
+ 'stakeholder.unit':'Contoh: Badan Kepegawaian Negara (BKN).',
+ 'stakeholder.role':'Contoh: Penyedia API SIASN dan mitra uji interkoneksi.',
+ 'stakeholder.engage':'Contoh: Rapat teknis dua mingguan dan surat resmi Sekretaris Jenderal.',
+ 'stakeholder.owner':'Contoh: Kepala Bagian Pengelolaan Pensiun, Biro SDM.',
+ 'decision.title':'Contoh: Cut-over pengajuan pensiun via HRIS dimulai Januari 2027.',
+ 'decision.by':'Contoh: Steering Committee HRIS dipimpin Sekretaris Jenderal.',
+ 'decision.impact':'Contoh: Memberi waktu BKN merilis API baru dan pengelola berlatih.',
+ 'decision.owner':'Contoh: Biro SDM Setjen.',
+ 'decision.date':'Contoh: 2026-10-12',
+ 'decision.due':'Contoh: 2026-12-31'
 };
 let PROJECT_FORM_TYPE='risiko';
 function projectField(k,label,val='',type='text',extra=''){
@@ -3378,8 +3404,7 @@ function projectField(k,label,val='',type='text',extra=''){
  return '<label class="prj-field"><span class="prj-field-header">'+esc(label)+'</span><input id="prj-'+k+'" type="'+type+'" value="'+esc(val)+'" '+extra+attrs+'><small class="prj-field-example">'+esc(example)+'</small></label>';
 }
 function projectDecorateInputs(html,kind){
- const example=PROJECT_GUIDE[kind]||PROJECT_GUIDE.ringkasan;
- return '<div class="prj-form-instruction"><b>Petunjuk pengisian</b><p>'+esc(example[1])+'</p><small>'+esc(example[2])+'</small></div>'+html;
+ return html;
 }
 
 function projectRiskEdit(scope,id){
@@ -3507,20 +3532,21 @@ ACT.prjDecisionDel=el=>{
 
 /* Panduan kontekstual: berlaku pada setiap header dan form Workspace Proyek. */
 const PROJECT_GUIDE={
- workspace:['Workspace Proyek','Pilih proyek atau subproyek untuk mengelola WBS, risiko, stakeholder, isu, keputusan, dan milestone tanpa meninggalkan menu Program.','Contoh: Core System APBN › Sektor Keuangan › FRSW. Informasi FRSW terpisah dari SIPK.'],
- ringkasan:['Ringkasan Proyek','Angka ringkasan dihitung dari WBS dan register pada lingkup yang dipilih; bukan kolom yang diisi manual.','Contoh: 41 item WBS, 6 risiko aktif, 12 stakeholder dan 3 milestone belum selesai.'],
- wbs:['WBS & Target Output','Klik kode WBS untuk melihat detail dan bukti dukung. Unggah bukti bila deliverable telah selesai (PMO/CMO Unit atau PMO/CMO Kemenkeu); capaian 100 baru dihitung setelah divalidasi PMO Kemenkeu.','Contoh: CORE-041 — Penyusunan Arsitektur FRSW, target 30 September 2026, PIC Tim Arsitektur.'],
- risiko:['Risk Register','Catat potensi kejadian, penyebab, kemungkinan (1–5), dampak (1–5), pemilik, mitigasi, tenggat dan status. Centang Risiko CM hanya jika memengaruhi kesiapan/adopsi perubahan.','Contoh: Risiko keterlambatan integrasi data; PIC Tim Data; mitigasi koordinasi penyedia data setiap minggu.'],
- stakeholder:['Stakeholder Register','Identifikasi individu atau kelompok yang memengaruhi/terdampak proyek; isi unit, peran, pengaruh, kepentingan, dukungan serta strategi pelibatan. Data dapat disalin dari subproyek lain lalu disesuaikan.','Contoh: DJPb — pengaruh tinggi, kepentingan tinggi; engagement: FGD kebutuhan dan pembaruan progres berkala.'],
- issue:['Issue Log','Isu adalah masalah yang sudah terjadi, berbeda dengan risiko yang masih berpotensi terjadi. Buat record berjenis Isu pada Risk Register, lalu pantau di sini.','Contoh: Koneksi data antarsistem gagal pada UAT; PIC integrasi; tenggat penyelesaian 15 November 2026.'],
- decision:['Decision Log','Catat keputusan penting, tanggal, pengambil keputusan, alasan, PIC tindak lanjut, tenggat dan statusnya.','Contoh: Disepakati piloting FRSW dilakukan bertahap; keputusan rapat steering committee; PIC pemilik proses bisnis.'],
- bukti:['Bukti Dukung','Pantau kelengkapan bukti dukung setiap item WBS. Saring berdasarkan status bukti; unggah dan validasi resmi tetap melalui Pelaksanaan → WBS sesuai kewenangan.','Contoh: Saring “Belum diunggah” untuk melihat deliverable yang belum memiliki bukti, lalu klik Unggah.'],
- milestone:['Milestone & Deliverable','Gunakan jadwal dan deliverable WBS sebagai sumber. Klik kode untuk membuka item; bukti dukung dapat diunggah sesuai kewenangan.','Contoh: Penyelesaian UAT modul pada 30 September 2026 disertai berita acara dan bukti pengujian.'],
- copy:['Salin dari Modul Lain','Pilih sumber register dari proyek/subproyek lain. Salinan menjadi data terpisah dan dapat diedit tanpa mengubah sumber. Sinkronisasi CMO perlu ditinjau ulang.','Contoh: Salin stakeholder dari FRSW ke SIPK, lalu tambahkan pihak regulator khusus SIPK.'],
- cm:['Risiko CM dan Sinkronisasi CMO','Centang bila risiko berkaitan dengan penerimaan, kesiapan, kompetensi, atau adopsi perubahan. Sinkronisasi hanya dilakukan bila modul CMO yang relevan teridentifikasi unik.','Contoh: Rendahnya kesiapan agen layanan menghadapi alur baru → Risiko CM. Kegagalan server semata → risiko proyek.'],
- scope:['Pilihan Proyek/Subproyek','Setiap lingkup mempunyai register tersendiri. Perubahan data subproyek tidak otomatis mengubah proyek induk atau subproyek lainnya.','Contoh: Stakeholder SIPK dan FRSW berbeda, walaupun keduanya berada pada proyek Sektor Keuangan.'],
- search:['Pencarian & Pagination','Cari kata kunci pada tab aktif. Tabel menampilkan maksimal sepuluh data per halaman; ubah halaman untuk melihat data berikutnya.','Contoh: Ketik "data" untuk mencari risiko terkait integrasi data.']
+ workspace:['Workspace Proyek','Ruang kerja satu proyek atau subproyek. Di sini Anda melihat ringkasan, WBS, dan bukti dukung, serta mengelola risiko, stakeholder, isu, dan keputusan proyek tanpa keluar dari menu Program.','Pilih HRIS Satu Kemenkeu › Modul Pengelolaan Pemberhentian dan Pensiun › Interkoneksi HRIS–SIASN; data subproyek ini terpisah dari subproyek Integrasi HRIS–TOOS.'],
+ ringkasan:['Ringkasan Proyek','Gambaran cepat kondisi proyek. Semua angka dihitung otomatis dari WBS dan register, tidak diisi manual.','Interkoneksi HRIS–SIASN: 14 item WBS, 3 terlambat, 2 risiko terbuka, 5 stakeholder.'],
+ wbs:['WBS & Target Output','Daftar item WBS proyek beserta status dan bukti. Klik kode untuk detail. Bukti dukung diunggah di Pelaksanaan › WBS & progres.','OA-112 · Berita acara UAT interkoneksi HRIS–SIASN · target 30/09/2026 · Menunggu validasi.'],
+ risiko:['Risk Register','Mencatat risiko (belum terjadi) dan isu (sudah terjadi) proyek, lengkap dengan skor, pemilik, dan mitigasinya. Risiko yang menyangkut kesiapan pengguna dapat dibawa ke CMO.','Keterlambatan API SIASN BKN · kemungkinan 4 × dampak 4 = skor 16 · PIC Tim Integrasi Setjen–BaTii.'],
+ stakeholder:['Stakeholder Register','Mendata pihak yang memengaruhi atau terdampak proyek, menilai pengaruh, kepentingan, dan dukungannya, lalu menetapkan strategi pelibatan.','BKN (Direktorat Pengembangan Sistem SIASN) · Eksternal · High/High · Neutral · rapat teknis dua mingguan.'],
+ issue:['Issue Log','Memantau masalah yang sudah terjadi. Isu dibuat dari Risk Register dengan jenis Isu atau dengan mengubah status risiko menjadi Menjadi isu.','Koneksi API SIASN gagal saat UAT tahap 2 · PIC Tim Integrasi · tenggat 15/10/2026.'],
+ decision:['Decision Log','Mencatat keputusan penting proyek agar alasan, pengambil keputusan, dan tindak lanjutnya bisa ditelusuri kemudian.','Cut-over pengajuan pensiun via HRIS dimulai Januari 2027 · Steering Committee HRIS · PIC Biro SDM.'],
+ bukti:['Bukti Dukung','Melihat dan mengunduh bukti dukung tiap item WBS proyek. Unggah hanya di Pelaksanaan › WBS & progres; validasi oleh PMO Kemenkeu.','Saring "Belum diunggah" untuk melihat deliverable Interkoneksi HRIS–SIASN yang buktinya belum ada.'],
+ milestone:['Milestone & Deliverable','Daftar tonggak dan deliverable proyek berdasarkan jadwal WBS.','UAT interkoneksi HRIS–SIASN selesai 30/09/2026, dibuktikan berita acara UAT.'],
+ copy:['Salin dari Modul Lain','Menyalin risiko atau stakeholder dari proyek/subproyek lain sebagai data baru. Sumber tidak berubah; tinjau ulang hasil salinan.','Salin stakeholder dari Integrasi HRIS–TOOS ke Interkoneksi HRIS–SIASN, lalu ganti mitra Taspen menjadi BKN.'],
+ cm:['Risiko CM dan Sinkronisasi CMO','Tandai risiko yang menyangkut penerimaan, kesiapan, kompetensi, atau adopsi pengguna agar ikut tercatat di CMO.','Pengelola kepegawaian terbiasa dengan surat manual → risiko resistensi, dicentang Risiko CM.'],
+ scope:['Pilihan Proyek/Subproyek','Setiap proyek dan subproyek punya register sendiri. Perubahan di subproyek tidak mengubah proyek induk.','Stakeholder Interkoneksi HRIS–SIASN berbeda dengan Integrasi HRIS–TOOS walau satu modul.'],
+ search:['Pencarian','Cari kata kunci di tab aktif; tabel menampilkan sepuluh data per halaman.','Ketik "SIASN" untuk menemukan risiko dan stakeholder terkait BKN.']
 };
+const PROJECT_FORMS={risiko:'prjRisk',issue:'prjRisk',cm:'prjRisk',stakeholder:'prjStake',decision:'prjDec',copy:'prjCopy'};
 function projectHelp(name,small=false){
  return '<button type="button" class="hlp prj-help '+(small?'prj-help-sm':'')+'" data-act="prjHelp" data-guide="'+esc(name)+'" aria-label="Petunjuk dan contoh '+esc(PROJECT_GUIDE[name]?.[0]||name)+'" title="Petunjuk dan contoh pengisian">?</button>';
 }
@@ -3654,7 +3680,11 @@ ACT.prjBuktiF=el=>{S.ui.prjBuktiF=el.dataset.v||'';S.ui.prjPages=S.ui.prjPages||
 ACT.prjDemoPdf=el=>{const w=S.wbs.find(x=>x.k===el.dataset.k);if(!w){toast('Item WBS tidak ditemukan');return}const clean=t=>String(t||'').normalize('NFKD').replace(/[^\x20-\x7E]/g,' ').replace(/[()\\]/g,' ').slice(0,115);const lines=['RINGKASAN ITEM WBS','Modul Transformasi - Kementerian Keuangan','Kode WBS: '+clean(w.k),'Program: '+clean(w.prog),'Output: '+clean(deliv(w)),'UIC: '+clean(uicU(w)),'Target: '+clean(w.f),'Status: '+clean(stOf(w,12)),'Validasi: '+(w.v?'Tercatat tervalidasi':'Belum tervalidasi'),'Dicetak: '+clean(TODAY)];const stream='BT /F1 12 Tf 45 775 Td 18 TL '+lines.map((v,i)=>(i?'T* ':'')+'('+clean(v)+') Tj').join(' ')+' ET';const objs=['<< /Type /Catalog /Pages 2 0 R >>','<< /Type /Pages /Kids [3 0 R] /Count 1 >>','<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>','<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>','<< /Length '+stream.length+' >>\nstream\n'+stream+'\nendstream'];let pdf='%PDF-1.4\n',offset=[0];objs.forEach((o,i)=>{offset.push(pdf.length);pdf+=(i+1)+' 0 obj\n'+o+'\nendobj\n'});const at=pdf.length;pdf+='xref\n0 '+(objs.length+1)+'\n0000000000 65535 f \n';offset.slice(1).forEach(n=>pdf+=String(n).padStart(10,'0')+' 00000 n \n');pdf+='trailer << /Size '+(objs.length+1)+' /Root 1 0 R >>\nstartxref\n'+at+'\n%%EOF';const url=URL.createObjectURL(new Blob([pdf],{type:'application/pdf'}));const a=document.createElement('a');a.href=url;a.download=w.k+'_Ringkasan.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500)};
 ACT.prjProgram=el=>{const p=progOf(el.dataset.v);const projects=p?progProjects(p):[];if(!projects.length){toast('Belum ada proyek WBS untuk program ini.');return}ACT.prjOpen({dataset:{scope:projectKey(p.akr,projects[0].n),tab:'ringkasan'}})};
 ACT.prjOpen=el=>{S.ui.prjScope=el.dataset.scope;S.ui.prjTab=el.dataset.tab||'ringkasan';S.ui.prjSearch='';S.ui.prjPages={};save();render();document.querySelector('.prj-close')?.focus()};
-ACT.prjHelp=el=>{const h=PROJECT_GUIDE[el.dataset.guide]||PROJECT_GUIDE.workspace;modal('<span class="exh"><span class="hlp sm" aria-hidden="true">?</span>Petunjuk · '+esc(h[0])+'</span>','<p><b>Cara mengisi / menggunakan</b></p><p>'+esc(h[1])+'</p><div class="prj-example-modal"><b>Contoh pengisian</b><p>'+esc(h[2])+'</p></div>','',null,{cancel:'Tutup',size:'sm'})};
+ACT.prjHelp=el=>{const g=el.dataset.guide,h=PROJECT_GUIDE[g]||PROJECT_GUIDE.workspace,fid=PROJECT_FORMS[g],fx=fid&&FORMEX[fid];
+ const body='<div class="hp-goal"><i>?</i><div><b>Tujuan & fungsi</b>'+esc(h[1])+'</div></div>'+
+  (fx?'<h4 class="hp-h">Cara mengisi tiap field</h4>'+hpFormsHtml([fid],fid).replace(/<p class="hp-ftuj">[\s\S]*?<\/p>/,''):'')+
+  '<div class="hp-tips" style="margin-top:12px"><b>Contoh dari proyek Interkoneksi HRIS–SIASN (Setjen)</b>'+esc(h[2])+'</div>';
+ modal('<span class="exh"><span class="hlp sm" aria-hidden="true">?</span>Bantuan · '+esc(h[0])+'</span>',body,'',null,{cancel:'Tutup',size:'wide hp'})};
 ACT.prjPage=el=>{S.ui.prjPages=S.ui.prjPages||{};S.ui.prjPages[el.dataset.tab]=Math.max(0,+el.dataset.page);save();render()};
 ACT.prjTab=el=>{S.ui.prjTab=el.dataset.v;S.ui.prjSearch='';save();render();document.querySelector('.ws-tab.on')?.scrollIntoView({inline:'nearest',block:'nearest'})};
 ACT.prjClose=()=>{S.ui.prjScope='';S.ui.prjSearch='';save();render();document.querySelector('.pm-project-click')?.focus({preventScroll:true})};
@@ -3695,9 +3725,7 @@ function pProgram(){
     ${!P.length?`<p class="pm-program-empty">Belum ada item WBS untuk tahun ${S.ui.tahun}. Rincian proyek muncul setelah WBS diimpor melalui <a href="#pmo-wbsplan">Susun WBS</a>.</p>`:
     `<div class="pm-program-detail-label"><span>RINCIAN PROYEK</span><span>${P.length} proyek · WBS Level 4</span></div>
      <div class="tscroll pm-project-scroll"><table class="lap pm-project-table"><thead><tr><th>Proyek (WBS Level 4)</th><th>UIC Utama</th><th>Jadwal</th><th class="num">Item WBS</th><th>Progres Tervalidasi</th><th class="num" title="Jumlah item WBS yang melewati batas waktu dan belum selesai">Item Terlambat</th><th class="pm-ws-action">Aksi</th></tr></thead>
-     <tbody>${P.map(r=>`<tr class="pm-project-click" data-prog="${esc(p.akr)}" data-project="${esc(r.n)}" tabindex="0" role="button" title="Klik untuk membuka popup Workspace Proyek"><td><strong>${esc(r.n)}</strong>${r.subItems&&r.subItems.length? `<span class="sm">${r.subItems.length} subproyek · ${S.ui.pgSubs?'ditampilkan':'centang Buka Subproyek'}</span>`:''}</td><td>${esc(r.uic)}</td><td class="s">${r.s?fmtD(r.s):'—'} – ${r.f?fmtD(r.f):'—'}</td><td class="num">${r.a.length}</td><td><div class="pg"><div class="bar"><i style="width:${r.pg}%;background:${r.pg===100?'var(--ok)':'var(--blue)'}"></i></div><b>${r.pg}%</b></div></td><td class="num">${r.late?`<span class="chip c-bad" title="${r.late} item WBS terlambat">${r.late}</span>`:'<span class="s">0</span>'}</td><td class="pm-ws-action"><button type="button" class="pm-ws-icon" data-act="prjOpen" data-scope="${esc(projectKey(p.akr,r.n))}" data-tab="ringkasan" title="Buka Workspace Proyek" aria-label="Buka Workspace Proyek ${esc(r.n)}"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18"/><path d="M9 9v11"/><path d="M12.5 13.5h5M12.5 16.5h3.2"/></svg></button></td></tr>${S.ui.pgSubs?r.subItems.map(x=>`<tr class="prj-subrow"><td><span class="prj-subname">↳ ${esc(x.name)}</span>
-
-</td><td class="s" colspan="2">Subproyek sesuai WBS</td><td class="num">${x.count}</td><td colspan="2">Kelola WBS, risiko, dan stakeholder melalui Workspace.</td><td class="pm-ws-action"><button type="button" class="pm-ws-icon" data-act="prjOpen" data-scope="${esc(projectKey(p.akr,r.n,x.name))}" data-tab="ringkasan" title="Buka Workspace Subproyek" aria-label="Buka Workspace Subproyek ${esc(x.name)}"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18"/><path d="M9 9v11"/><path d="M12.5 13.5h5M12.5 16.5h3.2"/></svg></button></td></tr>`).join(''):''}`).join('')}</tbody></table></div>`}
+     <tbody>${P.map(r=>`<tr class="pm-project-click prj-mainrow" data-prog="${esc(p.akr)}" data-project="${esc(r.n)}" tabindex="0" role="button" title="Klik untuk membuka popup Workspace Proyek"><td><strong>${esc(r.n)}</strong>${r.subItems&&r.subItems.length? `<span class="sm">${r.subItems.length} subproyek${S.ui.pgSubs?'':' · aktifkan Buka Subproyek untuk melihat'}</span>`:''}</td><td>${esc(r.uic)}</td><td>${r.s?fmtD(r.s):'—'} – ${r.f?fmtD(r.f):'—'}</td><td class="num">${r.a.length}</td><td><div class="pg"><div class="bar"><i style="width:${r.pg}%;background:${r.pg===100?'var(--ok)':'var(--blue)'}"></i></div><b>${r.pg}%</b></div></td><td class="num">${r.late?`<span class="chip c-bad" title="${r.late} item WBS terlambat">${r.late}</span>`:'<span class="s">0</span>'}</td><td class="pm-ws-action"><button type="button" class="pm-ws-icon" data-act="prjOpen" data-scope="${esc(projectKey(p.akr,r.n))}" data-tab="ringkasan" title="Buka Workspace Proyek" aria-label="Buka Workspace Proyek ${esc(r.n)}"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18"/><path d="M9 9v11"/><path d="M12.5 13.5h5M12.5 16.5h3.2"/></svg></button></td></tr>${S.ui.pgSubs?r.subItems.map((x,xi)=>`<tr class="prj-subrow${xi===r.subItems.length-1?' last':''}"><td><span class="prj-subname"><i aria-hidden="true"></i>${esc(x.name)}</span></td><td>${esc(x.uic)}</td><td>${x.s?fmtD(x.s):'—'} – ${x.f?fmtD(x.f):'—'}</td><td class="num">${x.count}</td><td><div class="pg"><div class="bar"><i style="width:${x.pg}%;background:${x.pg===100?'var(--ok)':'#7EA6D6'}"></i></div><b>${x.pg}%</b></div></td><td class="num">${x.late?`<span class="chip c-bad">${x.late}</span>`:'<span class="s">0</span>'}</td><td class="pm-ws-action"><button type="button" class="pm-ws-icon sub" data-act="prjOpen" data-scope="${esc(projectKey(p.akr,r.n,x.name))}" data-tab="ringkasan" title="Buka Workspace Subproyek" aria-label="Buka Workspace Subproyek ${esc(x.name)}"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18"/><path d="M9 9v11"/><path d="M12.5 13.5h5M12.5 16.5h3.2"/></svg></button></td></tr>`).join(''):''}`).join('')}</tbody></table></div>`}
    </div>
   </section>`;
  }).join('');
@@ -3854,217 +3882,245 @@ function showHelpLegacy(v,title){const h=helpOf(v)||{d:'Halaman ini menampilkan 
  modal(`<span class="exh"><span class="hlp sm" aria-hidden="true">?</span>Panduan · ${esc(title||'')}</span>`,`<p style="margin:0 0 12px">${esc(h.d)}</p><h4 class="hh">Cara mengisi</h4><ol class="hst">${h.c.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>
  ${h.e&&h.e.length?`<h4 class="hh">Contoh dari program Digitalisasi Office Automation</h4><div class="exw">${h.e.map(([l,t])=>exF(esc(l),esc(t))).join('')}</div>`:''}
  ${h.x?`<h4 class="hh">Contoh pengisian lengkap</h4><div class="hxb">${h.x.map(k=>`<button class="btn sm" data-act="chex" data-k="${k}">💡 ${EXTT[k]}</button>`).join('')}</div>`:''}`,'',null,{size:'wide',cancel:'Tutup'})}
-/* ===== Contoh isian per formulir (key, label, wajib, cara mengisi, contoh) ===== */
+/* ===== Contoh isian per formulir (key, label, wajib, cara mengisi, contoh) =====
+   Seluruh contoh memakai satu cerita: Program Digitalisasi Office Automation → HRIS Satu Kemenkeu →
+   Modul Pengelolaan Pemberhentian dan Pensiun (PPO) → Sub modul Interkoneksi HRIS–SIASN (UIC Setjen, Biro SDM). */
 const FORMEX={
- porto:{title:'Program (Tambah / Ubah)',f:[
-  ['jenis','Jenis',0,'Berkelanjutan = program multitahun; Tematik = program dengan tema khusus.','Berkelanjutan'],
-  ['akr','Akronim kode',1,'2–6 huruf; menjadi awalan kode item WBS, jadi pilih yang singkat dan tidak berubah.','OA'],
+ porto:{title:'Program (Tambah / Ubah)',tujuan:'Mendaftarkan program transformasi beserta UIC, sponsor, dan periode. Akronim program menjadi awalan seluruh kode WBS-nya.',f:[
+  ['jenis','Jenis',0,'Berkelanjutan = program multitahun; Tematik = program dengan tema khusus tahun berjalan.','Berkelanjutan'],
+  ['akr','Akronim kode',1,'2–6 huruf; menjadi awalan kode item WBS. Pilih yang singkat dan jangan diubah setelah WBS dibuat.','OA'],
   ['sing','Singkatan program',1,'Muncul di tombol filter program pada halaman WBS.','DOA'],
   ['mulai','Tahun mulai',1,'Tahun program mulai berjalan; ikut membentuk kode program (B25-…, T26-…).','2025'],
-  ['nama','Program / proyek',1,'Nama resmi program, tulis lengkap.','Digitalisasi Office Automation'],
-  ['lv2','Klaster (Lv 2)',0,'Kelompok level 2 pada struktur WBS, bila ada.','Digitalisasi Office Automation'],
+  ['nama','Program / proyek',1,'Nama resmi program, tulis lengkap seperti di Manual IKU.','Digitalisasi Office Automation'],
+  ['lv2','Klaster (Lv 2)',0,'Kelompok level 2 pada struktur WBS, bila ada.','HRIS Satu Kemenkeu'],
   ['sponsor','Sponsor',0,'Pimpinan yang menjadi sponsor program.','Sekretaris Jenderal'],
-  ['uic','UIC Utama',1,'Satu unit penanggung jawab utama.','BaTii'],
-  ['pend','UIC Pendukung',0,'Unit yang membantu. Boleh lebih dari satu, pisahkan dengan koma.','Setjen, DJPb, BPPK, Itjen'],
+  ['uic','UIC Utama',1,'Satu unit Eselon I penanggung jawab utama.','Setjen'],
+  ['pend','UIC Pendukung',0,'Unit yang membantu, pisahkan dengan koma.','BaTii, BPPK, Itjen'],
   ['periode','Periode',0,'Rentang tahun pelaksanaan.','2025–2028'],
   ['status','Status',0,'Kondisi terkini program; diperbarui PMO secara berkala.','On track'],
-  ['ket','Latar belakang & tujuan',0,'Satu-dua kalimat: mengapa program ada dan apa hasil akhirnya.','Menyatukan layanan perkantoran dalam satu platform agar proses lebih cepat dan terpantau.']]},
- wbs:{title:'Item WBS (Tambah / Ubah)',f:[
-  ['k','Kode',1,'Akronim program + nomor urut. Cek kode berikutnya di Referensi Kode agar tidak bentrok.','OA-148'],
-  ['u','UIC Utama',0,'Unit penanggung jawab item.','BaTii'],
-  ['d','UIC Pendukung',0,'Unit pendukung, pisahkan dengan koma.','Setjen, DJPb'],
-  ['w','Bobot',0,'Kosongkan bila ingin dihitung otomatis dari lama pekerjaan (Finish − Start + 1 hari).','90'],
-  ['prog','Program',0,'Pilih program induk item ini.','Digitalisasi Office Automation'],
-  ['pth','Jalur Lv 2 – deliverable',1,'Tulis dari level atas sampai deliverable, dipisah tanda ">".','Digitalisasi Office Automation > Aplikasi PENA JFKN > Penyusunan probis to-be Sub Modul Pembinaan'],
-  ['s','Mulai',0,'Tanggal mulai pekerjaan.','2026-01-01'],
-  ['f','Selesai',0,'Tanggal target selesai (Finish); menjadi tenggat item.','2026-03-31'],
-  ['j','Jenis dokumen pendukung',0,'Dokumen yang nanti diunggah sebagai bukti selesai.','Nota dinas dan notula rapat'],
-  ['tm','Bulan target',0,'Bulan ketika poin item dihitung masuk target; biasanya sama dengan bulan Finish.','Maret'],
-  ['ue','Cakupan UE I',0,'Centang unit Eselon I yang tercakup oleh item ini.','Setjen, DJPb'],
-  ['cm','Jenis item CM',0,'Isi bila item ini bagian dari Change Management. ADP membentuk satu modul CM; pilih Bukan bila item biasa.','ADP'],
-  ['v','Status validasi',0,'Terisi otomatis oleh validasi bukti oleh PMO Kemenkeu. Biasanya tidak perlu diubah manual.','0 = belum valid, 1 = valid']]},
- risk:{title:'Risiko / Isu (PMO)',f:[
+  ['ket','Latar belakang & tujuan',0,'Satu-dua kalimat: mengapa program ada dan apa hasil akhirnya.','Menyatukan layanan kepegawaian dalam HRIS Satu Kemenkeu, termasuk pengajuan pemberhentian dan pensiun yang terhubung langsung ke SIASN BKN dan Taspen.']]},
+ wbs:{title:'Item WBS (Tambah / Ubah)',tujuan:'Mencatat satu deliverable yang punya jadwal, bobot, dan bukti dukung. Item inilah yang dihitung capaiannya setelah buktinya divalidasi.',f:[
+  ['k','Kode',1,'Akronim program + nomor urut. Cek "Kode berikut" di Referensi Kode agar tidak bentrok.','OA-112'],
+  ['u','UIC Utama',0,'Unit penanggung jawab item (pemilik proses bisnis).','Setjen (Biro SDM)'],
+  ['d','UIC Pendukung',0,'Unit pendukung, pisahkan dengan koma.','BaTii (Puspensi)'],
+  ['w','Bobot',0,'Kosongkan agar dihitung otomatis dari lama pekerjaan (Finish − Start + 1 hari).','(dikosongkan → 92)'],
+  ['prog','Program',0,'Pilih program induk item ini.','B25-OA · Digitalisasi Office Automation'],
+  ['pth','Jalur Lv 2 – deliverable',1,'Tulis dari level atas sampai deliverable, dipisah tanda ">".','Digitalisasi Office Automation > HRIS Satu Kemenkeu > Modul Pengelolaan Pemberhentian dan Pensiun > Interkoneksi HRIS–SIASN > Berita acara UAT interkoneksi HRIS–SIASN'],
+  ['s','Mulai',0,'Tanggal mulai pekerjaan.','2026-07-01'],
+  ['f','Selesai',0,'Tanggal target selesai; menjadi tenggat item.','2026-09-30'],
+  ['j','Jenis dokumen pendukung',0,'Dokumen yang nanti diunggah sebagai bukti selesai.','Berita acara UAT dan laporan hasil uji'],
+  ['tm','Bulan target',0,'Bulan poin item masuk target; biasanya sama dengan bulan Finish.','September'],
+  ['ue','Cakupan UE I',0,'Centang unit Eselon I yang tercakup oleh item ini.','Setjen'],
+  ['cm','Jenis item CM',0,'Isi bila item bagian dari Change Management (ADP, Perencanaan, Implementasi, Monev). Pilih Bukan untuk item teknis.','Bukan (item teknis)'],
+  ['v','Status validasi',0,'Terisi otomatis setelah PMO Kemenkeu memvalidasi bukti. Tidak perlu diubah manual.','0 = belum valid']]},
+ risk:{title:'Risiko / Isu (PMO)',tujuan:'Register risiko dan isu tingkat program: apa yang dikhawatirkan, seberapa besar, siapa yang menangani, dan kapan selesai.',f:[
   ['jenis','Jenis',0,'Risiko = baru kemungkinan; Isu = sudah terjadi.','Risiko'],
-  ['uraian','Uraian',1,'Satu kalimat jelas tentang kejadian yang dikhawatirkan atau sudah terjadi.','Keterlambatan integrasi data antarsistem'],
+  ['uraian','Uraian',1,'Satu kalimat jelas tentang kejadian yang dikhawatirkan.','Keterlambatan penyediaan API SIASN oleh BKN untuk pengajuan pensiun'],
   ['prog','Program',0,'Program yang terdampak.','Digitalisasi Office Automation'],
-  ['item','Modul terkait',0,'Risiko melekat ke program atau modul, tidak sampai item WBS.','Aplikasi PENA JFKN'],
-  ['keCmo','Bawa ke CMO',0,'Centang bila risiko menyangkut kesiapan atau adopsi pengguna; risiko akan tampil di CMO.','Dicentang'],
-  ['jcm','Jenis risiko CM',0,'Hanya diisi bila dibawa ke CMO.','Resistensi'],
+  ['item','Modul terkait',0,'Risiko melekat ke program atau modul, tidak sampai item WBS.','Modul Pengelolaan Pemberhentian dan Pensiun'],
+  ['keCmo','Bawa ke CMO',0,'Centang hanya bila risiko menyangkut kesiapan atau adopsi pengguna.','Tidak dicentang (risiko teknis)'],
+  ['jcm','Jenis risiko CM',0,'Hanya diisi bila dibawa ke CMO.','—'],
   ['kat','Kategori',0,'Pilih yang paling dekat dengan sumber risiko.','Integrasi'],
   ['kem','Kemungkinan (1–5)',0,'1 = jarang terjadi, 5 = hampir pasti terjadi.','4'],
-  ['dmp','Dampak (1–5)',0,'1 = ringan, 5 = sangat berat. Skor = kemungkinan × dampak.','3'],
-  ['pemilik','Pemilik (UIC)',0,'Unit Eselon I yang bertanggung jawab mengelola risiko.','DJPb'],
-  ['sebab','Penyebab',0,'Mengapa risiko bisa terjadi.','Penyedia data belum menyiapkan API.'],
-  ['mit','Rencana mitigasi',0,'Langkah mencegah atau mengurangi dampak.','Koordinasi mingguan dan rencana cadangan.'],
-  ['tenggat','Tenggat mitigasi',0,'Tanggal mitigasi harus selesai.','2026-12-15'],
-  ['st','Status',0,'Terbuka → Dimitigasi → Ditutup. Pilih Menjadi isu bila risiko sudah terjadi.','Terbuka']]},
- kw:{title:'Output IKU K-Wide (Tambah / Ubah)',f:[
+  ['dmp','Dampak (1–5)',0,'1 = ringan, 5 = sangat berat. Skor = kemungkinan × dampak.','4 (skor 16)'],
+  ['pemilik','Pemilik (UIC)',0,'Unit Eselon I yang mengelola risiko.','Setjen'],
+  ['sebab','Penyebab',0,'Mengapa risiko bisa terjadi.','BKN sedang merilis API SIASN versi baru; antrean integrasi kementerian panjang.'],
+  ['mit','Rencana mitigasi',0,'Langkah mencegah atau mengurangi dampak.','Rapat teknis dua mingguan dengan BKN; siapkan unggah berkas manual sebagai jalur cadangan.'],
+  ['tenggat','Tenggat mitigasi',0,'Tanggal mitigasi harus selesai.','2026-10-31'],
+  ['st','Status',0,'Terbuka → Dimitigasi → Ditutup. Pilih Menjadi isu bila sudah terjadi.','Terbuka']]},
+ kw:{title:'Output IKU K-Wide (Tambah / Ubah)',tujuan:'Mencatat target dan realisasi output IKU K-Wide per triwulan sesuai Manual IKU.',f:[
   ['tw','TW',0,'Triwulan pelaporan.','3'],
   ['prog','Program Transformasi',1,'Nama program yang melapor.','Digitalisasi Office Automation'],
-  ['out','Target output',0,'Output yang ditargetkan pada triwulan itu.','Dokumen sistem tahap 3'],
-  ['t','Jumlah target',0,'Angka target output.','1'],
-  ['r','Jumlah realisasi',0,'Angka realisasi sampai triwulan itu.','1']]},
- tahap:{title:'Tahapan (Referensi)',f:[
-  ['urut','Urut',1,'Nomor urut tahapan.','3'],
-  ['kode','Kode',1,'Kode singkat tahapan.','T3'],
-  ['kel','Kelompok',1,'Pilih kelompok yang sudah ada atau ketik kelompok baru.','Pengembangan'],
-  ['nama','Tahapan',1,'Nama tahapan yang tampil.','Pengembangan sistem'],
-  ['kw','Kata kunci pencocokan',1,'Kata yang dipakai sistem untuk mengenali item WBS yang termasuk tahapan ini; pisahkan dengan koma.','pengembangan, coding, build'],
-  ['ket','Keterangan',0,'Penjelasan singkat bila perlu.','Mencakup pembangunan dan uji sistem.']]},
- usul:{title:'Usulan item ke PMO',f:[
-  ['modul','Modul / item acuan',1,'Pilih modul atau item WBS yang menjadi acuan usulan.','Aplikasi PENA JFKN'],
-  ['jenis','Jenis usulan',0,'Pilih item yang diusulkan ditambah atau jadwalnya diubah.','Tambah item Monev'],
-  ['uraian','Uraian',1,'Sebut nama item, perkiraan jadwal, dan UIC agar PMO mudah menelaah.','Penyusunan kertas kerja monev adopsi TW 3, selesai 30/09/2026, UIC BaTii.']]},
- users:{title:'Pengguna (Tambah / Ubah)',f:[
-  ['nama','Nama',1,'Nama lengkap pengguna.','Siti Rahma'],
-  ['email','Email Kemenkeu',1,'Harus berakhiran @kemenkeu.go.id.','siti.rahma@kemenkeu.go.id'],
+  ['out','Target output',0,'Output yang ditargetkan pada triwulan itu (sesuai Manual IKU).','EA Level 3 (Detail BLM tahap 2); dokumen sistem tahap 3; dokumen CM tahap 3'],
+  ['t','Jumlah target',0,'Jumlah output yang ditargetkan.','3'],
+  ['r','Jumlah realisasi',0,'Jumlah output yang sudah tercapai.','3']]},
+ tahap:{title:'Tahapan (Referensi)',tujuan:'Daftar tahapan proyek yang dipakai sistem untuk mengelompokkan item WBS secara otomatis.',f:[
+  ['urut','Urut',1,'Nomor urut tahapan.','4'],
+  ['kode','Kode',1,'Kode singkat tahapan.','T4'],
+  ['kel','Kelompok',1,'Pilih kelompok yang ada atau ketik kelompok baru.','Pengembangan'],
+  ['nama','Tahapan',1,'Nama tahapan yang tampil.','Uji coba & UAT'],
+  ['kw','Kata kunci pencocokan',1,'Kata yang dipakai sistem untuk mengenali item WBS tahapan ini; pisahkan dengan koma.','uat, uji coba, user acceptance'],
+  ['ket','Keterangan',0,'Penjelasan singkat bila perlu.','Mencakup UAT interkoneksi dan berita acara hasil uji.']]},
+ usul:{title:'Usulan item ke PMO',tujuan:'CMO mengusulkan item WBS baru (atau perubahan jadwal) agar kegiatan CM tercatat di WBS.',f:[
+  ['modul','Modul / item acuan',1,'Pilih modul atau item WBS yang menjadi acuan usulan.','Modul Pengelolaan Pemberhentian dan Pensiun'],
+  ['jenis','Jenis usulan',0,'Tambah item atau ubah jadwal.','Tambah item Monev'],
+  ['uraian','Uraian',1,'Sebut nama item, perkiraan jadwal, dan UIC agar PMO mudah menelaah.','T-Survey kesiapan pengelola kepegawaian pasca sosialisasi interkoneksi HRIS–SIASN, selesai 30/11/2026, UIC Setjen (Biro SDM).']]},
+ users:{title:'Pengguna (Tambah / Ubah)',tujuan:'Membuat akun pengguna dan menentukan peran, unit, serta modul yang ditangani.',f:[
+  ['nama','Nama',1,'Nama lengkap pengguna.','Dewi Anggraini'],
+  ['email','Email Kemenkeu',1,'Harus berakhiran @kemenkeu.go.id.','dewi.anggraini@kemenkeu.go.id'],
   ['pw','Kata sandi awal',0,'Kosongkan agar memakai sandi default; pengguna menggantinya sendiri.','(dikosongkan)'],
-  ['role','Peran',0,'Menentukan menu dan hak akses pengguna.','PMO Unit Eselon I'],
-  ['unit','Unit Eselon I',0,'Unit Eselon I tempat pengguna bekerja; membatasi data yang terlihat.','DJPb'],
-  ['sub','Unit Eselon II / tim',0,'Untuk Tim CM Proyek: Pusakti, Pusilki, Puspensi, atau Pusdatin.','Direktorat Sistem Perbendaharaan'],
-  ['modules','Modul ditugaskan',0,'Untuk peran bercakupan Modul (Tim CM Proyek): centang modul yang ditangani.','Modul Perjalanan Dinas'],
+  ['role','Peran',0,'Menentukan menu dan hak akses.','CMO Unit Eselon I'],
+  ['unit','Unit Eselon I',0,'Unit tempat pengguna bekerja; membatasi data yang terlihat.','Setjen'],
+  ['sub','Unit Eselon II / tim',0,'Unit Eselon II atau tim pengguna.','Biro SDM'],
+  ['modules','Modul ditugaskan',0,'Untuk peran bercakupan modul: centang modul yang ditangani.','Modul Pengelolaan Pemberhentian dan Pensiun'],
   ['aktif','Status',0,'Hapus centang bila pengguna tidak lagi bertugas.','Aktif']]},
- adp:{title:'ADP — sub modul',f:[
-  ['nama','Sub modul',1,'Nama bagian modul yang dianalisis.','Pembinaan JF KN'],
-  ['asis','Kondisi As-Is',0,'Cara kerja atau sistem saat ini.','Pembinaan dicatat manual lewat surat dan rekap Excel.'],
-  ['tobe','Kondisi To-Be',0,'Cara kerja setelah perubahan.','Pembinaan dan formasi dilakukan dalam satu aplikasi.'],
-  ['P','Proses Bisnis — tingkat',0,'Seberapa besar dampak pada proses bisnis: — / Minor / Moderate / Significant.','Significant'],
-  ['Pk','Proses Bisnis — uraian',0,'Jelaskan alasan tingkat dampak.','Alur pembinaan berubah dari manual menjadi digital.'],
+ adp:{title:'ADP — sub modul',tujuan:'Analisis Dampak Perubahan per sub modul: apa yang berubah (as-is → to-be), seberapa besar dampaknya pada aspek POSTeR, dan risikonya.',f:[
+  ['nama','Sub modul',1,'Nama bagian modul yang dianalisis.','Interkoneksi HRIS–SIASN'],
+  ['asis','Kondisi As-Is',0,'Cara kerja saat ini, apa adanya.','Pengajuan pemberhentian dan pensiun dilakukan melalui beberapa aplikasi dan surat manual ke BKN.'],
+  ['tobe','Kondisi To-Be',0,'Cara kerja setelah perubahan.','Pengajuan ke BKN terintegrasi dalam satu modul HRIS; status usulan dapat dipantau real-time.'],
+  ['P','Proses Bisnis — tingkat',0,'— / Minor / Moderate / Significant.','Significant'],
+  ['Pk','Proses Bisnis — uraian',0,'Jelaskan alasan tingkat dampak.','Alur pengajuan berubah dari manual/semi digital menjadi end-to-end di HRIS.'],
   ['O','Organisasi — tingkat',0,'Dampak pada struktur atau pembagian tugas.','Minor'],
-  ['Ok','Organisasi — uraian',0,'Jelaskan alasan.','Penambahan peran admin aplikasi di unit pembina.'],
+  ['Ok','Organisasi — uraian',0,'Jelaskan alasan.','Penyesuaian peran unit pengelola kepegawaian dalam verifikasi usulan.'],
   ['S','SDM — tingkat',0,'Dampak pada kompetensi atau perilaku pegawai.','Moderate'],
-  ['Sk','SDM — uraian',0,'Jelaskan alasan.','Pejabat fungsional perlu pelatihan penggunaan aplikasi.'],
+  ['Sk','SDM — uraian',0,'Jelaskan alasan.','Pejabat berwenang dan pengelola kepegawaian perlu memahami alur dan validasi data baru.'],
   ['T','Teknologi — tingkat',0,'Dampak pada sistem dan infrastruktur.','Significant'],
-  ['Tk','Teknologi — uraian',0,'Jelaskan alasan.','Integrasi dengan sistem kepegawaian.'],
-  ['R','Regulasi — tingkat',0,'Dampak pada aturan atau kebijakan.','Minor'],
-  ['Rk','Regulasi — uraian',0,'Jelaskan alasan.','Penyesuaian juknis pembinaan.'],
-  ['rr','Risiko Resistensi — tingkat',0,'Seberapa besar kemungkinan penolakan pengguna.','Moderate'],
-  ['rrk','Risiko Resistensi — uraian',0,'Jelaskan penyebabnya.','Sebagian pegawai terbiasa dengan cara manual.'],
-  ['ro','Risiko Operasional — tingkat',0,'Risiko gangguan operasional saat transisi.','Minor'],
-  ['rok','Risiko Operasional — uraian',0,'Jelaskan penyebabnya.','Layanan manual tetap tersedia sebagai cadangan.'],
+  ['Tk','Teknologi — uraian',0,'Jelaskan alasan.','Integrasi dengan modul data pegawai dan API SIASN BKN.'],
+  ['R','Regulasi — tingkat',0,'Dampak pada aturan atau kebijakan.','Moderate'],
+  ['Rk','Regulasi — uraian',0,'Jelaskan alasan.','Perlu penyesuaian juknis pengajuan pemberhentian dan pensiun.'],
+  ['rr','Risiko Resistensi — tingkat',0,'Kemungkinan penolakan pengguna.','Moderate'],
+  ['rrk','Risiko Resistensi — uraian',0,'Jelaskan penyebabnya.','Pengelola kepegawaian terbiasa dengan aplikasi dan surat manual.'],
+  ['ro','Risiko Operasional — tingkat',0,'Risiko gangguan layanan saat transisi.','Minor'],
+  ['rok','Risiko Operasional — uraian',0,'Jelaskan penyebabnya.','Usulan yang sedang berjalan tetap diproses lewat jalur lama sampai cut-over.'],
   ['rk','Risiko Ketergantungan — tingkat',0,'Risiko karena bergantung pada pihak/sistem lain.','Significant'],
-  ['rkk','Risiko Ketergantungan — uraian',0,'Jelaskan pihak/sistem yang menjadi ketergantungan.','Bergantung pada kesiapan API sistem mitra.'],
+  ['rkk','Risiko Ketergantungan — uraian',0,'Sebut pihak/sistem yang menjadi ketergantungan.','Bergantung pada ketersediaan dan stabilitas API SIASN BKN.'],
   ['rl','Risiko Lainnya — tingkat',0,'Risiko di luar tiga jenis di atas.','—'],
-  ['rlk','Risiko Lainnya — uraian',0,'Jelaskan bila ada.','']]},
- ind:{title:'Indikator Keberhasilan CM',f:[
-  ['nama','Indikator keberhasilan',1,'Hal yang diukur untuk menyatakan perubahan berhasil. Harus bisa diukur saat Monev.','Persentase pegawai yang aktif memakai aplikasi'],
+  ['rlk','Risiko Lainnya — uraian',0,'Jelaskan bila ada.','—']]},
+ ind:{title:'Indikator Keberhasilan CM',tujuan:'Menetapkan ukuran keberhasilan perubahan yang nanti diukur pada Monev (tab Keberhasilan CM).',f:[
+  ['nama','Indikator keberhasilan',1,'Hal yang diukur untuk menyatakan perubahan berhasil.','Persentase usulan pensiun yang diajukan melalui HRIS'],
   ['baseline','Baseline',0,'Nilai awal sebelum perubahan.','0%'],
-  ['tg','Target',0,'Nilai yang ingin dicapai.','80%'],
+  ['tg','Target',0,'Nilai yang ingin dicapai.','90'],
   ['sat','Satuan',0,'Satuan ukur.','%'],
   ['arah','Arah',0,'↑ makin besar makin baik; ↓ makin kecil makin baik.','↑'],
-  ['metode','Metode / alat ukur',0,'Cara mengukur.','T-Survey'],
-  ['waktu','Waktu pengukuran',0,'Kapan diukur.','TW 4 2026'],
-  ['pic','PIC',0,'Penanggung jawab pengukuran.','Tim CM Proyek'],
-  ['bobot','Bobot (%)',1,'Total bobot semua indikator pada satu modul sebaiknya 100%.','25']]},
- sh:{title:'Stakeholder (Perencanaan CM)',f:[
+  ['metode','Metode / alat ukur',0,'Cara mengukur.','Laporan penggunaan sistem HRIS'],
+  ['waktu','Waktu pengukuran',0,'Kapan diukur.','Per triwulan, mulai TW I 2027'],
+  ['pic','PIC',0,'Penanggung jawab pengukuran.','CMO Setjen'],
+  ['bobot','Bobot (%)',1,'Total bobot semua indikator pada satu modul sebaiknya 100%.','30']]},
+ sh:{title:'Stakeholder (Perencanaan CM)',tujuan:'Memetakan pihak yang terdampak atau berpengaruh, lalu menentukan strategi pelibatannya. Baris yang dicentang Komunikasi/Pelatihan otomatis masuk ke tab terkait.',f:[
   ['kat','Kategori',0,'Internal = dalam Kemenkeu; Eksternal = di luar Kemenkeu.','Internal'],
-  ['kel','Kelompok',1,'Pilih kelompok yang paling sesuai dengan posisi stakeholder.','Pegawai'],
-  ['rin','Rincian stakeholder',1,'Kelompok atau pihak yang terdampak/berpengaruh.','Pegawai Direktorat Sistem Perbendaharaan'],
-  ['unit','Nama unit',0,'Unit asal stakeholder.','DJPb (Dit. SP)'],
-  ['peran','Peran dalam perubahan',0,'Pilih peran stakeholder (pengguna, pengambil keputusan, dsb.).','Pengguna'],
-  ['jml','Jumlah',0,'Perkiraan jumlah orang.','120'],
+  ['kel','Kelompok',1,'Pilih kelompok yang paling sesuai.','Pegawai'],
+  ['rin','Rincian stakeholder',1,'Kelompok atau pihak yang terdampak/berpengaruh.','Pengelola kepegawaian unit Eselon II'],
+  ['unit','Nama unit',0,'Unit asal stakeholder.','Setjen (Biro SDM) dan unit pengelola kepegawaian'],
+  ['peran','Peran dalam perubahan',0,'Peran stakeholder terhadap perubahan.','Pengguna'],
+  ['jml','Jumlah',0,'Perkiraan jumlah orang.','250'],
   ['ex','Experience',0,'High = sudah berpengalaman dengan perubahan sejenis; Low = belum.','Low'],
-  ['ketEx','Keterangan experience',0,'Alasan penilaian experience.','Belum pernah memakai aplikasi sejenis.'],
+  ['ketEx','Keterangan experience',0,'Alasan penilaian experience.','Belum pernah mengajukan pensiun langsung terhubung ke SIASN.'],
   ['su','Support',0,'High = mendukung perubahan; Low = belum mendukung.','High'],
-  ['ketSu','Keterangan support',0,'Alasan penilaian support.','Pimpinan unit mendukung penuh.'],
-  ['strat','Rencana strategi',0,'Cara melibatkan stakeholder sesuai posisinya di matriks.','Pelatihan klasikal dan klinik pengguna setiap bulan.'],
-  ['kom','Duplikasi ke Komunikasi',0,'Centang agar baris ini otomatis muncul di tab Komunikasi.','Dicentang'],
-  ['pel','Duplikasi ke Pelatihan',0,'Centang agar baris ini otomatis muncul di tab Pelatihan.','Dicentang']]},
- jj:{title:'Jejaring (T-Agent per unit)',f:[
-  ['unit','Unit',1,'Unit yang membentuk jejaring agen perubahan.','DJPb'],
-  ['keb','Kebutuhan',0,'Jumlah agen yang dibutuhkan.','10'],
-  ['tet','Ditetapkan',0,'Jumlah agen yang sudah ditetapkan.','8'],
-  ['lat','Terlatih',0,'Jumlah agen yang sudah dilatih.','5'],
+  ['ketSu','Keterangan support',0,'Alasan penilaian support.','Mengurangi surat-menyurat dan waktu tunggu usulan.'],
+  ['strat','Rencana strategi',0,'Cara melibatkan stakeholder sesuai posisinya di matriks.','Sosialisasi alur baru, T-Course, dan klinik pendampingan saat cut-over.'],
+  ['kom','Duplikasi ke Komunikasi',0,'Centang agar baris ini muncul di tab Komunikasi.','Dicentang'],
+  ['pel','Duplikasi ke Pelatihan',0,'Centang agar baris ini muncul di tab Pelatihan.','Dicentang']]},
+ kom:{title:'Rencana Komunikasi',tujuan:'Merencanakan pesan, kanal, dan jadwal komunikasi untuk stakeholder yang dicentang Komunikasi. Tiap baris menjadi kegiatan di Implementasi.',f:[
+  ['k_info','Jenis informasi yang dibutuhkan',0,'Substansi perubahan yang perlu diketahui stakeholder.','Perubahan alur pengajuan pensiun melalui HRIS dan jadwal cut-over Januari 2027'],
+  ['k_katKom','Kategori komunikasi',0,'Must Have / Important to Have / Nice to Have.','Must Have'],
+  ['k_kanal','Kanal & kategori',0,'Pendekatan T-House yang dipakai.','T-Forum'],
+  ['k_frek','Frekuensi',0,'Berapa kali dilaksanakan.','2'],
+  ['k_keg','Kegiatan',0,'Nama atau bentuk kegiatan.','Sosialisasi interkoneksi HRIS–SIASN bagi pengelola kepegawaian'],
+  ['k_out','Output',0,'Hasil yang dapat dibuktikan.','Notula, daftar hadir, dan materi paparan'],
+  ['k_waktu','Pelaksanaan',0,'Bulan pelaksanaan.','2026-09'],
+  ['k_pic','UIC/PIC',0,'Unit penanggung jawab kegiatan.','Setjen (Biro SDM)'],
+  ['k_met','Metode',0,'Luring, daring, atau hybrid.','Hybrid'],
+  ['k_dur','Durasi',0,'Lama kegiatan.','120 menit/sesi'],
+  ['k_lok','Lokasi',0,'Tempat pelaksanaan.','Aula Djuanda I dan Zoom']]},
+ pel:{title:'Rencana Pelatihan (TNA)',tujuan:'Menilai kesenjangan kompetensi stakeholder yang dicentang Pelatihan dan merencanakan program pelatihannya.',f:[
+  ['p_now','Kompetensi saat ini',0,'Kemampuan stakeholder sekarang.','Mengajukan usulan lewat surat dan aplikasi BKN yang terpisah'],
+  ['p_need','Kompetensi dibutuhkan',0,'Kemampuan yang dibutuhkan setelah perubahan.','Mampu mengajukan dan memantau usulan pensiun di HRIS'],
+  ['p_gap','Gap',0,'Selisih antara kompetensi saat ini dan yang dibutuhkan.','Belum memahami menu dan validasi data di HRIS'],
+  ['p_prog','Program pelatihan',0,'Nama program pelatihan.','T-Course pengelolaan pemberhentian dan pensiun di HRIS'],
+  ['p_tuj','Tujuan pelatihan',0,'Hasil yang diharapkan dari pelatihan.','Peserta mampu mengajukan usulan tanpa pendampingan'],
+  ['p_butuh','Kebutuhan pendukung',0,'Sarana yang perlu disiapkan.','Akun latihan dan data dummy di lingkungan training'],
+  ['p_met','Metode',0,'Cara pelatihan dilaksanakan.','Hybrid'],
+  ['p_waktu','Pelaksanaan',0,'Bulan pelaksanaan.','2026-10'],
+  ['p_uic','UIC',0,'Unit penyelenggara.','Setjen (Biro SDM) bersama BPPK']]},
+ jj:{title:'Jejaring (T-Agent per unit)',tujuan:'Memantau pembentukan jejaring agen perubahan (T-Agent) di tiap unit.',f:[
+  ['unit','Unit',1,'Unit yang membentuk jejaring.','Setjen'],
+  ['keb','Kebutuhan',0,'Jumlah agen yang dibutuhkan.','12'],
+  ['tet','Ditetapkan',0,'Jumlah agen yang sudah ditetapkan.','10'],
+  ['lat','Terlatih',0,'Jumlah agen yang sudah dilatih.','6'],
   ['st','Status',0,'Belum → Proses → Aktif.','Proses']]},
- impl:{title:'Implementasi (Ubah status)',f:[
+ impl:{title:'Implementasi (Ubah status)',tujuan:'Melaporkan pelaksanaan kegiatan komunikasi dan pelatihan yang direncanakan.',f:[
   ['status','Status',0,'Terjadwal → Terlaksana. Pilih Ditunda/Batal bila berubah.','Terlaksana'],
-  ['tgl','Realisasi',0,'Tanggal kegiatan benar-benar dilaksanakan.','2026-09-15'],
-  ['hadir','Kehadiran / jangkauan',0,'Jumlah peserta atau penerima pesan.','85 peserta'],
-  ['bukti','Bukti dukung',0,'Tautan dokumentasi (daftar hadir, foto, notula).','https://kemenkeu.sharepoint.com/…'],
-  ['cat','Catatan',0,'Hal penting yang perlu dicatat.','Peserta aktif bertanya tentang alur pelaporan.']]},
- lak:{title:'Penyesuaian RTL (Pelaksanaan)',f:[
-  ['dev','Deviasi',0,'Selisih antara rencana dan kenyataan.','Jadwal mundur satu bulan.'],
-  ['sebab','Penyebab',0,'Mengapa terjadi deviasi.','Menunggu link API dari sistem mitra.'],
-  ['rtl','Penyesuaian RTL',0,'Rencana tindak lanjut yang baru.','Pelatihan digeser ke November 2026.'],
-  ['tglBaru','Jadwal baru',0,'Tanggal pelaksanaan yang baru.','2026-11-30'],
-  ['picRtl','PIC RTL',0,'Penanggung jawab tindak lanjut.','Tim CM Proyek']]},
- pan:{title:'Kertas Kerja Monev (Pemantauan)',f:[
-  ['keg','Kegiatan / program',0,'Kegiatan yang dipantau.','Training of Master Trainer'],
-  ['fok','Fokus monev (ADKAR)',0,'Aspek yang diukur: Awareness, Desire, Knowledge, Ability, Reinforcement.','Knowledge'],
-  ['ik','Indikator kinerja',0,'Ukuran keberhasilan kegiatan.','Peserta lulus kuis dengan nilai ≥ 80'],
+  ['tgl','Realisasi',0,'Tanggal kegiatan benar-benar dilaksanakan.','2026-09-18'],
+  ['hadir','Kehadiran / jangkauan',0,'Jumlah peserta atau penerima pesan.','212 peserta (85% dari undangan)'],
+  ['bukti','Bukti dukung',0,'Tautan dokumentasi (daftar hadir, foto, notula).','https://kemenkeu.sharepoint.com/…/Sosialisasi_HRIS-SIASN.pdf'],
+  ['cat','Catatan',0,'Hal penting yang perlu dicatat.','Banyak pertanyaan tentang usulan yang sedang berjalan saat cut-over.']]},
+ lak:{title:'Penyesuaian RTL (Pelaksanaan)',tujuan:'Mencatat deviasi antara rencana dan pelaksanaan beserta penyesuaian rencana tindak lanjut (RTL).',f:[
+  ['dev','Deviasi',0,'Selisih antara rencana dan kenyataan.','T-Course mundur satu bulan dari rencana September.'],
+  ['sebab','Penyebab',0,'Mengapa terjadi deviasi.','API SIASN versi baru belum dirilis BKN, sehingga lingkungan latihan belum siap.'],
+  ['rtl','Penyesuaian RTL',0,'Rencana tindak lanjut yang baru.','T-Course digeser ke Oktober dengan modul simulasi.'],
+  ['tglBaru','Jadwal baru',0,'Tanggal pelaksanaan yang baru.','2026-10-22'],
+  ['picRtl','PIC RTL',0,'Penanggung jawab tindak lanjut.','Setjen (Biro SDM)']]},
+ pan:{title:'Kertas Kerja Monev (Pemantauan)',tujuan:'Menilai efektivitas kegiatan CM dengan kerangka ADKAR dan mencatat temuan serta tindak lanjutnya.',f:[
+  ['keg','Kegiatan / program',0,'Kegiatan yang dipantau.','T-Course pengelolaan pemberhentian dan pensiun di HRIS'],
+  ['fok','Fokus monev (ADKAR)',0,'Awareness, Desire, Knowledge, Ability, atau Reinforcement.','Knowledge'],
+  ['ik','Indikator kinerja',0,'Ukuran keberhasilan kegiatan.','≥ 75% peserta lulus post-test'],
   ['met','Metode monev',0,'Cara mengumpulkan data.','T-Quiz'],
-  ['sum','Sumber data',0,'Dari mana data diambil.','Hasil T-Quiz'],
+  ['sum','Sumber data',0,'Dari mana data diambil.','Hasil T-Quiz post-test'],
   ['st','Status',0,'On Track / Required Action / Off Track.','On Track'],
-  ['tem','Temuan & tindak lanjut',0,'Hal yang ditemukan dan langkah berikutnya.','Materi modul 2 perlu diulang.'],
-  ['sar','Saran perbaikan',0,'Usulan perbaikan.','Tambahkan studi kasus pada materi.'],
-  ['tl','Tindak lanjut',0,'Langkah yang akan dilakukan.','Sesi ulang dijadwalkan pekan depan.']]},
- ado:{title:'Data Adopsi per Periode',f:[
-  ['per','Periode',1,'Triwulan pengukuran.','TW3 2026'],
-  ['tu','Ekspektasi pengguna',0,'Jumlah pengguna yang diharapkan memakai modul.','1000'],
-  ['au','Pengguna aktif',0,'Jumlah pengguna yang benar-benar aktif.','640'],
-  ['tt','Ekspektasi transaksi',0,'Jumlah transaksi yang diharapkan.','5000'],
-  ['at','Realisasi transaksi',0,'Jumlah transaksi sesungguhnya.','3200'],
-  ['cat','Catatan',0,'Konteks angka.','Lonjakan transaksi setelah pelatihan.']]},
- kcm:{title:'Keberhasilan CM (Realisasi indikator)',f:[
-  ['real','Realisasi',0,'Nilai capaian indikator pada periode ukur.','72%'],
-  ['per','Periode ukur',0,'Triwulan pengukuran.','TW3 2026'],
-  ['cat','Catatan',0,'Penjelasan capaian.','Survei diikuti 310 responden.']]},
- tr:{title:'Transfer Kepemilikan (Closing)',f:[
+  ['tem','Temuan & tindak lanjut',0,'Ringkasan hasil monev paling penting (1–2 kalimat).','82% peserta lulus; pemahaman validasi data riwayat jabatan masih rendah.'],
+  ['sar','Saran perbaikan',0,'Rekomendasi atas temuan.','Tambahkan simulasi validasi data pada materi.'],
+  ['tl','Tindak lanjut',0,'Aksi konkret yang akan/telah dilakukan.','Klinik daring setiap Jumat selama masa cut-over.']]},
+ ado:{title:'Data Adopsi per Periode',tujuan:'Mencatat tingkat pemakaian modul: pengguna aktif dan transaksi dibanding ekspektasi.',f:[
+  ['per','Periode',1,'Triwulan pengukuran.','TW1 2027'],
+  ['tu','Ekspektasi pengguna',0,'Jumlah pengguna yang diharapkan memakai modul.','250'],
+  ['au','Pengguna aktif',0,'Jumlah pengguna yang benar-benar aktif.','198'],
+  ['tt','Ekspektasi transaksi',0,'Jumlah transaksi yang diharapkan.','400'],
+  ['at','Realisasi transaksi',0,'Jumlah transaksi sesungguhnya.','312'],
+  ['cat','Catatan',0,'Konteks angka.','Usulan pensiun Januari–Maret 2027 diajukan lewat HRIS.']]},
+ kcm:{title:'Keberhasilan CM (Realisasi indikator)',tujuan:'Mengisi realisasi indikator keberhasilan yang ditetapkan di ADP.',f:[
+  ['real','Realisasi',0,'Nilai capaian indikator pada periode ukur.','78'],
+  ['per','Periode ukur',0,'Triwulan pengukuran.','TW1 2027'],
+  ['cat','Catatan',0,'Penjelasan capaian.','312 dari 400 usulan diajukan melalui HRIS; sisanya usulan lama.']]},
+ tr:{title:'Transfer Kepemilikan (Closing)',tujuan:'Menyerahkan perubahan dari tim proyek ke pemilik operasional sebagai syarat penutupan CM.',f:[
   ['area','Area perubahan',1,'Sistem/Aplikasi, Proses Bisnis Baru, Jaringan Perubahan, atau Lainnya.','Sistem / Aplikasi'],
-  ['dari','Dari (tim program)',0,'Tim yang menyerahkan.','Tim Program PENA JFKN'],
-  ['kpd','Kepada (pemilik operasional)',0,'Unit yang menerima dan mengoperasikan.','Direktorat Pembinaan JF KN'],
-  ['krit','Kriteria siap transfer',0,'Syarat yang harus terpenuhi sebelum serah terima.','Sistem stabil tiga bulan tanpa insiden berat.'],
-  ['dok','Dokumen diserahterimakan',0,'Dokumen yang ikut diserahkan.','Manual pengguna, SOP, dan berita acara serah terima.'],
+  ['dari','Dari (tim program)',0,'Tim yang menyerahkan.','Tim Proyek HRIS (Setjen dan BaTii)'],
+  ['kpd','Kepada (pemilik operasional)',0,'Unit yang menerima dan mengoperasikan.','Biro SDM Setjen'],
+  ['krit','Kriteria siap transfer',0,'Syarat sebelum serah terima.','Interkoneksi stabil tiga bulan tanpa insiden berat; SOP sudah ditetapkan.'],
+  ['dok','Dokumen diserahterimakan',0,'Dokumen yang ikut diserahkan.','Manual pengguna, SOP pengajuan pensiun, berita acara serah terima'],
   ['st','Status',0,'Belum → Proses → Selesai.','Proses'],
-  ['tgl','Tanggal transfer',0,'Tanggal serah terima.','2026-12-15'],
-  ['ttd','Penerima (TTD)',0,'Nama pejabat penerima.','Direktur Pembinaan JF KN']]},
- cr:{title:'Ajukan Change Request',f:[
-  ['','Kode WBS',1,'Ketik atau pilih item yang akan diubah. Hanya item yang unit Anda pegang sebagai UIC Utama.','OA-47'],
-  ['','Jenis perubahan',0,'Ubah item (jadwal, deliverable, bobot, UIC, dokumen), Tambah item baru, atau Hapus/arsip item.','Ubah item'],
-  ['','Komponen yang diubah',0,'Muncul setelah memilih jenis. Isi hanya komponen yang berubah; yang tidak diubah biarkan.','Selesai: 30/11/2026'],
-  ['','Alasan dan dasar',1,'Tulis alasan dan rujukan nota dinas atau notulen.','Penetapan SK pensiun melalui tanda tangan elektronik menunggu link API dari BKN, sesuai notulen rapat 12/10/2026.'],
+  ['tgl','Tanggal transfer',0,'Tanggal serah terima.','2027-04-15'],
+  ['ttd','Penerima (TTD)',0,'Nama jabatan penerima.','Kepala Biro SDM']]},
+ cr:{title:'Ajukan Change Request',tujuan:'Mengajukan perubahan item WBS yang sudah baseline (jadwal, deliverable, bobot, UIC, atau item baru/dihapus).',f:[
+  ['','Kode WBS',1,'Item yang akan diubah. Hanya item yang unit Anda pegang sebagai UIC Utama.','OA-112'],
+  ['','Jenis perubahan',0,'Ubah item, Tambah item baru, atau Hapus/arsip item.','Ubah item'],
+  ['','Komponen yang diubah',0,'Isi hanya komponen yang berubah.','Selesai: 30/11/2026 (semula 30/09/2026)'],
+  ['','Alasan dan dasar',1,'Tulis alasan dan rujukan nota dinas/notulen.','API SIASN versi baru dari BKN baru tersedia Oktober 2026, sesuai notulen rapat teknis 12/10/2026.'],
   ['','Tanggal efektif',0,'Tanggal perubahan mulai berlaku.','2026-11-05']]},
- bukti_up:{title:'Unggah bukti dukung',f:[
-  ['','Tanggal selesai aktual',1,'Tanggal deliverable benar-benar selesai (boleh mundur, tidak boleh melewati hari ini). Dipakai untuk menghitung bulan capaian.','2026-03-10'],
-  ['','Tautan SharePoint / berkas',0,'Tempel tautan dokumen. Wajib isi tautan atau pilih berkas.','https://kemenkeu.sharepoint.com/…/OA-47_BA-UAT.pdf'],
-  ['','Nama berkas',0,'Format: Kode WBS_Nama File.','OA-47_BA UAT Modul Pembinaan'],
-  ['','Atau pilih berkas',0,'Pilih berkas dari komputer; yang dicatat hanya namanya.','OA-47_BA UAT Modul Pembinaan.pdf'],
-  ['','Catatan',0,'Informasi tambahan untuk validator.','BA ditandatangani Direktur pada 10/03/2026.']]},
- validasi:{title:'Validasi bukti dukung (PMO Kemenkeu)',f:[
-  ['','Daftar periksa',1,'Centang keempatnya sebelum menekan Valid: nama berkas sesuai kode WBS, jenis dokumen sesuai, periode sesuai, dan sudah disahkan/ditandatangani.','Semua dicentang'],
-  ['','Catatan untuk UIC',0,'Wajib diisi bila menolak: jelaskan apa yang harus diperbaiki.','Berita acara belum ditandatangani; mohon unggah versi bertanda tangan.']]},
- addrev:{title:'Catatan reviu CMO Kementerian',f:[
+ bukti_up:{title:'Unggah bukti dukung',tujuan:'Mengirim dokumen bukti bahwa deliverable selesai. Capaian dihitung 100 setelah PMO Kemenkeu memvalidasi.',f:[
+  ['','Tanggal selesai aktual',1,'Tanggal deliverable benar-benar selesai (tidak boleh melewati hari ini).','2026-09-26'],
+  ['','Tautan SharePoint / berkas',0,'Tempel tautan dokumen. Wajib isi tautan atau pilih berkas.','https://kemenkeu.sharepoint.com/…/OA-112_BA UAT Interkoneksi HRIS-SIASN.pdf'],
+  ['','Nama berkas',0,'Format: Kode WBS_Nama File.','OA-112_BA UAT Interkoneksi HRIS-SIASN'],
+  ['','Atau pilih berkas',0,'Pilih berkas dari komputer; yang dicatat hanya namanya.','OA-112_BA UAT Interkoneksi HRIS-SIASN.pdf'],
+  ['','Catatan',0,'Informasi tambahan untuk validator.','BA ditandatangani Kepala Biro SDM dan perwakilan BKN pada 26/09/2026.']]},
+ validasi:{title:'Validasi bukti dukung (PMO Kemenkeu)',tujuan:'Memeriksa kesesuaian bukti sebelum capaian item dihitung.',f:[
+  ['','Daftar periksa',1,'Centang keempatnya sebelum Valid: nama berkas sesuai kode, jenis dokumen sesuai, periode sesuai, sudah ditandatangani.','Semua dicentang'],
+  ['','Catatan untuk UIC',0,'Wajib bila menolak: jelaskan yang harus diperbaiki.','Lampiran hasil uji skenario belum disertakan; mohon unggah versi lengkap.']]},
+ addrev:{title:'Catatan reviu CMO Kementerian',tujuan:'CMO Kementerian memberi catatan reviu per tahap yang harus ditindaklanjuti pemilik modul.',f:[
   ['','Tab',0,'Tahap modul yang direviu.','ADP'],
-  ['','Catatan',1,'Hasil reviu dan hal yang perlu diperbaiki pemilik modul.','Uraian dampak SDM belum menyebut kebutuhan pelatihan.']]},
- prjRisk:{title:'Workspace — Risk Register / Issue Log',f:[
+  ['','Catatan',1,'Hasil reviu dan perbaikan yang diminta.','Uraian dampak Regulasi belum menyebut juknis yang perlu direvisi; mohon dilengkapi.']]},
+ prjRisk:{title:'Workspace — Risk Register / Issue Log',tujuan:'Mencatat risiko dan isu tingkat proyek atau subproyek. Risiko yang dicentang Risiko CM ikut disinkronkan ke CMO.',f:[
+  ['','Uraian risiko / isu',1,'Satu kalimat jelas tentang kejadian.','Keterlambatan API SIASN BKN untuk interkoneksi pengajuan pensiun'],
   ['','Jenis',0,'Risiko proyek, Risiko perubahan, atau Isu (sudah terjadi).','Risiko proyek'],
-  ['','Kategori Risiko',0,'Pilih kategori terdekat.','Teknis'],
-  ['','Uraian risiko / isu',1,'Satu kalimat jelas.','Keterlambatan integrasi data antarsistem.'],
-  ['','Penyebab',0,'Mengapa terjadi.','Penyedia data belum menyiapkan API.'],
-  ['','Dampak',0,'Akibat bila terjadi.','Jadwal UAT mundur.'],
-  ['','Kemungkinan 1–5 / Dampak 1–5',0,'Skor = kemungkinan × dampak.','4 dan 3 (skor 12)'],
-  ['','Pemilik risiko (PIC)',0,'Penanggung jawab.','Tim Data'],
-  ['','Target mitigasi',0,'Tanggal mitigasi selesai.','2026-12-15'],
-  ['','Rencana mitigasi',0,'Langkah pencegahan.','Koordinasi mingguan, eskalasi hambatan, dan rencana cadangan.'],
+  ['','Kategori Risiko',0,'Pilih kategori terdekat.','Ketergantungan'],
+  ['','Penyebab',0,'Mengapa risiko bisa terjadi.','BKN sedang merilis API SIASN versi baru.'],
+  ['','Dampak',0,'Akibat bila terjadi.','UAT mundur dan cut-over Januari 2027 berisiko tertunda.'],
+  ['','Kemungkinan 1–5 / Dampak 1–5',0,'Skor = kemungkinan × dampak.','4 dan 4 (skor 16)'],
+  ['','Pemilik risiko (PIC)',0,'Penanggung jawab penanganan.','Tim Integrasi Setjen–BaTii'],
+  ['','Target mitigasi',0,'Tanggal mitigasi selesai.','2026-10-31'],
+  ['','Rencana mitigasi',0,'Langkah pencegahan.','Rapat teknis dua mingguan dengan BKN; siapkan unggah berkas manual sebagai cadangan.'],
   ['','Status',0,'Terbuka / Dimitigasi / Menjadi isu / Ditutup.','Terbuka'],
-  ['','Risiko CM',0,'Centang bila menyangkut kesiapan/adopsi; akan disinkronkan ke CMO.','Dicentang']]},
- prjStake:{title:'Workspace — Stakeholder Register',f:[
-  ['','Nama stakeholder / kelompok',1,'Pihak yang terdampak atau berpengaruh.','Direktorat Sistem Perbendaharaan'],
-  ['','Unit / instansi',0,'Asal pihak tersebut.','DJPb'],
-  ['','Peran / tanggung jawab',0,'Perannya terhadap proyek.','Pemilik data dan penerima manfaat'],
-  ['','Internal / Eksternal',0,'Dalam atau luar Kemenkeu.','Internal'],
+  ['','Risiko CM',0,'Centang hanya bila menyangkut kesiapan atau adopsi pengguna.','Tidak dicentang (risiko teknis)']]},
+ prjStake:{title:'Workspace — Stakeholder Register',tujuan:'Mendata pihak yang memengaruhi atau terdampak proyek beserta strategi pelibatannya.',f:[
+  ['','Nama stakeholder / kelompok',1,'Pihak yang terdampak atau berpengaruh.','Direktorat Pengembangan Sistem SIASN'],
+  ['','Unit / instansi',0,'Asal pihak tersebut.','Badan Kepegawaian Negara (BKN)'],
+  ['','Peran / tanggung jawab',0,'Perannya terhadap proyek.','Penyedia API SIASN dan mitra uji interkoneksi'],
+  ['','Internal / Eksternal',0,'Dalam atau luar Kemenkeu.','Eksternal'],
   ['','Pengaruh / Kepentingan',0,'High atau Low.','High / High'],
   ['','Dukungan',0,'Support, Neutral, atau Resisten.','Neutral'],
-  ['','Strategi pelibatan / komunikasi',0,'Cara melibatkan stakeholder.','FGD kebutuhan dan pembaruan progres tiap dua minggu.'],
-  ['','PIC hubungan stakeholder',0,'Yang menjaga komunikasi.','PIC komunikasi DJPb']]},
- prjDec:{title:'Workspace — Decision Log',f:[
-  ['','Keputusan',1,'Apa yang diputuskan.','Menetapkan piloting secara bertahap di dua unit.'],
-  ['','Tanggal',0,'Tanggal keputusan diambil.','2026-11-05'],
-  ['','Pengambil keputusan',0,'Siapa yang memutuskan.','Ketua Steering Committee'],
-  ['','Dampak',0,'Alasan atau akibat keputusan.','Memastikan kesiapan sebelum implementasi luas.'],
-  ['','PIC tindak lanjut',0,'Siapa yang menjalankan.','PMO UE I'],
-  ['','Tenggat',0,'Batas tindak lanjut.','2026-11-30'],
-  ['','Status',0,'Status pelaksanaan keputusan.','Berjalan']]}
+  ['','Strategi pelibatan / komunikasi',0,'Cara melibatkan stakeholder.','Rapat teknis dua mingguan dan surat resmi Sekretaris Jenderal untuk jadwal integrasi.'],
+  ['','PIC hubungan stakeholder',0,'Yang menjaga komunikasi.','Kepala Bagian Pengelolaan Pensiun, Biro SDM'],
+  ['','Salin ke modul CMO',0,'Centang agar stakeholder juga tercatat di Perencanaan CM modul terkait.','Dicentang']]},
+ prjDec:{title:'Workspace — Decision Log',tujuan:'Mencatat keputusan penting proyek agar alasan dan tindak lanjutnya bisa ditelusuri.',f:[
+  ['','Tanggal keputusan',0,'Tanggal keputusan diambil.','2026-10-12'],
+  ['','Keputusan / kesepakatan',1,'Apa yang diputuskan.','Cut-over pengajuan pensiun melalui HRIS dimulai Januari 2027; usulan lama tetap lewat jalur manual.'],
+  ['','Pengambil keputusan',0,'Siapa yang memutuskan.','Rapat Steering Committee HRIS dipimpin Sekretaris Jenderal'],
+  ['','Implikasi / alasan',0,'Alasan atau akibat keputusan.','Memberi waktu BKN merilis API baru dan pengelola kepegawaian berlatih.'],
+  ['','PIC tindak lanjut',0,'Siapa yang menjalankan.','Biro SDM Setjen'],
+  ['','Batas waktu',0,'Batas tindak lanjut.','2026-12-31'],
+  ['','Status tindak lanjut',0,'Belum dimulai / Berjalan / Selesai / Ditunda.','Berjalan']]},
+ prjCopy:{title:'Workspace — Salin dari modul lain',tujuan:'Menyalin risiko atau stakeholder dari proyek/subproyek lain sebagai data baru yang bisa diedit, tanpa mengubah sumbernya.',f:[
+  ['','Salin dari',1,'Pilih lingkup sumber yang datanya mirip.','HRIS Satu Kemenkeu › Modul Pengelolaan Pemberhentian dan Pensiun › Integrasi HRIS–TOOS (Taspen)'],
+  ['','Setelah disalin',0,'Tinjau ulang tiap baris: sesuaikan nama pihak, PIC, dan centang ulang penanda CMO bila perlu.','Ganti "PT Taspen" menjadi "BKN" pada stakeholder mitra integrasi.']]}
 };
 
 /* ===== Isi panduan per halaman ===== */
@@ -4264,12 +4320,12 @@ const GUIDE={
  alur:[
   ['Tab Stakeholder','Daftarkan stakeholder, nilai experience dan support. Centang duplikasi ke Komunikasi/Pelatihan.',null,null,'sh'],
   ['Tab ESM','Peta stakeholder pada matriks Experience–Support untuk memilih strategi.'],
-  ['Tab Komunikasi','Rencana kegiatan komunikasi (tanggal, saluran, PIC).'],
-  ['Tab Pelatihan','Rencana kegiatan pelatihan.'],
+  ['Tab Komunikasi','Rencana kegiatan komunikasi (tanggal, saluran, PIC).',null,null,'kom'],
+  ['Tab Pelatihan','Rencana kegiatan pelatihan (analisis kebutuhan pelatihan/TNA).',null,null,'pel'],
   ['Tab Jejaring','Kebutuhan, penetapan, dan pelatihan T-Agent per unit.',null,null,'jj'],
   ['Selanjutnya','Kegiatan yang direncanakan dilaksanakan dan dilaporkan di Implementasi.','cmo-impl','Buka Implementasi']],
  tab:[['Stakeholder (sh)','Daftar pihak terdampak dengan penilaian experience dan support.'],['ESM','Matriks otomatis dari penilaian stakeholder.'],['Komunikasi (kom)','Rencana komunikasi.'],['Pelatihan (pel)','Rencana pelatihan.'],['Jejaring (jj)','Agen perubahan (T-Agent) per unit.']],
- isi:['sh','jj']},
+ isi:['sh','kom','pel','jj']},
 
 'cmo-impl':{
  tujuan:'Melaporkan pelaksanaan kegiatan komunikasi dan pelatihan yang direncanakan.',
@@ -4348,7 +4404,7 @@ function hpBtn(g){
  return `<table class="hp-tbl"><thead><tr><th>Tombol / menu</th><th>Fungsinya</th><th>Menuju</th></tr></thead><tbody>${g.btn.map(([t,f,m,go])=>`<tr><td><span class="hp-key">${esc(t)}</span></td><td>${esc(f)}</td><td><div class="hp-dest"><span class="${go?'menu':'pop'}">${esc(m)}</span>${hpGo(go,'Buka')}</div></td></tr>`).join('')}</tbody></table>`}
 function hpFormsHtml(ids,open){
  return `<div class="hp-forms">${ids.map(id=>{const fx=FORMEX[id];if(!fx)return '';
-  return `<details class="hp-form" id="hpf-${id}"${(open===id||ids.length<=2)?' open':''}><summary>${esc(fx.title)}<small>${fx.f.length} isian</small></summary><table class="hp-ftbl"><thead><tr><th>Isian</th><th>Cara mengisi</th><th>Contoh</th></tr></thead><tbody>${fx.f.map(([k,l,r,c,e])=>`<tr><td>${esc(l)}${r?'<span class="hp-req">wajib</span>':'<span class="hp-opt">opsional</span>'}</td><td>${esc(c)}</td><td>${e?`<span class="hp-ex">${esc(e)}</span>`:'—'}</td></tr>`).join('')}</tbody></table></details>`}).join('')}</div>`}
+  return `<details class="hp-form" id="hpf-${id}"${(open===id||ids.length<=2)?' open':''}><summary>${esc(fx.title)}<small>${fx.f.length} isian</small></summary>${fx.tujuan?`<p class="hp-ftuj"><b>Tujuan:</b> ${esc(fx.tujuan)}</p>`:''}<table class="hp-ftbl"><thead><tr><th>Isian</th><th>Cara mengisi</th><th>Contoh</th></tr></thead><tbody>${fx.f.map(([k,l,r,c,e])=>`<tr><td>${esc(l)}${r?'<span class="hp-req">wajib</span>':'<span class="hp-opt">opsional</span>'}</td><td>${esc(c)}</td><td>${e?`<span class="hp-ex">${esc(e)}</span>`:'—'}</td></tr>`).join('')}</tbody></table></details>`}).join('')}</div>`}
 function hpIsiIds(g){
  const s=[];(g.isi||[]).forEach(x=>{if(FORMEX[x]&&!s.includes(x))s.push(x)});
  (g.alur||[]).forEach(a=>{if(a[4]&&FORMEX[a[4]]&&!s.includes(a[4]))s.push(a[4])});return s}
