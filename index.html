@@ -1807,6 +1807,44 @@ td .nt-chip span{display:inline!important;margin:0!important;font-size:12px!impo
 /* filter tertutup: satu baris ringkas */
 .flt.pmo-unified:not(.open) .lp{padding-top:6px;padding-bottom:6px;align-items:center}
 .flt.pmo-unified:not(.open) .ftop{min-height:0;padding-top:6px;padding-bottom:6px}
+
+/* ===== Filter PMO (opsi A): pita atas tetap 46px, label diam, isian satu baris di bawah ===== */
+.flt.pmo-unified{display:grid!important;grid-template-columns:200px minmax(0,1fr)!important;grid-template-rows:46px auto!important;padding:0!important;gap:0!important;min-height:0!important;border-radius:12px!important;overflow:hidden;border:1px solid #D4E0F2;background:#EEF4FD!important}
+.flt.pmo-unified>.lp{grid-row:1!important;grid-column:1!important;height:46px!important;min-height:0!important;padding:0 14px!important;margin:0!important;display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:center!important;justify-content:flex-start!important;gap:10px!important;border-radius:0!important;cursor:pointer;background:linear-gradient(120deg,#0B2447,#163A6B)!important}
+.flt.pmo-unified>.lp .gi{width:32px!important;height:32px!important}
+.flt.pmo-unified>.lp .gi svg{width:17px;height:17px}
+.flt.pmo-unified>.lp .lt{gap:10px!important}
+.flt.pmo-unified>.lp .lt b{font-size:15px!important;line-height:1!important}
+.flt.pmo-unified>.lp .lt small,.flt.pmo-unified>.lp hr,.flt.pmo-unified>.lp .res{display:none!important}
+.flt.pmo-unified>.rp{display:contents!important}
+.flt.pmo-unified .ftop{grid-row:1!important;grid-column:2!important;height:46px!important;min-height:0!important;padding:0 6px 0 14px!important;flex-wrap:nowrap!important;overflow:hidden;background:linear-gradient(120deg,#F6FAFF,#E6F0FC)!important;border-radius:0!important}
+.flt.pmo-unified .ftop .c1{min-width:0;flex-shrink:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.flt.pmo-unified .ftop .none{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.flt.pmo-unified .ftop .rs2{margin-left:auto!important;display:inline-flex;align-items:center;gap:6px;flex:none}
+.flt.pmo-unified .ftop .rs2m{display:inline-block;width:56px;height:5px;border-radius:3px;background:#D6E2F3;overflow:hidden;margin-left:4px}
+.flt.pmo-unified .ftop .rs2m i{display:block;height:100%;background:#FDB913}
+.flt.pmo-unified .ftop .rsm,.flt.pmo-unified .fcar{flex:none}
+.flt.pmo-unified .fcar{width:32px!important;height:32px!important}
+.flt.pmo-unified .fbar{grid-row:2!important;grid-column:1/-1!important;display:flex!important;flex-wrap:wrap!important;gap:8px 12px!important;align-items:flex-end!important;padding:8px 14px 10px!important;margin:0!important;border-top:1px solid #D4E0F2;background:#F7FAFE!important}
+.flt.pmo-unified .fbar[hidden]{display:none!important}
+.flt.pmo-unified .fbar>.fg{width:auto!important;min-width:0;flex:0 1 170px!important;grid-column:auto!important;gap:3px!important;margin:0!important}
+.flt.pmo-unified .fbar>.fg>label{font-size:11px!important;letter-spacing:.5px;margin:0!important}
+.flt.pmo-unified .fbar>.fg.pm-year{flex:0 0 84px!important}
+.flt.pmo-unified .fbar>.fg:has(.seg:not(.pseg)),.flt.pmo-unified .fbar>.fg:has(.lvw){flex:0 0 auto!important}
+.flt.pmo-unified .fbar>.fg:has(.fgi){flex:0 0 auto!important}.flt.pmo-unified .fbar .fgi{display:flex;gap:6px;align-items:center}.flt.pmo-unified .fbar .fgi .seg{height:34px;display:flex}.flt.pmo-unified .fbar .fgi .sel{width:auto;min-width:76px}
+.flt.pmo-unified .fbar>.fg.pm-period{flex:1 1 340px!important;min-width:340px}
+.flt.pmo-unified .fbar>.fg.pm-program{flex:1 1 180px!important}
+.flt.pmo-unified .fbar>.fg.pm-unit{flex:0 1 150px!important}
+.flt.pmo-unified .fbar>.fg.pm-role{flex:0 1 168px!important}
+.flt.pmo-unified .fbar .sel,.flt.pmo-unified .fbar input[type=date]{height:34px!important;min-height:0!important;font-size:13px!important;padding-top:0!important;padding-bottom:0!important;border-radius:8px!important}
+.flt.pmo-unified .fbar .pseg{display:flex!important;height:34px!important;border-radius:8px!important;overflow:hidden}
+.flt.pmo-unified .fbar .pseg button{flex:1 1 auto;height:34px!important;padding:0 8px!important;border-bottom:0!important;font-size:12.5px!important;white-space:nowrap}
+@media(max-width:760px){
+ .flt.pmo-unified{grid-template-columns:auto minmax(0,1fr)!important}
+ .flt.pmo-unified .ftop .tl,.flt.pmo-unified .ftop .c1,.flt.pmo-unified .ftop .none,.flt.pmo-unified .ftop .rs2m{display:none!important}
+ .flt.pmo-unified .fbar>.fg,.flt.pmo-unified .fbar>.fg.pm-period,.flt.pmo-unified .fbar>.fg.pm-program,.flt.pmo-unified .fbar>.fg.pm-unit,.flt.pmo-unified .fbar>.fg.pm-role{flex:1 1 100%!important;min-width:0}
+ .flt.pmo-unified .fbar .pseg{display:grid!important;grid-template-columns:repeat(3,1fr);height:auto!important}
+}
 </style>
 
 <div id="root"></div>
@@ -2878,9 +2916,10 @@ function fltHead(open,title,chips,n,reset,res){const act=chips.filter(c=>typeof 
  const ico=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg>`;
  const ch=act.length?act.map(c=>`<span class="c1">${esc(c.t)}<button class="fx" data-act="fclr" data-k="${c.k}" data-v="${esc(c.v||'')}" aria-label="Hapus filter ${esc(c.t)}" title="Hapus filter ini">×</button></span>`).join(''):`<span class="none">Belum ada — ${open?'menampilkan semua data':'semua data'}</span>`;
  const pc=res&&res[1]?Math.round(res[0]/res[1]*100):100;
- const lp=open?`<div class="lp" data-act="ftog" title="Klik untuk menyembunyikan filter"><div class="lt"><span class="gi">${ico}</span><span><b>${title}</b><small>${esc(sub)}</small></span></div>${res?`<hr><div class="res"><span>Hasil sesuai filter</span><b>${rp(res[0])}</b><small>dari ${rp(res[1])} ${res[2]}</small><span class="mb"><span style="width:${pc}%"></span></span>${n?`<div class="nar"><em class="na">${n} filter aktif</em>${reset}</div>`:''}</div>`:''}${n&&!res?reset:''}</div>`
+ const pu=typeof VIEW!=='undefined'&&VIEW.startsWith('pmo-');
+ const lp=open&&!pu?`<div class="lp" data-act="ftog" title="Klik untuk menyembunyikan filter"><div class="lt"><span class="gi">${ico}</span><span><b>${title}</b><small>${esc(sub)}</small></span></div>${res?`<hr><div class="res"><span>Hasil sesuai filter</span><b>${rp(res[0])}</b><small>dari ${rp(res[1])} ${res[2]}</small><span class="mb"><span style="width:${pc}%"></span></span>${n?`<div class="nar"><em class="na">${n} filter aktif</em>${reset}</div>`:''}</div>`:''}${n&&!res?reset:''}</div>`
   :`<div class="lp" data-act="ftog"><span class="gi">${ico}</span><div class="lt"><span><b>${title}</b></span></div></div>`;
- return lp+`<div class="rp"><div class="ftop" data-act="ftog" role="button" tabindex="0" aria-expanded="${open}" title="Klik untuk ${open?'menyembunyikan':'menampilkan'} filter"><span class="tl">Filter aktif</span>${ch}${!open&&res?`<span class="rs2"><b>${rp(res[0])}</b> dari ${rp(res[1])} ${res[2]}</span>`:''}${!open&&n?reset.replace('class="freset"','class="freset rsm"'):''}<span class="fcar" aria-hidden="true"><svg class="fcar-tri${window.FCAR_ANIM?' anim':''}" viewBox="0 0 12 12" width="12" height="12"><path d="M2.2 3.8h7.6L6 8.6z" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/></svg></span></div>`}
+ return lp+`<div class="rp"><div class="ftop" data-act="ftog" role="button" tabindex="0" aria-expanded="${open}" title="Klik untuk ${open?'menyembunyikan':'menampilkan'} filter"><span class="tl">Filter aktif</span>${ch}${(!open||pu)&&res?`<span class="rs2"><b>${rp(res[0])}</b> dari ${rp(res[1])} ${res[2]}${pu?`<span class="rs2m"><i style="width:${pc}%"></i></span>`:''}</span>`:''}${(!open||pu)&&n?reset.replace('class="freset"','class="freset rsm"'):''}<span class="fcar" aria-hidden="true"><svg class="fcar-tri${window.FCAR_ANIM?' anim':''}" viewBox="0 0 12 12" width="12" height="12"><path d="M2.2 3.8h7.6L6 8.6z" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/></svg></span></div>`}
 
 function perSeg(key,cur){const L=[['all','Setahun'],['1','TW 1'],['2','TW 2'],['3','TW 3'],['4','TW 4'],['r','Rentang']];return `<span class="fg w2${key==='pr'&&VIEW.startsWith('pmo-')?' pm-period':''}"><label>Periode</label><span class="seg pseg" role="group" aria-label="Periode">${L.map(([v,l])=>`<button type="button" data-seg="${key}" data-v="${v}" class="${cur===v?'on':''}" aria-pressed="${cur===v}">${l}</button>`).join('')}</span></span>`}
 ACT.fclr=el=>{const k=el.dataset.k,v=el.dataset.v;if(k.startsWith('pf_')){S.ui.portoF=S.ui.portoF||{};S.ui.portoF[k.slice(3)]=v}else S.ui[k]=v;if(k==='lvn'){S.ui.lvn=10;S.ui.lvm='sd'}if(k==='unit'){S.ui.umode='up'}if(k==='cunit'){S.ui.crole='';S.ui.mod=''}Object.keys(PG).forEach(x=>PG[x]=0);save();render()};
