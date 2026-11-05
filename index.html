@@ -1494,11 +1494,7 @@ body:has(.prj-overlay){overflow:hidden}
 @media(max-width:1100px){.ws-jlist .ws-jd{grid-template-columns:64px minmax(0,1fr) auto}.ws-jd .ws-ev-st{display:none}.ws-jd .ws-ev-act{grid-column:2/-1;justify-content:flex-start}}
 
 /* ===== Alur Koordinasi (Pusat Bantuan) ===== */
-.ko-nav{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px}
-.ko-nav button{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 13px;border:1px solid var(--line);border-radius:20px;background:#fff;font:inherit;font-size:13px;font-weight:700;color:var(--ink-2);cursor:pointer}
-.ko-nav button b{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#EEF3FA;color:var(--navy);font-size:11px}
-.ko-nav button:hover:not(.on){background:#F2F7FE}
-.ko-nav button.on{background:var(--navy);border-color:var(--navy);color:#fff}.ko-nav button.on b{background:var(--yellow);color:var(--navy)}
+.ko-nav{margin:0 0 14px;scroll-margin-top:76px}
 .ko-p{display:none}.ko-p.on{display:block}
 .ko-ph-h{display:flex;align-items:baseline;gap:10px;margin:0 0 8px}.ko-ph-h h4{margin:0;font-size:16px;color:var(--navy)}.ko-ph-h span{font-size:12.5px;font-weight:700;color:#7A5A06;background:#FFF4D2;padding:2px 10px;border-radius:20px}
 .ko-leg{display:flex;gap:16px;flex-wrap:wrap;margin:0 0 10px;font-size:12.5px;color:var(--ink-3);font-weight:600}
@@ -4591,7 +4587,7 @@ function koHtml(){
    ['Evaluasi pascaproyek','≥ 3 bulan setelah closing',['Evaluasi dampak, biaya, proses, layanan'],['Keberlanjutan adopsi & perubahan perilaku']]].map((f,i)=>
    '<button type="button" class="ko-ph" data-kf="'+(i+1)+'"><span class="ko-chev"><b>'+(i+1)+'</b>'+esc(f[0])+'</span><small>'+esc(f[1])+'</small><div class="ko-pm"><em>PMO</em>'+f[2].map(x=>'<span>'+esc(x)+'</span>').join('')+'</div><div class="ko-cm"><em>CMO</em>'+f[3].map(x=>'<span>'+esc(x)+'</span>').join('')+'</div><u>Lihat alur ›</u></button>').join('')+'</div></div>'+
   '<div class="ko-row"><span class="ko-rl">Pendukung</span><div class="ko-g4">'+['Pembinaan PMO/CMO Unit & agen','Pedoman teknis & kertas kerja','Data & aplikasi Modul Transformasi','Kapabilitas pengelola'].map(t=>'<div class="ko-sup">'+esc(t)+'</div>').join('')+'</div></div></div>';
- const nav='<div class="ko-nav" role="tablist"><button type="button" class="on" data-kf="0">Ringkasan</button>'+KO_PHASES.map(p=>'<button type="button" data-kf="'+p.id+'"><b>'+p.id+'</b>'+esc(p.nm)+'</button>').join('')+'</div>';
+ const nav='<div class="pchips ko-nav" role="tablist" aria-label="Fase"><span class="t">Fase</span><button type="button" class="pc on" data-kf="0" title="Ringkasan lima fase"><b>Ringkasan</b><span>'+KO_PHASES.length+'</span></button>'+KO_PHASES.map(p=>'<button type="button" class="pc" data-kf="'+p.id+'" title="'+esc(p.st.length+' langkah · '+p.when)+'"><b>'+p.id+'. '+esc(p.nm)+'</b><span>'+p.st.length+'</span></button>').join('')+'</div>';
  const panels='<div class="ko-p on" data-kfp="0"><p class="hp-lead">Teknis koordinasi PMO Kemenkeu dan CMO Kemenkeu dalam lima fase. Klik satu fase untuk melihat alur langkah per peran.</p>'+over+'</div>'+
   KO_PHASES.map(p=>'<div class="ko-p" data-kfp="'+p.id+'"><div class="ko-ph-h"><h4>Fase '+p.id+' · '+esc(p.nm)+'</h4><span>'+esc(p.when)+'</span></div>'+leg+'<div class="ko-wrap">'+koSvg(p)+'</div><details class="ko-det"><summary>Daftar langkah ('+p.st.length+')</summary>'+koSteps(p)+'</details></div>').join('')+
   '<p class="ko-src">Sumber: Pengaturan Manajemen Perubahan – RKMK Peta Rencana Transformasi Digital Kemenkeu (alur koordinasi PMO–CMO).</p>';
