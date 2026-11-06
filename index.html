@@ -8078,12 +8078,19 @@ const KO_PHASES=[
  {id:3,nm:'Pemantauan',when:'Berkala',cols:4,
   st:[['3.1','PU',0,'Melaporkan progres WBS & bukti dukung'],['3.2','CU',0,'Memantau CM, tindak lanjut & indikator'],['3.3','PK',1,'Konsolidasi laporan terpadu & validasi bukti dukung'],['3.4','CK',1,'Memantau lintas modul, hasil ke PMO'],['3.5','P',2,'Menerima laporan & menetapkan arahan'],['3.6','S',2,'Menindaklanjuti eskalasi resistensi',1]],
   ed:[['3.1','3.3','n'],['3.2','3.4','n'],['3.4','3.3','k'],['3.3','3.5','g'],['3.5','3.6','g']]},
- {id:4,nm:'Penutupan & adopsi',when:'Kriteria terpenuhi',cols:6,
-  st:[['4.1','PU',0,'Mengajukan penutupan proyek'],['4.2','CU',0,'Memperkuat adopsi & analisis capaian'],['4.3','CK',1,'Menilai kesiapan operasional'],['4.4','CK',2,'Menyampaikan analisis adopsi ke PMO'],['4.6','PU',2,'Penyampaian capaian target adopsi'],['4.5','PK',3,'Menelaah penutupan & serah terima'],['4.7','S',4,'Menyetujui penutupan & pengalihan',1],['4.8','PB',5,'Menerima kepemilikan operasional']],
-  ed:[['4.1','4.6','n'],['4.2','4.3','n'],['4.3','4.4','n'],['4.6','4.5','n'],['4.4','4.5','k'],['4.5','4.7','g'],['4.7','4.8','g']]},
- {id:5,nm:'Evaluasi pascaproyek',when:'≥ 3 bulan setelah closing',cols:4,
-  st:[['5.1','PK',0,'Mengoordinasikan evaluasi pascaproyek'],['5.2','CK',1,'Menilai keberlanjutan adopsi'],['5.3','CU',1,'Mendokumentasikan keberlanjutan adopsi'],['5.4','PK',2,'Konsolidasi evaluasi terpadu'],['5.5','PB',2,'Melaksanakan penguatan lanjutan'],['5.6','P',3,'Hasil evaluasi jadi masukan prioritas',1]],
-  ed:[['5.1','5.2','k'],['5.3','5.2','n'],['5.2','5.4','k'],['5.2','5.5','n'],['5.4','5.6','g']]}];
+ {id:4,nm:'Penutupan Proyek & Transisi CM',when:'Penutupan proyek sesuai kriteria; CM tetap berlanjut',cols:6,
+  st:[['4.1','PU',0,'Mengajukan penutupan proyek sesuai kriteria'],['4.2','CU',0,'Mendampingi pengguna pasca go-live'],['4.3','PK',2,'Menelaah usulan penutupan proyek'],['4.4','CK',2,'Memantau adopsi dan isu masa transisi'],['4.5','P',4,'Penutupan proyek sesuai tata kelola',1],['4.6','PB',5,'Melanjutkan pengelolaan hasil proyek']],
+  ed:[['4.1','4.3','n'],['4.2','4.4','n'],['4.3','4.5','g'],['4.4','4.3','k'],['4.5','4.6','g']]},
+ {id:5,nm:'Evaluasi Pascaimplementasi CM',when:'Paling cepat 1 bulan sejak implementasi sistem',cols:5,
+  st:[['5.1','CU',0,'Mendokumentasikan adopsi, perilaku kerja, dan isu'],['5.2','PB',1,'Memberi data penggunaan dan kesiapan operasional'],['5.3','CK',2,'Mengoordinasikan evaluasi keberlanjutan adopsi'],['5.4','PK',3,'Menerima hasil evaluasi perubahan untuk sinkronisasi'],['5.5','CU',4,'Merumuskan tindak lanjut dan kesiapan kanal resmi']],
+  ed:[['5.1','5.3','n'],['5.2','5.3','n'],['5.3','5.4','k'],['5.3','5.5','n']]},
+ {id:6,nm:'Penutupan Manajemen Perubahan',when:'Setelah evaluasi dan kesiapan pengalihan terpenuhi',cols:5,
+  st:[['6.1','CU',0,'Memastikan isu masa transisi tertangani atau dialihkan'],['6.2','PB',1,'Memastikan layanan operasional dan kanal resmi siap'],['6.3','CK',2,'Mengonfirmasi kesiapan penutupan CM'],['6.4','CU',3,'Mengakhiri kanal sementara dan menyampaikan kanal resmi'],['6.5','PB',4,'Menerima serah terima pendampingan dan operasional']],
+  ed:[['6.1','6.3','n'],['6.2','6.3','n'],['6.3','6.4','n'],['6.4','6.5','n']]},
+ {id:7,nm:'Evaluasi Pascaproyek PMO',when:'Paling cepat 3 bulan setelah proyek ditutup',cols:5,
+  st:[['7.1','PK',0,'Mengoordinasikan evaluasi manfaat proyek'],['7.2','PU',1,'Menghimpun capaian dan bukti hasil proyek'],['7.3','PB',2,'Menyampaikan dampak biaya, proses, dan layanan'],['7.4','PK',3,'Mengonsolidasikan hasil evaluasi pascaproyek'],['7.5','P',4,'Menggunakan evaluasi sebagai masukan perbaikan',1]],
+  ed:[['7.1','7.2','n'],['7.2','7.3','n'],['7.3','7.4','n'],['7.4','7.5','g']]}
+];
 const KO_COL={n:'#3E6FB0',k:'#7C5CC4',g:'#5E9E3C'};
 function koSvg(ph){
  const LW=138,LH=118,TOP=10,NW=160,NH=84,CW=Math.max(180,Math.floor(1060/ph.cols)),W=LW+ph.cols*CW+14,H=TOP+KO_LANES.length*LH+8;
@@ -8111,22 +8118,21 @@ function koSvg(ph){
 function koSteps(ph){const lab=k=>(KO_LANES.find(l=>l[0]===k)||[])[1]||k;
  return '<ol class="ko-steps">'+ph.st.slice().sort((a,b)=>parseFloat(a[0].split('.')[1])-parseFloat(b[0].split('.')[1])).map(s=>{const nx=ph.ed.filter(e=>e[0]===s[0]).map(e=>e[1]);return '<li><i>'+esc(s[0])+'</i><div><b>'+esc(s[3])+(s[4]?' <em>usulan</em>':'')+'</b><span>'+esc(lab(s[1]))+(nx.length?' → lanjut ke '+nx.join(', '):'')+'</span></div></li>'}).join('')+'</ol>'}
 function koHtml(){
- const leg='<div class="ko-leg"><span><i style="background:'+KO_COL.k+'"></i>Koordinasi PMO–CMO</span><span><i style="background:'+KO_COL.g+'"></i>Tata kelola (Pengarah/Sponsor)</span><span><i style="background:'+KO_COL.n+'"></i>Alur kerja</span><span><b class="ko-usb"></b>Usulan</span><span><svg width="26" height="10" viewBox="0 0 26 10" aria-hidden="true"><path d="M4 5H22" stroke="'+KO_COL.k+'" stroke-width="2"/><path d="M1 5L6 1.5V8.5Z M25 5L20 1.5V8.5Z" fill="'+KO_COL.k+'"/></svg>Dua arah</span></div>';
- const over='<div class="ko-over">'+
-  '<div class="ko-row"><span class="ko-rl">Tata kelola</span><div class="ko-g4">'+['Penetapan arah & prioritas','Keputusan CR & penutupan','Review berkala & eskalasi','Kepemimpinan oleh Pengarah'].map(t=>'<div class="ko-gov">'+esc(t)+'</div>').join('')+'</div></div>'+
-  '<div class="ko-row"><span class="ko-rl">Proses inti</span><div class="ko-g5">'+[
-   ['Perencanaan','T-1 s.d. awal TA',['Dokumen Proyek','ND Bersama','WBS'],['Kertas kerja CM (7 analisis)','Kesiapan jaringan']],
-   ['Pelaksanaan','Sesuai rencana kerja',['Koordinasi implementasi','Change request'],['Komunikasi','Pelatihan','Pendampingan']],
-   ['Pemantauan','Berkala',['Progres WBS','Pelaporan ke Ketua/Sponsor'],['Reviu & tindak lanjut','Reviu indikator keberhasilan CM']],
-   ['Penutupan & adopsi','Kriteria terpenuhi',['Analisis penutupan','Serah terima'],['Penanganan','Pencapaian target adopsi']],
-   ['Evaluasi pascaproyek','≥ 3 bulan setelah closing',['Evaluasi dampak, biaya, proses, layanan'],['Keberlanjutan adopsi & perubahan perilaku']]].map((f,i)=>
-   '<button type="button" class="ko-ph" data-kf="'+(i+1)+'"><span class="ko-chev"><b>'+(i+1)+'</b>'+esc(f[0])+'</span><small>'+esc(f[1])+'</small><div class="ko-pm"><em>PMO</em>'+f[2].map(x=>'<span>'+esc(x)+'</span>').join('')+'</div><div class="ko-cm"><em>CMO</em>'+f[3].map(x=>'<span>'+esc(x)+'</span>').join('')+'</div><u>Lihat alur ›</u></button>').join('')+'</div></div>'+
-  '<div class="ko-row"><span class="ko-rl">Pendukung</span><div class="ko-g4">'+['Pembinaan PMO/CMO Unit & agen','Pedoman teknis & kertas kerja','Data & aplikasi Modul Transformasi','Kapabilitas pengelola'].map(t=>'<div class="ko-sup">'+esc(t)+'</div>').join('')+'</div></div></div>';
- const nav='<div class="pchips ko-nav" role="tablist" aria-label="Fase"><span class="t">Fase</span><button type="button" class="pc on" data-kf="0" title="Ringkasan lima fase"><b>Ringkasan</b><span>'+KO_PHASES.length+'</span></button>'+KO_PHASES.map(p=>'<button type="button" class="pc" data-kf="'+p.id+'" title="'+esc(p.st.length+' langkah · '+p.when)+'"><b>'+p.id+'. '+esc(p.nm)+'</b><span>'+p.st.length+'</span></button>').join('')+'</div>';
- const panels='<div class="ko-p on" data-kfp="0"><p class="hp-lead">Teknis koordinasi PMO Kemenkeu dan CMO Kemenkeu dalam lima fase. Klik satu fase untuk melihat alur langkah per peran.</p>'+over+'</div>'+
-  KO_PHASES.map(p=>'<div class="ko-p" data-kfp="'+p.id+'"><div class="ko-ph-h"><h4>Fase '+p.id+' · '+esc(p.nm)+'</h4><span>'+esc(p.when)+'</span></div>'+leg+'<div class="ko-wrap">'+koSvg(p)+'</div><details class="ko-det"><summary>Daftar langkah ('+p.st.length+')</summary>'+koSteps(p)+'</details></div>').join('')+
-  '<p class="ko-src">Sumber: Pengaturan Manajemen Perubahan – RKMK Peta Rencana Transformasi Digital Kemenkeu (alur koordinasi PMO–CMO).</p>';
- return nav+panels}
+ const leg='<div class="ko-leg"><span><i style="background:'+KO_COL.k+'"></i>Koordinasi PMO–CMO</span><span><i style="background:'+KO_COL.g+'"></i>Tata kelola (Pengarah/Sponsor)</span><span><i style="background:'+KO_COL.n+'"></i>Alur kerja</span><span><b class="ko-usb"></b>Ilustrasi koordinasi</span></div>';
+ const track=(title,kind,items)=>'<div class="txcs-koTrack"><div class="txcs-koTrackTitle '+kind+'">'+title+'</div><div class="txcs-koTrackSteps">'+items.map((a,i)=>'<div class="txcs-koTrackStep"><small>'+('0'+(i+1)).slice(-2)+'</small><b>'+esc(a[0])+'</b><span>'+esc(a[1])+'</span></div>').join('')+'</div></div>';
+ const over='<div class="txcs-ko-over">'+
+  '<div class="txcs-koHead"><div><h4>Dua lintasan, titik penutupan berbeda</h4><p>Penutupan proyek tidak otomatis mengakhiri pendampingan perubahan. Kedua fungsi saling berkoordinasi, tetapi mempunyai evaluasi dan kriteria penutupan masing-masing.</p></div><span class="txcs-koStatus">Draft KMK (6)</span></div>'+
+  track('PMO · Manajemen Proyek','pmo',[['Perencanaan','Dokumen Proyek & WBS'],['Pelaksanaan','Hasil kerja & Change Request'],['Pemantauan','Progres dan bukti'],['Penutupan','Kriteria proyek terpenuhi'],['Evaluasi Pascaproyek','≥ 3 bulan setelah ditutup']])+
+  track('CMO · Manajemen Perubahan','cmo',[['Perencanaan','Analisis & strategi CM'],['Pelaksanaan','Aktivasi jaringan, komunikasi & pelatihan'],['Pemantauan','Adopsi dan tindak lanjut'],['Evaluasi Pascaimplementasi','≥ 1 bulan sejak implementasi'],['Penutupan CM','Pengalihan ke operasional']])+
+  '<p class="txcs-ko-bridge"><b>Keterkaitan:</b> pengukuran adopsi CMO dapat berlangsung ketika proyek sudah ditutup. Evaluasi pascaproyek PMO dan penutupan CM tidak harus terjadi dalam urutan yang sama untuk setiap proyek.</p>'+
+  '<h4 class="txcs-koChoicesTitle">Pilih fase untuk melihat diagram koordinasi per peran</h4>'+
+  '<div class="txcs-koChoiceGrid">'+KO_PHASES.map(ph=>'<button class="txcs-koChoice" type="button" data-kf="'+ph.id+'"><em>'+('0'+ph.id).slice(-2)+'</em><b>'+esc(ph.nm)+'</b><span>'+esc(ph.when)+'</span><u>Jelajahi diagram →</u></button>').join('')+'</div></div>';
+ const nav='<div class="pchips ko-nav" role="tablist" aria-label="Fase koordinasi"><span class="t">Fase</span><button type="button" class="pc on" data-kf="0" title="Ringkasan dua lintasan"><b>Ringkasan</b></button>'+KO_PHASES.map(ph=>'<button type="button" class="pc" data-kf="'+ph.id+'" title="'+esc(ph.st.length+' langkah · '+ph.when)+'"><b>'+ph.id+'. '+esc(ph.nm)+'</b></button>').join('')+'</div>';
+ const panels='<div class="ko-p on" data-kfp="0">'+over+'</div>'+
+ KO_PHASES.map(ph=>'<div class="ko-p" data-kfp="'+ph.id+'"><div class="ko-ph-h"><h4>Fase '+ph.id+' · '+esc(ph.nm)+'</h4><span>'+esc(ph.when)+'</span></div>'+leg+'<p class="txcs-koHint">Diagram alur lintas peran · geser horizontal apabila diperlukan.</p><div class="ko-wrap">'+koSvg(ph)+'</div><details class="ko-det"><summary>Daftar langkah dan peran ('+ph.st.length+')</summary>'+koSteps(ph)+'</details></div>').join('')+
+ '<p class="ko-src">Rujukan: Draft KMK Peta Rencana Transformasi Digital versi (6). Hubungan antarperan dalam diagram merupakan visualisasi koordinasi untuk memudahkan pemahaman, bukan pengganti ketentuan normatif.</p>';
+ return nav+panels
+}
 function koWire(ov){ov.addEventListener('click',e=>{const b=e.target.closest('[data-kf]');if(!b)return;const k=b.dataset.kf;ov.querySelectorAll('.ko-nav button').forEach(x=>x.classList.toggle('on',x.dataset.kf===k));ov.querySelectorAll('.ko-p').forEach(p=>p.classList.toggle('on',p.dataset.kfp===k));const n=ov.querySelector('.ko-nav');n&&n.scrollIntoView({block:'nearest',behavior:'smooth'})})}
 
 /* Pusat Bantuan global */
