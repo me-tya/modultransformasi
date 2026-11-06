@@ -1,4 +1,4 @@
-<!-- PMO Program UI build 2026-11-04: hierarki program, rincian dapat diperluas/diciutkan, tampilan awal ringkas. -->
+<!-- PMO / CMO KMK v6 release 2026-11-06: 5 phases each + governance cheatsheet and app help. -->
 <title>Modul Transformasi Kemenkeu</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2361,7 +2361,7 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 /* Keep CM navigation above CRA with PMO-like tab spacing. */
 .cm-journey{display:grid!important;grid-template-columns:repeat(8,minmax(0,1fr))!important;gap:4px!important;margin:0!important;padding:6px!important;overflow:visible!important;border-radius:14px!important;box-shadow:0 1px 0 #fff inset,0 4px 14px rgba(11,31,69,.06)!important}.cm-step{min-width:0!important;min-height:40px!important;height:40px!important;flex:initial!important;gap:6px!important;padding:0 7px!important;font-size:12px!important;white-space:nowrap!important;text-align:center!important}.cm-step-label{white-space:nowrap!important;line-height:1.1!important;text-align:center!important}.cm-step-number{width:22px!important;height:22px!important;flex-basis:22px!important}.cm-step[title]{cursor:help}
 @media(max-width:1180px){.cm-journey{display:flex!important;overflow-x:auto!important;scrollbar-width:thin}.cm-step{flex:0 0 auto!important;min-width:125px!important;padding-inline:10px!important}}@media(max-width:650px){.cm-journey{margin:0!important}.cm-step{min-width:132px!important}.flt.cm-unified .fbar{padding:10px 12px 12px!important}}
-</style>
+.txcs-topbtn{background:#fff8e4!important;color:#16375a!important;border:1px solid #e4bb59!important;font-weight:850!important}.txcs-topbtn:hover{background:#fdb913!important;border-color:#fdb913!important}.txcs-entry{font-size:11px!important}</style>
 <script src="cra-native.js?v=20261106-ux3"></script>
 <script src="pengelola-native.js"></script>
 <script>
@@ -2938,7 +2938,22 @@ function viewCmShared(view){
  <div class="note i" style="margin-top:12px">Jika data belum muncul, masuk dengan akun Dashboard CM melalui halaman yang ditampilkan. Hak akses dan keamanan mengikuti Firebase Dashboard CM.</div>`;
 }
 
-function render(){try{ensureBkFlow()}catch(e){}try{kwMigrate()}catch(e){}
+/* Migrasi aman: evaluasi dari versi awal dipindahkan ke koleksi existing agar tetap
+   tersimpan pada aturan Firebase yang sudah digunakan aplikasi. */
+function upgradeEvalRecords(){
+ if(!S)return;
+ if(!Array.isArray(S.pantau))S.pantau=[];
+ if(!Array.isArray(S.projectDecisions))S.projectDecisions=[];
+ if(Array.isArray(S.pasca)&&S.pasca.length){
+  S.pasca.forEach(x=>{if(!S.pantau.some(y=>y.id===x.id))S.pantau.push(Object.assign({},x,{jenisCatatan:'EVAL-CM'}))});
+  S.pasca.length=0;
+ }
+ if(Array.isArray(S.projectEval)&&S.projectEval.length){
+  S.projectEval.forEach(x=>{if(!S.projectDecisions.some(y=>y.id===x.id))S.projectDecisions.push(Object.assign({},x,{jenisCatatan:'EVAL-PASCAPROYEK'}))});
+  S.projectEval.length=0;
+ }
+}
+function render(){try{upgradeEvalRecords()}catch(e){}try{ensureBkFlow()}catch(e){}try{kwMigrate()}catch(e){}
  if(!ME){renderLogin();return}
  ensureCh();ensureNar();
  const mm=VIEW.match(/^modul-(.+)-t-(\w+)$/);
@@ -2949,7 +2964,7 @@ function render(){try{ensureBkFlow()}catch(e){}try{kwMigrate()}catch(e){}
  <div class="main"><header class="top"><button class="hamb" id="hamb" aria-label="Tampilkan/sembunyikan menu">☰</button><div class="crumb">${crumbOf()}</div>
  <label class="tsel"><span>Tahun Anggaran</span><select id="yr" aria-label="Tahun anggaran">${yearsOpt().map(y=>`<option ${S.ui.tahun==y?'selected':''}>${y}</option>`).join('')}</select></label>
  <span class="role">${meLab()}</span>
- ${FB.on?`<span class="dbb" id="dbb" title="Status sinkron Firestore">${FB.st==="Gagal menyimpan"?"⚠ ":"● "}${esc(FB.st||"Firestore")}</span>`:""}<button class="hbtn" data-act="helphome" title="Pusat Bantuan: alur, peta menu, dan istilah"><i>?</i><span>Bantuan</span></button><button class="ibtn${tkv.length&&!BELL.seen(tk)?' bell-on':''}" id="bell" aria-label="Notifikasi${tkv.length?', '+tkv.length+' tugas':''}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>${tkv.length?`<i>${tkv.length}</i>`:''}</button>
+ ${FB.on?`<span class="dbb" id="dbb" title="Status sinkron Firestore">${FB.st==="Gagal menyimpan"?"⚠ ":"● "}${esc(FB.st||"Firestore")}</span>`:""}<button class="hbtn" data-act="helphome" title="Bantuan menggunakan menu, filter, form, dan tombol aplikasi"><i>?</i><span>Bantuan</span></button>${/^(pmo-|cmo-|modul-)/.test(VIEW)?`<button type="button" class="hbtn txcs-topbtn" data-act="cheatsheet" data-kind="${VIEW.startsWith("pmo-")?"pmo":"cmo"}" title="Cheatsheet framework dan tata kelola · draft KMK versi (6)">▤ <span>Cheatsheet</span></button>`:""}<button class="ibtn${tkv.length&&!BELL.seen(tk)?' bell-on':''}" id="bell" aria-label="Notifikasi${tkv.length?', '+tkv.length+' tugas':''}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>${tkv.length?`<i>${tkv.length}</i>`:''}</button>
  <button class="av" id="av" aria-label="Akun">${esc(ME.nama.split(' ').map(w=>w[0]).slice(0,2).join(''))}</button></header>
  <main class="view" id="view"></main></div></div>`;
  $('#hamb').onclick=()=>{if(innerWidth<=900)$('#side').classList.toggle('open');else{S.ui.side=S.ui.side===0?1:0;save();$('#app').classList.toggle('collapsed')}};
@@ -3753,10 +3768,10 @@ function pmoTabs(cur0){let cur=VIEW.startsWith('pmo-')?VIEW.slice(4):cur0;if(cur
  return `<nav class="ptabs" aria-label="Tab PMO">${G.map(x=>{const n=x.g[2];const c=x.ks.length>1?gc(x):cnt[x.ks[0]];const tgt=x.ks.includes(cur)?cur:x.ks[0];return `<a href="#pmo-${tgt}" class="${x===on?'on':''}"><span>${n?`<em>${n}</em> `:''}${x.g[1]}</span>${c!==''&&c!=null&&+c>0?` <b>${c}</b>`:''}</a>`}).join('')}</nav>`+pmoFilterPanel(cur)+sub}
 /* Evaluasi Pascaproyek PMO — KMK v6, dilaksanakan paling cepat 3 bulan setelah proyek ditutup. */
 function pEval(){
- S.projectEval=S.projectEval||[];
+ S.projectDecisions=S.projectDecisions||[];
  return vh('E','pmo','Evaluasi Pascaproyek','Penilaian kebermanfaatan proyek paling cepat 3 bulan setelah proyek ditutup; berbeda dari evaluasi adopsi dan penutupan CM.')+pmoTabs('pascaproyek')+
  '<div class="note i"><span><b>Ketentuan draft KMK:</b> PMO Kemenkeu mengoordinasikan evaluasi pascaproyek paling cepat <b>3 bulan setelah penutupan proyek</b>. Fokus penilaian meliputi efisiensi biaya, perbaikan proses bisnis, dan pemenuhan layanan. Dokumentasikan temuan serta rekomendasi tindak lanjut. Penutupan CM dikelola secara terpisah.</span></div>'+
- tbl('projectEval',{ent:'evaluasi pascaproyek',title:'Register Evaluasi Manfaat Proyek',add:true,edit:true,del:true,wide:true,addLabel:'Hasil Evaluasi',list:()=>S.projectEval,rows:()=>S.projectEval,
+ tbl('projectEval',{ent:'evaluasi pascaproyek',title:'Register Evaluasi Manfaat Proyek',add:true,edit:true,del:true,wide:true,addLabel:'Hasil Evaluasi',list:()=>S.projectDecisions,rows:()=>S.projectDecisions.filter(x=>x.jenisCatatan==='EVAL-PASCAPROYEK'),onSave:x=>{x.jenisCatatan='EVAL-PASCAPROYEK'},
  canAdd:()=>['SA','PMOK','PMOU'].includes(ME.role),canEdit:()=>['SA','PMOK','PMOU'].includes(ME.role),canDel:()=>['SA','PMOK'].includes(ME.role),label:x=>x.proyek||x.program,
  cols:[{k:'program',l:'Program',t:'sel',o:()=>progVis().map(p=>[p.akr,p.nama]),req:true},
  {k:'proyek',l:'Proyek / Modul',req:true,w:1},{k:'tglTutup',l:'Tanggal penutupan proyek',t:'date'},
@@ -6504,7 +6519,7 @@ function ddEval(src,c){const n=c.items.length;
   case 'wbs':return n?{st:'Lengkap',info:n+' item WBS terdata'}:{st:'Belum',info:'Belum ada item WBS'};
   case 'risk':{const k=reg(S.projectRisks||[]);return {st:k?'Lengkap':'Belum',info:k+' risiko/isu tercatat'}}
   case 'stake':{const k=reg(S.projectStakeholders||[]);return {st:k?'Lengkap':'Belum',info:k+' stakeholder tercatat'}}
-  case 'dec':{const k=reg(S.projectDecisions||[]);return {st:k?'Lengkap':'Belum',info:k+' keputusan tercatat'}}
+  case 'dec':{const k=reg((S.projectDecisions||[]).filter(x=>x.jenisCatatan!=='EVAL-PASCAPROYEK'));return {st:k?'Lengkap':'Belum',info:k+' keputusan tercatat'}}
   case 'valid':{const d=c.items.filter(w=>doneAt(w,12)),v=d.filter(w=>w.v).length;return d.length?{st:v===d.length?'Lengkap':v?'Sebagian':'Belum',info:`${v}/${d.length} item selesai tervalidasi`}:{st:'N/A',info:'Belum ada item selesai'}}
   case 'cr':{const k=(S.crs||[]).filter(x=>c.progs.includes(x.prog)&&x.st==='Diterapkan').length;return k?{st:'Lengkap',info:k+' CR diterapkan'}:{st:'N/A',info:'Tidak ada CR diterapkan'}}
   case 'close':{const L=[].concat(...c.progs.map(a=>{const p=S.programs.find(x=>x.akr===a);return Object.entries((p&&p.closing)||{}).filter(([k])=>c.scopes.some(sc=>k.startsWith(sc)||sc.startsWith(k))).map(([,v])=>v.st)}));const t=L.filter(x=>x==='Ditutup').length;return L.length?{st:t===L.length?'Lengkap':'Sebagian',info:t+' ditutup · '+(L.length-t)+' dalam proses penutupan'}:{st:'Belum',info:'Penutupan belum diisi di menu Penutupan'}}
@@ -6620,7 +6635,7 @@ function tpProjItems(p,j){return pmoScopedWbs().filter(w=>w.prog===p.akr&&(progP
 function tpReady(p,r){const ch=chCur(p.akr),K=((ch&&ch.kp)||[]).map(k=>({k,x:kpProg(p,k)})),kOk=K.filter(z=>z.x&&z.x.pg===100).length;
  const a=r.a||[],x=pgStat(a),undone=a.filter(w=>!doneAt(w,12));const pre=projectKey(p.akr,r.n,r.sub||''),pk0=projectKey(p.akr,r.n);projectStores();
  const inS=o=>{const sc=String(o.scope||'');return r.sub?(sc===pk0||sc.startsWith(pre)):sc.startsWith(pre)};const rOpen=S.projectRisks.filter(o=>inS(o)&&o.status!=='Ditutup');
- const dOpen=S.projectDecisions.filter(o=>inS(o)&&!['Selesai','Dibatalkan'].includes(o.status));const crOpen=(S.crs||[]).filter(c=>c.prog===p.akr&&['Diajukan','Telaah PMO Pusat'].includes(c.st));
+ const dOpen=S.projectDecisions.filter(o=>o.jenisCatatan!=='EVAL-PASCAPROYEK'&&inS(o)&&!['Selesai','Dibatalkan'].includes(o.status));const crOpen=(S.crs||[]).filter(c=>c.prog===p.akr&&['Diajukan','Telaah PMO Pusat'].includes(c.st));
  const bOpen=a.filter(w=>doneAt(w,12)&&!w.v).length;
  return {K,kOk,x,undone,rOpen,dOpen,crOpen,bOpen,pct:K.length?Math.round(kOk/K.length*100):x.pg}}
 function tpDocEval(d,p,r,c,R){c=c||{};const src=d[3];if(src==='man'){const m=(c.docs||{})[d[0]]||{},na=attNorm(m.att).items.length;const inf=[m.link?'No./lokasi: '+m.link:'',na?na+' berkas/tautan':''].filter(Boolean).join(' · ');return m.st?{st:m.st,info:inf||(m.st==='N/A'?'Tidak diperlukan':'')}:{st:'Belum',info:na?inf+' (pilih status)':'Unggah berkas atau tautan di menu Penutupan'}}
@@ -8356,7 +8371,7 @@ function tMonev(ms,mf,mk){const sub=S.ui.sub.monev||'lak';let out=`<div class="c
    onSave:r=>{Object.assign(S.impl[r.id],{dev:r.dev,sebab:r.sebab,rtl:r.rtl,tglBaru:r.tglBaru,picRtl:r.picRtl})},
    cols:[...(mk?[]:[{k:'modul',l:'Modul',frm:false,r:r=>`<span class="code">${esc(r.modul)}</span>`}]),{k:'keg',l:'Kegiatan',ro:true,w:1,r:r=>`<b>${esc(r.keg)}</b><span class="sm">${r.jenis} · ${esc(r.sh)}</span>`},{k:'rencana',l:'Rencana',ro:true,r:r=>esc(r.rencana||'—')},{k:'status',l:'Status implementasi',ro:true,r:r=>chipSt(r.status)},
     {k:'dev',l:'Deviasi',t:'sel',o:['','Sesuai rencana','Terlambat','Ditunda','Batal','Lebih cepat'],r:r=>r.dev?`<span class="chip ${r.dev==='Sesuai rencana'||r.dev==='Lebih cepat'?'c-ok':r.dev==='Batal'?'c-bad':'c-warn'}">${r.dev}</span>`:'—'},{k:'sebab',l:'Penyebab',t:'ta'},{k:'rtl',l:'Penyesuaian RTL',t:'ta',w:1},{k:'tglBaru',l:'Jadwal baru',t:'date',r:r=>fmtD(r.tglBaru)},{k:'picRtl',l:'PIC RTL'}]});}
- else if(sub==='pan'){out+=tbl('pan',{ent:'kertas kerja monev',title:'Pemantauan — Kertas Kerja Monev',add:true,edit:true,del:true,addLabel:'Catatan Monev',list:()=>S.pantau,rows:()=>S.pantau.filter(mf),canAdd:()=>can('monev','C',mk),canEdit:p=>can('monev','U',p.modul),canDel:p=>can('monev','D',p.modul),label:p=>p.keg,onSave:p=>{if(mk)p.modul=mk},wide:true,
+ else if(sub==='pan'){out+=tbl('pan',{ent:'kertas kerja monev',title:'Pemantauan — Kertas Kerja Monev',add:true,edit:true,del:true,addLabel:'Catatan Monev',list:()=>S.pantau,rows:()=>S.pantau.filter(p=>p.jenisCatatan!=='EVAL-CM'&&mf(p)),canAdd:()=>can('monev','C',mk),canEdit:p=>can('monev','U',p.modul),canDel:p=>can('monev','D',p.modul),label:p=>p.keg,onSave:p=>{if(mk)p.modul=mk},wide:true,
    cols:[...(mk?[]:[modCol('monev')]),{k:'keg',l:'Kegiatan / program',req:true,w:1,t:'dl',o:()=>implRows(mf).map(r=>[r.keg,r.jenis+' · '+r.sh]),r:p=>`<b>${esc(p.keg)}</b><span class="sm"><span class="chip c-gold">${esc(p.fok)}</span></span>`},{k:'fok',l:'Fokus monev (ADKAR)',t:'sel',o:ADKAR,tbl:false},{k:'ik',l:'Indikator kinerja',t:'ta',w:1,r:p=>`${esc(p.ik)}<span class="sm">${esc([p.met,p.sum].filter(Boolean).join(' · '))}</span>`},{k:'met',l:'Metode monev',t:'sel',tbl:false,o:['T-Survey','T-Quiz','Data sistem','Observasi','Wawancara']},{k:'sum',l:'Sumber data',tbl:false},
     {k:'st',l:'Status',t:'sel',o:['On Track','Required Action','Off Track'],r:p=>chipSt(p.st)},{k:'tem',l:'Temuan & tindak lanjut',t:'ta',w:1,r:p=>`${esc(p.tem)}${p.sar&&p.sar!=='—'?`<span class="sm">Saran: ${esc(p.sar)}</span>`:''}${p.tl?`<span class="sm">TL: ${esc(p.tl)}</span>`:''}`},{k:'sar',l:'Saran perbaikan',t:'ta',tbl:false},{k:'tl',l:'Tindak lanjut',t:'ta',tbl:false}]});}
  else if(sub==='ado'){out+=`<div class="card"><div class="ch"><h3>Ekspektasi vs Realisasi Penggunaan Modul</h3><span class="r lgd"><span><i style="background:#C9D3E8"></i>Ekspektasi pengguna</span><span><i style="background:var(--navy-2)"></i>Pengguna aktif</span></span></div><div class="pad">${ms.map(m=>{const a=S.adopsi.filter(x=>x.modul===m.kode);if(!a.length)return '';const mx=Math.max(...a.map(x=>Math.max(+x.tu||0,+x.au||0)),1);return `<div style="margin-bottom:10px"><b style="font-size:12.5px">${esc(m.nama)}</b>${a.map(x=>`<div class="hbar"><span>${esc(x.per)}</span><div class="t" style="height:16px"><i style="width:${(+x.tu||0)/mx*100}%;background:#C9D3E8"></i><i style="width:${(+x.au||0)/mx*100}%;background:var(--navy-2);height:60%;top:20%"></i></div><b>${x.tu?pct(x.au/x.tu*100):'—'}</b></div>`).join('')}</div>`}).join('')||'<span class="s">Belum ada data adopsi.</span>'}</div></div>`;
@@ -8370,13 +8385,13 @@ function tMonev(ms,mf,mk){const sub=S.ui.sub.monev||'lak';let out=`<div class="c
  return out}
 /* Evaluasi Pascaimplementasi CM — KMK v6, paling cepat 1 bulan setelah implementasi. */
 function tPasca(ms,mf,mk){
- S.pasca=S.pasca||[];
- const items=S.pasca.filter(mf),done=items.filter(x=>x.st==='Selesai').length,run=items.filter(x=>x.st==='Berjalan').length;
+ S.pantau=S.pantau||[];
+ const items=S.pantau.filter(x=>x.jenisCatatan==='EVAL-CM'&&mf(x)),done=items.filter(x=>x.st==='Selesai').length,run=items.filter(x=>x.st==='Berjalan').length;
  const kpi='<div class="kpis"><div class="kpi"><div class="l">Catatan evaluasi</div><div class="v">'+items.length+'</div><div class="d">Hasil evaluasi terdata</div></div>'+
  '<div class="kpi"><div class="l">Evaluasi selesai</div><div class="v" style="color:var(--ok)">'+done+'</div><div class="d">Dapat menjadi dasar proses closing CM</div></div>'+
  '<div class="kpi"><div class="l">Sedang dievaluasi</div><div class="v">'+run+'</div><div class="d">Periksa isu, adopsi, dan kesiapan kanal resmi</div></div></div>';
  return '<div class="note i"><span><b>Evaluasi Pascaimplementasi Perubahan:</b> dilaksanakan paling cepat <b>1 (satu) bulan sejak implementasi sistem baru</b>. CMO Kemenkeu bersama CMO Unit, pemilik proses bisnis, dan unit teknis menilai keberlanjutan adopsi, perilaku kerja baru, efektivitas penanganan isu dan resistensi, serta kesiapan peralihan pendampingan transisi menuju layanan operasional reguler. Hasilnya menjadi dasar Penutupan CM. <button type="button" data-act="cheatsheet" data-kind="cmo" class="txcs-entry">Cheatsheet</button></span></div>'+kpi+
- tbl('pasca',{ent:'evaluasi pascaimplementasi',title:'Kertas Kerja Evaluasi Pascaimplementasi',add:true,edit:true,del:true,wide:true,addLabel:'Evaluasi Perubahan',list:()=>S.pasca,rows:()=>S.pasca.filter(mf),canAdd:()=>can('monev','C',mk),canEdit:x=>can('monev','U',x.modul),canDel:x=>can('monev','D',x.modul),label:x=>x.aspek||x.modul,onSave:x=>{if(mk)x.modul=mk},
+ tbl('pasca',{ent:'evaluasi pascaimplementasi',title:'Kertas Kerja Evaluasi Pascaimplementasi',add:true,edit:true,del:true,wide:true,addLabel:'Evaluasi Perubahan',list:()=>S.pantau,rows:()=>S.pantau.filter(x=>x.jenisCatatan==='EVAL-CM'&&mf(x)),canAdd:()=>can('monev','C',mk),canEdit:x=>can('monev','U',x.modul),canDel:x=>can('monev','D',x.modul),label:x=>x.aspek||x.modul,onSave:x=>{x.jenisCatatan='EVAL-CM';if(mk)x.modul=mk},
  cols:[...(mk?[]:[modCol('monev')]),{k:'aspek',l:'Subjek / perubahan',req:true,w:1},
  {k:'goLive',l:'Tanggal implementasi',t:'date'},{k:'tgl',l:'Tanggal evaluasi',t:'date'},
  {k:'adopsi',l:'Keberlanjutan adopsi',t:'ta',w:1},{k:'perilaku',l:'Proses & perilaku kerja baru',t:'ta',w:1},
@@ -8387,8 +8402,8 @@ function tPasca(ms,mf,mk){
 }
 /* --- Closing --- */
 function tClosing(ms,mf,mk){
- S.pasca=S.pasca||[];
- return `<div class="note i"><span><b>Penutupan Manajemen Perubahan</b> berbeda dari penutupan proyek. Closing dilakukan <b>setelah evaluasi pascaimplementasi dan masa transisi</b>, dengan memastikan isu terselesaikan atau dialihkan, kanal layanan resmi siap, serta tanggung jawab pendampingan diterima pemilik proses bisnis/unit operasional. Dokumen hasil: <b>BAST atau dokumen sejenis</b>. <button type="button" class="txcs-entry" data-act="cheatsheet" data-kind="cmo">Cheatsheet</button></span></div><div class="kpis">${ms.filter(m=>mk||S.tr.some(t=>t.modul===m.kode)).map(m=>{const t=S.tr.filter(x=>x.modul===m.kode);const d=t.filter(x=>x.st==='Selesai').length;return `<div class="kpi"><div class="l">${esc(m.nama)}</div><div class="v">${t.length?d+'<small>/ '+t.length+' area</small>':'—'}</div><div class="d">${t.length&&d===t.length&&S.pasca.some(p=>p.modul===m.kode&&p.st==='Selesai')?'<span class="chip c-ok">Siap ditutup</span>':t.length&&d===t.length?'<span class="chip c-warn">Menunggu evaluasi pascaimplementasi</span>':t.length?'Transisi berjalan':'Belum ada rencana transisi'}</div></div>`}).join('')||'<div class="kpi"><div class="l">Belum ada rencana transisi</div></div>'}</div>`+
+ S.pantau=S.pantau||[];
+ return `<div class="note i"><span><b>Penutupan Manajemen Perubahan</b> berbeda dari penutupan proyek. Closing dilakukan <b>setelah evaluasi pascaimplementasi dan masa transisi</b>, dengan memastikan isu terselesaikan atau dialihkan, kanal layanan resmi siap, serta tanggung jawab pendampingan diterima pemilik proses bisnis/unit operasional. Dokumen hasil: <b>BAST atau dokumen sejenis</b>. <button type="button" class="txcs-entry" data-act="cheatsheet" data-kind="cmo">Cheatsheet</button></span></div><div class="kpis">${ms.filter(m=>mk||S.tr.some(t=>t.modul===m.kode)).map(m=>{const t=S.tr.filter(x=>x.modul===m.kode);const d=t.filter(x=>x.st==='Selesai').length;return `<div class="kpi"><div class="l">${esc(m.nama)}</div><div class="v">${t.length?d+'<small>/ '+t.length+' area</small>':'—'}</div><div class="d">${t.length&&d===t.length&&S.pantau.some(p=>p.jenisCatatan==='EVAL-CM'&&p.modul===m.kode&&p.st==='Selesai')?'<span class="chip c-ok">Siap ditutup</span>':t.length&&d===t.length?'<span class="chip c-warn">Menunggu evaluasi pascaimplementasi</span>':t.length?'Transisi berjalan':'Belum ada rencana transisi'}</div></div>`}).join('')||'<div class="kpi"><div class="l">Belum ada rencana transisi</div></div>'}</div>`+
  tbl('tr',{ent:'transfer kepemilikan',title:'Penutupan CM — Serah Terima Pendampingan & Kanal Layanan',add:true,edit:true,del:true,wide:true,addLabel:'Area Transfer',list:()=>S.tr,rows:()=>S.tr.filter(mf),canAdd:()=>can('closing','C',mk),canEdit:t=>can('closing','U',t.modul),canDel:t=>can('closing','D',t.modul),label:t=>t.area,onSave:t=>{if(mk)t.modul=mk},
   cols:[...(mk?[]:[modCol('closing')]),{k:'area',l:'Area perubahan',t:'sel',o:['Sistem / Aplikasi','Proses Bisnis Baru','Jaringan Perubahan','Kanal Layanan / Complaint Handling','Lainnya'],req:true},{k:'dari',l:'Dari (tim program)'},{k:'kpd',l:'Kepada (pemilik operasional)'},{k:'krit',l:'Kriteria siap transfer',t:'ta',w:1},{k:'dok',l:'Dokumen / BAST atau sejenis',t:'ta',w:1},{k:'st',l:'Status',t:'sel',o:['Belum','Proses','Selesai'],r:t=>chipSt(t.st)},{k:'tgl',l:'Tanggal transfer',t:'date',r:t=>fmtD(t.tgl)},{k:'ttd',l:'Penerima (TTD)'}]})}
 
@@ -8667,6 +8682,6 @@ document.addEventListener('mouseover',function(e){const el=e.target.closest('a[h
  const target=tujuanMenu(h);if(target)el.title='Menuju menu '+target;
 });
 </script>
-<script src="cheatsheet.js?v=20261106"></script>
+<script src="cheatsheet.js?v=20261106-2"></script>
 
 
