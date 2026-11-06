@@ -8096,42 +8096,6 @@ function cmRptHtml(model){
   </div>${front}
   <div class="sheet content"><div class="runhead"><span>${escapeHtml(model.header||'')}</span><span>${escapeHtml(c.kicker)}</span></div>${body}<div class="foot">${escapeHtml(model.header||'')}${F?'':` · ${L('Sumber data: Dashboard Master Agenda Change Management','Data source: Change Management Master Agenda dashboard')}`}</div></div>
   
-<!-- Modul Transformasi: same-source Dashboard CM embedding (no data copies). -->
-<style>
-html.mt-embedded body { min-width: 0!important; }
-html.mt-embedded .tab-btn:not([data-tab="priority"]):not([data-tab="survey"]):not([data-tab="contact"]):not([data-tab="resource"]) { display:none!important; }
-html.mt-embedded .tab-btn[data-tab] { display:none!important; }
-html.mt-embedded [class*="announcement-bar"] { display:none!important; }
-html.mt-embedded #cmContextHelp {display:none!important}
-html.mt-embedded body {padding-bottom:30px!important}
-</style>
-<script>
-(function(){
-  var target=(new URLSearchParams(location.search)).get('mt_module')||'priority';
-  var allowed=['priority','survey','resource','contact'];
-  if(!allowed.includes(target))target='priority';
-  document.documentElement.classList.add('mt-embedded');
-  function openTarget(){
-    try{
-      var button=document.querySelector('.tab-btn[data-tab="'+target+'"]');
-      if(button && typeof switchTab==='function'){
-        if(!button.classList.contains('active')) switchTab(target);
-        return button.classList.contains('active');
-      }
-    }catch(e){}
-    return false;
-  }
-  window.addEventListener('load',function(){
-    openTarget();
-    var attempts=0, handle=setInterval(function(){if(openTarget()||++attempts>120)clearInterval(handle)},1000);
-    document.addEventListener('click',function(e){
-      if(e.target.closest('#btnGoogleLogin,#btnGoogleLogout,[id*="login"],[id*="Login"]'))
-        setTimeout(openTarget,1600);
-    });
-  });
-})();
-</script>
-
 </body></html>`;
 }
 
@@ -20361,6 +20325,42 @@ waitForFirebaseAuthReady().then(cmTaskLoad);
 
 <script>
 (function(){const nav=document.getElementById('tabNav');if(!nav)return;const show=()=>{if(window.innerWidth>640)return;const a=nav.querySelector('.tab-btn.active');if(a){const l=nav.scrollLeft+(a.getBoundingClientRect().left-nav.getBoundingClientRect().left)-(nav.clientWidth-a.offsetWidth)/2;nav.scrollTo({left:Math.max(0,l),behavior:'smooth'});}};nav.addEventListener('click',e=>{if(e.target.closest('.tab-btn'))setTimeout(show,60);});window.addEventListener('load',()=>setTimeout(show,400));})();
+</script>
+
+<!-- Modul Transformasi: same-source Dashboard CM embedding (no data copies). -->
+<style>
+html.mt-embedded body { min-width: 0!important; }
+html.mt-embedded .tab-btn:not([data-tab="priority"]):not([data-tab="survey"]):not([data-tab="contact"]):not([data-tab="resource"]) { display:none!important; }
+html.mt-embedded .tab-btn[data-tab] { display:none!important; }
+html.mt-embedded [class*="announcement-bar"] { display:none!important; }
+html.mt-embedded #cmContextHelp {display:none!important}
+html.mt-embedded body {padding-bottom:30px!important}
+</style>
+<script>
+(function(){
+  var target=(new URLSearchParams(location.search)).get('mt_module')||'priority';
+  var allowed=['priority','survey','resource','contact'];
+  if(!allowed.includes(target))target='priority';
+  document.documentElement.classList.add('mt-embedded');
+  function openTarget(){
+    try{
+      var button=document.querySelector('.tab-btn[data-tab="'+target+'"]');
+      if(button && typeof switchTab==='function'){
+        if(!button.classList.contains('active')) switchTab(target);
+        return button.classList.contains('active');
+      }
+    }catch(e){}
+    return false;
+  }
+  window.addEventListener('load',function(){
+    openTarget();
+    var attempts=0, handle=setInterval(function(){if(openTarget()||++attempts>120)clearInterval(handle)},1000);
+    document.addEventListener('click',function(e){
+      if(e.target.closest('#btnGoogleLogin,#btnGoogleLogout,[id*="login"],[id*="Login"]'))
+        setTimeout(openTarget,1600);
+    });
+  });
+})();
 </script>
 </body>
 </html>
