@@ -2355,8 +2355,14 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 .cm-step:focus-visible{outline:2px solid #fdb913;outline-offset:2px}.cm-cra-workspace{min-width:0}.cm-cra-workspace .cra2-hero{margin-top:0}
 @media(max-width:1250px){.cm-journey{display:flex;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:thin}.cm-step{flex:0 0 148px;scroll-snap-align:start}}
 @media(max-width:700px){.cm-step{flex-basis:132px;min-height:50px}.cm-journey{margin:10px 0 14px;padding:6px}}
+
+/* Common compact filter: CMO inherits Project Management's dimensions and styling. */
+.flt.cm-unified .fbar{padding:10px 14px 12px!important;gap:9px 12px!important}.flt.cm-unified .fbar .fg{gap:4px}.flt.cm-unified .fbar .sel{height:36px!important;padding-right:8px}.flt.cm-unified .fbar .pseg{height:36px}.flt.cm-unified .fbar .pseg button{padding-inline:4px}.flt.cm-unified .ftop{padding-left:12px!important}.flt.cm-unified>.lp{padding-inline:12px!important}
+/* Keep CM navigation above CRA with PMO-like tab spacing. */
+.cm-journey{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:7px!important;margin:10px 0 14px!important;padding:7px!important;overflow:visible!important;border-radius:12px!important}.cm-step{min-width:0!important;min-height:48px!important;flex:initial!important;gap:6px!important;padding:8px 5px!important;font-size:11.5px!important;white-space:nowrap!important;text-align:center!important}.cm-step-label{white-space:nowrap!important;line-height:1.1!important;text-align:center!important}.cm-step-number{width:22px!important;height:22px!important;flex-basis:22px!important}.cm-step[title]{cursor:help}
+@media(max-width:1180px){.cm-journey{display:flex!important;overflow-x:auto!important;scrollbar-width:thin}.cm-step{flex:0 0 auto!important;min-width:125px!important;padding-inline:10px!important}}@media(max-width:650px){.cm-journey{margin:8px 0 12px!important}.cm-step{min-width:132px!important}.flt.cm-unified .fbar{padding:10px 12px 12px!important}}
 </style>
-<script src="cra-native.js"></script>
+<script src="cra-native.js?v=20261106-ux3"></script>
 <script src="pengelola-native.js"></script>
 <script>
 /* ======================== konstanta ======================== */
@@ -2957,7 +2963,7 @@ function render(){try{ensureBkFlow()}catch(e){}try{kwMigrate()}catch(e){}
  else if(VIEW==='aktivitas')h=pAktivitas();else if(VIEW.startsWith('pmo-'))h=viewPmo(VIEW.slice(4));else if(VIEW.startsWith('cmo-'))h=viewCmo(VIEW.slice(4),null);
  else if(VIEW==='set-pengguna')h=viewUsers();else if(VIEW==='set-akses')h=viewAkses();else if(VIEW==='set-sinkron')h=viewSinkron();else if(VIEW==='set-db')h=viewDb();else if(VIEW==='set-log')h=viewLog();
  if(VIEW.startsWith('set-'))h=h.replace('<!--vh-->',setTabs());
- v.innerHTML=h;if(VIEW==='cra'&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}if(VIEW==='pengelola'&&window.PENGELOLA_NATIVE){window.PENGELOLA_NATIVE.attach({S,ME,save,toast});return;}if((VIEW==='cmo-cra'||/^modul-.+-t-cra$/.test(VIEW))&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}try{foldNotes(v)}catch(e){}
+ v.innerHTML=h;window.CM_CRA_NAV=()=>cmoTabs('cra',null);if(VIEW==='cra'&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}if(VIEW==='pengelola'&&window.PENGELOLA_NATIVE){window.PENGELOLA_NATIVE.attach({S,ME,save,toast});return;}if((VIEW==='cmo-cra'||/^modul-.+-t-cra$/.test(VIEW))&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}try{foldNotes(v)}catch(e){}
 }
 const yearsOpt=()=>{const ys=new Set([S.ui.tahun]);S.wbs.forEach(w=>{const y=yrOf(w);if(y>=2020)ys.add(y)});return [...ys].sort()};
 function foldNotes(v){const host=v.querySelector('.subt.ctabs')||v.querySelector('.subt')||v.querySelector('.vh h1');if(!host)return;
@@ -3480,12 +3486,12 @@ function fltHead(open,title,chips,n,reset,res){const act=chips.filter(c=>typeof 
  const ico=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg>`;
  const ch=act.length?act.map(c=>`<span class="c1">${esc(c.t)}<button class="fx" data-act="fclr" data-k="${c.k}" data-v="${esc(c.v||'')}" aria-label="Hapus filter ${esc(c.t)}" title="Hapus filter ini">×</button></span>`).join(''):`<span class="none">Belum ada — ${open?'menampilkan semua data':'semua data'}</span>`;
  const pc=res&&res[1]?Math.round(res[0]/res[1]*100):100;
- const pu=typeof VIEW!=='undefined'&&(VIEW.startsWith('pmo-')||VIEW==='dashboard');
+ const pu=typeof VIEW!=='undefined'&&(VIEW.startsWith('pmo-')||VIEW.startsWith('cmo-')||VIEW==='dashboard');
  const lp=open&&!pu?`<div class="lp" data-act="ftog" title="Klik untuk menyembunyikan filter"><div class="lt"><span class="gi">${ico}</span><span><b>${title}</b><small>${esc(sub)}</small></span></div>${res?`<hr><div class="res"><span>Hasil sesuai filter</span><b>${rp(res[0])}</b><small>dari ${rp(res[1])} ${res[2]}</small><span class="mb"><span style="width:${pc}%"></span></span>${n?`<div class="nar"><em class="na">${n} filter aktif</em>${reset}</div>`:''}</div>`:''}${n&&!res?reset:''}</div>`
   :`<div class="lp" data-act="ftog"><span class="gi">${ico}</span><div class="lt"><span><b>${title}</b></span></div></div>`;
  return lp+`<div class="rp"><div class="ftop" data-act="ftog" role="button" tabindex="0" aria-expanded="${open}" title="Klik untuk ${open?'menyembunyikan':'menampilkan'} filter"><span class="tl">Filter aktif</span>${ch}${(!open||pu)&&res?`<span class="rs2"><b>${rp(res[0])}</b> dari ${rp(res[1])} ${res[2]}${pu?`<span class="rs2m"><i style="width:${pc}%"></i></span>`:''}</span>`:''}${(!open||pu)&&n?reset.replace('class="freset"','class="freset rsm"'):''}<span class="fcar" aria-hidden="true"><svg class="fcar-tri${window.FCAR_ANIM?' anim':''}" viewBox="0 0 12 12" width="12" height="12"><path d="M2.2 3.8h7.6L6 8.6z" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/></svg></span></div>`}
 
-function perSeg(key,cur){const L=[['all','Setahun'],['1','TW 1'],['2','TW 2'],['3','TW 3'],['4','TW 4'],['r','Rentang']];return `<span class="fg w2${key==='pr'&&(VIEW.startsWith('pmo-')||VIEW==='dashboard')?' pm-period':''}"><label>Periode</label><span class="seg pseg" role="group" aria-label="Periode">${L.map(([v,l])=>`<button type="button" data-seg="${key}" data-v="${v}" class="${cur===v?'on':''}" aria-pressed="${cur===v}">${l}</button>`).join('')}</span></span>`}
+function perSeg(key,cur){const L=[['all','Setahun'],['1','TW 1'],['2','TW 2'],['3','TW 3'],['4','TW 4'],['r','Rentang']];return `<span class="fg w2${(key==='pr'||key==='cpr')&&(VIEW.startsWith('pmo-')||VIEW.startsWith('cmo-')||VIEW==='dashboard')?' pm-period':''}"><label>Periode</label><span class="seg pseg" role="group" aria-label="Periode">${L.map(([v,l])=>`<button type="button" data-seg="${key}" data-v="${v}" class="${cur===v?'on':''}" aria-pressed="${cur===v}">${l}</button>`).join('')}</span></span>`}
 ACT.fclr=el=>{const k=el.dataset.k,v=el.dataset.v;if(k.startsWith('pf_')){S.ui.portoF=S.ui.portoF||{};S.ui.portoF[k.slice(3)]=v}else S.ui[k]=v;if(k==='lvn'){S.ui.lvn=10;S.ui.lvm='sd'}if(k==='unit'){S.ui.umode='up'}if(k==='cunit'){S.ui.crole='';S.ui.mod=''}Object.keys(PG).forEach(x=>PG[x]=0);save();render()};
 function fltBar(o={}){const P=per();const open=S.ui.fopen===1;const pv=progVis();const act=c=>c?' act':'';
  const isW=['pmo-wbs','pmo-wbsplan'].includes(VIEW);const UML={up:'utama/pendukung',u:'UIC Utama',p:'UIC Pendukung',ue:'cakupan UE I'};const lvn=S.ui.lvn||10,lvm=S.ui.lvm||'sd';
@@ -8155,7 +8161,8 @@ const capSt=c=>c==null?'Belum diukur':c>=100?'Tercapai':c>=80?'Mendekati':'Di ba
 function idxMod(mk){const is=S.ind.filter(i=>i.modul===mk);let w=0,s=0;is.forEach(i=>{const c=capOf(i);if(c!=null){w+=+i.bobot||0;s+=c*(+i.bobot||0)}});return w?s/w:null}
 function adoptMod(mk){const a=S.adopsi.filter(x=>x.modul===mk);if(!a.length)return null;const l=a[a.length-1];return {per:l.per,p:l.tu?l.au/l.tu*100:null,t:l.tt?l.at/l.tt*100:null}}
 const adpSt=mk=>(S.modMeta[mk]||{}).adp||'Draft';
-function cmoTabs(tab,mk){return `<nav class="cm-journey" aria-label="Tujuh tahapan Change Management">${CMT.map(([k,l],i)=>{const href=mk?`#modul-${mk}-t-${k}`:`#cmo-${k}`;return `<a href="${href}" class="cm-step ${k===tab?'on':''}" ${k===tab?'aria-current="step"':''} title="Tahap ${i+1}: ${l}"><span class="cm-step-number">${i+1}</span><span class="cm-step-label">${l}</span></a>`}).join('')}</nav>`}
+const CM_TAB_HELP={adp:'Identifikasi perubahan As-Is dan To-Be, dampak POSTeR, risiko, serta indikator keberhasilan.',rencana:'Petakan pemangku kepentingan dan susun strategi komunikasi serta pelatihan perubahan.',jaringan:'Kelola peran sponsor, Change Champion, T-Agent, penugasan, dan aktivasi jaringan perubahan.',cra:'Ukur kesiapan pengguna melalui survei, analisis respons, dan rencana tindak lanjut.',pelaksanaan:'Pantau realisasi komunikasi dan pelatihan serta bukti pelaksanaannya.',monev:'Evaluasi efektivitas intervensi, tingkat adopsi, dan pencapaian indikator perubahan.',closing:'Pastikan transisi, serah terima kepemilikan perubahan, dan keberlanjutan manfaat.'};
+function cmoTabs(tab,mk){return `<nav class="cm-journey" aria-label="Menu Change Management">${CMT.map(([k,l],i)=>{const href=mk?`#modul-${mk}-t-${k}`:`#cmo-${k}`;const tip=CM_TAB_HELP[k]||l;return `<a href="${href}" class="cm-step ${k===tab?'on':''}" ${k===tab?'aria-current="page"':''} title="${esc(tip)}" aria-label="${esc(l+': '+tip)}"><span class="cm-step-number">${i+1}</span><span class="cm-step-label">${l}</span></a>`}).join('')}</nav>`}
 const modRel=(m,u)=>!u?'':m.uicUnits.includes(u)?'u':unitsOf(m.pend).includes(u)?'p':'';
 const cU=()=>lockU()||S.ui.cunit||'';
 function cmoMatch(m){const u=cU(),r=S.ui.crole||'';const y=S.ui.tahun,P=cper(),its=[m.adp,...m.items];if(!its.some(w=>yrOf(w)===y))return false;if(S.ui.cprog&&m.prog!==S.ui.cprog)return false;const th=S.ui.cth||'';if((P.pr!=='all'||th)&&!its.some(w=>yrOf(w)===y&&(P.pr==='all'||inP(w,P))&&(!th||tahapMatch(w,th))))return false;if(!u)return true;const x=modRel(m,u);return r==='u'?x==='u':r==='p'?x==='p':!!x}
@@ -8166,14 +8173,14 @@ function cmoFlt(f,tab){const open=S.ui.fopen===1;const u=cU(),r=S.ui.crole||'';c
  const lab2={'':'utama + pendukung','u':'pemilik probis utama','p':'UIC pendukung'};const chips=[`Tahun ${S.ui.tahun}`,P.pr!=='all'?{t:P.lab,k:'cpr'}:'Setahun',S.ui.cprog?{t:progLabel(S.ui.cprog),k:'cprog'}:'Semua program',
   lockU()?`${lockU()} (unit Anda)`:(u?{t:u,k:'cunit'}:'Semua UE I'),...(u?[r?{t:'sebagai '+lab2[r],k:'crole'}:'sebagai '+lab2['']]:[]),
   ...(S.ui.cth?[{t:'Tahapan: '+tahapLab(S.ui.cth),k:'cth'}]:[]),...(tab!=='siklus'&&S.ui.mod?[{t:'Modul '+S.ui.mod,k:'mod'}]:[])];const nAct=chips.filter(c=>typeof c!=='string').length;const allM=visMods(f).filter(m=>[m.adp,...m.items].some(w=>yrOf(w)===S.ui.tahun)).length;
- return `<section class="flt fx2${open?' open':''}" aria-label="Filter CMO">${fltHead(open,'Filter',chips,nAct,'<button class="freset" data-act="cfreset">↺ Atur ulang</button>',[ms.length,allM,'modul'])}
+ return `<section class="flt fx2 pmo-unified cm-unified${open?' open':''}" aria-label="Filter CMO">${fltHead(open,'Filter',chips,nAct,'<button class="freset" data-act="cfreset">↺ Atur ulang</button>',[ms.length,allM,'modul'])}
  <div class="fbar"${open?'':' hidden'}>
- <span class="fg"><label for="c-th">Tahun</label><select class="sel" id="c-th" data-on="tahun">${yearsOpt().map(y=>`<option ${S.ui.tahun==y?'selected':''}>${y}</option>`).join('')}</select></span>
+ <span class="fg pm-year"><label for="c-th">Tahun</label><select class="sel" id="c-th" data-on="tahun">${yearsOpt().map(y=>`<option ${S.ui.tahun==y?'selected':''}>${y}</option>`).join('')}</select></span>
  ${perSeg('cpr',P.pr)}
  ${P.pr==='r'?`<span class="fg"><label for="c-d1">Dari</label><input type="date" class="sel act" id="c-d1" data-on="cd1" value="${P.d1}"></span><span class="fg"><label for="c-d2">s.d.</label><input type="date" class="sel act" id="c-d2" data-on="cd2" value="${P.d2}"></span>`:''}
- <span class="fg w2"><label for="c-pg">Program</label><select class="sel${act(S.ui.cprog)}" id="c-pg" data-on="cprog"><option value="">Semua program</option>${pv.map(p=>`<option value="${p.akr}" ${S.ui.cprog===p.akr?'selected':''}>${p.kode} · ${esc(p.nama)}</option>`).join('')}</select></span>
- ${lockU()?'':`<span class="fg"><label for="c-un">Unit</label><select class="sel${act(u)}" id="c-un" data-on="cunit"><option value="">Semua UE I</option>${ME.unit?`<option value="${esc(ME.unit)}" ${u===ME.unit?'selected':''}>${esc(ME.unit)} (unit Anda)</option>`:''}${UNITS.filter(x=>x!==ME.unit).map(x=>`<option ${u===x?'selected':''}>${x}</option>`).join('')}</select></span>`}
- <span class="fg fgr"><label for="c-ro">${lockU()?esc(lockU())+' sebagai':'Peran unit'}<span class="lhint" tabindex="0" role="note" data-tip="Pemilik probis utama dapat menambah, mengubah, dan menghapus data. UIC pendukung hanya dapat melihat." aria-label="Pemilik probis utama dapat menambah, mengubah, dan menghapus data. UIC pendukung hanya dapat melihat.">i</span></label><select class="sel${act(r)}" id="c-ro" data-on="crole" ${u?'':'disabled'}>${opts([['','Utama + pendukung'],['u','Pemilik probis utama'],['p','UIC pendukung']],r)}</select></span>
+ <span class="fg w2 pm-program"><label for="c-pg">Program</label><select class="sel${act(S.ui.cprog)}" id="c-pg" data-on="cprog"><option value="">Semua program</option>${pv.map(p=>`<option value="${p.akr}" ${S.ui.cprog===p.akr?'selected':''}>${p.kode} · ${esc(p.nama)}</option>`).join('')}</select></span>
+ ${lockU()?'':`<span class="fg pm-unit"><label for="c-un">Unit</label><select class="sel${act(u)}" id="c-un" data-on="cunit"><option value="">Semua UE I</option>${ME.unit?`<option value="${esc(ME.unit)}" ${u===ME.unit?'selected':''}>${esc(ME.unit)} (unit Anda)</option>`:''}${UNITS.filter(x=>x!==ME.unit).map(x=>`<option ${u===x?'selected':''}>${x}</option>`).join('')}</select></span>`}
+ <span class="fg fgr pm-role"><label for="c-ro">${lockU()?esc(lockU())+' sebagai':'Peran unit'}<span class="lhint" tabindex="0" role="note" data-tip="Pemilik probis utama dapat menambah, mengubah, dan menghapus data. UIC pendukung hanya dapat melihat." aria-label="Pemilik probis utama dapat menambah, mengubah, dan menghapus data. UIC pendukung hanya dapat melihat.">i</span></label><select class="sel${act(r)}" id="c-ro" data-on="crole" ${u?'':'disabled'}>${opts([['','Utama + pendukung'],['u','Pemilik probis utama'],['p','UIC pendukung']],r)}</select></span>
  <span class="fg w2"><label for="c-th2">Tahapan</label><select class="sel${act(S.ui.cth)}" id="c-th2" data-on="cth">${tahapOpts(S.ui.cth||'')}</select></span>
  ${tab!=='siklus'?`<span class="fg w2"><label for="c-mo">Modul</label>${modFilter(f)}</span>`:''}
  </div></div></section>`}
@@ -8193,7 +8200,7 @@ function viewCmo(tab,mk){
  };
  const head=mk?modHead(mk):vh('C','cmo','Change Management',descriptions[tab]||'Pengelolaan perubahan transformasi digital.','');
  const tabs=cmoTabs(tab,mk);
- if(tab==='cra')return head+tabs+'<div id="cm-cra-workspace" class="cm-cra-workspace"></div>';
+ if(tab==='cra')return head+tabs+'<div id="cm-cra-workspace" class="cm-cra-workspace" aria-label="Ruang kerja asesmen kesiapan perubahan"></div>';
  const ms=mk?[modOf(mk)].filter(Boolean):visMods(f).filter(cmoMatch).filter(m=>!S.ui.mod||m.kode===S.ui.mod);
  const mf=s=>ms.some(m=>m.kode===s.modul);
  let body='';
