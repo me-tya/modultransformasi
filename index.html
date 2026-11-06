@@ -8153,7 +8153,7 @@ function showGuideHome(){
   ['alur','Langkah Penggunaan',`<h3>Langkah praktis Project Management</h3>${flow(FLOW_PMO)}<h3>Langkah praktis Change Management</h3>${flow(FLOW_CMO)}`],
   ['gl','Istilah Aplikasi',gl]
  ];
- const body=`<div class="hp-goal"><i>?</i><div><b>Pusat Bantuan</b>Gunakan pusat bantuan untuk menemukan menu, mengikuti langkah pengisian, dan memahami tombol atau istilah pada aplikasi. Ikon <strong>?</strong> menjawab pertanyaan cara menggunakan fitur; tombol <strong>Cheatsheet</strong> khusus membahas framework dan tata kelola.</div></div><div class="hp-tabs" role="tablist">${panels.map((p,i)=>`<button role="tab" data-hp="${p[0]}" class="${i?'':'on'}">${p[1]}</button>`).join('')}</div>${panels.map((p,i)=>`<div class="hp-p${i?'':' on'}" data-hpp="${p[0]}">${p[2]}</div>`).join('')}`;
+ const body=`<div class="hp-goal"><i>?</i><div><b>Pusat Bantuan</b>Gunakan pusat bantuan untuk menemukan menu, mengikuti langkah pengisian, dan memahami tombol atau istilah pada aplikasi. Ikon <strong>?</strong> membantu cara menggunakan fitur; tombol <strong>Cheatsheet</strong> berisi framework, tata kelola, dan diagram alur koordinasi PMO–CMO.</div></div><div class="hp-tabs" role="tablist">${panels.map((p,i)=>`<button role="tab" data-hp="${p[0]}" class="${i?'':'on'}">${p[1]}</button>`).join('')}</div>${panels.map((p,i)=>`<div class="hp-p${i?'':' on'}" data-hpp="${p[0]}">${p[2]}</div>`).join('')}`;
  const ov=modal('<span class="exh"><span class="hlp sm" aria-hidden="true">?</span>Pusat Bantuan Modul Transformasi</span>',body,'',null,{size:'wide hp',cancel:'Tutup'});
  hpWire(ov);koWire(ov);
  ov.addEventListener('click',e=>{const h=e.target.closest('[data-hhelp]');if(h){ov.remove();showHelp(h.dataset.hhelp,h.dataset.t)}});
@@ -8688,6 +8688,6 @@ document.addEventListener('mouseover',function(e){const el=e.target.closest('a[h
  const target=tujuanMenu(h);if(target)el.title='Menuju menu '+target;
 });
 </script>
-<script src="cheatsheet.js?v=20261106-2"></script>
+<script src="cheatsheet.js?v=20261106-koord3"></script>
 
 
