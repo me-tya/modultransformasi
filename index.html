@@ -8179,7 +8179,7 @@ function cmoFlt(f,tab){const open=S.ui.fopen===1;const u=cU(),r=S.ui.crole||'';c
  </div></div></section>`}
 ACT.cfreset=()=>{S.ui.cunit='';S.ui.crole='';S.ui.mod='';S.ui.cpr='';S.ui.cprog='';S.ui.cth='';Object.keys(PG).forEach(x=>PG[x]=0);save();render()};
 function modFilter(f){const ms=visMods(f).filter(cmoMatch);return `<select class="sel${S.ui.mod?' act':''}" id="c-mo" data-on="mod" aria-label="Pilih modul"><option value="">Semua modul (${ms.length})</option>${ms.map(m=>`<option value="${m.kode}" ${S.ui.mod===m.kode?'selected':''}>${m.kode} · ${esc(m.nama)}</option>`).join('')}</select>`}
-function tJaringan(ms,mf,mk){const prev=S.ui.sub.rencana;S.ui.sub.rencana='jj';try{const out=tRencana(ms,mf,mk);const prefix='<div class="card">'+subNav('rencana',[['sh','Stakeholder'],['esm','Matriks Experience–Support'],['kom','Komunikasi'],['pel','Pelatihan'],['jj','Jejaring']],'sh')+'</div>';return out.startsWith(prefix)?out.slice(prefix.length):out;}finally{S.ui.sub.rencana=prev;}}
+function tJaringan(ms,mf,mk){const prev=S.ui.sub.rencana;S.ui.sub.rencana='jj';try{const out=tRencana(ms,mf,mk);const prefix='<div class="card">'+subNav('rencana',[['sh','Stakeholder'],['esm','Matriks Experience–Support'],['kom','Komunikasi'],['pel','Pelatihan']],'sh')+'</div>';return out.startsWith(prefix)?out.slice(prefix.length):out;}finally{S.ui.sub.rencana=prev;}}
 function viewCmo(tab,mk){
  const f=tab==='jaringan'?'rencana':tab==='pelaksanaan'?'impl':tab==='cra'?'adp':tab;
  const descriptions={
@@ -8276,7 +8276,7 @@ function tAdp(ms,mf,mk){const sub=S.ui.sub.adp||'dampak';
    cols:[...(mk?[]:[modCol('adp')]),{k:'nama',l:'Indikator keberhasilan',req:true,w:1},{k:'baseline',l:'Baseline'},{k:'tg',l:'Target',t:'num',req:true,r:i=>`<b>${i.arah==='↓'?'≤':'≥'} ${esc(i.tg)}</b>`},{k:'sat',l:'Satuan'},{k:'arah',l:'Arah',t:'sel',o:[['↑','↑ makin besar makin baik'],['↓','↓ makin kecil makin baik']]},{k:'metode',l:'Metode / alat ukur'},{k:'waktu',l:'Waktu pengukuran'},{k:'pic',l:'PIC'},{k:'bobot',l:'Bobot (%)',t:'num',req:true,num:1}]})}
  return out}
 /* --- Perencanaan --- */
-function tRencana(ms,mf,mk){const sub=S.ui.sub.rencana||'sh';let out=`<div class="card">${subNav('rencana',[['sh','Stakeholder'],['esm','Matriks Experience–Support'],['kom','Komunikasi'],['pel','Pelatihan'],['jj','Jejaring']],'sh')}</div>`;
+function tRencana(ms,mf,mk){const sub=S.ui.sub.rencana||'sh';let out=`<div class="card">${subNav('rencana',[['sh','Stakeholder'],['esm','Matriks Experience–Support'],['kom','Komunikasi'],['pel','Pelatihan']],'sh')}</div>`;
  if(sub==='sh'){out+=tbl('sh',{ent:'stakeholder',title:'Identifikasi Stakeholder',add:true,edit:true,del:true,wide:true,addLabel:'Stakeholder',list:()=>S.sh,rows:()=>S.sh.filter(mf),canAdd:()=>can('rencana','C',mk),canEdit:s=>can('rencana','U',s.modul),canDel:s=>can('rencana','D',s.modul),label:s=>s.rin,onSave:s=>{if(mk)s.modul=mk},
    notice:`<div class="note g" style="margin:10px 12px 0"><span>Centang kolom <b>Komunikasi</b> atau <b>Pelatihan</b> (paling kanan) untuk menduplikasi stakeholder ke tab Komunikasi atau Pelatihan. Posisi experience–support tampil di tab Matriks Experience–Support.</span></div>`,
    cols:[...(mk?[]:[modCol('rencana')]),{k:'kat',l:'Kategori',t:'sel',tbl:false,o:['Internal','Eksternal']},{k:'kel',l:'Kelompok',t:'sel',tbl:false,o:['Pimpinan tertinggi','Pimpinan','Middle Management','Pegawai','Tim Teknis','Pengguna utama','Pemerintah','Bisnis','Masyarakat','Pengguna eksternal','Pengawas']},
