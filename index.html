@@ -2347,7 +2347,7 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 </style>
 <script src="cra-question-bank.js"></script>
 <style id="cm-journey-style">
-.cm-journey{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;align-items:stretch;background:#fff;border:1px solid #dee5f1;border-radius:16px;padding:8px;margin:14px 0 20px;box-shadow:0 5px 20px rgba(14,35,72,.055)}
+.cm-journey{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;align-items:stretch;background:#fff;border:1px solid #dee5f1;border-radius:16px;padding:8px;margin:14px 0 20px;box-shadow:0 5px 20px rgba(14,35,72,.055)}
 .cm-step{min-width:0;min-height:56px;display:flex;justify-content:center;align-items:center;gap:8px;padding:9px 7px;border-radius:11px;text-decoration:none!important;color:#52617b;font-size:12.5px;font-weight:800;position:relative;transition:background .16s,color .16s,box-shadow .16s}
 .cm-step:hover{background:#eff4fc;color:#0b2447}.cm-step-number{display:grid;place-items:center;flex:0 0 24px;width:24px;height:24px;border-radius:50%;background:#edf2f9;color:#486080;font-size:11px;font-weight:900}
 .cm-step-label{line-height:1.3;text-align:left}.cm-step.on{background:linear-gradient(120deg,#0c244c,#1b477e);color:#fff;box-shadow:0 6px 16px rgba(13,40,71,.22)}
@@ -2359,7 +2359,7 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 /* Common compact filter: CMO inherits Project Management's dimensions and styling. */
 .flt.cm-unified .fbar{padding:10px 14px 12px!important;gap:9px 12px!important}.flt.cm-unified .fbar .fg{gap:4px}.flt.cm-unified .fbar .sel{height:36px!important;padding-right:8px}.flt.cm-unified .fbar .pseg{height:36px}.flt.cm-unified .fbar .pseg button{padding-inline:4px}.flt.cm-unified .ftop{padding-left:12px!important}.flt.cm-unified>.lp{padding-inline:12px!important}
 /* Keep CM navigation above CRA with PMO-like tab spacing. */
-.cm-journey{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:4px!important;margin:0!important;padding:6px!important;overflow:visible!important;border-radius:14px!important;box-shadow:0 1px 0 #fff inset,0 4px 14px rgba(11,31,69,.06)!important}.cm-step{min-width:0!important;min-height:40px!important;height:40px!important;flex:initial!important;gap:6px!important;padding:0 7px!important;font-size:12px!important;white-space:nowrap!important;text-align:center!important}.cm-step-label{white-space:nowrap!important;line-height:1.1!important;text-align:center!important}.cm-step-number{width:22px!important;height:22px!important;flex-basis:22px!important}.cm-step[title]{cursor:help}
+.cm-journey{display:grid!important;grid-template-columns:repeat(8,minmax(0,1fr))!important;gap:4px!important;margin:0!important;padding:6px!important;overflow:visible!important;border-radius:14px!important;box-shadow:0 1px 0 #fff inset,0 4px 14px rgba(11,31,69,.06)!important}.cm-step{min-width:0!important;min-height:40px!important;height:40px!important;flex:initial!important;gap:6px!important;padding:0 7px!important;font-size:12px!important;white-space:nowrap!important;text-align:center!important}.cm-step-label{white-space:nowrap!important;line-height:1.1!important;text-align:center!important}.cm-step-number{width:22px!important;height:22px!important;flex-basis:22px!important}.cm-step[title]{cursor:help}
 @media(max-width:1180px){.cm-journey{display:flex!important;overflow-x:auto!important;scrollbar-width:thin}.cm-step{flex:0 0 auto!important;min-width:125px!important;padding-inline:10px!important}}@media(max-width:650px){.cm-journey{margin:0!important}.cm-step{min-width:132px!important}.flt.cm-unified .fbar{padding:10px 12px 12px!important}}
 </style>
 <script src="cra-native.js?v=20261106-ux3"></script>
@@ -2383,10 +2383,10 @@ const LEVELS=['-','R','RU','CRU','CRUD'];
 const SCOPES=['Semua','Unit','Modul'];
 const SCOPE_DESK={Semua:'seluruh data',Unit:'data yang unitnya UIC Utama',Modul:'modul yang ditugaskan'};
 const UNREAD_SCOPED=['dash','porto','wbs','mil','risk','cr','crok','bukti','valid','lap','ref','adopsi','adp','reviu','usul','user','akses','sinkron','log'];
-const CMT=[['adp','ADP'],['rencana','Perencanaan'],['jaringan','Jaringan Perubahan'],['cra','CRA'],['pelaksanaan','Pelaksanaan'],['monev','Monev'],['closing','Closing']];
-const PMT=[['siklus','Overview','porto'],['portofolio','Portofolio','porto'],['program','Program','porto'],['perencanaan','Dokumen Proyek','charter'],['wbsplan','WBS','wbs'],['wbs','WBS & progres','wbs'],['bukti','Bukti Dukung','bukti'],['cr','Change Request','cr'],['milestone','Milestone','mil'],['risiko','Risiko & Isu','risk'],['laporan','Capaian TW','lap'],['narasi','Narasi T-Program','lap'],['oneonone','Jadwal 1-on-1','wbs'],['penutupan','Penutupan','porto'],['referensi','Referensi Kode','ref']];
+const CMT=[['adp','ADP'],['rencana','Perencanaan'],['jaringan','Jaringan Perubahan'],['cra','CRA'],['pelaksanaan','Pelaksanaan'],['monev','Monev'],['pasca','Evaluasi Pasca'],['closing','Penutupan CM']];
+const PMT=[['siklus','Overview','porto'],['portofolio','Portofolio','porto'],['program','Program','porto'],['perencanaan','Dokumen Proyek','charter'],['wbsplan','WBS','wbs'],['wbs','WBS & progres','wbs'],['bukti','Bukti Dukung','bukti'],['cr','Change Request','cr'],['milestone','Milestone','mil'],['risiko','Risiko & Isu','risk'],['laporan','Capaian TW','lap'],['narasi','Narasi T-Program','lap'],['oneonone','Jadwal 1-on-1','wbs'],['penutupan','Penutupan','porto'],['pascaproyek','Evaluasi Pascaproyek','porto'],['referensi','Referensi Kode','ref']];
 /* kelompok tab PMO mengikuti alur Draft KEP Kepala BaTii: perencanaan → pelaksanaan → pemantauan → penutupan */
-const PMG=[['siklus','Overview',0,['siklus']],['portofolio','Portofolio',0,['portofolio']],['program','Program',0,['program']],['plan','Perencanaan',1,['perencanaan','wbsplan']],['exec','Pelaksanaan',2,['wbs','narasi','bukti','cr']],['mon','Pemantauan',3,['milestone','risiko','laporan','oneonone']],['close','Penutupan',4,['penutupan']],['ref','Referensi',0,['referensi']]];
+const PMG=[['siklus','Overview',0,['siklus']],['portofolio','Portofolio',0,['portofolio']],['program','Program',0,['program']],['plan','Perencanaan',1,['perencanaan','wbsplan']],['exec','Pelaksanaan',2,['wbs','narasi','bukti','cr']],['mon','Pemantauan',3,['milestone','risiko','laporan','oneonone']],['close','Penutupan',4,['penutupan']],['eval','Evaluasi Pascaproyek',5,['pascaproyek']],['ref','Referensi',0,['referensi']]];
 const STN=[['set-pengguna','Pengguna','user'],['set-akses','Hak Akses Peran','akses'],['set-sinkron','Aturan Sinkron CM','sinkron'],['set-log','Log Aktivitas','log'],['set-db','Database','user']];
 const LV_UB=['—','Minor','Moderate','Significant'], LV_RS=['—','Rendah','Sedang','Tinggi'];
 const DIMS=[['P','Proses Bisnis'],['O','Organisasi'],['S','SDM'],['T','Teknologi'],['R','Regulasi']];
@@ -2441,7 +2441,7 @@ const APLIKASI={'CORE-72':'SIKD Single Window','CORE-95':'SIMPONI V2','CORE-170'
 
 /* ======================== seed ======================== */
 function seed(){
- const S={v:6,cfg:{rep:9,pdmp:true},ui:{tahun:2026,tw:3,prog:'',unit:'',umode:'up',lvm:'sd',lvn:10,wcm:'',wst:'',seg:'',mod:'',sub:{},ps:{},nav:{lainnya:1,trans:1},bseg:'Menunggu validasi',mseg:'all',rf:''},users:[],akses:{},programs:PROG0.map(p=>Object.assign({id:uid(),ket:''},p)),wbs:wbsFromData(),bukti:{},ms:{},kwideLinks:{},kwide:D0.K.map(x=>Object.assign({id:uid()},x)),oneonone:[],projectRisks:[],projectStakeholders:[],projectDecisions:[],risks:[],crs:[],usul:[],sub:[],ind:[],sh:[],impl:{},jj:[],jjMod:{},pantau:[],adopsi:[],tr:[],reviu:[],modMeta:{},log:[]};
+ const S={v:6,cfg:{rep:9,pdmp:true},ui:{tahun:2026,tw:3,prog:'',unit:'',umode:'up',lvm:'sd',lvn:10,wcm:'',wst:'',seg:'',mod:'',sub:{},ps:{},nav:{lainnya:1,trans:1},bseg:'Menunggu validasi',mseg:'all',rf:''},users:[],akses:{},programs:PROG0.map(p=>Object.assign({id:uid(),ket:''},p)),wbs:wbsFromData(),bukti:{},ms:{},kwideLinks:{},kwide:D0.K.map(x=>Object.assign({id:uid()},x)),oneonone:[],projectRisks:[],projectStakeholders:[],projectDecisions:[],risks:[],crs:[],usul:[],sub:[],ind:[],sh:[],impl:{},jj:[],jjMod:{},pantau:[],pasca:[],projectEval:[],adopsi:[],tr:[],reviu:[],modMeta:{},log:[]};
  const U=(email,nama,role,unit,sub,modules)=>S.users.push({id:uid(),email,pw:PW,nama,role,unit,sub:sub||'',modules:modules||[],aktif:true});
  U('superadmin@kemenkeu.go.id','Admin Sistem','SA','BaTii','Puspensi');
  U('pmo.kemenkeu@kemenkeu.go.id','PMO Kemenkeu (Pusmantap)','PMOK','BaTii','Pusmantap');
@@ -3039,7 +3039,7 @@ function onChange(el){const k=el.dataset.on,v=el.value;if(k==='impwbs')return;
  else if(k==='kepf'){const f=el.files[0];if(!f)return;if(f.size>(FB.on?7e5:1.5e6)){toast(FB.on?'Ukuran KEP maksimal 700 KB pada mode Firestore.':'Ukuran KEP maksimal 1,5 MB pada prototipe.');return}const rd=new FileReader();rd.onload=()=>{const j=jjm(el.dataset.m);j.kepFile=rd.result;j.kepName=f.name;log('Unggah KEP',f.name);save();toast('KEP terunggah.');render()};rd.readAsDataURL(f);return}
  save();render()}
 const jjm=mk=>S.jjMod[mk]||(S.jjMod[mk]={link:'',kepNo:'',kepTgl:'',kepFile:'',kepName:'',aktif:'Belum'});
-function vh(ic,cls,title,desc,acts){if(cls==='pmo'&&typeof VIEW!=='undefined'&&VIEW.startsWith('pmo-')&&typeof PMG!=='undefined'){let k=VIEW.slice(4);if(k==='charter')k='perencanaan';const g=PMG.find(x=>x[3].includes(k));if(g&&g[1]!==String(title).replace(/<[^>]+>/g,'')){const pt=String(title).replace(/<[^>]+>/g,'');desc=`<b class="vh-sub">${esc(pt)}</b><span class="vh-dot">·</span>${desc}`;title=g[1]}if(g)ic=g[2]?String(g[2]):g[1].charAt(0)}const tt=esc(String(title).replace(/<[^>]+>/g,''));if(cls==='pmo'&&typeof oneBadge==='function'){const ob=oneBadge();if(ob)acts=(acts||'')+'<span class="one-slot">'+ob+'</span>'}return `<div class="vh"><div class="pic ${cls}">${ic}</div><div style="min-width:0"><h1>${title}<button class="hlp" data-act="help" data-v="${esc(typeof VIEW!=='undefined'?VIEW:'')}" data-t="${tt}" title="Panduan cara mengisi" aria-label="Panduan cara mengisi ${tt}">?</button></h1><p title="${esc(String(desc).replace(/<[^>]+>/g,''))}">${desc}</p></div>${acts?`<div class="acts">${acts}</div>`:''}</div><!--vh-->`}
+function vh(ic,cls,title,desc,acts){if(cls==='pmo'&&typeof VIEW!=='undefined'&&VIEW.startsWith('pmo-')&&typeof PMG!=='undefined'){let k=VIEW.slice(4);if(k==='charter')k='perencanaan';const g=PMG.find(x=>x[3].includes(k));if(g&&g[1]!==String(title).replace(/<[^>]+>/g,'')){const pt=String(title).replace(/<[^>]+>/g,'');desc=`<b class="vh-sub">${esc(pt)}</b><span class="vh-dot">·</span>${desc}`;title=g[1]}if(g)ic=g[2]?String(g[2]):g[1].charAt(0)}const tt=esc(String(title).replace(/<[^>]+>/g,''));if(cls==='pmo'&&typeof oneBadge==='function'){const ob=oneBadge();if(ob)acts=(acts||'')+'<span class="one-slot">'+ob+'</span>'}return `<div class="vh"><div class="pic ${cls}">${ic}</div><div style="min-width:0"><h1>${title}<button class="hlp" data-act="help" data-v="${esc(typeof VIEW!=='undefined'?VIEW:'')}" data-t="${tt}" title="Panduan cara mengisi" aria-label="Panduan cara mengisi ${tt}">?</button>${(cls==='pmo'||cls==='cmo')?'<button type="button" class="txcs-entry" data-act="cheatsheet" data-kind="'+cls+'" title="Framework dan tata kelola manajemen">Cheatsheet</button>':''}</h1><p title="${esc(String(desc).replace(/<[^>]+>/g,''))}">${desc}</p></div>${acts?`<div class="acts">${acts}</div>`:''}</div><!--vh-->`}
 function setTabs(){return `<nav class="ptabs" aria-label="Pengaturan">${STN.filter(t=>lv(t[2])!=='-').map(([k,l])=>`<a href="#${k}" class="${k===VIEW?'on':''}"><span>${l}</span></a>`).join('')}</nav>`}
 function subNav(key,list,def){const cur=S.ui.sub[key]||def;return `<div class="subt" role="tablist">${list.map(([k,l])=>`<a data-act="sub" data-k="${key}" data-v="${k}" class="${cur===k?'on':''}" role="tab" aria-selected="${cur===k}">${l}</a>`).join('')}</div>`}
 ACT.tsort=el=>{const id=el.dataset.t,k=el.dataset.k;S.ui.sort=S.ui.sort||{};const cur=sortOf(id);S.ui.sort[id]=cur&&cur.k===k?(cur.d==='asc'?{k,d:'desc'}:{k:'',d:''}):{k,d:'asc'};if(!S.ui.sort[id].k)S.ui.sort[id]={k:'_none',d:''};PG[id]=0;save();redrawT(id);const sel=document.querySelector(`[data-wsort="${id}"]`);if(sel)sel.value=sortVal(id)};
@@ -3751,7 +3751,21 @@ function pmoTabs(cur0){let cur=VIEW.startsWith('pmo-')?VIEW.slice(4):cur0;if(cur
  const gc=x=>x.ks.reduce((a,k)=>a+(+cnt[k]||0),0);
  const sub=on&&on.ks.length>1?`<div class="subt ctabs" role="tablist" aria-label="${esc(on.g[1])}">${on.ks.map(k=>`<a href="#pmo-${k}" class="${k===cur?'on':''}" role="tab" aria-selected="${k===cur}">${L(k)}${cnt[k]!==''&&cnt[k]!=null&&+cnt[k]>0?` <b class="sb">${cnt[k]}</b>`:''}</a>`).join('')}</div>`:'';
  return `<nav class="ptabs" aria-label="Tab PMO">${G.map(x=>{const n=x.g[2];const c=x.ks.length>1?gc(x):cnt[x.ks[0]];const tgt=x.ks.includes(cur)?cur:x.ks[0];return `<a href="#pmo-${tgt}" class="${x===on?'on':''}"><span>${n?`<em>${n}</em> `:''}${x.g[1]}</span>${c!==''&&c!=null&&+c>0?` <b>${c}</b>`:''}</a>`}).join('')}</nav>`+pmoFilterPanel(cur)+sub}
-function viewPmo(tab){const f={charter:pCharter,siklus:pOverview,portofolio:pPorto,program:pProgram,perencanaan:pPerencanaan,wbsplan:pWbs,wbs:pWbs,oneonone:pOneOnOne,milestone:pMilestone,risiko:pRisiko,cr:pCr,bukti:pBukti,laporan:pLaporan,narasi:pNarasi,penutupan:pPenutupan,referensi:pRef}[tab];return f?f():''}
+/* Evaluasi Pascaproyek PMO — KMK v6, dilaksanakan paling cepat 3 bulan setelah proyek ditutup. */
+function pEval(){
+ S.projectEval=S.projectEval||[];
+ return vh('E','pmo','Evaluasi Pascaproyek','Penilaian kebermanfaatan proyek paling cepat 3 bulan setelah proyek ditutup; berbeda dari evaluasi adopsi dan penutupan CM.')+pmoTabs('pascaproyek')+
+ '<div class="note i"><span><b>Ketentuan draft KMK:</b> PMO Kemenkeu mengoordinasikan evaluasi pascaproyek paling cepat <b>3 bulan setelah penutupan proyek</b>. Fokus penilaian meliputi efisiensi biaya, perbaikan proses bisnis, dan pemenuhan layanan. Dokumentasikan temuan serta rekomendasi tindak lanjut. Penutupan CM dikelola secara terpisah.</span></div>'+
+ tbl('projectEval',{ent:'evaluasi pascaproyek',title:'Register Evaluasi Manfaat Proyek',add:true,edit:true,del:true,wide:true,addLabel:'Hasil Evaluasi',list:()=>S.projectEval,rows:()=>S.projectEval,
+ canAdd:()=>['SA','PMOK','PMOU'].includes(ME.role),canEdit:()=>['SA','PMOK','PMOU'].includes(ME.role),canDel:()=>['SA','PMOK'].includes(ME.role),label:x=>x.proyek||x.program,
+ cols:[{k:'program',l:'Program',t:'sel',o:()=>progVis().map(p=>[p.akr,p.nama]),req:true},
+ {k:'proyek',l:'Proyek / Modul',req:true,w:1},{k:'tglTutup',l:'Tanggal penutupan proyek',t:'date'},
+ {k:'tglEval',l:'Tanggal evaluasi',t:'date'},{k:'biaya',l:'Efisiensi biaya',t:'ta',w:1},
+ {k:'proses',l:'Efisiensi proses bisnis',t:'ta',w:1},{k:'layanan',l:'Pemenuhan layanan',t:'ta',w:1},
+ {k:'hasil',l:'Hasil dan manfaat',t:'ta',w:1},{k:'rtl',l:'Rekomendasi tindak lanjut',t:'ta',w:1},
+ {k:'st',l:'Status evaluasi',t:'sel',o:['Direncanakan','Berjalan','Selesai'],r:x=>chipSt(x.st||'Direncanakan')}]});
+}
+function viewPmo(tab){const f={charter:pCharter,siklus:pOverview,portofolio:pPorto,program:pProgram,perencanaan:pPerencanaan,wbsplan:pWbs,wbs:pWbs,oneonone:pOneOnOne,milestone:pMilestone,risiko:pRisiko,cr:pCr,bukti:pBukti,laporan:pLaporan,narasi:pNarasi,penutupan:pPenutupan,pascaproyek:pEval,referensi:pRef}[tab];return f?f():''}
 /* --- Portofolio --- */
 function pbChart(PV,items,M,tw,jenis='Berkelanjutan'){
  const L=PV.filter(p=>jenis==='Semua'||p.jenis===jenis).map(p=>{const s=sumTR(items.filter(w=>w.prog===p.akr),M);const pItems=items.filter(w=>w.prog===p.akr);const has=!!s.a,missing=!pItems.length?'Belum ada WBS':pItems.every(w=>!(+w.w>0))?'Bobot WBS belum diisi':'Bulan target/bobot belum lengkap';const v=has?s.r/s.a*100:0,t=has?s.t/s.a*100:0,g=v-t;
@@ -7357,7 +7371,7 @@ const HELP={
 };
 function helpOf(v){let h=HELP[v];if(h&&h.ref)h=HELP[h.ref];if(!h&&/^modul-/.test(v))h=HELP['cmo-'+(v.split('-t-')[1]||'siklus')];return h}
 function showHelpLegacy(v,title){const h=helpOf(v)||{d:'Halaman ini menampilkan data sesuai peran Anda.',c:['Gunakan filter di bagian atas untuk mempersempit data.','Tombol tambah/ubah hanya muncul bila peran Anda memiliki hak tersebut.'],e:[]};
- modal(`<span class="exh"><span class="hlp sm" aria-hidden="true">?</span>Panduan · ${esc(title||'')}</span>`,`<p style="margin:0 0 12px">${esc(h.d)}</p><h4 class="hh">Cara mengisi</h4><ol class="hst">${h.c.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>
+ modal(`<span class="exh"><span class="hlp sm" aria-hidden="true">?</span>Bantuan Penggunaan · ${esc(title||'')}</span>`,`<p style="margin:0 0 12px">${esc(h.d)}</p><h4 class="hh">Cara mengisi</h4><ol class="hst">${h.c.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>
  ${h.e&&h.e.length?`<h4 class="hh">Contoh dari program Digitalisasi Office Automation</h4><div class="exw">${h.e.map(([l,t])=>exF(esc(l),esc(t))).join('')}</div>`:''}
  ${h.x?`<h4 class="hh">Contoh pengisian lengkap</h4><div class="hxb">${h.x.map(k=>`<button class="btn sm" data-act="chex" data-k="${k}">💡 ${EXTT[k]}</button>`).join('')}</div>`:''}`,'',null,{size:'wide',cancel:'Tutup'})}
 /* ===== Contoh isian per formulir (key, label, wajib, cara mengisi, contoh) =====
@@ -7979,6 +7993,9 @@ const GROLES=[['Super Admin (SA)','Akses penuh, termasuk Pengaturan.'],['PMO Kem
 let CURF=null;
 const HP_OK=g=>{try{return !g||/^modul-/.test(g)||allowedViews().includes(g)}catch(e){return true}};
 const hpGo=(g,l,sub)=>g&&HP_OK(g)?`<button class="hp-go" data-hgo="${esc(g)}"${sub?` data-hsub="${esc(sub)}"`:''}><span>${esc(l||'Buka')}</span><i aria-hidden="true">›</i></button>`:'';
+
+GUIDE['cmo-pasca']={tujuan:'Mengisi hasil evaluasi pascaimplementasi perubahan paling cepat satu bulan setelah sistem baru diimplementasikan.',alur:[['Pilih modul','Pilih modul pada filter CMO.'],['Catat waktu implementasi dan evaluasi','Masukkan tanggal go-live dan pelaksanaan evaluasi.'],['Nilai hasil perubahan','Isi keberlanjutan adopsi, perilaku kerja baru, isu/resistensi, serta kesiapan kanal resmi.'],['Simpan dan tindak lanjuti','Dokumentasikan rekomendasi dan tandai Selesai setelah penilaian tuntas.'],['Lanjut ke Penutupan CM','Gunakan hasil evaluasi sebagai dasar serah terima pendampingan ke operasional.','cmo-closing','Ke Penutupan']]};
+GUIDE['pmo-pascaproyek']={tujuan:'Mencatat hasil evaluasi manfaat proyek paling cepat tiga bulan setelah penutupan proyek.',alur:[['Tambah Hasil Evaluasi','Pilih program dan tuliskan proyek atau modul yang dievaluasi.'],['Isi tanggal','Catat tanggal penutupan proyek dan pelaksanaan evaluasi.'],['Nilai manfaat','Lengkapi efisiensi biaya, proses bisnis, dan pemenuhan layanan.'],['Simpan hasil','Catat hasil, rekomendasi tindak lanjut, dan status evaluasi.']]};
 function hpGuideOf(v){
  let g=GUIDE[v];
  if(!g&&/^modul-/.test(v)){const tb=v.split('-t-')[1]||'siklus';g=GUIDE['cmo-'+tb]}
@@ -8017,7 +8034,7 @@ function showHelp(v,title){
   ['isi','Contoh Isian',(ids.length?hpFormsHtml(ids):'')+wiz,ids.length+((g.x&&g.x.length)?g.x.length:0)]
  ].filter(p=>p[0]==='ring'||p[2]);
  const body=`<div class="hp-tabs" role="tablist">${panels.map((p,i)=>`<button role="tab" data-hp="${p[0]}" class="${i?'':'on'}">${p[1]}${p[3]?`<b>${p[3]}</b>`:''}</button>`).join('')}</div>${panels.map((p,i)=>`<div class="hp-p${i?'':' on'}" data-hpp="${p[0]}">${p[2]}</div>`).join('')}`;
- const ov=modal(`<span class="exh"><span class="hlp sm" aria-hidden="true">?</span>Panduan · ${esc(title||'')}</span>`,body,'',null,{size:'wide hp',cancel:'Tutup',extra:`<button class="btn hp-btn-ex" data-mx="home">📖 Pusat Bantuan (semua menu)</button>`,onExtra:k=>{if(k==='home'){setTimeout(showGuideHome,0)}}});
+ const ov=modal(`<span class="exh"><span class="hlp sm" aria-hidden="true">?</span>Bantuan Penggunaan · ${esc(title||'')}</span>`,body,'',null,{size:'wide hp',cancel:'Tutup',extra:`<button class="btn hp-btn-ex" data-mx="home">📖 Pusat Bantuan (semua menu)</button>`,onExtra:k=>{if(k==='home'){setTimeout(showGuideHome,0)}}});
  hpWire(ov);return ov}
 function hpSwitch(ov,key){ov.querySelectorAll('.hp-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.hp===key));ov.querySelectorAll('.hp-p').forEach(p=>p.classList.toggle('on',p.dataset.hpp===key))}
 function hpWire(ov){
@@ -8111,12 +8128,11 @@ function showGuideHome(){
  const gl=`<table class="hp-tbl"><tbody>${GLOSS.map(([a,b])=>`<tr><td><span class="hp-key">${esc(a)}</span></td><td>${esc(b)}</td></tr>`).join('')}</tbody></table>`;
  const rl=`<table class="hp-tbl" style="margin-top:12px"><thead><tr><th>Peran</th><th>Tugas utama</th></tr></thead><tbody>${GROLES.map(([a,b])=>`<tr><td><span class="hp-key">${esc(a)}</span></td><td>${esc(b)}</td></tr>`).join('')}</tbody></table>`;
  const panels=[
-  ['alur','Tahapan PMO dan CMO',flowStagesHtml()],
-  ['koord','Alur Koordinasi',koHtml()],
-  ['peta','Peta Menu',`<p class="hp-lead">Semua menu yang boleh Anda buka. Tombol <b>Panduan</b> menampilkan penjelasan lengkap halaman itu.</p>${peta}`],
-  ['gl','Istilah & Peran',`${gl}${rl}`]
+  ['peta','Peta Menu',`<p class="hp-lead">Temukan menu yang tersedia bagi peran Anda, lalu klik <b>Buka</b> atau <b>Panduan</b> untuk mengetahui langkah penggunaan fitur.</p>${peta}`],
+  ['alur','Langkah Penggunaan',`<h3>Langkah praktis Project Management</h3>${flow(FLOW_PMO)}<h3>Langkah praktis Change Management</h3>${flow(FLOW_CMO)}`],
+  ['gl','Istilah Aplikasi',gl]
  ];
- const body=`<div class="hp-goal"><i>?</i><div><b>Pusat Bantuan</b>Ikuti alur di bawah, atau buka Peta Menu untuk melihat fungsi tiap halaman. Di setiap halaman ada tombol <strong>?</strong> di judul untuk panduan khusus halaman tersebut, dan tombol <strong>💡 Contoh pengisian</strong> di setiap formulir.</div></div><div class="hp-tabs" role="tablist">${panels.map((p,i)=>`<button role="tab" data-hp="${p[0]}" class="${i?'':'on'}">${p[1]}</button>`).join('')}</div>${panels.map((p,i)=>`<div class="hp-p${i?'':' on'}" data-hpp="${p[0]}">${p[2]}</div>`).join('')}`;
+ const body=`<div class="hp-goal"><i>?</i><div><b>Pusat Bantuan</b>Gunakan pusat bantuan untuk menemukan menu, mengikuti langkah pengisian, dan memahami tombol atau istilah pada aplikasi. Ikon <strong>?</strong> menjawab pertanyaan cara menggunakan fitur; tombol <strong>Cheatsheet</strong> khusus membahas framework dan tata kelola.</div></div><div class="hp-tabs" role="tablist">${panels.map((p,i)=>`<button role="tab" data-hp="${p[0]}" class="${i?'':'on'}">${p[1]}</button>`).join('')}</div>${panels.map((p,i)=>`<div class="hp-p${i?'':' on'}" data-hpp="${p[0]}">${p[2]}</div>`).join('')}`;
  const ov=modal('<span class="exh"><span class="hlp sm" aria-hidden="true">?</span>Pusat Bantuan Modul Transformasi</span>',body,'',null,{size:'wide hp',cancel:'Tutup'});
  hpWire(ov);koWire(ov);
  ov.addEventListener('click',e=>{const h=e.target.closest('[data-hhelp]');if(h){ov.remove();showHelp(h.dataset.hhelp,h.dataset.t)}});
@@ -8127,6 +8143,7 @@ function showFormEx(id){
  modal(`<span class="exh"><span class="hlp sm" aria-hidden="true">?</span>Contoh isian · ${esc(fx.title)}</span>`,hpFormsHtml([id],id),'',null,{size:'wide hp',cancel:'Tutup'})}
 ACT.help=el=>showHelp(el.dataset.v,el.dataset.t);
 ACT.helphome=()=>showGuideHome();
+ACT.cheatsheet=el=>{if(typeof window.openTxCheatsheet==='function')window.openTxCheatsheet(el.dataset.kind||(/^(pmo-)/.test(VIEW)?'pmo':'cmo'));else toast('Cheatsheet belum termuat. Muat ulang halaman.');};
 function fexOf(c){if(!CURF||!FORMEX[CURF])return '';const f=FORMEX[CURF].f.find(x=>x[0]===c.k);return f&&f[4]?f[4]:''}
 
 
@@ -8161,7 +8178,7 @@ const capSt=c=>c==null?'Belum diukur':c>=100?'Tercapai':c>=80?'Mendekati':'Di ba
 function idxMod(mk){const is=S.ind.filter(i=>i.modul===mk);let w=0,s=0;is.forEach(i=>{const c=capOf(i);if(c!=null){w+=+i.bobot||0;s+=c*(+i.bobot||0)}});return w?s/w:null}
 function adoptMod(mk){const a=S.adopsi.filter(x=>x.modul===mk);if(!a.length)return null;const l=a[a.length-1];return {per:l.per,p:l.tu?l.au/l.tu*100:null,t:l.tt?l.at/l.tt*100:null}}
 const adpSt=mk=>(S.modMeta[mk]||{}).adp||'Draft';
-const CM_TAB_HELP={adp:'Identifikasi perubahan As-Is dan To-Be, dampak POSTeR, risiko, serta indikator keberhasilan.',rencana:'Petakan pemangku kepentingan dan susun strategi komunikasi serta pelatihan perubahan.',jaringan:'Kelola peran sponsor, Change Champion, T-Agent, penugasan, dan aktivasi jaringan perubahan.',cra:'Ukur kesiapan pengguna melalui survei, analisis respons, dan rencana tindak lanjut.',pelaksanaan:'Pantau realisasi komunikasi dan pelatihan serta bukti pelaksanaannya.',monev:'Evaluasi efektivitas intervensi, tingkat adopsi, dan pencapaian indikator perubahan.',closing:'Pastikan transisi, serah terima kepemilikan perubahan, dan keberlanjutan manfaat.'};
+const CM_TAB_HELP={adp:'Identifikasi perubahan As-Is dan To-Be, dampak POSTeR, risiko, serta indikator keberhasilan.',rencana:'Petakan pemangku kepentingan dan susun strategi komunikasi serta pelatihan perubahan.',jaringan:'Kelola peran sponsor, Change Champion, T-Agent, penugasan, dan aktivasi jaringan perubahan.',cra:'Ukur kesiapan pengguna melalui survei, analisis respons, dan rencana tindak lanjut.',pelaksanaan:'Pantau realisasi komunikasi dan pelatihan serta bukti pelaksanaannya.',monev:'Pantau komunikasi, pelatihan, tindak lanjut, serta indikator keberhasilan secara berkala.',pasca:'Evaluasi keberlanjutan adopsi paling cepat satu bulan setelah implementasi, sebagai dasar penutupan CM.',closing:'Tutup pendampingan transisi setelah evaluasi, kesiapan kanal layanan resmi, dan pengalihan tanggung jawab operasional.'};
 function cmoTabs(tab,mk){return `<nav class="cm-journey" aria-label="Menu Change Management">${CMT.map(([k,l],i)=>{const href=mk?`#modul-${mk}-t-${k}`:`#cmo-${k}`;const tip=CM_TAB_HELP[k]||l;return `<a href="${href}" class="cm-step ${k===tab?'on':''}" ${k===tab?'aria-current="page"':''} title="${esc(tip)}" aria-label="${esc(l+': '+tip)}"><span class="cm-step-number">${i+1}</span><span class="cm-step-label">${l}</span></a>`}).join('')}</nav>`}
 const modRel=(m,u)=>!u?'':m.uicUnits.includes(u)?'u':unitsOf(m.pend).includes(u)?'p':'';
 const cU=()=>lockU()||S.ui.cunit||'';
@@ -8188,15 +8205,16 @@ ACT.cfreset=()=>{S.ui.cunit='';S.ui.crole='';S.ui.mod='';S.ui.cpr='';S.ui.cprog=
 function modFilter(f){const ms=visMods(f).filter(cmoMatch);return `<select class="sel${S.ui.mod?' act':''}" id="c-mo" data-on="mod" aria-label="Pilih modul"><option value="">Semua modul (${ms.length})</option>${ms.map(m=>`<option value="${m.kode}" ${S.ui.mod===m.kode?'selected':''}>${m.kode} · ${esc(m.nama)}</option>`).join('')}</select>`}
 function tJaringan(ms,mf,mk){const prev=S.ui.sub.rencana;S.ui.sub.rencana='jj';try{const out=tRencana(ms,mf,mk);const prefix='<div class="card">'+subNav('rencana',[['sh','Stakeholder'],['esm','Matriks Experience–Support'],['kom','Komunikasi'],['pel','Pelatihan']],'sh')+'</div>';return out.startsWith(prefix)?out.slice(prefix.length):out;}finally{S.ui.sub.rencana=prev;}}
 function viewCmo(tab,mk){
- const f=tab==='jaringan'?'rencana':tab==='pelaksanaan'?'impl':tab==='cra'?'adp':tab;
+ const f=tab==='jaringan'?'rencana':tab==='pelaksanaan'?'impl':tab==='cra'?'adp':tab==='pasca'?'monev':tab;
  const descriptions={
  adp:'Analisis Dampak Perubahan (ADP) — As-Is, To-Be, POSTeR, risiko, dan indikator keberhasilan.',
  rencana:'Perencanaan perubahan — stakeholder, matriks experience–support, komunikasi, dan pelatihan.',
  jaringan:'Pembentukan dan aktivasi jaringan perubahan, KEP penugasan, serta kesiapan T-Agent per unit.',
  cra:'Asesmen kesiapan perubahan: bank pertanyaan berbasis peran, survei, analitik, action plan, dan perbandingan pengukuran.',
  pelaksanaan:'Realisasi kegiatan komunikasi dan pelatihan berdasarkan perencanaan perubahan.',
- monev:'Monitoring dan evaluasi pelaksanaan, adopsi, serta keberhasilan perubahan.',
- closing:'Transisi dan transfer kepemilikan perubahan kepada pemilik operasional.'
+ monev:'Pemantauan berkala strategi komunikasi, pelatihan, dan indikator keberhasilan perubahan.',
+ pasca:'Evaluasi keberlanjutan adopsi dan kesiapan kanal operasional paling cepat satu bulan setelah implementasi.',
+ closing:'Penutupan pendampingan transisi dan serah terima ke pemilik proses bisnis serta unit operasional.'
  };
  const head=mk?modHead(mk):vh('C','cmo','Change Management',descriptions[tab]||'Pengelolaan perubahan transformasi digital.','');
  const tabs=cmoTabs(tab,mk);
@@ -8206,12 +8224,12 @@ function viewCmo(tab,mk){
  let body='';
  if(lv(f)==='-')body='<div class="card empty">Peran Anda tidak memiliki akses ke tab ini.</div>';
  else if(!ms.length)body='<div class="card empty">Belum ada modul dalam cakupan akses Anda.</div>';
- else body=({adp:tAdp,rencana:tRencana,jaringan:tJaringan,pelaksanaan:tImpl,monev:tMonev,closing:tClosing}[tab]||(()=>''))(ms,mf,mk);
+ else body=({adp:tAdp,rencana:tRencana,jaringan:tJaringan,pelaksanaan:tImpl,monev:tMonev,pasca:tPasca,closing:tClosing}[tab]||(()=>''))(ms,mf,mk);
  return head+tabs+(mk?'':cmoFlt(f,tab))+body;
 }
 function modHead(mk){const m=modOf(mk);if(!m)return `<div class="card empty">Modul ${esc(mk)} tidak ditemukan (item ADP mungkin diarsipkan).</div>`;const sm=S.sub.filter(s=>s.modul===mk);
  return `<div class="vh"><a href="#cmo-siklus" class="btn sm">‹ Semua modul</a></div><div class="mhead"><div class="pic cmo" style="width:44px;height:44px;border-radius:11px;display:grid;place-items:center;color:#fff;font-weight:800">M</div>
- <div style="min-width:0"><div class="s">${esc(m.aplikasi)} › Modul</div><h1 style="font-size:19px;margin:0;font-weight:800">${esc(m.nama)} <span class="code">${m.kode}</span><button class="hlp" data-act="help" data-v="${esc(VIEW)}" data-t="Ruang kerja modul" title="Panduan ruang kerja modul" aria-label="Panduan ruang kerja modul">?</button></h1><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">${sm.map((s,i)=>`<span class="smc"><i>${m.kode}.${i+1}</i>${esc(s.nama)}</span>`).join('')||'<span class="chip c-warn">Sub modul belum diisi di ADP</span>'}</div></div>
+ <div style="min-width:0"><div class="s">${esc(m.aplikasi)} › Modul</div><h1 style="font-size:19px;margin:0;font-weight:800">${esc(m.nama)} <span class="code">${m.kode}</span><button class="hlp" data-act="help" data-v="${esc(VIEW)}" data-t="Ruang kerja modul" title="Panduan ruang kerja modul" aria-label="Panduan ruang kerja modul">?</button><button type="button" class="txcs-entry" data-act="cheatsheet" data-kind="cmo" title="Framework dan tata kelola manajemen perubahan">Cheatsheet</button></h1><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">${sm.map((s,i)=>`<span class="smc"><i>${m.kode}.${i+1}</i>${esc(s.nama)}</span>`).join('')||'<span class="chip c-warn">Sub modul belum diisi di ADP</span>'}</div></div>
  <div class="kvs"><div><span>Program</span>${progLabel(m.prog)}</div><div><span>UIC Utama</span>${esc(short(m.uic,50))}</div><div><span>Pendamping CM</span>Pusmantap (advisory)</div><div><span>Status ADP</span>${chipSt(adpSt(mk))}</div>${relChip(m)?`<div><span>Peran unit Anda</span>${relChip(m)}</div>`:''}</div></div>`}
 /* --- Siklus --- */
 function stgBar(m,s){const it=m.st[s];if(!it.length)return `<span title="${s}: belum ada item WBS" style="background:repeating-linear-gradient(135deg,#FCF1DC 0 3px,#F2D9A6 3px 6px)"></span>`;const d=it.filter(w=>doneAt(w,12)).length;return `<span title="${s}: ${d}/${it.length} selesai"><i style="width:${d/it.length*100}%"></i></span>`}
@@ -8350,11 +8368,29 @@ function tMonev(ms,mf,mk){const sub=S.ui.sub.monev||'lak';let out=`<div class="c
    cols:[...(mk?[]:[{k:'modul',l:'Modul',frm:false,r:i=>`<span class="code">${esc(i.modul)}</span>`}]),{k:'nama',l:'Indikator (dari ADP)',ro:true,w:1},{k:'baseline',l:'Baseline',ro:true},{k:'tg',l:'Target',ro:true,r:i=>`${i.arah==='↓'?'≤':'≥'} ${esc(i.tg)} <span class="sm">${esc(i.sat)}</span>`},{k:'bobot',l:'Bobot',ro:true,r:i=>esc(i.bobot)+'%'},{k:'metode',l:'Metode',ro:true},
     {k:'real',l:'Realisasi',t:'num',r:i=>i.real===''?'—':`<b>${esc(i.real)}</b>`},{k:'per',l:'Periode ukur',t:'sel',o:['','TW1 2026','TW2 2026','TW3 2026','TW4 2026','TW1 2027']},{k:'_c',l:'Capaian',frm:false,r:i=>{const c=capOf(i);return c==null?'—':`<div class="pg"><div class="bar"><i style="width:${c}%;background:${c>=100?'var(--ok)':c>=80?'#E9A23B':'var(--bad)'}"></i></div><b>${pct(c)}</b></div>`}},{k:'_s',l:'Status',frm:false,r:i=>chipSt(capSt(capOf(i))),x:i=>capSt(capOf(i))},{k:'cat',l:'Catatan',t:'ta'}]});}
  return out}
+/* Evaluasi Pascaimplementasi CM — KMK v6, paling cepat 1 bulan setelah implementasi. */
+function tPasca(ms,mf,mk){
+ S.pasca=S.pasca||[];
+ const items=S.pasca.filter(mf),done=items.filter(x=>x.st==='Selesai').length,run=items.filter(x=>x.st==='Berjalan').length;
+ const kpi='<div class="kpis"><div class="kpi"><div class="l">Catatan evaluasi</div><div class="v">'+items.length+'</div><div class="d">Hasil evaluasi terdata</div></div>'+
+ '<div class="kpi"><div class="l">Evaluasi selesai</div><div class="v" style="color:var(--ok)">'+done+'</div><div class="d">Dapat menjadi dasar proses closing CM</div></div>'+
+ '<div class="kpi"><div class="l">Sedang dievaluasi</div><div class="v">'+run+'</div><div class="d">Periksa isu, adopsi, dan kesiapan kanal resmi</div></div></div>';
+ return '<div class="note i"><span><b>Evaluasi Pascaimplementasi Perubahan:</b> dilaksanakan paling cepat <b>1 (satu) bulan sejak implementasi sistem baru</b>. CMO Kemenkeu bersama CMO Unit, pemilik proses bisnis, dan unit teknis menilai keberlanjutan adopsi, perilaku kerja baru, efektivitas penanganan isu dan resistensi, serta kesiapan peralihan pendampingan transisi menuju layanan operasional reguler. Hasilnya menjadi dasar Penutupan CM. <button type="button" data-act="cheatsheet" data-kind="cmo" class="txcs-entry">Cheatsheet</button></span></div>'+kpi+
+ tbl('pasca',{ent:'evaluasi pascaimplementasi',title:'Kertas Kerja Evaluasi Pascaimplementasi',add:true,edit:true,del:true,wide:true,addLabel:'Evaluasi Perubahan',list:()=>S.pasca,rows:()=>S.pasca.filter(mf),canAdd:()=>can('monev','C',mk),canEdit:x=>can('monev','U',x.modul),canDel:x=>can('monev','D',x.modul),label:x=>x.aspek||x.modul,onSave:x=>{if(mk)x.modul=mk},
+ cols:[...(mk?[]:[modCol('monev')]),{k:'aspek',l:'Subjek / perubahan',req:true,w:1},
+ {k:'goLive',l:'Tanggal implementasi',t:'date'},{k:'tgl',l:'Tanggal evaluasi',t:'date'},
+ {k:'adopsi',l:'Keberlanjutan adopsi',t:'ta',w:1},{k:'perilaku',l:'Proses & perilaku kerja baru',t:'ta',w:1},
+ {k:'isu',l:'Efektivitas penanganan isu / resistensi',t:'ta',w:1},
+ {k:'kanal',l:'Kesiapan kanal layanan resmi',t:'ta',w:1},
+ {k:'rtl',l:'Tindak lanjut / rekomendasi',t:'ta',w:1},
+ {k:'st',l:'Status evaluasi',t:'sel',o:['Direncanakan','Berjalan','Selesai'],r:x=>chipSt(x.st||'Direncanakan')}]});
+}
 /* --- Closing --- */
 function tClosing(ms,mf,mk){
- return `<div class="kpis">${ms.filter(m=>mk||S.tr.some(t=>t.modul===m.kode)).map(m=>{const t=S.tr.filter(x=>x.modul===m.kode);const d=t.filter(x=>x.st==='Selesai').length;return `<div class="kpi"><div class="l">${esc(m.nama)}</div><div class="v">${t.length?d+'<small>/ '+t.length+' area</small>':'—'}</div><div class="d">${t.length&&d===t.length?'<span class="chip c-ok">Siap ditutup</span>':t.length?'Transisi berjalan':'Belum ada rencana transisi'}</div></div>`}).join('')||'<div class="kpi"><div class="l">Belum ada rencana transisi</div></div>'}</div>`+
- tbl('tr',{ent:'transfer kepemilikan',title:'Transisi — Transfer Kepemilikan',add:true,edit:true,del:true,wide:true,addLabel:'Area Transfer',list:()=>S.tr,rows:()=>S.tr.filter(mf),canAdd:()=>can('closing','C',mk),canEdit:t=>can('closing','U',t.modul),canDel:t=>can('closing','D',t.modul),label:t=>t.area,onSave:t=>{if(mk)t.modul=mk},
-  cols:[...(mk?[]:[modCol('closing')]),{k:'area',l:'Area perubahan',t:'sel',o:['Sistem / Aplikasi','Proses Bisnis Baru','Jaringan Perubahan','Lainnya'],req:true},{k:'dari',l:'Dari (tim program)'},{k:'kpd',l:'Kepada (pemilik operasional)'},{k:'krit',l:'Kriteria siap transfer',t:'ta',w:1},{k:'dok',l:'Dokumen diserahterimakan',t:'ta',w:1},{k:'st',l:'Status',t:'sel',o:['Belum','Proses','Selesai'],r:t=>chipSt(t.st)},{k:'tgl',l:'Tanggal transfer',t:'date',r:t=>fmtD(t.tgl)},{k:'ttd',l:'Penerima (TTD)'}]})}
+ S.pasca=S.pasca||[];
+ return `<div class="note i"><span><b>Penutupan Manajemen Perubahan</b> berbeda dari penutupan proyek. Closing dilakukan <b>setelah evaluasi pascaimplementasi dan masa transisi</b>, dengan memastikan isu terselesaikan atau dialihkan, kanal layanan resmi siap, serta tanggung jawab pendampingan diterima pemilik proses bisnis/unit operasional. Dokumen hasil: <b>BAST atau dokumen sejenis</b>. <button type="button" class="txcs-entry" data-act="cheatsheet" data-kind="cmo">Cheatsheet</button></span></div><div class="kpis">${ms.filter(m=>mk||S.tr.some(t=>t.modul===m.kode)).map(m=>{const t=S.tr.filter(x=>x.modul===m.kode);const d=t.filter(x=>x.st==='Selesai').length;return `<div class="kpi"><div class="l">${esc(m.nama)}</div><div class="v">${t.length?d+'<small>/ '+t.length+' area</small>':'—'}</div><div class="d">${t.length&&d===t.length&&S.pasca.some(p=>p.modul===m.kode&&p.st==='Selesai')?'<span class="chip c-ok">Siap ditutup</span>':t.length&&d===t.length?'<span class="chip c-warn">Menunggu evaluasi pascaimplementasi</span>':t.length?'Transisi berjalan':'Belum ada rencana transisi'}</div></div>`}).join('')||'<div class="kpi"><div class="l">Belum ada rencana transisi</div></div>'}</div>`+
+ tbl('tr',{ent:'transfer kepemilikan',title:'Penutupan CM — Serah Terima Pendampingan & Kanal Layanan',add:true,edit:true,del:true,wide:true,addLabel:'Area Transfer',list:()=>S.tr,rows:()=>S.tr.filter(mf),canAdd:()=>can('closing','C',mk),canEdit:t=>can('closing','U',t.modul),canDel:t=>can('closing','D',t.modul),label:t=>t.area,onSave:t=>{if(mk)t.modul=mk},
+  cols:[...(mk?[]:[modCol('closing')]),{k:'area',l:'Area perubahan',t:'sel',o:['Sistem / Aplikasi','Proses Bisnis Baru','Jaringan Perubahan','Kanal Layanan / Complaint Handling','Lainnya'],req:true},{k:'dari',l:'Dari (tim program)'},{k:'kpd',l:'Kepada (pemilik operasional)'},{k:'krit',l:'Kriteria siap transfer',t:'ta',w:1},{k:'dok',l:'Dokumen / BAST atau sejenis',t:'ta',w:1},{k:'st',l:'Status',t:'sel',o:['Belum','Proses','Selesai'],r:t=>chipSt(t.st)},{k:'tgl',l:'Tanggal transfer',t:'date',r:t=>fmtD(t.tgl)},{k:'ttd',l:'Penerima (TTD)'}]})}
 
 /* ======================== PENGATURAN ======================== */
 function viewUsers(){const ed=lv('user');
@@ -8624,11 +8660,13 @@ document.addEventListener('change',async e=>{
 </script>
 <script>
 /* Tooltip navigasi memakai tujuan menu, bukan teks tombol. */
-const DESTINASI_PMO={siklus:'Overview',oneonone:'Pemantauan - Jadwal 1-on-1',portofolio:'Portofolio',program:'Program',perencanaan:'Perencanaan - Dokumen Proyek',charter:'Perencanaan - Dokumen Proyek',wbsplan:'Perencanaan - WBS',wbs:'Pelaksanaan - WBS & Progres',bukti:'Pelaksanaan - Bukti Dukung',cr:'Pelaksanaan - Change Request',milestone:'Pemantauan - Milestone',risiko:'Pemantauan - Risiko & Isu',laporan:'Pemantauan - Capaian Triwulanan',narasi:'Pelaksanaan - Narasi T-Program',penutupan:'Penutupan Proyek',referensi:'Referensi Kode'};
-const DESTINASI_CMO={adp:'Perencanaan - Analisis Dampak Perubahan',rencana:'Perencanaan - Rencana Manajemen Perubahan',impl:'Implementasi Manajemen Perubahan',monev:'Monitoring dan Evaluasi',closing:'Penutupan Manajemen Perubahan'};
+const DESTINASI_PMO={siklus:'Overview',oneonone:'Pemantauan - Jadwal 1-on-1',portofolio:'Portofolio',program:'Program',perencanaan:'Perencanaan - Dokumen Proyek',charter:'Perencanaan - Dokumen Proyek',wbsplan:'Perencanaan - WBS',wbs:'Pelaksanaan - WBS & Progres',bukti:'Pelaksanaan - Bukti Dukung',cr:'Pelaksanaan - Change Request',milestone:'Pemantauan - Milestone',risiko:'Pemantauan - Risiko & Isu',laporan:'Pemantauan - Capaian Triwulanan',narasi:'Pelaksanaan - Narasi T-Program',penutupan:'Penutupan Proyek',pascaproyek:'Evaluasi Pascaproyek',referensi:'Referensi Kode'};
+const DESTINASI_CMO={pasca:'Evaluasi Pascaimplementasi Perubahan',adp:'Perencanaan - Analisis Dampak Perubahan',rencana:'Perencanaan - Rencana Manajemen Perubahan',impl:'Implementasi Manajemen Perubahan',monev:'Monitoring dan Evaluasi',closing:'Penutupan Manajemen Perubahan'};
 function tujuanMenu(href){const dest=String(href||'').replace(/^#/,'');if(dest.startsWith('pmo-'))return DESTINASI_PMO[dest.slice(4)]||'PMO - '+dest.slice(4);if(dest.startsWith('cmo-'))return DESTINASI_CMO[dest.slice(4)]||'CMO - '+dest.slice(4);if(dest==='dashboard')return 'Dashboard Eksekutif';return ''}
 document.addEventListener('mouseover',function(e){const el=e.target.closest('a[href^="#"],button[data-act],button[data-seg]');if(!el)return;let h=el.getAttribute('href')||'';const action=el.dataset.act||'';if(!h){if(action==='gowbs')h='#pmo-wbs';else if(action==='pchipgo')h='#pmo-wbs';else if(action==='chopen')h='#pmo-perencanaan';else if(action==='portoTab'){el.title='Tampilkan tab '+(el.textContent||'').trim();return}else return}
  const target=tujuanMenu(h);if(target)el.title='Menuju menu '+target;
 });
 </script>
+<script src="cheatsheet.js?v=20261106"></script>
+
 
