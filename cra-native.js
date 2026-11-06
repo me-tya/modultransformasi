@@ -14,7 +14,7 @@ let ctx=null, tab='surveys', chosen='', editing='', statusFilter='all';
 const e=s=>String(s==null?'':s).replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
 const ds=()=>{let m=ctx.S.modMeta;if(!m||typeof m!=='object')ctx.S.modMeta=m={};let v=m[KEY];if(!v||!Array.isArray(v.surveys)||!Array.isArray(v.responses))v=m[KEY]={surveys:[],responses:[],version:1};return v};
 const save=()=>{ctx.save(); ctx.toast('Perubahan CRA disimpan.');};
-const canEdit=()=>['SA','PMOK','CMOK','CMOU','TIM'].includes(ctx.ME?.role);
+const canEdit=()=>['SA','CMOK','CMOU','TIM'].includes(ctx.ME?.role);
 const now=()=>new Date().toISOString();
 const uuid=()=> 'cra-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10);
 const pct=x=>Math.round(x*20);
@@ -24,7 +24,7 @@ const stats=id=>{
  if(!s)return {count:0,avg:0,score:0,critical:0,coverage:0,status:'Belum dinilai',items:[]};
  (s.questions||[]).forEach(q=>{const v=r.map(a=>Number(a.answers?.[q.id])).filter(n=>Number.isFinite(n)&&n>=1&&n<=5);items.push({q,avg:v.length?v.reduce((a,b)=>a+b,0)/v.length:0,n:v.length});});
  const values=items.filter(x=>x.n),avg=values.length?values.reduce((a,b)=>a+b.avg,0)/values.length:0;
- const critical=items.filter(x=>x.q.critical&&x.n),crit=critical.length?critical.reduce((a,b)=>a+x.avg,0)/critical.length:0;
+ const critical=items.filter(x=>x.q.critical&&x.n),crit=critical.length?critical.reduce((a,b)=>a+b.avg,0)/critical.length:0;
  const coverage=s.target?Math.round(100*r.length/s.target):0; const score=pct(avg);
  let status='Belum dinilai';
  if(r.length){status=score>=80&&crit>=4?'Siap':score>=70?'Siap Bersyarat':score>=50?'Perlu Penguatan':'Belum Siap';}
@@ -50,7 +50,7 @@ const detail=(s)=>{
  const t=stats(s.id),r=answersFor(s.id),isManager=canEdit();
  return '<div class="cra-panel"><div class="cra-toolbar"><div><h3>'+e(s.name)+'</h3><p class="cra-muted">'+e(s.moduleName||s.module||'Tanpa modul')+' · '+e(s.year)+' · '+e(s.status)+'</p></div><button class="btn" data-cra="list">Kembali</button></div>'+
  '<p>'+e(s.description||'')+'</p><div class="cra-kpis">'+card('Skor kesiapan',t.count?t.score+'%':'—','Rata-rata jawaban')+card('Klasifikasi',t.status,'Berdasarkan ambang CRA')+card('Respons',t.count,'Target '+s.target)+card('Skor item kritis',t.count?t.critical.toFixed(2)+'/5':'—','Syarat siap: ≥4/5')+'</div>'+
- '<div class="cra-actions">'+(s.status==='Aktif'?'<button class="btn pri" data-cra="respond">Isi Asesmen</button>':'')+(isManager?'<button class="btn" data-cra="edit">Ubah</button><button class="btn" data-cra="toggle">'+(s.status==='Aktif'?'Tutup Survei':'Aktifkan Survei')+'</button><button class="btn" data-cra="export">Ekspor CSV</button>':'')+'</div>'+
+ '<div class="cra-actions">'+(s.status==='Aktif'&&isManager?'<button class="btn pri" data-cra="respond">Isi Asesmen</button>':'')+(isManager?'<button class="btn" data-cra="edit">Ubah</button><button class="btn" data-cra="toggle">'+(s.status==='Aktif'?'Tutup Survei':'Aktifkan Survei')+'</button><button class="btn" data-cra="export">Ekspor CSV</button>':'')+'</div>'+
  '<h4>Hasil per dimensi</h4><div class="cra-table-wrap"><table class="cra-table"><thead><tr><th>Dimensi</th><th>Pertanyaan</th><th>Rata-rata</th><th>Respons</th></tr></thead><tbody>'+t.items.map(i=>'<tr><td>'+e(i.q.dimension)+(i.q.critical?' <span title="Indikator kritis">*</span>':'')+'</td><td>'+e(i.q.text)+'</td><td>'+ (i.n?i.avg.toFixed(2)+' / 5':'—')+'</td><td>'+i.n+'</td></tr>').join('')+'</tbody></table></div>'+
  '<h4>Riwayat respons</h4>'+(r.length?'<div class="cra-table-wrap"><table class="cra-table"><thead><tr><th>Responden</th><th>Peran</th><th>Waktu</th><th>Skor</th></tr></thead><tbody>'+r.map(x=>'<tr><td>'+e(x.name)+'</td><td>'+e(x.role)+'</td><td>'+e(x.created?.slice(0,16).replace('T',' '))+'</td><td>'+e(pct(Object.values(x.answers||{}).map(Number).reduce((a,b)=>a+b,0)/Math.max(1,Object.values(x.answers||{}).length)).toString())+'%</td></tr>').join('')+'</tbody></table></div>':'<p class="cra-muted">Belum ada respons.</p>')+'</div>';
 };
@@ -78,7 +78,7 @@ function bind(v){
  if(a==='new'){tab='new';chosen='';}
  if(a==='open'){tab='detail';chosen=b.dataset.id;}
  if(a==='edit'){tab='edit';}
- if(a==='respond'){tab='respond';}
+ if(a==='respond'){if(!canEdit()){ctx.toast('Pengisian CRA memerlukan peran CMO atau Tim CM dengan izin tulis.');return;}tab='respond';}
  if(a==='toggle'){if(!canEdit())return;const s=ds().surveys.find(x=>x.id===chosen);if(s){s.status=s.status==='Aktif'?'Ditutup':'Aktif';s.updated=now();save();}}
  if(a==='export'){exportCSV(chosen);return;}
  if(a==='add-question'){const box=v.querySelector('#cra-question-editor');const div=document.createElement('div');div.className='cra-question-edit';div.dataset.qid=uuid();div.innerHTML='<b>＋</b><input class="cra-q-dim" placeholder="Dimensi" aria-label="Dimensi"><input class="cra-q-text" placeholder="Pertanyaan asesmen" aria-label="Pertanyaan"><label><input type="checkbox" class="cra-q-critical"> Kritis</label><button type="button" class="btn" data-cra="remove-question">Hapus</button>';box.appendChild(div);div.querySelector('button').onclick=()=>div.remove();return;}
@@ -95,7 +95,7 @@ function bind(v){
  if(!current)ds().surveys.unshift(o);chosen=o.id;tab='detail';save();render();
  };
  const rf=v.querySelector('#cra-response-form');if(rf)rf.onsubmit=ev=>{
- ev.preventDefault();const s=ds().surveys.find(x=>x.id===chosen);if(!s||s.status!=='Aktif'){ctx.toast('Survei tidak aktif.');return;}
+ ev.preventDefault();const s=ds().surveys.find(x=>x.id===chosen);if(!s||s.status!=='Aktif'||!canEdit()){ctx.toast('Survei tidak aktif atau akun belum memiliki izin tulis.');return;}
  const fd=new FormData(rf),answers={};for(const q of s.questions){const n=Number(fd.get(q.id));if(!Number.isFinite(n)||n<1||n>5){ctx.toast('Semua pertanyaan wajib dijawab.');return;}answers[q.id]=n;}
  ds().responses.push({id:uuid(),surveyId:s.id,name:String(fd.get('name')||'').trim(),role:String(fd.get('role')||''),email:ctx.ME?.email||'',answers,created:now()});tab='detail';save();render();
  };
