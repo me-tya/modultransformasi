@@ -2313,6 +2313,39 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 <div id="root"></div>
 <div class="toast" id="toast" role="status"></div>
 <script type="application/json" id="d0">{"S":[],"W":[],"K":[]}</script>
+<style>
+
+/* Native CRA — fully integrated page (no embedded dashboard). */
+.cra-native{display:block;width:100%;max-width:none}.cra-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px;border-bottom:1px solid var(--line);padding-bottom:10px}
+.cra-tab{cursor:pointer;padding:9px 15px;border-radius:8px;background:#fff;border:1px solid var(--line);font-weight:800;color:var(--navy)}
+.cra-tab.active{background:var(--navy);color:white;border-color:var(--navy)}
+.cra-panel{background:#fff;border:1px solid var(--line);border-radius:13px;padding:20px;margin:14px 0;box-shadow:0 1px 3px #162d4910}
+.cra-panel h3{font-size:17px;margin:0 0 8px;color:var(--navy)}.cra-panel h4{font-size:14px;margin:20px 0 10px;color:var(--navy)}
+.cra-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:15px}
+.cra-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}
+.cra-stat{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:11px;padding:17px;gap:5px}
+.cra-stat small,.cra-stat span,.cra-muted{color:var(--ink-3)}.cra-stat strong{font-size:24px;color:var(--navy)}.cra-stat span{font-size:12px}
+.cra-actions{display:flex;align-items:center;flex-wrap:wrap;gap:9px}.cra-actions button{cursor:pointer}
+.cra-table-wrap{overflow:auto;width:100%}.cra-table{width:100%;border-collapse:collapse;text-align:left;font-size:13px}
+.cra-table th{background:#f0f4fa;font-size:12px;color:var(--navy)}.cra-table td,.cra-table th{padding:12px 11px;border-bottom:1px solid var(--line);vertical-align:middle}
+.cra-table td small,.cra-history small{display:block;color:var(--ink-3);font-size:11px;margin-top:4px}
+.cra-pill{display:inline-flex;padding:4px 9px;border-radius:14px;background:#eaf0f8;color:#304d74;font-size:12px;font-weight:800;white-space:nowrap}
+.cra-pill.good{background:#e2f5ed;color:#16714f}.cra-pill.info{background:#e4efff;color:#2455a0}
+.cra-pill.warn{background:#fff1dc;color:#8d5707}.cra-pill.bad{background:#ffe8e9;color:#a32134}
+.cra-empty{text-align:center;padding:55px 18px;color:var(--ink-3)}
+.cra-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.cra-grid label,.cra-full{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:800;color:var(--ink-2)}
+.cra-grid input,.cra-grid select,.cra-full textarea,.cra-question-edit input,.cra-toolbar select{padding:10px;border:1px solid #cbd5e3;border-radius:8px;min-width:0;background:#fff;width:100%}
+.cra-full{margin:14px 0}.cra-question-edit{display:grid;grid-template-columns:28px 160px minmax(150px,1fr) 95px 70px;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.cra-question-edit label{display:flex;gap:5px;align-items:center;font-size:12px}.cra-question-edit label input{width:auto}
+.cra-q{border:1px solid var(--line);border-radius:10px;padding:15px;margin:12px 0}.cra-q legend{font-weight:800;padding:0 8px}
+.cra-q small{color:var(--ink-3)}.cra-scale{display:flex;gap:14px;margin:10px 0}.cra-scale label{display:inline-flex;gap:5px;align-items:center;cursor:pointer}
+.cra-history{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:12px 0}
+@media(max-width:1000px){.cra-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.cra-question-edit{grid-template-columns:24px 1fr 2fr;}.cra-question-edit label,.cra-question-edit button{grid-column:span 1}}
+@media(max-width:650px){.cra-grid,.cra-kpis{grid-template-columns:1fr}.cra-question-edit{grid-template-columns:1fr}.cra-panel{padding:13px}.cra-history{align-items:flex-start;flex-direction:column}}
+
+</style>
+<script src="cra-native.js"></script>
 <script>
 /* ======================== konstanta ======================== */
 const UNITS=['Setjen','Itjen','BPPK','DJA','DJPb','DJPK','DJKN','DJPPR','DJP','DJBC','DJSEF','DJSPSK','BaTii','LNSW'];
@@ -2906,11 +2939,12 @@ function render(){try{ensureBkFlow()}catch(e){}try{kwMigrate()}catch(e){}
  $('#av').onclick=e=>userMenu(e.currentTarget);$('#bell').onclick=e=>bellMenu(e.currentTarget,tk);
  const v=$('#view');let h='';
  if(mm)h=viewCmo(mm[2],mm[1]);else if(VIEW==='beranda')h=viewHome(tk);else if(VIEW==='dashboard')h=viewDash();
- else if(['project-selection','cra','tim-cm','squad-team'].includes(VIEW))h=viewCmShared(VIEW);
+ else if(VIEW==='cra')h='<div class="vh"><h1>Change Readiness Assessment (CRA)</h1></div>';
+ else if(['project-selection','tim-cm','squad-team'].includes(VIEW))h=viewCmShared(VIEW);
  else if(VIEW==='aktivitas')h=pAktivitas();else if(VIEW.startsWith('pmo-'))h=viewPmo(VIEW.slice(4));else if(VIEW.startsWith('cmo-'))h=viewCmo(VIEW.slice(4),null);
  else if(VIEW==='set-pengguna')h=viewUsers();else if(VIEW==='set-akses')h=viewAkses();else if(VIEW==='set-sinkron')h=viewSinkron();else if(VIEW==='set-db')h=viewDb();else if(VIEW==='set-log')h=viewLog();
  if(VIEW.startsWith('set-'))h=h.replace('<!--vh-->',setTabs());
- v.innerHTML=h;try{foldNotes(v)}catch(e){}
+ v.innerHTML=h;if(VIEW==='cra'&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}try{foldNotes(v)}catch(e){}
 }
 const yearsOpt=()=>{const ys=new Set([S.ui.tahun]);S.wbs.forEach(w=>{const y=yrOf(w);if(y>=2020)ys.add(y)});return [...ys].sort()};
 function foldNotes(v){const host=v.querySelector('.subt.ctabs')||v.querySelector('.subt')||v.querySelector('.vh h1');if(!host)return;
