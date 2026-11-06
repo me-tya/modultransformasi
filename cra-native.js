@@ -23,7 +23,7 @@ const stats=id=>{
  const s=ds().surveys.find(x=>x.id===id),r=answersFor(id),items=[];
  if(!s)return {count:0,avg:0,score:0,critical:0,coverage:0,status:'Belum dinilai',items:[]};
  (s.questions||[]).forEach(q=>{const v=r.map(a=>Number(a.answers?.[q.id])).filter(n=>Number.isFinite(n)&&n>=1&&n<=5);items.push({q,avg:v.length?v.reduce((a,b)=>a+b,0)/v.length:0,n:v.length});});
- const values=items.filter(x=>x.n),avg=values.length?values.reduce((a,b)=>a+x.avg,0)/values.length:0;
+ const values=items.filter(x=>x.n),avg=values.length?values.reduce((a,b)=>a+b.avg,0)/values.length:0;
  const critical=items.filter(x=>x.q.critical&&x.n),crit=critical.length?critical.reduce((a,b)=>a+x.avg,0)/critical.length:0;
  const coverage=s.target?Math.round(100*r.length/s.target):0; const score=pct(avg);
  let status='Belum dinilai';
