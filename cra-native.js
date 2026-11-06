@@ -6,7 +6,7 @@ const KEY='__CRA_NATIVE__',ROLES=['ALL','Probis','Arsitek','Pengembang','Operasi
 const e=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const esc=e,uuid=()=> 'cra-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,9),now=()=>new Date().toISOString();
 const db=()=>{ctx.S.modMeta||={};const v=ctx.S.modMeta[KEY]||={surveys:[],responses:[],version:2};v.surveys||=[];v.responses||=[];v.actions||=[];if(!Array.isArray(v.bank))v.bank=JSON.parse(JSON.stringify(window.CRA_ORIGINAL_BANK||[]));return v};
-const notify=m=>ctx.toast(m),save=()=>ctx.save(),can=()=>['SA','CMOK','CMOU','TIM'].includes(ctx.ME?.role);
+const notify=m=>ctx.toast(m),save=()=>ctx.save(),can=()=>['SA','PMOK','CMOK','CMOU','TIM'].includes(ctx.ME?.role);
 const survey=id=>db().surveys.find(s=>s.id===id),resp=id=>db().responses.filter(r=>r.surveyId===id);
 const pct=a=>{const x=a.map(Number).filter(n=>n>=1&&n<=5);return x.length?Math.round(x.reduce((s,v)=>s+v,0)/x.length*20):null};
 const res=s=>{const rows=resp(s.id),q=s.questions||[];return {rows,pct:pct(rows.flatMap(r=>q.map(x=>r.answers?.[x.id]))),critical:pct(rows.flatMap(r=>q.filter(x=>x.critical).map(x=>r.answers?.[x.id]))),dims:[...new Set(q.map(x=>x.dimension))].map(d=>({d,p:pct(rows.flatMap(r=>q.filter(x=>x.dimension===d).map(x=>r.answers?.[x.id])))}))}};
