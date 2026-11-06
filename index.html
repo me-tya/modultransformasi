@@ -2308,6 +2308,16 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 .kp-imp{border:1.5px dashed #B9C6DD;border-radius:12px;padding:12px;background:#F7F9FD}.kp-imp.on{border-color:var(--blue);background:var(--blue-l)}.kp-imp-t{display:flex;flex-direction:column;gap:3px;font-size:12.5px}.kp-lnk{color:var(--blue);text-decoration:underline;cursor:pointer}
 .kp-prog{margin-top:6px}.kp-prog>div{height:6px;background:#E2E6EF;border-radius:3px;overflow:hidden}.kp-prog i{display:block;height:100%;width:0;background:var(--blue);transition:width .2s}.kp-prog em{font-style:normal;font-size:12px;color:var(--ink-3)}
 .kp-fr{display:flex;gap:8px;align-items:center}.kp-ug{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px 10px;max-height:46vh;overflow:auto}.kp-uc{display:flex;gap:6px;align-items:center;font-size:12.5px}
+
+/* CMO filter: uses the same compact grid, controls, and 46px header as PMO. */
+.flt.cm-unified .fbar{padding:10px 14px 12px!important;gap:9px 12px!important}
+.flt.cm-unified .fbar .fg{gap:4px}
+.flt.cm-unified .fbar .sel{height:36px!important;padding-right:8px}
+.flt.cm-unified .fbar .pseg{height:36px}
+.flt.cm-unified .fbar .pseg button{padding-inline:4px}
+.flt.cm-unified .ftop{padding-left:12px!important}
+.flt.cm-unified>.lp{padding-inline:12px!important}
+@media(max-width:650px){.flt.cm-unified .fbar{padding:10px 12px 12px!important}}
 </style>
 
 <div id="root"></div>
@@ -3480,12 +3490,12 @@ function fltHead(open,title,chips,n,reset,res){const act=chips.filter(c=>typeof 
  const ico=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg>`;
  const ch=act.length?act.map(c=>`<span class="c1">${esc(c.t)}<button class="fx" data-act="fclr" data-k="${c.k}" data-v="${esc(c.v||'')}" aria-label="Hapus filter ${esc(c.t)}" title="Hapus filter ini">×</button></span>`).join(''):`<span class="none">Belum ada — ${open?'menampilkan semua data':'semua data'}</span>`;
  const pc=res&&res[1]?Math.round(res[0]/res[1]*100):100;
- const pu=typeof VIEW!=='undefined'&&(VIEW.startsWith('pmo-')||VIEW==='dashboard');
+ const pu=typeof VIEW!=='undefined'&&(VIEW.startsWith('pmo-')||VIEW.startsWith('cmo-')||VIEW==='dashboard');
  const lp=open&&!pu?`<div class="lp" data-act="ftog" title="Klik untuk menyembunyikan filter"><div class="lt"><span class="gi">${ico}</span><span><b>${title}</b><small>${esc(sub)}</small></span></div>${res?`<hr><div class="res"><span>Hasil sesuai filter</span><b>${rp(res[0])}</b><small>dari ${rp(res[1])} ${res[2]}</small><span class="mb"><span style="width:${pc}%"></span></span>${n?`<div class="nar"><em class="na">${n} filter aktif</em>${reset}</div>`:''}</div>`:''}${n&&!res?reset:''}</div>`
   :`<div class="lp" data-act="ftog"><span class="gi">${ico}</span><div class="lt"><span><b>${title}</b></span></div></div>`;
  return lp+`<div class="rp"><div class="ftop" data-act="ftog" role="button" tabindex="0" aria-expanded="${open}" title="Klik untuk ${open?'menyembunyikan':'menampilkan'} filter"><span class="tl">Filter aktif</span>${ch}${(!open||pu)&&res?`<span class="rs2"><b>${rp(res[0])}</b> dari ${rp(res[1])} ${res[2]}${pu?`<span class="rs2m"><i style="width:${pc}%"></i></span>`:''}</span>`:''}${(!open||pu)&&n?reset.replace('class="freset"','class="freset rsm"'):''}<span class="fcar" aria-hidden="true"><svg class="fcar-tri${window.FCAR_ANIM?' anim':''}" viewBox="0 0 12 12" width="12" height="12"><path d="M2.2 3.8h7.6L6 8.6z" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/></svg></span></div>`}
 
-function perSeg(key,cur){const L=[['all','Setahun'],['1','TW 1'],['2','TW 2'],['3','TW 3'],['4','TW 4'],['r','Rentang']];return `<span class="fg w2${key==='pr'&&(VIEW.startsWith('pmo-')||VIEW==='dashboard')?' pm-period':''}"><label>Periode</label><span class="seg pseg" role="group" aria-label="Periode">${L.map(([v,l])=>`<button type="button" data-seg="${key}" data-v="${v}" class="${cur===v?'on':''}" aria-pressed="${cur===v}">${l}</button>`).join('')}</span></span>`}
+function perSeg(key,cur){const L=[['all','Setahun'],['1','TW 1'],['2','TW 2'],['3','TW 3'],['4','TW 4'],['r','Rentang']];return `<span class="fg w2${(key==='pr'||key==='cpr')&&(VIEW.startsWith('pmo-')||VIEW.startsWith('cmo-')||VIEW==='dashboard')?' pm-period':''}"><label>Periode</label><span class="seg pseg" role="group" aria-label="Periode">${L.map(([v,l])=>`<button type="button" data-seg="${key}" data-v="${v}" class="${cur===v?'on':''}" aria-pressed="${cur===v}">${l}</button>`).join('')}</span></span>`}
 ACT.fclr=el=>{const k=el.dataset.k,v=el.dataset.v;if(k.startsWith('pf_')){S.ui.portoF=S.ui.portoF||{};S.ui.portoF[k.slice(3)]=v}else S.ui[k]=v;if(k==='lvn'){S.ui.lvn=10;S.ui.lvm='sd'}if(k==='unit'){S.ui.umode='up'}if(k==='cunit'){S.ui.crole='';S.ui.mod=''}Object.keys(PG).forEach(x=>PG[x]=0);save();render()};
 function fltBar(o={}){const P=per();const open=S.ui.fopen===1;const pv=progVis();const act=c=>c?' act':'';
  const isW=['pmo-wbs','pmo-wbsplan'].includes(VIEW);const UML={up:'utama/pendukung',u:'UIC Utama',p:'UIC Pendukung',ue:'cakupan UE I'};const lvn=S.ui.lvn||10,lvm=S.ui.lvm||'sd';
@@ -8166,14 +8176,14 @@ function cmoFlt(f,tab){const open=S.ui.fopen===1;const u=cU(),r=S.ui.crole||'';c
  const lab2={'':'utama + pendukung','u':'pemilik probis utama','p':'UIC pendukung'};const chips=[`Tahun ${S.ui.tahun}`,P.pr!=='all'?{t:P.lab,k:'cpr'}:'Setahun',S.ui.cprog?{t:progLabel(S.ui.cprog),k:'cprog'}:'Semua program',
   lockU()?`${lockU()} (unit Anda)`:(u?{t:u,k:'cunit'}:'Semua UE I'),...(u?[r?{t:'sebagai '+lab2[r],k:'crole'}:'sebagai '+lab2['']]:[]),
   ...(S.ui.cth?[{t:'Tahapan: '+tahapLab(S.ui.cth),k:'cth'}]:[]),...(tab!=='siklus'&&S.ui.mod?[{t:'Modul '+S.ui.mod,k:'mod'}]:[])];const nAct=chips.filter(c=>typeof c!=='string').length;const allM=visMods(f).filter(m=>[m.adp,...m.items].some(w=>yrOf(w)===S.ui.tahun)).length;
- return `<section class="flt fx2${open?' open':''}" aria-label="Filter CMO">${fltHead(open,'Filter',chips,nAct,'<button class="freset" data-act="cfreset">↺ Atur ulang</button>',[ms.length,allM,'modul'])}
+ return `<section class="flt fx2 pmo-unified cm-unified${open?' open':''}" aria-label="Filter CMO">${fltHead(open,'Filter',chips,nAct,'<button class="freset" data-act="cfreset">↺ Atur ulang</button>',[ms.length,allM,'modul'])}
  <div class="fbar"${open?'':' hidden'}>
- <span class="fg"><label for="c-th">Tahun</label><select class="sel" id="c-th" data-on="tahun">${yearsOpt().map(y=>`<option ${S.ui.tahun==y?'selected':''}>${y}</option>`).join('')}</select></span>
+ <span class="fg pm-year"><label for="c-th">Tahun</label><select class="sel" id="c-th" data-on="tahun">${yearsOpt().map(y=>`<option ${S.ui.tahun==y?'selected':''}>${y}</option>`).join('')}</select></span>
  ${perSeg('cpr',P.pr)}
  ${P.pr==='r'?`<span class="fg"><label for="c-d1">Dari</label><input type="date" class="sel act" id="c-d1" data-on="cd1" value="${P.d1}"></span><span class="fg"><label for="c-d2">s.d.</label><input type="date" class="sel act" id="c-d2" data-on="cd2" value="${P.d2}"></span>`:''}
- <span class="fg w2"><label for="c-pg">Program</label><select class="sel${act(S.ui.cprog)}" id="c-pg" data-on="cprog"><option value="">Semua program</option>${pv.map(p=>`<option value="${p.akr}" ${S.ui.cprog===p.akr?'selected':''}>${p.kode} · ${esc(p.nama)}</option>`).join('')}</select></span>
- ${lockU()?'':`<span class="fg"><label for="c-un">Unit</label><select class="sel${act(u)}" id="c-un" data-on="cunit"><option value="">Semua UE I</option>${ME.unit?`<option value="${esc(ME.unit)}" ${u===ME.unit?'selected':''}>${esc(ME.unit)} (unit Anda)</option>`:''}${UNITS.filter(x=>x!==ME.unit).map(x=>`<option ${u===x?'selected':''}>${x}</option>`).join('')}</select></span>`}
- <span class="fg fgr"><label for="c-ro">${lockU()?esc(lockU())+' sebagai':'Peran unit'}<span class="lhint" tabindex="0" role="note" data-tip="Pemilik probis utama dapat menambah, mengubah, dan menghapus data. UIC pendukung hanya dapat melihat." aria-label="Pemilik probis utama dapat menambah, mengubah, dan menghapus data. UIC pendukung hanya dapat melihat.">i</span></label><select class="sel${act(r)}" id="c-ro" data-on="crole" ${u?'':'disabled'}>${opts([['','Utama + pendukung'],['u','Pemilik probis utama'],['p','UIC pendukung']],r)}</select></span>
+ <span class="fg w2 pm-program"><label for="c-pg">Program</label><select class="sel${act(S.ui.cprog)}" id="c-pg" data-on="cprog"><option value="">Semua program</option>${pv.map(p=>`<option value="${p.akr}" ${S.ui.cprog===p.akr?'selected':''}>${p.kode} · ${esc(p.nama)}</option>`).join('')}</select></span>
+ ${lockU()?'':`<span class="fg pm-unit"><label for="c-un">Unit</label><select class="sel${act(u)}" id="c-un" data-on="cunit"><option value="">Semua UE I</option>${ME.unit?`<option value="${esc(ME.unit)}" ${u===ME.unit?'selected':''}>${esc(ME.unit)} (unit Anda)</option>`:''}${UNITS.filter(x=>x!==ME.unit).map(x=>`<option ${u===x?'selected':''}>${x}</option>`).join('')}</select></span>`}
+ <span class="fg fgr pm-role"><label for="c-ro">${lockU()?esc(lockU())+' sebagai':'Peran unit'}<span class="lhint" tabindex="0" role="note" data-tip="Pemilik probis utama dapat menambah, mengubah, dan menghapus data. UIC pendukung hanya dapat melihat." aria-label="Pemilik probis utama dapat menambah, mengubah, dan menghapus data. UIC pendukung hanya dapat melihat.">i</span></label><select class="sel${act(r)}" id="c-ro" data-on="crole" ${u?'':'disabled'}>${opts([['','Utama + pendukung'],['u','Pemilik probis utama'],['p','UIC pendukung']],r)}</select></span>
  <span class="fg w2"><label for="c-th2">Tahapan</label><select class="sel${act(S.ui.cth)}" id="c-th2" data-on="cth">${tahapOpts(S.ui.cth||'')}</select></span>
  ${tab!=='siklus'?`<span class="fg w2"><label for="c-mo">Modul</label>${modFilter(f)}</span>`:''}
  </div></div></section>`}
