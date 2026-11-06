@@ -2346,6 +2346,16 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 
 </style>
 <script src="cra-question-bank.js"></script>
+<style id="cm-journey-style">
+.cm-journey{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;align-items:stretch;background:#fff;border:1px solid #dee5f1;border-radius:16px;padding:8px;margin:14px 0 20px;box-shadow:0 5px 20px rgba(14,35,72,.055)}
+.cm-step{min-width:0;min-height:56px;display:flex;justify-content:center;align-items:center;gap:8px;padding:9px 7px;border-radius:11px;text-decoration:none!important;color:#52617b;font-size:12.5px;font-weight:800;position:relative;transition:background .16s,color .16s,box-shadow .16s}
+.cm-step:hover{background:#eff4fc;color:#0b2447}.cm-step-number{display:grid;place-items:center;flex:0 0 24px;width:24px;height:24px;border-radius:50%;background:#edf2f9;color:#486080;font-size:11px;font-weight:900}
+.cm-step-label{line-height:1.3;text-align:left}.cm-step.on{background:linear-gradient(120deg,#0c244c,#1b477e);color:#fff;box-shadow:0 6px 16px rgba(13,40,71,.22)}
+.cm-step.on:after{content:"";position:absolute;bottom:4px;left:25%;right:25%;height:3px;border-radius:4px;background:#fdb913}.cm-step.on .cm-step-number{background:#fdb913;color:#13264b}
+.cm-step:focus-visible{outline:2px solid #fdb913;outline-offset:2px}.cm-cra-workspace{min-width:0}.cm-cra-workspace .cra2-hero{margin-top:0}
+@media(max-width:1250px){.cm-journey{display:flex;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:thin}.cm-step{flex:0 0 148px;scroll-snap-align:start}}
+@media(max-width:700px){.cm-step{flex-basis:132px;min-height:50px}.cm-journey{margin:10px 0 14px;padding:6px}}
+</style>
 <script src="cra-native.js"></script>
 <script src="pengelola-native.js"></script>
 <script>
@@ -2367,7 +2377,7 @@ const LEVELS=['-','R','RU','CRU','CRUD'];
 const SCOPES=['Semua','Unit','Modul'];
 const SCOPE_DESK={Semua:'seluruh data',Unit:'data yang unitnya UIC Utama',Modul:'modul yang ditugaskan'};
 const UNREAD_SCOPED=['dash','porto','wbs','mil','risk','cr','crok','bukti','valid','lap','ref','adopsi','adp','reviu','usul','user','akses','sinkron','log'];
-const CMT=[['siklus','Siklus CM'],['adopsi','Tingkat Adopsi'],['adp','ADP'],['rencana','Perencanaan'],['impl','Implementasi'],['monev','Monev'],['closing','Closing CM']];
+const CMT=[['adp','ADP'],['rencana','Perencanaan'],['jaringan','Jaringan Perubahan'],['cra','CRA'],['pelaksanaan','Pelaksanaan'],['monev','Monev'],['closing','Closing']];
 const PMT=[['siklus','Overview','porto'],['portofolio','Portofolio','porto'],['program','Program','porto'],['perencanaan','Dokumen Proyek','charter'],['wbsplan','WBS','wbs'],['wbs','WBS & progres','wbs'],['bukti','Bukti Dukung','bukti'],['cr','Change Request','cr'],['milestone','Milestone','mil'],['risiko','Risiko & Isu','risk'],['laporan','Capaian TW','lap'],['narasi','Narasi T-Program','lap'],['oneonone','Jadwal 1-on-1','wbs'],['penutupan','Penutupan','porto'],['referensi','Referensi Kode','ref']];
 /* kelompok tab PMO mengikuti alur Draft KEP Kepala BaTii: perencanaan → pelaksanaan → pemantauan → penutupan */
 const PMG=[['siklus','Overview',0,['siklus']],['portofolio','Portofolio',0,['portofolio']],['program','Program',0,['program']],['plan','Perencanaan',1,['perencanaan','wbsplan']],['exec','Pelaksanaan',2,['wbs','narasi','bukti','cr']],['mon','Pemantauan',3,['milestone','risiko','laporan','oneonone']],['close','Penutupan',4,['penutupan']],['ref','Referensi',0,['referensi']]];
@@ -2823,7 +2833,7 @@ const go=h=>{location.hash=h};
 const TASK_PRE={'pmo-bukti':{bseg:'Menunggu validasi'},'pmo-cr':{crseg:'open'},'pmo-milestone':{mseg:'late'}};
 const goTask=h=>{const p=TASK_PRE[h];if(p){Object.assign(S.ui,p,{prog:''});save()}go(h)};
 window.addEventListener('hashchange',()=>{readHash();render();window.scrollTo(0,0)});
-function readHash(){VIEW=(location.hash||'').slice(1)||'beranda';if(VIEW==='tim-cm'||VIEW==='squad-team')VIEW='pengelola'}
+function readHash(){VIEW=(location.hash||'').slice(1)||'beranda';if(VIEW==='tim-cm'||VIEW==='squad-team')VIEW='pengelola';if(VIEW==='cra')VIEW='cmo-cra';if(VIEW==='cmo-siklus'||VIEW==='cmo-adopsi')VIEW='cmo-adp';if(VIEW==='cmo-impl')VIEW='cmo-pelaksanaan';VIEW=VIEW.replace(/^(modul-.+-t-)impl$/,'$1pelaksanaan').replace(/^(modul-.+-t-)siklus$/,'$1adp')}
 
 /* ======================== login ======================== */
 const sess=()=>{try{return sessionStorage.getItem('mt_me')}catch(e){return null}};
@@ -2867,17 +2877,14 @@ function splash(cb){const d=document.createElement('div');d.className='splash';d
 
 /* ======================== shell & navigasi ======================== */
 function pmoTabsVis(){return PMT.filter(t=>t[2]==='cr'?(lv('cr')!=='-'||lv('crok')!=='-'):t[2]==='bukti'?(lv('bukti')!=='-'||lv('valid')!=='-'):lv(t[2])!=='-')}
-function cmoTabsVis(){return CMT.filter(t=>t[0]==='siklus'?['adp','rencana','impl','monev'].some(f=>lv(f)!=='-'):lv(t[0])!=='-')}
+function cmoTabsVis(){return CMT.slice()}
 function navTree(){
  const ext=(id,l,ic,kids)=>({id,l,ic,kids:kids.map(k=>({l:k,ext:1}))});
  const trans={id:'trans',l:'Transformasi',badge:'BARU',ic:'◎',kids:[]};
  if(lv('dash')!=='-')trans.kids.push({l:'Executive Dashboard',h:'dashboard'});
  trans.kids.push({l:'Project Selection',h:'project-selection'});
  const pt=pmoTabsVis();if(pt.length)trans.kids.push({l:'Project Management',h:'pmo-'+pt[0][0],pre:'pmo-'});
- const ct=cmoTabsVis();const cmKids=[];
- if(ct.length)cmKids.push({l:'Siklus Change Management',h:'cmo-'+ct[0][0],pre:'cmo-'});
- cmKids.push({l:'Change Readiness Assessment (CRA)',h:'cra'});
- trans.kids.push({id:'change-management',l:'Change Management',kids:cmKids});
+ trans.kids.push({l:'Change Management',h:'cmo-adp',pre:'cmo-'});
  if(aktOk())trans.kids.push({l:'Aktivitas',h:'aktivitas'});
  trans.kids.push({l:'Pengelola',h:'pengelola'});
  const st=STN.filter(t=>lv(t[2])!=='-');if(st.length)trans.kids.push({l:'Pengaturan',h:st[0][0],pre:'set-'});
@@ -2950,7 +2957,7 @@ function render(){try{ensureBkFlow()}catch(e){}try{kwMigrate()}catch(e){}
  else if(VIEW==='aktivitas')h=pAktivitas();else if(VIEW.startsWith('pmo-'))h=viewPmo(VIEW.slice(4));else if(VIEW.startsWith('cmo-'))h=viewCmo(VIEW.slice(4),null);
  else if(VIEW==='set-pengguna')h=viewUsers();else if(VIEW==='set-akses')h=viewAkses();else if(VIEW==='set-sinkron')h=viewSinkron();else if(VIEW==='set-db')h=viewDb();else if(VIEW==='set-log')h=viewLog();
  if(VIEW.startsWith('set-'))h=h.replace('<!--vh-->',setTabs());
- v.innerHTML=h;if(VIEW==='cra'&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}if(VIEW==='pengelola'&&window.PENGELOLA_NATIVE){window.PENGELOLA_NATIVE.attach({S,ME,save,toast});return;}try{foldNotes(v)}catch(e){}
+ v.innerHTML=h;if(VIEW==='cra'&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}if(VIEW==='pengelola'&&window.PENGELOLA_NATIVE){window.PENGELOLA_NATIVE.attach({S,ME,save,toast});return;}if((VIEW==='cmo-cra'||/^modul-.+-t-cra$/.test(VIEW))&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}try{foldNotes(v)}catch(e){}
 }
 const yearsOpt=()=>{const ys=new Set([S.ui.tahun]);S.wbs.forEach(w=>{const y=yrOf(w);if(y>=2020)ys.add(y)});return [...ys].sort()};
 function foldNotes(v){const host=v.querySelector('.subt.ctabs')||v.querySelector('.subt')||v.querySelector('.vh h1');if(!host)return;
@@ -8148,7 +8155,7 @@ const capSt=c=>c==null?'Belum diukur':c>=100?'Tercapai':c>=80?'Mendekati':'Di ba
 function idxMod(mk){const is=S.ind.filter(i=>i.modul===mk);let w=0,s=0;is.forEach(i=>{const c=capOf(i);if(c!=null){w+=+i.bobot||0;s+=c*(+i.bobot||0)}});return w?s/w:null}
 function adoptMod(mk){const a=S.adopsi.filter(x=>x.modul===mk);if(!a.length)return null;const l=a[a.length-1];return {per:l.per,p:l.tu?l.au/l.tu*100:null,t:l.tt?l.at/l.tt*100:null}}
 const adpSt=mk=>(S.modMeta[mk]||{}).adp||'Draft';
-function cmoTabs(tab,mk){return `<nav class="ptabs" aria-label="Tahap CM">${cmoTabsVis().map(([k,l])=>{const href=mk?`#modul-${mk}-t-${k}`:`#cmo-${k}`;const n=['adp','rencana','impl','monev'].indexOf(k);return `<a href="${href}" class="${k===tab?'on':''}"><span>${n>=0?`<em>${n+1}</em> `:''}${mk&&k==='siklus'?'Ruang kerja':l}</span></a>`}).join('')}</nav>`}
+function cmoTabs(tab,mk){return `<nav class="cm-journey" aria-label="Tujuh tahapan Change Management">${CMT.map(([k,l],i)=>{const href=mk?`#modul-${mk}-t-${k}`:`#cmo-${k}`;return `<a href="${href}" class="cm-step ${k===tab?'on':''}" ${k===tab?'aria-current="step"':''} title="Tahap ${i+1}: ${l}"><span class="cm-step-number">${i+1}</span><span class="cm-step-label">${l}</span></a>`}).join('')}</nav>`}
 const modRel=(m,u)=>!u?'':m.uicUnits.includes(u)?'u':unitsOf(m.pend).includes(u)?'p':'';
 const cU=()=>lockU()||S.ui.cunit||'';
 function cmoMatch(m){const u=cU(),r=S.ui.crole||'';const y=S.ui.tahun,P=cper(),its=[m.adp,...m.items];if(!its.some(w=>yrOf(w)===y))return false;if(S.ui.cprog&&m.prog!==S.ui.cprog)return false;const th=S.ui.cth||'';if((P.pr!=='all'||th)&&!its.some(w=>yrOf(w)===y&&(P.pr==='all'||inP(w,P))&&(!th||tahapMatch(w,th))))return false;if(!u)return true;const x=modRel(m,u);return r==='u'?x==='u':r==='p'?x==='p':!!x}
@@ -8172,14 +8179,29 @@ function cmoFlt(f,tab){const open=S.ui.fopen===1;const u=cU(),r=S.ui.crole||'';c
  </div></div></section>`}
 ACT.cfreset=()=>{S.ui.cunit='';S.ui.crole='';S.ui.mod='';S.ui.cpr='';S.ui.cprog='';S.ui.cth='';Object.keys(PG).forEach(x=>PG[x]=0);save();render()};
 function modFilter(f){const ms=visMods(f).filter(cmoMatch);return `<select class="sel${S.ui.mod?' act':''}" id="c-mo" data-on="mod" aria-label="Pilih modul"><option value="">Semua modul (${ms.length})</option>${ms.map(m=>`<option value="${m.kode}" ${S.ui.mod===m.kode?'selected':''}>${m.kode} · ${esc(m.nama)}</option>`).join('')}</select>`}
-function viewCmo(tab,mk){const f=tab==='siklus'?'adp':tab;
- const TT={siklus:['Siklus Change Management','Modul CM terbentuk dari item ADP di WBS PMO; item CM lain di bawah induk yang sama ikut masuk. Klik modul untuk membuka ruang kerja.'],adopsi:['Tingkat Adopsi','Ringkasan keberhasilan CM dan adopsi pengguna per modul, dari indikator ADP dan data Monev.'],adp:['Tahap 1 — Analisis Dampak Perubahan','Dokumen ADP per modul › sub modul: As-Is, To-Be, POSTeR, risiko, dan indikator keberhasilan. ADP dapat dibaca utuh oleh CMO pusat dan unit; isian per modul.'],rencana:['Tahap 2 — Perencanaan','Identifikasi stakeholder, matriks experience–support, rencana komunikasi, rencana pelatihan, dan jejaring perubahan.'],impl:['Tahap 3 — Implementasi','Status kegiatan komunikasi dan pelatihan, disalin otomatis dari Perencanaan.'],monev:['Tahap 4 — Monev','Pelaksanaan (penyesuaian RTL), pemantauan (kertas kerja monev), adopsi, dan keberhasilan CM.'],closing:['Closing CM','Transisi dan transfer kepemilikan perubahan ke pemilik operasional.']}[tab]||['',''];
- const head=mk?modHead(mk):vh('C','cmo',TT[0],TT[1],'');
- const ms=mk?[modOf(mk)].filter(Boolean):visMods(f).filter(cmoMatch).filter(m=>tab==='siklus'||!S.ui.mod||m.kode===S.ui.mod);const mf=s=>ms.some(m=>m.kode===s.modul);
- let body='';if(lv(f)==='-'&&tab!=='siklus')body=`<div class="card empty">Peran Anda tidak memiliki akses ke tab ini.</div>`;
- else if(!ms.length)body=`<div class="card empty">Belum ada modul dalam cakupan akses Anda. ${scope()==='Modul'?'Minta Superadmin menugaskan modul ke akun Anda.':''}</div>`;
- else body=({siklus:tSiklus,adopsi:tAdopsi,adp:tAdp,rencana:tRencana,impl:tImpl,monev:tMonev,closing:tClosing}[tab]||(()=>''))(ms,mf,mk);
- return head+cmoTabs(tab,mk)+(mk?'':cmoFlt(f,tab))+body}
+function tJaringan(ms,mf,mk){const prev=S.ui.sub.rencana;S.ui.sub.rencana='jj';try{const out=tRencana(ms,mf,mk);const prefix='<div class="card">'+subNav('rencana',[['sh','Stakeholder'],['esm','Matriks Experience–Support'],['kom','Komunikasi'],['pel','Pelatihan'],['jj','Jejaring']],'sh')+'</div>';return out.startsWith(prefix)?out.slice(prefix.length):out;}finally{S.ui.sub.rencana=prev;}}
+function viewCmo(tab,mk){
+ const f=tab==='jaringan'?'rencana':tab==='pelaksanaan'?'impl':tab==='cra'?'adp':tab;
+ const descriptions={
+ adp:'Analisis Dampak Perubahan (ADP) — As-Is, To-Be, POSTeR, risiko, dan indikator keberhasilan.',
+ rencana:'Perencanaan perubahan — stakeholder, matriks experience–support, komunikasi, dan pelatihan.',
+ jaringan:'Pembentukan dan aktivasi jaringan perubahan, KEP penugasan, serta kesiapan T-Agent per unit.',
+ cra:'Asesmen kesiapan perubahan: bank pertanyaan berbasis peran, survei, analitik, action plan, dan perbandingan pengukuran.',
+ pelaksanaan:'Realisasi kegiatan komunikasi dan pelatihan berdasarkan perencanaan perubahan.',
+ monev:'Monitoring dan evaluasi pelaksanaan, adopsi, serta keberhasilan perubahan.',
+ closing:'Transisi dan transfer kepemilikan perubahan kepada pemilik operasional.'
+ };
+ const head=mk?modHead(mk):vh('C','cmo','Change Management',descriptions[tab]||'Pengelolaan perubahan transformasi digital.','');
+ const tabs=cmoTabs(tab,mk);
+ if(tab==='cra')return head+tabs+'<div id="cm-cra-workspace" class="cm-cra-workspace"></div>';
+ const ms=mk?[modOf(mk)].filter(Boolean):visMods(f).filter(cmoMatch).filter(m=>!S.ui.mod||m.kode===S.ui.mod);
+ const mf=s=>ms.some(m=>m.kode===s.modul);
+ let body='';
+ if(lv(f)==='-')body='<div class="card empty">Peran Anda tidak memiliki akses ke tab ini.</div>';
+ else if(!ms.length)body='<div class="card empty">Belum ada modul dalam cakupan akses Anda.</div>';
+ else body=({adp:tAdp,rencana:tRencana,jaringan:tJaringan,pelaksanaan:tImpl,monev:tMonev,closing:tClosing}[tab]||(()=>''))(ms,mf,mk);
+ return head+tabs+(mk?'':cmoFlt(f,tab))+body;
+}
 function modHead(mk){const m=modOf(mk);if(!m)return `<div class="card empty">Modul ${esc(mk)} tidak ditemukan (item ADP mungkin diarsipkan).</div>`;const sm=S.sub.filter(s=>s.modul===mk);
  return `<div class="vh"><a href="#cmo-siklus" class="btn sm">‹ Semua modul</a></div><div class="mhead"><div class="pic cmo" style="width:44px;height:44px;border-radius:11px;display:grid;place-items:center;color:#fff;font-weight:800">M</div>
  <div style="min-width:0"><div class="s">${esc(m.aplikasi)} › Modul</div><h1 style="font-size:19px;margin:0;font-weight:800">${esc(m.nama)} <span class="code">${m.kode}</span><button class="hlp" data-act="help" data-v="${esc(VIEW)}" data-t="Ruang kerja modul" title="Panduan ruang kerja modul" aria-label="Panduan ruang kerja modul">?</button></h1><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">${sm.map((s,i)=>`<span class="smc"><i>${m.kode}.${i+1}</i>${esc(s.nama)}</span>`).join('')||'<span class="chip c-warn">Sub modul belum diisi di ADP</span>'}</div></div>
