@@ -22,6 +22,44 @@ var css=[
 '.txcs-tab{flex:1 0 auto;min-width:115px;white-space:nowrap;border:0;background:transparent;color:#58708e;cursor:pointer;border-radius:9px;padding:10px 13px;font:800 12px inherit;transition:.16s}',
 '.txcs-tab:hover{background:#eff3fa;color:#143862}',
 '.txcs-tab.on{color:#fff;background:#10345c;box-shadow:0 3px 10px rgba(6,32,65,.17)}',
+'.txcs-ko{min-width:0}',
+'.txcs-ko .ko-nav{display:flex;align-items:center;gap:7px;overflow-x:auto;padding:7px 0 11px;scrollbar-width:thin;flex-wrap:nowrap}',
+'.txcs-ko .ko-nav .t{flex:none;font-size:11px;color:#667991;font-weight:850;text-transform:uppercase;letter-spacing:.08em}',
+'.txcs-ko .ko-nav .pc{white-space:nowrap;flex:none;padding:8px 11px;border-radius:9px;border:1px solid #d9e3ef;background:#f4f7fb;color:#406080;font-size:11px;font-weight:780;cursor:pointer}',
+'.txcs-ko .ko-nav .pc:hover{background:#eaf2fa}',
+'.txcs-ko .ko-nav .pc.on{background:#12365f;color:#fff;border-color:#12365f;box-shadow:0 3px 8px rgba(12,43,79,.13)}',
+'.txcs-ko .ko-nav .pc.on b{color:#fff}',
+'.txcs-ko .ko-p{padding:6px 0}',
+'.txcs-ko-over{display:grid;gap:12px}',
+'.txcs-koHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;background:#fff;border:1px solid #e0e7f0;padding:17px 19px;border-radius:13px}',
+'.txcs-koHead h4{margin:0 0 5px;font-size:17px;color:#163a5e;font-weight:850}',
+'.txcs-koHead p{margin:0;font-size:12px;color:#64758a;line-height:1.6;max-width:790px}',
+'.txcs-koStatus{font-size:10px;font-weight:850;color:#9a6a10;background:#fff3d6;border:1px solid #f2d796;border-radius:20px;padding:6px 10px;white-space:nowrap}',
+'.txcs-koTrack{display:grid;grid-template-columns:165px minmax(0,1fr);overflow:hidden;border:1px solid #dfe7f1;border-radius:13px;background:#fff}',
+'.txcs-koTrackTitle{display:flex;align-items:center;padding:13px 15px;background:#103760;color:white;font-size:12px;font-weight:850;line-height:1.5}',
+'.txcs-koTrackTitle.cmo{background:#0f7a81}',
+'.txcs-koTrackSteps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}',
+'.txcs-koTrackStep{padding:13px 12px;border-left:1px solid #e6ebf1;min-width:0;display:flex;flex-direction:column;gap:4px}',
+'.txcs-koTrackStep small{font-size:10px;font-weight:900;color:#b07a1e}',
+'.txcs-koTrackStep b{font-size:11.5px;font-weight:820;color:#173859;line-height:1.35}',
+'.txcs-koTrackStep span{font-size:10.8px;color:#61758c;line-height:1.4}',
+'.txcs-ko-bridge{margin:0;padding:12px 14px;background:#eaf6f5;border:1px solid #cbe8e6;border-left:4px solid #0d7e85;border-radius:10px;font-size:11.5px;color:#285f62;line-height:1.6}',
+'.txcs-koChoicesTitle{font-size:14px;font-weight:850;color:#1a3f64;margin:4px 0 -2px}',
+'.txcs-koChoiceGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}',
+'.txcs-koChoice{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:5px;background:#fff;border:1px solid #dbe5ee;border-radius:12px;padding:14px;min-height:135px;cursor:pointer;transition:box-shadow .15s,transform .15s,border-color .15s}',
+'.txcs-koChoice:hover,.txcs-koChoice:focus-visible{border-color:#b6a162;box-shadow:0 8px 18px rgba(15,46,79,.12);transform:translateY(-2px)}',
+'.txcs-koChoice em{display:grid;place-items:center;width:26px;height:26px;border-radius:8px;background:#12385f;color:#ffcc49;font-size:11px;font-style:normal;font-weight:900}',
+'.txcs-koChoice b{font-size:12px;color:#183e60;line-height:1.4;font-weight:850}',
+'.txcs-koChoice span{font-size:10.5px;color:#75849a;line-height:1.4;flex:1}',
+'.txcs-koChoice u{font-size:10px;font-weight:800;text-decoration:none;color:#0e7f87}',
+'.txcs-ko .ko-ph-h h4{font-size:17px;color:#16395e}',
+'.txcs-ko .ko-ph-h span{line-height:1.4}',
+'.txcs-ko .ko-wrap{background:#fff;overflow:auto;border:1px solid #dbe5ee;border-radius:13px}',
+'.txcs-ko .ko-svg{display:block;width:100%;min-width:1020px;height:auto}',
+'.txcs-ko .ko-src{line-height:1.6}',
+'.txcs-koHint{font-size:11px;color:#647c91;margin:3px 0 10px}',
+'@media(max-width:1180px){.txcs-koChoiceGrid{grid-template-columns:repeat(3,minmax(0,1fr))}.txcs-koTrack{grid-template-columns:132px minmax(0,1fr)}.txcs-koTrackStep{padding:9px 8px}}',
+'@media(max-width:800px){.txcs-koChoiceGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.txcs-koTrack{display:flex;flex-direction:column}.txcs-koTrackSteps{overflow-x:auto;min-width:0}.txcs-koTrackStep{min-width:150px}.txcs-koHead{flex-direction:column}}',
 '.txcs-scroll{padding:22px 24px 30px;overflow:auto;flex:1;scrollbar-gutter:stable}',
 '.txcs-pane[hidden]{display:none!important}',
 '.txcs-secTitle{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:17px}',
@@ -196,9 +234,13 @@ metrics([['Titik awal','Implementasi sistem baru'],['Evaluasi pascaimplementasi'
 ['Tanggung jawab dialihkan','Pemilik proses bisnis/unit operasional menerima pendampingan dan pengelolaan lanjutan melalui BAST atau dokumen sejenis.']
 ])+'</div>'+
 note('<b>Urutan:</b> Go-live & masa transisi → Evaluasi Pascaimplementasi Perubahan → Penutupan Manajemen Perubahan. Evaluasi PMO atas manfaat proyek tetap berdiri sendiri setelah penutupan proyek.')}
+function pageKoordinasi(){
+ return sec('Alur Koordinasi PMO–CMO','Diagram swimlane per peran dan hubungan koordinasi sepanjang siklus proyek serta perubahan. Klik fase untuk melihat alur lengkap.')+
+  (typeof koHtml==='function'?'<div class="txcs-ko">'+koHtml()+'</div>':note('Diagram koordinasi belum dapat dimuat. Muat ulang halaman untuk mengambil versi terbaru.'));
+}
 var tabs={
- pmo:[['framework','Framework',function(){return pageFramework('pmo')}],['tenggat','Tahapan & Tenggat',pageTenggat],['tata','Tata Kelola',function(){return pageGovernance('pmo')}],['sinergi','Sinergi PMO–CMO',pageSync]],
- cmo:[['framework','Framework',function(){return pageFramework('cmo')}],['tata','Tata Kelola',function(){return pageGovernance('cmo')}],['closing','Evaluasi & Closing',pageClosing],['kom','Rekomendasi Komunikasi',pageComm],['knowledge','Portal Knowledge',pageKnowledge],['transisi','Aduan Masa Transisi',pageTransisi],['resmi','Aduan Resmi',pageResmi]]
+ pmo:[['framework','Framework',function(){return pageFramework('pmo')}],['koordinasi','Alur Koordinasi',pageKoordinasi],['tenggat','Tahapan & Tenggat',pageTenggat],['tata','Tata Kelola',function(){return pageGovernance('pmo')}],['sinergi','Sinergi PMO–CMO',pageSync]],
+ cmo:[['framework','Framework',function(){return pageFramework('cmo')}],['koordinasi','Alur Koordinasi',pageKoordinasi],['tata','Tata Kelola',function(){return pageGovernance('cmo')}],['closing','Evaluasi & Closing',pageClosing],['kom','Rekomendasi Komunikasi',pageComm],['knowledge','Portal Knowledge',pageKnowledge],['transisi','Aduan Masa Transisi',pageTransisi],['resmi','Aduan Resmi',pageResmi]]
 };
 var current=null,prevFocus=null;
 function closeCheatsheet(){if(!current)return;current.remove();current=null;document.removeEventListener('keydown',onKey);if(prevFocus&&prevFocus.focus)prevFocus.focus()}
@@ -209,8 +251,8 @@ function openCheatsheet(mode){addStyle();closeCheatsheet();mode=mode==='pmo'?'pm
 '<nav class="txcs-toolbar" role="tablist" aria-label="Tab cheatsheet">'+arr.map(function(a,i){return '<button type="button" class="txcs-tab'+(i?'':' on')+'" role="tab" aria-selected="'+(!i)+'" data-tx-tab="'+a[0]+'">'+a[1]+'</button>'}).join('')+'</nav>'+
 '<div class="txcs-scroll">'+arr.map(function(a,i){return '<section class="txcs-pane" role="tabpanel" data-tx-pane="'+a[0]+'"'+(i?' hidden':'')+'>'+a[2]()+'</section>'}).join('')+'</div>'+
 '<footer class="txcs-foot"><span><b>Cheatsheet = referensi tata kelola.</b> Untuk cara mengisi aplikasi, gunakan ikon <b>?</b> Bantuan di masing-masing halaman.</span><span>Draft · November 2026</span></footer></section>';
-document.body.appendChild(ov);current=ov;document.addEventListener('keydown',onKey);ov.addEventListener('click',function(e){if(e.target===ov||e.target.closest('[data-txclose]')){closeCheatsheet();return}var btn=e.target.closest('[data-tx-tab]');if(!btn)return;var key=btn.getAttribute('data-tx-tab');ov.querySelectorAll('[data-tx-tab]').forEach(function(x){var yes=x.getAttribute('data-tx-tab')===key;x.classList.toggle('on',yes);x.setAttribute('aria-selected',String(yes))});ov.querySelectorAll('[data-tx-pane]').forEach(function(p){p.hidden=p.getAttribute('data-tx-pane')!==key});ov.querySelector('.txcs-scroll').scrollTop=0});ov.querySelector('.txcs-x').focus();return ov}
+document.body.appendChild(ov);current=ov;if(typeof koWire==='function')koWire(ov);document.addEventListener('keydown',onKey);ov.addEventListener('click',function(e){if(e.target===ov||e.target.closest('[data-txclose]')){closeCheatsheet();return}var btn=e.target.closest('[data-tx-tab]');if(!btn)return;var key=btn.getAttribute('data-tx-tab');ov.querySelectorAll('[data-tx-tab]').forEach(function(x){var yes=x.getAttribute('data-tx-tab')===key;x.classList.toggle('on',yes);x.setAttribute('aria-selected',String(yes))});ov.querySelectorAll('[data-tx-pane]').forEach(function(p){p.hidden=p.getAttribute('data-tx-pane')!==key});ov.querySelector('.txcs-scroll').scrollTop=0});ov.querySelector('.txcs-x').focus();return ov}
 window.openTxCheatsheet=openCheatsheet;
-window.txCheatsheetVersion='2026.11-KMK6';
+window.txCheatsheetVersion='2026.11-KMK6-koordinasi-v3';
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addStyle);else addStyle();
 })();
