@@ -2179,6 +2179,110 @@ table.act-tbl{width:100%;min-width:1120px;table-layout:fixed;border-collapse:col
 #ch-active-document>.chtuj:first-child,#ch-active-document>*:first-child{margin-top:0!important}
 @media(max-width:1200px){.ch-tabbar{flex-wrap:wrap}.ch-tabbar .chtabs{flex-basis:100%}.ch-document-actions{margin-left:auto!important}}
 
+/* Aktivitas Daftar: salinan gaya bar filter + Agenda Hari Ini Dashboard CM */
+.cmx{--navy-900:#0B1B3D;--navy-800:#12275A;--navy-700:#1B3A73;--navy-600:#254A8C;--gold-500:#C8A84B;--gold-400:#DEC079;--gold-100:#F6EFDC;--bg:#F3F5FA;--surface:#fff;--ink-900:#141B2E;--ink-700:#333E58;--ink-500:#5D6785;--ink-300:#9AA3BD;--border:#E3E7F1;--border-soft:#EDF0F7;--gray-bg:#EEF0F4;--shadow-sm:0 1px 2px rgba(15,25,60,.06);--radius:14px;font-family:Inter,sans-serif}
+.cmx{.filter-bar{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 16px;margin-bottom:18px;box-shadow:var(--shadow-sm);
+}
+.filter-bar-row1{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+.filter-bar-body{
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  margin-top:12px;padding-top:12px;border-top:1px solid var(--border-soft);
+}
+.filter-bar-body.hidden{display:none;}
+.btn-filter-toggle{
+  border:1px solid var(--border);background:var(--bg);color:var(--ink-700);
+  border-radius:9px;padding:9px 13px;font-size:12.5px;font-weight:600;
+  display:flex;align-items:center;gap:7px;cursor:pointer;font-family:'Inter',sans-serif;
+  white-space:nowrap;transition:background .15s ease,border-color .15s ease;
+}
+.search-wrap{position:relative;flex:1 1 240px;min-width:200px;}
+.search-wrap input{
+  width:100%;padding:9px 40px 9px 34px;border:1px solid var(--border);border-radius:9px;
+  font-size:13px;font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink-900);
+}
+.search-wrap input:focus{outline:2px solid var(--navy-600);outline-offset:-1px;background:#fff;}
+.search-wrap > svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink-300);pointer-events:none;}
+.search-clear-btn{
+  position:absolute;right:7px;top:50%;transform:translateY(-50%);z-index:2;
+  width:30px;height:30px;padding:0;border:1px solid transparent;border-radius:8px;background:transparent;
+  display:flex;align-items:center;justify-content:center;color:var(--navy-700);cursor:pointer;
+  transition:background .15s ease,color .15s ease,border-color .15s ease,opacity .15s ease;
+}
+.search-clear-btn:hover:not(:disabled){background:var(--gray-bg);border-color:var(--border);color:var(--navy-900);}
+.search-clear-btn:focus-visible{outline:2px solid var(--navy-600);outline-offset:1px;}
+.search-clear-btn:disabled{opacity:.28;cursor:default;}
+.search-clear-btn svg{position:static;width:18px;height:18px;transform:none;pointer-events:none;}
+select.filter-select, input.filter-date{
+  padding:9px 10px;border:1px solid var(--border);border-radius:9px;font-size:12.5px;
+  font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink-700);cursor:pointer;min-width:130px;
+}
+input.filter-date{cursor:default;min-width:128px;}
+.filter-date-sep{font-size:12px;color:var(--ink-300);}
+select.filter-select:focus, input.filter-date:focus{outline:2px solid var(--navy-600);outline-offset:-1px;}
+.today-agenda{position:relative;margin:0 0 14px;border:1px solid #D6AD3A;border-radius:14px;background:linear-gradient(120deg,#FFFDF6,#FAF3DF);box-shadow:var(--shadow-sm);overflow:hidden}.today-agenda-body{display:grid;grid-template-columns:270px minmax(0,1fr);gap:0;min-height:190px}.today-summary{border:0;background:linear-gradient(145deg,var(--navy-900),var(--navy-700));color:#fff;padding:20px 20px 18px;text-align:left;cursor:pointer;display:grid;grid-template-columns:42px 1fr;grid-template-rows:auto 1fr;column-gap:12px;align-items:start}.today-summary:hover{filter:brightness(1.06)}.today-icon{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--gold-500);color:var(--navy-900)}.today-icon svg{width:20px;height:20px}.today-summary-copy b{font-family:'Sora',sans-serif;font-size:16px;display:block}.today-summary-copy small{font-size:11.5px;color:#CAD5EB;display:block;margin-top:3px}.today-summary-total{grid-column:1/-1;align-self:end;border-top:1px solid rgba(255,255,255,.24);padding-top:13px;margin-top:18px;text-align:center}.today-summary-total small{display:block;font-size:11px;color:#CFDAEC}.today-summary-total strong{display:inline-block;font-family:'Sora',sans-serif;font-size:29px;color:#fff;line-height:1;margin-top:6px;position:relative}.today-summary-total strong:hover{color:var(--gold-400)}.today-summary-total em{display:block;font-style:normal;font-size:9.5px;color:var(--gold-400);margin-top:6px;font-weight:700}.today-summary:hover .today-summary-total em{text-decoration:underline}.today-list-wrap{padding:14px 18px 12px;min-width:0}.today-list-head,.today-agenda-row{display:grid;grid-template-columns:110px minmax(190px,1.7fr) 130px 120px 115px;gap:10px;align-items:center}.today-list-head{padding:0 10px 7px;color:#8A6A1B;font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}.today-list{display:grid;gap:6px}.today-agenda-row{width:100%;border:1px solid #E8DFC7;border-radius:9px;background:rgba(255,255,255,.92);padding:9px 10px;text-align:left;cursor:pointer;color:var(--ink-700);font:inherit}.today-agenda-row:hover{border-color:var(--gold-500);background:#fff;box-shadow:var(--shadow-sm)}.today-time{font-size:11.5px;font-weight:800;color:#9A6B09}.today-time.am{color:#1F3F86}.today-time.pm{color:#9A6B09}.today-main{min-width:0}.today-main b{display:block;font-size:11.8px;color:var(--ink-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.today-main small{display:block;font-size:10px;color:var(--ink-500);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.today-pic{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.today-empty{padding:30px 12px;text-align:center;color:var(--ink-500);font-size:12px}.today-more{margin:8px auto 0;display:block;border:0;background:transparent;color:#8A6A1B;font-size:10.5px;font-weight:700;cursor:pointer}.today-collapse{position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;border:1px solid #D9B85C;background:var(--gold-500);color:var(--navy-900);display:grid;place-items:center;cursor:pointer;z-index:3}.today-collapsed-line{display:none}.today-agenda.collapsed{min-height:0}.today-agenda.collapsed .today-agenda-body{display:none}.today-agenda.collapsed .today-collapsed-line{display:flex;width:100%;border:0;background:linear-gradient(90deg,var(--navy-900) 0 280px,#FFF9E9 280px);padding:12px 50px 12px 18px;align-items:center;gap:10px;cursor:pointer;color:var(--navy-900);text-align:left}.today-agenda.collapsed .today-collapsed-line>span:first-child{color:var(--gold-400)}.today-agenda.collapsed .today-collapsed-line b{font-family:'Sora',sans-serif;color:#fff;margin-right:6px}.today-agenda.collapsed .today-collapsed-line small{margin-left:auto;color:var(--ink-500)}
+@media(max-width:1050px){.today-agenda-body{grid-template-columns:230px minmax(0,1fr)}.today-list-head,.today-agenda-row{grid-template-columns:90px minmax(160px,1fr) 105px 90px}.today-list-head span:nth-child(4),.today-agenda-row .today-pic{display:none}}
+.today-agenda-row,
+.today-agenda-row > *,
+.today-main,
+.today-title-line,
+.today-pic { min-width:0; max-width:100%; }
+
+
+.today-list-head,
+.today-agenda-row {
+  grid-template-columns:
+    minmax(76px,.62fr)
+    minmax(0,2.8fr)
+    minmax(88px,.86fr)
+    minmax(92px,1.05fr)
+    minmax(108px,1.12fr);
+  gap:8px;
+}
+.today-agenda-row .cat-badge,
+.today-agenda-row .status-badge {
+  min-width:0;
+  max-width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  justify-content:flex-start;
+}
+.today-agenda-row .today-pic {
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+
+@media (max-width:1180px){
+  .today-list-head,
+  .today-agenda-row {
+    grid-template-columns:minmax(72px,.6fr) minmax(0,2.6fr) minmax(90px,.9fr) minmax(108px,1.15fr);
+  }
+  .today-list-head span:nth-child(4),
+  .today-agenda-row .today-pic { display:none; }
+}
+
+}
+.cmx .cb{border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;font-family:'Inter',sans-serif;white-space:nowrap;background:#fff;color:var(--navy-800)}
+.cmx .cb.rst{background:linear-gradient(180deg,#D24545,#A92E2E);color:#fff;border-color:#8E2323;box-shadow:0 3px 9px rgba(169,46,46,.22)}
+.cmx .cb.rep{background:linear-gradient(180deg,#E7C45E,#D8AA32);color:var(--navy-900);border-color:#D3A52E;box-shadow:0 3px 9px rgba(200,168,75,.18)}
+.cmx .cb.nav{background:linear-gradient(180deg,#22458F,#1B3A73);color:#fff;border-color:#12275A;box-shadow:0 3px 9px rgba(18,39,90,.22)}
+.cmx .cb:hover{filter:brightness(1.06)}
+.cmx .filter-bar{margin-bottom:14px}.cmx .search-wrap input{font-family:Inter,sans-serif}
+.cmx select.filter-select,.cmx input.filter-date{min-width:0;flex:0 1 auto}
+.cmx .today-agenda-row .cat-badge,.cmx .today-agenda-row .status-badge{display:inline-flex}
+.cmx .today-title-line{display:flex;align-items:center;gap:6px;min-width:0}
+.cmx .btn-filter-toggle{border:1px solid var(--border);background:var(--bg);color:var(--ink-700);border-radius:9px;padding:9px 13px;font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:7px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap}
+.cmx .btn-filter-toggle:hover{background:var(--gold-100);border-color:var(--gold-400)}
+.cmx .btn-filter-toggle svg{width:14px;height:14px;transition:transform .18s ease}.cmx .btn-filter-toggle.open svg:last-child{transform:rotate(180deg)}
+.cmx .filter-active-badge{background:var(--navy-700);color:#fff;font-size:10.5px;font-weight:700;border-radius:20px;min-width:17px;height:17px;padding:0 5px;display:inline-flex;align-items:center;justify-content:center}
+.cmx .cat-badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.cmx .status-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.cmx .count-badge{background:var(--gray-bg);color:var(--ink-500);border-radius:20px;padding:2px 9px;font-size:11px;font-weight:700}
+.cmx .today-open-link{color:var(--navy-700);text-decoration:none;font-weight:800;flex:none}
 /* Aktivitas: tab Overview/Matriks/Tim (salinan gaya Dashboard CM) */
 .analytics-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:14px;padding:14px}.analytics-grid>*{min-width:0}
 @media(max-width:1000px){.analytics-grid{grid-template-columns:1fr}}
@@ -4540,7 +4644,7 @@ function oneDocs(x){const c=(k,l)=>{const h=notulaChip(x[k],1);return h?'<div cl
 function actDocPills(x){const n=k=>{const a=attNorm(x[k]);return a.items.length||(a.no?1:0)},o=[['st','ST',n('st')],['materi','Materi',n('materi')],['notula','Notula',n('notula')],['notulaTeks','Notulen',String(x.notulaTeks||'').replace(/<[^>]*>|&nbsp;/g,'').trim()?1:0],['dok','Dok.',n('dok')]].filter(r=>r[2]);
  return o.length?o.map(r=>'<span class="dpill" title="'+r[1]+(r[2]>1?' ('+r[2]+' berkas)':'')+'">'+r[1]+(r[2]>1?' <i>'+r[2]+'</i>':'')+'</span>').join(''):''}
 function pAktDaftar(){const all=getOneOnOne().filter(x=>!isOne(x)||x.keAkt),tw=+S.ui.oneTw||0,kat=S.ui.actKat||'',sf=S.ui.actSt||'',pf=S.ui.actPic||'',qq=(S.ui.actQ||'').toLowerCase().trim(),M=actMaster();
- const rows=all.filter(x=>(!tw||oneTwOf(x)===tw)&&(!kat||actKatOf(x)===kat)&&(!sf||actStBase(x)===sf)&&(!pf||(x.pic||[]).includes(pf))&&(!qq||actHay(x).includes(qq)));
+ const U=S.ui,rows=all.filter(x=>(!tw||oneTwOf(x)===tw)&&(!kat||actKatOf(x)===kat)&&(!sf||actStBase(x)===sf)&&(!pf||(x.pic||[]).includes(pf))&&(!U.actProg||x.program===U.actProg)&&(!U.actUnit||x.unitP===U.actUnit)&&(!U.actLay||x.layanan===U.actLay)&&(!U.actFrom||(x.tglSelesai||x.tgl||'')>=U.actFrom)&&(!U.actTo||(x.tgl||'9999')<=U.actTo)&&(!qq||actHay(x).includes(qq)));
  const editable=actCanEdit(),canDel=lv('wbs').includes('D'),hari=all.filter(x=>x.tgl&&x.tgl<=TODAY&&(x.tglSelesai||x.tgl)>=TODAY&&!['Dibatalkan','Ditunda'].includes(x.stat));
  const nUp=all.filter(x=>x.tgl&&x.tgl>=TODAY&&!['Dibatalkan','Ditunda','Tidak Dihadiri'].includes(x.stat)).length,nDone=all.filter(x=>actStBase(x)==='Selesai').length,nNot=all.filter(actHasNotula).length;
  const ic=p=>`<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
@@ -4580,14 +4684,25 @@ function pAktDaftar(){const all=getOneOnOne().filter(x=>!isOne(x)||x.keAkt),tw=+
   (editable?ib('oneEdit','<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>','Ubah aktivitas',x.id,'ib-edit')+ib('oneSt','<rect x="4" y="7" width="16" height="12" rx="2"/><path d="M9 7V5h6v2M4 12h16"/>','Konsep Surat Tugas (Word)',x.id)+ib('oneDup','<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>','Duplikat aktivitas',x.id)+(canDel?ib('oneDel','<path d="M4 7h16M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13M9 7V4h6v3"/>','Hapus aktivitas',x.id,'ib-del'):''):'')+'</div></td></tr>'};
  const th=(k,l)=>'<th class="srt" data-act="oneSort" data-k="'+k+'" role="button" tabindex="0" aria-sort="'+(sk===k?(sd>0?'ascending':'descending'):'none')+'">'+l+(sk===k?'<span class="sort-ind">'+(sd>0?'▲':'▼')+'</span>':'')+'</th>';
  const pgn=rows.length?'<div class="act-pgn"><span>Menampilkan '+((pg-1)*ps+1)+'–'+Math.min(pg*ps,rows.length)+' dari '+rows.length+' aktivitas</span><span class="pg-r"><label>Baris <select class="inp act-f" data-actf="actPs" aria-label="Baris per halaman">'+[10,20,50,100].map(n=>'<option'+(n===ps?' selected':'')+'>'+n+'</option>').join('')+'</select></label><button class="btn sm" data-act="onePg" data-v="'+(pg-1)+'"'+(pg<=1?' disabled':'')+'>‹</button><b>'+pg+' / '+pages+'</b><button class="btn sm" data-act="onePg" data-v="'+(pg+1)+'"'+(pg>=pages?' disabled':'')+'>›</button></span></div>':'';
- return vh('1','pmo','Aktivitas','Seluruh kegiatan PMO dan CMO Kemenkeu: 1-on-1 T-Program, forum, rapat koordinasi, pendampingan, lengkap dengan PIC, notulen, dokumentasi, dan notula.',acts)+actTabs()+
- (hari.length?'<div class="note i act-today"><span><b>Agenda hari ini:</b> '+hari.map(x=>esc(actName(x))+(x.jam?' ('+esc(x.jam)+')':'')).join(' · ')+'</span></div>':'')+
- '<div class="kpis"><div class="kpi dk"><div class="l">Total aktivitas'+(tw?' · TW '+ONE_RM[tw]:'')+'</div><div class="v">'+(tw?all.filter(x=>oneTwOf(x)===tw).length:all.length)+'</div><div class="d">Tahun '+S.ui.tahun+'</div></div><div class="kpi"><div class="l">Akan datang</div><div class="v">'+nUp+'</div></div><div class="kpi"><div class="l">Selesai</div><div class="v">'+nDone+'</div></div><div class="kpi"><div class="l">Notulen/notula terisi</div><div class="v">'+nNot+'</div></div></div>'+
- '<div class="card"><div class="ch"><h3>Daftar Aktivitas</h3><span class="r row" style="gap:8px;align-items:center;flex-wrap:wrap">'+seg+'</span></div>'+
- '<div class="act-bar"><input class="inp act-q" type="search" data-actf="actQ" value="'+esc(S.ui.actQ||'')+'" placeholder="Cari kegiatan, PIC, lokasi, notulen… lalu Enter" aria-label="Cari aktivitas">'+sel('actKat','Kategori',M.kat,kat)+sel('actSt','Status',['Menunggu Konfirmasi','Terjadwal','Hari ini','Berlangsung','Selesai','Ditunda','Tidak Dihadiri','Dibatalkan','Belum dijadwalkan'],sf)+sel('actPic','PIC',picNames,pf)+((kat||sf||pf||qq)?'<button class="btn sm" data-act="oneReset">Reset filter</button>':'')+
- (editable?'<span class="act-one"><b>1-on-1:</b><button class="btn sm" data-act="oneDraft" title="Buat konsep undangan rapat 1-on-1 satu triwulan">⎙ Konsep undangan</button><button class="btn sm" data-act="oneImp">⇪ Impor undangan</button><button class="btn sm" data-act="oneCopyTw" title="Salin sesi 1-on-1 ke triwulan berikutnya">⧉ Salin ke TW berikutnya</button></span>':'')+'</div>'+
+ const fsel=(k,lab,list,cur)=>'<select class="filter-select" data-actf="'+k+'" aria-label="'+lab+'"><option value="">'+lab+'</option>'+list.map(v=>{const val=Array.isArray(v)?v[0]:v,tx=Array.isArray(v)?v[1]:v;return '<option value="'+esc(val)+'"'+(val===cur?' selected':'')+'>'+esc(tx)+'</option>'}).join('')+'</select>';
+ const nAct=[tw,kat,sf,pf,qq,U.actProg,U.actUnit,U.actLay,U.actFrom,U.actTo].filter(Boolean).length,fopen=!U.actFClosed;
+ const uniq=f=>[...new Set(all.map(f).filter(Boolean))].sort();
+ const fbar='<div class="card filter-bar" style="border-radius:14px"><div class="filter-bar-row1"><div class="search-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input type="search" data-actf="actQ" value="'+esc(U.actQ||'')+'" placeholder="Cari kegiatan, PIC, program, kategori, lokasi, notulen… lalu Enter" aria-label="Cari aktivitas">'+(U.actQ?'<button type="button" class="search-clear-btn" data-act="actClear" title="Hapus pencarian" aria-label="Hapus pencarian"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>':'')+'</div>'+
+  '<button type="button" class="btn-filter-toggle'+(fopen?' open':'')+'" data-act="actFOpen" aria-expanded="'+fopen+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>Filter'+(nAct?' <span class="filter-active-badge">'+nAct+'</span>':'')+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 15l6-6 6 6"/></svg></button></div>'+
+  '<div class="filter-bar-body'+(fopen?'':' hidden')+'">'+
+  '<select class="filter-select" data-actf="oneTw" aria-label="Triwulan"><option value="0">Semua Triwulan</option>'+[1,2,3,4].map(t=>'<option value="'+t+'"'+(tw===t?' selected':'')+'>TW '+ONE_RM[t]+'</option>').join('')+'</select>'+
+  fsel('actKat','Semua Kategori',M.kat,kat)+fsel('actProg','Semua Program',uniq(x=>x.program),U.actProg||'')+fsel('actUnit','Semua Unit Pemohon',uniq(x=>x.unitP),U.actUnit||'')+fsel('actLay','Semua (Layanan & Non-Layanan)',['Ya','Tidak'].map(v=>[v,v==='Ya'?'Layanan':'Non-Layanan']),U.actLay||'')+fsel('actSt','Semua Status',['Menunggu Konfirmasi','Terjadwal','Hari ini','Berlangsung','Selesai','Ditunda','Tidak Dihadiri','Dibatalkan','Belum dijadwalkan'],sf)+fsel('actPic','Semua PIC',picNames,pf)+
+  '<input type="date" class="filter-date" data-actf="actFrom" value="'+esc(U.actFrom||'')+'" aria-label="Dari tanggal"><span class="filter-date-sep">s.d.</span><input type="date" class="filter-date" data-actf="actTo" value="'+esc(U.actTo||'')+'" aria-label="Sampai tanggal">'+
+  '<button type="button" class="cb rst" data-act="oneReset">'+'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+'<path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>Reset</button><button type="button" class="cb rep" data-act="oneExport" title="Ekspor daftar aktivitas ke Excel">'+'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+'<path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4M10 13h6M10 17h6"/></svg>Laporan</button></div></div>';
+ const tdy=all.filter(x=>x.tgl&&x.tgl<=TODAY&&(x.tglSelesai||x.tgl)>=TODAY).sort((a,b)=>String(a.jam||'99').localeCompare(String(b.jam||'99')));
+ const dlab=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'}),tcol=!!U.actTodayCol;
+ const trow=x=>{const st=actSt(x),lk=actLink(x),tm=String(x.jam||'').match(/(\d{1,2})[.:]\d{2}/);return '<div class="today-agenda-row" role="button" tabindex="0" data-act="oneEdit" data-id="'+esc(x.id)+'" title="Buka detail aktivitas"><span class="today-time '+(tm?(+tm[1]<12?'am':'pm'):'')+'">'+esc(x.jam?jm(x.jam):'Seharian')+'</span><span class="today-main"><span class="today-title-line"><b>'+esc(actName(x))+'</b>'+(lk?'<a class="today-open-link" href="'+esc(lk)+'" target="_blank" rel="noopener" title="Buka tautan" aria-label="Buka tautan" onclick="event.stopPropagation()">↗</a>':'')+'</span><small>'+esc(x.unitP||'')+'</small></span><span class="cat-badge" style="'+kcol(actKatOf(x))+'">'+esc(actKatOf(x))+'</span><span class="today-pic">'+esc((x.pic||[]).join(', '))+'</span><span class="status-badge" style="'+scol(st[0])+'">'+esc(st[0])+'</span></div>'};
+ const today='<section class="today-agenda'+(tcol?' collapsed':'')+'"><div class="today-agenda-body"><button type="button" class="today-summary" data-act="actTodayCol"><span class="today-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span><span class="today-summary-copy"><b>Agenda Hari Ini</b><small>'+esc(dlab)+'</small></span><span class="today-summary-total"><small>Total hari ini</small><strong>'+tdy.length+'</strong></span></button><div class="today-list-wrap"><div class="today-list-head"><span>Waktu</span><span>Agenda</span><span>Kategori</span><span>PIC</span><span>Status</span></div><div class="today-list">'+(tdy.length?tdy.slice(0,5).map(trow).join(''):'<div class="today-empty">Tidak ada agenda yang dijadwalkan hari ini.</div>')+'</div>'+(tdy.length>5?'<div class="today-more">+'+(tdy.length-5)+' agenda lainnya</div>':'')+'</div></div><button type="button" class="today-collapse" data-act="actTodayCol" aria-expanded="'+!tcol+'" title="'+(tcol?'Buka':'Tutup')+' Agenda Hari Ini"><span>'+(tcol?'▾':'▴')+'</span></button>'+(tcol?'<button type="button" class="today-collapsed-line" data-act="actTodayCol"><b>Agenda Hari Ini</b><span class="count-badge">'+tdy.length+'</span><small>'+esc(dlab)+'</small></button>':'')+'</section>';
+ return '<div class="cmx">'+vh('1','pmo','Aktivitas','Seluruh kegiatan PMO dan CMO Kemenkeu: 1-on-1 T-Program, forum, rapat koordinasi, pendampingan, lengkap dengan PIC, notulen, dokumentasi, dan notula.',acts)+actTabs()+
+ fbar+today+'<div class="card"><div class="ch"><h3>Daftar Aktivitas <span class="s">('+rows.length+')</span></h3></div>'+
+ (editable?'<div class="act-bar"><span class="act-one"><b>1-on-1:</b><button class="btn sm" data-act="oneDraft" title="Buat konsep undangan rapat 1-on-1 satu triwulan">⎙ Konsep undangan</button><button class="btn sm" data-act="oneImp">⇪ Impor undangan</button><button class="btn sm" data-act="oneCopyTw" title="Salin sesi 1-on-1 ke triwulan berikutnya">⧉ Salin ke TW berikutnya</button></span></div>':'')+
  '<div class="tscroll act-cm"><table class="act-tbl"><colgroup><col class="c-no"><col class="c-date"><col class="c-act"><col class="c-svc"><col class="c-unit"><col class="c-cat"><col class="c-prog"><col class="c-pic"><col class="c-st"><col class="c-ax"></colgroup><thead><tr><th>No</th>'+th('tgl','Tanggal / Jam')+th('nama','Kegiatan')+th('lay','Layanan')+th('unit','Unit')+th('kat','Kategori')+th('prog','Program')+'<th>PIC</th>'+th('st','Status')+'<th>Aksi</th></tr></thead><tbody>'+
- (paged.length?paged.map(tr).join(''):'<tr><td colspan="10" class="od-emp">'+(all.length?'Tidak ada aktivitas yang cocok dengan filter.':'Belum ada aktivitas.')+' Klik <b>+ Aktivitas</b> atau <b>Import Undangan</b> untuk menambah.</td></tr>')+'</tbody></table></div>'+pgn+'</div>';
+ (paged.length?paged.map(tr).join(''):'<tr><td colspan="10" class="od-emp">'+(all.length?'Tidak ada aktivitas yang cocok dengan filter.':'Belum ada aktivitas.')+' Klik <b>+ Aktivitas</b> atau <b>Import Undangan</b> untuk menambah.</td></tr>')+'</tbody></table></div>'+pgn+'</div></div>';
 }
 
 /* ===== Aktivitas: tab Overview, Matriks, Tim PMO & CMO Kemenkeu, Tim PMO & CMO Unit =====
@@ -4871,7 +4986,10 @@ ACT.oneHist=el=>{const x=(S.oneonone||[]).find(v=>v.id===el.dataset.id);if(!x)re
 /* klik baris = ubah aktivitas (kecuali klik tombol/tautan di dalam baris) */
 document.addEventListener('click',e=>{const r=e.target.closest&&e.target.closest('tr[data-rowedit]');if(!r||e.target.closest('a,button,input,select,[data-act],[data-atdl]'))return;if(!actCanEdit())return;ACT.oneEdit({dataset:{id:r.dataset.rowedit}})});
 ACT.oneTw=el=>{S.ui.oneTw=+el.dataset.v||0;save();render()};
-ACT.oneReset=()=>{S.ui.actKat='';S.ui.actSt='';S.ui.actPic='';S.ui.actQ='';save();render()};
+ACT.oneReset=()=>{['actKat','actSt','actPic','actQ','actProg','actUnit','actLay','actFrom','actTo'].forEach(k=>S.ui[k]='');S.ui.oneTw=0;S.ui.actPg=1;save();render()};
+ACT.actClear=()=>{S.ui.actQ='';S.ui.actPg=1;save();render()};
+ACT.actFOpen=()=>{S.ui.actFClosed=!S.ui.actFClosed;save();render()};
+ACT.actTodayCol=()=>{S.ui.actTodayCol=!S.ui.actTodayCol;save();render()};
 ACT.oneKelola=()=>actPicMgr();
 ACT.oneNl=el=>{const x=(S.oneonone||[]).find(v=>v.id===el.dataset.id);if(!x)return;busy('Menyusun notula…',actName(x),30);actDocxNotula(x).then(b=>{busyOff();mtRptDownloadBlob(b,'Notula_'+actName(x).replace(/[^\w]+/g,'_').slice(0,50)+'.docx')}).catch(e=>{busyOff();toast('Gagal membuat Word: '+e.message)})};
 ACT.oneSt=el=>{const x=(S.oneonone||[]).find(v=>v.id===el.dataset.id);if(!x)return;actDocxST(x).then(b=>mtRptDownloadBlob(b,'Konsep_ST_'+actName(x).replace(/[^\w]+/g,'_').slice(0,50)+'.docx')).catch(e=>toast('Gagal membuat Word: '+e.message))};
