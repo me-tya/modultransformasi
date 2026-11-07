@@ -93,6 +93,7 @@
  @media(max-width:680px){#app .ps-banner h1{font-size:21px}#app .ps-actions{width:100%}#app .ps-btn{flex:1}#app .ps-route{gap:7px}#app .ps-stage{padding:9px;gap:7px}#app .ps-stage .num{width:26px;height:26px;font-size:11px}#app .ps-stage strong{font-size:10.5px}#app .ps-stage small{font-size:9px}#app .ps-frame{min-height:850px;height:calc(100vh - 225px)}.ps-overlay{padding:8px}.ps-dialog{border-radius:15px;max-height:96vh}.ps-dialog-head{padding:18px}.ps-dialog-head h2{font-size:19px}.ps-dialog-body{padding:13px}.ps-cards,.ps-grid3{grid-template-columns:1fr}.ps-tabbar{padding:7px 9px 0;gap:2px}.ps-tabbar button{padding:8px;font-size:10.5px}.ps-dialog-foot{font-size:10px;padding:9px 12px}}
  `;
 
+ style.textContent += `
  /* Project Selection is a native page within the existing module shell, not a second dashboard. */
  body:has(#view .ps-page){overflow:hidden!important}
  #app:has(.ps-page){height:100dvh;min-height:0!important;overflow:hidden}
@@ -117,6 +118,7 @@
  .ps-account-actions button:first-child{background:#fdb913;color:#0b294b;border-color:#e2ac21}
  .ps-account-body a{font-size:11px;color:#185a98}
  @media(max-width:680px){#app .ps-page>.vh{align-items:flex-start;flex-wrap:wrap}#app .ps-page>.vh .acts{margin-left:auto}#app .ps-page>.vh h1{font-size:19px!important}.ps-account-pop{right:12px;top:110px}}
+ `;
  if(!document.getElementById(style.id))document.head.appendChild(style);
 
  function page(){
