@@ -2407,6 +2407,7 @@ const ROLES=[
  {id:'CMOK',nama:'CMO Kementerian',desk:'Pusmantap (BaTii): memberi catatan reviu dan mengusulkan item WBS, serta dapat melakukan semua tugas CMO dan PMO Unit Eselon I untuk seluruh modul dan unit.'},
  {id:'PMOU',nama:'PMO Unit Eselon I',desk:'Satu akun per UE I (PMO Setjen, PMO Itjen, … PMO LNSW). Hanya melihat program dan item WBS unitnya; memutakhirkan progres dan bukti dukung, serta mengajukan Change Request untuk item yang unitnya UIC Utama.'},
  {id:'CMOU',nama:'CMO Unit Eselon I',desk:'Menyusun ADP, perencanaan, implementasi, monev, dan closing CM modul yang unitnya UIC Utama.'},
+ {id:'KETUA',nama:'Ketua Organisasi Pengelola Proyek dan Perubahan',desk:'Memutuskan Change Request sesudah telaah PMO Kemenkeu; tidak memutakhirkan WBS.'},
  {id:'TIM',nama:'Tim CM Proyek',desk:'Satu tim per modul CM (mis. Tim CM Mekanisme Kerja), beranggotakan Pusakti, Pusilki, Puspensi, Pusdatin: memutakhirkan perencanaan, implementasi, dan monev modulnya.'}
 ];
 const FEAT=[['dash','Dashboard Eksekutif'],['porto','PMO · Portofolio Program'],['wbs','PMO · WBS & Progres'],['mil','PMO · Milestone'],['risk','PMO · Risiko & Isu'],['cr','PMO · Change Request (ajukan)'],['crok','PMO · Keputusan Change Request'],['bukti','PMO · Bukti Dukung (unggah)'],['valid','PMO · Validasi Bukti Dukung'],['lap','PMO · Laporan TW'],['ref','PMO · Referensi Kode & Usulan'],['adopsi','CMO · Tingkat Adopsi'],['adp','CMO · ADP'],['rencana','CMO · Perencanaan'],['impl','CMO · Implementasi'],['monev','CMO · Monev'],['closing','CMO · Closing CM'],['reviu','CMO · Catatan Reviu'],['usul','CMO · Usulan item WBS ke PMO'],['user','Pengaturan · Pengguna'],['akses','Pengaturan · Hak Akses'],['sinkron','Pengaturan · Aturan Sinkron CM'],['log','Pengaturan · Log Aktivitas'],['charter','PMO · Project Charter']];
@@ -2429,7 +2430,7 @@ const ST_IMPL=['Belum dijadwalkan','Terjadwal','Disiapkan','Berjalan','Terlaksan
 const ESQ={Champions:{c:'q-champ',k:'champ',ex:'High',su:'High',tip:'Libatkan sebagai change agent dan narasumber testimoni.'},Critics:{c:'q-crit',k:'crit',ex:'High',su:'Low',tip:'Dengarkan keberatan, tangani isu, dan ajak co-creation.'},Advocates:{c:'q-adv',k:'adv',ex:'Low',su:'High',tip:'Tingkatkan pengalaman lewat demo, pelatihan, dan uji coba.'},Skeptics:{c:'q-skep',k:'skep',ex:'Low',su:'Low',tip:'Bangun awareness dan alasan perubahan secara bertahap.'}};
 const segES=(ex,su)=>ex==='High'?(su==='High'?'Champions':'Critics'):(su==='High'?'Advocates':'Skeptics');
 const CR_JENIS=['Ubah item','Tambah item','Hapus/arsip item'];
-const CR_ST=['Diajukan','Telaah PMO Pusat','Dikembalikan','Ditolak','Diterapkan'];
+const CR_ST=['Diajukan','Telaah PMO Pusat','Menunggu Persetujuan Ketua','Disetujui Ketua','Dikembalikan','Ditolak','Diterapkan'];
 const RK_KAT=['Jadwal','Teknologi','Integrasi','SDM','Regulasi','Anggaran','Resistensi perubahan','Operasional'];
 const RK_ST=['Terbuka','Dimitigasi','Menjadi isu','Ditutup'];
 const PW='Transformasi2026';
@@ -2755,8 +2756,8 @@ const modOfItem=it=>mods().find(m=>m.items.includes(it));
 /* ======================== akses ======================== */
 const meLab=()=>ME.role==='CMOU'?'CMO '+esc(ME.unit):ME.role==='PMOU'?'PMO '+esc(ME.unit):roleN(ME.role)+' · '+esc(ME.unit)+(ME.sub?' ('+esc(ME.sub)+')':'');
 const roleN=id=>(ROLES.find(r=>r.id===id)||{}).nama||id;
-const lv=f=>{const r=S.akses[ME.role];return r?(r.f[f]||'-'):'-'};
-const scope=()=>(S.akses[ME.role]||{}).scope||'Unit';
+const lv=f=>{const r=S.akses[ME.role];if(!r&&ME.role==='KETUA')return f==='cr'?'R':f==='crok'?'RU':'-';return r?(r.f[f]||'-'):'-'};
+const scope=()=>ME.role==='KETUA'?'Semua':((S.akses[ME.role]||{}).scope||'Unit');
 function inScope(mk){const sc=scope();if(sc==='Semua')return true;const m=modOf(mk);if(!m)return false;if(sc==='Unit')return m.uicUnits.includes(ME.unit);return (ME.modules||[]).includes(mk)}
 function can(f,act,mk){const L=lv(f);if(L==='-'||!L.includes(act))return false;if(act==='R'&&UNREAD_SCOPED.includes(f))return true;if(mk==null)return scope()==='Semua'||mods().filter(cmoMatch).some(m=>inScope(m.kode));return inScope(mk)}
 const bkUnits=w=>[uicU(w),w.d].filter(Boolean).join(', ');
@@ -2914,7 +2915,7 @@ function splash(cb){const d=document.createElement('div');d.className='splash';d
 
 /* ======================== shell & navigasi ======================== */
 function pmoTabsVis(){return PMT.filter(t=>t[2]==='cr'?(lv('cr')!=='-'||lv('crok')!=='-'):t[2]==='bukti'?(lv('bukti')!=='-'||lv('valid')!=='-'):lv(t[2])!=='-')}
-function cmoTabsVis(){return CMT.slice()}
+function cmoTabsVis(){return ME&&ME.role==='KETUA'?[]:CMT.slice()}
 function navTree(){
  const ext=(id,l,ic,kids)=>({id,l,ic,kids:kids.map(k=>({l:k,ext:1}))});
  const trans={id:'trans',l:'Transformasi',badge:'BARU',ic:'◎',kids:[]};
@@ -2943,7 +2944,7 @@ const aktOk=()=>!!ME&&['SA','PMOK','CMOK'].includes(ME.role);
 function allowedViews(){const v=['beranda','project-selection','cra','pengelola'];if(aktOk())v.push('aktivitas');if(lv('dash')!=='-')v.push('dashboard');pmoTabsVis().forEach(t=>v.push('pmo-'+t[0]));if(lv('charter')!=='-')v.push('pmo-charter');cmoTabsVis().forEach(t=>v.push('cmo-'+t[0]));STN.forEach(t=>{if(lv(t[2])!=='-')v.push(t[0])});return v}
 function tasks(){const out=[];
  if(lv('valid').includes('U')){const n=S.wbs.filter(w=>!w.arsip&&buktiSt(w)==='Menunggu validasi').length;if(n)out.push(['PMO',`${n} bukti dukung menunggu validasi`,'pmo-bukti','Menunggu']);}
- if(lv('crok').includes('U')){const n=S.crs.filter(c=>['Diajukan','Telaah PMO Pusat'].includes(c.st)).length;if(n)out.push(['PMO',`${n} change request menunggu keputusan`,'pmo-cr','Telaah'])}
+ if(lv('crok').includes('U')){const n=S.crs.filter(c=>crCanAct(c)).length;if(n)out.push(['PMO',`${n} change request perlu tindakan Anda`,'pmo-cr',ME.role==='KETUA'?'Keputusan':'Tindakan'])}if(lv('cr').includes('U')){const n=S.crs.filter(c=>c.st==='Dikembalikan'&&c.unit===ME.unit&&(!c.pic||c.pic===ME.email)).length;if(n)out.push(['PMO',`${n} CR dikembalikan untuk perbaikan`,'pmo-cr','Perbaikan'])}
  if(lv('ref').includes('U')){const n=S.usul.filter(u=>u.st==='Diajukan').length;if(n)out.push(['PMO',`${n} usulan item dari CMO`,'pmo-referensi','Baru'])}
  const late=S.wbs.filter(w=>!w.arsip&&yrOf(w)===S.ui.tahun&&stOf(w,12)==='Terlambat'&&(scope()==='Semua'||unitsOf(w.u).includes(ME.unit))).length;if(late&&lv('wbs')!=='-')out.push(['PMO',`${late} item WBS terlambat${scope()==='Semua'?'':' di unit Anda'}`,'pmo-milestone','Terlambat']);
  const rev=mods().filter(m=>(S.modMeta[m.kode]||{}).adp==='Review CMO'&&(can('reviu','C',m.kode)||can('adp','U',m.kode)));rev.forEach(m=>out.push(['CMO',`Review ADP ${m.nama}`,`modul-${m.kode}-t-adp`,'Review']));
@@ -3806,7 +3807,7 @@ function pmoFilterPanel(tab){const P=per(),all=pmoAllWbs(),base=pmoScopedWbs(),p
  }
  return fltBar({umode:true,res,extra,chips});
 }
-function pmoCnt(){const u=curUnit(),W=S.wbs.filter(w=>!w.arsip&&unitMatch(w,u,lockM()||'up'));const WY=W.filter(w=>yrOf(w)===S.ui.tahun);return {portofolio:progVis().length,program:progVis().length,wbs:W.length,wbsplan:'',milestone:WY.filter(w=>stOf(w,12)==='Terlambat').length,risiko:S.risks.filter(r=>r.st!=='Ditutup'&&riskVis(r)).length,cr:S.crs.filter(c=>crVis(c)&&['Diajukan','Telaah PMO Pusat'].includes(c.st)).length,bukti:W.filter(w=>buktiSt(w)==='Menunggu validasi').length,laporan:'',narasi:narPending(),penutupan:'',perencanaan:'',oneonone:'',siklus:'',referensi:S.usul.filter(x=>x.st==='Diajukan').length}}
+function pmoCnt(){const u=curUnit(),W=S.wbs.filter(w=>!w.arsip&&unitMatch(w,u,lockM()||'up'));const WY=W.filter(w=>yrOf(w)===S.ui.tahun);return {portofolio:progVis().length,program:progVis().length,wbs:W.length,wbsplan:'',milestone:WY.filter(w=>stOf(w,12)==='Terlambat').length,risiko:S.risks.filter(r=>r.st!=='Ditutup'&&riskVis(r)).length,cr:S.crs.filter(c=>crVis(c)&&CR_OPEN.includes(c.st)).length,bukti:W.filter(w=>buktiSt(w)==='Menunggu validasi').length,laporan:'',narasi:narPending(),penutupan:'',perencanaan:'',oneonone:'',siklus:'',referensi:S.usul.filter(x=>x.st==='Diajukan').length}}
 function pmoTabs(cur0){let cur=VIEW.startsWith('pmo-')?VIEW.slice(4):cur0;if(cur==='charter')cur='perencanaan';const u=curUnit(),W=S.wbs.filter(w=>!w.arsip&&unitMatch(w,u,lockM()||'up'));const WY=W.filter(w=>yrOf(w)===S.ui.tahun);
  const cnt=pmoCnt();
  const vis=new Set(pmoTabsVis().map(t=>t[0]));const L=k=>(PMT.find(t=>t[0]===k)||[k,k])[1];
@@ -5371,17 +5372,26 @@ function crChanges(c,html){if(c.jenis==='Tambah item')return `Item baru “${c.n
 function crDampak(c){const it=wbsBy(c.item);if(c.jenis==='Tambah item')return c.cmBaru==='ADP'?'Besar':'Kecil';if(c.jenis==='Hapus/arsip item')return 'Besar';const ch=c.ch||{};
  if(ch.f&&(twOfDate(ch.f[1])!==twOfDate(ch.f[0])||String(ch.f[1]).slice(0,4)!==String(ch.f[0]).slice(0,4)))return 'Besar';if(ch.dl||ch.u)return 'Besar';if(it&&cmType(it)==='ADP'&&Object.keys(ch).length)return 'Besar';return 'Kecil'}
 function crVis(c){const u=lockU();if(!u)return true;const it=wbsBy(c.item);return c.unit===u||(it&&unitMatch(it,u,lockM()||'up'))}
-function pCr(){const seg=S.ui.crseg||'';const CS=pmoCrList();const rows=CS.filter(c=>!seg||(seg==='open'?['Diajukan','Telaah PMO Pusat','Dikembalikan'].includes(c.st):['Diterapkan','Ditolak'].includes(c.st))).slice().reverse();
+
+/* P0 workflow: pencatat dan pelaksana tindakan terpisah dari pejabat pengambil keputusan. */
+const CR_OPEN=['Diajukan','Telaah PMO Pusat','Menunggu Persetujuan Ketua','Disetujui Ketua','Dikembalikan'];
+function crRole(c){return ['Diajukan','Telaah PMO Pusat','Disetujui Ketua'].includes(c.st)?'PMOK':c.st==='Menunggu Persetujuan Ketua'?'KETUA':c.st==='Dikembalikan'?'PMOU':''}
+function crRecipient(role,unit){const u=(S.users||[]).find(x=>x.aktif&&x.role===role&&(!unit||x.unit===unit));return u?u.email:''}
+function crCanAct(c){return !!(ME&&c&&crRole(c)===ME.role&&(!c.pic||c.pic===ME.email))}
+function crStep(c,st,note,role,unit){c.hist=c.hist||[];c.st=st;c.pic=role?crRecipient(role,unit):'';c.hist.push({st,by:ME.email,to:c.pic||role||'',at:new Date().toISOString(),note:note||''});c.cat=note+' · '+ME.nama;log('Alur CR '+st,c.kode+' → '+(c.pic||role||'-'));save();render()}
+ACT.crroute=el=>{if(ME.role!=='SA'){toast('Hanya Superadmin yang dapat mengalihkan PIC.');return}const c=S.crs.find(x=>x.id===el.dataset.i);if(!c)return;const role=crRole(c);const us=S.users.filter(u=>u.aktif&&u.role===role&&(!c.unit||role!=='PMOU'||u.unit===c.unit));if(!us.length){toast('Belum ada akun aktif untuk peran '+role+'.');return}modal('Alihkan PIC '+c.kode,`<p class="s">Tugas ini sedang di tahap ${esc(c.st)}. Hanya PIC yang ditunjuk dapat melakukan tindakan tahap ini.</p><label class="fld">PIC penerima<select id="cr-pic" class="sel">${us.map(u=>`<option value="${esc(u.email)}" ${u.email===c.pic?'selected':''}>${esc(u.nama+' · '+u.email)}</option>`).join('')}</select></label><label class="fld">Alasan pengalihan<textarea id="cr-route-note" class="inp" rows="2"></textarea></label>`,'Alihkan tugas',()=>{const n=$('#cr-route-note').value.trim(),email=$('#cr-pic').value;if(!n){toast('Alasan pengalihan wajib diisi.');return false}c.pic=email;c.hist=c.hist||[];c.hist.push({st:c.st,by:ME.email,to:email,at:new Date().toISOString(),note:'Pengalihan PIC: '+n});log('Alihkan PIC CR',c.kode+' → '+email);save();render()})};
+
+function pCr(){const seg=S.ui.crseg||'';const CS=pmoCrList();const rows=CS.filter(c=>!seg||(seg==='open'?CR_OPEN.includes(c.st):['Diterapkan','Ditolak'].includes(c.st))).slice().reverse();
  const sla=c=>['Diajukan','Telaah PMO Pusat'].includes(c.st)&&addDays(c.tgl,7)<TODAY;
  return vh('CR','pmo','Change Request','Pengajuan dan keputusan perubahan item WBS yang sudah ber-baseline.',lv('cr').includes('C')?'<button class="btn pri" data-act="crnew">+ Change Request</button>':'')+pmoTabs('cr')+
- `<div class="kpis"><div class="kpi dk"><div class="l">CR terbuka</div><div class="v">${CS.filter(c=>['Diajukan','Telaah PMO Pusat'].includes(c.st)).length}</div></div><div class="kpi"><div class="l">Melewati SLA (5 hari kerja)</div><div class="v" style="color:var(--bad)">${CS.filter(sla).length}</div></div><div class="kpi"><div class="l">Diterapkan ${S.ui.tahun}</div><div class="v">${CS.filter(c=>c.st==='Diterapkan').length}</div></div><div class="kpi"><div class="l">Ditolak / dikembalikan</div><div class="v">${CS.filter(c=>['Ditolak','Dikembalikan'].includes(c.st)).length}</div></div></div>`+
+ `<div class="kpis"><div class="kpi dk"><div class="l">CR terbuka</div><div class="v">${CS.filter(c=>CR_OPEN.includes(c.st)).length}</div></div><div class="kpi"><div class="l">Melewati SLA (5 hari kerja)</div><div class="v" style="color:var(--bad)">${CS.filter(sla).length}</div></div><div class="kpi"><div class="l">Diterapkan ${S.ui.tahun}</div><div class="v">${CS.filter(c=>c.st==='Diterapkan').length}</div></div><div class="kpi"><div class="l">Ditolak / dikembalikan</div><div class="v">${CS.filter(c=>['Ditolak','Dikembalikan'].includes(c.st)).length}</div></div></div>`+
  tbl('cr',{ent:'change request',title:'Register CR',list:()=>S.crs,rows:()=>rows,label:c=>c.kode,open:c=>crView(c),sx:c=>c.kode+' '+c.item+' '+c.jenis+' '+crChanges(c)+' '+c.pengaju,
   tools:`<div class="seg">${[['','Semua'],['open','Terbuka'],['done','Selesai']].map(([v,l])=>`<button data-seg="crseg" data-v="${v}" class="${seg===v?'on':''}">${l}</button>`).join('')}</div>`,
-  rowAct:c=>`${lv('crok').includes('U')&&['Diajukan','Telaah PMO Pusat'].includes(c.st)?`<button data-act="crdec" data-i="${c.id}" title="Putuskan">⚖</button>`:''}${c.st==='Dikembalikan'&&c.unit===ME.unit&&lv('cr').includes('U')?`<button data-act="crre" data-i="${c.id}" title="Ajukan ulang">↻</button>`:''}`,
+  rowAct:c=>`${crCanAct(c)?`<button data-act="crdec" data-i="${c.id}" title="${c.st==='Menunggu Persetujuan Ketua'?'Putuskan':c.st==='Disetujui Ketua'?'Terapkan':'Telaah'} CR">⚖</button>`:''}${c.st==='Dikembalikan'&&c.unit===ME.unit&&lv('cr').includes('U')&&(!c.pic||c.pic===ME.email)?`<button data-act="crre" data-i="${c.id}" title="Ajukan ulang">↻</button>`:''}${ME.role==='SA'&&crRole(c)?`<button data-act="crroute" data-i="${c.id}" title="Alihkan PIC">☷</button>`:''}`,
   cols:[{k:'kode',l:'Kode',r:c=>`<span class="code">${c.kode}</span>`},{k:'jenis',l:'Jenis'},{k:'item',l:'Item WBS',r:c=>{const it=wbsBy(c.item);const m=it&&modOfItem(it);return `<span class="code">${esc(c.item)}</span><span class="sm">${esc(short(it?deliv(it):'',50))}</span>${m?`<span class="sm">Modul CMO: ${esc(short(m.nama,40))}</span>`:''}`}},
-   {k:'ch',l:'Perubahan',w:1,r:c=>crChanges(c,true),x:c=>crChanges(c)},{k:'d',l:'Dampak',r:c=>chipSt(crDampak(c)),x:c=>crDampak(c)},{k:'pengaju',l:'Pengaju',r:c=>`${esc(c.pengaju)}<span class="sm">${esc(c.unit||'')} · ${fmtD(c.tgl)}</span>${c.dasar?`<span class="sm">${notulaChip(c.dasar,1)}</span>`:''}`},{k:'st',l:'Status',r:c=>chipSt(c.st)+(sla(c)?' <span class="chip c-bad">SLA</span>':'')}]})}
+   {k:'ch',l:'Perubahan',w:1,r:c=>crChanges(c,true),x:c=>crChanges(c)},{k:'d',l:'Dampak',r:c=>chipSt(crDampak(c)),x:c=>crDampak(c)},{k:'pengaju',l:'Pengaju',r:c=>`${esc(c.pengaju)}<span class="sm">${esc(c.unit||'')} · ${fmtD(c.tgl)}</span>${c.dasar?`<span class="sm">${notulaChip(c.dasar,1)}</span>`:''}`},{k:'st',l:'Status / Tugas berikutnya',r:c=>chipSt(c.st)+`<span class="sm">${esc(c.pic||crRole(c)||'—')}</span>`+(sla(c)?' <span class="chip c-bad">SLA</span>':'')}]})}
 ACT.crnew=()=>crNew('');
-ACT.crre=el=>{const c=S.crs.find(x=>x.id===el.dataset.i);c.st='Diajukan';c.tgl=TODAY;log('Ajukan ulang CR',c.kode);save();render()};
+ACT.crre=el=>{const c=S.crs.find(x=>x.id===el.dataset.i);if(!c||c.st!=='Dikembalikan'||c.unit!==ME.unit||!lv('cr').includes('U')||(c.pic&&c.pic!==ME.email))return;const note=c.cat||'';modal('Ajukan ulang '+c.kode,`<p class="s">Pastikan perbaikan telah dilakukan. Catatan sebelumnya: ${esc(note)}</p><label class="fld">Uraian perbaikan<textarea class="inp" id="cr-resub" rows="3"></textarea></label>`,'Ajukan ulang',()=>{const n=$('#cr-resub').value.trim();if(!n){toast('Uraian perbaikan wajib diisi.');return false}c.tgl=TODAY;crStep(c,'Diajukan',n,'PMOK')})};
 function crNew(item){notulaReset('cr');const its=S.wbs.filter(w=>!w.arsip&&canW('cr','C',w.u,w));
  const ov=modal('Ajukan Change Request',`<div class="fgrid"><div class="fld"><label for="c-i">Kode WBS <i>*</i></label>${comboHTML('c-i','Pilih atau cari kode / nama item…',item)}<small>${lockU()?`Item yang ${esc(lockU())} pegang sebagai UIC Utama (${its.length} item).`:`${its.length} item tersedia.`}</small></div>
  <div class="fld"><label for="c-j">Jenis perubahan</label><select id="c-j">${opts([['Ubah item','Ubah komponen item (deadline, tanggal, deliverable, bobot, UIC, dokumen)'],['Tambah item','Tambah item baru di bawah induk yang sama'],['Hapus/arsip item','Hapus / arsipkan item']])}</select></div>
@@ -5389,7 +5399,7 @@ function crNew(item){notulaReset('cr');const its=S.wbs.filter(w=>!w.arsip&&canW(
  <div class="fld wide"><label for="c-a">Alasan dan dasar <i>*</i></label><textarea id="c-a" placeholder="Alasan perubahan, rujukan nota dinas/notulen"></textarea></div>${notulaField('cr',null,'Dokumen dasar (nota dinas / notula rapat)')}<div class="fld"><label for="c-e">Tanggal efektif</label><input id="c-e" type="date" value="${TODAY}"></div><div class="fld"><label>Pihak yang diberi tahu</label><small>PMO Pusat, UIC Pendukung, CMO Unit modul terkait, dan Pendamping CM (Pusmantap, advisory).</small></div></div>`,'Ajukan',()=>{
   const it=wbsBy($('#c-i').value.trim().toUpperCase());if(!it){toast('Kode WBS tidak ditemukan.');return false}if(!its.includes(it)){toast('Item ini di luar cakupan unit Anda (bukan UIC Utama).');return false}
   const c=draft();if(!c)return false;const nt=notulaCollect('cr',null);if(nt===false)return false;c.dasar=nt;notulaReset('cr');c.alasan=$('#c-a').value.trim();c.efektif=$('#c-e').value;if(!c.alasan){toast('Alasan wajib diisi.');return false}
-  c.id=uid();c.kode='CR-'+String(S.ui.tahun).slice(-2)+'-'+String(S.crs.length+1).padStart(3,'0');c.st='Diajukan';c.pengaju=ME.nama;c.unit=ME.unit;c.tgl=TODAY;c.cat='';
+  c.id=uid();c.kode='CR-'+String(S.ui.tahun).slice(-2)+'-'+String(S.crs.length+1).padStart(3,'0');c.st='Diajukan';c.pengaju=ME.nama;c.unit=ME.unit;c.owner=ME.email;c.prog=(wbsBy(c.item)||{}).prog||'';c.tgl=TODAY;c.cat='';c.pic=crRecipient('PMOK');c.hist=[{st:'Diajukan',by:ME.email,to:c.pic||'PMOK',at:new Date().toISOString(),note:'Diajukan untuk telaah'}];
   S.crs.push(c);log('Ajukan CR',c.kode+' '+c.item+' · '+crChanges(c));save();toast(`${c.kode} diajukan · dampak ${crDampak(c)}.`);if(VIEW!=='pmo-cr')go('pmo-cr');else render()},{size:'wide'});
  let last=null;
  function draft(silent){const it=wbsBy($('#c-i').value.trim().toUpperCase());if(!it)return null;const j=$('#c-j').value;const c={jenis:j,item:it.k,ch:{},nilai:'',cmBaru:'',tglM:'',tglS:''};
@@ -5397,7 +5407,7 @@ function crNew(item){notulaReset('cr');const its=S.wbs.filter(w=>!w.arsip&&canW(
    if(!Object.keys(c.ch).length){if(!silent)toast('Belum ada komponen yang diubah.');return null}const s=(c.ch.s||[0,it.s])[1],f=(c.ch.f||[0,it.f])[1];if(s&&f&&f<s){if(!silent)toast('Tanggal selesai harus ≥ tanggal mulai.');return null}}
   else if(j==='Tambah item'){c.nilai=(ov.querySelector('#cf-n')||{}).value?.trim()||'';c.tglM=ov.querySelector('#cf-m').value;c.tglS=ov.querySelector('#cf-sl').value;c.cmBaru=ov.querySelector('#cf-c').value;if(!c.nilai){if(!silent)toast('Isi nama item baru.');return null}}
   return c}
- function preview(){const p=ov.querySelector('#c-dp');if(!p)return;const c=draft(true);p.innerHTML=c?`Dampak otomatis: ${chipSt(crDampak(c))} ${crDampak(c)==='Besar'?'· diputuskan PMO Pusat lalu Sponsor':'· diputuskan PMO Pusat'}${modOfItem(wbsBy(c.item))?' · CMO Unit modul terkait diberi notifikasi':''}`:'<span class="s">Ubah minimal satu komponen untuk melihat dampak.</span>'}
+ function preview(){const p=ov.querySelector('#c-dp');if(!p)return;const c=draft(true);p.innerHTML=c?`Dampak otomatis: ${chipSt(crDampak(c))} · ditelaah PMO Kemenkeu lalu disetujui Ketua sebelum penerapan${modOfItem(wbsBy(c.item))?' · CMO Unit modul terkait diberi notifikasi':''}`:'<span class="s">Ubah minimal satu komponen untuk melihat dampak.</span>'}
  function box(){const it=wbsBy($('#c-i').value.trim().toUpperCase());const j=$('#c-j').value;const key=(it?it.k:'')+j;if(key===last)return;last=key;const b=ov.querySelector('#c-box');
   if(!it){b.innerHTML='<div class="note i"><span>Pilih kode WBS terlebih dahulu; komponen item akan tampil dan dapat diubah.</span></div>';return}
   const head=`<div class="note g" style="margin-bottom:10px"><span><span class="code">${it.k}</span> <b>${esc(deliv(it))}</b><br>${esc(it.p.slice(1,-1).join(' › '))}<br>Jadwal ${fmtD(it.s)} – ${fmtD(it.f)} (TW ${twOfDate(it.f)}) · bobot ${it.w} · UIC ${esc(it.u)} · ${chipSt(stOf(it,12))}</span></div>`;
@@ -5414,15 +5424,54 @@ function comboBind(root,id,items,onPick){const inp=root.querySelector('#'+id),li
  list.addEventListener('mousedown',e=>{const o=e.target.closest('.cbo[data-v]');if(o){e.preventDefault();pick(o.dataset.v)}});
  inp.addEventListener('blur',()=>setTimeout(()=>{list.hidden=true},150));
  inp.parentNode.querySelector('.cbc').addEventListener('mousedown',e=>{e.preventDefault();if(document.activeElement===inp&&!list.hidden){list.hidden=true}else{inp.focus();draw()}})}
-function crView(c){const it=wbsBy(c.item);const m=it&&modOfItem(it);modal(`<span class="code">${c.kode}</span> ${esc(c.jenis)}`,`<div class="kv"><span>Item</span><div><span class="code">${esc(c.item)}</span> ${esc(it?deliv(it):'')}</div>${c.dasar?`<span>Dokumen dasar</span><div>${notulaChip(c.dasar)}</div>`:''}<span>Perubahan</span><div>${crChanges(c,true)}</div><span>Dampak</span><div>${chipSt(crDampak(c))} ${crDampak(c)==='Besar'?'· perlu keputusan Sponsor setelah PMO Pusat':''}</div><span>Modul CMO terdampak</span><div>${m?`${esc(m.nama)}${cmType(it)==='ADP'||(c.ch&&(c.ch.u||c.ch.dl))?' · <span class="chip c-warn">perlu tinjau ulang ADP</span>':''}`:'—'}</div><span>Alasan</span><div>${esc(c.alasan)}</div><span>Efektif</span><div>${fmtD(c.efektif)}</div><span>Pengaju</span><div>${esc(c.pengaju)} (${esc(c.unit||'')}) · ${fmtD(c.tgl)}</div><span>Status</span><div>${chipSt(c.st)} ${esc(c.cat||'')}</div></div>
- <div class="s" style="margin-top:10px">Alur: Diajukan → cek otomatis → telaah dan keputusan PMO Pusat (SLA 5 hari kerja) → keputusan Sponsor bila dampak Besar → diterapkan ke WBS; nilai lama tersimpan di riwayat CR.</div>`,null,null,{cancel:'Tutup',extra:lv('crok').includes('U')&&['Diajukan','Telaah PMO Pusat'].includes(c.st)?'<button class="btn pri" data-mx="d">Putuskan</button>':'',onExtra:()=>{crDecide(c)}})}
-ACT.crdec=el=>crDecide(S.crs.find(c=>c.id===el.dataset.i));
-function crDecide(c){modal(`Keputusan ${c.kode}`,`<p style="margin:0 0 8px">${esc(c.jenis)} · <span class="code">${esc(c.item)}</span> · dampak ${chipSt(crDampak(c))}</p><div style="margin-bottom:8px;font-size:12.5px">${crChanges(c,true)}</div>${crDampak(c)==='Besar'?'<div class="note w" style="margin-bottom:8px"><span>Dampak Besar: lampirkan disposisi Sponsor pada catatan.</span></div>':''}<div class="fld"><label for="dc">Catatan keputusan <i>*</i></label><textarea id="dc"></textarea></div>`,'Setujui & terapkan',()=>{const n=$('#dc').value.trim();if(!n){toast('Catatan wajib diisi.');return false}crApply(c);c.st='Diterapkan';c.cat=n+' · '+ME.nama;log('Setujui CR',c.kode+' · '+crChanges(c));save();toast(`${c.kode} disetujui dan diterapkan ke WBS.`);render()},
- {extra:'<button class="btn" data-mx="k">Kembalikan</button><button class="btn dng" data-mx="t">Tolak</button>',onExtra:k=>{const n=$('#dc').value.trim();if(!n){toast('Catatan wajib diisi.');return false}c.st=k==='k'?'Dikembalikan':'Ditolak';c.cat=n+' · '+ME.nama;log((k==='k'?'Kembalikan':'Tolak')+' CR',c.kode);save();render()}})}
-function crApply(c){const it=wbsBy(c.item);if(!it)return;
- if(c.jenis==='Ubah item'){Object.entries(c.ch||{}).forEach(([k,[o,n]])=>{if(k==='dl')it.p[it.p.length-1]=n;else if(k==='w')it.w=+n||0;else it[k]=n;if(k==='f'&&it.tm&&n&&String(n).slice(0,4)===String(yrOf(it)))it.tm=+String(n).slice(5,7)})}
- else if(c.jenis==='Tambah item'){const pre=it.prog;const n=Math.max(...S.wbs.filter(w=>w.prog===pre).map(w=>+w.k.split('-')[1]||0))+1;const k=pre+'-'+n;S.wbs.push({id:k,k,prog:pre,p:[...it.p.slice(0,-1),c.nilai],s:c.tglM||'',f:c.tglS||'',u:it.u,d:it.d,j:'',w:0,tm:c.tglS?+c.tglS.slice(5,7):0,rm:0,ue:[...it.ue],v:0,cm:c.cmBaru||'Bukan',arsip:false});c.nilai=c.nilai+' → '+k;WIDX=null}
- else if(c.jenis==='Hapus/arsip item')it.arsip=true}
+
+function crView(c){if(!c)return;const it=wbsBy(c.item),m=it&&modOfItem(it);
+ const hist=(c.hist||[]).slice().reverse().map(h=>`<div style="padding:7px 0;border-bottom:1px solid #edf0f5"><b>${esc(h.st)}</b> · ${esc(h.by||'—')}<span class="sm">Tujuan: ${esc(h.to||'—')} · ${esc(String(h.at||'').replace('T',' ').slice(0,16))}</span>${h.note?`<span class="sm">${esc(h.note)}</span>`:''}</div>`).join('')||'<span class="s">Catatan lama tanpa riwayat tahapan terperinci.</span>';
+ const extra=crCanAct(c)?'<button class="btn pri" data-mx="d">Proses tahap ini</button>':'';
+ modal(`<span class="code">${esc(c.kode)}</span> ${esc(c.jenis)}`,
+ `<div class="kv"><span>Item WBS</span><div><span class="code">${esc(c.item)}</span> ${esc(it?deliv(it):'')}</div><span>Perubahan</span><div>${crChanges(c,true)}</div><span>Dampak</span><div>${chipSt(crDampak(c))}</div><span>Modul CM</span><div>${m?esc(m.nama):'—'}</div><span>Alasan</span><div>${esc(c.alasan||'—')}</div><span>Pengaju</span><div>${esc(c.pengaju||'—')} · ${fmtD(c.tgl)}</div><span>Status</span><div>${chipSt(c.st)}<span class="sm">PIC: ${esc(c.pic||crRole(c)||'—')}</span></div>${c.telaah?`<span>Hasil telaah PMO</span><div>${esc(c.telaah)}</div>`:''}${c.keputusan?`<span>Keputusan Ketua</span><div>${esc(c.keputusan.cat||'')} · Rujukan ${esc(c.keputusan.ref||'—')} · ${esc(c.keputusan.by||'')}</div>`:''}</div><h4>Riwayat perpindahan tugas</h4><div style="max-height:210px;overflow:auto">${hist}</div><p class="s">Setiap perubahan baseline memerlukan telaah PMO Kemenkeu, keputusan Ketua, kemudian penerapan oleh PMO Kemenkeu.</p>`,
+ null,null,{cancel:'Tutup',extra,onExtra:k=>{if(k==='d')crDecide(c)}});
+}
+ACT.crdec=el=>{const c=S.crs.find(x=>x.id===el.dataset.i);if(c)crDecide(c)};
+function crDecide(c){
+ if(!crCanAct(c)){toast('Aksi hanya untuk PIC pada tahap ini.');return}
+ const st=c.st,phase=st==='Menunggu Persetujuan Ketua'?'ketua':st==='Disetujui Ketua'?'apply':'telaah';
+ if(phase==='apply'){
+  modal('Terapkan '+c.kode,`<div class="note g"><span>Keputusan Ketua tercatat. Perubahan WBS belum diterapkan sebelum tindakan ini.</span></div><p><b>Referensi keputusan:</b> ${esc((c.keputusan||{}).ref||'—')}</p><div>${crChanges(c,true)}</div><label class="fld">Catatan penerapan<textarea class="inp" id="cr-apply-note" rows="2"></textarea></label>`,'Terapkan ke WBS',()=>{
+   const n=$('#cr-apply-note').value.trim();if(!n){toast('Catatan penerapan wajib diisi.');return false}
+   if(!crApply(c))return false;
+   crStep(c,'Diterapkan',n,'');toast('Baseline WBS diperbarui sesuai keputusan Ketua.');return true});return;
+ }
+ if(phase==='telaah'){
+  modal('Telaah PMO Kemenkeu · '+c.kode,`<p><b>${esc(c.item)}</b> · ${esc(c.jenis)} · ${chipSt(crDampak(c))}</p><div>${crChanges(c,true)}</div><label class="fld">Hasil telaah dan rekomendasi <i>*</i><textarea class="inp" id="cr-review" rows="5" placeholder="Kelayakan, risiko, dampak jadwal/lingkup, dan rekomendasi"></textarea></label>`,'Teruskan ke Ketua',()=>{
+   const n=$('#cr-review').value.trim();if(!n){toast('Hasil telaah wajib diisi.');return false}
+   if(!crRecipient('KETUA')){toast('Belum ada akun Ketua yang aktif. Admin perlu menetapkan akun Ketua.');return false}
+   c.telaah=n;crStep(c,'Menunggu Persetujuan Ketua',n,'KETUA');toast('CR diteruskan kepada Ketua.');return true
+  },{extra:'<button class="btn" data-mx="ret">Kembalikan</button>',onExtra:k=>{
+   if(k==='ret'){const n=$('#cr-review').value.trim();if(!n){toast('Catatan perbaikan wajib diisi.');return false}crStep(c,'Dikembalikan',n,'PMOU',c.unit);toast('CR dikembalikan ke PMO Unit.');return true}return false}});
+  return;
+ }
+ modal('Keputusan Ketua · '+c.kode,`<p><b>${esc(c.item)}</b> · ${esc(c.jenis)} · dampak ${chipSt(crDampak(c))}</p><div>${crChanges(c,true)}</div><div class="note i"><span><b>Rekomendasi PMO Kemenkeu:</b> ${esc(c.telaah||'Belum tersedia — cek telaah.')}</span></div><label class="fld">Nomor / tautan keputusan atau disposisi <i>*</i><input class="inp" id="cr-ref" placeholder="Nomor ND/disposisi atau tautan dokumen"></label><label class="fld">Pertimbangan keputusan <i>*</i><textarea class="inp" id="cr-vote" rows="4"></textarea></label>`,'Setujui CR',()=>{
+  const ref=$('#cr-ref').value.trim(),n=$('#cr-vote').value.trim();if(!ref||!n){toast('Rujukan dan alasan keputusan wajib diisi.');return false}
+  c.keputusan={by:ME.email,ref,cat:n,at:new Date().toISOString()};crStep(c,'Disetujui Ketua',n,'PMOK');toast('Disetujui Ketua. Menunggu penerapan WBS oleh PMO Kemenkeu.');return true;
+ },{extra:'<button class="btn dng" data-mx="tolak">Tolak CR</button><button class="btn" data-mx="ret">Kembalikan ke PMO</button>',onExtra:k=>{
+  const n=$('#cr-vote').value.trim(),ref=$('#cr-ref').value.trim();if(!n){toast('Alasan keputusan wajib diisi.');return false}
+  if(k==='tolak'){c.keputusan={by:ME.email,ref,cat:n,at:new Date().toISOString(),hasil:'Ditolak'};crStep(c,'Ditolak',n,'');toast('CR ditolak; WBS tidak berubah.');return true}
+  if(k==='ret'){crStep(c,'Telaah PMO Pusat',n,'PMOK');toast('CR dikembalikan untuk telaah lanjutan.');return true}return false
+ }});
+}
+function crApply(c){
+ if(!c||c.st!=='Disetujui Ketua'||!c.keputusan||!c.keputusan.by||!crCanAct(c)){toast('WBS terkunci sampai persetujuan Ketua dan penugasan PIC yang sah.');return false}
+ const it=wbsBy(c.item);if(!it){toast('Item WBS tidak ditemukan.');return false}
+ if(c.jenis==='Ubah item'){
+  for(const [k,[o,n]] of Object.entries(c.ch||{}))if(String(crGet(it,k))!==String(o)){toast('Baseline WBS telah berubah sejak pengajuan CR. Telaah ulang diperlukan.');return false}
+  Object.entries(c.ch||{}).forEach(([k,[o,n]])=>{if(k==='dl')it.p[it.p.length-1]=n;else if(k==='w')it.w=+n||0;else it[k]=n;if(k==='f'&&it.tm&&n&&String(n).slice(0,4)===String(yrOf(it)))it.tm=+String(n).slice(5,7)})
+ }else if(c.jenis==='Tambah item'){
+  const pre=it.prog,n=Math.max(0,...S.wbs.filter(w=>w.prog===pre).map(w=>+w.k.split('-')[1]||0))+1,k=pre+'-'+n;
+  S.wbs.push({id:k,k,prog:pre,p:[...it.p.slice(0,-1),c.nilai],s:c.tglM||'',f:c.tglS||'',u:it.u,d:it.d,j:'',w:0,tm:c.tglS?+c.tglS.slice(5,7):0,rm:0,ue:[...it.ue],v:0,cm:c.cmBaru||'Bukan',arsip:false});c.nilai=c.nilai+' → '+k;WIDX=null
+ }else if(c.jenis==='Hapus/arsip item')it.arsip=true;
+ return true
+}
 
 /* --- Laporan TW --- */
 function lapData(){const y=S.ui.tahun,lu=lockU();const items=pmoScopedWbs(false);
@@ -8235,7 +8284,7 @@ tbl('tahap',{ent:'tahapan',title:'Referensi Tahapan',add:true,edit:true,del:true
 ACT.thgo=el=>{S.ui.wth=el.dataset.i;S.ui.pr='all';S.ui.lvm='sd';S.ui.lvn=10;S.ui.fopen=1;Object.keys(PG).forEach(x=>PG[x]=0);save();location.hash='pmo-wbs'};
 ACT.usulcr=el=>{const u=S.usul.find(x=>x.id===el.dataset.i);const cmB={'Tambah item ADP':'ADP','Tambah item Perencanaan':'Perencanaan','Tambah item Implementasi':'Implementasi','Tambah item Monev':'Monev'}[u.jenis]||'';
  const c={id:uid(),kode:'CR-'+String(S.ui.tahun).slice(-2)+'-'+String(S.crs.length+1).padStart(3,'0'),jenis:cmB?'Tambah item':'Ubah item',ch:cmB?{}:{f:[(wbsBy(u.modul)||{}).f||'',`${S.ui.tahun}-12-31`]},unit:ME.unit,item:u.modul,tglM:'',tglS:`${S.ui.tahun}-12-31`,nilai:cmB==='ADP'?'Analisis Dampak Perubahan':cmB==='Monev'?'Evaluasi tingkat adopsi':u.jenis.replace('Tambah item ',''),cmBaru:cmB,alasan:'Usulan CMO: '+u.uraian,efektif:TODAY,st:'Telaah PMO Pusat',pengaju:ME.nama,tgl:TODAY,cat:''};
- S.crs.push(c);u.st='Diteruskan jadi CR';u.cat=c.kode;log('Usulan CMO → CR',c.kode);save();toast(`Diteruskan sebagai ${c.kode}.`);render()};
+ c.owner=ME.email;c.prog=(wbsBy(c.item)||{}).prog||'';c.pic=crRecipient('PMOK');c.hist=[{st:c.st,by:ME.email,to:c.pic||'PMOK',at:new Date().toISOString(),note:'Usulan CMO'}];S.crs.push(c);u.st='Diteruskan jadi CR';u.cat=c.kode;log('Usulan CMO → CR',c.kode);save();toast(`Diteruskan sebagai ${c.kode}.`);render()};
 ACT.usultolak=el=>{const u=S.usul.find(x=>x.id===el.dataset.i);modal('Tolak usulan','<div class="fld"><label for="ut">Alasan</label><textarea id="ut"></textarea></div>','Tolak',()=>{const t=$('#ut').value.trim();if(!t){toast('Alasan wajib.');return false}u.st='Ditolak';u.cat=t;log('Tolak usulan',u.modul);save();render()},{danger:true,size:'sm'})};
 
 /* ======================== CMO ======================== */
@@ -9106,7 +9155,7 @@ function pmCharter(){var parts=[
  '<div class="sk-grid3">'+parts.map(function(a,i){return '<div class="sk-card"><span class="sk-pill sk-pgold">0'+(i+1)+'</span><strong style="margin-top:9px">'+a[0]+'</strong><p>'+a[1]+'</p></div>'}).join('')+'</div>'+
  '<div class="sk-feature"><div class="sk-featureIcon">✓</div><div><b>Penetapan dan penurunan rencana</b><span>Dokumen Proyek ditetapkan dengan Nota Dinas bersama paling lambat 15 hari kerja setelah kontrak kinerja Kemenkeu Wide. WBS disusun paling lambat 15 hari kerja setelah ND bersama.</span></div></div>'+jump('Buka Dokumen Proyek','pmo-perencanaan');
 }
-function pmWBS(){return intro('Work Breakdown Structure','Dari Strategi ke Paket Kerja yang Terukur','WBS mengurai rencana kerja menjadi aktivitas, keluaran, target, penanggung jawab, jadwal, dan bukti yang dapat dikendalikan.','Draft RKMK (6) · hlm 49')+
+function pmWBS(){return intro('Work Breakdown Structure','Dari Strategi ke Paket Kerja yang Terukur','WBS mengurai rencana kerja menjadi aktivitas, keluaran, target, penanggung jawab, jadwal, dan bukti yang dapat dikendalikan.','RKMK Peta Rencana · Pengendalian Perubahan')+
  '<div class="sk-tree">'+[
  'PROGRAM TRANSFORMASI · Tujuan dan manfaat','PROYEK / MODUL · Lingkup dan target','TAHAP / WORKSTREAM · Kelompok pekerjaan','ITEM WBS · Aktivitas / deliverable / PIC','PERIODE & BOBOT · Target, realisasi, bukti'
  ].map(function(x,i){return (i?'<div class="sk-treearrow">↓</div>':'')+'<div class="sk-treenode">'+x+'</div>'}).join('')+'</div>'+
@@ -9117,7 +9166,7 @@ function pmCR(){var stages=[
  ['PMO Unit','Mengajukan usulan perubahan lingkup, jadwal, atau biaya.'],
  ['PMO Kemenkeu','Menelaah alasan, dampak, risiko, jadwal, dan keterkaitan proyek.'],
  ['Ketua Organisasi','Memberi keputusan persetujuan sebelum perubahan dilaksanakan.'],
- ['Pelaksanaan','Jika disetujui: baseline WBS dimutakhirkan dan CMO menyesuaikan strategi.']
+ ['PMO Kemenkeu','Setelah persetujuan Ketua, PIC PMO menerapkan perubahan WBS. Jejak perubahan dan pihak terkait tercatat.']
  ];
  return intro('Pengendalian Perubahan','Alur Change Request (CR)','Menjaga keterkendalian baseline proyek. Perubahan tidak boleh langsung dilaksanakan sebelum ditelaah dan disetujui sesuai kewenangan.','Draft RKMK (6) · hlm 49')+
  '<div class="sk-laneFlow">'+stages.map(function(x,i){return '<div class="sk-laneBox" style="border-top-color:'+(i===2?'#cc9222':'#184d80')+'"><span class="sk-pill sk-pgold">'+('0'+(i+1)).slice(-2)+'</span><b style="margin-top:7px">'+x[0]+'</b><p>'+x[1]+'</p></div>'}).join('')+'</div>'+
@@ -9137,7 +9186,7 @@ function coordination(){
 }
 var cfg={
  help:{
- pmo:[['menu','Peta Menu',function(){return helpMenu('pmo')}],['steps','Tahapan Manajemen Proyek',function(){return helpStages('pmo')}],['terms','Daftar Istilah PM',function(){return helpGloss('pmo')}],['docs','Dokumentasi',function(){return helpDocs('pmo')}]],
+ pmo:[['menu','Peta Menu',function(){return helpMenu('pmo')}],['steps','Tahapan Manajemen Proyek',function(){return helpStages('pmo')}],['crflow','Alur Change Request',function(){return pmCR()}],['terms','Daftar Istilah PM',function(){return helpGloss('pmo')}],['docs','Dokumentasi',function(){return helpDocs('pmo')}]],
  cmo:[['menu','Peta Menu',function(){return helpMenu('cmo')}],['steps','Tahapan Manajemen Perubahan',function(){return helpStages('cmo')}],['terms','Daftar Istilah CM',function(){return helpGloss('cmo')}],['docs','Dokumentasi',function(){return helpDocs('cmo')}]]
  },
  sheet:{
