@@ -92,78 +92,148 @@
  @media(max-width:1000px){#app .ps-banner{padding:16px 18px}#app .ps-route{grid-template-columns:repeat(2,minmax(0,1fr))}}
  @media(max-width:680px){#app .ps-banner h1{font-size:21px}#app .ps-actions{width:100%}#app .ps-btn{flex:1}#app .ps-route{gap:7px}#app .ps-stage{padding:9px;gap:7px}#app .ps-stage .num{width:26px;height:26px;font-size:11px}#app .ps-stage strong{font-size:10.5px}#app .ps-stage small{font-size:9px}#app .ps-frame{min-height:850px;height:calc(100vh - 225px)}.ps-overlay{padding:8px}.ps-dialog{border-radius:15px;max-height:96vh}.ps-dialog-head{padding:18px}.ps-dialog-head h2{font-size:19px}.ps-dialog-body{padding:13px}.ps-cards,.ps-grid3{grid-template-columns:1fr}.ps-tabbar{padding:7px 9px 0;gap:2px}.ps-tabbar button{padding:8px;font-size:10.5px}.ps-dialog-foot{font-size:10px;padding:9px 12px}}
  `;
+
+ /* Project Selection is a native page within the existing module shell, not a second dashboard. */
+ body:has(#view .ps-page){overflow:hidden!important}
+ #app:has(.ps-page){height:100dvh;min-height:0!important;overflow:hidden}
+ #app:has(.ps-page) .main{height:100dvh;min-height:0;overflow:hidden}
+ #app:has(.ps-page) .view{flex:1;min-height:0;overflow:hidden;padding-block:10px 8px!important;gap:0!important}
+ #app .ps-page{flex:1;min-height:0;height:100%;gap:10px;overflow:hidden}
+ #app .ps-page>.vh{flex:none;min-height:64px}
+ #app .ps-frame-wrap{flex:1;min-height:0;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:hidden!important}
+ #app .ps-frame-wrap:before{display:none!important}
+ #app .ps-frame{height:100%!important;min-height:0!important;width:100%;background:transparent!important}
+ #app .ps-status{border:1px solid #e7c46d;border-radius:8px;color:#815a0c;background:#fff8e6;padding:8px 11px;font-size:11.5px}
+ #app .ps-status:empty{display:none}
+ .ps-account-pop{position:fixed;z-index:100200;right:22px;top:105px;width:min(340px,calc(100vw - 24px));background:#fff;border-radius:15px;border:1px solid #cad9eb;box-shadow:0 20px 54px rgba(6,32,64,.24);overflow:hidden;font-family:'Nunito Sans','Segoe UI',sans-serif}
+ .ps-account-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;color:#fff;background:linear-gradient(115deg,#0c294b,#1a578b);border-bottom:3px solid #fdb913}
+ .ps-account-head b{font-size:13px;font-weight:900}
+ .ps-account-head button{border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.13);color:#fff;border-radius:7px;width:28px;height:28px;font-size:20px;cursor:pointer}
+ .ps-account-body{padding:15px}
+ .ps-account-body strong{color:#12385e;font-size:13px;overflow-wrap:anywhere}
+ .ps-account-body p{color:#59718a;font-size:11.5px;line-height:1.6;margin:6px 0 13px}
+ .ps-account-actions{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+ .ps-account-actions button{border:1px solid #bcd0e7;border-radius:8px;background:#eaf3fd;color:#124a7a;padding:8px 11px;font-weight:800;font-size:11.5px;cursor:pointer}
+ .ps-account-actions button:first-child{background:#fdb913;color:#0b294b;border-color:#e2ac21}
+ .ps-account-body a{font-size:11px;color:#185a98}
+ @media(max-width:680px){#app .ps-page>.vh{align-items:flex-start;flex-wrap:wrap}#app .ps-page>.vh .acts{margin-left:auto}#app .ps-page>.vh h1{font-size:19px!important}.ps-account-pop{right:12px;top:110px}}
  if(!document.getElementById(style.id))document.head.appendChild(style);
 
  function page(){
-  return '<section class="ps-page" aria-label="Project Selection – Prioritas Proyek">'+
-   '<header class="ps-banner"><div><span class="ps-badge">◆ Transformasi · Seleksi Prioritas</span><h1>Project Selection</h1>'+
-   '<p>Mesin pemeringkatan <b>Priority Dashboard CM</b> yang sama, dengan 12 kriteria SMART, ranking prioritas, dan penelusuran manfaat. Data dan hak akses tetap mengikuti Dashboard CM.</p></div>'+
-   '<div class="ps-actions"><button type="button" class="ps-btn" data-ps-open="help">ⓘ Bantuan</button><button type="button" class="ps-btn gold" data-ps-open="sheet">▤ Cheatsheet SMART</button></div></header>'+
-   '<nav class="ps-route" aria-label="Navigasi cepat tab Project Selection">'+
-   [['projects','01','Daftar Proyek','Ranking & kuadran'],['criteria','02','Kriteria & Bobot','12 kriteria SMART'],['monev','03','Monev Manfaat','Indikator & benefit'],['reference','04','Referensi & Rumus','Cara hitung SMART']].map(function(x,i){return '<button type="button" class="ps-stage'+(i===0?' is-active':'')+'" data-ps-goto="'+x[0]+'"><span class="num">'+x[1]+'</span><span><strong>'+x[2]+'</strong><small>'+x[3]+'</small></span></button>';}).join('')+
-   '</nav><div class="ps-frame-wrap mt-cm-frame-wrap"><iframe class="ps-frame mt-cm-frame" src="dashboard-cm-shared.html?mt_module=priority" title="Priority Dashboard CM — Project Selection (aplikasi dan data asli)" loading="eager" referrerpolicy="strict-origin-when-cross-origin" allow="clipboard-read; clipboard-write"></iframe></div>'+
-   '<div class="ps-footnote"><span aria-hidden="true">🔒</span><span><b>Satu sumber data.</b> Penambahan/edit proyek, skor SMART, bobot, referensi, snapshot, laporan, serta monev berlangsung langsung di Dashboard CM yang tertanam. Jika belum masuk, autentikasi melalui panel di atas. <span id="ps-live-status" role="status"></span></span></div></section>';
+  // The native module header is the only permanent header on this page.
+  const actions='<button class="btn" type="button" data-ps-account aria-haspopup="dialog" aria-expanded="false" title="Login, logout, dan status akses Dashboard CM">♙ <span>Akun CM</span></button>';
+  const desc='Pemeringkatan proyek dengan 12 kriteria SMART, prioritas P1–P3, kapasitas CM, dan monitoring manfaat.';
+  const header=typeof vh==='function'
+   ?vh('PS','dash','Project Selection',desc,actions)
+   :'<div class="vh"><div class="pic dash">PS</div><div style="min-width:0"><h1>Project Selection</h1><p>'+desc+'</p></div><div class="acts">'+actions+'</div></div>';
+  return '<section class="ps-page" aria-label="Project Selection – Prioritas Proyek">'+header+
+    '<div id="ps-live-status" class="ps-status" role="status" aria-live="polite"></div>'+
+    '<div class="ps-frame-wrap mt-cm-frame-wrap"><iframe class="ps-frame mt-cm-frame" src="dashboard-cm-shared.html?mt_module=priority" title="Seleksi dan prioritas proyek (fitur Priority Dashboard CM)" loading="eager" referrerpolicy="strict-origin-when-cross-origin" allow="clipboard-read; clipboard-write"></iframe></div>'+
+    '</section>';
  }
  function iframe(){return document.querySelector('#view .ps-frame')}
  function doc(){try{var f=iframe();return f&&f.contentDocument||null}catch(_){return null}}
  function status(msg){var e=document.getElementById('ps-live-status');if(e)e.textContent=msg?' '+msg:''}
  function navigate(tab){
-  var d=doc(),f=iframe();if(!d||!d.querySelector('#tab-priority')){status('Jika tampilan belum tersedia, masuk ke Dashboard CM atau muat ulang panel.');return false}
+  var d=doc(),f=iframe();if(!d||!d.querySelector('#tab-priority')){status('Fitur Priority belum dapat diakses. Periksa login Akun CM.');return false}
   var btn=d.querySelector('[data-prio-tab="'+tab+'"]');
-  if(!btn){status('Tab belum tersedia; tunggu login Dashboard CM selesai.');return false}
+  if(!btn){status('Tab belum siap. Silakan muat ulang melalui menu Akun CM.');return false}
   btn.click();
-  document.querySelectorAll('#view .ps-stage').forEach(function(b){b.classList.toggle('is-active',b.dataset.psGoto===tab)});
   try{f.contentWindow.scrollTo({top:0,behavior:'smooth'})}catch(_){}
   status('');
   return true;
  }
  function frameStyle(){
   return `
-  html.mt-embedded{--navy-900:#092746;--navy-800:#114477;--navy-700:#165d99;--gold-500:#fdb913;--gold-400:#ffd269;--gold-100:#fff2cc;--bg:#f0f5fc}
-  html.mt-embedded body{background:#f0f5fc!important;font-family:'Nunito Sans','Inter',system-ui,sans-serif!important}
-  html.mt-embedded #appHeader{background:linear-gradient(115deg,#0a2544,#124c7e)!important;min-height:0!important;padding:9px 14px!important}
-  html.mt-embedded #appHeader .brand-text h1{font-family:'Nunito Sans',sans-serif;font-size:13px!important;font-weight:900!important;line-height:1.3!important}
-  html.mt-embedded #appHeader .brand-text p{font-size:10px!important}
-  html.mt-embedded #btnImport,html.mt-embedded #btnExport,html.mt-embedded #btnBackupAll,html.mt-embedded #btnRestoreAll,html.mt-embedded #btnReminderCenter{display:none!important}
-  html.mt-embedded .tabs-row{display:none!important}
-  html.mt-embedded #appMain{padding-top:12px!important}
-  html.mt-embedded #tab-priority{border-radius:12px!important}
-  html.mt-embedded .prio-page{font-family:'Nunito Sans','Inter',sans-serif!important}
-  html.mt-embedded .prio-hero{background:linear-gradient(112deg,#0b2d50,#16578e 74%,#1c76a4)!important;border:1px solid #2d6797!important;border-bottom:3px solid #fdb913!important;box-shadow:0 11px 20px rgba(11,50,92,.12)!important}
-  html.mt-embedded .prio-hero h2{font-family:'Nunito Sans',sans-serif!important;font-weight:900!important;letter-spacing:-.25px}
-  html.mt-embedded .prio-kpi{background:linear-gradient(145deg,#fff,#f0f6ff)!important;border-color:#d3e2f2!important;box-shadow:0 4px 10px rgba(10,60,104,.06)!important}
-  html.mt-embedded .prio-card,html.mt-embedded .prio-list{border-color:#d3e1f1!important;background:linear-gradient(148deg,#fff 0%,#f7faff 100%)!important;box-shadow:0 5px 16px rgba(7,49,92,.065)!important}
-  html.mt-embedded .prio-grp,html.mt-embedded .prio-quad{border-color:#cddff1!important;box-shadow:0 4px 13px rgba(9,53,97,.05)!important}
-  html.mt-embedded .prio-subtabs{background:linear-gradient(95deg,#eaf3ff,#f9fbff)!important;border:1px solid #d1dfee!important;border-radius:12px!important;padding:5px!important}
-  html.mt-embedded .prio-subtabs .active{border-color:#d6e8fa!important;box-shadow:0 3px 8px rgba(20,87,145,.1)!important}
-  html.mt-embedded .prio-formula{background:linear-gradient(155deg,#0a284b,#143e70)!important;border:1px solid #28658f!important;box-shadow:0 6px 18px rgba(8,45,83,.14)!important}
-  html.mt-embedded .prio-cr.open{background:linear-gradient(140deg,#eaf3ff,#fff)!important;border-color:#80add6!important}
-  html.mt-embedded #prioModal{backdrop-filter:blur(4px)}
-  html.mt-embedded #prioModal .modal-box{border-radius:19px!important;border:1px solid #bad1eb!important;background:linear-gradient(145deg,#edf5ff,#fff 45%,#f4f8ff)!important;box-shadow:0 26px 60px rgba(4,29,59,.32)!important;overflow:hidden}
-  html.mt-embedded #prioModal .modal-head{background:linear-gradient(112deg,#0b2b50,#1b5e96)!important;color:#fff!important;border-bottom:3px solid #fdb913!important;padding:15px 19px!important}
+  /* Same token family as Modul Transformasi; no nested product shell. */
+  html.mt-embedded{--navy-900:#0b2447;--navy-800:#0d355e;--navy-700:#185a97;--gold-500:#fdb913;--gold-400:#f6c34c;--gold-100:#fff5db;--bg:#f2f4f8}
+  html.mt-embedded body{background:#f2f4f8!important;font-family:'Nunito Sans','Segoe UI',system-ui,sans-serif!important}
+  html.mt-embedded #appHeader,html.mt-embedded .tabs-row,html.mt-embedded .app-footer{display:none!important}
+  html.mt-embedded #appMain{max-width:none!important;margin:0!important;padding:4px 6px 18px!important}
+  html.mt-embedded #tab-priority{padding:0!important;border:0!important;box-shadow:none!important;background:transparent!important}
+  html.mt-embedded .prio-page{font-family:'Nunito Sans','Segoe UI',sans-serif!important;gap:10px!important}
+  /* Priority's title is intentionally moved to the parent module's standard vh header.
+     Keep the native Add Project/Excel/Report actions, without the duplicate hero. */
+  html.mt-embedded .prio-hero{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:#15304d!important;padding:1px 0 2px!important;min-height:32px!important;justify-content:flex-end!important}
+  html.mt-embedded .prio-hero>div:first-child:not(.prio-hero-actions){display:none!important}
+  html.mt-embedded .prio-hero-actions{margin-left:auto!important;justify-content:flex-end!important}
+  html.mt-embedded .prio-btn-light{color:#173b62!important;background:#fff!important;border-color:#cedbec!important}
+  html.mt-embedded .prio-btn-light:hover{background:#eef5ff!important}
+  html.mt-embedded .btn.btn-gold{background:#fdb913!important;color:#102d4d!important;border-color:#e1a713!important}
+  /* One tab navigation, aligned with the module's underlined tabs. */
+  html.mt-embedded .prio-subtabs{display:flex!important;gap:7px!important;overflow-x:auto!important;flex-wrap:nowrap!important;margin:0 0 2px!important;background:transparent!important;border:0!important;border-bottom:1px solid #d7e0ec!important;border-radius:0!important;padding:1px 0 0!important;box-shadow:none!important}
+  html.mt-embedded .prio-subtabs .cm-survey-subtab{position:relative!important;display:inline-flex!important;align-items:center!important;border:0!important;border-radius:8px 8px 0 0!important;padding:10px 13px 11px!important;background:transparent!important;box-shadow:none!important;color:#556783!important;font-family:'Nunito Sans','Segoe UI',sans-serif!important;font-size:12px!important;font-weight:800!important;white-space:nowrap!important;min-height:40px!important}
+  html.mt-embedded .prio-subtabs .cm-survey-subtab:hover{background:#eaf1fb!important;color:#154778!important}
+  html.mt-embedded .prio-subtabs .cm-survey-subtab.active{background:#fff!important;color:#123b6a!important;box-shadow:inset 0 -4px 0 #fdb913!important}
+  html.mt-embedded .prio-tab-n{background:#e5ecf5!important;color:#294970!important;border-radius:99px!important}
+  html.mt-embedded .prio-kpi{background:linear-gradient(150deg,#fff,#f5f8fc)!important;border-color:#dce4ef!important;box-shadow:0 3px 9px rgba(15,39,76,.04)!important}
+  html.mt-embedded .prio-card,html.mt-embedded .prio-list{background:#fff!important;border-color:#dce4ef!important;box-shadow:0 3px 12px rgba(15,41,79,.045)!important}
+  html.mt-embedded .prio-formula{background:linear-gradient(142deg,#0b294b,#153b69)!important;border:1px solid #28618f!important;box-shadow:0 7px 22px rgba(8,34,75,.12)!important}
+  html.mt-embedded .prio-cr.open{background:linear-gradient(136deg,#edf5ff,#fff)!important;border-color:#a7c4e3!important}
+  /* Priority modals remain the same functional forms, now themed like the module. */
+  html.mt-embedded #prioModal{backdrop-filter:blur(5px)}
+  html.mt-embedded #prioModal .modal-box{border-radius:16px!important;border:1px solid #bcd1e9!important;background:#f7faff!important;box-shadow:0 26px 60px rgba(4,29,59,.32)!important;overflow:auto}
+  html.mt-embedded #prioModal .modal-head{background:linear-gradient(110deg,#0d2847,#15558a)!important;color:#fff!important;border-bottom:3px solid #fdb913!important;padding:15px 19px!important}
   html.mt-embedded #prioModal .modal-head h2{font-family:'Nunito Sans',sans-serif!important;font-weight:900!important;color:#fff!important}
-  html.mt-embedded #prioModal .modal-close{color:white!important}
-  html.mt-embedded #prioModal .modal-body{background:linear-gradient(145deg,#f6faff,#eaf3fd)!important}
-  html.mt-embedded #prioModal .prio-crit{background:linear-gradient(140deg,#fff,#e9f2ff)!important;border-color:#cddff2!important;border-radius:12px!important;box-shadow:0 3px 9px rgba(9,53,97,.04)!important}
-  html.mt-embedded #prioModal .prio-form-sec{background:linear-gradient(100deg,#dbeafa,#f3f8ff)!important;border-left:4px solid #f0b72c!important;border-radius:8px!important;color:#0e4578!important}
-  html.mt-embedded #prioModal input:focus,html.mt-embedded #prioModal select:focus,html.mt-embedded #prioModal textarea:focus{outline:2px solid #e6b53b!important;outline-offset:1px!important;border-color:#2178b7!important}
-  html.mt-embedded .btn.btn-gold{background:#fdb913!important;color:#122b4a!important;border-color:#e3aa16!important}
-  @media(max-width:700px){html.mt-embedded #appHeader .brand-text p{display:none!important}html.mt-embedded #appHeader .brand-mark{display:none!important}html.mt-embedded #appMain{padding:8px!important}}
+  html.mt-embedded #prioModal .modal-close{color:#fff!important}
+  html.mt-embedded #prioModal .modal-body{background:linear-gradient(155deg,#f7faff,#edf3fa)!important}
+  html.mt-embedded #prioModal .prio-crit{background:linear-gradient(143deg,#fff,#f0f6ff)!important;border-color:#d5e2f1!important;border-radius:11px!important}
+  html.mt-embedded #prioModal .prio-form-sec{background:linear-gradient(105deg,#e1eeff,#f6faff)!important;border-left:4px solid #fdb913!important;border-radius:8px!important;color:#0c3f70!important}
+  html.mt-embedded #prioModal input:focus,html.mt-embedded #prioModal select:focus,html.mt-embedded #prioModal textarea:focus{outline:2px solid #e8b339!important;outline-offset:1px!important;border-color:#2472ab!important}
+  @media(max-width:680px){html.mt-embedded #appMain{padding:2px 4px 18px!important}html.mt-embedded .prio-hero-actions{justify-content:flex-start!important;width:100%!important}html.mt-embedded .prio-subtabs .cm-survey-subtab{padding:10px 9px!important;font-size:11px!important}}
   `;
  }
  function decorate(){
-  var d=doc();if(!d)return;try{
-   if(!d.getElementById('mtProjectSelectionTheme')){var s=d.createElement('style');s.id='mtProjectSelectionTheme';s.textContent=frameStyle();d.head.appendChild(s)}
+  var d=doc(),f=iframe();if(!d||!f)return;
+  try{
+   if(!d.getElementById('mtProjectSelectionTheme')){var st=d.createElement('style');st.id='mtProjectSelectionTheme';st.textContent=frameStyle();d.head.appendChild(st)}
    d.documentElement.setAttribute('data-mt-selection','1');
-   var a=d.querySelector('[data-prio-tab][aria-selected="true"]');
-   if(a)document.querySelectorAll('#view .ps-stage').forEach(function(b){b.classList.toggle('is-active',b.dataset.psGoto===a.dataset.prioTab)});
+   // Keep the Indonesian language of the parent application.
+   if(d.documentElement.dataset.psLangApplied!=='1'){
+    d.documentElement.dataset.psLangApplied='1';
+    if(f.contentWindow&&typeof f.contentWindow.setLanguage==='function')f.contentWindow.setLanguage('id');
+   }
    status('');
-  }catch(e){status('Tampilan mengikuti tema Dashboard CM.')}
+  }catch(e){status('Tampilan Priority menggunakan gaya dasar Dashboard CM.')}
  }
  function mount(){
   var f=iframe();if(!f)return;
   f.addEventListener('load',decorate);
   if(f.contentDocument&&f.contentDocument.readyState==='complete')decorate();
+ }
+ function account(){
+  var existing=document.getElementById('ps-account-pop');
+  if(existing){closeAccount();return}
+  var d=doc(),cw=iframe()&&iframe().contentWindow;
+  var user=cw&&cw.fbAuth&&cw.fbAuth.currentUser;
+  var role='';
+  try{if(cw&&typeof cw.cmGetAccessRole==='function')role=String(cw.cmGetAccessRole()||'')}catch(e){}
+  var pop=document.createElement('aside');pop.className='ps-account-pop';pop.id='ps-account-pop';
+  pop.setAttribute('role','dialog');pop.setAttribute('aria-label','Kelola akses Dashboard CM');
+  var es=x=>String(x||'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  pop.innerHTML='<div class="ps-account-head"><b>🔒 Akses Dashboard CM</b><button type="button" data-ps-acclose aria-label="Tutup akses CM">×</button></div>'+
+    '<div class="ps-account-body"><strong>'+(user?es(user.email||'Akun Google tersambung'):'Belum masuk Dashboard CM')+'</strong>'+
+    '<p>'+(user?'Hak akses: '+es(role||'mengikuti konfigurasi Dashboard CM')+'. Data Priority tetap menggunakan sumber Firestore yang sama.':'Masuk untuk mengakses atau memperbarui data Priority sesuai izin akun CM.')+'</p>'+
+    '<div class="ps-account-actions">'+
+    (user?'<button type="button" data-ps-aclogout>Keluar dari CM</button>':'<button type="button" data-ps-aclogin>Masuk dengan Google</button>')+
+    '<button type="button" data-ps-acreload>Muat ulang Priority</button></div>'+
+    '<a target="_blank" rel="noopener" href="dashboard-cm-shared.html?mt_module=priority">Buka workspace CM di tab terpisah</a></div>';
+  document.body.appendChild(pop);
+  var b=document.querySelector('#view [data-ps-account]');if(b)b.setAttribute('aria-expanded','true');
+  pop.querySelector('[data-ps-acclose]').focus();
+ }
+ function closeAccount(){
+  var el=document.getElementById('ps-account-pop');if(el)el.remove();
+  var b=document.querySelector('#view [data-ps-account]');if(b)b.setAttribute('aria-expanded','false');
+ }
+ function accountAction(mode){
+  var d=doc(),f=iframe();
+  if(!d||!f){status('Panel Dashboard CM belum siap.');closeAccount();return}
+  var selector=mode==='login'?'#btnGoogleLogin, #btnCmAdminLogin':mode==='logout'?'#btnLogout':'';
+  if(mode==='reload'){f.contentWindow.location.reload();closeAccount();return}
+  var btn=selector&&d.querySelector(selector);
+  if(btn){closeAccount();btn.click();}
+  else{status('Kontrol akun belum tersedia. Buka workspace CM di tab terpisah.');closeAccount();}
  }
  function help(){
   var cards=[
@@ -253,6 +323,7 @@
   if(overlay&&lastFocus&&lastFocus.isConnected&&lastFocus.focus)lastFocus.focus();
  }
  function onKey(e){
+  if(e.key==='Escape'&&document.getElementById('ps-account-pop')){e.preventDefault();closeAccount();return}
   var o=document.getElementById('ps-help-overlay');if(!o)return;
   if(e.key==='Escape'){e.preventDefault();close();return}
   if(e.key==='Tab'){
@@ -264,6 +335,10 @@
   }
  }
  document.addEventListener('click',function(e){
+  var ab=e.target.closest('[data-ps-account]');if(ab){e.preventDefault();account();return}
+  var ac=e.target.closest('[data-ps-aclogin],[data-ps-aclogout],[data-ps-acreload],[data-ps-acclose]');
+  if(ac){e.preventDefault();if(ac.hasAttribute('data-ps-acclose'))closeAccount();else accountAction(ac.hasAttribute('data-ps-aclogin')?'login':ac.hasAttribute('data-ps-aclogout')?'logout':'reload');return}
+  if(document.getElementById('ps-account-pop')&&!e.target.closest('#ps-account-pop'))closeAccount();
   var o=document.getElementById('ps-help-overlay');
   if(o&&e.target===o){close();return}
   var closer=e.target.closest('[data-ps-close]');if(closer){e.preventDefault();close();return}
@@ -279,5 +354,5 @@
    navigate(tab);
   }
  });
- window.MT_PROJECT_SELECTION={page:page,mount:mount,open:open,navigate:navigate,criteria:criteria.map(function(c){return {code:c[0],weight:c[2],type:c[3]}}),version:'20261107-priority-native-v1'};
+ window.MT_PROJECT_SELECTION={page:page,mount:mount,open:open,navigate:navigate,criteria:criteria.map(function(c){return {code:c[0],weight:c[2],type:c[3]}}),version:'20261107-priority-unified-v2'};
 })();
