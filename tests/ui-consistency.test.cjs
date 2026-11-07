@@ -43,7 +43,7 @@ test('Garis tab seragam 4px dan tetap di dalam komponen',()=>{
  assert.match(css,/#app \.mt-subtab-host > \.subt > a\.on::after/);
 });
 test('Tab tingkat kedua untuk Dashboard/CM/CRA dan panel terkait tetap tercakup',()=>{
- for(const name of ['.subt','.ov-tabs','.porto-view-tabs','.ws-tabs','.hp-tabs','.chtabs','.cra-tabs','.wz-sub','.sk-tabbar','.cm-survey-subtabs','.cm-ap-tabs']){
+ for(const name of ['.subt','.ov-tabs','.porto-view-tabs','.ws-tabs','.hp-tabs','.chtabs','.cra-tabs','.wz-sub','.sk-tabbar','.cm-survey-subtabs','.cm-ap-tabs','.cra2-tabs','.pg-tabs','.eo-ws-nav']){
    assert.ok(css.includes(name),name+' belum tercakup');
  }
  assert.match(bridge,/iframe\.mt-cm-frame/);
