@@ -8,7 +8,7 @@
  const script=readFileSync('project-selection-ui.js','utf8');
  const source=readFileSync('dashboard-cm-shared.html','utf8');
  test('Project Selection loads Priority Dashboard CM and mounts its UI',()=>{
-  assert.match(index,/project-selection-ui\.js\?v=20261107-1/);
+  assert.match(index,/project-selection-ui\.js\?v=20261107-2/);
   assert.match(index,/view==="project-selection"&&window\.MT_PROJECT_SELECTION/);
   assert.match(index,/window\.MT_PROJECT_SELECTION\.mount\(\)/);
   assert.match(script,/dashboard-cm-shared\.html\?mt_module=priority/);
@@ -63,7 +63,7 @@
  test('Javascript Project Selection sintaks valid dan styling modal scoped',()=>{
   assert.doesNotThrow(()=>new vm.Script(script,{filename:'project-selection-ui.js'}));
   for(const tab of ['projects','criteria','monev','reference']){
-   assert.ok(script.includes("'"+tab+"'"),'Tab hilang: '+tab);
+   assert.ok(source.includes("'"+tab+"'")||source.includes('data-prio-tab="'+tab+'"'),'Tab hilang dari Priority asli: '+tab);
   }
   assert.match(script,/html\.mt-embedded #prioModal \.modal-head/);
   assert.match(script,/html\.mt-embedded \.prio-hero/);
