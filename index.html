@@ -2342,6 +2342,24 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 @media(max-width:850px){.rpt2-stageNote{align-items:flex-start;flex-direction:column;gap:4px}}
 </style>
 
+<style>
+/* P0 UX: header lebih lapang, aksi WBS di samping subtab. */
+.subt.ctabs.wbs-with-actions{display:flex;align-items:center;gap:6px;width:100%;max-width:100%;padding:6px 4px 10px;margin:6px 0 10px;background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;overflow:visible;flex-wrap:wrap}
+.subt.ctabs.wbs-with-actions>a{padding:7px 12px}
+.wbs-actionbar{margin-left:auto;display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:7px;min-width:0}
+.wbs-actionbar>.btn,.wbs-actionbar>.wbs-import,.wbs-more>summary{height:36px;display:inline-flex;align-items:center;justify-content:center;padding:0 12px;border-radius:9px;font-size:12px}
+.wbs-actionbar .wbs-import{cursor:pointer}
+.wbs-more{position:relative}
+.wbs-more>summary{cursor:pointer;list-style:none;gap:8px;background:var(--surface);border:1px solid var(--line)}
+.wbs-more>summary::-webkit-details-marker{display:none}
+.wbs-more[open]>summary{border-color:#95aac6;color:var(--navy)}
+.wbs-more-pop{position:absolute;right:0;top:calc(100% + 7px);z-index:120;min-width:216px;max-width:min(300px,90vw);padding:6px;background:#fff;border:1px solid #CFD9E6;border-radius:11px;box-shadow:0 12px 30px rgba(11,36,71,.15);display:flex;flex-direction:column;gap:2px}
+.wbs-more-item{font:inherit;font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px;text-align:left;color:var(--navy);padding:10px 11px;border:0;border-radius:7px;background:transparent;width:100%;min-height:36px;cursor:pointer;text-decoration:none;white-space:normal;justify-content:flex-start}
+.wbs-more-item:hover,.wbs-more-item:focus-visible{background:#EDF3FB;color:var(--navy)}
+.wbs-more-item svg{width:16px;height:16px;flex:none}
+@media(max-width:900px){.subt.ctabs.wbs-with-actions{align-items:flex-start}.wbs-actionbar{margin-left:0;width:100%;justify-content:flex-start}.wbs-actionbar>.btn,.wbs-actionbar>.wbs-import,.wbs-more>summary{height:34px}}
+@media(max-width:480px){.wbs-actionbar{gap:5px}.wbs-actionbar>.btn,.wbs-actionbar>.wbs-import,.wbs-more>summary{padding-inline:9px;font-size:11px}}
+</style>
 <div id="root"></div>
 <div class="toast" id="toast" role="status"></div>
 <script type="application/json" id="d0">{"S":[],"W":[],"K":[]}</script>
@@ -3118,7 +3136,7 @@ function pmReportButton(){if(typeof VIEW!=='string'||!VIEW.startsWith('pmo-'))re
  ' title="Buka laporan '+esc(PMO_REPORT_LABEL[stage])+'" aria-label="Laporan '+esc(PMO_REPORT_LABEL[stage])+'">'+
  '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2-2V8zM14 3v5h5M9 17v-4m3 4v-7m3 7v-5"/></svg> Laporan</button>';
 }
-function vh(ic,cls,title,desc,acts){if(cls==='pmo'&&typeof VIEW!=='undefined'&&VIEW.startsWith('pmo-')&&typeof PMG!=='undefined'){let k=VIEW.slice(4);if(k==='charter')k='perencanaan';const g=PMG.find(x=>x[3].includes(k));if(g&&g[1]!==String(title).replace(/<[^>]+>/g,'')){const pt=String(title).replace(/<[^>]+>/g,'');desc=`<b class="vh-sub">${esc(pt)}</b><span class="vh-dot">·</span>${desc}`;title=g[1]}if(g)ic=g[2]?String(g[2]):g[1].charAt(0)}const tt=esc(String(title).replace(/<[^>]+>/g,''));if(cls==='pmo')acts=(acts||'')+pmReportButton();if(cls==='pmo'&&typeof oneBadge==='function'){const ob=oneBadge();if(ob)acts=(acts||'')+'<span class="one-slot">'+ob+'</span>'}return `<div class="vh"><div class="pic ${cls}">${ic}</div><div style="min-width:0"><div class="vh-heading"><h1>${title}</h1></div><p title="${esc(String(desc).replace(/<[^>]+>/g,''))}">${desc}</p></div>${acts?`<div class="acts">${acts}</div>`:''}</div><!--vh-->`}
+function vh(ic,cls,title,desc,acts){if(cls==='pmo'&&typeof VIEW!=='undefined'&&VIEW.startsWith('pmo-')&&typeof PMG!=='undefined'){let k=VIEW.slice(4);if(k==='charter')k='perencanaan';const g=PMG.find(x=>x[3].includes(k));if(g&&g[1]!==String(title).replace(/<[^>]+>/g,'')){const pt=String(title).replace(/<[^>]+>/g,'');desc=`<b class="vh-sub">${esc(pt)}</b><span class="vh-dot">·</span>${desc}`;title=g[1]}if(g)ic=g[2]?String(g[2]):g[1].charAt(0)}const tt=esc(String(title).replace(/<[^>]+>/g,''));if(cls==='pmo'&&!['pmo-wbsplan','pmo-wbs'].includes(VIEW))acts=(acts||'')+pmReportButton();if(cls==='pmo'&&!['pmo-wbsplan','pmo-wbs'].includes(VIEW)&&typeof oneBadge==='function'){const ob=oneBadge();if(ob)acts=(acts||'')+'<span class="one-slot">'+ob+'</span>'}return `<div class="vh"><div class="pic ${cls}">${ic}</div><div style="min-width:0"><div class="vh-heading"><h1>${title}</h1></div><p title="${esc(String(desc).replace(/<[^>]+>/g,''))}">${desc}</p></div>${acts?`<div class="acts">${acts}</div>`:''}</div><!--vh-->`}
 function setTabs(){return `<nav class="ptabs" aria-label="Pengaturan">${STN.filter(t=>lv(t[2])!=='-').map(([k,l])=>`<a href="#${k}" class="${k===VIEW?'on':''}"><span>${l}</span></a>`).join('')}</nav>`}
 function subNav(key,list,def){const cur=S.ui.sub[key]||def;return `<div class="subt" role="tablist">${list.map(([k,l])=>`<a data-act="sub" data-k="${key}" data-v="${k}" class="${cur===k?'on':''}" role="tab" aria-selected="${cur===k}">${l}</a>`).join('')}</div>`}
 ACT.tsort=el=>{const id=el.dataset.t,k=el.dataset.k;S.ui.sort=S.ui.sort||{};const cur=sortOf(id);S.ui.sort[id]=cur&&cur.k===k?(cur.d==='asc'?{k,d:'desc'}:{k:'',d:''}):{k,d:'asc'};if(!S.ui.sort[id].k)S.ui.sort[id]={k:'_none',d:''};PG[id]=0;save();redrawT(id);const sel=document.querySelector(`[data-wsort="${id}"]`);if(sel)sel.value=sortVal(id)};
@@ -3887,13 +3905,36 @@ function pmoFilterPanel(tab){const P=per(),all=pmoAllWbs(),base=pmoScopedWbs(),p
  return fltBar({umode:true,res,extra,chips});
 }
 function pmoCnt(){const u=curUnit(),W=S.wbs.filter(w=>!w.arsip&&unitMatch(w,u,lockM()||'up'));const WY=W.filter(w=>yrOf(w)===S.ui.tahun);return {portofolio:progVis().length,program:progVis().length,wbs:W.length,wbsplan:'',milestone:WY.filter(w=>stOf(w,12)==='Terlambat').length,risiko:S.risks.filter(r=>r.st!=='Ditutup'&&riskVis(r)).length,cr:S.crs.filter(c=>crVis(c)&&CR_OPEN.includes(c.st)).length,bukti:W.filter(w=>buktiSt(w)==='Menunggu validasi').length,laporan:'',narasi:narPending(),penutupan:'',perencanaan:'',oneonone:'',siklus:'',referensi:S.usul.filter(x=>x.st==='Diajukan').length}}
+/* P0 UX: aksi WBS berada di area kerja, bukan di header PMO. */
+function wbsQuickActions(plan){
+ const edit=lv('wbs').includes('C'),cr=lv('cr').includes('C');
+ const report=pmReportButton().replace('class="btn pri pm-report-global"','class="wbs-more-item"');
+ const quick=edit?(plan?
+  '<button type="button" class="btn" data-act="tplwbs" title="Unduh template Excel WBS">Template WBS</button>'+
+  '<label class="btn wbs-import">Import Excel<input type="file" hidden accept=".xlsx,.xls" data-on="impwbs"></label>'+
+  '<button type="button" class="btn pri" data-act="add" data-t="wbs">+ Item WBS</button>':
+  '<button type="button" class="btn pri" data-act="add" data-t="wbs">+ Item WBS</button>'):'';
+ return '<div class="wbs-actionbar" role="group" aria-label="Kelola WBS">'+quick+
+  '<details class="wbs-more"><summary class="btn" aria-label="Aksi WBS lainnya">Lainnya <span aria-hidden="true">⌄</span></summary><div class="wbs-more-pop">'+
+  '<button type="button" class="wbs-more-item" data-act="expkomp">Export Kompilasi</button>'+
+  (cr?'<button type="button" class="wbs-more-item" data-act="crnew">Ajukan Change Request</button>':'')+report+
+  '<a class="wbs-more-item" href="#pmo-oneonone">Jadwal 1-on-1</a></div></details></div>';
+}
+function wbsActionSubline(cur,sub){
+ if(cur!=='wbsplan'&&cur!=='wbs')return sub;
+ const bar=wbsQuickActions(cur==='wbsplan');
+ if(!sub)return '<div class="subt ctabs wbs-with-actions">'+bar+'</div>';
+ const html=sub.replace('class="subt ctabs"','class="subt ctabs wbs-with-actions"');
+ const i=html.lastIndexOf('</div>');
+ return i<0?html+bar:html.slice(0,i)+bar+html.slice(i);
+}
 function pmoTabs(cur0){let cur=VIEW.startsWith('pmo-')?VIEW.slice(4):cur0;if(cur==='charter')cur='perencanaan';const u=curUnit(),W=S.wbs.filter(w=>!w.arsip&&unitMatch(w,u,lockM()||'up'));const WY=W.filter(w=>yrOf(w)===S.ui.tahun);
  const cnt=pmoCnt();
  const vis=new Set(pmoTabsVis().map(t=>t[0]));const L=k=>(PMT.find(t=>t[0]===k)||[k,k])[1];
  const G=PMG.map(g=>({g,ks:g[3].filter(k=>vis.has(k))})).filter(x=>x.ks.length);const on=G.find(x=>x.ks.includes(cur))||G[0];
  const gc=x=>x.ks.reduce((a,k)=>a+(+cnt[k]||0),0);
  const sub=on&&on.ks.length>1?`<div class="subt ctabs" role="tablist" aria-label="${esc(on.g[1])}">${on.ks.map(k=>`<a href="#pmo-${k}" class="${k===cur?'on':''}" role="tab" aria-selected="${k===cur}">${L(k)}${cnt[k]!==''&&cnt[k]!=null&&+cnt[k]>0?` <b class="sb">${cnt[k]}</b>`:''}</a>`).join('')}</div>`:'';
- return `<nav class="ptabs pmo-journey" aria-label="Tab PMO">${G.map(x=>{const n=x.g[2];const c=x.ks.length>1?gc(x):cnt[x.ks[0]];const tgt=x.ks.includes(cur)?cur:x.ks[0];return `<a href="#pmo-${tgt}" class="${x===on?'on':''}"><span>${n?`<em>${n}</em> `:''}${x.g[1]}</span>${c!==''&&c!=null&&+c>0?` <b>${c}</b>`:''}</a>`}).join('')}</nav>`+pmoFilterPanel(cur)+sub}
+ return `<nav class="ptabs pmo-journey" aria-label="Tab PMO">${G.map(x=>{const n=x.g[2];const c=x.ks.length>1?gc(x):cnt[x.ks[0]];const tgt=x.ks.includes(cur)?cur:x.ks[0];return `<a href="#pmo-${tgt}" class="${x===on?'on':''}"><span>${n?`<em>${n}</em> `:''}${x.g[1]}</span>${c!==''&&c!=null&&+c>0?` <b>${c}</b>`:''}</a>`}).join('')}</nav>`+pmoFilterPanel(cur)+wbsActionSubline(cur,sub)}
 /* Evaluasi Pascaproyek PMO — KMK v6, dilaksanakan paling cepat 3 bulan setelah proyek ditutup. */
 function pEval(){
  S.projectDecisions=S.projectDecisions||[];
@@ -5261,8 +5302,7 @@ function ganttCell(w){const y=yrOf(w)||S.ui.tahun;const d0=new Date(y,0,1),d1=ne
 function pWbs(){const P=per(),M=P.b,tw=P.tw;const rows=wbsRows();const yearlyRows=VIEW==='pmo-wbsplan'&&S.ui.planYear!=='year'?rows.filter(w=>yrOf(w)===S.ui.tahun):rows;const s0=sumP(yearlyRows,P);const s={t:s0.t,r:s0.r};const stc=st=>yearlyRows.filter(w=>stP(w,P)===st).length;
  const pr=S.ui.prog?progOf(S.ui.prog):null;
  const plan=VIEW==='pmo-wbsplan';
- return vh('W','pmo',plan?'WBS':'WBS & Progres',plan?'Pecah rencana kerja hingga level paling detail, impor dari Excel, lalu jadikan baseline.':'Struktur, jadwal, progres, dan bukti dukung item WBS per program.',
-  `${plan?`${lv('wbs').includes('C')?`<button class="btn" data-act="tplwbs" title="Unduh template Excel sheet program untuk diisi lalu diimpor">Template WBS</button><label class="btn">Import WBS<input type="file" hidden accept=".xlsx,.xls" data-on="impwbs"></label>`:''}<button class="btn" data-act="expkomp">Export (format Kompilasi)</button>`:''}${lv('cr').includes('C')?'<button class="btn gold" data-act="crnew">Change Request</button>':''}${lv('wbs').includes('C')?'<button class="btn pri" data-act="add" data-t="wbs">+ Item WBS</button>':''}`)+pmoTabs('wbs')+(plan?`<div class="note i"><span><b>Susun WBS.</b> Impor sheet Kompilasi atau sheet program, atau tambah item manual. Bobot, target bulanan, triwulan, dan cakupan UE I dihitung otomatis dari Start–Finish. Setelah charter disahkan, WBS menjadi baseline dan perubahan berikutnya lewat Change Request. Update progres bulanan dilakukan di <a href="#pmo-wbs">Pelaksanaan › WBS &amp; progres</a>.</span></div>`:'')+
+ return vh('W','pmo',plan?'WBS':'WBS & Progres',plan?'Pecah rencana kerja hingga level paling detail, impor dari Excel, lalu jadikan baseline.':'Struktur, jadwal, progres, dan bukti dukung item WBS per program.','')+pmoTabs('wbs')+(plan?`<div class="note i"><span><b>Susun WBS.</b> Impor sheet Kompilasi atau sheet program, atau tambah item manual. Bobot, target bulanan, triwulan, dan cakupan UE I dihitung otomatis dari Start–Finish. Setelah charter disahkan, WBS menjadi baseline dan perubahan berikutnya lewat Change Request. Update progres bulanan dilakukan di <a href="#pmo-wbs">Pelaksanaan › WBS &amp; progres</a>.</span></div>`:'')+
  (!plan&&S.ui.wbsProject?`<div class="note i"><span><b>Proyek:</b> ${esc(S.ui.wbsProject)} <button class="btn sm" data-act="wbsprojclear" title="Tampilkan seluruh proyek">Tampilkan semua proyek ×</button></span></div>`:'')+
   pChips()+
  `<div class="kpis"><div class="kpi dk"><div class="l">Item sesuai filter</div><div class="v">${rp(rows.length)}</div><div class="d">${rows.filter(w=>cmType(w)).length} item CM · ${rows.filter(w=>cmType(w)==='ADP').length} ADP</div></div>
@@ -8617,7 +8657,14 @@ function viewCmo(tab,mk){
  pasca:'Evaluasi keberlanjutan adopsi dan kesiapan kanal operasional paling cepat satu bulan setelah implementasi.',
  closing:'Penutupan pendampingan transisi dan serah terima ke pemilik proses bisnis serta unit operasional.'
  };
- const head=mk?modHead(mk):vh('C','cmo','Change Management',descriptions[tab]||'Pengelolaan perubahan transformasi digital.','');
+ const cmHeaders={
+  adp:['1','Analisis Dampak Perubahan'],rencana:['2','Perencanaan Perubahan'],
+  jaringan:['3','Jaringan Perubahan'],cra:['4','Asesmen Kesiapan Perubahan'],
+  pelaksanaan:['5','Pelaksanaan Perubahan'],monev:['6','Monitoring dan Evaluasi'],
+  pasca:['7','Evaluasi Pascaperubahan'],closing:['8','Penutupan Perubahan']
+ };
+ const cmHeading=cmHeaders[tab]||['C','Change Management'];
+ const head=mk?modHead(mk):vh(cmHeading[0],'cmo',cmHeading[1],descriptions[tab]||'Pengelolaan perubahan transformasi digital.','');
  const tabs=cmoTabs(tab,mk);
  if(tab==='cra')return head+tabs+'<div id="cm-cra-workspace" class="cm-cra-workspace" aria-label="Ruang kerja asesmen kesiapan perubahan"></div>';
  const ms=mk?[modOf(mk)].filter(Boolean):visMods(f).filter(cmoMatch).filter(m=>!S.ui.mod||m.kode===S.ui.mod);
@@ -8630,7 +8677,7 @@ function viewCmo(tab,mk){
 }
 function modHead(mk){const m=modOf(mk);if(!m)return `<div class="card empty">Modul ${esc(mk)} tidak ditemukan (item ADP mungkin diarsipkan).</div>`;const sm=S.sub.filter(s=>s.modul===mk);
  return `<div class="vh"><a href="#cmo-siklus" class="btn sm">‹ Semua modul</a></div><div class="mhead"><div class="pic cmo" style="width:44px;height:44px;border-radius:11px;display:grid;place-items:center;color:#fff;font-weight:800">M</div>
- <div style="min-width:0"><div class="s">${esc(m.aplikasi)} › Modul</div><h1 style="font-size:19px;margin:0;font-weight:800">${esc(m.nama)} <span class="code">${m.kode}</span><button class="hlp" data-act="help" data-v="${esc(VIEW)}" data-t="Ruang kerja modul" title="Panduan ruang kerja modul" aria-label="Panduan ruang kerja modul">?</button><button type="button" class="txcs-entry" data-act="cheatsheet" data-kind="cmo" title="Framework dan tata kelola manajemen perubahan">Cheatsheet</button></h1><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">${sm.map((s,i)=>`<span class="smc"><i>${m.kode}.${i+1}</i>${esc(s.nama)}</span>`).join('')||'<span class="chip c-warn">Sub modul belum diisi di ADP</span>'}</div></div>
+ <div style="min-width:0"><div class="s">${esc(m.aplikasi)} › ${esc((CMT.find(x=>x[0]===(VIEW.match(/-t-(\w+)$/)||[])[1])||['','Modul'])[1])}</div><h1 style="font-size:19px;margin:0;font-weight:800">${esc(m.nama)} <span class="code">${m.kode}</span><button class="hlp" data-act="help" data-v="${esc(VIEW)}" data-t="Ruang kerja modul" title="Panduan ruang kerja modul" aria-label="Panduan ruang kerja modul">?</button><button type="button" class="txcs-entry" data-act="cheatsheet" data-kind="cmo" title="Framework dan tata kelola manajemen perubahan">Cheatsheet</button></h1><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">${sm.map((s,i)=>`<span class="smc"><i>${m.kode}.${i+1}</i>${esc(s.nama)}</span>`).join('')||'<span class="chip c-warn">Sub modul belum diisi di ADP</span>'}</div></div>
  <div class="kvs"><div><span>Program</span>${progLabel(m.prog)}</div><div><span>UIC Utama</span>${esc(short(m.uic,50))}</div><div><span>Pendamping CM</span>Pusmantap (advisory)</div><div><span>Status ADP</span>${chipSt(adpSt(mk))}</div>${relChip(m)?`<div><span>Peran unit Anda</span>${relChip(m)}</div>`:''}</div></div>`}
 /* --- Siklus --- */
 function stgBar(m,s){const it=m.st[s];if(!it.length)return `<span title="${s}: belum ada item WBS" style="background:repeating-linear-gradient(135deg,#FCF1DC 0 3px,#F2D9A6 3px 6px)"></span>`;const d=it.filter(w=>doneAt(w,12)).length;return `<span title="${s}: ${d}/${it.length} selesai"><i style="width:${d/it.length*100}%"></i></span>`}
