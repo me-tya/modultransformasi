@@ -5826,8 +5826,87 @@ const capRaw=(r,t)=>t>0&&r!=null?pct(r/t*100):'—';
 function capSel(){const sc=capScope(),u=curUnit(),pk=S.ui.prog;return {sc,u,pk,kind:sc==='unit'?(pk?'combo':'ue'):(pk?'prog':'tot'),key:sc==='unit'?(pk?u+'|'+pk:u):pk}}
 function capCtl(){const {sc,u}=capSel();
  const seg=(k,cur,L)=>`<span class="cap-seg" role="group">${L.map(([v,l,t])=>`<button type="button" data-act="capSet" data-k="${k}" data-v="${v}" class="${cur===v?'on':''}" aria-pressed="${cur===v}" title="${esc(t||'')}">${esc(l)}</button>`).join('')}</span>`;
- return `<div class="cap-ctl">${u?seg('capScope',sc==='unit'?'unit':'kem',[['kem','Kemenkeu'],['unit',u]]):''}<span class="chip c-info">TW ditutup: arsip periode · TW berjalan: WBS terkini</span></div>`}
+ return `<div class="cap-ctl">${u?seg('capScope',sc==='unit'?'unit':'kem',[['kem','Kemenkeu'],['unit',u]]):''}<span class="chip c-info">TW ditutup: arsip periode · TW berjalan: WBS terkini</span>${lv('lap').includes('U')&&!lockU()?'<label class="btn sm" style="cursor:pointer">Impor rekap Excel<input type="file" accept=".xlsx,.xls" data-on="capRekapImport" style="display:none"></label>':''}</div>`}
 ACT.capSet=el=>{S.ui[el.dataset.k]=el.dataset.v;save();render()};
+
+/* Perbarui snapshot laporan dari Excel tanpa menyisipkan angka manual.
+   Mendukung sheet "Capaian T-Program" dengan header Target TWn / Realisasi TWn,
+   baik satu TW maupun seluruh TW. Tetap mengikuti snapshot per periode. */
+function capReadRekap(wb){
+ const norm=x=>String(x??'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'');
+ const numExcel=x=>{if(typeof x==='number'&&Number.isFinite(x))return x;const s=String(x??'').trim().replace(/[^0-9-]/g,'');return s?+s:0};
+ const qkey=(col,prefix,q)=>{const k=norm(col);return k===prefix+'tw'+q||k===prefix+'tw'+['','i','ii','iii','iv'][q]};
+ const resolve=name=>{const s=norm(name);
+  if(/officeautomation/.test(s))return 'OA';
+  if(/integratedcoresystem|digitalisasicore/.test(s))return 'CORE';
+  if(/singleprofile/.test(s))return 'SP';
+  if(/satudatakemenkeu/.test(s))return 'SD';
+  if(/seamlessservices/.test(s))return 'SSB';
+  if(/pemotonganpajakdimukaatastkd/.test(s))return 'TKD';
+  const p=S.programs.find(p=>norm(p.nama)===s||norm(p.kode)===s||norm(p.akr)===s);
+  return p?p.akr:null;
+ };
+ const sheets=wb.SheetNames.map(name=>({name,rows:XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:''})}));
+ const found=sheets.map(s=>({...s,head:s.rows.findIndex(r=>r.some(v=>norm(v)==='tprogram')&&r.some(v=>/^targettw(?:[1-4]|i|ii|iii|iv)$/.test(norm(v))))}))
+   .find(s=>s.head>=0&&(/capaian.?t.?program/i.test(s.name)||sheets.length===1))||
+   sheets.map(s=>({...s,head:s.rows.findIndex(r=>r.some(v=>norm(v)==='tprogram')&&r.some(v=>/^targettw(?:[1-4]|i|ii|iii|iv)$/.test(norm(v))))})).find(s=>s.head>=0);
+ if(!found)throw Error('Sheet rekap harus memiliki kolom T-Program dan Target TW1/TW2/TW3/TW4.');
+ const headers=found.rows[found.head],nameCol=headers.findIndex(v=>norm(v)==='tprogram');
+ const annualCol=headers.findIndex(v=>norm(v)==='targettahunan'),out=[];
+ if(annualCol<0)throw Error('Kolom Target Tahunan belum tersedia.');
+ for(let q=1;q<=4;q++){
+  const ti=headers.findIndex(v=>qkey(v,'target',q)),ri=headers.findIndex(v=>qkey(v,'realisasi',q));
+  if(ti<0||ri<0)continue;
+  const rows=found.rows.slice(found.head+1).filter(r=>String(r[nameCol]||'').trim());
+  const raw=rows.map(r=>({name:String(r[nameCol]).trim(),code:resolve(r[nameCol]),t:numExcel(r[ti]),r:numExcel(r[ri]),a:numExcel(r[annualCol])}));
+  const grand=raw.find(x=>/^total$/i.test(x.name)),entries=raw.filter(x=>x.code&&(x.t>0||x.r>0));
+  const unrecognized=raw.filter(x=>!x.code&&!/^total$/i.test(x.name)&&!/^reminder/i.test(x.name)&&x.t>0);
+  if(unrecognized.length)throw Error('Nama program tidak dikenal: '+unrecognized.map(x=>x.name).slice(0,3).join(', '));
+  if(!entries.length)continue;
+  let participants=entries.slice();
+  let sum=()=>({t:participants.reduce((a,x)=>a+x.t,0),r:participants.reduce((a,x)=>a+x.r,0)});
+  if(grand&&(sum().t!==grand.t||sum().r!==grand.r)){
+   const diffT=sum().t-grand.t,diffR=sum().r-grand.r;
+   const excluded=participants.find(x=>x.t===diffT&&x.r===diffR);
+   if(excluded)participants=participants.filter(x=>x!==excluded);
+  }
+  if(grand&&(sum().t!==grand.t||sum().r!==grand.r))throw Error('Total TW '+q+' tidak sesuai jumlah baris program. Periksa formula/lingkup Excel.');
+  const val=x=>[x.t,x.r,x.a,x.a?x.r/x.a*100:null,null,null,null,null];
+  const total=grand||{t:sum().t,r:sum().r,a:participants.reduce((a,x)=>a+x.a,0)};
+  const p=Object.fromEntries(participants.map(x=>[x.code,val(x)]));
+  const y=+S.ui.tahun;
+  out.push({year:y,tw:q,tot:val(total),prog:p,participants:participants.map(x=>x.code),source:found.name});
+ }
+ if(!out.length)throw Error('Tidak ada pasangan kolom Target TW dan Realisasi TW yang dapat diimpor.');
+ return out;
+}
+document.addEventListener('change',e=>{
+ if(e.target.dataset.on!=='capRekapImport')return;
+ const input=e.target,file=input.files&&input.files[0];input.value='';
+ if(!file)return;
+ if(!lv('lap').includes('U')||lockU()){toast('Hanya PMO Kemenkeu yang dapat mengimpor rekap capaian.');return}
+ if(!window.XLSX){toast('Pustaka pembaca Excel belum siap.');return}
+ const rd=new FileReader();
+ rd.onerror=()=>toast('Berkas Excel gagal dibaca.');
+ rd.onload=()=>{
+  try{
+   const wb=XLSX.read(rd.result,{type:'array',cellDates:false});
+   const rec=capReadRekap(wb),summary=rec.map(x=>`TW ${ROM[x.tw]}: ${rp(x.tot[1])} realisasi / ${rp(x.tot[0])} target; tahunan ${rp(x.tot[2])} · ${x.participants.length} program`).join('<br>');
+   modal('Impor rekap Capaian T-Program',`<p>Periksa angka hasil baca <b>${esc(file.name)}</b> sebelum mengganti arsip triwulan ${S.ui.tahun}:</p><p>${summary}</p><div class="note w"><span>Hanya triwulan yang memiliki pasangan kolom target dan realisasi akan diperbarui. Angka WBS operasional tidak berubah.</span></div>`,
+   'Simpan rekap',()=>{
+     S.cfg.capSnap=S.cfg.capSnap||{};
+     rec.forEach(x=>{S.cfg.capSnap[x.year+'-'+x.tw]={
+      cut:capDeadline(x.year,x.tw),at:TODAY,by:ME?.email||'PMO Kemenkeu',how:'revised',
+      source:file.name+' · '+x.source,n:null,tot:x.tot,prog:x.prog,ue:{},combo:{},participants:x.participants
+     }});
+     log('Impor rekap capaian historis',file.name+' · '+rec.map(x=>'TW '+x.tw).join(', '));
+     save();render();toast('Rekap per program dan total telah diperbarui dari Excel.');
+   });
+  }catch(ex){toast('Impor rekap gagal: '+ex.message)}
+ };
+ rd.readAsArrayBuffer(file);
+});
+
 function capLockBuild(y,tw,how){const all=S.wbs.filter(w=>!w.arsip&&yrOf(w)===y),L=v=>[v.t,v.r,v.a,v.ct==null?null:Math.round(v.ct*100)/100,v.on,v.nT,v.nOn,v.nE];
  const o={cut:capDeadline(y,tw),at:new Date().toISOString().slice(0,16).replace('T',' '),by:how==='auto'?'Sistem (otomatis)':(ME?ME.email:'-'),how:how||'manual',n:all.length,tot:L(capLiveTot(all,tw,y)),prog:{},ue:{},combo:{}};
  S.programs.forEach(p=>{const it=all.filter(w=>w.prog===p.akr);if(it.length)o.prog[p.akr]=L(capLive(it,tw))});UNITS.forEach(u=>{const it=all.filter(w=>w.ue.includes(u));if(it.length)o.ue[u]=L(capLive(it,tw));S.programs.forEach(p=>{const ip=it.filter(w=>w.prog===p.akr);if(ip.length)o.combo[u+'|'+p.akr]=L(capLive(ip,tw))})});return o}
@@ -5840,7 +5919,7 @@ ACT.capLock=el=>{const tw=+el.dataset.v,y=+S.ui.tahun,dl=capDeadline(y,tw),late=
 ACT.capUnlock=el=>{const tw=+el.dataset.v,y=+S.ui.tahun;if(capSnap(y,tw)?.how==='excel-reference'){toast('Rekap historis Excel tidak dapat dibuka sebagai data WBS terkini.');return}modal('Buka kunci TW '+ROM[tw]+' '+y,'<p style="margin:0">Angka cut-off TW '+ROM[tw]+' dihapus dari database. Capaian TW ini kembali dihitung langsung dari WBS terkini.</p>','Buka kunci',()=>{if(S.cfg.capSnap)delete S.cfg.capSnap[y+'-'+tw];log('Buka kunci capaian','TW '+tw+' '+y);save();render();toast('Kunci TW '+ROM[tw]+' dibuka.')})};
 function capQuarter(quarters,num){capAutoLock();const {sc,u,pk,kind,key}=capSel(),items=capItems(sc),cd=curTwDone(),y=+S.ui.tahun,adm=lv('lap').includes('U')&&!lockU();
  const card=t=>{const st=t<=cd?'done':t===cd+1?'run':'plan',v=capVal(kind,key,items,t);
-  const chip=v.src==='lock'?(v.lock.how==='excel-reference'?`<span class="chip c-ok" title="Sumber: ${esc(v.lock.source)} · ${esc(v.lock.by)}">Arsip Excel TW ${ROM[t]}</span>`:`<span class="chip c-ok" title="Dikunci ${esc(v.lock.by)} · ${esc(v.lock.at)}">🔒 Cut-off ${fmtD(v.cut)}</span>`):v.src==='missing'?'<span class="chip c-warn">Rekap TW belum tersedia</span>':st==='run'?'<span class="chip c-info">Berjalan · s.d. hari ini</span>':st==='plan'?'<span class="chip c-gray">Belum berjalan</span>':'<span class="chip c-info">WBS periode berjalan</span>';
+  const chip=v.src==='lock'?((v.lock.how==='excel-reference'||v.lock.how==='revised')?`<span class="chip c-ok" title="Sumber: ${esc(v.lock.source)} · ${esc(v.lock.by)}">Arsip Excel TW ${ROM[t]}</span>`:`<span class="chip c-ok" title="Dikunci ${esc(v.lock.by)} · ${esc(v.lock.at)}">🔒 Cut-off ${fmtD(v.cut)}</span>`):v.src==='missing'?'<span class="chip c-warn">Rekap TW belum tersedia</span>':st==='run'?'<span class="chip c-info">Berjalan · s.d. hari ini</span>':st==='plan'?'<span class="chip c-gray">Belum berjalan</span>':'<span class="chip c-info">WBS periode berjalan</span>';
   const big=st==='plan'?'—':capPct(v.r,v.t,t);
   const brk=st!=='plan'&&v.on!=null&&v.early>0?`<span class="cap-b"><b>${num(v.on)}</b> dari task yang jatuh tempo s.d. TW ${ROM[t]}${v.nT!=null?' ('+v.nOn+'/'+v.nT+' task)':''} + <b>${num(v.early)}</b> dari ${v.nE!=null?v.nE+' ':''}task yang selesai lebih cepat dari jadwal</span>`:st!=='plan'&&v.nT!=null?`<span class="cap-b">${v.nOn}/${v.nT} task jatuh tempo s.d. TW ${ROM[t]} selesai &amp; tervalidasi</span>`:'';
   const lv2='';
