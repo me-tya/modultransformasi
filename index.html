@@ -2481,7 +2481,7 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 #app .subt.ctabs>a{padding:6px 10px;font-size:11.7px}
 #app .wbs-with-actions{gap:5px!important;padding:4px 2px 6px!important;margin:4px 0 6px!important}
 #app .wbs-actionbar>.btn,#app .wbs-actionbar>.wbs-import,#app .wbs-more>summary{height:32px!important;padding-inline:10px;font-size:11.5px}
-@media(max-width:1200px){#app .adp-state{display:none}}
+@media(max-width:700px){#app .adp-state{display:none}}
 @media(max-width:760px){#app .adp-workbar{flex-wrap:wrap}#app .adp-nav{flex-basis:100%}#app .adp-tools{flex-basis:100%;justify-content:flex-end}#app .flt.pmo-unified{grid-template-columns:112px minmax(0,1fr)!important}}
 </style>
 <div id="root"></div>
@@ -3174,7 +3174,7 @@ function render(){if(ME&&ME.role==='SA'&&S.akses&&!S.akses.KETUA){S.akses.KETUA=
  else if(VIEW==='aktivitas')h=pAktivitas();else if(VIEW.startsWith('pmo-'))h=viewPmo(VIEW.slice(4));else if(VIEW.startsWith('cmo-'))h=viewCmo(VIEW.slice(4),null);
  else if(VIEW==='set-pengguna')h=viewUsers();else if(VIEW==='set-akses')h=viewAkses();else if(VIEW==='set-sinkron')h=viewSinkron();else if(VIEW==='set-db')h=viewDb();else if(VIEW==='set-log')h=viewLog();
  if(VIEW.startsWith('set-'))h=h.replace('<!--vh-->',setTabs());
- v.innerHTML=h;window.CM_CRA_NAV=()=>cmoTabs('cra',null);if(VIEW==='cra'&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}if(VIEW==='pengelola'&&window.PENGELOLA_NATIVE){window.PENGELOLA_NATIVE.attach({S,ME,save,toast});return;}if((VIEW==='cmo-cra'||/^modul-.+-t-cra$/.test(VIEW))&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}try{foldNotes(v);bindCompactGuides(v)}catch(e){console.warn('Panduan ringkas:',e)}
+ v.innerHTML=h;window.CM_CRA_NAV=()=>cmoTabs('cra',null);if(VIEW==='cra'&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}if(VIEW==='pengelola'&&window.PENGELOLA_NATIVE){window.PENGELOLA_NATIVE.attach({S,ME,save,toast});return;}if((VIEW==='cmo-cra'||/^modul-.+-t-cra$/.test(VIEW))&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}try{foldNotes(v);bindCompactGuides(v)}catch(e){console.warn('Panduan ringkas:',e)}try{scrollActiveCompactNav(v)}catch(e){}
 }
 const yearsOpt=()=>{const ys=new Set([S.ui.tahun]);S.wbs.forEach(w=>{const y=yrOf(w);if(y>=2020)ys.add(y)});return [...ys].sort()};
 function foldNotes(v){
@@ -3309,6 +3309,14 @@ function pmReportButton(){if(typeof VIEW!=='string'||!VIEW.startsWith('pmo-'))re
 }
 function vh(ic,cls,title,desc,acts){if(cls==='pmo'&&typeof VIEW!=='undefined'&&VIEW.startsWith('pmo-')&&typeof PMG!=='undefined'){let k=VIEW.slice(4);if(k==='charter')k='perencanaan';const g=PMG.find(x=>x[3].includes(k));if(g&&g[1]!==String(title).replace(/<[^>]+>/g,'')){const pt=String(title).replace(/<[^>]+>/g,'');desc=`<b class="vh-sub">${esc(pt)}</b><span class="vh-dot">·</span>${desc}`;title=g[1]}if(g)ic=g[2]?String(g[2]):g[1].charAt(0)}const tt=esc(String(title).replace(/<[^>]+>/g,''));return `<div class="vh"><div class="pic ${cls}">${ic}</div><div style="min-width:0"><div class="vh-heading"><h1>${title}</h1></div><p title="${esc(String(desc).replace(/<[^>]+>/g,''))}">${desc}</p></div>${acts?`<div class="acts">${acts}</div>`:''}</div><!--vh-->`}
 function setTabs(){return `<nav class="ptabs" aria-label="Pengaturan">${STN.filter(t=>lv(t[2])!=='-').map(([k,l])=>`<a href="#${k}" class="${k===VIEW?'on':''}"><span>${l}</span></a>`).join('')}</nav>`}
+function scrollActiveCompactNav(v){
+ v.querySelectorAll('.pm-stage-shell>.pmo-journey,.adp-nav>.subt').forEach(nav=>{
+  const active=nav.querySelector(':scope > a.on');if(!active)return;
+  const n=nav.getBoundingClientRect(),a=active.getBoundingClientRect();
+  if(a.left<n.left+5)nav.scrollLeft-=n.left+5-a.left;
+  else if(a.right>n.right-5)nav.scrollLeft+=a.right-(n.right-5);
+ });
+}
 function subNav(key,list,def){const cur=S.ui.sub[key]||def;return `<div class="subt" role="tablist">${list.map(([k,l,full])=>`<a data-act="sub" data-k="${key}" data-v="${k}" class="${cur===k?'on':''}" role="tab" aria-selected="${cur===k}" title="${esc(full||l)}" aria-label="${esc(full||l)}">${l}</a>`).join('')}</div>`}
 ACT.tsort=el=>{const id=el.dataset.t,k=el.dataset.k;S.ui.sort=S.ui.sort||{};const cur=sortOf(id);S.ui.sort[id]=cur&&cur.k===k?(cur.d==='asc'?{k,d:'desc'}:{k:'',d:''}):{k,d:'asc'};if(!S.ui.sort[id].k)S.ui.sort[id]={k:'_none',d:''};PG[id]=0;save();redrawT(id);const sel=document.querySelector(`[data-wsort="${id}"]`);if(sel)sel.value=sortVal(id)};
 ACT.tplwbs=()=>{try{const bin=atob(TPLX),u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);const url=URL.createObjectURL(new Blob([u8],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));const a=document.createElement('a');a.href=url;a.download='Template_WBS_Transformation_Program.xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);log('Unduh template WBS','');toast('Template diunduh. Ganti tahun di sheet Petunjuk bila perlu, isi sheet program, lalu Import WBS.')}catch(e){toast('Unduh gagal: '+e.message)}};
