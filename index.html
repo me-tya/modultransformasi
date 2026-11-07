@@ -2334,6 +2334,10 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 @media(max-width:1050px){.pm-tb1.tp-tb{grid-template-columns:minmax(0,1fr)}.pm-tb1.tp-tb .tp-tb-actions{justify-content:flex-end}}
 @media(max-width:540px){.pm-tb1.tp-tb .tp-chip{font-size:10.7px;padding:6px 8px}.vh .acts .pm-report-global{min-width:90px}}
 
+
+.rpt2-stageNote{display:flex;align-items:center;gap:12px;padding:10px 13px;margin-bottom:10px;border:1px solid #c8d9e9;border-left:4px solid #244e7d;background:#f1f6fc;border-radius:9px;color:#163d64;font-size:12px}
+.rpt2-stageNote b{white-space:nowrap}.rpt2-stageNote span{line-height:1.45;color:#516a84;font-size:11.2px}
+@media(max-width:850px){.rpt2-stageNote{align-items:flex-start;flex-direction:column;gap:4px}}
 </style>
 
 <div id="root"></div>
@@ -7319,13 +7323,17 @@ function rptXlsx(c){if(!window.XLSX){toast('Pustaka Excel belum termuat.');retur
  chSaveBlob(new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),rptFile(c,'xlsx'))}
 const rptEnc=s=>[s.k,s.p||'',s.j||'',s.s||''].map(encodeURIComponent).join('|');
 const rptDec=v=>{const [k,p,j,s]=String(v||'filter').split('|').map(x=>{try{return decodeURIComponent(x)}catch(e){return x}});return {k:k||'filter',p,j,s}};
-ACT.pgRep=el=>{const d=el.dataset;let spec={k:d.k||'filter',p:d.p||'',j:d.j||'',s:d.s||'',th:''};
- const G=pgGroups().filter(g=>g.P.length);if(!G.length){toast('Belum ada proyek/item WBS yang sesuai filter untuk dilaporkan.');return}
- if(spec.p&&!G.some(g=>g.p.akr===spec.p)){toast('Program ini belum memiliki proyek/item WBS yang sesuai filter.');return}
- const pre=d.preset==='tutup';const inc=pre?Object.assign({},RPT_DEF,{tutup:1,item:0}):(S.ui.rptInc=Object.assign({},RPT_DEF,S.ui.rptInc||{}));const sg=S.ui.rptSigner||{};
+ACT.pgRep=el=>{const d=el.dataset;let spec={k:d.k||'filter',p:d.p||'',j:d.j||'',s:d.s||'',th:'',allowEmpty:1};
+ let G=pgGroups();if(!G.length)G=progVis().map(p=>({p,P:[],items:[],x:pgStat([])}));
+ if(!G.length){toast('Belum ada program yang tersedia untuk disusun laporannya.');return}
+ if(spec.p&&!G.some(g=>g.p.akr===spec.p)){toast('Program tidak tersedia dalam filter saat ini.');return}
+ const pre=d.preset==='tutup',stage=d.stage||(pre?'penutupan':'');
+ const inc=stage?rptPreset(stage):(S.ui.rptInc=Object.assign({},RPT_DEF,S.ui.rptInc||{}));
+ const sg=S.ui.rptSigner||{};
  const optsC=()=>{const L=[[rptEnc({k:'filter'}),'Semua program sesuai filter ('+G.length+')']];G.forEach(g=>{L.push([rptEnc({k:'prog',p:g.p.akr}),'Program · '+g.p.kode+' '+g.p.nama]);if(spec.p===g.p.akr)g.P.forEach(r=>{L.push([rptEnc({k:'proj',p:g.p.akr,j:r.n}),'   Proyek · '+r.n]);if(spec.j===r.n)(r.subItems||[]).forEach(x=>L.push([rptEnc({k:'sub',p:g.p.akr,j:r.n,s:x.name}),'      Subproyek · '+x.name]))})});return L};
  const nInc=()=>RPT_SECT.filter(([k])=>inc[k]).length;
  const body=`<div class="rpt2">
+  <div class="rpt2-stageNote"><b>${esc(stage?'Laporan Tahap · '+PMO_REPORT_LABEL[stage]:'Laporan Program / Proyek')}</b><span>${pre?'Laporan akhir dapat dibuat sebelum proyek ditutup dan ditandai DRAFT sampai seluruh penutupan disahkan.':'Komponen laporan dipilih sesuai tahap dan dapat disesuaikan melalui Isi laporan.'}</span></div>
   <div class="rpt2-bar">
    <label class="rpt2-f w3"><span>Cakupan laporan</span><select class="sel" id="rpt-sc">${opts(optsC(),rptEnc(spec))}</select></label>
    <label class="rpt2-f w2"><span>Tahapan</span><select class="sel" id="rpt-th">${tahapOpts('')}</select></label>
@@ -7338,7 +7346,7 @@ ACT.pgRep=el=>{const d=el.dataset;let spec={k:d.k||'filter',p:d.p||'',j:d.j||'',
    <div class="rpt2-all"><button type="button" class="lnk" data-all="1">Pilih semua</button><button type="button" class="lnk" data-all="0">Kosongkan</button><button type="button" class="lnk" data-all="d">Bawaan</button></div></details>
   <div class="rpt2-frame"><div class="rpt2-load">Menyusun laporan…</div><iframe id="rpt-if" title="Pratinjau laporan"></iframe></div></div>`;
  let ctx=null,model=null;
- const ov=modal(`<span class="exh">${RPT_ICO(20)} ${pre?'Pratinjau Laporan Akhir '+(d.k==='proj'||d.k==='sub'?'Proyek':'Program'):'Pratinjau Laporan'}</span>`,body,null,null,{cancel:'Tutup',size:'wide rpt',extra:'<button class="btn" data-mx="xls">⬇ Excel</button><button class="btn" data-mx="ppt">⬇ PowerPoint</button><button class="btn" data-mx="pdf">⬇ PDF</button><button class="btn pri" data-mx="doc">⬇ Word (.docx)</button>',onExtra:(k,ov)=>{
+ const ov=modal(`<span class="exh">${RPT_ICO(20)} ${pre?'Pratinjau Laporan Akhir (draft bila belum ditutup)':'Pratinjau Laporan '+(PMO_REPORT_LABEL[stage]||'')}</span>`,body,null,null,{cancel:'Tutup',size:'wide rpt',extra:'<button class="btn" data-mx="xls">⬇ Excel</button><button class="btn" data-mx="ppt">⬇ PowerPoint</button><button class="btn" data-mx="pdf">⬇ PDF</button><button class="btn pri" data-mx="doc">⬇ Word (.docx)</button>',onExtra:(k,ov)=>{
    if(k==='flt'){S.ui.fopen=1;save();render();setTimeout(()=>document.querySelector('.flt')?.scrollIntoView({block:'start',behavior:'smooth'}),60);return true}
    if(!ctx||!model)return false;
    if(k==='pdf'){try{const w=ov.querySelector('#rpt-if').contentWindow;const t=w.document.title;w.document.title=model.fileName;w.focus();w.print();setTimeout(()=>{try{w.document.title=t}catch(e){}},1500)}catch(e){toast('Gagal mencetak: '+e.message)}log('Cetak laporan',ctx.title+' · '+ctx.name);save();return false}
@@ -7347,8 +7355,8 @@ ACT.pgRep=el=>{const d=el.dataset;let spec={k:d.k||'filter',p:d.p||'',j:d.j||'',
    if(k==='xls'){rptXlsx(ctx);log('Unduh laporan Excel',ctx.title+' · '+ctx.name);save();return false}
    return false}});
  const fr=ov.querySelector('#rpt-if'),ld=ov.querySelector('.rpt2-load');
- const upd=()=>{ld.style.display='flex';setTimeout(()=>{try{ctx=rptCtx(spec);model=rptModel(ctx,inc,{no:ov.querySelector('#rpt-no').value.trim(),preset:pre?'tutup':''});fr.srcdoc=mtRptHtml(model)}catch(err){console.error(err);toast('Gagal menyusun laporan: '+err.message)}ld.style.display='none'},20)};
- ov.querySelector('#rpt-sc').addEventListener('change',ev=>{const th=spec.th;spec=Object.assign(rptDec(ev.target.value),{th});ev.target.innerHTML=opts(optsC(),rptEnc(spec));upd()});
+ const upd=()=>{ld.style.display='flex';setTimeout(()=>{try{ctx=rptCtx(spec);model=rptModel(ctx,inc,{no:ov.querySelector('#rpt-no').value.trim(),preset:pre?'tutup':'',stage});fr.srcdoc=mtRptHtml(model)}catch(err){console.error(err);toast('Gagal menyusun laporan: '+err.message)}ld.style.display='none'},20)};
+ ov.querySelector('#rpt-sc').addEventListener('change',ev=>{const th=spec.th;spec=Object.assign(rptDec(ev.target.value),{th,allowEmpty:1});ev.target.innerHTML=opts(optsC(),rptEnc(spec));upd()});
  ov.querySelector('#rpt-th').addEventListener('change',ev=>{spec.th=ev.target.value;upd()});
  ov.querySelector('#rpt-no').addEventListener('change',upd);
  ov.querySelector('#rpt-tteb').addEventListener('click',()=>{const p=ov.querySelector('.rpt2-tte');p.hidden=!p.hidden});
