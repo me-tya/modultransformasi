@@ -8342,10 +8342,53 @@ const GUIDE={
  btn:[['🔔 Notifikasi','Daftar tugas dan pemberitahuan untuk peran Anda.','Panel notifikasi (pop-up)'],['Bantuan (bilah atas)','Membuka Pusat Bantuan dengan peta semua menu.','Pop-up Pusat Bantuan'],['Tahun Anggaran','Mengganti tahun data di seluruh aplikasi.','Halaman yang sama']],
  tips:['Menu yang tidak terlihat berarti peran Anda tidak memiliki hak akses ke menu itu.']},
 
+
 'dashboard':{
- tujuan:'Ringkasan eksekutif capaian program transformasi untuk pimpinan, hanya untuk dibaca.',
- alur:[['Pilih tahun','Pilih Tahun Anggaran di bilah atas.'],['Baca kartu dan grafik','Kartu atas menunjukkan capaian keseluruhan; grafik menunjukkan perkembangan dan perbandingan.'],['Telusuri','Klik kartu atau nama program untuk membuka rincian di menu PMO.','pmo-siklus','Buka Overview']],
- tips:['Angka dihitung dari item WBS yang sudah divalidasi PMO Kemenkeu.']},
+ tujuan:'Panduan khusus Executive Dashboard: membaca kinerja program transformasi, status modul, pengecualian yang perlu perhatian, dan menelusuri data sumber. Tampilan ini merupakan lapisan pemantauan pimpinan; pemutakhiran pekerjaan dilakukan pada modul PMO/CMO sesuai kewenangan.',
+ alur:[
+  ['1. Tentukan cakupan laporan','Pilih Tahun Anggaran, periode, program, dan Unit Eselon I pada Filter. Periksa kembali cakupan sebelum membandingkan angka antarperiode.'],
+  ['2. Mulai dari Peta Modul per Triwulan','Baca jumlah modul yang ditargetkan, tercapai, berjalan, terlambat, atau terjadwal. Pilih Triwulan I–IV, klik salah satu kartu status untuk menyaring, atau cari nama modul/proyek.'],
+  ['3. Identifikasi pengecualian di Perlu Perhatian','Telusuri modul dan item WBS terlambat, tenggat 30 hari ke depan, bukti menunggu validasi, serta risiko tinggi. Gunakan daftar ini untuk menentukan prioritas eskalasi.'],
+  ['4. Bandingkan kinerja di Ringkasan Capaian','Baca capaian per program, grafik target–realisasi per triwulan, dan capaian per UE I. Bandingkan capaian periode dengan capaian tahunan menggunakan penyebut masing-masing.'],
+  ['5. Telusuri dan tindak lanjuti','Klik item, baris program atau UE I yang menyediakan rincian. Untuk memeriksa sumber angka, buka WBS & Progres atau Bukti Dukung.','pmo-wbs','Buka WBS & Progres']
+ ],
+ tab:[
+  ['Peta Modul per Triwulan','Status modul dihitung dari tahapan item WBS sampai TW terpilih. Kartu status dapat diklik sebagai filter; kartu modul menampilkan rincian target, progres, dan item.'],
+  ['Perlu Perhatian','Menyajikan modul terlambat, item terlambat, tenggat 30 hari, bukti belum tervalidasi, dan risiko tinggi terbuka. Tidak seluruh baris memiliki aksi klik yang sama.'],
+  ['Ringkasan Capaian','Berisi KPI pelaksanaan, capaian per program, grafik target–realisasi per TW, serta perbandingan per UE I dan indikator CM yang sudah memiliki hasil pengukuran.']
+ ],
+ btn:[
+  ['Tahun Anggaran','Mengganti tahun data yang ditampilkan pada dashboard dan menu lainnya.','Filter global'],
+  ['Filter','Memilih periode, program, dan unit yang masuk perhitungan.','Panel filter'],
+  ['TW I–IV','Mengubah triwulan pembacaan Peta Modul atau Perlu Perhatian.','Halaman yang sama'],
+  ['Kartu status modul','Menyaring kartu modul sesuai status. Klik ulang untuk kembali menampilkan semua.','Peta Modul'],
+  ['Cari modul','Mempersempit daftar berdasarkan nama modul, submodul, atau UIC.','Peta Modul'],
+  ['Klik kartu modul','Membuka rincian tahapan, item, dan progres modul terkait.','Rincian modul'],
+  ['Baris program / UE I','Membuka daftar item/rincian sesuai data yang tersedia.','Rincian sumber'],
+  ['Grafik per triwulan','Klik batang untuk memilih periode triwulan yang ingin dianalisis.','Halaman yang sama'],
+  ['Ekspor laporan','Membuat laporan dari fungsi ekspor yang tersedia pada sistem.','Unduhan berkas'],
+  ['WBS & Progres','Memeriksa jadwal, bobot, progres dan bukti item yang membentuk capaian.','Project Management','pmo-wbs'],
+  ['Bukti Dukung','Memeriksa status validasi dokumen bukti sumber realisasi.','Project Management','pmo-bukti']
+ ],
+ q:[
+  ['Apa beda capaian periode dan capaian tahunan?','Capaian periode = bobot WBS yang direalisasikan dan tervalidasi untuk item yang ditargetkan pada periode terpilih dibagi bobot target periode. Capaian tahunan = akumulasi bobot WBS tervalidasi sampai batas periode dibagi seluruh bobot target setahun. Penyebutnya berbeda.',
+   ['Lihat label periode pada Filter.','Jangan menganggap dua persentase tersebut seharusnya sama.'],null,'pmo-siklus','Buka Overview'],
+  ['Apa arti status modul?','Tercapai = seluruh item kumulatif dalam cakupan TW dinyatakan selesai; terlambat = terdapat item lewat target yang belum selesai; berjalan = masih dalam pelaksanaan; terjadwal = target berikutnya belum jatuh tempo. Persentase validasi bukti ditampilkan terpisah dari status tahapan.',
+   ['Klik kartu status untuk menyaring daftar.','Klik modul untuk menelusuri item pembentuk status.'],null,null,null],
+  ['Mengapa jumlah capaian per UE I tidak sama dengan total?','Satu item WBS dapat berkaitan dengan beberapa UE I. Oleh karena itu, angka cakupan unit dapat beririsan dan tidak otomatis dijumlahkan untuk mendapatkan total unik.',
+   ['Gunakan total portofolio sebagai acuan keseluruhan.','Gunakan per UE I untuk melihat kontribusi atau keterlibatan unit.'],null,null,null],
+  ['Mengapa indikator CM ada yang kosong?','Indeks keberhasilan dan tingkat adopsi hanya dihitung untuk modul yang sudah memiliki data pengukuran; ketidaktersediaan data bukan berarti 0%.',
+   ['Periksa data Monev pada Change Management bila perlu.'],null,'cmo-monev','Buka Monev CM'],
+  ['Dari mana sumber dashboard?','Sumber utama ialah program dan WBS, jadwal, bobot, realisasi tervalidasi, bukti pendukung, serta data risiko/milestone yang relevan. Indikator keberhasilan CM atau adopsi mengikuti pengukuran CMO bila tersedia.',
+   ['Verifikasi angka pada daftar WBS dan bukti dukung.','Pastikan waktu pengukuran dan cakupan filter sama.'],null,'pmo-wbs','Buka WBS & Progres']
+ ],
+ tips:[
+  'Baca dashboard berurutan: kondisi umum → pengecualian → kinerja program/UE I → tindak lanjut.',
+  'Bedakan status tahapan modul, capaian bobot WBS, dan status validasi bukti. Ketiganya bukan indikator yang sama.',
+  'Kartu tertentu masih bersifat informatif. Fitur klik seluruh card dan storytelling redesign belum diterapkan pada dashboard operasional.',
+  'Jangan menyimpulkan manfaat transformasi atau adopsi pengguna jika belum terdapat hasil pengukuran yang dapat dipertanggungjawabkan.'
+ ]
+},
 
 'pmo-siklus':{
  tujuan:'Overview capaian program transformasi: seberapa jauh target tercapai menurut triwulan, K-Wide, T-Program, dan unit Eselon I. Halaman ini hanya untuk dibaca.',
@@ -10024,8 +10067,30 @@ function open(mode,kind,selected){
 }
 function currentKind(){try{return typeof VIEW==='string'&&VIEW.indexOf('pmo-')===0?'pmo':'cmo'}catch(e){return 'cmo'}}
 window.openTxCheatsheet=function(mode,selected){return open('sheet',mode||currentKind(),selected==='koordinasi'?'ko':selected)};
-window.showGuideHome=function(){return open('help',currentKind())};
-window.showHelp=function(v){return open('help',String(v||'').indexOf('pmo-')===0?'pmo':String(v||'').indexOf('cmo-')===0?'cmo':currentKind(),'menu')};
+/* Routing Bantuan mengikuti menu aktif. Halaman non-PMO/CMO tidak lagi default ke CMO. */
+var originalGenericGuide=window.showGuideHome;
+var originalContextGuide=window.showHelp;
+function helpArea(view){
+ var v=String(view||'');
+ if(v==='dashboard')return 'dashboard';
+ if(v.indexOf('pmo-')===0)return 'pmo';
+ if(v.indexOf('cmo-')===0||v.indexOf('modul-')===0)return 'cmo';
+ return 'umum';
+}
+function activeHelpView(){try{return typeof VIEW==='string'?VIEW:''}catch(e){return ''}}
+window.showGuideHome=function(){
+ var kind=helpArea(activeHelpView());
+ if(kind==='dashboard')return originalContextGuide('dashboard','Executive Dashboard');
+ if(kind==='pmo'||kind==='cmo')return open('help',kind);
+ return originalGenericGuide();
+};
+window.showHelp=function(v,title){
+ var page=String(v||activeHelpView());
+ var kind=helpArea(page);
+ if(kind==='dashboard')return originalContextGuide('dashboard',title||'Executive Dashboard');
+ if(kind==='pmo'||kind==='cmo')return open('help',kind,'menu');
+ return originalContextGuide(page,title);
+};
 window.skHelpCheatsheetVersion='20261107-stage-shortcuts-v4';
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addStyle);else addStyle();
 })();
