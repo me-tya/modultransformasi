@@ -6,6 +6,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="wbs-cap-2026-reference.js"></script>
+<script src="cheatsheet-referensi.js?v=20261107-1"></script>
 <style>
 /* Satu Kemenkeu shell: sidebar navy gelap, topbar navy, aksen kuning; isi kartu putih padat */
 :root{
@@ -5927,7 +5928,7 @@ function capQuarter(quarters,num){capAutoLock();const {sc,u,pk,kind,key}=capSel(
   const lk=adm&&st==='done'&&sn?.how!=='excel-reference'?(sn?`<button type="button" class="btn sm" data-act="capUnlock" data-v="${t}">Buka kunci</button>`:`<button type="button" class="btn sm" data-act="capLock" data-v="${t}">🔒 Kunci TW ${ROM[t]}</button>`):'';
   return `<div class="ov-q cap-q ${st}"><div class="cap-h"><small>TRIWULAN ${ROM[t]}</small>${chip}</div><b class="big" title="Capaian mentah ${capRaw(v.r,v.t)} · maksimum pelaporan ${capMax(t)}%">${big}</b><div class="bar"><i style="width:${st==='plan'?0:Math.min(100,v.t?v.r/v.t*100:0)}%;background:var(--blue)"></i></div><span>${v.src==='missing'?'Rincian periode historis belum diarsipkan':st==='plan'?'Target '+num(v.t):num(v.r)+' realisasi / '+num(v.t)+' target'}</span>${brk}<div class="cap-y"><span>Capaian tahunan${v.a?'<small style="display:block;font-weight:600;font-size:10.5px;letter-spacing:0;color:#6B7D96">target tahunan '+num(v.a)+'</small>':''}</span><b>${st==='plan'||v.ct==null?'—':pct(v.ct)}</b></div>${lv2}${lk}</div>`};
  const scopeLab=sc==='unit'?'UE I '+u+' (kolom cakupan UE I = "Ya")':'Kemenkeu'+(pk?' · '+((progOf(pk)||{}).nama||pk):' · seluruh T-Program');
- return `<div class="card"><div class="ch"><h3>Capaian per Triwulan</h3>${capCtl()}</div><div class="ov-qgrid">${quarters.map(card).join('')}</div>`+
+ return `<div class="card"><div class="ch"><h3>Ringkasan Capaian per Triwulan</h3>${capCtl()}</div><div class="ov-qgrid">${quarters.map(card).join('')}</div>`+
  `<div class="ov-filter-status"><b>Lingkup:</b> ${esc(scopeLab)} · TW selesai menggunakan rekap historis sesuai periode; TW berjalan dihitung dari WBS${sc==='unit'&&pk?' · <i>Rincian kombinasi UE I × program lama tidak ditampilkan bila tidak ada arsip, agar tidak memakai angka terkini</i>':''}</div>`+
  `<p class="cap-note">TW I dan III 2026 berasal dari workbook WBS (8)(1); TW II 2026 menggunakan tabel Excel terbaru yang dilampirkan; TW berjalan dihitung dari WBS. Capaian pelaporan dibatasi 100% pada TW I–II dan 120% pada TW III–IV, tanpa mengubah target dan realisasi. Metode: <b>target</b> = bobot (hari) task yang jatuh tempo s.d. akhir TW, kumulatif; <b>realisasi</b> = bobot task yang sudah ditandai 100% s.d. bulan itu dan buktinya tervalidasi, termasuk task yang selesai lebih cepat dari jadwal. <b>Kunci cut-off</b> dibuat otomatis oleh sistem ${capCutHK()} hari kerja setelah TW berakhir (batas pengisian realisasi), agar angka yang dilaporkan tidak berubah oleh realisasi susulan atau CR.</p></div>`+capBreakdown(quarters,num)}
 /* Rincian quarter memakai capVal() yang sama dengan kartu dan tab T-Program:
@@ -5965,7 +5966,7 @@ function capMatrix(kindTab,num){capAutoLock();const {sc,u,pk}=capSel(),quarterCh
   if(!pk)ent.push({name:'Total'+(sc==='unit'?' '+u:''),tot:1,tw:[1,2,3,4].map(t=>sc==='unit'?capVal('ue',u,base,t):capVal('tot','',base,t))})}
  else{const us=sc==='unit'?[u]:UNITS;ent=us.map(x=>{const it=all.filter(w=>w.ue.includes(x));return {name:x,me:x===u,tw:[1,2,3,4].map(t=>pk?capVal('combo',x+'|'+pk,it,t):capVal('ue',x,it,t))}}).filter(e=>e.tw.some(v=>v.t||v.r))}
  const cell=(v,t)=>`<td class="num" title="Capaian sebelum batas: ${capRaw(v.r,v.t)} · batas TW ${ROM[t]} ${capMax(t)}%"><b>${t>cd+1?'—':capPct(v.r,v.t,t)}</b><span class="sm">${v.src==='missing'?'Belum tersedia':num(v.r)+' / '+num(v.t)}</span>${v.src==='lock'?'<span class="src">🔒 rekap TW</span>':''}</td>`;
- const title=kindTab==='prog'?'Capaian T-Program':'Capaian per Unit Eselon I';
+ const title=kindTab==='prog'?'Rincian Capaian per T-Program':'Capaian per Unit Eselon I';
  return `<div class="card ov-matrix"><div class="ch"><h3>${title}</h3>${capCtl()}</div><div class="tscroll"><table class="lap"><thead><tr><th>${kindTab==='prog'?'T-Program':'UE I'}</th>${[1,2,3,4].map(t=>`<th class="num">TW ${ROM[t]}</th>`).join('')}<th class="num">Target tahunan</th><th class="num">Capaian tahunan s.d. TW ${ROM[cd]}</th></tr></thead><tbody>${ent.map(e=>{const v=e.tw[cd-1];return `<tr${e.tot?' style="background:#F4F7FC"':''}><td><b>${esc(e.name)}</b>${e.me&&sc!=='unit'?' <span class="chip c-info">unit saya</span>':''}</td>${e.tw.map((x,i)=>cell(x,i+1)).join('')}<td class="num">${num(v.a)}</td><td class="num"><b>${v.ct==null?'—':pct(v.ct)}</b></td></tr>`}).join('')}</tbody></table></div><p class="cap-note">Sel TW: realisasi periode ÷ target kumulatif periode. TW yang sudah ditutup memakai rekap laporan atau snapshot cut-off; TW berjalan dihitung dari WBS saat ini. Jika arsip kombinasi filter lama tidak tersedia, angka tidak ditampilkan.</p></div>`}
 function pOverview(){
  const y=+S.ui.tahun,tab=['tw','kwide','tprog','ue'].includes(S.ui.overviewTab)?S.ui.overviewTab:'tw';
@@ -5984,7 +5985,7 @@ function pOverview(){
  const kTable=kwideView();
  const quarter=capQuarter(periodQuarters,num);
  return vh('O','pmo','Overview','Capaian per triwulan, K-Wide, T-Program, dan per UE I sesuai struktur workbook WBS.')+pmoTabs('siklus')+favBlock()+
- '<div class="ov-tabs" role="tablist" aria-label="Jenis capaian">'+[['tw','Capaian per Triwulan'],['kwide','Capaian K-Wide'],['tprog','Capaian T-Program'],['ue','Capaian per UE I']].map(([v,l])=>'<button type="button" data-act="ovTab" data-v="'+v+'" role="tab" aria-selected="'+(tab===v)+'" class="'+(tab===v?'on':'')+'">'+l+'</button>').join('')+'</div>'+
+ '<div class="ov-tabs" role="tablist" aria-label="Jenis capaian">'+[['tw','Ringkasan per Triwulan'],['kwide','Capaian K-Wide'],['tprog','Rincian per T-Program'],['ue','Capaian per UE I']].map(([v,l])=>'<button type="button" data-act="ovTab" data-v="'+v+'" role="tab" aria-selected="'+(tab===v)+'" class="'+(tab===v?'on':'')+'">'+l+'</button>').join('')+'</div>'+
  (tab==='tw'?quarter+(data.items.length?'':'<div class="note w">WBS tahun ini belum tersedia di aplikasi. Impor sheet Kompilasi untuk mengisi capaian WBS.</div>'):
   tab==='kwide'?kTable:tab==='tprog'?capMatrix('prog',num):capMatrix('ue',num))+
  '<p class="s ov-source">Capaian TW yang sudah ditutup mengikuti rekap historis per TW; TW berjalan dihitung dari WBS. Target dan realisasi tidak dipotong, hanya persentase capaian pelaporan yang dibatasi 100% (TW I–II) dan 120% (TW III–IV). K-Wide adalah indikator terpisah.</p>';
@@ -9654,14 +9655,15 @@ function coordination(){
  '<div class="sk-coordination">'+(diagram||note('Diagram tidak berhasil dimuat. Muat ulang halaman atau periksa versi aplikasi.',true))+'</div>'+
  note('<b>Cara membaca:</b> jalur biru = pengendalian proyek PMO; jalur hijau-teal = pengelolaan adopsi CMO. Panah pada diagram rinci menunjukkan koordinasi antarperan. Penutupan proyek tidak otomatis menutup pendampingan CM.');
 }
+function pmReference(){return typeof window.txFormulaReferenceHtml==='function'?window.txFormulaReferenceHtml():note('Referensi belum termuat. Muat ulang halaman untuk mengambil materi terbaru.',true)}
 var cfg={
  help:{
  pmo:[['menu','Peta Menu',function(){return helpMenu('pmo')}],['steps','Tahapan Manajemen Proyek',function(){return helpStages('pmo')}],['crflow','Alur Change Request',function(){return pmCR()}],['reports','Laporan per Tahap',function(){return helpReports()}],['terms','Daftar Istilah PM',function(){return helpGloss('pmo')}],['docs','Dokumentasi',function(){return helpDocs('pmo')}]],
  cmo:[['menu','Peta Menu',function(){return helpMenu('cmo')}],['steps','Tahapan Manajemen Perubahan',function(){return helpStages('cmo')}],['terms','Daftar Istilah CM',function(){return helpGloss('cmo')}],['docs','Dokumentasi',function(){return helpDocs('cmo')}]]
  },
  sheet:{
- pmo:[['pmbok','Framework PMBOK',pmFramework],['tata','Tata Kelola PM',pmGovernance],['charter','Charter',pmCharter],['wbs','WBS',pmWBS],['cr','Change Request',pmCR],['ko','Alur Koordinasi',coordination]],
- cmo:[['framework','Framework',cmFramework],['tata','Tata Kelola CM',cmGovernance],['kom','Komunikasi',cmCommunication],['pel','Pelatihan',cmTraining],['trans','Transisi & Tiket',cmTransition],['ko','Alur Koordinasi',coordination]]
+ pmo:[['pmbok','Framework PMBOK',pmFramework],['ref','Referensi',pmReference],['tata','Tata Kelola PM',pmGovernance],['charter','Charter',pmCharter],['wbs','WBS',pmWBS],['cr','Change Request',pmCR],['ko','Alur Koordinasi',coordination]],
+ cmo:[['framework','Framework',cmFramework],['ref','Referensi',pmReference],['tata','Tata Kelola CM',cmGovernance],['kom','Komunikasi',cmCommunication],['pel','Pelatihan',cmTraining],['trans','Transisi & Tiket',cmTransition],['ko','Alur Koordinasi',coordination]]
  }
 };
 var active=null,lastFocus=null,modalKind=null,modalMode=null;
