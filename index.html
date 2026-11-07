@@ -7353,6 +7353,7 @@ function tpModal(p,r,tab){const k=tpKey(p,r.n,r.sub);p.closing=p.closing||{};con
    if(m==='tutup'){if(!tpCanReview(c)){toast('Hanya PIC penelaah yang ditugaskan boleh menyetujui penutupan.');return false}const miss=tpP0Gate(c,tpReady(p,r));if(miss.length){toast('Tidak dapat menyetujui penutupan: '+miss.join('; ')+'.');return false}commit('Ditutup',((ov.querySelector('#tp-rn')||{}).value||'').trim());toast('Proyek dinyatakan ditutup.');return true}
    if(m==='buka'){commit('Draft','Dibuka kembali');return true}
    return false}});ov._tp={p,r,R,reopen};
+ attachSync();
  ov.querySelectorAll('[data-tpt]').forEach(b=>b.addEventListener('click',()=>{S.ui.tpTab=b.dataset.tpt;ov.querySelectorAll('[data-tpt]').forEach(x=>x.classList.toggle('on',x===b));ov.querySelectorAll('[data-sec]').forEach(s=>s.hidden=s.dataset.sec!==b.dataset.tpt)}))}
 /* ---- Bagian laporan: Penutupan ---- */
 function rptTutupBlocks(c){const B=[];B.push({t:'h1',text:'Penutupan Proyek'});const pill=s=>({text:s,fill:{'Belum diajukan':'98A2B3',Draft:'98A2B3',Diajukan:'2F5BD3',Dikembalikan:'E25563',Ditutup:'16A37F'}[s]||'5B6B82',color:'FFFFFF'});
