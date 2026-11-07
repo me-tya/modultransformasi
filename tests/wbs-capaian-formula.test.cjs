@@ -72,3 +72,37 @@ test('Change Request tanggal akhir menghitung ulang durasi dan bulan target',()=
  assert.equal(item.w,181);
  assert.equal(item.tm,6);
 });
+
+test('Arsip Excel TW I tidak berubah oleh realisasi terkini 192,1%',()=>{
+ const ref={window:{}};
+ vm.runInNewContext(fs.readFileSync(path.join(__dirname,'..','wbs-cap-2026-reference.js'),'utf8'),ref);
+ const S={ui:{tahun:2026},cfg:{capSnap:{'2026-1':{tot:[5618,10792,89812],how:'manual',by:'Simulasi laporan terlambat'}}}};
+ const body=section('function capSnap(y,tw)','function capScope()')+
+ '\\n'+section('function capOff(kind,key,tw)','const capPct=')+
+ '\\n({capSnap,capVal})';
+ const ctx={S,window:ref.window,TODAY:'2026-11-07',
+   capDeadline:(y,tw)=>y===2026&&tw<=3?'2026-10-05':'2027-01-05',
+   capLive:()=>({t:5618,r:10792,a:89812,src:'live'}),
+   capLiveTot:()=>({t:5618,r:10792,a:89812,src:'live'})};
+ const fn=vm.runInNewContext(body,ctx);
+ const tw1=fn.capVal('tot','',[],1);
+ assert.equal(tw1.t,5618);
+ assert.equal(tw1.r,10430);
+ assert.equal(Math.round(tw1.r/tw1.t*1000)/10,185.7);
+ assert.equal(tw1.lock.how,'excel-reference');
+ const tw4=fn.capVal('tot','',[],4);
+ assert.equal(tw4.src,'live');
+});
+test('Triwulan ditutup tanpa arsip tidak boleh memakai realisasi terbaru',()=>{
+ const S={ui:{tahun:2027},cfg:{}};
+ const body=section('function capSnap(y,tw)','function capScope()')+
+ '\\n'+section('function capOff(kind,key,tw)','const capPct=')+
+ '\\n({capVal})';
+ const fn=vm.runInNewContext(body,{S,window:{},TODAY:'2027-11-07',
+   capDeadline:()=> '2027-04-05',
+   capLive:()=>({t:100,r:150,src:'live'}),
+   capLiveTot:()=>({t:100,r:150,src:'live'})});
+ const tw1=fn.capVal('tot','',[],1);
+ assert.equal(tw1.src,'missing');
+ assert.equal(tw1.t,null);
+});
