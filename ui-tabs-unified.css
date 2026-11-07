@@ -83,3 +83,58 @@
  :is(.subt,.ov-tabs,.porto-view-tabs,.ws-tabs,.hp-tabs,.chtabs,.cra-tabs,.wz-sub,.sk-tabbar)>:is(a,button,.porto-view-tab,.ws-tab,.cra-tab,.sk-tab){padding:8px 10px!important;font-size:11.5px!important}
  .subt.ctabs.wbs-with-actions{overflow:visible!important}
 }
+
+/* Tab horizontal pada Dashboard CM terintegrasi (iframe same-origin).
+   Navigasi vertikal Activity Form, langkah wizard, serta tombol filter tetap
+   mempertahankan struktur karena bukan baris tab sekunder. */
+html.mt-ui-embedded :is(.tabs,.cm-survey-subtabs,.cm-ap-tabs,.prio-subtabs){
+ display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;
+ align-items:stretch!important;gap:4px!important;min-height:46px!important;
+ width:100%!important;max-width:100%!important;margin:6px 0 12px!important;
+ padding:4px 4px 0!important;background:transparent!important;border:0!important;
+ border-bottom:2px solid #DCE3EF!important;border-radius:0!important;
+ box-shadow:none!important;overflow-x:auto!important;overflow-y:hidden!important;
+}
+html.mt-ui-embedded :is(.tabs,.cm-survey-subtabs,.cm-ap-tabs,.prio-subtabs)>:is(.tab-btn,.cm-survey-subtab,button){
+ position:relative!important;flex:0 0 auto!important;display:inline-flex!important;
+ align-items:center!important;justify-content:center!important;gap:7px!important;
+ min-width:0!important;min-height:40px!important;max-width:none!important;
+ margin:0!important;padding:8px 14px 9px!important;background:transparent!important;
+ border:1px solid transparent!important;border-radius:10px 10px 0 0!important;
+ border-bottom-width:1px!important;box-shadow:none!important;
+ color:#5F6B85!important;font-size:13px!important;font-weight:800!important;
+ line-height:1.35!important;white-space:nowrap!important;cursor:pointer;
+}
+html.mt-ui-embedded :is(.tabs,.cm-survey-subtabs,.cm-ap-tabs,.prio-subtabs)>:is(.tab-btn,.cm-survey-subtab,button):not(.active):not(.on):hover{
+ color:#0B2447!important;background:#F3F7FD!important;
+}
+html.mt-ui-embedded :is(.tabs,.cm-survey-subtabs,.cm-ap-tabs,.prio-subtabs)>:is(.tab-btn,.cm-survey-subtab,button):is(.active,.on){
+ color:#0B2447!important;background:#fff!important;border-color:#DCE3EF!important;
+ border-bottom-color:transparent!important;box-shadow:0 1px 2px rgba(11,31,69,.045)!important;
+}
+html.mt-ui-embedded :is(.tabs,.cm-survey-subtabs,.cm-ap-tabs,.prio-subtabs)>:is(.tab-btn,.cm-survey-subtab,button):is(.active,.on)::after{
+ content:""!important;position:absolute!important;left:0!important;right:0!important;
+ bottom:-2px!important;height:4px!important;background:#FDB913!important;
+ pointer-events:none!important;
+}
+html.mt-ui-embedded :is(.tabs,.cm-survey-subtabs,.cm-ap-tabs,.prio-subtabs)>:is(.tab-btn,.cm-survey-subtab,button):focus-visible{
+ outline:2px solid #1C67B4!important;outline-offset:-3px!important;
+}
+html.mt-ui-embedded .tabs .tab-btn .tab-icon{color:inherit!important}
+html.mt-ui-embedded :is(.tabs .count-badge,.cm-ap-cnt,.prio-tab-n){
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ background:#EEF1F6!important;color:#5F6B85!important;border-radius:999px!important;
+ padding:2px 8px!important;font-size:11px!important;font-weight:800!important;
+}
+html.mt-ui-embedded :is(.tabs .tab-btn.active .count-badge,.cm-ap-tabs button.on .cm-ap-cnt,.prio-subtabs .cm-survey-subtab.active .prio-tab-n){
+ background:#FDB913!important;color:#0B2447!important;
+}
+html.mt-ui-embedded .tabs-row .tabs{margin:0!important}
+html.mt-ui-embedded .cm-survey-subtabs>.cm-context-help{
+ align-self:center!important;min-height:32px!important;border-radius:50%!important;
+}
+@media(max-width:760px){
+ html.mt-ui-embedded :is(.tabs,.cm-survey-subtabs,.cm-ap-tabs,.prio-subtabs)>:is(.tab-btn,.cm-survey-subtab,button){
+ padding:8px 10px!important;font-size:11.5px!important;
+ }
+}
