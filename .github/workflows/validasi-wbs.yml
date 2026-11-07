@@ -4,6 +4,9 @@ on:
     paths:
       - 'index.html'
       - 'ui-tabs-unified.css'
+      - 'project-selection-ui.js'
+      - 'dashboard-cm-shared.html'
+      - 'tests/project-selection.test.cjs'
       - 'tests/ui-consistency.test.cjs'
       - 'tests/wbs-capaian-formula.test.cjs'
       - 'tests/cheatsheet-referensi.test.cjs'
@@ -15,6 +18,9 @@ on:
     paths:
       - 'index.html'
       - 'ui-tabs-unified.css'
+      - 'project-selection-ui.js'
+      - 'dashboard-cm-shared.html'
+      - 'tests/project-selection.test.cjs'
       - 'tests/ui-consistency.test.cjs'
       - 'tests/wbs-capaian-formula.test.cjs'
       - 'tests/cheatsheet-referensi.test.cjs'
