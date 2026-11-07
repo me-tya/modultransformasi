@@ -2059,7 +2059,12 @@ button.nt-chip{font:inherit;cursor:pointer}
 .hq{margin-left:auto;align-self:center;flex:none;width:24px;height:24px;border-radius:50%;border:0;background:var(--navy,#0B2A55);color:#fff;font:800 13px/24px inherit;cursor:pointer;padding:0;text-align:center}.hq:hover{background:#1A4A8C}.hq:focus-visible{outline:2px solid var(--yellow,#F6B800);outline-offset:2px}.subt .hq{margin-left:6px}h1 .hq{margin-left:6px;vertical-align:middle;width:22px;height:22px;line-height:22px;font-size:12px}
 .vh .vh-heading{display:flex;align-items:center;justify-content:flex-start;gap:8px;min-width:0;max-width:100%}
 .vh .vh-heading h1{flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.vh .vh-heading .hq{flex:0 0 22px;margin:0;align-self:center}.hq-b{padding:6px 12px 10px;font-size:12.5px;line-height:1.5;color:var(--ink-2,#33445C)}.hq-n+.hq-n{margin-top:8px;padding-top:8px;border-top:1px solid #E3E8F0}
+.vh .vh-heading .hq{flex:0 0 22px;margin:0;align-self:center}.hq-b{padding:6px 12px 10px;font-size:12.5px;line-height:1.5;color:var(--ink-2,#33445C)}.hq-n+.hq.hq-info{display:inline-flex;align-items:center;justify-content:center;flex-direction:row;gap:0;min-width:26px;width:26px;height:26px;padding:0;border:1px solid #91B7E2;border-radius:50%;background:#EAF3FF;color:#155DAA;font:800 14px/1 Arial,sans-serif;cursor:pointer}
+.hq.hq-info:hover{background:#D5E8FF;color:#0B447E;border-color:#4D91D9}
+.hq.hq-info:focus-visible{outline:2px solid var(--yellow);outline-offset:3px}
+.hq-b .hq-n{font-size:12.5px;line-height:1.55;overflow-wrap:anywhere}
+.hq-b .hq-n:first-child{margin-top:0;padding-top:0;border-top:0}
+.hq-n{margin-top:8px;padding-top:8px;border-top:1px solid #E3E8F0}
 .chxa{display:flex;align-items:center;gap:6px;padding:7px 12px;border-top:1px solid var(--line,#E3E8F0);font-size:12px;color:var(--mut,#5B6B82)}.chxa span{flex:1}.chxa button{border:1px solid var(--line,#D5DCE6);background:#fff;border-radius:6px;padding:3px 10px;font:600 11.5px inherit;cursor:pointer;color:var(--navy,#0B2A55)}.chxa button:hover{background:#F3F6FB}
 
 .md.kertas{max-width:1100px}
@@ -3053,13 +3058,40 @@ function render(){if(ME&&ME.role==='SA'&&S.akses&&!S.akses.KETUA){S.akses.KETUA=
  v.innerHTML=h;window.CM_CRA_NAV=()=>cmoTabs('cra',null);if(VIEW==='cra'&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}if(VIEW==='pengelola'&&window.PENGELOLA_NATIVE){window.PENGELOLA_NATIVE.attach({S,ME,save,toast});return;}if((VIEW==='cmo-cra'||/^modul-.+-t-cra$/.test(VIEW))&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}try{foldNotes(v)}catch(e){}
 }
 const yearsOpt=()=>{const ys=new Set([S.ui.tahun]);S.wbs.forEach(w=>{const y=yrOf(w);if(y>=2020)ys.add(y)});return [...ys].sort()};
-function foldNotes(v){const host=v.querySelector('.subt.ctabs')||v.querySelector('.subt')||v.querySelector('.vh .vh-heading')||v.querySelector('.vh h1');if(!host)return;
- const ns=[...v.children].filter(n=>n.matches&&n.matches('.note.i,.note.g')&&!n.querySelector('button,input,select,[data-act]')&&(n.textContent||'').trim().length>40);if(!ns.length)return;
- const html=ns.map(n=>`<div class="hq-n">${n.innerHTML}</div>`).join('');ns.forEach(n=>n.remove());
- /* Menu Referensi & Penutupan: cukup satu ikon ? di judul (panduan lengkap ada di sana), tanpa ikon ? kedua. */
- if(typeof VIEW!=='undefined'&&(VIEW==='pmo-referensi'||VIEW==='pmo-penutupan'))return;
- const b=document.createElement('button');b.type='button';b.className='hq';b.textContent='?';b.title='Panduan halaman ini';b.setAttribute('aria-label','Panduan halaman ini');host.appendChild(b);
- b.onclick=e=>{e.stopPropagation();const m=popMenu(b,`<div class="hd"><b>Panduan halaman</b></div><div class="hq-b">${html}</div>`);m.style.width='min(440px,92vw)';m.onclick=ev=>{if(ev.target.closest('a'))m.remove()}}}
+function foldNotes(v){
+ const host=v.querySelector('.subt.ctabs')||v.querySelector('.subt')||v.querySelector('.vh .vh-heading')||v.querySelector('.vh h1');
+ if(!host)return;
+ /* Ringkas hanya panduan informasional. Tombol aksi, isian, dan peringatan tetap terlihat.
+    Tombol Cheatsheet di dalam panduan boleh diringkas karena sudah tersedia pada header global. */
+ const ns=[...v.children].filter(n=>{
+  if(!n.matches||!n.matches('.note.i,.note.g')||(n.textContent||'').trim().length<=40)return false;
+  if(n.querySelector('input,select,textarea'))return false;
+  const actions=[...n.querySelectorAll('button,[data-act]')];
+  return actions.every(a=>a.matches('button[data-act="cheatsheet"]')||!!a.closest('button[data-act="cheatsheet"]'));
+ });
+ if(!ns.length)return;
+ const html=ns.map(n=>{
+  const clone=n.cloneNode(true);
+  clone.querySelectorAll('button[data-act="cheatsheet"]').forEach(b=>b.remove());
+  return `<div class="hq-n">${clone.innerHTML}</div>`;
+ }).join('');
+ /* Ketentuan tetap bisa dibuka: jangan menghilangkan isi tanpa menyediakan akses alternatif. */
+ ns.forEach(n=>n.remove());
+ const b=document.createElement('button');b.type='button';b.className='hq hq-info';
+ b.textContent='i';b.title='Lihat informasi dan ketentuan halaman';
+ b.setAttribute('aria-label','Lihat informasi dan ketentuan halaman');
+ b.setAttribute('aria-haspopup','dialog');
+ host.appendChild(b);
+ b.onclick=e=>{
+  e.stopPropagation();
+  const m=popMenu(b,`<div class="hd"><b>Informasi dan ketentuan</b></div><div class="hq-b">${html}</div>`);
+  m.style.width='min(440px,92vw)';
+  m.setAttribute('role','dialog');
+  m.setAttribute('aria-label','Informasi dan ketentuan halaman');
+  m.onclick=ev=>{if(ev.target.closest('a'))m.remove()};
+  m.addEventListener('keydown',ev=>{if(ev.key==='Escape'){m.remove();b.focus()}});
+ };
+}
 function popMenu(btn,html){document.querySelectorAll('.menu').forEach(m=>m.remove());const r=btn.getBoundingClientRect();const m=document.createElement('div');m.className='menu';m.style.top=(r.bottom+6)+'px';m.style.right=Math.max(8,innerWidth-r.right)+'px';m.innerHTML=html;document.body.appendChild(m);
  setTimeout(()=>document.addEventListener('click',function h(e){if(!m.contains(e.target)){m.remove();document.removeEventListener('click',h)}}),0);return m}
 const BELL={k:()=>'mt_bell_'+((ME&&ME.email)||''),get(){try{return JSON.parse(localStorage.getItem(this.k())||'{}')}catch(e){return {}}},set(o){try{localStorage.setItem(this.k(),JSON.stringify(o))}catch(e){}},
