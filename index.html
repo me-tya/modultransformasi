@@ -5775,9 +5775,9 @@ ACT.favEdit=()=>{S.ui.favEdit=!S.ui.favEdit;save();render()};
 ACT.favTog=el=>{const k=el.dataset.v;let L=favList();if(L.includes(k))L=L.filter(x=>x!==k);else{if(L.length>=FAV_MAX){toast('Maksimal '+FAV_MAX+' menu favorit agar tetap satu baris. Lepas salah satu dulu.');return}L=L.concat([k])}S.ui.pmoFav=L;save();render()};
 ACT.favReset=()=>{S.ui.pmoFav=FAV_DEF.slice();save();render()};
 
-/* Capaian WBS — seluruh angka dihitung dari WBS di database (tanpa angka tertanam).
-   Kunci cut-off: salinan hitungan WBS pada batas pengisian TW disimpan di database (S.cfg.capSnap),
-   dibuat otomatis oleh sistem saat batas pengisian lewat, atau manual oleh PMO Kemenkeu. */
+/* Capaian WBS: periode berjalan dihitung langsung dari item WBS.
+   Periode selesai memakai snapshot cut-off; khusus TW I–III 2026 memakai arsip rekap formula dari workbook pengguna.
+   Data terkini tidak boleh mengubah hasil laporan periode historis. */
 const CAP_AUTO_FROM='2026-11-06';/* kunci otomatis hanya untuk batas pengisian sejak fitur ini aktif */
 const capCutHK=()=>+((S.cfg||{}).capCutHK)||3;/* batas pengisian realisasi: n hari kerja setelah TW berakhir (TW III 2026: Senin 5 Okt) */
 const capDeadline=(y,tw)=>addWD(twEnd(y,tw),capCutHK());
@@ -8140,7 +8140,7 @@ const GUIDE_Q={
  ['Capaian TW (mis. 103,7%)','Realisasi ÷ target <b>kumulatif</b> sampai akhir triwulan. Target = bobot (hari kerja) item yang jatuh tempo s.d. akhir TW. Realisasi = bobot item yang buktinya sudah <b>divalidasi</b>. Rumusnya sama dengan sheet Capaian T-Program/per UE1.',['Untuk menaikkan realisasi: unggah bukti item yang sudah selesai lalu minta validasi.','Buka tab Capaian T-Program atau per UE I untuk melihat siapa yang tertinggal.'],'Target TW III 16.527, realisasi 17.139 → 103,7%.','pmo-wbs','Buka WBS & progres'],
  ['Kenapa bisa lebih dari 100%?','Task yang selesai <b>lebih cepat</b> dari jadwal ikut dihitung sebagai realisasi. Kartu TW merinci berapa dari task sesuai jadwal dan berapa dari task lebih cepat.',[],'1.679 dari task jatuh tempo s.d. TW I + 3.513 dari task lebih cepat = 5.192 ÷ 1.679 = 309%.'],
  ['Capaian tahunan','Realisasi s.d. triwulan itu ÷ target setahun penuh.',[],'17.139 ÷ 30.005 = 57,1%.'],
- ['Kunci cut-off vs Data terkini','<b>Kunci cut-off</b> = angka yang dibekukan sistem 3 hari kerja setelah triwulan berakhir (batas pengisian), dipakai untuk laporan resmi. <b>Data terkini</b> = dihitung ulang dari WBS hari ini.',['Pakai Kunci cut-off untuk laporan; pakai Data terkini untuk memantau.','PMO Kemenkeu dapat mengunci/membuka kunci TW lewat tombol di kartu.'],'Bukti TW III yang baru divalidasi bulan November tidak mengubah angka TW III yang sudah dikunci.'],
+ ['Data historis vs data berjalan','<b>TW yang sudah ditutup</b> menggunakan snapshot periode terkait. Untuk TW I–III 2026, rekapnya diambil dari hasil rumus pada workbook WBS 2026. <b>TW berjalan</b> dihitung langsung dari WBS yang aktif.',['Perubahan realisasi hari ini tidak mengubah capaian TW yang sudah ditutup.','Periode tanpa arsip historis ditampilkan belum tersedia, bukan angka terkini.'],'TW I 2026 = 10.430 ÷ 5.618 = 185,7% sesuai rekap Capaian T-Program dalam Excel.'],
  ['Pilihan Kemenkeu | (unit Anda)','Melihat capaian seluruh Kemenkeu atau hanya unit Eselon I Anda (item dengan kolom cakupan UE I = “Ya”).',[],'PMO DJA memilih “DJA” → capaian dihitung dari item yang mencakup DJA saja.']],
 'pmo-portofolio':[
  ['Chip “Belum ada WBS”','Program sudah terdaftar tetapi belum punya item WBS di tahun terpilih, jadi capaiannya belum bisa dihitung.',['Susun WBS lewat Perencanaan › Susun WBS (impor Excel atau tambah item).'],'Program T26-CATP baru didaftarkan → impor WBS-nya → capaian mulai terhitung.','pmo-wbsplan','Buka Susun WBS'],
