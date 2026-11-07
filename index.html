@@ -2558,6 +2558,7 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 </style>
 <script src="cra-native.js?v=20261107-peta-menu"></script>
 <script src="pengelola-native.js"></script>
+<script src="project-selection-ui.js?v=20261107-1"></script>
 <script>
 /* ======================== konstanta ======================== */
 const UNITS=['Setjen','Itjen','BPPK','DJA','DJPb','DJPK','DJKN','DJPPR','DJP','DJBC','DJSEF','DJSPSK','BaTii','LNSW'];
@@ -3121,6 +3122,7 @@ function ensureBkFlow(){if(!S||!S.akses||S.bkF===1)return;const A=S.akses,up=(r,
    authentication, permissions, Priority, CRA, CM Team and Squad Team datasets.
    This iframe reads/writes the original records; no bulk import or duplication. */
 function viewCmShared(view){
+ if(view==="project-selection"&&window.MT_PROJECT_SELECTION)return window.MT_PROJECT_SELECTION.page();
  const defs={
   'project-selection':['Project Selection','priority','Salinan langsung menu Priority dari Dashboard CM.'],
   'cra':['Change Readiness Assessment (CRA)','survey','Salinan langsung menu CRA dari Dashboard CM.'],
@@ -3161,7 +3163,7 @@ function render(){if(ME&&ME.role==='SA'&&S.akses&&!S.akses.KETUA){S.akses.KETUA=
  <div class="main"><header class="top"><button class="hamb" id="hamb" aria-label="Tampilkan/sembunyikan menu">☰</button><div class="crumb">${crumbOf()}</div>
  <label class="tsel"><span>Tahun Anggaran</span><select id="yr" aria-label="Tahun anggaran">${yearsOpt().map(y=>`<option ${S.ui.tahun==y?'selected':''}>${y}</option>`).join('')}</select></label>
  <span class="role">${meLab()}</span>
- ${FB.on?`<span class="dbb" id="dbb" title="Status sinkron Firestore">${FB.st==="Gagal menyimpan"?"⚠ ":"● "}${esc(FB.st||"Firestore")}</span>`:""}<div class="sk-hdrActions"><button type="button" class="hbtn sk-hdrBtn sk-hdrHelp" data-act="helphome" title="Bantuan: panduan pemakaian menu, fitur dan dokumentasi" aria-label="Buka Bantuan penggunaan aplikasi"><i>?</i><span>Bantuan</span></button>${/^(pmo-|cmo-|modul-)/.test(VIEW)?`<button type="button" class="hbtn sk-hdrBtn sk-hdrSheet" data-act="cheatsheet" data-kind="${VIEW.startsWith("pmo-")?"pmo":"cmo"}" title="Cheatsheet: framework, tata kelola dan alur koordinasi" aria-label="Buka Cheatsheet tata kelola">▤ <span>Cheatsheet</span></button>`:""}</div><button class="ibtn${tkv.length&&!BELL.seen(tk)?' bell-on':''}" id="bell" aria-label="Notifikasi${tkv.length?', '+tkv.length+' tugas':''}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>${tkv.length?`<i>${tkv.length}</i>`:''}</button>
+ ${FB.on?`<span class="dbb" id="dbb" title="Status sinkron Firestore">${FB.st==="Gagal menyimpan"?"⚠ ":"● "}${esc(FB.st||"Firestore")}</span>`:""}<div class="sk-hdrActions"><button type="button" class="hbtn sk-hdrBtn sk-hdrHelp" data-act="helphome" title="Bantuan: panduan pemakaian menu, fitur dan dokumentasi" aria-label="Buka Bantuan penggunaan aplikasi"><i>?</i><span>Bantuan</span></button>${(VIEW==='project-selection'||/^(pmo-|cmo-|modul-)/.test(VIEW))?`<button type="button" class="hbtn sk-hdrBtn sk-hdrSheet" data-act="cheatsheet" data-kind="${VIEW==='project-selection'?'selection':VIEW.startsWith("pmo-")?"pmo":"cmo"}" title="Cheatsheet: framework, tata kelola dan alur koordinasi" aria-label="Buka Cheatsheet tata kelola">▤ <span>Cheatsheet</span></button>`:""}</div><button class="ibtn${tkv.length&&!BELL.seen(tk)?' bell-on':''}" id="bell" aria-label="Notifikasi${tkv.length?', '+tkv.length+' tugas':''}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>${tkv.length?`<i>${tkv.length}</i>`:''}</button>
  <button class="av" id="av" aria-label="Akun">${esc(ME.nama.split(' ').map(w=>w[0]).slice(0,2).join(''))}</button></header>
  <main class="view" id="view"></main></div></div>`;
  $('#hamb').onclick=()=>{if(innerWidth<=900)$('#side').classList.toggle('open');else{S.ui.side=S.ui.side===0?1:0;save();$('#app').classList.toggle('collapsed')}};
@@ -3175,7 +3177,7 @@ function render(){if(ME&&ME.role==='SA'&&S.akses&&!S.akses.KETUA){S.akses.KETUA=
  else if(VIEW==='aktivitas')h=pAktivitas();else if(VIEW.startsWith('pmo-'))h=viewPmo(VIEW.slice(4));else if(VIEW.startsWith('cmo-'))h=viewCmo(VIEW.slice(4),null);
  else if(VIEW==='set-pengguna')h=viewUsers();else if(VIEW==='set-akses')h=viewAkses();else if(VIEW==='set-sinkron')h=viewSinkron();else if(VIEW==='set-db')h=viewDb();else if(VIEW==='set-log')h=viewLog();
  if(VIEW.startsWith('set-'))h=h.replace('<!--vh-->',setTabs());
- v.innerHTML=h;window.CM_CRA_NAV=()=>cmoTabs('cra',null);if(VIEW==='cra'&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}if(VIEW==='pengelola'&&window.PENGELOLA_NATIVE){window.PENGELOLA_NATIVE.attach({S,ME,save,toast});return;}if((VIEW==='cmo-cra'||/^modul-.+-t-cra$/.test(VIEW))&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}try{foldNotes(v);bindCompactGuides(v);mtCompactWorkbars(v)}catch(e){console.warn('Panduan ringkas:',e)}try{scrollActiveCompactNav(v)}catch(e){}
+ v.innerHTML=h;if(VIEW==='project-selection'&&window.MT_PROJECT_SELECTION)window.MT_PROJECT_SELECTION.mount();window.CM_CRA_NAV=()=>cmoTabs('cra',null);if(VIEW==='cra'&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}if(VIEW==='pengelola'&&window.PENGELOLA_NATIVE){window.PENGELOLA_NATIVE.attach({S,ME,save,toast});return;}if((VIEW==='cmo-cra'||/^modul-.+-t-cra$/.test(VIEW))&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}try{foldNotes(v);bindCompactGuides(v);mtCompactWorkbars(v)}catch(e){console.warn('Panduan ringkas:',e)}try{scrollActiveCompactNav(v)}catch(e){}
 }
 const yearsOpt=()=>{const ys=new Set([S.ui.tahun]);S.wbs.forEach(w=>{const y=yrOf(w);if(y>=2020)ys.add(y)});return [...ys].sort()};
 function foldNotes(v){
@@ -10066,7 +10068,7 @@ function open(mode,kind,selected){
  ov.querySelector('.sk-close').focus();return ov
 }
 function currentKind(){try{return typeof VIEW==='string'&&VIEW.indexOf('pmo-')===0?'pmo':'cmo'}catch(e){return 'cmo'}}
-window.openTxCheatsheet=function(mode,selected){return open('sheet',mode||currentKind(),selected==='koordinasi'?'ko':selected)};
+window.openTxCheatsheet=function(mode,selected){if(mode==='selection'&&window.MT_PROJECT_SELECTION)return window.MT_PROJECT_SELECTION.open('sheet');return open('sheet',mode||currentKind(),selected==='koordinasi'?'ko':selected)};
 /* Routing Bantuan mengikuti menu aktif. Halaman non-PMO/CMO tidak lagi default ke CMO. */
 var originalGenericGuide=window.showGuideHome;
 var originalContextGuide=window.showHelp;
@@ -10079,6 +10081,7 @@ function helpArea(view){
 }
 function activeHelpView(){try{return typeof VIEW==='string'?VIEW:''}catch(e){return ''}}
 window.showGuideHome=function(){
+ if(activeHelpView()==='project-selection'&&window.MT_PROJECT_SELECTION)return window.MT_PROJECT_SELECTION.open('help');
  var kind=helpArea(activeHelpView());
  if(kind==='dashboard')return originalContextGuide('dashboard','Executive Dashboard');
  if(kind==='pmo'||kind==='cmo')return open('help',kind);
@@ -10086,6 +10089,7 @@ window.showGuideHome=function(){
 };
 window.showHelp=function(v,title){
  var page=String(v||activeHelpView());
+ if(page==='project-selection'&&window.MT_PROJECT_SELECTION)return window.MT_PROJECT_SELECTION.open('help');
  var kind=helpArea(page);
  if(kind==='dashboard')return originalContextGuide('dashboard',title||'Executive Dashboard');
  if(kind==='pmo'||kind==='cmo')return open('help',kind,'menu');
