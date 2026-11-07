@@ -1,0 +1,24 @@
+name: Validasi rumus capaian WBS
+on:
+  push:
+    paths:
+      - 'index.html'
+      - 'tests/wbs-capaian-formula.test.cjs'
+      - '.github/workflows/validasi-wbs.yml'
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'tests/wbs-capaian-formula.test.cjs'
+      - '.github/workflows/validasi-wbs.yml'
+permissions:
+  contents: read
+jobs:
+  cek-rumus:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Uji logika capaian terhadap perubahan WBS
+        run: node --test tests/wbs-capaian-formula.test.cjs
