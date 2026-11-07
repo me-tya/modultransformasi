@@ -95,7 +95,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   if(document.getElementById('mt-unified-tabs-styles'))return;
   var el=document.createElement('link');
   el.id='mt-unified-tabs-styles';el.rel='stylesheet';
-  el.href='ui-tabs-unified.css?v=20261107-2';
+  el.href='ui-tabs-unified.css?v=20261107-4';
   document.head.appendChild(el);
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadUnifiedTabs,{once:true});
@@ -111,7 +111,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
    d.documentElement.classList.add('mt-ui-embedded');
    if(d.getElementById('mt-unified-tabs-styles'))return;
    var l=d.createElement('link');l.id='mt-unified-tabs-styles';l.rel='stylesheet';
-   l.href='ui-tabs-unified.css?v=20261107-3';d.head.appendChild(l);
+   l.href='ui-tabs-unified.css?v=20261107-4';d.head.appendChild(l);
   }catch(e){/* iframe lintas origin: tidak diubah */ }
  }
  function bind(){
