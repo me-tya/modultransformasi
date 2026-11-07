@@ -2985,7 +2985,7 @@ function upgradeEvalRecords(){
   S.projectEval.length=0;
  }
 }
-function render(){try{upgradeEvalRecords()}catch(e){}try{ensureBkFlow()}catch(e){}try{kwMigrate()}catch(e){}
+function render(){if(ME&&ME.role==='SA'&&S.akses&&!S.akses.KETUA){S.akses.KETUA={scope:'Semua',f:Object.fromEntries(FEAT.map(([k])=>[k,k==='cr'?'R':k==='crok'?'RU':'-']))};setTimeout(save,0)}try{upgradeEvalRecords()}catch(e){}try{ensureBkFlow()}catch(e){}try{kwMigrate()}catch(e){}
  if(!ME){renderLogin();return}
  ensureCh();ensureNar();
  const mm=VIEW.match(/^modul-(.+)-t-(\w+)$/);
@@ -5382,7 +5382,7 @@ function crStep(c,st,note,role,unit){c.hist=c.hist||[];c.st=st;c.pic=role?crReci
 ACT.crroute=el=>{if(ME.role!=='SA'){toast('Hanya Superadmin yang dapat mengalihkan PIC.');return}const c=S.crs.find(x=>x.id===el.dataset.i);if(!c)return;const role=crRole(c);const us=S.users.filter(u=>u.aktif&&u.role===role&&(!c.unit||role!=='PMOU'||u.unit===c.unit));if(!us.length){toast('Belum ada akun aktif untuk peran '+role+'.');return}modal('Alihkan PIC '+c.kode,`<p class="s">Tugas ini sedang di tahap ${esc(c.st)}. Hanya PIC yang ditunjuk dapat melakukan tindakan tahap ini.</p><label class="fld">PIC penerima<select id="cr-pic" class="sel">${us.map(u=>`<option value="${esc(u.email)}" ${u.email===c.pic?'selected':''}>${esc(u.nama+' · '+u.email)}</option>`).join('')}</select></label><label class="fld">Alasan pengalihan<textarea id="cr-route-note" class="inp" rows="2"></textarea></label>`,'Alihkan tugas',()=>{const n=$('#cr-route-note').value.trim(),email=$('#cr-pic').value;if(!n){toast('Alasan pengalihan wajib diisi.');return false}c.pic=email;c.hist=c.hist||[];c.hist.push({st:c.st,by:ME.email,to:email,at:new Date().toISOString(),note:'Pengalihan PIC: '+n});log('Alihkan PIC CR',c.kode+' → '+email);save();render()})};
 
 function pCr(){const seg=S.ui.crseg||'';const CS=pmoCrList();const rows=CS.filter(c=>!seg||(seg==='open'?CR_OPEN.includes(c.st):['Diterapkan','Ditolak'].includes(c.st))).slice().reverse();
- const sla=c=>['Diajukan','Telaah PMO Pusat'].includes(c.st)&&addDays(c.tgl,7)<TODAY;
+ const sla=c=>CR_OPEN.includes(c.st)&&addDays(c.tgl,7)<TODAY;
  return vh('CR','pmo','Change Request','Pengajuan dan keputusan perubahan item WBS yang sudah ber-baseline.',lv('cr').includes('C')?'<button class="btn pri" data-act="crnew">+ Change Request</button>':'')+pmoTabs('cr')+
  `<div class="kpis"><div class="kpi dk"><div class="l">CR terbuka</div><div class="v">${CS.filter(c=>CR_OPEN.includes(c.st)).length}</div></div><div class="kpi"><div class="l">Melewati SLA (5 hari kerja)</div><div class="v" style="color:var(--bad)">${CS.filter(sla).length}</div></div><div class="kpi"><div class="l">Diterapkan ${S.ui.tahun}</div><div class="v">${CS.filter(c=>c.st==='Diterapkan').length}</div></div><div class="kpi"><div class="l">Ditolak / dikembalikan</div><div class="v">${CS.filter(c=>['Ditolak','Dikembalikan'].includes(c.st)).length}</div></div></div>`+
  tbl('cr',{ent:'change request',title:'Register CR',list:()=>S.crs,rows:()=>rows,label:c=>c.kode,open:c=>crView(c),sx:c=>c.kode+' '+c.item+' '+c.jenis+' '+crChanges(c)+' '+c.pengaju,
@@ -6643,8 +6643,8 @@ function rptTahap(items){const L=tahapList(),out=[];const kel=TK.concat([...new 
 /* ===== Penutupan proyek: kesiapan, data penutupan / laporan akhir proyek, lessons learned, checklist dokumen, pengajuan & telaah ===== */
 const TP_ST=['Belum diajukan','Draft','Diajukan','Dikembalikan','Ditutup'];
 const TP_C={'Belum diajukan':'c-gray',Draft:'c-gray',Diajukan:'c-info',Dikembalikan:'c-bad',Ditutup:'c-ok'};
-const TP_ALASAN=['Seluruh kriteria penyelesaian terpenuhi','Dilanjutkan ke periode berikutnya','Carry over 3 tahun','Lainnya'];
-const tpAlasan=c=>!c||!c.alasan?'':c.alasan==='Lainnya'?('Lainnya: '+(c.alasanLain||'—')):c.alasan;
+const TP_ALASAN=['Seluruh kriteria penyelesaian terpenuhi','Dialihkan menjadi proyek unit','Dihentikan berdasarkan keputusan strategis'];
+const tpAlasan=c=>!c||!c.alasan?'':c.alasan;
 const TP_DOCNO={T04:NOPH.BA,T05:NOPH.ND,T10:NOPH.LAP,T12:NOPH.ND,T13:'Lokasi arsip / nomor dokumen'};
 const TP_DOCS=[
  ['T01','Pernyataan Penyelesaian Proyek','Pernyataan PMO UE I bahwa proyek selesai, beserta alasan penutupan.','auto:ajuan'],
@@ -6748,8 +6748,33 @@ function tpDocEval(d,p,r,c,R){c=c||{};const src=d[3];if(src==='man'){const m=(c.
  return {st:'N/A',info:''}}
 function tpDocs(p,r){const c=tpGet(p,r.n,r.sub)||{},R=tpReady(p,r);return TP_DOCS.map(d=>({d,r:tpDocEval(d,p,r,c,R)}))}
 const tpDocScore=L=>{const req=L.filter(x=>x.r.st!=='N/A');return {ok:req.filter(x=>x.r.st==='Lengkap').length,n:req.length}};
-const tpCanEdit=p=>canW('porto','U',p.uic)||['SA','PMOK','PMOU'].includes(ME&&ME.role);
-const tpCanReview=()=>['SA','PMOK'].includes(ME&&ME.role);
+const tpCanEdit=p=>!!ME&&(ME.role==='SA'||ME.role==='PMOK'||(ME.role==='PMOU'&&canW('porto','U',p.uic)));
+const tpCanReview=c=>!!ME&&['SA','PMOK'].includes(ME.role)&&(!c||!c.pic||c.pic===ME.email||ME.role==='SA');
+function tpP0Gate(c,R){
+ const miss=[],d=(k)=>((c.docs||{})[k]||{});
+ if(!TP_ALASAN.includes(c.alasan))miss.push('pilih salah satu dari 3 dasar penutupan');
+ if(!String(c.ringkas||'').trim())miss.push('ringkasan hasil proyek');
+ if(!String(c.capaian||'').trim())miss.push('capaian output/outcome');
+ if(!String((c.sign||{}).nama||'').trim())miss.push('penanda tangan pernyataan');
+ if(!String((c.sign||{}).jabatan||'').trim())miss.push('jabatan penanda tangan');
+ if(R.crOpen.length)miss.push(R.crOpen.length+' Change Request belum selesai');
+ if(c.alasan===TP_ALASAN[0]){
+  if(!R.K.length||R.kOk<R.K.length)miss.push('seluruh acceptance criteria tervalidasi');
+  if(R.undone.length)miss.push('semua item WBS selesai');
+  if(R.bOpen)miss.push('semua bukti WBS divalidasi');
+  if(d('T04').st!=='Lengkap')miss.push('T04 · BA penerimaan hasil oleh pemilik proses bisnis');
+  if(!String((c.op||{}).unit||'').trim())miss.push('unit pengelola operasional');
+ }else if(c.alasan===TP_ALASAN[1]){
+  if(!String((c.op||{}).unit||'').trim())miss.push('unit penerima pengalihan proyek');
+  if(!String(c.sisa||'').trim())miss.push('daftar pekerjaan tersisa beserta tindak lanjut');
+  if(d('T05').st!=='Lengkap')miss.push('T05 · dokumen pengalihan ke proyek unit');
+  if(!String((c.op||{}).ba||'').trim())miss.push('nomor berita acara serah terima proyek');
+ }else if(c.alasan===TP_ALASAN[2]){
+  if(!String(c.putusan||'').trim())miss.push('nomor/tautan keputusan penghentian strategis');
+  if(!String(c.sisa||'').trim())miss.push('disposisi pekerjaan dan risiko yang belum selesai');
+ }
+ return miss
+}
 /* ---- Halaman ---- */
 function pPenutupan(){const G=pgGroups().filter(g=>g.P.length),f=S.ui.tpSt||'';const rows=[];
  G.forEach(g=>tpUnits(g.p,g.P).forEach(r=>rows.push({g,r,st:tpSt(g.p,r.n,r.sub),R:tpReady(g.p,r)})));
@@ -6825,7 +6850,7 @@ function tpGuide(k,open){const g=TP_GUIDE[k];if(!g)return '';const TL={siap:'Kes
 /* Kartu tanya-jawab bantuan: [judul, artinya, langkah[], contoh, hash tujuan?, label tombol?] — dipakai panduan penutupan dan semua panduan halaman. */
 function hpQList(q){if(!q||!q.length)return '';return `<div class="hq">${q.map(([h,a,l,e,goH,goL])=>`<details class="hq-i"><summary>${h}</summary><div class="hq-b"><div class="hq-r"><span>Artinya</span><div>${a}</div></div>${l&&l.length?`<div class="hq-r"><span>Yang harus dilakukan</span><ol>${l.map(x=>`<li>${x}</li>`).join('')}</ol></div>`:''}${e?`<div class="hq-r hq-e"><span>Contoh</span><div>${e}</div></div>`:''}${goH?`<div class="hq-go"><button type="button" class="hp-go" data-hgo="${esc(goH)}">${esc(goL||'Buka')} ›</button></div>`:''}</div></details>`).join('')}</div>`}
 function tpModal(p,r,tab){const k=tpKey(p,r.n,r.sub);p.closing=p.closing||{};const c=JSON.parse(JSON.stringify(p.closing[k]||{st:'Draft',docs:{},ll:{baik:[],kendala:[],rek:[]},mf:[],hist:[]}));
- const ch=chCur(p.akr),R=tpReady(p,r),ed=tpCanEdit(p)&&!['Diajukan','Ditutup'].includes(c.st),rv=tpCanReview();const st=tpSt(p,r.n,r.sub);
+ const ch=chCur(p.akr),R=tpReady(p,r),ed=tpCanEdit(p)&&!['Diajukan','Ditutup'].includes(c.st),rv=tpCanReview(c);const st=tpSt(p,r.n,r.sub);
  if(!(c.mf||[]).length&&ch&&(ch.mf||[]).length)c.mf=ch.mf.map(m=>({m:m.m||'',ind:m.ind||'',tgt:m.tgt||'',real:'',ket:''}));
  const dis=ed?'':' disabled',ta=(id,v,ph,rows=3)=>`<textarea class="inp tp-ta" id="${id}" rows="${rows}" placeholder="${esc(ph)}"${dis}>${esc(v||'')}</textarea>`,inp=(id,v,ph,t='text')=>`<input class="inp" type="${t}" id="${id}" value="${esc(v||'')}" placeholder="${esc(ph)}"${dis}>`;
  const TABS=[['siap','Kesiapan'],['lap','Data Penutupan'],['ll','Lessons Learned'],['dok','Checklist Dokumen'],['aju','Pengajuan & Telaah']];
@@ -6834,7 +6859,8 @@ function tpModal(p,r,tab){const k=tpKey(p,r.n,r.sub);p.closing=p.closing||{};con
  const siap=`<p class="s tp-src">Semua angka di tab ini terisi otomatis dari <b>Pelaksanaan › WBS &amp; progres dan Bukti Accept Criteria</b>, charter, serta register proyek. Klik kotak yang belum beres untuk langsung melengkapinya.</p><div class="tp-ready">${tk('wbs',R.x.pg+'%','Progres WBS tervalidasi',R.x.pg<100,R.x.pg<100?'Lengkapi di WBS ›':'Lihat item ›')}${tk('kp',R.K.length?R.kOk+'/'+R.K.length:'—','Kriteria penyelesaian',R.K.length&&R.kOk<R.K.length,R.K.length?(R.kOk<R.K.length?'Lihat kriteria ↓':'Semua terpenuhi'):'Isi di charter ›')}${tk('undone',R.undone.length,'Item belum selesai',R.undone.length,R.undone.length?'Buka di WBS ›':'Tidak ada')}${tk('bukti',R.bOpen,'Bukti selesai belum valid',R.bOpen,R.bOpen?'Validasi ›':'Tidak ada')}${tk('reg',regN,'Register/CR terbuka',regN,regN?(R.crOpen.length?'Buka CR ›':'Buka register ›'):'Tidak ada')}</div>
   <div class="tp-kh"><h4 class="tp-h">Kriteria penyelesaian (charter ${esc(p.kode)})</h4>${ch&&chCan('U',p)?`<button type="button" class="btn sm" data-tpgo="chedit">✎ Ubah kriteria di Charter</button>`:''}</div><p class="s" style="margin:0 0 6px">Klik baris kriteria untuk melihat item WBS tertautnya dan melengkapi yang belum.</p><div class="acl2">${R.K.map(({k,x},i)=>`<button type="button" class="acr2 tp-kp ${x&&x.pg===100?'ok':''}" data-tpkp="${i}"><span class="ai">${x&&x.pg===100?'✓':i+1}</span><div style="flex:1;min-width:0"><b>${esc(k.m)}</b>${(k.k||[]).map(t=>`<div class="s" style="margin-top:2px">• ${esc(t)}</div>`).join('')}</div><div class="ap">${x?`<div class="pg"><div class="bar"><i style="width:${x.pg}%;background:${x.pg===100?'var(--ok)':'var(--blue)'}"></i></div><b>${x.pg}%</b></div><span class="sm">${x.nv}/${x.n} item WBS tertaut valid · ${x.man?'dipilih manual':'otomatis'}</span>`:'<span class="chip c-gray">Belum tertaut ke WBS</span>'}<em class="tp-kgo">${x&&x.pg===100?'Lihat item ›':'Lengkapi ›'}</em></div></button>`).join('')||`<div class="note w" style="margin:0"><span>Charter program ini belum memiliki kriteria penyelesaian.${ch&&chCan('U',p)?' Klik <b>✎ Ubah kriteria di Charter</b> untuk menambahkannya (langkah 3).':ch?'':' Charter program belum dibuat.'}</span></div>`}</div>
   ${R.undone.length?`<h4 class="tp-h">Item WBS belum selesai (${R.undone.length})</h4><div class="tscroll"><table class="lap"><thead><tr><th>Kode</th><th>Output</th><th>UIC</th><th>Jadwal</th><th>Status</th></tr></thead><tbody>${R.undone.slice(0,30).map(w=>`<tr><td class="dx-k">${esc(w.k)}</td><td>${esc(deliv(w))}</td><td>${esc(uicU(w))}</td><td>${pgJadwal(w.s,w.f)}</td><td>${esc(stOf(w,12))}</td></tr>`).join('')}</tbody></table></div>`:''}`;
- const lap=`<div class="fgrid"><div class="fld"><label for="tp-al">Alasan penutupan</label><select class="sel" id="tp-al"${dis} onchange="const w=this.closest('.fgrid').querySelector('.tp-al2');if(w)w.hidden=this.value!=='Lainnya'">${opts([['','— pilih —'],...TP_ALASAN],c.alasan||'')}</select><div class="tp-al2"${c.alasan==='Lainnya'?'':' hidden'}><textarea class="inp tp-ta" id="tp-al2" rows="2" placeholder="Tuliskan alasan penutupan, mis. deadlock: tidak tercapai kesepakatan antara dua unit pemilik proses"${dis}>${esc(c.alasanLain||'')}</textarea></div></div><div class="fld"><label for="tp-tgl">Tanggal penyelesaian</label>${inp('tp-tgl',c.tgl||'','', 'date')}</div>
+ const lap=`<div class="note i" style="margin:8px 0"><span><b>Pilih dasar penutupan sesuai RKMK.</b> Proyek yang hanya bergeser ke tahun berikutnya tidak ditutup. Kriteria kelengkapan berbeda untuk selesai, dialihkan menjadi proyek unit, dan penghentian strategis.</span></div><div class="fgrid"><div class="fld"><label for="tp-al">Dasar penutupan <i>*</i></label><select class="sel" id="tp-al"${dis}>${opts([['','— pilih satu dari 3 alasan —'],...TP_ALASAN],c.alasan||'')}</select></div><div class="fld"><label for="tp-tgl">Tanggal penyelesaian</label>${inp('tp-tgl',c.tgl||'','', 'date')}</div>
+  <div class="fld wide"><label for="tp-pu">No. keputusan penghentian strategis (jika berlaku)</label>${inp('tp-pu',c.putusan||'','Nomor ND/disposisi/tautan dokumen keputusan')}</div>
   <div class="fld wide"><label for="tp-rg">Ringkasan hasil proyek</label>${ta('tp-rg',c.ringkas,'Apa yang dihasilkan proyek dan kondisi akhirnya',3)}</div>
   <div class="fld wide"><label for="tp-cp">Capaian output &amp; outcome</label>${ta('tp-cp',c.capaian,'Bandingkan dengan output/outcome pada charter',3)}</div>
   <div class="fld wide"><label for="tp-ss">Item belum selesai &amp; tindak lanjut</label>${ta('tp-ss',c.sisa,R.undone.length?R.undone.length+' item belum selesai — jelaskan dialihkan ke mana/kapan':'Tidak ada item tersisa',2)}</div>
@@ -6853,7 +6879,7 @@ function tpModal(p,r,tab){const k=tpKey(p,r.n,r.sub);p.closing=p.closing||{};con
   <div class="ov-tabs tp-tabs" role="tablist">${TABS.map(([v,l])=>`<button type="button" data-tpt="${v}" class="${v===tab?'on':''}">${l}</button>`).join('')}</div>${ed?'':`<div class="note i" style="margin:8px 0 0"><span>${['Diajukan','Ditutup'].includes(c.st)?'Isian dikunci karena penutupan sudah '+c.st.toLowerCase()+'.':'Anda hanya dapat melihat isian penutupan proyek ini.'}</span></div>`}
   ${TABS.map(([v])=>`<div class="tp-sec" data-sec="${v}"${v===tab?'':' hidden'}>${tpGuide(v,v==='siap'&&!c.upd&&!(S.ui.tpGdSeen))}${SEC[v]}</div>`).join('')}`;
  const collect=ov=>{const g=id=>{const e=ov.querySelector('#'+id);return e?e.value.trim():''};if(!ed)return;
-  Object.assign(c,{alasan:g('tp-al'),alasanLain:g('tp-al2'),tgl:g('tp-tgl'),ringkas:g('tp-rg'),capaian:g('tp-cp'),sisa:g('tp-ss'),op:{unit:g('tp-ou'),ba:g('tp-ob'),tgl:g('tp-ot')},ang:{rencana:g('tp-ar'),realisasi:g('tp-aa')},sign:{nama:g('tp-sn'),jabatan:g('tp-sj')}});
+  Object.assign(c,{alasan:g('tp-al'),alasanLain:'',putusan:g('tp-pu'),tgl:g('tp-tgl'),ringkas:g('tp-rg'),capaian:g('tp-cp'),sisa:g('tp-ss'),op:{unit:g('tp-ou'),ba:g('tp-ob'),tgl:g('tp-ot')},ang:{rencana:g('tp-ar'),realisasi:g('tp-aa')},sign:{nama:g('tp-sn'),jabatan:g('tp-sj')}});
   c.ll={baik:g('tp-lbaik').split('\n').map(x=>x.trim()).filter(Boolean),kendala:g('tp-lkendala').split('\n').map(x=>x.trim()).filter(Boolean),rek:g('tp-lrek').split('\n').map(x=>x.trim()).filter(Boolean)};
   ov.querySelectorAll('[data-mfr]').forEach(e=>{c.mf[+e.dataset.mfr].real=e.value.trim()});ov.querySelectorAll('[data-mfk]').forEach(e=>{c.mf[+e.dataset.mfk].ket=e.value.trim()});
   c.docs=c.docs||{};ov.querySelectorAll('[data-dst]').forEach(e=>{const d=c.docs[e.dataset.dst]=c.docs[e.dataset.dst]||{};d.st=e.value});ov.querySelectorAll('[data-dlk]').forEach(e=>{const d=c.docs[e.dataset.dlk]=c.docs[e.dataset.dlk]||{};d.link=e.value.trim()});
@@ -6865,14 +6891,15 @@ function tpModal(p,r,tab){const k=tpKey(p,r.n,r.sub);p.closing=p.closing||{};con
  extra='<button class="btn" data-mx="rep">'+RPT_ICO(15)+' Laporan Akhir Proyek</button>'+extra;
  const reopen=()=>{const p2=S.programs.find(x=>x.akr===p.akr);const r2=tpUnits(p2).find(x=>x.n===r.n&&(x.sub||'')===(r.sub||''));if(r2)tpModal(p2,r2,'siap')};
  const ov=modal(`<span class="exh">Penutupan Proyek <button type="button" class="hlp" data-tpgd title="Panduan: tujuan, cara mengisi, dan contoh untuk tab ini" aria-label="Panduan pengisian tab ini">?</button></span>`,body,null,null,{cancel:'Tutup',size:'wide tp-md',extra,onExtra:(m,ov)=>{
-   if(m==='imp'){const F=[['tp-al','Alasan penutupan'],['tp-al2','Alasan lainnya',['uraian alasan']],['tp-tgl','Tanggal penyelesaian'],['tp-rg','Ringkasan hasil proyek',['ringkasan hasil','ringkasan']],['tp-cp','Capaian output & outcome',['capaian output dan outcome','capaian output','capaian']],['tp-ss','Item belum selesai & tindak lanjut',['item belum selesai','sisa pekerjaan','tindak lanjut']],['tp-ou','Unit pengelola operasional',['unit pengelola','pengelola operasional']],['tp-ob','Nomor BA serah terima',['nomor ba','no ba','ba serah terima']],['tp-ot','Tanggal serah terima'],['tp-ar','Anggaran rencana',['rencana anggaran']],['tp-aa','Anggaran realisasi',['realisasi anggaran']],['tp-lbaik','Yang berjalan baik',['hal yang berjalan baik','what went well']],['tp-lkendala','Kendala',['hambatan']],['tp-lrek','Rekomendasi',['saran']],['tp-sn','Penanda tangan',['penanda tangan pernyataan','nama pejabat']],['tp-sj','Jabatan',['jabatan penanda tangan']]].map(([k,l,al])=>({k,l,al:al||[]}));
-    docImport(F,sel=>{Object.entries(sel).forEach(([k,v])=>{const el=ov.querySelector('#'+k);if(!el)return;if(k==='tp-al'&&!docSet(el,v)){el.value='Lainnya';const t=ov.querySelector('#tp-al2');if(t)t.value=v.join(' ')}else docSet(el,v);if(k==='tp-al'||k==='tp-al2'){const w=ov.querySelector('.tp-al2');if(w)w.hidden=ov.querySelector('#tp-al').value!=='Lainnya'}})});return false}
+   if(m==='imp'){const F=[['tp-al','Alasan penutupan'],['tp-pu','No. keputusan penghentian strategis'],['tp-tgl','Tanggal penyelesaian'],['tp-rg','Ringkasan hasil proyek',['ringkasan hasil','ringkasan']],['tp-cp','Capaian output & outcome',['capaian output dan outcome','capaian output','capaian']],['tp-ss','Item belum selesai & tindak lanjut',['item belum selesai','sisa pekerjaan','tindak lanjut']],['tp-ou','Unit pengelola operasional',['unit pengelola','pengelola operasional']],['tp-ob','Nomor BA serah terima',['nomor ba','no ba','ba serah terima']],['tp-ot','Tanggal serah terima'],['tp-ar','Anggaran rencana',['rencana anggaran']],['tp-aa','Anggaran realisasi',['realisasi anggaran']],['tp-lbaik','Yang berjalan baik',['hal yang berjalan baik','what went well']],['tp-lkendala','Kendala',['hambatan']],['tp-lrek','Rekomendasi',['saran']],['tp-sn','Penanda tangan',['penanda tangan pernyataan','nama pejabat']],['tp-sj','Jabatan',['jabatan penanda tangan']]].map(([k,l,al])=>({k,l,al:al||[]}));
+    docImport(F,sel=>{Object.entries(sel).forEach(([k,v])=>{const el=ov.querySelector('#'+k);if(!el)return;docSet(el,v)})});return false}
    if(m==='rep'){if(collect(ov)===false)return false;if(ed){p.closing[k]=c;save()}setTimeout(()=>ACT.pgRep({dataset:{k:'proj',p:p.akr,j:r.n,preset:'tutup'}}),30);return true}
    if(m==='draft'){if(collect(ov)===false)return false;commit(c.st==='Dikembalikan'?'Dikembalikan':'Draft');toast('Draft penutupan disimpan.');return true}
-   if(m==='ajukan'){if(collect(ov)===false)return false;const miss=[];if(!c.alasan)miss.push('alasan penutupan');if(c.alasan==='Lainnya'&&!String(c.alasanLain||'').trim())miss.push('uraian alasan “Lainnya”');if(!c.ringkas)miss.push('ringkasan hasil');if(!(c.sign||{}).nama)miss.push('penanda tangan pernyataan');if(miss.length){toast('Lengkapi dulu: '+miss.join(', ')+'.');return false}
-    if(c.alasan===TP_ALASAN[0]&&R.K.length&&R.kOk<R.K.length&&!confirm(`Baru ${R.kOk}/${R.K.length} kriteria terpenuhi. Tetap ajukan dengan alasan "${c.alasan}"?`))return false;commit('Diajukan','');toast('Penutupan diajukan untuk ditelaah.');return true}
-   if(m==='kembali'){const n=(ov.querySelector('#tp-rn')||{}).value||'';if(!n.trim()){toast('Isi catatan telaah sebelum mengembalikan.');return false}commit('Dikembalikan',n.trim());toast('Pengajuan dikembalikan.');return true}
-   if(m==='tutup'){commit('Ditutup',((ov.querySelector('#tp-rn')||{}).value||'').trim());toast('Proyek dinyatakan ditutup.');return true}
+   if(m==='ajukan'){if(collect(ov)===false)return false;const miss=tpP0Gate(c,tpReady(p,r));if(miss.length){toast('Penutupan belum dapat diajukan: '+miss.join('; ')+'.');return false}
+     c.pic=crRecipient('PMOK');if(!c.pic){toast('Belum ada PIC PMO Kemenkeu untuk menerima telaah.');return false}
+     commit('Diajukan','Diajukan ke '+c.pic);toast('Penutupan diajukan kepada PIC PMO Kemenkeu.');return true}
+   if(m==='kembali'){if(!tpCanReview(c))return false;const n=(ov.querySelector('#tp-rn')||{}).value||'';if(!n.trim()){toast('Isi catatan telaah sebelum mengembalikan.');return false}commit('Dikembalikan',n.trim());toast('Pengajuan dikembalikan.');return true}
+   if(m==='tutup'){if(!tpCanReview(c)){toast('Hanya PIC penelaah yang ditugaskan boleh menyetujui penutupan.');return false}const miss=tpP0Gate(c,tpReady(p,r));if(miss.length){toast('Tidak dapat menyetujui penutupan: '+miss.join('; ')+'.');return false}commit('Ditutup',((ov.querySelector('#tp-rn')||{}).value||'').trim());toast('Proyek dinyatakan ditutup.');return true}
    if(m==='buka'){commit('Draft','Dibuka kembali');return true}
    return false}});ov._tp={p,r,R,reopen};
  ov.querySelectorAll('[data-tpt]').forEach(b=>b.addEventListener('click',()=>{S.ui.tpTab=b.dataset.tpt;ov.querySelectorAll('[data-tpt]').forEach(x=>x.classList.toggle('on',x===b));ov.querySelectorAll('[data-sec]').forEach(s=>s.hidden=s.dataset.sec!==b.dataset.tpt)}))}
