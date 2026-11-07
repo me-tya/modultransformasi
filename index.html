@@ -2365,6 +2365,30 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 @media(max-width:900px){.subt.ctabs.wbs-with-actions{align-items:flex-start}.wbs-actionbar{margin-left:0;width:100%;justify-content:flex-start}.wbs-actionbar>.btn,.wbs-actionbar>.wbs-import,.wbs-more>summary{height:34px}}
 @media(max-width:480px){.wbs-actionbar{gap:5px}.wbs-actionbar>.btn,.wbs-actionbar>.wbs-import,.wbs-more>summary{padding-inline:9px;font-size:11px}}
 </style>
+
+<style>
+/* Panduan minimal: informasi disembunyikan secara dapat-diakses, aksi tetap terlihat */
+.ui-info-control{display:inline-flex;align-items:center;justify-content:center;gap:5px;vertical-align:middle;align-self:center;flex:none;min-height:30px;white-space:nowrap;background:transparent;border:1px solid transparent;border-radius:8px;padding:3px 7px;color:#24527e;font:700 11.5px/1.1 'Nunito Sans',sans-serif;cursor:pointer}
+.ui-info-control:hover,.ui-info-control:focus-visible{background:#eef4fc;border-color:#c7d9f0;outline-offset:2px}
+.ui-info-dot{display:inline-flex;align-items:center;justify-content:center;flex:none;width:22px;height:22px;border-radius:50%;background:#e7f0fc;border:1px solid #7eafe0;color:#13568f;font:800 13px/1 Arial,sans-serif;vertical-align:middle}
+.ui-note-inline{display:inline-flex;align-items:center;justify-content:flex-start;padding:1px 2px;min-height:28px}
+.vh .vh-heading .ui-note-link,.mhead h1 .ui-note-link,.card>.ch .ui-note-link{margin-left:8px}
+.ui-guide-pop .hq-b{padding:8px 14px 14px;font-size:12px;line-height:1.55;overflow-wrap:anywhere}
+.ui-guide-pop .hd{position:sticky;top:0;background:#fff;z-index:2}
+.ui-guide-body p{margin:4px 0 9px}
+.adp-workbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;padding:5px 9px;min-width:0}
+.adp-workbar>.subt{flex:1 1 auto;min-width:0;width:auto;max-width:100%;margin:0;background:transparent;border:0;padding:2px;box-shadow:none}
+.adp-tools{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex:0 1 auto;flex-wrap:wrap;padding:2px 0;min-width:0}
+.adp-state{display:inline-flex;align-items:center;max-width:100%;border-radius:6px;background:#f2f6fb;color:#425a76;padding:5px 8px;font-size:11px;font-weight:700;line-height:1.3}
+.adp-import{cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.adp-tools .btn{min-height:32px}
+#app .ui-help-aligned,#app button.hlp,#app button.hq{display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;align-self:center;line-height:1;margin-top:0;margin-bottom:0;top:auto;transform:none}
+#app button.hlp{margin-left:6px;vertical-align:middle}
+#app .top .sk-hdrActions .sk-hdrBtn{display:inline-flex;align-items:center;justify-content:center;line-height:1.1}
+#app .top .sk-hdrHelp i{display:inline-flex;align-items:center;justify-content:center;flex:none;vertical-align:middle;line-height:1}
+@media(max-width:1150px){.adp-workbar>.subt{flex-basis:100%}.adp-tools{width:100%;justify-content:flex-start}.adp-state{margin-right:auto}}
+@media(max-width:600px){.adp-workbar{padding:6px}.adp-tools{gap:4px}.adp-state{flex:1 0 100%}.adp-workbar>.subt{overflow-x:auto;flex-wrap:nowrap}.adp-tools .btn{font-size:11px}}
+</style>
 <div id="root"></div>
 <div class="toast" id="toast" role="status"></div>
 <script type="application/json" id="d0">{"S":[],"W":[],"K":[]}</script>
@@ -3055,42 +3079,62 @@ function render(){if(ME&&ME.role==='SA'&&S.akses&&!S.akses.KETUA){S.akses.KETUA=
  else if(VIEW==='aktivitas')h=pAktivitas();else if(VIEW.startsWith('pmo-'))h=viewPmo(VIEW.slice(4));else if(VIEW.startsWith('cmo-'))h=viewCmo(VIEW.slice(4),null);
  else if(VIEW==='set-pengguna')h=viewUsers();else if(VIEW==='set-akses')h=viewAkses();else if(VIEW==='set-sinkron')h=viewSinkron();else if(VIEW==='set-db')h=viewDb();else if(VIEW==='set-log')h=viewLog();
  if(VIEW.startsWith('set-'))h=h.replace('<!--vh-->',setTabs());
- v.innerHTML=h;window.CM_CRA_NAV=()=>cmoTabs('cra',null);if(VIEW==='cra'&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}if(VIEW==='pengelola'&&window.PENGELOLA_NATIVE){window.PENGELOLA_NATIVE.attach({S,ME,save,toast});return;}if((VIEW==='cmo-cra'||/^modul-.+-t-cra$/.test(VIEW))&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}try{foldNotes(v)}catch(e){}
+ v.innerHTML=h;window.CM_CRA_NAV=()=>cmoTabs('cra',null);if(VIEW==='cra'&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}if(VIEW==='pengelola'&&window.PENGELOLA_NATIVE){window.PENGELOLA_NATIVE.attach({S,ME,save,toast});return;}if((VIEW==='cmo-cra'||/^modul-.+-t-cra$/.test(VIEW))&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}try{foldNotes(v);bindCompactGuides(v)}catch(e){console.warn('Panduan ringkas:',e)}
 }
 const yearsOpt=()=>{const ys=new Set([S.ui.tahun]);S.wbs.forEach(w=>{const y=yrOf(w);if(y>=2020)ys.add(y)});return [...ys].sort()};
 function foldNotes(v){
- const host=v.querySelector('.subt.ctabs')||v.querySelector('.subt')||v.querySelector('.vh .vh-heading')||v.querySelector('.vh h1');
- if(!host)return;
- /* Ringkas hanya panduan informasional. Tombol aksi, isian, dan peringatan tetap terlihat.
-    Tombol Cheatsheet di dalam panduan boleh diringkas karena sudah tersedia pada header global. */
- const ns=[...v.children].filter(n=>{
-  if(!n.matches||!n.matches('.note.i,.note.g')||(n.textContent||'').trim().length<=40)return false;
-  if(n.querySelector('input,select,textarea'))return false;
-  const actions=[...n.querySelectorAll('button,[data-act]')];
-  return actions.every(a=>a.matches('button[data-act="cheatsheet"]')||!!a.closest('button[data-act="cheatsheet"]'));
+ /* Ubah panduan pasif (bukan peringatan/validasi) menjadi ikon informasional,
+    tidak menyingkirkan tombol aksi, kolom input, maupun alert kesalahan. */
+ const sections=[...v.querySelectorAll('.note.i,.note.g')];
+ sections.forEach((n,index)=>{
+  if(!n.isConnected||(n.textContent||'').trim().length<38)return;
+  if(n.closest('.menu,.md,.modal,[role="dialog"]'))return;
+  if(n.querySelector('input,select,textarea'))return;
+  const acts=[...n.querySelectorAll('button,[data-act]')];
+  if(!acts.every(a=>a.matches('button[data-act="cheatsheet"]')||!!a.closest('button[data-act="cheatsheet"]')))return;
+  const copy=n.cloneNode(true);
+  copy.querySelectorAll('button[data-act="cheatsheet"]').forEach(b=>b.remove());
+  const content=copy.innerHTML;
+  if(!(copy.textContent||'').trim())return;
+  const b=document.createElement('button');b.type='button';b.className='ui-info-control ui-note-link';
+  b.innerHTML='<span class="ui-info-dot" aria-hidden="true">i</span><span>Info</span>';
+  b.title='Buka informasi dan ketentuan bagian ini';
+  b.setAttribute('aria-label','Buka informasi dan ketentuan bagian ini');
+  b.setAttribute('aria-haspopup','dialog');
+  b.onclick=e=>{e.stopPropagation();showUiGuide(b,content,'Informasi & ketentuan')};
+  let target=null;
+  if(n.parentElement===v) target=v.querySelector('.vh .vh-heading')||v.querySelector('.mhead h1')||v.querySelector('.vh h1');
+  if(!target){
+   const card=n.closest('.card');
+   if(card&&card.contains(n)&&n.parentElement===card)target=card.querySelector(':scope > .ch');
+  }
+  if(target){target.appendChild(b);n.remove()}
+  else{const wrap=document.createElement('span');wrap.className='ui-note-inline';wrap.appendChild(b);n.replaceWith(wrap)}
  });
- if(!ns.length)return;
- const html=ns.map(n=>{
-  const clone=n.cloneNode(true);
-  clone.querySelectorAll('button[data-act="cheatsheet"]').forEach(b=>b.remove());
-  return `<div class="hq-n">${clone.innerHTML}</div>`;
- }).join('');
- /* Ketentuan tetap bisa dibuka: jangan menghilangkan isi tanpa menyediakan akses alternatif. */
- ns.forEach(n=>n.remove());
- const b=document.createElement('button');b.type='button';b.className='hq hq-info';
- b.textContent='i';b.title='Lihat informasi dan ketentuan halaman';
- b.setAttribute('aria-label','Lihat informasi dan ketentuan halaman');
- b.setAttribute('aria-haspopup','dialog');
- host.appendChild(b);
- b.onclick=e=>{
-  e.stopPropagation();
-  const m=popMenu(b,`<div class="hd"><b>Informasi dan ketentuan</b></div><div class="hq-b">${html}</div>`);
-  m.style.width='min(440px,92vw)';
-  m.setAttribute('role','dialog');
-  m.setAttribute('aria-label','Informasi dan ketentuan halaman');
-  m.onclick=ev=>{if(ev.target.closest('a'))m.remove()};
-  m.addEventListener('keydown',ev=>{if(ev.key==='Escape'){m.remove();b.focus()}});
- };
+ // Konversi pertolongan tersebar menjadi ikon yang konsisten.
+ v.querySelectorAll('button.hlp,button.hq').forEach(b=>{
+  if(b.classList.contains('ui-help-aligned'))return;
+  b.classList.add('ui-help-aligned');
+  if(!b.hasAttribute('aria-label'))b.setAttribute('aria-label','Bantuan atau panduan bagian ini');
+ });
+}
+function showUiGuide(anchor,html,title){
+ const m=popMenu(anchor,'<div class="hd"><b>'+esc(title||'Informasi')+'</b></div><div class="hq-b ui-guide-body">'+html+'</div>');
+ m.classList.add('ui-guide-pop');
+ m.setAttribute('role','dialog');
+ m.setAttribute('aria-label',title||'Informasi');
+ m.style.width='min(460px,calc(100vw - 24px))';
+ m.style.maxHeight='min(430px,calc(100vh - 28px))';
+ m.style.overflowY='auto';
+ const rect=m.getBoundingClientRect(),a=anchor.getBoundingClientRect();
+ if(rect.bottom>innerHeight-12)m.style.top=Math.max(12,a.top-rect.height-7)+'px';
+ m.addEventListener('keydown',e=>{if(e.key==='Escape'){m.remove();anchor.focus()}});
+ return m;
+}
+function bindCompactGuides(v){
+ v.querySelectorAll('[data-ui-tip="adp"]').forEach(b=>{
+  b.onclick=e=>{e.stopPropagation();showUiGuide(b,window.__adpGuideMarkup||'Pengisian ADP tersedia melalui aplikasi atau template Excel.','Panduan ADP')};
+ });
 }
 function popMenu(btn,html){document.querySelectorAll('.menu').forEach(m=>m.remove());const r=btn.getBoundingClientRect();const m=document.createElement('div');m.className='menu';m.style.top=(r.bottom+6)+'px';m.style.right=Math.max(8,innerWidth-r.right)+'px';m.innerHTML=html;document.body.appendChild(m);
  setTimeout(()=>document.addEventListener('click',function h(e){if(!m.contains(e.target)){m.remove();document.removeEventListener('click',h)}}),0);return m}
@@ -8751,7 +8795,13 @@ function tAdopsi(ms){const rows0=ms.map(m=>({id:m.kode,m,idx:idxMod(m.kode),ad:a
 /* --- ADP --- */
 function tAdp(ms,mf,mk){const sub=S.ui.sub.adp||'dampak';
  const stSel=mk?`<label class="s" for="adpst">Status dokumen ADP</label><select class="sel" id="adpst" data-on="adpst" data-m="${mk}" ${can('adp','U',mk)?'':'disabled'}>${opts(['Draft','Review CMO','Final'],adpSt(mk))}</select>`:'';
- let out=`<div class="adpx"><span class="ic">⇅</span><span><b>Isi ADP lewat Excel atau langsung di aplikasi.</b> Template berisi semua modul Anda beserta isian ADP saat ini (sub modul, As-Is/To-Be, POSTeR, risiko, indikator). Ubah lalu impor kembali.</span><button class="btn sm" data-act="adptpl">Unduh template ADP</button>${['adp'].some(f=>lv(f).includes('C')||lv(f).includes('U'))?'<label class="btn sm pri">Impor ADP<input type="file" hidden accept=".xlsx,.xls" data-on="adpimp"></label>':''}</div><div class="card">${subNav('adp',[['dampak','Daftar ADP (sub modul)'],['poster','Matriks POSTeR & Peta Risiko'],['reg','Register Risiko'],['ind','Indikator Keberhasilan CM']],'dampak')}</div>`;
+ const totalAdp=ms.length;
+ const docCounts={Draft:0,'Review CMO':0,Final:0};
+ ms.forEach(m=>{const st=adpSt(m.kode);docCounts[st]=(docCounts[st]||0)+1});
+ const statusText=mk?'Status ADP: '+adpSt(mk):'Status ADP: '+docCounts.Final+' final · '+(docCounts['Review CMO']||0)+' reviu · '+docCounts.Draft+' draf';
+ const adpInfo='<div class="ui-guide-source"><b>Pengisian ADP melalui Excel</b><p>Unduh template untuk memutakhirkan submodul, As-Is/To-Be, POSTeR, risiko, dan indikator keberhasilan CM. Isi secara offline lalu impor kembali. ADP juga dapat diperbarui langsung di aplikasi.</p><p>Periksa kembali data yang diimpor sebelum digunakan sebagai dasar perencanaan perubahan.</p></div>';
+ let out=`<div class="card adp-workbar">${subNav('adp',[['dampak','Daftar ADP (sub modul)'],['poster','Matriks POSTeR & Peta Risiko'],['reg','Register Risiko'],['ind','Indikator Keberhasilan CM']],'dampak')}<div class="adp-tools"><span class="adp-state" title="Ringkasan status dokumen ADP sesuai modul yang sedang tampil">${esc(statusText)}</span><button type="button" class="ui-info-control" data-ui-tip="adp" aria-label="Panduan pengisian ADP dengan Excel" title="Panduan pengisian ADP"><span class="ui-info-dot" aria-hidden="true">i</span><span>Info</span></button><button class="btn sm" data-act="adptpl">Unduh template</button>${['adp'].some(f=>lv(f).includes('C')||lv(f).includes('U'))?'<label class="btn sm pri adp-import">Impor Excel<input type="file" hidden accept=".xlsx,.xls" data-on="adpimp"></label>':''}</div></div>`;
+ if(typeof window!=='undefined')window.__adpGuideMarkup=adpInfo;
  if(sub==='dampak'){
   const cols=[...(mk?[]:[modCol('adp')]),{k:'_kd',l:'Kode',frm:false,r:s=>{const i=S.sub.filter(x=>x.modul===s.modul).indexOf(s)+1;return `<span class="code">${s.modul}.${i}</span>`}},{k:'nama',l:'Sub modul',req:true,w:1,r:s=>`<b>${esc(s.nama)}</b><span class="sm">As-Is: ${esc(short(s.asis,90))}</span><span class="sm">To-Be: ${esc(short(s.tobe,90))}</span>`},{k:'asis',l:'Kondisi As-Is',t:'ta',tbl:false},{k:'tobe',l:'Kondisi To-Be',t:'ta',tbl:false},
    {k:'_po',l:'POSTeR (P O S T R)',frm:false,r:s=>`<div class="hm">${DIMS.map(d=>lvl(s[d[0]],LV_UB,d[1]+': '+LV_UB[s[d[0]]||0]+(s[d[0]+'k']?' — '+s[d[0]+'k']:''))).join('')}</div>`,x:s=>DIMS.map(d=>d[0]+':'+LV_UB[s[d[0]]||0]).join(' ')},
