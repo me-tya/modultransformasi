@@ -89,3 +89,15 @@ window.txFormulaReferenceHtml=render;
 window.txFormulaReferenceVersion='2026-11-07-formula-glossary-1';
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addStyle);else addStyle();
 })();
+/* UI global — tab sekunder seragam WBS & Progres, 2026-11-07 */
+;(function(){
+ function loadUnifiedTabs(){
+  if(document.getElementById('mt-unified-tabs-styles'))return;
+  var el=document.createElement('link');
+  el.id='mt-unified-tabs-styles';el.rel='stylesheet';
+  el.href='ui-tabs-unified.css?v=20261107-2';
+  document.head.appendChild(el);
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadUnifiedTabs,{once:true});
+ else loadUnifiedTabs();
+})();
