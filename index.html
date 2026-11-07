@@ -6,7 +6,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="wbs-cap-2026-reference.js"></script>
-<script src="cheatsheet-referensi.js?v=20261107-1"></script>
+<script src="cheatsheet-referensi.js?v=20261107-4"></script>
 <style>
 /* Satu Kemenkeu shell: sidebar navy gelap, topbar navy, aksen kuning; isi kartu putih padat */
 :root{
@@ -3174,7 +3174,7 @@ function render(){if(ME&&ME.role==='SA'&&S.akses&&!S.akses.KETUA){S.akses.KETUA=
  else if(VIEW==='aktivitas')h=pAktivitas();else if(VIEW.startsWith('pmo-'))h=viewPmo(VIEW.slice(4));else if(VIEW.startsWith('cmo-'))h=viewCmo(VIEW.slice(4),null);
  else if(VIEW==='set-pengguna')h=viewUsers();else if(VIEW==='set-akses')h=viewAkses();else if(VIEW==='set-sinkron')h=viewSinkron();else if(VIEW==='set-db')h=viewDb();else if(VIEW==='set-log')h=viewLog();
  if(VIEW.startsWith('set-'))h=h.replace('<!--vh-->',setTabs());
- v.innerHTML=h;window.CM_CRA_NAV=()=>cmoTabs('cra',null);if(VIEW==='cra'&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}if(VIEW==='pengelola'&&window.PENGELOLA_NATIVE){window.PENGELOLA_NATIVE.attach({S,ME,save,toast});return;}if((VIEW==='cmo-cra'||/^modul-.+-t-cra$/.test(VIEW))&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}try{foldNotes(v);bindCompactGuides(v)}catch(e){console.warn('Panduan ringkas:',e)}try{scrollActiveCompactNav(v)}catch(e){}
+ v.innerHTML=h;window.CM_CRA_NAV=()=>cmoTabs('cra',null);if(VIEW==='cra'&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}if(VIEW==='pengelola'&&window.PENGELOLA_NATIVE){window.PENGELOLA_NATIVE.attach({S,ME,save,toast});return;}if((VIEW==='cmo-cra'||/^modul-.+-t-cra$/.test(VIEW))&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}try{foldNotes(v);bindCompactGuides(v);mtCompactWorkbars(v)}catch(e){console.warn('Panduan ringkas:',e)}try{scrollActiveCompactNav(v)}catch(e){}
 }
 const yearsOpt=()=>{const ys=new Set([S.ui.tahun]);S.wbs.forEach(w=>{const y=yrOf(w);if(y>=2020)ys.add(y)});return [...ys].sort()};
 function foldNotes(v){
@@ -3201,9 +3201,9 @@ function foldNotes(v){
   if(n.parentElement===v) target=v.querySelector('.vh .vh-heading')||v.querySelector('.mhead h1')||v.querySelector('.vh h1');
   if(!target){
    const card=n.closest('.card');
-   if(card&&card.contains(n)&&n.parentElement===card)target=card.querySelector(':scope > .ch');
+   if(card&&card.contains(n)&&n.parentElement===card)target=card.querySelector(':scope > .tbar,:scope > .ch');
   }
-  if(target){target.appendChild(b);n.remove()}
+  if(target){if(target.classList.contains('tbar')&&target.querySelector('h3'))target.querySelector('h3').after(b);else target.appendChild(b);n.remove()}
   else{const wrap=document.createElement('span');wrap.className='ui-note-inline';wrap.appendChild(b);n.replaceWith(wrap)}
  });
  // Konversi pertolongan tersebar menjadi ikon yang konsisten.
@@ -3211,6 +3211,27 @@ function foldNotes(v){
   if(b.classList.contains('ui-help-aligned'))return;
   b.classList.add('ui-help-aligned');
   if(!b.hasAttribute('aria-label'))b.setAttribute('aria-label','Bantuan atau panduan bagian ini');
+ });
+}
+function mtCompactWorkbars(view){
+ view.querySelectorAll('.card > .subt[role="tablist"]').forEach(function(nav){
+  var host=nav.parentElement;
+  if(!host||host.children.length!==1||host.id)return;
+  host.classList.add('mt-subtab-host');
+  var next=host.nextElementSibling;
+  if(!next||!next.matches('.card[id^="tw-"]'))return;
+  var toolbar=next.querySelector(':scope > .tbar');
+  if(!toolbar)return;
+  var search=toolbar.querySelector(':scope > .tsearch');
+  var infos=Array.from(toolbar.querySelectorAll(':scope > .ui-note-link'));
+  if(!search&&!infos.length)return;
+  var tools=document.createElement('div');
+  tools.className='mt-subtab-utilities';
+  tools.setAttribute('role','group');
+  tools.setAttribute('aria-label','Pencarian dan informasi tabel');
+  if(search){search.setAttribute('data-mt-search-promoted','true');tools.appendChild(search)}
+  infos.forEach(function(info){tools.appendChild(info)});
+  host.appendChild(tools);
  });
 }
 function showUiGuide(anchor,html,title){
@@ -4100,12 +4121,9 @@ function wbsQuickActions(plan){
   '<a class="wbs-more-item" href="#pmo-oneonone">Jadwal 1-on-1</a></div></details></div>';
 }
 function wbsActionSubline(cur,sub){
- if(cur!=='wbsplan'&&cur!=='wbs')return sub;
- const bar=wbsQuickActions(cur==='wbsplan');
- if(!sub)return '<div class="subt ctabs wbs-with-actions">'+bar+'</div>';
- const html=sub.replace('class="subt ctabs"','class="subt ctabs wbs-with-actions"');
- const i=html.lastIndexOf('</div>');
- return i<0?html+bar:html.slice(0,i)+bar+html.slice(i);
+ const bar=cur==='wbsplan'||cur==='wbs'?wbsQuickActions(cur==='wbsplan'):'';
+ if(!sub)return bar?'<div class="mt-pmo-subtab-band mt-actions-only">'+bar+'</div>':'';
+ return '<div class="mt-pmo-subtab-band">'+sub+bar+'</div>';
 }
 function pmoTopActions(cur){
  if(cur==='wbs'||cur==='wbsplan')return '';
