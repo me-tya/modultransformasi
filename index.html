@@ -2732,7 +2732,8 @@ let WIDX=null;
 const wbsBy=k=>{if(!WIDX||WIDX._n!==S.wbs.length){WIDX={_n:S.wbs.length};S.wbs.forEach(w=>WIDX[w.k]=w)}return WIDX[k]};
 const REP=()=>S.cfg.rep||9;
 const bit=(it,m)=>!!((it.rm||0)>>(m-1)&1);
-const realAt=(it,M)=>bit(it,M)||(M>REP()&&bit(it,REP()));
+/* Realisasi pada Excel bersifat kumulatif: sesudah item selesai, bobotnya terus dihitung sampai akhir tahun. */
+const realAt=(it,M)=>doneAt(it,M);
 const doneAt=(it,M)=>{for(let m=1;m<=M;m++)if(bit(it,m))return true;return false};
 const tgtAt=(it,M)=>it.tm&&it.tm<=M?(+it.w||0):0;
 const realV=(it,M)=>realAt(it,M)&&it.v?(+it.w||0):0;
@@ -5283,7 +5284,7 @@ function pWbs(){const P=per(),M=P.b,tw=P.tw;const rows=wbsRows();const yearlyRow
    {k:'ue',l:'Cakupan UE I',t:'multi',o:UNITS,tbl:false},{k:'cm',l:'Jenis item CM',t:'sel',o:[['','Otomatis (aturan sinkron)'],['Bukan','Bukan item CM'],'ADP','Perencanaan','Implementasi','Monev'],tbl:false,hint:'ADP membentuk 1 modul CM'},{k:'v',l:'Status validasi',t:'sel',o:[[0,'Belum'],[1,'Sudah']],tbl:false}],
   onAdd:n=>{n.id=n.k;S.wbs.push(n)},
   validate:(d,row)=>{if(!/^[A-Z]+-\d+$/i.test(d.k)){toast('Kode harus [AKRONIM]-[nomor], mis. OA-150.');return false}if(S.wbs.some(w=>w!==row&&w.k===d.k)){toast('Kode sudah dipakai.');return false}if(d.s&&d.f&&d.f<d.s){toast('Tanggal selesai harus ≥ tanggal mulai.');return false}
-   d.p=String(d.pth).split('>').map(x=>x.trim()).filter(Boolean);delete d.pth;d.tm=+d.tm||0;d.v=+d.v||0;d.w=+d.w||0;if(row&&row.k!==d.k){toast('Kode item tidak dapat diubah.');return false}},
+   d.p=String(d.pth).split('>').map(x=>x.trim()).filter(Boolean);delete d.pth;d.tm=isD(d.f)?+d.f.slice(5,7):0;d.v=+d.v||0;d.w=durW(d.s,d.f);if(row&&row.k!==d.k){toast('Kode item tidak dapat diubah.');return false}},
   onSave:(w,isNew)=>{delete w.pth;if(isNew){w.id=w.k;w.rm=0;w.arsip=false;w.ue=w.ue||[];w.d=w.d||''}WIDX=null;if(cmType(w)==='ADP'&&isNew)toast(`Modul ${w.k} dibuat di CMO.`)}})+
  `<p class="s" style="margin:0">* realisasi dilaporkan tetapi bukti dukung belum tervalidasi (tidak dihitung capaian). Klik baris untuk panel detail target vs realisasi bulanan.</p>`}
 // isi field pth saat edit
@@ -5295,7 +5296,7 @@ function kompRow(w){const o={Code:w.k};const lv=[`Program Transformasi Kemenkeu 
  MON.forEach((m,i)=>{o[['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][i]]=!!(w.s&&w.f&&+w.s.slice(5,7)<=i+1&&+w.f.slice(5,7)>=i+1)});
  UNITS.forEach(u=>o[u]=w.ue.includes(u)?'Ya':'');['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].forEach((m,i)=>o['Target '+m]=tgtAt(w,i+1));['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].forEach((m,i)=>o['Real '+m]=bit(w,i+1)?w.w:0);o['Status Validasi']=w.v?'Sudah':'';o['Jenis CM (aplikasi)']=cmType(w);return o}
 const MM3=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const xd=x=>x instanceof Date?new Date(x.getTime()-x.getTimezoneOffset()*6e4).toISOString().slice(0,10):(/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(x)?x.split('/').reverse().map(s=>s.padStart(2,'0')).join('-'):String(x||'').slice(0,10));
+const xd=x=>x instanceof Date?new Date(x.getTime()-x.getTimezoneOffset()*6e4).toISOString().slice(0,10):(typeof x==='number'&&Number.isFinite(x)&&x>20000&&x<80000?new Date(Math.round((x-25569)*864e5)).toISOString().slice(0,10):(/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(x)?x.split('/').reverse().map(s=>s.padStart(2,'0')).join('-'):String(x||'').slice(0,10)));
 const isD=x=>/^\d{4}-\d\d-\d\d$/.test(x)&&x>'1950';
 /* Rumus Kompilasi dihitung sistem: bobot = Finish − Start + 1 (hari); target bobot penuh mulai bulan Finish (kumulatif); cakupan UE I = unit disebut di UIC Utama/Pendukung */
 const durW=(s,f)=>isD(s)&&isD(f)&&f>=s?Math.round((new Date(f)-new Date(s))/864e5)+1:0;
@@ -5541,7 +5542,8 @@ function crApply(c){
  const it=wbsBy(c.item);if(!it){toast('Item WBS tidak ditemukan.');return false}
  if(c.jenis==='Ubah item'){
   for(const [k,[o,n]] of Object.entries(c.ch||{}))if(String(crGet(it,k))!==String(o)){toast('Baseline WBS telah berubah sejak pengajuan CR. Telaah ulang diperlukan.');return false}
-  Object.entries(c.ch||{}).forEach(([k,[o,n]])=>{if(k==='dl')it.p[it.p.length-1]=n;else if(k==='w')it.w=+n||0;else it[k]=n;if(k==='f'&&it.tm&&n&&String(n).slice(0,4)===String(yrOf(it)))it.tm=+String(n).slice(5,7)})
+  Object.entries(c.ch||{}).forEach(([k,[o,n]])=>{if(k==='dl')it.p[it.p.length-1]=n;else if(k==='w')it.w=+n||0;else it[k]=n});
+  if(Object.keys(c.ch||{}).some(k=>k==='s'||k==='f')){it.w=durW(it.s,it.f);it.tm=isD(it.f)?+it.f.slice(5,7):0}
  }else if(c.jenis==='Tambah item'){
   const pre=it.prog,n=Math.max(0,...S.wbs.filter(w=>w.prog===pre).map(w=>+w.k.split('-')[1]||0))+1,k=pre+'-'+n;
   S.wbs.push({id:k,k,prog:pre,p:[...it.p.slice(0,-1),c.nilai],s:c.tglM||'',f:c.tglS||'',u:it.u,d:it.d,j:'',w:0,tm:c.tglS?+c.tglS.slice(5,7):0,rm:0,ue:[...it.ue],v:0,cm:c.cmBaru||'Bukan',arsip:false});c.nilai=c.nilai+' → '+k;WIDX=null
@@ -5781,8 +5783,12 @@ const capDeadline=(y,tw)=>addWD(twEnd(y,tw),capCutHK());
 function capSnap(y,tw){return ((S.cfg||{}).capSnap||{})[y+'-'+tw]||null}
 function capScope(){const u=curUnit();return u&&S.ui.capScope!=='kem'?'unit':'kem'}
 function capItems(sc,unit){const u=unit||curUnit();return pmoAllWbs().filter(w=>(!S.ui.prog||w.prog===S.ui.prog)&&(sc!=='unit'||!u||w.ue.includes(u)))}
-/* Total Kemenkeu mengikuti sheet Capaian T-Program: program berstatus Selesai yang realisasinya sudah 100% pada TW sebelumnya tidak dihitung lagi (mis. TKD sejak TW II). */
-function capTotItems(items,tw){if(tw<2)return items;const drop=new Set(S.programs.filter(p=>/selesai/i.test(p.status||'')).map(p=>p.akr).filter(k=>{const it=items.filter(w=>w.prog===k),v=capLive(it,tw-1);return it.length&&v.a>0&&v.r>=v.a}));return drop.size?items.filter(w=>!drop.has(w.prog)):items}
+/* Referensi workbook 2026: total T-Program memasukkan TKD di TW I tetapi mengeluarkannya mulai TW II.
+   Ini ketentuan lingkup laporan 2026 (baris Total Excel), bukan aturan generik untuk semua program Selesai.
+   Tahun berikutnya semua program dihitung kecuali pengecualian eksplisit di cfg.capReportingExclusions. */
+function capTotItems(items,tw){const y=+S.ui.tahun,setting=((S.cfg||{}).capReportingExclusions||{}),byYear=setting[String(y)]||{};
+ const custom=byYear[String(tw)],excluded=Array.isArray(custom)?custom:(y===2026&&tw>=2?['TKD']:[]);
+ return excluded.length?items.filter(w=>!excluded.includes(w.prog)):items}
 function capLive(items,tw){const M=tw*3,x=sumTR(items,M),a=sumTR(items,12).t;let on=0,ont=0,nOn=0,nT=0,nE=0;
  items.forEach(w=>{const b=+w.w||0;if(tgtAt(w,M)){ont+=b;nT++;if(realV(w,M)){on+=b;nOn++}}else if(realV(w,M))nE++});
  return {t:x.t,r:x.r,a,ct:a?x.r/a*100:null,on,early:x.r-on,nT,nOn,nE,src:'live'}}
@@ -5818,7 +5824,7 @@ function capQuarter(quarters,num){capAutoLock();const {sc,u,pk,kind,key}=capSel(
  const scopeLab=sc==='unit'?'UE I '+u+' (kolom cakupan UE I = "Ya")':'Kemenkeu'+(pk?' · '+((progOf(pk)||{}).nama||pk):' · seluruh T-Program');
  return `<div class="card"><div class="ch"><h3>Capaian per Triwulan</h3>${capCtl()}</div><div class="ov-qgrid">${quarters.map(card).join('')}</div>`+
  `<div class="ov-filter-status"><b>Lingkup:</b> ${esc(scopeLab)} · ${esc(S.ui.capSrc==='live'?'Data terkini dari WBS':'Angka kunci cut-off bila ada, selain itu dari WBS')}${sc==='unit'&&pk?' · <i>kunci cut-off per UE I × program tidak tersedia, ditampilkan data terkini</i>':''}</div>`+
- `<p class="cap-note">Semua angka dihitung dari item WBS di database dengan rumus sheet Capaian T-Program dan Capaian per UE1: <b>target</b> = bobot (hari) task yang jatuh tempo s.d. akhir TW, kumulatif; <b>realisasi</b> = bobot task yang sudah ditandai 100% s.d. bulan itu dan buktinya tervalidasi, termasuk task yang selesai lebih cepat dari jadwal. <b>Kunci cut-off</b> dibuat otomatis oleh sistem ${capCutHK()} hari kerja setelah TW berakhir (batas pengisian realisasi), agar angka yang dilaporkan tidak berubah oleh realisasi susulan atau CR.</p></div>`}
+ `<p class="cap-note">Angka dihitung ulang dari item WBS tersimpan (kecuali yang dikunci pada cut-off), menggunakan logika sheet Capaian T-Program dan Capaian per UE1: <b>target</b> = bobot (hari) task yang jatuh tempo s.d. akhir TW, kumulatif; <b>realisasi</b> = bobot task yang sudah ditandai 100% s.d. bulan itu dan buktinya tervalidasi, termasuk task yang selesai lebih cepat dari jadwal. <b>Kunci cut-off</b> dibuat otomatis oleh sistem ${capCutHK()} hari kerja setelah TW berakhir (batas pengisian realisasi), agar angka yang dilaporkan tidak berubah oleh realisasi susulan atau CR.</p></div>`}
 function capMatrix(kindTab,num){capAutoLock();const {sc,u,pk}=capSel(),cd=Math.max(1,Math.min(4,curTwDone()||1)),all=pmoAllWbs().filter(w=>!pk||w.prog===pk);
  let ent=[];
  if(kindTab==='prog'){const base=sc==='unit'?all.filter(w=>w.ue.includes(u)):all;
