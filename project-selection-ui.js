@@ -159,7 +159,7 @@
   html.mt-embedded .prio-hero{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:#15304d!important;padding:1px 0 2px!important;min-height:32px!important;justify-content:flex-end!important}
   html.mt-embedded .prio-hero>div:first-child:not(.prio-hero-actions){display:none!important}
   html.mt-embedded .prio-hero-actions{margin-left:auto!important;justify-content:flex-end!important}
-  html.mt-embedded .prio-hero:empty{display:none!important}
+  html.mt-embedded .prio-hero{display:none!important}
   html.mt-embedded .ps-priority-actions-row{display:flex!important;justify-content:flex-end!important;align-items:center!important;gap:9px!important;flex-wrap:wrap!important;margin:3px 0 9px!important;padding:0!important}
   html.mt-embedded .ps-priority-actions-row .prio-hero-actions{display:flex!important;flex-wrap:wrap!important;gap:9px!important;width:auto!important;margin:0!important}
   html.mt-embedded .prio-btn-light{color:#173b62!important;background:#fff!important;border-color:#cedbec!important}
