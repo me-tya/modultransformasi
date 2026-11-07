@@ -2351,7 +2351,7 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 .cm-step{min-width:0;min-height:56px;display:flex;justify-content:center;align-items:center;gap:8px;padding:9px 7px;border-radius:11px;text-decoration:none!important;color:#52617b;font-size:12.5px;font-weight:800;position:relative;transition:background .16s,color .16s,box-shadow .16s}
 .cm-step:hover{background:#eff4fc;color:#0b2447}.cm-step-number{display:grid;place-items:center;flex:0 0 24px;width:24px;height:24px;border-radius:50%;background:#edf2f9;color:#486080;font-size:11px;font-weight:900}
 .cm-step-label{line-height:1.3;text-align:left}.cm-step.on{background:linear-gradient(120deg,#0c244c,#1b477e);color:#fff;box-shadow:0 6px 16px rgba(13,40,71,.22)}
-.cm-step.on:after{content:"";position:absolute;bottom:4px;left:25%;right:25%;height:3px;border-radius:4px;background:#fdb913}.cm-step.on .cm-step-number{background:#fdb913;color:#13264b}
+.cm-step.on .cm-step-number{background:#fdb913;color:#13264b}
 .cm-step:focus-visible{outline:2px solid #fdb913;outline-offset:2px}.cm-cra-workspace{min-width:0}.cm-cra-workspace .cra2-hero{margin-top:0}
 @media(max-width:1250px){.cm-journey{display:flex;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:thin}.cm-step{flex:0 0 148px;scroll-snap-align:start}}
 @media(max-width:700px){.cm-step{flex-basis:132px;min-height:50px}.cm-journey{margin:10px 0 14px;padding:6px}}
@@ -2361,7 +2361,7 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 /* Keep CM navigation above CRA with PMO-like tab spacing. */
 /* Use the same content-sized, scrollable tab behavior as PMO: avoid number/label overlap. */
 .cm-journey{display:flex!important;grid-template-columns:none!important;gap:4px!important;margin:0!important;padding:6px!important;overflow-x:auto!important;overflow-y:hidden!important;scroll-snap-type:x proximity;scrollbar-width:thin;border-radius:14px!important;box-shadow:0 1px 0 #fff inset,0 4px 14px rgba(11,31,69,.06)!important}
-.cm-step{flex:1 0 auto!important;min-width:max-content!important;min-height:40px!important;height:40px!important;gap:6px!important;padding:0 11px!important;font-size:12px!important;white-space:nowrap!important;text-align:center!important;cursor:pointer!important;scroll-snap-align:center}
+.cm-step{flex:1 0 auto!important;min-width:max-content!important;min-height:40px!important;height:40px!important;justify-content:flex-start!important;gap:8px!important;padding:0 12px!important;font-size:12px!important;white-space:nowrap!important;text-align:left!important;cursor:pointer!important;scroll-snap-align:center}
 .cm-step-label{white-space:nowrap!important;line-height:1.1!important;text-align:center!important}
 .cm-step-number{width:22px!important;height:22px!important;flex:0 0 22px!important}
 .cm-step[title]{cursor:pointer!important}
