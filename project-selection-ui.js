@@ -123,7 +123,7 @@
 
  function page(){
   // The native module header is the only permanent header on this page.
-  const actions='<button class="btn" type="button" data-ps-account aria-haspopup="dialog" aria-expanded="false" title="Login, logout, dan status akses Dashboard CM">♙ <span>Akun CM</span></button>';
+  const actions=''; // No separate CM login button in Project Selection.
   const desc='Pemeringkatan proyek dengan 12 kriteria SMART, prioritas P1–P3, kapasitas CM, dan monitoring manfaat.';
   const header=typeof vh==='function'
    ?vh('PS','dash','Project Selection',desc,actions)
@@ -159,6 +159,9 @@
   html.mt-embedded .prio-hero{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:#15304d!important;padding:1px 0 2px!important;min-height:32px!important;justify-content:flex-end!important}
   html.mt-embedded .prio-hero>div:first-child:not(.prio-hero-actions){display:none!important}
   html.mt-embedded .prio-hero-actions{margin-left:auto!important;justify-content:flex-end!important}
+  html.mt-embedded .prio-hero:empty{display:none!important}
+  html.mt-embedded .ps-priority-actions-row{display:flex!important;justify-content:flex-end!important;align-items:center!important;gap:9px!important;flex-wrap:wrap!important;margin:3px 0 9px!important;padding:0!important}
+  html.mt-embedded .ps-priority-actions-row .prio-hero-actions{display:flex!important;flex-wrap:wrap!important;gap:9px!important;width:auto!important;margin:0!important}
   html.mt-embedded .prio-btn-light{color:#173b62!important;background:#fff!important;border-color:#cedbec!important}
   html.mt-embedded .prio-btn-light:hover{background:#eef5ff!important}
   html.mt-embedded .btn.btn-gold{background:#fdb913!important;color:#102d4d!important;border-color:#e1a713!important}
@@ -182,8 +185,19 @@
   html.mt-embedded #prioModal .prio-crit{background:linear-gradient(143deg,#fff,#f0f6ff)!important;border-color:#d5e2f1!important;border-radius:11px!important}
   html.mt-embedded #prioModal .prio-form-sec{background:linear-gradient(105deg,#e1eeff,#f6faff)!important;border-left:4px solid #fdb913!important;border-radius:8px!important;color:#0c3f70!important}
   html.mt-embedded #prioModal input:focus,html.mt-embedded #prioModal select:focus,html.mt-embedded #prioModal textarea:focus{outline:2px solid #e8b339!important;outline-offset:1px!important;border-color:#2472ab!important}
-  @media(max-width:680px){html.mt-embedded #appMain{padding:2px 4px 18px!important}html.mt-embedded .prio-hero-actions{justify-content:flex-start!important;width:100%!important}html.mt-embedded .prio-subtabs .cm-survey-subtab{padding:10px 9px!important;font-size:11px!important}}
+  @media(max-width:680px){html.mt-embedded #appMain{padding:2px 4px 18px!important}html.mt-embedded .ps-priority-actions-row{justify-content:flex-start!important}html.mt-embedded .prio-hero-actions{justify-content:flex-start!important;width:100%!important}html.mt-embedded .prio-subtabs .cm-survey-subtab{padding:10px 9px!important;font-size:11px!important}}
   `;
+ }
+ function organizePriorityActions(d){
+  // Move existing actions without replacing buttons or their handlers.
+  var tabs=d.querySelector('#tab-priority .prio-subtabs');
+  var actions=d.querySelector('#tab-priority .prio-hero-actions');
+  if(!tabs||!actions)return false;
+  var row=d.getElementById('ps-priority-actions-row');
+  if(!row){row=d.createElement('div');row.id='ps-priority-actions-row';row.className='ps-priority-actions-row';}
+  if(row.previousElementSibling!==tabs)tabs.insertAdjacentElement('afterend',row);
+  if(actions.parentElement!==row)row.appendChild(actions);
+  return true;
  }
  function decorate(){
   var d=doc(),f=iframe();if(!d||!f)return;
@@ -195,12 +209,22 @@
     d.documentElement.dataset.psLangApplied='1';
     if(f.contentWindow&&typeof f.contentWindow.setLanguage==='function')f.contentWindow.setLanguage('id');
    }
+   organizePriorityActions(d);
+   if(!f.__psObserver&&d.body&&typeof MutationObserver!=='undefined'){
+    var pending=false;
+    f.__psObserver=new MutationObserver(function(){
+     if(pending)return;
+     pending=true;
+     Promise.resolve().then(function(){pending=false;if(iframe()===f)organizePriorityActions(d)});
+    });
+    f.__psObserver.observe(d.body,{childList:true,subtree:true});
+   }
    status('');
   }catch(e){status('Tampilan Priority menggunakan gaya dasar Dashboard CM.')}
  }
  function mount(){
   var f=iframe();if(!f)return;
-  f.addEventListener('load',decorate);
+  f.addEventListener('load',function(){if(f.__psObserver){f.__psObserver.disconnect();f.__psObserver=null}decorate()});
   if(f.contentDocument&&f.contentDocument.readyState==='complete')decorate();
  }
  function account(){
