@@ -1,0 +1,85 @@
+/* Tab tingkat kedua Modul Transformasi — referensi visual WBS & Progres, 7 Nov 2026.
+   Tidak mengubah menu/tahapan utama (.ptabs.pmo-journey, .cm-journey)
+   ataupun tahapan wizard (.sw-nav, .wz-steps). */
+:root{--mt-tab-ink:#0B2447;--mt-tab-muted:#5F6B85;--mt-tab-line:#DCE3EF;--mt-tab-yellow:#FDB913}
+:is(.subt,.ov-tabs,.porto-view-tabs,.ws-tabs,.hp-tabs,.chtabs,.cra-tabs,.wz-sub,.sk-tabbar){
+  display:flex!important;grid-template-columns:none!important;align-items:stretch!important;
+  flex-wrap:nowrap!important;gap:4px!important;width:100%!important;max-width:100%!important;
+  min-height:46px!important;margin:6px 0 12px!important;padding:4px 4px 0!important;
+  background:transparent!important;border:0!important;border-bottom:2px solid var(--mt-tab-line)!important;
+  border-radius:0!important;box-shadow:none!important;
+  overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:thin;
+}
+:is(.subt,.ov-tabs,.porto-view-tabs,.ws-tabs,.hp-tabs,.chtabs,.cra-tabs,.wz-sub,.sk-tabbar)
+  >:is(a,button,.porto-view-tab,.ws-tab,.cra-tab,.sk-tab){
+  position:relative!important;display:inline-flex!important;flex:0 0 auto!important;
+  align-items:center!important;justify-content:center!important;gap:7px!important;
+  min-width:0!important;min-height:40px!important;height:auto!important;
+  margin:0!important;padding:8px 14px 9px!important;
+  font-family:inherit!important;font-size:13px!important;font-weight:800!important;
+  line-height:1.35!important;white-space:nowrap!important;text-decoration:none!important;
+  color:var(--mt-tab-muted)!important;background:transparent!important;
+  border:1px solid transparent!important;border-radius:10px 10px 0 0!important;
+  box-shadow:none!important;cursor:pointer;transition:background .15s,color .15s;
+}
+:is(.subt,.ov-tabs,.porto-view-tabs,.ws-tabs,.hp-tabs,.chtabs,.cra-tabs,.wz-sub,.sk-tabbar)
+  >:is(a,button,.porto-view-tab,.ws-tab,.cra-tab,.sk-tab):is(:hover,:focus-visible):not(.on):not(.active):not([aria-selected="true"]){
+  color:var(--mt-tab-ink)!important;background:#F3F7FD!important;
+}
+:is(.subt,.ov-tabs,.porto-view-tabs,.ws-tabs,.hp-tabs,.chtabs,.cra-tabs,.wz-sub,.sk-tabbar)
+  >:is(a,button,.porto-view-tab,.ws-tab,.cra-tab,.sk-tab):is(.on,.active,[aria-selected="true"]){
+  color:var(--mt-tab-ink)!important;background:#fff!important;
+  border-color:var(--mt-tab-line)!important;border-bottom-color:transparent!important;
+  box-shadow:0 1px 2px rgba(11,31,69,.045)!important;
+}
+:is(.subt,.ov-tabs,.porto-view-tabs,.ws-tabs,.hp-tabs,.chtabs,.cra-tabs,.wz-sub,.sk-tabbar)
+  >:is(a,button,.porto-view-tab,.ws-tab,.cra-tab,.sk-tab):is(.on,.active,[aria-selected="true"])::after{
+  content:""!important;position:absolute!important;left:0!important;right:0!important;
+  bottom:-2px!important;height:4px!important;background:var(--mt-tab-yellow)!important;
+  border-radius:0!important;pointer-events:none!important;
+}
+:is(.subt,.ov-tabs,.porto-view-tabs,.ws-tabs,.hp-tabs,.chtabs,.cra-tabs,.wz-sub,.sk-tabbar)
+  >:is(a,button,.porto-view-tab,.ws-tab,.cra-tab,.sk-tab):focus-visible{
+  outline:2px solid #1C67B4!important;outline-offset:-3px!important;
+}
+.subt a::before{display:none!important}
+.subt.ctabs a.on::after{height:4px!important}
+:is(.subt a .sb,.ws-tab b,.hp-tabs button b,.dx-tabs .dx-badge){
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  min-width:20px!important;padding:2px 8px!important;border-radius:999px!important;
+  background:#EEF1F6!important;color:var(--mt-tab-muted)!important;
+  font-size:11px!important;font-weight:800!important;line-height:1.35!important;
+}
+:is(.subt a.on .sb,.ws-tab.on b,.hp-tabs button.on b,.dx-tabs button.on .dx-badge){
+  background:var(--mt-tab-yellow)!important;color:var(--mt-tab-ink)!important;
+}
+.chtabs{position:sticky!important;top:0!important;z-index:22!important;min-height:0!important}
+.chtabs button{min-height:43px!important;text-align:left!important;gap:7px!important}
+.chtabs button span{min-width:0;display:block!important}
+.chtabs button b{font-size:12px!important;color:inherit!important}
+.chtabs button i,.wz-sub button i{
+  flex:0 0 22px!important;width:22px!important;height:22px!important;
+  display:inline-grid!important;place-items:center!important;border-radius:50%!important;
+  background:#EDF2F9!important;color:#486080!important;font-size:11px!important;
+}
+.chtabs button.on i,.wz-sub button.on i{background:var(--mt-tab-yellow)!important;color:var(--mt-tab-ink)!important}
+.ws-tab.on .ws-i{color:var(--mt-tab-ink)!important}
+.ws-tab.on::after{left:0!important;right:0!important;bottom:-2px!important;height:4px!important}
+.wz-sub .sa{align-self:center}
+.subt.ctabs.wbs-with-actions{
+  flex-wrap:wrap!important;overflow:visible!important;padding-bottom:0!important;
+}
+.subt.ctabs.wbs-with-actions .wbs-actionbar{
+  align-self:center!important;margin-left:auto!important;position:relative;z-index:1;
+}
+#app .adp-nav>.subt{margin:0!important}
+#app .adp-nav>.subt a{min-height:40px!important}
+/* Overlay bantuan memakai style inject sendiri; aturan ini menjaga gaya tab konsisten. */
+.sk-overlay .sk-tabbar{border-bottom:2px solid var(--mt-tab-line)!important}
+.sk-overlay .sk-tabbar>.sk-tab{color:var(--mt-tab-muted)!important}
+.sk-overlay .sk-tabbar>.sk-tab[aria-selected="true"]{background:#fff!important;color:var(--mt-tab-ink)!important}
+@media(max-width:760px){
+ :is(.subt,.ov-tabs,.porto-view-tabs,.ws-tabs,.hp-tabs,.chtabs,.cra-tabs,.wz-sub,.sk-tabbar){gap:2px!important}
+ :is(.subt,.ov-tabs,.porto-view-tabs,.ws-tabs,.hp-tabs,.chtabs,.cra-tabs,.wz-sub,.sk-tabbar)>:is(a,button,.porto-view-tab,.ws-tab,.cra-tab,.sk-tab){padding:8px 10px!important;font-size:11.5px!important}
+ .subt.ctabs.wbs-with-actions{overflow:visible!important}
+}
