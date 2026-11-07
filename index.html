@@ -3375,7 +3375,7 @@ function chOpen(akr,id){S.ui.chp=akr;S.ui.chv=id||'';save();if(location.hash!=='
 const chFocusLast=sel=>setTimeout(()=>{const a=document.querySelectorAll(sel);if(a.length)a[a.length-1].focus()},0);
 ACT.chopen=el=>{CHD=null;S.ui.ched='';chOpen(el.dataset.p)};
 
-/* P0: pintasan Bantuan menuju tab sebenarnya, termasuk dokumen proyek per program. */
+/* Deep links menuju tab asli, tanpa membuat menu atau tab baru. */
 window.mtP0Navigate=function(target,section){
  if(target==='pmo-charter'){
   if(lv('charter')==='-'){toast('Akun Anda tidak memiliki akses Dokumen Proyek.');return}
@@ -3383,11 +3383,46 @@ window.mtP0Navigate=function(target,section){
   const ps=progVis(),current=ps.find(p=>p.akr===(S.ui.chp||S.ui.prog));
   if(current){open(current);return}
   if(!ps.length){toast('Tidak ada program yang dapat diakses.');return}
-  modal('Pilih program untuk Dokumen Proyek',`<p class="s">Buka tab ${esc((CHPG.find(x=>x[0]===section)||[])[1]||'Charter')} pada program terpilih.</p><label class="fld">Program<select id="p0help-program" class="sel">${ps.map(p=>`<option value="${esc(p.akr)}">${esc(p.kode+' · '+p.nama)}</option>`).join('')}</select></label>`,'Buka dokumen',()=>{const p=ps.find(x=>x.akr===$('#p0help-program').value);if(!p)return false;open(p)});
+  modal('Pilih program untuk Dokumen Proyek','<p class="s">Pilih program yang dokumennya ingin dibuka.</p><label class="fld">Program<select id="p0help-program" class="sel">'+ps.map(p=>'<option value="'+esc(p.akr)+'">'+esc(p.kode+' · '+p.nama)+'</option>').join('')+'</select></label>','Buka dokumen',()=>{const p=ps.find(x=>x.akr===$('#p0help-program').value);if(!p)return false;open(p)});
   return;
  }
  if(!allowedViews().includes(target)){toast('Menu tidak tersedia untuk hak akses Anda.');return}
- const split=String(section||'').split(':');if(split.length===2&&['adp','rencana','monev'].includes(split[0])){S.ui.sub=S.ui.sub||{};S.ui.sub[split[0]]=split[1];save()}
+ const split=String(section||'').split(':'),scope=split[0],tab=split[1];
+ if(scope==='workspace'){
+  const valid=['ringkasan','jadwal','risiko','stakeholder','issue','decision'];
+  if(!valid.includes(tab))return;
+  const options=[];
+  progVis().forEach(p=>progProjects(p).forEach(j=>options.push({key:projectKey(p.akr,j.n),name:p.kode+' · '+p.nama+' — '+j.n})));
+  if(!options.length){toast('Belum ada proyek WBS yang dapat dibuka untuk tahun ini.');go('pmo-program');return}
+  const open=key=>{const choice=options.find(x=>x.key===key);if(!choice)return false;
+   S.ui.prjScope=choice.key;S.ui.prjTab=tab;S.ui.prjSearch='';S.ui.prjPages={};save();
+   if(location.hash==='#pmo-program')render();else go('pmo-program');
+   return true};
+  const current=options.find(x=>x.key===S.ui.prjScope);
+  if(current){open(current.key);return}
+  modal('Pilih proyek untuk membuka tab', '<p class="s">Tab <b>'+esc(tab)+'</b> tersedia di Workspace Proyek. Pilih proyek yang ingin dilihat.</p><label class="fld">Proyek<select id="p0help-workspace" class="sel">'+options.map(x=>'<option value="'+esc(x.key)+'">'+esc(x.name)+'</option>').join('')+'</select></label>','Buka tab',()=>open($('#p0help-workspace').value));
+  return;
+ }
+ if(scope==='closure'){
+  const valid=['siap','lap','ll','dok','aju'];
+  if(!valid.includes(tab))return;
+  const options=[];
+  progVis().forEach(p=>tpUnits(p).forEach(u=>options.push({p:p,r:u,key:projectKey(p.akr,u.n,u.sub||''),name:p.kode+' · '+u.label})));
+  if(!options.length){toast('Belum ada proyek yang bisa dipilih untuk penutupan.');go('pmo-penutupan');return}
+  const open=key=>{const x=options.find(q=>q.key===key);if(!x)return false;
+   S.ui.tpTab=tab;save();if(location.hash==='#pmo-penutupan')render();else go('pmo-penutupan');
+   tpModal(x.p,x.r,tab);return true};
+  modal('Pilih proyek untuk tab Penutupan','<p class="s">Pilih proyek atau submodul sebelum membuka tab penutupan.</p><label class="fld">Proyek<select id="p0help-closure" class="sel">'+options.map(x=>'<option value="'+esc(x.key)+'">'+esc(x.name)+'</option>').join('')+'</select></label>','Buka tab',()=>open($('#p0help-closure').value));
+  return;
+ }
+ if(scope==='overview'&&['tw','kwide','tprog','ue'].includes(tab))S.ui.overviewTab=tab;
+ if(scope==='porto'&&['daftar','capaian','milestone'].includes(tab))S.ui.portoTab=tab;
+ if(scope==='cra'&&window.CRA_NATIVE&&typeof window.CRA_NATIVE.setTab==='function')window.CRA_NATIVE.setTab(tab);
+ if(['adp','rencana','monev'].includes(scope)&&tab){
+  const allowed={adp:['dampak','poster','reg','ind'],rencana:['sh','esm','kom','pel'],monev:['lak','pan','ado','kcm']};
+  if((allowed[scope]||[]).includes(tab)){S.ui.sub=S.ui.sub||{};S.ui.sub[scope]=tab}
+ }
+ save();
  if(location.hash==='#'+target){VIEW=target;render()}else go(target);
 };
 
@@ -8898,6 +8933,39 @@ var styles=[
 "@media(max-width:540px){.sk-commStage{grid-template-columns:76px 1fr}.sk-commKinds{grid-template-columns:repeat(2,minmax(0,1fr))}.sk-kcard{grid-template-columns:36px 1fr}.sk-kaud{grid-column:2;justify-self:start}.sk-laneFlow,.sk-laneFlow.official{grid-template-columns:1fr}.sk-planCols{grid-template-columns:1fr}.sk-intro{flex-direction:column;align-items:flex-start}}"
 ].join("");
 styles += "\n/* Knowledge UX v2: clean layout, accessible interactive destinations */\n.sk-overlay .sk-cta{display:inline-flex!important;align-items:center;justify-content:center;gap:7px;max-width:100%;line-height:1.25;background:#f1f6fc;border:1px solid #bed2e8;color:#123b66;border-radius:9px;box-shadow:none;white-space:normal;min-height:33px;padding:7px 10px;font-size:11px;font-weight:850}\n.sk-overlay .sk-cta .sk-ctaArrow{color:#a56e10;font-size:15px;font-weight:900}\n.sk-overlay .sk-cta:hover,.sk-overlay .sk-cta:focus-visible{background:#123c69!important;border-color:#123c69!important;color:#fff!important;box-shadow:0 4px 11px #143c6133!important}\n.sk-overlay .sk-cta:hover .sk-ctaArrow,.sk-overlay .sk-cta:focus-visible .sk-ctaArrow{color:#ffd36c!important}\n.sk-overlay .sk-cta:disabled:hover{background:#f1f6fc!important;color:#123b66!important}\n.sk-menutop{display:flex;align-items:center;gap:16px;justify-content:space-between;flex-wrap:wrap;background:#fff;border:1px solid #e0e9f3;border-radius:13px;padding:12px 14px;margin-bottom:17px}\n.sk-menuSearch{display:flex;align-items:center;gap:8px;min-width:min(450px,100%);flex:1}\n.sk-menuSearch>span{font-size:23px;color:#c18a2c;line-height:1}\n.sk-menuSearch .sk-search{margin:0!important;width:100%!important;min-width:0;background:#f7faff}\n.sk-menuSearchHint{font-size:10.5px;font-weight:800;color:#52708e;background:#eff6fd;border-radius:24px;padding:7px 11px}\n.sk-menuSections{display:grid;gap:14px}\n.sk-menuSection{background:#fff;border:1px solid #dfe8f2;border-radius:14px;overflow:hidden;box-shadow:0 4px 13px #1138600b}\n.sk-menuSection[hidden],.sk-menuTile[hidden]{display:none!important}\n.sk-menuSectionHead{display:flex;align-items:center;gap:11px;background:linear-gradient(92deg,#f2f6fc,#fff);border-bottom:1px solid #e3ebf4;padding:11px 15px}\n.sk-menuSectionNo{flex:0 0 32px;height:32px;display:grid;place-items:center;border-radius:9px;background:#133b63;color:#ffd26b;font-size:12px;font-weight:900}\n.sk-menuSectionHead>div{flex:1;min-width:0}\n.sk-menuSectionHead h4{margin:0 0 2px;font-size:13px;font-weight:900;color:#14355a}\n.sk-menuSectionHead p{margin:0;font-size:11px;line-height:1.35;color:#677d97}\n.sk-menuSectionCount{font-size:10px;white-space:nowrap;border:1px solid #e4d7bb;background:#fff9e9;color:#875b15;border-radius:20px;padding:5px 9px;font-weight:850}\n.sk-menuTiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:12px}\nbutton.sk-menuTile{appearance:none;font:inherit;color:#14375c;background:#fff;border:1px solid #dae6f2;border-radius:11px;display:flex;align-items:center;gap:10px;padding:12px 11px;text-align:left;min-height:90px;cursor:pointer;box-shadow:0 2px 6px #143a6010;transition:background .14s,transform .14s,box-shadow .14s,border-color .14s}\n.sk-menuTileIcon{flex:0 0 34px;height:34px;border-radius:9px;background:#fff5e4;border:1px solid #f3dfb6;color:#b67a15;display:grid;place-items:center;font-size:21px;font-weight:900}\n.sk-menuTileContent{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}\n.sk-menuTileContent strong{display:block;font-size:12px;line-height:1.25;color:#15395e}\n.sk-menuTileContent small{display:block;font-size:10.8px;line-height:1.45;color:#697f99}\n.sk-menuTileArrow{font-size:17px;font-weight:900;color:#b7832e;align-self:flex-start}\nbutton.sk-menuTile:hover,button.sk-menuTile:focus-visible{transform:translateY(-2px);background:#123b69!important;border-color:#123b69!important;box-shadow:0 7px 18px #0f345439}\nbutton.sk-menuTile:hover .sk-menuTileContent strong,button.sk-menuTile:hover .sk-menuTileContent small,button.sk-menuTile:focus-visible .sk-menuTileContent strong,button.sk-menuTile:focus-visible .sk-menuTileContent small{color:#fff!important}\nbutton.sk-menuTile:hover .sk-menuTileArrow,button.sk-menuTile:focus-visible .sk-menuTileArrow{color:#ffcc5f!important}\nbutton.sk-menuTile:hover .sk-menuTileIcon,button.sk-menuTile:focus-visible .sk-menuTileIcon{color:#133657!important;background:#ffce72!important;border-color:#ffce72!important}\n.sk-phaseRail{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin:4px 0 20px}\n.sk-phaseStop{background:linear-gradient(150deg,#163d66,#082a4e);border:1px solid #274b73;border-radius:13px;color:#fff;padding:13px 12px;min-height:90px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:8px;text-align:left;position:relative;cursor:pointer;transition:transform .14s,box-shadow .14s}\n.sk-phaseStop:nth-child(2),.sk-phaseStop:nth-child(5){background:linear-gradient(145deg,#0a8389,#09626e);border-color:#25818b}\n.sk-phaseStop:nth-child(3){background:linear-gradient(145deg,#cd962b,#a56f14);border-color:#c89941}\n.sk-phaseStop .sk-phaseBubble{height:28px;min-width:28px;display:grid;place-items:center;border-radius:50%;background:#ffcb55;color:#15345b;font-size:11px;font-weight:900}\n.sk-phaseStop strong{font-size:12px;line-height:1.3;color:#fff}\n.sk-phaseChevron{position:absolute;right:9px;top:13px;color:#ffe29a;font-size:17px;font-weight:900}\n.sk-phaseStop:hover,.sk-phaseStop:focus-visible{transform:translateY(-3px);box-shadow:0 7px 20px #113d6040;filter:brightness(1.08)}\n.sk-phaseStop:hover strong,.sk-phaseStop:focus-visible strong{color:#fff!important}\n.sk-phaseDetails{display:grid;gap:10px}\n.sk-phaseDetail{display:flex;gap:15px;align-items:flex-start;background:#fff;border:1px solid #dfe8f2;border-radius:13px;padding:16px 17px;box-shadow:0 3px 11px #1539600a;scroll-margin-top:22px}\n.sk-phaseDetail.is-highlight{border-color:#e2a329;box-shadow:0 0 0 3px #ffd78155}\n.sk-phaseBadge{flex:none;width:38px;height:38px;border-radius:11px;background:#e9f1f9;color:#15416c;font-size:13px;font-weight:900;display:grid;place-items:center}\n.sk-phaseDetailText{min-width:0;flex:1}\n.sk-phaseDetailText h4{font-size:14px;line-height:1.3;color:#15375d;margin:1px 0 5px}\n.sk-phaseDetailText p{font-size:12px;color:#627890;line-height:1.6;margin:0 0 11px}\n.sk-phaseLinks{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}\n.sk-phaseLinksLabel{font-size:10px;color:#8a6524;font-weight:850;padding:9px 0;white-space:nowrap}\n.sk-phaseLinks .sk-buttons{display:flex;flex-wrap:wrap;gap:7px}\n.sk-coordination{min-width:0;--ko-navy:#113c67;--ko-teal:#07848a;--ko-gold:#e3ab35}\n.sk-coordination .txcs-ko-over{display:grid!important;gap:16px;padding:0}\n.sk-coordination .txcs-koHead{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;background:linear-gradient(108deg,#102e54,#1c4a73);color:#fff;border-radius:14px;padding:21px 22px;box-shadow:0 8px 23px #12375c22}\n.sk-coordination .txcs-koHead h4{font-size:19px;font-weight:900;color:#fff;margin:0 0 8px}\n.sk-coordination .txcs-koHead p{font-size:11.8px;line-height:1.6;color:#dfeaf8;margin:0;max-width:830px}\n.sk-coordination .txcs-koStatus{background:#f1bd50;color:#12345b;font-size:10px;font-weight:900;white-space:nowrap;border-radius:50px;padding:8px 12px;flex:none}\n.sk-coordination .txcs-koTrack{display:grid;grid-template-columns:180px minmax(0,1fr);border:1px solid #d8e5ef;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 16px #12395b0d}\n.sk-coordination .txcs-koTrackTitle{display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(155deg,#153c66,#092d55);color:#fff;font-size:13px;line-height:1.5;font-weight:900;padding:15px}\n.sk-coordination .txcs-koTrackTitle.cmo{background:linear-gradient(155deg,#0a858d,#09616c)}\n.sk-coordination .txcs-koTrackSteps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));min-width:0}\n.sk-coordination .txcs-koTrackStep{display:flex;flex-direction:column;gap:5px;position:relative;padding:14px 13px;border-left:1px solid #e2e9f0;min-width:0}\n.sk-coordination .txcs-koTrackStep:not(:last-child):after{content:\"→\";position:absolute;right:-8px;top:50%;z-index:2;transform:translateY(-50%);height:19px;width:19px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:900;color:#163f68;background:#ffce68;box-shadow:0 0 0 3px #fff}\n.sk-coordination .txcs-koTrackStep small{color:#b17a1c;font-size:10px;font-weight:900}\n.sk-coordination .txcs-koTrackStep b{font-size:12px;line-height:1.35;font-weight:900;color:#123959}\n.sk-coordination .txcs-koTrackStep span{font-size:10.8px;color:#637a92;line-height:1.4}\n.sk-coordination .txcs-ko-bridge{margin:0;padding:13px 16px;border-radius:11px;border:1px solid #cfe8e9;border-left:4px solid #0b858a;background:#e9f7f5;color:#235e69;font-size:12px;line-height:1.6}\n.sk-coordination .txcs-koChoicesTitle{font-size:14px;color:#12375c;font-weight:900;margin:1px 0 -6px}\n.sk-coordination .txcs-koChoiceGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}\n.sk-coordination button.txcs-koChoice{appearance:none;display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;min-height:146px;padding:14px;border-radius:12px;border:1px solid #dbe5ef;background:#fff;color:#143960;cursor:pointer;box-shadow:0 3px 10px #133b5c10;transition:transform .15s,box-shadow .15s,background .15s}\n.sk-coordination .txcs-koChoice em{height:28px;min-width:28px;border-radius:9px;display:grid;place-items:center;font-style:normal;font-size:11px;font-weight:900;background:#143c65;color:#ffdb87}\n.sk-coordination .txcs-koChoice b{font-size:11.9px;line-height:1.4;color:#163a60;font-weight:900}\n.sk-coordination .txcs-koChoice span{flex:1;font-size:10.5px;line-height:1.45;color:#6c8296}\n.sk-coordination .txcs-koChoice u{text-decoration:none;color:#087b85;font-size:10.8px;font-weight:850}\n.sk-coordination button.txcs-koChoice:hover,.sk-coordination button.txcs-koChoice:focus-visible{transform:translateY(-2px);background:#123b66!important;border-color:#123b66!important;box-shadow:0 7px 16px #12365d36}\n.sk-coordination button.txcs-koChoice:hover b,.sk-coordination button.txcs-koChoice:hover span,.sk-coordination button.txcs-koChoice:focus-visible b,.sk-coordination button.txcs-koChoice:focus-visible span{color:#fff!important}\n.sk-coordination button.txcs-koChoice:hover u,.sk-coordination button.txcs-koChoice:focus-visible u{color:#ffdc87!important}\n.sk-coordination button.txcs-koChoice:hover em,.sk-coordination button.txcs-koChoice:focus-visible em{background:#ffca62;color:#153657}\n.sk-coordination .ko-ph-h{display:flex;align-items:center;flex-wrap:wrap;gap:9px}\n.sk-coordination .ko-ph-h h4{font-size:17px;color:#12375d;margin:0}\n.sk-coordination .ko-ph-h span{background:#fff3d9;color:#815616;border-radius:50px;padding:5px 10px;font-size:11px;font-weight:800}\n.sk-coordination .ko-leg{display:flex;gap:15px;flex-wrap:wrap;padding:9px 0;color:#52718f}\n.sk-coordination .ko-wrap{border:1px solid #dbe6f1;border-radius:12px;overflow:auto;background:white;box-shadow:0 5px 17px #133a5f16}\n.sk-coordination .ko-svg{display:block;width:100%;min-width:1030px;height:auto}\n.sk-coordination .ko-p:not(.on){display:none!important}\n.sk-coordination .ko-nav button:hover,.sk-coordination .ko-nav button:focus-visible{background:#123b66!important;border-color:#123b66!important;color:#fff!important}\n.sk-coordination .ko-nav button:hover b,.sk-coordination .ko-nav button:focus-visible b{color:#fff!important}\n@media(max-width:1250px){.sk-menuTiles{grid-template-columns:repeat(3,minmax(0,1fr))}.sk-coordination .txcs-koChoiceGrid{grid-template-columns:repeat(3,minmax(0,1fr))}.sk-coordination .txcs-koTrack{grid-template-columns:135px minmax(0,1fr)}.sk-coordination .txcs-koTrackStep{padding:10px}}\n@media(max-width:900px){.sk-menuTiles{grid-template-columns:repeat(2,minmax(0,1fr))}.sk-phaseRail{display:flex;overflow-x:auto}.sk-phaseStop{min-width:155px;flex:none}.sk-coordination .txcs-koTrack{display:flex;flex-direction:column}.sk-coordination .txcs-koTrackSteps{overflow-x:auto}.sk-coordination .txcs-koTrackStep{min-width:155px}.sk-coordination .txcs-koChoiceGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}\n@media(max-width:600px){.sk-menuTiles{grid-template-columns:1fr}.sk-menuSectionCount{display:none}.sk-phaseDetail{padding:12px;gap:9px}.sk-coordination .txcs-koHead{flex-direction:column}.sk-coordination .txcs-koChoiceGrid{grid-template-columns:1fr}}\n";
+styles += "\n/* Peta Menu v3: rapat, simetris, responsif; kartu tanpa tab tetap ringkas. */\n"+
+".sk-overlay .sk-intro{margin-bottom:10px;gap:10px}\n"+
+".sk-overlay .sk-intro h3{font-size:18px;margin-bottom:3px}\n"+
+".sk-overlay .sk-intro p{font-size:11.5px;line-height:1.45}\n"+
+".sk-overlay .sk-menutop{margin:0 0 10px;padding:8px 10px;border-radius:10px;gap:9px}\n"+
+".sk-overlay .sk-menuSearch{min-width:180px}\n"+
+".sk-overlay .sk-menuSearch .sk-search{padding:8px 10px;font-size:11.6px}\n"+
+".sk-overlay .sk-menuSections{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;align-items:start}\n"+
+".sk-overlay .sk-menuSection{min-width:0;border-radius:11px}\n"+
+".sk-overlay .sk-menuSectionHead{padding:8px 10px;gap:8px}\n"+
+".sk-overlay .sk-menuSectionNo{flex-basis:27px;height:27px;border-radius:7px}\n"+
+".sk-overlay .sk-menuSectionHead h4{font-size:12.3px;margin:0 0 1px}\n"+
+".sk-overlay .sk-menuSectionHead p{font-size:10.5px;line-height:1.3}\n"+
+".sk-overlay .sk-menuSectionCount{padding:4px 7px;font-size:9.5px}\n"+
+".sk-overlay .sk-menuTiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:9px;align-items:stretch}\n"+
+".sk-overlay .sk-menuTiles>.sk-p0-wrap:only-child{grid-column:1/-1}\n"+
+".sk-overlay .sk-menuTiles>.sk-p0-wrap:last-child:nth-child(odd){grid-column:1/-1}\n"+
+".sk-overlay .sk-p0-wrap{display:flex;flex-direction:column;min-width:0;border:1px solid #e0e8f1;border-radius:10px;background:#fff;overflow:hidden}\n"+
+".sk-overlay .sk-p0-wrap>.sk-menuTile{border:0;box-shadow:none;border-radius:0;width:100%;min-height:66px;padding:9px 10px;gap:9px}\n"+
+".sk-overlay .sk-menuTileIcon{flex-basis:29px;height:29px;font-size:17px;border-radius:7px}\n"+
+".sk-overlay .sk-menuTileContent strong{font-size:11.7px}\n"+
+".sk-overlay .sk-menuTileContent small{font-size:10px;line-height:1.35}\n"+
+".sk-overlay .sk-menuTileArrow{font-size:15px}\n"+
+".sk-overlay .sk-p0-minihead{display:flex;justify-content:space-between;gap:5px;align-items:center;font-size:9px;font-weight:850;letter-spacing:.02em;text-transform:uppercase;color:#687b93;background:#f6f9fd;border-top:1px solid #e8edf4;padding:7px 10px 3px}\n"+
+".sk-overlay .sk-p0-minihead b{font-size:9px;background:#e9f0f8;padding:2px 6px;border-radius:8px;color:#214b76}\n"+
+".sk-overlay .sk-p0-minilinks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding:6px 8px 9px;background:#f9fbfe}\n"+
+".sk-overlay .sk-p0-minitab{min-width:0;display:flex;justify-content:space-between;align-items:center;gap:5px;border:1px solid #d6e3f3;border-radius:7px;background:#fff;color:#174472;font-weight:750;font-size:10px;line-height:1.3;text-align:left;padding:6px 7px;cursor:pointer;overflow-wrap:anywhere}\n"+
+".sk-overlay .sk-p0-minitab>span:last-child{flex:none;color:#bc8324}\n"+
+".sk-overlay .sk-p0-minitab:hover,.sk-overlay .sk-p0-minitab:focus-visible{background:#fef1cf!important;border-color:#e6b44e!important;color:#143c67!important}\n"+
+".sk-overlay .sk-p0-minitab:hover>span:last-child,.sk-overlay .sk-p0-minitab:focus-visible>span:last-child{color:#73510e!important}\n"+
+".sk-overlay .sk-menuSection[hidden],.sk-overlay .sk-p0-wrap[hidden]{display:none!important}\n"+
+"@media(max-width:1080px){.sk-overlay .sk-menuSections{grid-template-columns:1fr}.sk-overlay .sk-menuTiles{grid-template-columns:repeat(2,minmax(0,1fr))}}\n"+
+"@media(max-width:540px){.sk-overlay .sk-menuTiles{grid-template-columns:1fr}.sk-overlay .sk-p0-minilinks{grid-template-columns:repeat(2,minmax(0,1fr))}.sk-overlay .sk-menuSectionCount{display:none}}\n";
 function addStyle(){if(document.getElementById("sk-ux-style"))return;var e=document.createElement("style");e.id="sk-ux-style";e.textContent=styles;document.head.appendChild(e)}
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function src(t){return '<span class="sk-source">'+t+'</span>'}
@@ -9011,47 +9079,100 @@ function helpStages(kind){
  note(cm?'<b>Urutan CM:</b> Perencanaan → Pelaksanaan → Pemantauan dan Evaluasi → Evaluasi Pascaimplementasi (paling cepat 1 bulan) → Penutupan CM setelah transisi dan pengalihan.':'<b>Urutan PMO:</b> Perencanaan → Pelaksanaan → Pemantauan dan Pengendalian → Penutupan Proyek → Evaluasi Pascaproyek (paling cepat 3 bulan).');
 }
 
-var skDeepTabsPM={'pmo-perencanaan':[
- ['1 · Kondisi As-Is','pmo-charter','asis'],['2 · Kondisi To-Be','pmo-charter','tobe'],
- ['3 · Perbandingan As-Is / To-Be','pmo-charter','cs'],['4 · Charter Proyek','pmo-charter','ch'],
- ['5 · Kriteria Penyelesaian','pmo-charter','kp'],['6 · Manfaat Proyek','pmo-charter','mf'],
- ['7 · Rencana Kerja','pmo-charter','rk']]};
+/* Peta menu: gunakan tab yang memang tersedia di aplikasi; menu tunggal tidak diberi tab semu. */
+var skDeepTabsPM={
+ 'pmo-siklus':[
+  ['Per Triwulan','pmo-siklus','overview:tw'],
+  ['K-Wide','pmo-siklus','overview:kwide'],
+  ['T-Program','pmo-siklus','overview:tprog'],
+  ['Per UE I','pmo-siklus','overview:ue']],
+ 'pmo-portofolio':[
+  ['Daftar Program','pmo-portofolio','porto:daftar'],
+  ['Capaian Program','pmo-portofolio','porto:capaian'],
+  ['Milestone Mendatang','pmo-portofolio','porto:milestone']],
+ 'pmo-program':[
+  ['Ringkasan Proyek','pmo-program','workspace:ringkasan'],
+  ['Jadwal & Bukti','pmo-program','workspace:jadwal'],
+  ['Risk Register','pmo-program','workspace:risiko'],
+  ['Stakeholder','pmo-program','workspace:stakeholder'],
+  ['Issue Log','pmo-program','workspace:issue'],
+  ['Decision Log','pmo-program','workspace:decision']],
+ 'pmo-perencanaan':[
+  ['1 · Kondisi As-Is','pmo-charter','asis'],
+  ['2 · Kondisi To-Be','pmo-charter','tobe'],
+  ['3 · Perbandingan','pmo-charter','cs'],
+  ['4 · Charter Proyek','pmo-charter','ch'],
+  ['5 · Kriteria Penyelesaian','pmo-charter','kp'],
+  ['6 · Manfaat Proyek','pmo-charter','mf'],
+  ['7 · Rencana Kerja','pmo-charter','rk']],
+ 'pmo-penutupan':[
+  ['Kesiapan','pmo-penutupan','closure:siap'],
+  ['Data Penutupan','pmo-penutupan','closure:lap'],
+  ['Lessons Learned','pmo-penutupan','closure:ll'],
+  ['Checklist Dokumen','pmo-penutupan','closure:dok'],
+  ['Pengajuan & Telaah','pmo-penutupan','closure:aju']]
+};
 var skDeepTabsCM={
- 'cmo-adp':[['Daftar ADP (submodul)','cmo-adp','adp:dampak'],['Matriks POSTeR & Peta Risiko','cmo-adp','adp:poster'],['Register Risiko','cmo-adp','adp:reg'],['Indikator Keberhasilan CM','cmo-adp','adp:ind']],
- 'cmo-rencana':[['Stakeholder','cmo-rencana','rencana:sh'],['Matriks Experience–Support','cmo-rencana','rencana:esm'],['Komunikasi','cmo-rencana','rencana:kom'],['Pelatihan','cmo-rencana','rencana:pel']],
- 'cmo-monev':[['Pelaksanaan','cmo-monev','monev:lak'],['Pemantauan','cmo-monev','monev:pan'],['Adopsi','cmo-monev','monev:ado'],['Keberhasilan CM','cmo-monev','monev:kcm']]};
+ 'cmo-adp':[
+  ['Daftar Dampak','cmo-adp','adp:dampak'],
+  ['Peta POSTeR & Risiko','cmo-adp','adp:poster'],
+  ['Register Risiko','cmo-adp','adp:reg'],
+  ['Indikator Keberhasilan','cmo-adp','adp:ind']],
+ 'cmo-rencana':[
+  ['Stakeholder','cmo-rencana','rencana:sh'],
+  ['Matriks Experience–Support','cmo-rencana','rencana:esm'],
+  ['Rencana Komunikasi','cmo-rencana','rencana:kom'],
+  ['Rencana Pelatihan','cmo-rencana','rencana:pel']],
+ 'cmo-cra':[
+  ['Buat Survei','cmo-cra','cra:create'],
+  ['Survei Aktif','cmo-cra','cra:active'],
+  ['Analisis Kesiapan','cmo-cra','cra:analytics'],
+  ['Rencana Aksi','cmo-cra','cra:actions'],
+  ['Perbandingan Pengukuran','cmo-cra','cra:compare'],
+  ['Riwayat Survei','cmo-cra','cra:history']],
+ 'cmo-monev':[
+  ['Pelaksanaan','cmo-monev','monev:lak'],
+  ['Pemantauan','cmo-monev','monev:pan'],
+  ['Adopsi','cmo-monev','monev:ado'],
+  ['Keberhasilan CM','cmo-monev','monev:kcm']]
+};
 function helpMenu(kind){
  var items=kind==='pmo'?menuPM:menuCM;
+ var deep=kind==='pmo'?skDeepTabsPM:skDeepTabsCM;
  var groups=kind==='pmo'?[
- ['Gambaran & Portofolio','Memahami cakupan, program, dan prioritas transformasi','◈',['pmo-siklus','pmo-portofolio','pmo-program']],
- ['Perencanaan Proyek','Menetapkan arah dan memecah rencana menjadi paket kerja','▦',['pmo-perencanaan','pmo-wbsplan']],
- ['Pelaksanaan Proyek','Melaksanakan pekerjaan, mendukung capaian dan mengendalikan perubahan','⚙',['pmo-wbs','pmo-bukti','pmo-cr','pmo-narasi']],
- ['Pemantauan & Pengendalian','Memantau realisasi, risiko, serta jadwal dan laporan berkala','◷',['pmo-milestone','pmo-risiko','pmo-laporan','pmo-oneonone']],
- ['Penutupan & Evaluasi','Mengakhiri proyek dan mengukur kebermanfaatan hasilnya','✓',['pmo-penutupan','pmo-pascaproyek']],
- ['Referensi','Menjaga konsistensi standar kode dan data program','⌘',['pmo-referensi']]
+  ['Gambaran & Portofolio','Cakupan program, capaian dan prioritas transformasi','◈',['pmo-siklus','pmo-portofolio','pmo-program']],
+  ['Perencanaan Proyek','Dokumen proyek dan penyusunan paket kerja','▦',['pmo-perencanaan','pmo-wbsplan']],
+  ['Pelaksanaan Proyek','Progres pekerjaan, bukti dan pengendalian perubahan','⚙',['pmo-wbs','pmo-bukti','pmo-cr','pmo-narasi']],
+  ['Pemantauan & Pengendalian','Milestone, risiko, pelaporan dan koordinasi','◷',['pmo-milestone','pmo-risiko','pmo-laporan','pmo-oneonone']],
+  ['Penutupan & Evaluasi','Kriteria penyelesaian dan pengukuran manfaat','✓',['pmo-penutupan','pmo-pascaproyek']],
+  ['Referensi','Standar kode dan referensi pengelolaan program','⌘',['pmo-referensi']]
  ]:[
- ['01 · Perencanaan Perubahan','Analisis dampak, stakeholder, jaringan, dan kesiapan','◎',['cmo-adp','cmo-rencana','cmo-jaringan','cmo-cra']],
- ['02 · Pelaksanaan Perubahan','Aktivasi jaringan, komunikasi, pelatihan, dan penguatan kesiapan','➤',['cmo-pelaksanaan']],
- ['03 · Pemantauan dan Evaluasi','Monitoring intervensi dan indikator keberhasilan secara berkala','▤',['cmo-monev']],
- ['04 · Evaluasi Pascaimplementasi','Menilai adopsi dan kesiapan layanan setelah implementasi','◷',['cmo-pasca']],
- ['05 · Penutupan Manajemen Perubahan','Serah terima pendampingan dan peralihan ke operasional reguler','✓',['cmo-closing']]
+  ['01 · Perencanaan Perubahan','Analisis dampak, pemangku kepentingan dan kesiapan','◎',['cmo-adp','cmo-rencana','cmo-jaringan','cmo-cra']],
+  ['02 · Pelaksanaan Perubahan','Realisasi intervensi dan penguatan kesiapan','➤',['cmo-pelaksanaan']],
+  ['03 · Pemantauan dan Evaluasi','Evaluasi aktivitas, adopsi dan capaian indikator','▤',['cmo-monev']],
+  ['04 · Evaluasi Pascaimplementasi','Keberlanjutan adopsi dan kanal operasional','◷',['cmo-pasca']],
+  ['05 · Penutupan Manajemen Perubahan','Serah terima dan alih kepemilikan perubahan','✓',['cmo-closing']]
  ];
- var map={};items.forEach(function(x){map[x[2]]=x});
+ var byDest={};items.forEach(function(x){byDest[x[2]]=x});
+ var totalTabs=Object.keys(deep).reduce(function(n,k){return n+deep[k].length},0);
  var sections=groups.map(function(g,i){
-  var part=g[3].map(function(dest,j){var a=map[dest];if(!a)return '';
-   var tabs=(kind==='pmo'?skDeepTabsPM:skDeepTabsCM)[dest]||[];
-   var links=tabs.length?'<div class="sk-p0-minihead">TAB DI DALAM MENU · '+tabs.length+'</div><div class="sk-p0-minilinks">'+tabs.map(function(t){return '<button type="button" class="sk-p0-minitab" data-skdeep="'+esc(t[1])+'" data-sksub="'+esc(t[2])+'" title="Buka tab '+esc(t[0])+'">'+esc(t[0])+' ↗</button>'}).join('')+'</div>':'';
-   return '<div class="sk-p0-wrap sk-filtered" data-skitem="'+esc((a[0]+' '+a[1]+' '+g[0]+' '+tabs.map(t=>t[0]).join(' ')).toLowerCase())+'">'+
-    '<button type="button" class="sk-menuTile" data-skgo="'+esc(dest)+'" title="Menuju '+esc(a[0])+'" aria-label="Menuju '+esc(a[0])+'">'+
+  var tiles=g[3].map(function(dest){
+   var a=byDest[dest];if(!a)return '';
+   var tabs=deep[dest]||[];
+   var links=tabs.length?'<div class="sk-p0-minihead"><span>Tab / halaman di dalam menu</span><b>'+tabs.length+'</b></div>'+
+    '<div class="sk-p0-minilinks">'+tabs.map(function(t){return '<button type="button" class="sk-p0-minitab" data-skdeep="'+esc(t[1])+'" data-sksub="'+esc(t[2])+'" title="Buka '+esc(t[0])+'" aria-label="Buka tab '+esc(t[0])+' pada '+esc(a[0])+'"><span>'+esc(t[0])+'</span><span aria-hidden="true">↗</span></button>'}).join('')+'</div>':'';
+   return '<article class="sk-p0-wrap sk-filtered" data-skitem="'+esc((a[0]+' '+a[1]+' '+g[0]+' '+tabs.map(function(t){return t[0]}).join(' ')).toLowerCase())+'">'+
+    '<button type="button" class="sk-menuTile" data-skgo="'+esc(dest)+'" title="Buka menu '+esc(a[0])+'" aria-label="Buka menu '+esc(a[0])+'">'+
     '<span class="sk-menuTileIcon" aria-hidden="true">'+esc(g[2])+'</span>'+
     '<span class="sk-menuTileContent"><strong>'+esc(a[0])+'</strong><small>'+esc(a[1])+'</small></span>'+
-    '<span class="sk-menuTileArrow" aria-hidden="true">↗</span></button>'+links+'</div>';
+    '<span class="sk-menuTileArrow" aria-hidden="true">↗</span></button>'+links+'</article>';
   }).join('');
-  return '<section class="sk-menuSection" data-skgroup><div class="sk-menuSectionHead"><span class="sk-menuSectionNo">'+('0'+(i+1)).slice(-2)+'</span><div><h4>'+esc(g[0])+'</h4><p>'+esc(g[1])+'</p></div><span class="sk-menuSectionCount">'+g[3].length+' menu</span></div><div class="sk-menuTiles">'+part+'</div></section>';
+  return '<section class="sk-menuSection" data-skgroup><div class="sk-menuSectionHead"><span class="sk-menuSectionNo">'+('0'+(i+1)).slice(-2)+'</span><div><h4>'+esc(g[0])+'</h4><p>'+esc(g[1])+'</p></div><span class="sk-menuSectionCount">'+g[3].length+' menu</span></div><div class="sk-menuTiles">'+tiles+'</div></section>';
  }).join('');
- return '<style>.sk-p0-wrap{display:flex;min-width:0;flex-direction:column;border:1px solid #e2e8f0;border-radius:13px;overflow:hidden;background:#fff}.sk-p0-wrap>.sk-menuTile{width:100%;border:0;border-radius:0}.sk-p0-minihead{color:#697997;font-size:10px;font-weight:800;letter-spacing:.5px;padding:4px 12px}.sk-p0-minilinks{display:flex;flex-wrap:wrap;gap:5px;padding:5px 10px 12px}.sk-p0-minitab{border:1px solid #d6e3f6;border-radius:7px;background:#f1f6ff;color:#143d76;font-weight:700;font-size:11px;text-align:left;padding:6px 9px;cursor:pointer}.sk-p0-minitab:hover{background:#fbe7ae;border-color:#f1bf3f;color:#182b4a}</style>'+intro('Peta navigasi · berdasarkan fase','Peta Menu '+(kind==='pmo'?'Project Management':'Change Management'),'Pilih kelompok kerja, lalu klik langsung kartu bernama menu yang ingin digunakan. Tidak perlu menebak fungsi tiap tombol.')+
- '<div class="sk-menutop"><div class="sk-menuSearch"><span aria-hidden="true">⌕</span><input class="sk-search" type="search" data-skfilter placeholder="Cari menu atau fungsi, misalnya WBS, CRA, evaluasi..." aria-label="Cari menu"></div><div class="sk-menuSearchHint">'+items.length+' menu tersedia sebagai pintasan</div></div>'+
- '<div class="sk-menuSections">'+sections+'</div>';
+ return intro('Peta navigasi hingga tab','Peta Menu '+(kind==='pmo'?'Project Management':'Change Management'),
+  'Klik judul kartu untuk membuka menu, atau langsung pilih tab di dalamnya. Setiap tautan mengikuti hak akses pengguna.')+
+  '<div class="sk-menutop"><div class="sk-menuSearch"><span aria-hidden="true">⌕</span><input class="sk-search" type="search" data-skfilter placeholder="Cari menu, tab, fungsi atau fase..." aria-label="Cari menu dan tab"></div><div class="sk-menuSearchHint">'+items.length+' menu · '+totalTabs+' pintasan tab</div></div>'+
+  '<div class="sk-menuSections">'+sections+'</div>';
 }
 function helpGloss(kind){return intro('Istilah penting','Daftar Istilah '+(kind==='pmo'?'Project Management':'Change Management'),'Glosarium ringkas untuk memahami singkatan, label, dan istilah yang muncul dalam menu aplikasi.')+
  '<input class="sk-search" type="search" data-skfilter placeholder="Cari istilah..." aria-label="Cari istilah"><div class="sk-gloss" style="margin-top:13px">'+(kind==='pmo'?termsPM:termsCM).map(function(a){return '<div class="sk-term sk-filtered" data-skitem="'+esc(a.join(' ').toLowerCase())+'"><b>'+a[0]+'</b><p>'+a[1]+'</p></div>'}).join('')+'</div>'}
