@@ -3292,7 +3292,7 @@ function chChk(d){const f=a=>(a||[]).some(x=>String(x).trim());const r={};
  r.cs=[(d.cs||[]).length>0&&(d.cs||[]).every(x=>String(x.a||'').trim()&&String(x.b||'').trim())];
  const A=d.asis||{},T=d.tobe||{};r.asis=[!!String(A.pb||'').trim(),(A.kor||[]).length>0,!!String(A.tek||'').trim()];r.tobe=[(T.pb||[]).length>0,!!String(T.ar||'').trim()];r.mf=[(d.mf||[]).length>0&&(d.mf||[]).every(x=>String(x.m||'').trim()&&String(x.ind||'').trim()&&String(x.tgt||'').trim())];
  const o={};Object.keys(r).forEach(k=>{const a=r[k];o[k]={ok:a.every(Boolean),n:a.filter(Boolean).length,t:a.length}});return o}
-const CHREQ=['id','isi','ms','kp','rk'];
+const CHREQ=['asis','tobe','cs','id','isi','ms','kp','mf','rk'];
 const chEmpty=d=>!String(d.judul||'').trim()&&!String(d.tujuan||'').trim()&&!(d.lb||[]).some(x=>String(x).trim())&&!(d.kp||[]).length&&!(d.rk||[]).length&&!(d.cs||[]).length;
 function chCommit(){if(!CHD)return false;if(CHD.fresh&&!chEmpty(CHD))delete CHD.fresh;const i=S.charters.findIndex(x=>x.id===CHD.id);if(i<0)return false;const cur=JSON.stringify(S.charters[i]),nx=JSON.stringify(CHD);if(cur===nx)return false;S.charters[i]=JSON.parse(nx);S.ui.chsv=new Date().toTimeString().slice(0,5);save();return true}
 function chWizard(c,p){if(!CHD||CHD.id!==c.id){CHD=JSON.parse(JSON.stringify(c));['kp','rk','cs','mf'].forEach(f=>{if(!Array.isArray(CHD[f]))CHD[f]=[]});CHD.asis=Object.assign({pb:'',masalah:'',link:'',kor:[],tek:''},CHD.asis||{});CHD.tobe=Object.assign({pb:[],pot:[],ar:'',link:'',arLink:''},CHD.tobe||{});if(!CHD.kpY)CHD.kpY=+CHD.p1||S.ui.tahun;RKP=null}
@@ -3372,6 +3372,23 @@ const chBy=()=>ME?(ME.nama||ME.email):'-';
 function chOpen(akr,id){S.ui.chp=akr;S.ui.chv=id||'';save();if(location.hash!=='#pmo-charter')location.hash='pmo-charter';else render();window.scrollTo(0,0)}
 const chFocusLast=sel=>setTimeout(()=>{const a=document.querySelectorAll(sel);if(a.length)a[a.length-1].focus()},0);
 ACT.chopen=el=>{CHD=null;S.ui.ched='';chOpen(el.dataset.p)};
+
+/* P0: pintasan Bantuan menuju tab sebenarnya, termasuk dokumen proyek per program. */
+window.mtP0Navigate=function(target,section){
+ if(target==='pmo-charter'){
+  if(lv('charter')==='-'){toast('Akun Anda tidak memiliki akses Dokumen Proyek.');return}
+  const open=p=>{if(!p)return;CHD=null;S.ui.ched='';S.ui.cht=CHPG.some(x=>x[0]===section)?section:'ch';S.ui.chp=p.akr;S.ui.chv='';save();chOpen(p.akr)};
+  const ps=progVis(),current=ps.find(p=>p.akr===(S.ui.chp||S.ui.prog));
+  if(current){open(current);return}
+  if(!ps.length){toast('Tidak ada program yang dapat diakses.');return}
+  modal('Pilih program untuk Dokumen Proyek',`<p class="s">Buka tab ${esc((CHPG.find(x=>x[0]===section)||[])[1]||'Charter')} pada program terpilih.</p><label class="fld">Program<select id="p0help-program" class="sel">${ps.map(p=>`<option value="${esc(p.akr)}">${esc(p.kode+' · '+p.nama)}</option>`).join('')}</select></label>`,'Buka dokumen',()=>{const p=ps.find(x=>x.akr===$('#p0help-program').value);if(!p)return false;open(p)});
+  return;
+ }
+ if(!allowedViews().includes(target)){toast('Menu tidak tersedia untuk hak akses Anda.');return}
+ const split=String(section||'').split(':');if(split.length===2&&['adp','rencana','monev'].includes(split[0])){S.ui.sub=S.ui.sub||{};S.ui.sub[split[0]]=split[1];save()}
+ if(location.hash==='#'+target){VIEW=target;render()}else go(target);
+};
+
 ACT.chnew=el=>{const p=S.programs.find(x=>x.akr===el.dataset.p);if(!p||!chCan('C',p))return;const y=S.ui.tahun;const p2=+(String(p.periode||'').match(/(\d{4})\D*$/)||[0,y])[1]||y;
  const c={id:uid(),prog:p.akr,tahun:y,ver:1,st:'Draft',judul:'',tujuan:'',lb:[''],tb:'',out:[''],oc:[''],p1:+(p.mulai||y),p2,ms:[{y,t:'',g:''}],ris:[''],pk:[''],ch:'Menteri Keuangan',ow:[p.sponsor||''].filter(Boolean),kpY:Math.min(Math.max(y,+(p.mulai||y)),p2),kp:[],rk:[],cs:[],mf:[],asis:{pb:'',masalah:'',link:'',kor:[],tek:''},tobe:{pb:[],pot:[],ar:'',link:'',arLink:''},log:[{st:'Draft',by:chBy(),at:TODAY}],doc:{link:''},keRisk:true,fresh:1};
  if(!c.ow.length)c.ow=[''];S.charters.push(c);log('Buat charter',p.kode);save();CHD=null;S.ui.ched=c.id;S.ui.chws=0;S.ui.chsv='';chOpen(p.akr,c.id)};
@@ -8873,6 +8890,7 @@ var docPM=[
 ['Perbandingan As-Is dan To-Be','Selisih proses/teknologi yang perlu diubah','PMO Unit','T−1 · Perencanaan','pmo-perencanaan'],
 ['Charter Proyek','Tujuan, lingkup, pihak terlibat, dan hasil','PMO Unit','T−1 · Perencanaan','pmo-perencanaan'],
 ['Kriteria Penyelesaian Proyek','Batas penerimaan hasil/acceptance criteria','PMO Unit + pemilik probis','Perencanaan','pmo-perencanaan'],
+['Manfaat Proyek','Indikator, baseline, target, dan mekanisme pengukuran manfaat','PMO Unit + pemilik probis','Perencanaan','pmo-perencanaan'],
 ['Rencana Kerja','Jadwal, target, tahapan, dan sumber daya','PMO Unit','Perencanaan','pmo-perencanaan'],
 ['Nota Dinas Bersama Dokumen Proyek','Penetapan dokumen proyek','PMO Kemenkeu + PMO Unit','≤ 15 HK setelah kontrak kinerja','pmo-perencanaan'],
 ['Work Breakdown Structure','Rincian kegiatan, target, bobot dan PIC','PMO Kemenkeu + PMO Unit','≤ 15 HK setelah Nota Dinas bersama','pmo-wbsplan'],
@@ -8910,6 +8928,16 @@ function helpStages(kind){
  rail+'<div class="sk-phaseDetails">'+blocks+'</div>'+
  note(cm?'<b>Urutan CM:</b> Perencanaan → Pelaksanaan → Pemantauan dan Evaluasi → Evaluasi Pascaimplementasi (paling cepat 1 bulan) → Penutupan CM setelah transisi dan pengalihan.':'<b>Urutan PMO:</b> Perencanaan → Pelaksanaan → Pemantauan dan Pengendalian → Penutupan Proyek → Evaluasi Pascaproyek (paling cepat 3 bulan).');
 }
+
+var skDeepTabsPM={'pmo-perencanaan':[
+ ['1 · Kondisi As-Is','pmo-charter','asis'],['2 · Kondisi To-Be','pmo-charter','tobe'],
+ ['3 · Perbandingan As-Is / To-Be','pmo-charter','cs'],['4 · Charter Proyek','pmo-charter','ch'],
+ ['5 · Kriteria Penyelesaian','pmo-charter','kp'],['6 · Manfaat Proyek','pmo-charter','mf'],
+ ['7 · Rencana Kerja','pmo-charter','rk']]};
+var skDeepTabsCM={
+ 'cmo-adp':[['Daftar ADP (submodul)','cmo-adp','adp:dampak'],['Matriks POSTeR & Peta Risiko','cmo-adp','adp:poster'],['Register Risiko','cmo-adp','adp:reg'],['Indikator Keberhasilan CM','cmo-adp','adp:ind']],
+ 'cmo-rencana':[['Stakeholder','cmo-rencana','rencana:sh'],['Matriks Experience–Support','cmo-rencana','rencana:esm'],['Komunikasi','cmo-rencana','rencana:kom'],['Pelatihan','cmo-rencana','rencana:pel']],
+ 'cmo-monev':[['Pelaksanaan','cmo-monev','monev:lak'],['Pemantauan','cmo-monev','monev:pan'],['Adopsi','cmo-monev','monev:ado'],['Keberhasilan CM','cmo-monev','monev:kcm']]};
 function helpMenu(kind){
  var items=kind==='pmo'?menuPM:menuCM;
  var groups=kind==='pmo'?[
@@ -8929,21 +8957,24 @@ function helpMenu(kind){
  var map={};items.forEach(function(x){map[x[2]]=x});
  var sections=groups.map(function(g,i){
   var part=g[3].map(function(dest,j){var a=map[dest];if(!a)return '';
-   return '<button type="button" class="sk-menuTile sk-filtered" data-skgo="'+esc(dest)+'" data-skitem="'+esc((a[0]+' '+a[1]+' '+g[0]).toLowerCase())+'" title="Menuju '+esc(a[0])+'" aria-label="Menuju '+esc(a[0])+'">'+
+   var tabs=(kind==='pmo'?skDeepTabsPM:skDeepTabsCM)[dest]||[];
+   var links=tabs.length?'<div class="sk-p0-minihead">TAB DI DALAM MENU · '+tabs.length+'</div><div class="sk-p0-minilinks">'+tabs.map(function(t){return '<button type="button" class="sk-p0-minitab" data-skdeep="'+esc(t[1])+'" data-sksub="'+esc(t[2])+'" title="Buka tab '+esc(t[0])+'">'+esc(t[0])+' ↗</button>'}).join('')+'</div>':'';
+   return '<div class="sk-p0-wrap sk-filtered" data-skitem="'+esc((a[0]+' '+a[1]+' '+g[0]+' '+tabs.map(t=>t[0]).join(' ')).toLowerCase())+'">'+
+    '<button type="button" class="sk-menuTile" data-skgo="'+esc(dest)+'" title="Menuju '+esc(a[0])+'" aria-label="Menuju '+esc(a[0])+'">'+
     '<span class="sk-menuTileIcon" aria-hidden="true">'+esc(g[2])+'</span>'+
     '<span class="sk-menuTileContent"><strong>'+esc(a[0])+'</strong><small>'+esc(a[1])+'</small></span>'+
-    '<span class="sk-menuTileArrow" aria-hidden="true">↗</span></button>';
+    '<span class="sk-menuTileArrow" aria-hidden="true">↗</span></button>'+links+'</div>';
   }).join('');
   return '<section class="sk-menuSection" data-skgroup><div class="sk-menuSectionHead"><span class="sk-menuSectionNo">'+('0'+(i+1)).slice(-2)+'</span><div><h4>'+esc(g[0])+'</h4><p>'+esc(g[1])+'</p></div><span class="sk-menuSectionCount">'+g[3].length+' menu</span></div><div class="sk-menuTiles">'+part+'</div></section>';
  }).join('');
- return intro('Peta navigasi · berdasarkan fase','Peta Menu '+(kind==='pmo'?'Project Management':'Change Management'),'Pilih kelompok kerja, lalu klik langsung kartu bernama menu yang ingin digunakan. Tidak perlu menebak fungsi tiap tombol.')+
+ return '<style>.sk-p0-wrap{display:flex;min-width:0;flex-direction:column;border:1px solid #e2e8f0;border-radius:13px;overflow:hidden;background:#fff}.sk-p0-wrap>.sk-menuTile{width:100%;border:0;border-radius:0}.sk-p0-minihead{color:#697997;font-size:10px;font-weight:800;letter-spacing:.5px;padding:4px 12px}.sk-p0-minilinks{display:flex;flex-wrap:wrap;gap:5px;padding:5px 10px 12px}.sk-p0-minitab{border:1px solid #d6e3f6;border-radius:7px;background:#f1f6ff;color:#143d76;font-weight:700;font-size:11px;text-align:left;padding:6px 9px;cursor:pointer}.sk-p0-minitab:hover{background:#fbe7ae;border-color:#f1bf3f;color:#182b4a}</style>'+intro('Peta navigasi · berdasarkan fase','Peta Menu '+(kind==='pmo'?'Project Management':'Change Management'),'Pilih kelompok kerja, lalu klik langsung kartu bernama menu yang ingin digunakan. Tidak perlu menebak fungsi tiap tombol.')+
  '<div class="sk-menutop"><div class="sk-menuSearch"><span aria-hidden="true">⌕</span><input class="sk-search" type="search" data-skfilter placeholder="Cari menu atau fungsi, misalnya WBS, CRA, evaluasi..." aria-label="Cari menu"></div><div class="sk-menuSearchHint">'+items.length+' menu tersedia sebagai pintasan</div></div>'+
  '<div class="sk-menuSections">'+sections+'</div>';
 }
 function helpGloss(kind){return intro('Istilah penting','Daftar Istilah '+(kind==='pmo'?'Project Management':'Change Management'),'Glosarium ringkas untuk memahami singkatan, label, dan istilah yang muncul dalam menu aplikasi.')+
  '<input class="sk-search" type="search" data-skfilter placeholder="Cari istilah..." aria-label="Cari istilah"><div class="sk-gloss" style="margin-top:13px">'+(kind==='pmo'?termsPM:termsCM).map(function(a){return '<div class="sk-term sk-filtered" data-skitem="'+esc(a.join(' ').toLowerCase())+'"><b>'+a[0]+'</b><p>'+a[1]+'</p></div>'}).join('')+'</div>'}
 function helpDocs(kind){var docs=kind==='pmo'?docPM:docCM;return intro('Katalog artefak','Dokumentasi & Output '+(kind==='pmo'?'Manajemen Proyek':'Manajemen Perubahan'),'Daftar dokumen dan keluaran yang disebutkan atau dijabarkan dalam draft RKMK. Klik shortcut untuk menuju menu pengisian/pencatatannya.','Draft RKMK (6) · Bagian J')+
- '<input class="sk-search" type="search" data-skfilter placeholder="Cari dokumen, penanggung jawab, atau tahap..." aria-label="Cari dokumentasi"><div class="sk-docwrap" style="margin-top:12px"><div class="sk-docHead"><span>No.</span><span>Dokumen / keluaran</span><span>Penanggung jawab</span><span>Waktu / fase</span><span>Menu</span></div>'+docs.map(function(a,i){return '<div class="sk-docrow sk-filtered" data-skitem="'+esc(a.join(' ').toLowerCase())+'"><span class="sk-docnum">'+(i+1)+'</span><div><b>'+a[0]+'</b><p>'+a[1]+'</p></div><span class="sk-owner">'+a[2]+'</span><span class="sk-when">'+a[3]+'</span>'+jump(menuName(a[4]),a[4])+'</div>'}).join('')+'</div>'+note('Dokumen dipakai sebagai katalog keluaran kerja. Ketersediaan tombol pembuatan atau unggah mengikuti hak akses dan kemampuan menu masing-masing, bukan tautan unduhan template yang belum tersedia.',true)}
+ '<input class="sk-search" type="search" data-skfilter placeholder="Cari dokumen, penanggung jawab, atau tahap..." aria-label="Cari dokumentasi"><div class="sk-docwrap" style="margin-top:12px"><div class="sk-docHead"><span>No.</span><span>Dokumen / keluaran</span><span>Penanggung jawab</span><span>Waktu / fase</span><span>Menu</span></div>'+docs.map(function(a,i){return '<div class="sk-docrow sk-filtered" data-skitem="'+esc(a.join(' ').toLowerCase())+'"><span class="sk-docnum">'+(i+1)+'</span><div><b>'+a[0]+'</b><p>'+a[1]+'</p></div><span class="sk-owner">'+a[2]+'</span><span class="sk-when">'+a[3]+'</span>'+(kind==='pmo'&&i<7?'<button type="button" class="sk-cta" data-skdeep="pmo-charter" data-sksub="'+['asis','tobe','cs','ch','kp','mf','rk'][i]+'">↗ Buka tab</button>':jump(menuName(a[4]),a[4]))+'</div>'}).join('')+'</div>'+note('Dokumen dipakai sebagai katalog keluaran kerja. Ketersediaan tombol pembuatan atau unggah mengikuti hak akses dan kemampuan menu masing-masing, bukan tautan unduhan template yang belum tersedia.',true)}
 function cmFramework(){
  var plan=[
  ['Analisis Dampak Perubahan',['As-Is → To-Be, POSTeR','Risiko perubahan & resistensi','Indikator keberhasilan CM']],
@@ -9134,7 +9165,8 @@ function open(mode,kind,selected){
   if(e.target===ov||e.target.closest('[data-skclose]')){close();return}
   var tab=e.target.closest('[data-sktab]');if(tab){var k=tab.getAttribute('data-sktab');ov.querySelectorAll('[data-sktab]').forEach(function(b){b.setAttribute('aria-selected',String(b.getAttribute('data-sktab')===k))});ov.querySelectorAll('[data-skview]').forEach(function(v){v.hidden=v.getAttribute('data-skview')!==k});ov.querySelector('.sk-content').scrollTop=0;return}
   var stage=e.target.closest('[data-skstage]');if(stage){var root=stage.closest('.sk-view');var section=root&&root.querySelector('[data-skphasedetail="'+stage.dataset.skstage+'"]');if(section){root.querySelectorAll('.sk-phaseDetail').forEach(function(el){el.classList.remove('is-highlight')});section.classList.add('is-highlight');section.scrollIntoView({block:'start',behavior:'smooth'})}return}
-  var goto=e.target.closest('[data-skgo]');if(goto){var dest=goto.getAttribute('data-skgo');close();if(typeof window.go==='function')window.go(dest);else location.hash='#'+dest;return}
+  var deep=e.target.closest('[data-skdeep]');if(deep){var d=deep.getAttribute('data-skdeep'),sub=deep.getAttribute('data-sksub');close();if(typeof window.mtP0Navigate==='function')window.mtP0Navigate(d,sub);else location.hash='#'+d;return}
+   var goto=e.target.closest('[data-skgo]');if(goto){var dest=goto.getAttribute('data-skgo');close();if(typeof window.go==='function')window.go(dest);else location.hash='#'+dest;return}
  });
  ov.addEventListener('input',function(e){var filter=e.target.closest('[data-skfilter]');if(!filter)return;var pane=filter.closest('.sk-view'),term=filter.value.trim().toLowerCase();pane.querySelectorAll('[data-skitem]').forEach(function(card){card.hidden=!!term&&!card.dataset.skitem.includes(term)});pane.querySelectorAll('[data-skgroup]').forEach(function(group){group.hidden=!Array.from(group.querySelectorAll('[data-skitem]')).some(function(card){return !card.hidden})})});
  ov.querySelector('.sk-close').focus();return ov
