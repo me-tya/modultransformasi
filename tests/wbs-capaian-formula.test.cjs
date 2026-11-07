@@ -78,7 +78,7 @@ test('Arsip Excel TW I tidak berubah oleh realisasi terkini 192,1%',()=>{
  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'..','wbs-cap-2026-reference.js'),'utf8'),ref);
  const S={ui:{tahun:2026},cfg:{capSnap:{'2026-1':{tot:[5618,10792,89812],how:'manual',by:'Simulasi laporan terlambat'}}}};
  const body=section('function capSnap(y,tw)','function capScope()')+
- '\\n'+section('function capOff(kind,key,tw)','const capPct=')+
+ String.fromCharCode(10)+section('function capOff(kind,key,tw)','const capPct=')+
  '\\n({capSnap,capVal})';
  const ctx={S,window:ref.window,TODAY:'2026-11-07',
    capDeadline:(y,tw)=>y===2026&&tw<=3?'2026-10-05':'2027-01-05',
@@ -96,7 +96,7 @@ test('Arsip Excel TW I tidak berubah oleh realisasi terkini 192,1%',()=>{
 test('Triwulan ditutup tanpa arsip tidak boleh memakai realisasi terbaru',()=>{
  const S={ui:{tahun:2027},cfg:{}};
  const body=section('function capSnap(y,tw)','function capScope()')+
- '\\n'+section('function capOff(kind,key,tw)','const capPct=')+
+ String.fromCharCode(10)+section('function capOff(kind,key,tw)','const capPct=')+
  '\\n({capVal})';
  const fn=vm.runInNewContext(body,{S,window:{},TODAY:'2027-11-07',
    capDeadline:()=> '2027-04-05',
