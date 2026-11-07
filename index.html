@@ -2389,6 +2389,48 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 @media(max-width:1150px){.adp-workbar>.subt{flex-basis:100%}.adp-tools{width:100%;justify-content:flex-start}.adp-state{margin-right:auto}}
 @media(max-width:600px){.adp-workbar{padding:6px}.adp-tools{gap:4px}.adp-state{flex:1 0 100%}.adp-workbar>.subt{overflow-x:auto;flex-wrap:nowrap}.adp-tools .btn{font-size:11px}}
 </style>
+<style>
+/* Penutupan proyek — daftar dokumen ringkas, kewajiban terlihat, ikon lampiran. */
+.md.tp-md{max-width:min(1220px,97vw);width:min(1220px,97vw)}
+.tp-doc-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:11px 13px;margin:0 0 9px;border:1px solid #dbe5f0;background:#f8fafd;border-radius:11px}
+.tp-doc-summary>div:first-child{display:flex;flex-direction:column;gap:3px;min-width:220px;flex:1}
+.tp-doc-summary b{font-size:13px;color:#17375b}.tp-doc-summary .s{font-size:11px}
+.tp-doc-summary-side{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+.tp-required-count{font-size:12px;font-weight:800;color:#174f7b;background:#e5f0ff;padding:5px 10px;border-radius:7px}
+.tp-doc-legend{font-size:10.5px;color:#677a90}
+.tp-doc-scroll{border:1px solid #e1e8f1;border-radius:11px;overflow:auto}
+.tp-doc-grid{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;min-width:820px}
+.tp-doc-grid th{font-size:10.5px;letter-spacing:.03em;text-transform:uppercase;color:#657891;background:#f3f7fc;padding:10px 10px}
+.tp-doc-grid td{padding:10px;vertical-align:middle;border-top:1px solid #edf0f5;font-size:12px;overflow-wrap:anywhere}
+.tp-doc-grid tbody tr:hover td{background:#f9fbff}
+.tp-doc-grid .tp-code{font-family:var(--mono);font-weight:750;color:#506783;white-space:nowrap}
+.tp-doc-name{font-size:12px;line-height:1.35;font-weight:800;display:block;color:#173457}
+.tp-doc-desc{font-size:10.5px;line-height:1.4;color:#738198;margin-top:3px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.tp-rule{display:inline-flex;align-items:center;white-space:nowrap;font-size:10.5px;font-weight:800;border-radius:7px;padding:5px 7px;border:1px solid #e0e5ed}
+.tp-rule.required{background:#e5f4eb;color:#16704d;border-color:#bce4cf}
+.tp-rule.conditional{background:#fff6e5;color:#95610a;border-color:#f0d6a2}
+.tp-rule.support{background:#f1f4f8;color:#637287}
+.tp-doc-select{width:100%;min-width:0!important;max-width:135px;height:34px;font-size:11.5px}
+.tp-auto-label{margin-top:3px;color:#8490a3;font-size:10px}
+.tp-doc-auto{display:block;font-size:11px;line-height:1.45;color:#536781}
+.tp-doc-evidence{display:flex;flex-direction:column;gap:5px;min-width:0}
+.tp-doc-number{width:100%;min-width:0!important;height:34px!important;font-size:11px}
+.tp-attach-icon{display:flex;align-items:center;flex-direction:row;flex-wrap:wrap;gap:8px;min-width:0}
+.tp-attach-icon .at-list{display:flex;flex-wrap:wrap;gap:4px;min-width:0;max-width:100%;align-items:center}
+.tp-attach-icon .at-empty{display:none}
+.tp-at-actions{display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin:0}
+.tp-at-actions .tp-att-icon{width:29px;height:29px;display:inline-flex;align-items:center;justify-content:center;flex:none;border-radius:7px;border:1px solid #d7e2ef;background:#f8fbff;color:#285983;cursor:pointer;padding:0}
+.tp-at-actions .tp-att-icon:hover,.tp-at-actions .tp-att-icon:focus-visible{background:#e4f0ff;border-color:#8fb7e6;color:#123b6d}
+.tp-at-actions .tp-link-entry{display:flex;align-items:center;gap:4px;flex:1 1 200px;min-width:0}
+.tp-at-actions .tp-link-entry[hidden]{display:none!important}
+.tp-at-actions .tp-link-entry .inp{height:29px!important;min-width:0;flex:1;font-size:11px;padding:0 8px}
+.tp-at-actions .tp-link-confirm{color:#137d60;border-color:#c5e1d3}
+.tp-attach-icon .at-it{max-width:100%;font-size:10.5px}
+.tp-attach-icon .nt-chip{max-width:140px;overflow:hidden;text-overflow:ellipsis}
+.tp-md .tp-tabs{gap:4px}
+@media(max-width:900px){.md.tp-md{max-width:99vw;width:99vw}.tp-doc-scroll{margin-inline:-2px}}
+@media(max-width:600px){.tp-doc-summary{align-items:flex-start}.tp-doc-summary-side{justify-content:flex-start}.tp-doc-legend{display:none}}
+</style>
 <div id="root"></div>
 <div class="toast" id="toast" role="status"></div>
 <script type="application/json" id="d0">{"S":[],"W":[],"K":[]}</script>
@@ -6291,10 +6333,26 @@ async function nlView(i){if(!i||i.t!=='f')return;const nm=String(i.nama||'').toL
 /* attField(key, nilai, label, {no: placeholder nomor surat, req, compact, ro}) */
 function attField(key,v,label,o={}){const a=attNorm(v);ATT[key]={items:a.items.slice(),rm:[],busy:0,ro:!!o.ro,cb:o.cb||null};
  const kk=esc(key);const noIn=o.no?`<input class="inp at-noin" id="at-no-${kk}" value="${esc(a.no||'')}" placeholder="${esc(o.no)}" title="Nomor surat/dokumen. Format: ${esc(o.no)}"${o.ro?' disabled':''}>`:'';
- return `<div class="${o.compact?'at-fld cp':'fld wide at-fld'}" data-at="${kk}">${label?`<label>${label}${o.req?' <i>*</i>':' <span class="nt-opt">opsional</span>'}</label>`:''}${noIn}
-  <div class="at-list" id="at-l-${kk}">${attListHtml(key)}</div>${o.ro?'':`
-  <div class="at-add"><input type="url" class="inp" id="at-u-${kk}" placeholder="Tempel tautan SharePoint / OneDrive…"><button type="button" class="btn sm" data-atlink="${kk}">+ Tautan</button><label class="btn sm at-up">⇪ Unggah berkas<input type="file" multiple data-atfile="${kk}" hidden accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.zip,.txt,.csv"></label></div>
-  ${o.compact?'':`<small class="at-msg" id="at-m-${kk}">Bisa lebih dari satu berkas, maks. 5 MB per berkas. Berkas lebih besar: unggah ke SharePoint lalu tempel tautannya.</small>`}`}</div>`}
+ const iconLink='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1 0l3-3A5 5 0 0 0 13 3l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.1 0l-3 3A5 5 0 0 0 11 21l1.7-1.7"/></svg>';
+ const iconUpload='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5"/><path d="M4 16v4h16v-4"/></svg>';
+ const actions=o.iconOnly?`<div class="at-add tp-at-actions">
+   <button type="button" class="tp-att-icon" data-tplink="${kk}" title="Tambahkan tautan SharePoint/OneDrive" aria-label="Tambahkan tautan SharePoint atau OneDrive">${iconLink}</button>
+   <label class="tp-att-icon tp-upload-icon" title="Unggah berkas" aria-label="Unggah berkas">${iconUpload}<input type="file" multiple data-atfile="${kk}" hidden accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.zip,.txt,.csv"></label>
+   <div class="tp-link-entry" data-tplink-editor="${kk}" hidden>
+    <input type="url" class="inp" id="at-u-${kk}" placeholder="https://sharepoint…/dokumen" aria-label="Tautan berkas">
+    <button type="button" class="tp-att-icon tp-link-confirm" data-atlink="${kk}" title="Simpan tautan" aria-label="Simpan tautan">✓</button>
+   </div>
+  </div>`:`<div class="at-add"><input type="url" class="inp" id="at-u-${kk}" placeholder="Tempel tautan SharePoint / OneDrive…"><button type="button" class="btn sm" data-atlink="${kk}">+ Tautan</button><label class="btn sm at-up">⇪ Unggah berkas<input type="file" multiple data-atfile="${kk}" hidden accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.zip,.txt,.csv"></label></div>`;
+ return `<div class="${o.compact?'at-fld cp':'fld wide at-fld'}${o.iconOnly?' tp-attach-icon':''}" data-at="${kk}">${label?`<label>${label}${o.req?' <i>*</i>':' <span class="nt-opt">opsional</span>'}</label>`:''}${noIn}
+  <div class="at-list" id="at-l-${kk}">${attListHtml(key)}</div>${o.ro?'':actions}
+  ${o.compact?'':`<small class="at-msg" id="at-m-${kk}">Bisa lebih dari satu berkas, maks. 5 MB per berkas. Berkas lebih besar: unggah ke SharePoint lalu tempel tautannya.</small>`}</div>`}
+document.addEventListener('click',e=>{
+ const b=e.target.closest&&e.target.closest('[data-tplink]');if(!b)return;
+ e.preventDefault();e.stopPropagation();
+ const panel=document.querySelector('[data-tplink-editor="'+b.dataset.tplink+'"]');if(!panel)return;
+ panel.hidden=!panel.hidden;b.setAttribute('aria-expanded',String(!panel.hidden));
+ if(!panel.hidden){const f=panel.querySelector('input');if(f)f.focus()}
+});
 function attChanged(key){const A=ATT[key];if(A&&A.cb){try{A.cb({no:'',items:A.items.slice()})}catch(e){}}}
 function attRedraw(key){const el=document.getElementById('at-l-'+key);if(el)el.innerHTML=attListHtml(key)}
 function attMsg(key,h){const el=document.getElementById('at-m-'+key);if(el)el.innerHTML=h;else if(h)toast(h.replace(/<[^>]+>/g,''))}
@@ -6993,6 +7051,32 @@ const TP_DOCS=[
  ['T11','Laporan CM akhir (monev & adopsi)','Bukti dukung tahapan C10 Monitoring & Evaluasi dan C11 Pengukuran Adopsi.','auto:cm'],
  ['T12','ND pembubaran tim / pelepasan sumber daya','Penugasan tim proyek berakhir.','man'],
  ['T13','Arsip dokumen proyek','Daftar lokasi seluruh dokumen proyek.','man']];
+/* Kewajiban dokumen merupakan klasifikasi operasional aplikasi.
+   T01/T02/T07/T09 adalah data proses otomatis; T04/T05 adalah bukti manual yang digate.
+   Bersyarat/Pendukung tidak otomatis menjadi syarat pengajuan tanpa aturan yang disepakati. */
+function tpDocRule(code,c,p,r){
+ const alasan=(c||{}).alasan||'';
+ const normal=alasan===TP_ALASAN[0],alih=alasan===TP_ALASAN[1];
+ const compulsory=(why)=>({level:'Wajib',required:true,why});
+ const conditional=(why)=>({level:'Bersyarat',required:false,why});
+ const supporting=(why)=>({level:'Pendukung',required:false,why});
+ switch(code){
+  case 'T01':return compulsory('Pernyataan pengajuan penutupan; terbentuk saat pengajuan resmi.');
+  case 'T02':return compulsory('Laporan akhir dari isian data penutupan; disusun otomatis oleh aplikasi.');
+  case 'T03':return normal?compulsory('Wajib untuk penutupan karena seluruh kriteria penyelesaian terpenuhi.'):conditional('Berlaku ketika proyek ditutup karena seluruh acceptance criteria telah terpenuhi.');
+  case 'T04':return normal?compulsory('Wajib: BA penerimaan hasil beserta bukti untuk proyek yang diselesaikan.'):conditional('Wajib jika dasar penutupan adalah seluruh kriteria penyelesaian terpenuhi.');
+  case 'T05':return alih?compulsory('Wajib: dokumen dan bukti pengalihan ke proyek unit.'):conditional('Wajib apabila proyek dialihkan menjadi proyek unit; untuk proyek selesai dapat menjadi pendukung.');
+  case 'T06':return supporting('Lessons Learned diisi pada tab tersendiri, kemudian terangkai ke Laporan Akhir.');
+  case 'T07':return compulsory('Status akhir risiko, isu, keputusan dan CR diperiksa dari register aplikasi.');
+  case 'T08':return conditional('Relevan apabila charter menetapkan indikator manfaat; realisasi dapat dipantau pascaproyek.');
+  case 'T09':return compulsory('Rekap akhir WBS dan tindak lanjut pekerjaan belum selesai dihasilkan dari aplikasi.');
+  case 'T10':return conditional('Diperlukan jika proyek memiliki anggaran khusus yang harus dipertanggungjawabkan.');
+  case 'T11':return conditional('Relevan jika proyek memuat kegiatan CM dan indikator adopsi.');
+  case 'T12':return conditional('Diperlukan jika ada penugasan formal tim proyek yang harus diakhiri.');
+  case 'T13':return supporting('Daftar lokasi arsip mempermudah audit dan pengelolaan dokumen pascaproyek.');
+  default:return supporting('Dokumen pendukung.');
+ }
+}
 const tpKey=(p,j,sb)=>projectKey(p.akr||p,j,sb||'');
 function tpGet(p,j,sb){const k=tpKey(p,j,sb);return (p.closing||{})[k]||null}
 function tpSt(p,j,sb){const c=tpGet(p,j,sb);return c&&c.st?c.st:'Belum diajukan'}
@@ -7074,13 +7158,16 @@ function tpDocEval(d,p,r,c,R){c=c||{};const src=d[3];if(src==='man'){const m=(c.
   case 'auto:lap':{const f=[c.ringkas,c.capaian,c.alasan].filter(x=>String(x||'').trim()).length;return f===3?{st:'Lengkap',info:'Ringkasan, capaian, dan alasan terisi'}:f?{st:'Sebagian',info:f+'/3 isian pokok terisi'}:{st:'Belum',info:'Isian laporan belum diisi'}}
   case 'auto:kp':return R.K.length?{st:R.kOk===R.K.length?'Lengkap':R.kOk?'Sebagian':'Belum',info:R.kOk+'/'+R.K.length+' kriteria terpenuhi'}:{st:'N/A',info:'Charter belum memiliki kriteria'};
   case 'auto:ll':{const n=['baik','kendala','rek'].reduce((s,k)=>s+((ll[k]||[]).length),0);return n?{st:(ll.baik||[]).length&&(ll.kendala||[]).length&&(ll.rek||[]).length?'Lengkap':'Sebagian',info:n+' catatan'}:{st:'Belum',info:'Belum ada catatan'}}
-  case 'auto:reg':{const o=R.rOpen.length+R.dOpen.length+R.crOpen.length;return o?{st:'Sebagian',info:`${R.rOpen.length} risiko/isu, ${R.dOpen.length} keputusan, ${R.crOpen.length} CR masih terbuka`}:{st:'Lengkap',info:'Tidak ada register terbuka'}}
+  case 'auto:reg':{const o=R.rOpen.length+R.dOpen.length+R.crOpen.length;
+  if(!o)return {st:'Lengkap',info:'Tidak ada register terbuka'};
+  if(!R.crOpen.length&&String(c.sisa||'').trim())return {st:'Lengkap',info:'Risiko/isu dan keputusan tersisa telah memiliki rencana pengalihan'};
+  return {st:'Sebagian',info:`${R.rOpen.length} risiko/isu, ${R.dOpen.length} keputusan, ${R.crOpen.length} CR masih terbuka`};}
   case 'auto:mf':{const m=(c.mf||[]).filter(x=>String(x.real||'').trim());const ch=chCur(p.akr);const n=((ch&&ch.mf)||[]).length;return n?{st:m.length>=n?'Lengkap':m.length?'Sebagian':'Belum',info:m.length+'/'+n+' manfaat berisi realisasi'}:{st:'N/A',info:'Charter belum memuat manfaat'}}
   case 'auto:wbs':return R.x.cnt?{st:R.undone.length?(String(c.sisa||'').trim()?'Lengkap':'Sebagian'):'Lengkap',info:`Progres ${R.x.pg}% · ${R.undone.length} item belum selesai`+(R.undone.length&&!String(c.sisa||'').trim()?' (tindak lanjut belum diisi)':'')}:{st:'Belum',info:'Belum ada item WBS'};
   case 'auto:cm':{const it=(r.a||[]).filter(w=>tahapOf(w).some(t=>t.id==='th-C10'||t.id==='th-C11'));return it.length?{st:it.every(w=>w.v)?'Lengkap':it.some(w=>w.v)?'Sebagian':'Belum',info:it.filter(w=>w.v).length+'/'+it.length+' item tervalidasi'}:{st:'N/A',info:'Tidak ada item C10/C11'}}}
  return {st:'N/A',info:''}}
-function tpDocs(p,r){const c=tpGet(p,r.n,r.sub)||{},R=tpReady(p,r);return TP_DOCS.map(d=>({d,r:tpDocEval(d,p,r,c,R)}))}
-const tpDocScore=L=>{const req=L.filter(x=>x.r.st!=='N/A');return {ok:req.filter(x=>x.r.st==='Lengkap').length,n:req.length}};
+function tpDocs(p,r){const c=tpGet(p,r.n,r.sub)||{},R=tpReady(p,r);return TP_DOCS.map(d=>({d,r:tpDocEval(d,p,r,c,R),rule:tpDocRule(d[0],c,p,r)}))}
+const tpDocScore=L=>{const req=L.filter(x=>x.rule?x.rule.required:x.r.st!=='N/A');return {ok:req.filter(x=>x.r.st==='Lengkap').length,n:req.length,all:L.length}};
 const tpCanEdit=p=>!!ME&&(ME.role==='SA'||ME.role==='PMOK'||(ME.role==='PMOU'&&unitsOf(p.uic).includes(ME.unit)));
 const tpCanReview=c=>!!ME&&['SA','PMOK'].includes(ME.role)&&(!c||!c.pic||c.pic===ME.email||ME.role==='SA');
 function tpP0Gate(c,R){
@@ -7204,8 +7291,11 @@ function tpModal(p,r,tab){const k=tpKey(p,r.n,r.sub);p.closing=p.closing||{};con
   <div class="fld"><label for="tp-ot">Tanggal serah terima</label>${inp('tp-ot',(c.op||{}).tgl,'','date')}</div><div class="fld"><label for="tp-ar">Anggaran: rencana / realisasi (Rp)</label><div class="row" style="gap:6px">${inp('tp-ar',(c.ang||{}).rencana,'Rencana')}${inp('tp-aa',(c.ang||{}).realisasi,'Realisasi')}</div></div></div>
   <h4 class="tp-h">Realisasi manfaat</h4>${(c.mf||[]).length?`<div class="tscroll"><table class="lap tp-mf"><thead><tr><th>Manfaat</th><th>Indikator</th><th>Target</th><th>Realisasi</th><th>Pemantau / keterangan</th></tr></thead><tbody>${c.mf.map((m,i)=>`<tr><td>${esc(m.m)}</td><td>${esc(m.ind)}</td><td>${esc(m.tgt)}</td><td><input class="inp" data-mfr="${i}" value="${esc(m.real||'')}"${dis}></td><td><input class="inp" data-mfk="${i}" value="${esc(m.ket||'')}"${dis}></td></tr>`).join('')}</tbody></table></div>`:'<p class="s">Charter belum memuat daftar manfaat.</p>'}`;
  const ll=c.ll||{};const llb=`<p class="s" style="margin:0 0 8px">Satu poin per baris.</p><div class="tp-ll">${[['baik','Yang berjalan baik','Contoh: pelibatan pemilik proses sejak analisis'],['kendala','Kendala','Contoh: API mitra terlambat siap'],['rek','Rekomendasi','Contoh: siapkan lingkungan uji sejak awal']].map(([k,l,ph])=>`<div class="fld"><label for="tp-l${k}">${l}</label>${ta('tp-l'+k,(ll[k]||[]).join('\n'),ph,6)}</div>`).join('')}</div>`;
- const D=TP_DOCS.map(d=>({d,r:tpDocEval(d,p,r,c,R)}));const dok=`<div class="tscroll"><table class="lap tp-doc"><thead><tr><th>Kode</th><th>Dokumen</th><th>Status</th><th>Keterangan / tautan berkas</th></tr></thead><tbody>${D.map(({d,r:e})=>{const m=(c.docs||{})[d[0]]||{};const man=d[3]==='man';
-  return `<tr><td class="mono">${d[0]}</td><td><b>${esc(d[1])}</b><div class="s">${esc(d[2])}</div></td><td>${man?`<select class="sel" data-dst="${d[0]}"${dis}>${opts([['','Belum'],['Lengkap','Lengkap'],['Sebagian','Sebagian'],['N/A','N/A']],m.st||'')}</select>`:`<span class="chip ${e.st==='Lengkap'?'c-ok':e.st==='Sebagian'?'c-warn':e.st==='N/A'?'c-gray':'c-bad'}">${esc(e.st)}</span><div class="sm">otomatis</div>`}</td><td>${man?`<input class="inp" data-dlk="${d[0]}" value="${esc(m.link||'')}" placeholder="${esc(TP_DOCNO[d[0]]||'Nomor dokumen')}" title="Nomor dokumen. Format: ${esc(TP_DOCNO[d[0]]||'')}"${dis}><div data-dat="tpd-${d[0]}">${attField('tpd-'+d[0],m.att,'',{compact:true,ro:!ed})}</div>`:esc(e.info)}</td></tr>`}).join('')}</tbody></table></div>`;
+ const D=TP_DOCS.map(d=>({d,r:tpDocEval(d,p,r,c,R),rule:tpDocRule(d[0],c,p,r)}));const dok=`<div class="tp-doc-summary"><div><b>Checklist dokumen penutupan</b><span class="s">Dokumen otomatis terisi dari data aplikasi. Lengkapi lampiran yang wajib sesuai dasar penutupan.</span></div><div class="tp-doc-summary-side"><span class="tp-required-count" data-tp-summary>${tpDocScore(D).ok}/${tpDocScore(D).n} wajib lengkap</span><span class="tp-doc-legend" title="Bersyarat sesuai dasar penutupan atau karakteristik proyek">Wajib · Bersyarat · Pendukung</span></div></div>
+ <div class="tscroll tp-doc-scroll"><table class="lap tp-doc tp-doc-grid"><colgroup><col style="width:6%"><col style="width:34%"><col style="width:13%"><col style="width:13%"><col style="width:34%"></colgroup><thead><tr><th>Kode</th><th>Dokumen</th><th>Kewajiban</th><th>Status</th><th>Bukti / nomor dokumen</th></tr></thead><tbody>${D.map(({d,r:e,rule})=>{const m=(c.docs||{})[d[0]]||{};const man=d[3]==='man';
+ const badge=`<span data-tp-rule="${d[0]}" class="tp-rule ${rule.level==='Wajib'?'required':rule.level==='Bersyarat'?'conditional':'support'}" title="${esc(rule.why)}">${rule.level==='Wajib'?'● ':''}${esc(rule.level)}</span>`;
+ const statuses=rule.required?[['','Belum'],['Lengkap','Lengkap'],['Sebagian','Sebagian']]:[['','Belum'],['Lengkap','Lengkap'],['Sebagian','Sebagian'],['N/A','N/A']];
+ return `<tr data-tp-docrow="${d[0]}"><td class="tp-code">${d[0]}</td><td><b class="tp-doc-name">${esc(d[1])}</b><div class="tp-doc-desc" title="${esc(d[2])}">${esc(d[2])}</div></td><td>${badge}</td><td>${man?`<select class="sel tp-doc-select" data-dst="${d[0]}" aria-label="Status ${esc(d[1])}"${dis}>${opts(statuses,m.st||'')}</select>`:`<span class="chip ${e.st==='Lengkap'?'c-ok':e.st==='Sebagian'?'c-warn':e.st==='N/A'?'c-gray':'c-bad'}">${esc(e.st)}</span><div class="sm tp-auto-label">Otomatis</div>`}</td><td>${man?`<div class="tp-doc-evidence"><input class="inp tp-doc-number" data-dlk="${d[0]}" aria-label="Nomor atau lokasi dokumen ${esc(d[1])}" value="${esc(m.link||'')}" placeholder="${esc(TP_DOCNO[d[0]]||'Nomor/lokasi dokumen')}" title="Nomor/lokasi dokumen. ${esc(TP_DOCNO[d[0]]||'')}"${dis}><div class="tp-doc-att" data-dat="tpd-${d[0]}">${attField('tpd-'+d[0],m.att,'',{compact:true,ro:!ed,iconOnly:true})}</div></div>`:`<span class="tp-doc-auto" title="${esc(e.info)}">${esc(e.info||'Tercatat otomatis')}</span>`}</td></tr>`}).join('')}</tbody></table></div>`;
  const hist=(c.hist||[]).slice().reverse();const aju=`<div class="tp-stbox"><span>Status saat ini</span><span class="chip ${TP_C[st]}">${esc(st)}</span>${c.note?`<div class="note ${st==='Dikembalikan'?'w':'i'}" style="margin:8px 0 0"><span><b>Catatan telaah:</b> ${esc(c.note)}</span></div>`:''}</div>
   <div class="fgrid" style="margin-top:10px"><div class="fld"><label for="tp-sn">Penanda tangan pernyataan (PMO UE I)</label>${inp('tp-sn',(c.sign||{}).nama,'Nama pejabat')}</div><div class="fld"><label for="tp-sj">Jabatan</label>${inp('tp-sj',(c.sign||{}).jabatan,'Jabatan')}</div></div>
   ${rv&&st==='Diajukan'?`<div class="fld wide" style="margin-top:10px"><label for="tp-rn">Catatan telaah</label><textarea class="inp tp-ta" id="tp-rn" rows="2" placeholder="Wajib diisi bila dikembalikan"></textarea></div>`:''}
@@ -7226,7 +7316,30 @@ function tpModal(p,r,tab){const k=tpKey(p,r.n,r.sub);p.closing=p.closing||{};con
  if(ME.role==='SA'&&st==='Diajukan')extra+='<button class="btn" data-mx="tp-route">Alihkan PIC</button>';
  if(rv&&st==='Ditutup')extra+='<button class="btn" data-mx="buka">Buka kembali</button>';
  extra='<button class="btn" data-mx="rep">'+RPT_ICO(15)+' Laporan Akhir Proyek</button>'+extra;
+ const syncChecklist=ov=>{
+  const chosen=(ov.querySelector('#tp-al')||{}).value||c.alasan;
+  let needed=0,complete=0;
+  TP_DOCS.forEach(d=>{
+   const rule=tpDocRule(d[0],{alasan:chosen},p,r);
+   const label=ov.querySelector('[data-tp-rule="'+d[0]+'"]');
+   if(label){label.textContent=(rule.level==='Wajib'?'● ':'')+rule.level;label.title=rule.why;label.className='tp-rule '+(rule.required?'required':rule.level==='Bersyarat'?'conditional':'support')}
+   const sel=ov.querySelector('[data-dst="'+d[0]+'"]');
+   if(sel){
+    const na=sel.querySelector('option[value="N/A"]');
+    if(rule.required){if(sel.value==='N/A')sel.value='';if(na)na.remove()}
+    else if(!na){const option=document.createElement('option');option.value='N/A';option.textContent='N/A';sel.appendChild(option)}
+   }
+   if(rule.required){needed++;const status=sel?sel.value:(D.find(x=>x.d[0]===d[0])||{}).r?.st;if(status==='Lengkap')complete++}
+  });
+  const sum=ov.querySelector('[data-tp-summary]');if(sum)sum.textContent=complete+'/'+needed+' wajib lengkap';
+ };
  const reopen=()=>{const p2=S.programs.find(x=>x.akr===p.akr);const r2=tpUnits(p2).find(x=>x.n===r.n&&(x.sub||'')===(r.sub||''));if(r2)tpModal(p2,r2,'siap')};
+ const attachSync=()=>{
+  syncChecklist(ov);
+  ov.addEventListener('change',ev=>{
+   if(ev.target.matches('#tp-al,[data-dst]'))syncChecklist(ov);
+  });
+ };
  const ov=modal(`<span class="exh">Penutupan Proyek <button type="button" class="hlp" data-tpgd title="Panduan: tujuan, cara mengisi, dan contoh untuk tab ini" aria-label="Panduan pengisian tab ini">?</button></span>`,body,null,null,{cancel:'Tutup',size:'wide tp-md',extra,onExtra:(m,ov)=>{
    if(m==='imp'){const F=[['tp-al','Alasan penutupan'],['tp-pu','No. keputusan penghentian strategis'],['tp-tgl','Tanggal penyelesaian'],['tp-rg','Ringkasan hasil proyek',['ringkasan hasil','ringkasan']],['tp-cp','Capaian output & outcome',['capaian output dan outcome','capaian output','capaian']],['tp-ss','Item belum selesai & tindak lanjut',['item belum selesai','sisa pekerjaan','tindak lanjut']],['tp-ou','Unit pengelola operasional',['unit pengelola','pengelola operasional']],['tp-ob','Nomor BA serah terima',['nomor ba','no ba','ba serah terima']],['tp-ot','Tanggal serah terima'],['tp-ar','Anggaran rencana',['rencana anggaran']],['tp-aa','Anggaran realisasi',['realisasi anggaran']],['tp-lbaik','Yang berjalan baik',['hal yang berjalan baik','what went well']],['tp-lkendala','Kendala',['hambatan']],['tp-lrek','Rekomendasi',['saran']],['tp-sn','Penanda tangan',['penanda tangan pernyataan','nama pejabat']],['tp-sj','Jabatan',['jabatan penanda tangan']]].map(([k,l,al])=>({k,l,al:al||[]}));
     docImport(F,sel=>{Object.entries(sel).forEach(([k,v])=>{const el=ov.querySelector('#'+k);if(!el)return;docSet(el,v)})});return false}
