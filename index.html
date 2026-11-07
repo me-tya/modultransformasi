@@ -5857,7 +5857,7 @@ function capBreakdown(quarters,num){
  const y=+S.ui.tahun,{sc,u,pk}=capSel(),all=capItems(sc),cd=curTwDone();
  const renderQuarter=t=>{
    const sn=capClosed(t)?capSnap(y,t):null;
-   const allCodes=sn&&Array.isArray(sn.participants)?sn.participants.slice():[...new Set(all.map(w=>w.prog))];
+   const allCodes=sn&&Array.isArray(sn.participants)?sn.participants.slice():[...new Set((sc==='unit'?all:capTotItems(all,t)).map(w=>w.prog))];
    const codes=pk?allCodes.filter(code=>code===pk):allCodes;
    const entries=codes.map(code=>{
      const it=all.filter(w=>w.prog===code);
