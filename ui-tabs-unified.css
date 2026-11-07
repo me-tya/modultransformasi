@@ -327,3 +327,40 @@ html.mt-ui-embedded .eo-ws-nav > .eo-ws-tab.active .eo-ws-stepno{
 html.mt-ui-embedded .eo-ws-nav > .eo-ws-tab:not(.active) .eo-ws-stepno{
  background:#EEF1F6!important;color:#5F6B85!important;
 }
+
+/* Native CRA & Pengelola: tab yang dibangun oleh JS terpisah. */
+#app :is(.cra2-tabs,.pg-tabs){
+ display:flex!important;align-items:stretch!important;flex-wrap:nowrap!important;
+ box-sizing:border-box!important;width:100%!important;max-width:100%!important;
+ min-height:48px!important;gap:4px!important;margin:6px 0 11px!important;
+ padding:3px 4px 0!important;background:transparent!important;
+ border:0!important;border-bottom:2px solid #DCE3EF!important;
+ border-radius:0!important;box-shadow:none!important;
+ overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:thin!important;
+}
+#app :is(.cra2-tabs,.pg-tabs) > button{
+ position:relative!important;display:inline-flex!important;flex:0 0 auto!important;
+ align-items:center!important;justify-content:center!important;
+ box-sizing:border-box!important;height:44px!important;min-height:44px!important;
+ gap:7px!important;margin:0!important;padding:8px 14px!important;
+ background:transparent!important;color:#5F6B85!important;
+ border:1px solid transparent!important;border-radius:10px 10px 0 0!important;
+ box-shadow:none!important;cursor:pointer!important;
+ font-family:inherit!important;font-size:13px!important;font-weight:800!important;
+ line-height:1.2!important;white-space:nowrap!important;
+}
+#app :is(.cra2-tabs,.pg-tabs) > button:is(.on,:hover):not(.on){
+ background:#F3F7FD!important;color:#0B2447!important;
+}
+#app :is(.cra2-tabs,.pg-tabs) > button.on{
+ background:#fff!important;color:#0B2447!important;
+ border-color:#DCE3EF!important;border-bottom-color:transparent!important;
+}
+#app :is(.cra2-tabs,.pg-tabs) > button.on::after{
+ content:""!important;position:absolute!important;left:0!important;right:0!important;
+ bottom:0!important;height:4px!important;background:#FDB913!important;
+ pointer-events:none!important;
+}
+@media(max-width:760px){
+ #app :is(.cra2-tabs,.pg-tabs)>button{font-size:11.5px!important;padding:8px 10px!important}
+}
