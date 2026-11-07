@@ -5786,13 +5786,13 @@ function capItems(sc,unit){const u=unit||curUnit();return pmoAllWbs().filter(w=>
 /* Referensi workbook 2026: total T-Program memasukkan TKD di TW I tetapi mengeluarkannya mulai TW II.
    Ini ketentuan lingkup laporan 2026 (baris Total Excel), bukan aturan generik untuk semua program Selesai.
    Tahun berikutnya semua program dihitung kecuali pengecualian eksplisit di cfg.capReportingExclusions. */
-function capTotItems(items,tw){const y=+S.ui.tahun,setting=((S.cfg||{}).capReportingExclusions||{}),byYear=setting[String(y)]||{};
+function capTotItems(items,tw,yHint){const y=yHint==null?+S.ui.tahun:+yHint,setting=((S.cfg||{}).capReportingExclusions||{}),byYear=setting[String(y)]||{};
  const custom=byYear[String(tw)],excluded=Array.isArray(custom)?custom:(y===2026&&tw>=2?['TKD']:[]);
  return excluded.length?items.filter(w=>!excluded.includes(w.prog)):items}
 function capLive(items,tw){const M=tw*3,x=sumTR(items,M),a=sumTR(items,12).t;let on=0,ont=0,nOn=0,nT=0,nE=0;
  items.forEach(w=>{const b=+w.w||0;if(tgtAt(w,M)){ont+=b;nT++;if(realV(w,M)){on+=b;nOn++}}else if(realV(w,M))nE++});
  return {t:x.t,r:x.r,a,ct:a?x.r/a*100:null,on,early:x.r-on,nT,nOn,nE,src:'live'}}
-function capLiveTot(items,tw){return capLive(capTotItems(items,tw),tw)}
+function capLiveTot(items,tw,yHint){return capLive(capTotItems(items,tw,yHint),tw)}
 function capOff(kind,key,tw){const sn=capSnap(+S.ui.tahun,tw);if(!sn||!kind)return null;const v=kind==='tot'?sn.tot:(sn[kind]||{})[key];if(!v)return null;
  return {t:v[0],r:v[1],a:v[2],ct:v[3]!=null?+v[3]:(v[2]?v[1]/v[2]*100:null),on:v[4],early:v[4]!=null?v[1]-v[4]:null,nT:v[5],nOn:v[6],nE:v[7],src:'lock',cut:sn.cut,lock:sn}}
 function capVal(kind,key,items,tw){const live=kind==='tot'?capLiveTot(items,tw):capLive(items,tw);if(S.ui.capSrc!=='live'){const o=capOff(kind,key,tw);if(o){o.live=live;return o}}return live}
@@ -5803,7 +5803,7 @@ function capCtl(){const {sc,u}=capSel(),src=S.ui.capSrc==='live'?'live':'lock';
  return `<div class="cap-ctl">${u?seg('capScope',sc==='unit'?'unit':'kem',[['kem','Kemenkeu'],['unit',u]]):''}${seg('capSrc',src,[['lock','Kunci cut-off','Pakai angka yang dikunci saat batas pengisian; TW yang belum dikunci tetap dihitung langsung dari WBS'],['live','Data terkini','Hitung ulang seluruh TW dari WBS saat ini']])}</div>`}
 ACT.capSet=el=>{S.ui[el.dataset.k]=el.dataset.v;save();render()};
 function capLockBuild(y,tw,how){const all=S.wbs.filter(w=>!w.arsip&&yrOf(w)===y),L=v=>[v.t,v.r,v.a,v.ct==null?null:Math.round(v.ct*100)/100,v.on,v.nT,v.nOn,v.nE];
- const o={cut:capDeadline(y,tw),at:new Date().toISOString().slice(0,16).replace('T',' '),by:how==='auto'?'Sistem (otomatis)':(ME?ME.email:'-'),how:how||'manual',n:all.length,tot:L(capLiveTot(all,tw)),prog:{},ue:{}};
+ const o={cut:capDeadline(y,tw),at:new Date().toISOString().slice(0,16).replace('T',' '),by:how==='auto'?'Sistem (otomatis)':(ME?ME.email:'-'),how:how||'manual',n:all.length,tot:L(capLiveTot(all,tw,y)),prog:{},ue:{}};
  S.programs.forEach(p=>{const it=all.filter(w=>w.prog===p.akr);if(it.length)o.prog[p.akr]=L(capLive(it,tw))});UNITS.forEach(u=>{const it=all.filter(w=>w.ue.includes(u));if(it.length)o.ue[u]=L(capLive(it,tw))});return o}
 /* Kunci otomatis: dijalankan saat PMO Kemenkeu/Superadmin membuka aplikasi setelah batas pengisian TW lewat. */
 function capAutoLock(){try{if(!ME||lockU()||!lv('lap').includes('U'))return;if(FB.on&&!FB.ready)return;const y=+TODAY.slice(0,4);let ch=0;
