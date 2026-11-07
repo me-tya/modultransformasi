@@ -48,6 +48,7 @@ test('Pengecualian historis 2026 tidak menular ke 2027–2029',()=>{
  assert.equal(scope(items,2).map(w=>w.prog).join(','),'CORE,SD');
  S.ui.tahun=2027;
  assert.equal(scope(items,2).map(w=>w.prog).join(','),'CORE,TKD,SD');
+ assert.equal(scope(items,2,2026).map(w=>w.prog).join(','),'CORE,SD'); // snapshot historical 2026
  S.cfg.capReportingExclusions={'2027':{'2':['SD']}};
  assert.equal(scope(items,2).map(w=>w.prog).join(','),'CORE,TKD');
 });
