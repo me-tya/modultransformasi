@@ -7202,8 +7202,23 @@ const RPT_SECT=[
  ['tahapan','Progres per tahapan'],['rinciTahap','Rincian per tahapan'],['proyek','Rincian proyek & subproyek'],
  ['stake','Stakeholder Register'],['risk','Risk Register'],['issue','Issue Log'],['dec','Decision Log'],['cr','Change Request'],['tutup','Penutupan proyek'],
  ['dokumen','Checklist data dukung'],['terlambat','Item WBS terlambat'],['item','Lampiran daftar item WBS'],
- ['toc','Daftar isi, gambar & tabel'],['tte','Tanda tangan (TTE)']];
-const RPT_DEF={ringkasan:1,profil:1,charter:1,tahapan:1,rinciTahap:1,proyek:1,stake:1,risk:1,issue:1,dec:1,cr:1,tutup:1,dokumen:1,terlambat:1,item:0,toc:1,tte:1};
+ ['eval','Evaluasi pascaproyek'],['toc','Daftar isi, gambar & tabel'],['tte','Tanda tangan (TTE)']];
+const RPT_DEF={ringkasan:1,profil:1,charter:1,tahapan:1,rinciTahap:1,proyek:1,stake:1,risk:1,issue:1,dec:1,cr:1,tutup:1,eval:1,dokumen:1,terlambat:1,item:0,toc:1,tte:1};
+const RPT_STAGE_SECTIONS={
+ gambaran:['ringkasan','profil','tahapan'],
+ perencanaan:['ringkasan','profil','charter','tahapan','dokumen'],
+ pelaksanaan:['ringkasan','tahapan','rinciTahap','proyek','risk','issue','cr','item'],
+ pemantauan:['ringkasan','tahapan','rinciTahap','risk','issue','dec','terlambat','dokumen'],
+ penutupan:['ringkasan','profil','charter','tahapan','rinciTahap','proyek','stake','risk','issue','dec','cr','tutup','dokumen','eval'],
+ pascaproyek:['profil','tutup','eval'],
+ referensi:['profil','dokumen','tahapan']};
+function rptPreset(stage){const keys=RPT_STAGE_SECTIONS[stage]||null;if(!keys)return Object.assign({},RPT_DEF);
+ const inc={};RPT_SECT.forEach(([k])=>inc[k]=keys.includes(k)?1:0);inc.toc=1;inc.tte=0;return inc}
+function rptIsDraftFinal(c){if(!c.G.length)return true;let count=0;
+ for(const g of c.G){for(const r of g.P){const list=tpUnits(g.p,g.P).filter(x=>x.n===r.n);if(!list.length)return true;
+  for(const u of list){count++;if(tpSt(g.p,u.n,u.sub)!=='Ditutup')return true}
+ }}return count===0}
+
 const rptLongDate=d=>{const m=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];const p=String(d||'').split('-');return p.length===3?(+p[2])+' '+m[(+p[1]||1)-1]+' '+p[0]:fmtD(d)};
 const rptTxt=v=>Array.isArray(v)?v.filter(x=>String(x||'').trim()).join('\n'):String(v??'').trim();
 const RPT_ST_C={Lengkap:'16A37F',Sebagian:'F2A93B',Belum:'E25563','Perlu perbaikan':'E25563','N/A':'98A2B3',Manual:'5B6B82',Selesai:'16A37F',Berjalan:'2F5BD3',Terlambat:'E25563',Terjadwal:'7C8DB5','Belum dijadwalkan':'98A2B3',Valid:'16A37F','Menunggu validasi':'F2A93B',Ditolak:'E25563','Belum diunggah':'98A2B3',Tinggi:'E25563',Sedang:'F2A93B',Rendah:'16A37F',Ditutup:'5B6B82',Terbuka:'2F5BD3',Diterapkan:'16A37F',Diajukan:'2F5BD3','Belum dimulai':'98A2B3',Ditunda:'F2A93B'};
@@ -7214,7 +7229,7 @@ function rptBarImg(rows,o={}){try{const sc=2,W=720,rh=30,top=12,lw=o.lw||250,H=t
   const bw=W-lw-70;g.fillStyle='#EEF1F6';g.fillRect(lw,y-8,bw,16);g.fillStyle=r.c||'#2F5BD3';g.fillRect(lw,y-8,Math.max(2,bw*Math.min(1,r.v/max)),16);g.fillStyle='#12275A';g.font='bold 12px Segoe UI, Arial';g.fillText((o.pct?r.v+'%':String(r.v)),lw+bw+8,y);g.font='12px Segoe UI, Arial'});
  return {src:cv.toDataURL('image/png'),w:W,h:H}}catch(e){return null}}
 function rptRegs(c){const m=a=>(a||[]).filter(x=>c.scopes.some(k=>String(x.scope||'').startsWith(k)));projectStores();
- return {risk:m(S.projectRisks).filter(r=>r.kind!=='Isu'),issue:m(S.projectRisks).filter(r=>r.kind==='Isu'),stake:m(S.projectStakeholders),dec:m(S.projectDecisions),cr:(S.crs||[]).filter(x=>c.progs.includes(x.prog))}}
+ return {risk:m(S.projectRisks).filter(r=>r.kind!=='Isu'),issue:m(S.projectRisks).filter(r=>r.kind==='Isu'),stake:m(S.projectStakeholders),dec:m(S.projectDecisions).filter(x=>x.jenisCatatan!=='EVAL-PASCAPROYEK'),eval:(S.projectDecisions||[]).filter(x=>x.jenisCatatan==='EVAL-PASCAPROYEK'&&c.progs.includes(x.program)&&(!c.spec.j||!x.proyek||String(x.proyek).trim()===String(c.spec.j).trim())),cr:(S.crs||[]).filter(x=>c.progs.includes(x.prog))}}
 const rptScopeLab=k=>{const l=projectLabels(k);return l[2]||l[1]||''};
 /* Model laporan {cover, blocks} */
 function rptModel(c,inc,o){o=o||{};const B=[],e=x=>String(x??''),R=rptRegs(c),T=rptTahap(c.items),one=c.G.length===1?c.G[0]:null,P1=one&&one.P.length===1?one.P[0]:null;
@@ -7270,18 +7285,24 @@ function rptModel(c,inc,o){o=o||{};const B=[],e=x=>String(x??''),R=rptRegs(c),T=
  if(sec('dec')){B.push({t:'h1',text:'Decision Log'});R.dec.length?B.push({t:'table',small:true,caption:'Decision log',head:['Tanggal','Keputusan','Diputuskan oleh','Dampak','PIC tindak lanjut','Batas waktu','Status'],widths:[10,28,14,18,12,9,9],rows:R.dec.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))).map(d=>[d.date?fmtD(d.date):'—',e(d.title),e(d.by||'—'),e(d.impact||'—'),e(d.owner||'—'),d.due?fmtD(d.due):'—',rptPill(d.status||'Belum dimulai')])}):regEmpty('Decision log')}
  if(sec('cr')){B.push({t:'h1',text:'Change Request'});R.cr.length?B.push({t:'table',small:true,caption:'Change request',head:['Kode','Jenis','Item WBS','Alasan','Pengaju','Tanggal','Status'],widths:[10,12,22,26,12,9,9],rows:R.cr.map(x=>[e(x.kode||'—'),e(x.jenis||'—'),e(x.item||'—'),e(x.alasan||'—'),e([x.pengaju,x.unit].filter(Boolean).join(' · ')||'—'),x.tgl?fmtD(x.tgl):'—',rptPill(x.st)])}):B.push({t:'p',muted:true,text:'Tidak ada change request untuk program pada cakupan ini.'})}
  if(sec('tutup'))B.push(...rptTutupBlocks(c));
+ if(sec('eval')){B.push({t:'h1',text:'Evaluasi Pascaproyek'});
+  if(R.eval.length)B.push({t:'table',small:true,caption:'Register evaluasi manfaat pascaproyek',head:['Program / Proyek','Tanggal tutup / Evaluasi','Efisiensi biaya','Proses bisnis','Layanan','Hasil / manfaat','RTL','Status'],widths:[14,12,12,12,12,16,14,8],rows:R.eval.map(x=>[[x.program,x.proyek].filter(Boolean).join(' · '),[x.tglTutup,x.tglEval].filter(Boolean).map(fmtD).join(' / ')||'—',e(x.biaya||'—'),e(x.proses||'—'),e(x.layanan||'—'),e(x.hasil||'—'),e(x.rtl||'—'),rptPill(x.st||'Direncanakan')])});
+  else B.push({t:'p',muted:true,text:'Belum ada hasil evaluasi pascaproyek pada register. Penilaian manfaat dilakukan paling cepat tiga bulan setelah proyek resmi ditutup.'});
+ }
+
  if(sec('dokumen')){B.push({t:'h1',text:'Checklist Dokumen Data Dukung'});B.push({t:'p',text:`Kelengkapan dokumen wajib: **${ddOk} dari ${ddReq.length}** dokumen lengkap. Status dihitung otomatis dari bukti dukung item WBS per tahapan, Dokumen Proyek, dan register Workspace Proyek; N/A berarti tidak ada item WBS untuk dokumen tersebut pada cakupan ini.`});
   DD_TPL.forEach(([g,ds])=>{B.push({t:'h2',text:g});B.push({t:'table',small:true,caption:'Data dukung '+g,head:['Kode','Dokumen','PIC · format','Status','Keterangan'],widths:[8,34,24,12,22],rows:ds.map(d=>{const r=ddEval(d[5],c);return [d[0],d[1],d[4]+' · '+d[3],rptPill(r.st),r.info]})})})}
  if(sec('terlambat')){const late=c.items.filter(w=>stOf(w,12)==='Terlambat').sort((a,b)=>String(a.f).localeCompare(String(b.f)));B.push({t:'h1',text:'Item WBS Terlambat'});
   late.length?B.push({t:'table',small:true,caption:'Item WBS terlambat',head:['Kode','Output','Proyek','UIC','Jadwal','Status','Bukti'],widths:[12,30,16,10,12,10,10],rows:late.map(itemRow)}):B.push({t:'callout',tone:'good',title:'Tidak ada item terlambat',lines:['Seluruh item WBS pada cakupan ini sesuai jadwal atau telah selesai.']})}
  if(sec('item')){B.push({t:'h1',nonum:true,text:'Lampiran · Daftar Item WBS'});B.push({t:'table',small:true,caption:'Daftar seluruh item WBS',head:['Kode','Output','Tahapan','UIC','Jadwal','Bobot','Status','Bukti'],widths:[11,29,14,10,12,6,9,9],rows:c.items.map(w=>[w.k,deliv(w),tahapOf(w).map(t=>t.kode).join(', ')||'—',uicU(w)||'—',pgFmtR(w.s,w.f),String(+w.w||0),rptPill(stOf(w,12)),rptPill(buktiSt(w))])})}
  if(!B.length)B.push({t:'p',muted:true,text:'Belum ada bagian laporan yang dipilih.'});
- const sg=S.ui.rptSigner||{};const kick=(o.preset==='tutup'?'LAPORAN AKHIR ':'LAPORAN ')+(c.spec.k==='filter'?'PROGRAM TRANSFORMASI':c.spec.k==='prog'?'PROGRAM':c.spec.k==='proj'?'PROYEK':'SUBPROYEK');
+ const sg=S.ui.rptSigner||{};const draftFinal=o.preset==='tutup'&&rptIsDraftFinal(c);
+ const kick=(draftFinal?'DRAFT · ':'')+(o.preset==='tutup'?'LAPORAN AKHIR ':'LAPORAN ')+(c.spec.k==='filter'?'PROGRAM TRANSFORMASI':c.spec.k==='prog'?'PROGRAM':c.spec.k==='proj'?'PROYEK':'SUBPROYEK');
  const subj=c.spec.k==='proj'||c.spec.k==='sub'?(one?one.p.kode+' · '+one.p.nama:''):'Tahun Anggaran '+S.ui.tahun;
- const fn=rptFile(c,'x').replace(/\.x$/,'');
+ const fn=(draftFinal?'DRAFT_':'')+rptFile(c,'x').replace(/\.x$/,'');
  return {lang:'id',formal:!!inc.toc,fileName:fn,header:kick.charAt(0)+kick.slice(1).toLowerCase()+' · '+c.name,
-  cover:{kicker:kick,title:c.name,subject:subj,chips:[one?one.p.kode:c.G.length+' program',one?(one.p.jenis||''):'','TA '+S.ui.tahun,c.spec.th?tahapLab(c.spec.th):'Seluruh tahapan',P1?'UIC '+P1.uic:''],scope:c.filter.split(' · '),
-   meta:[...(o.no?[['Nomor',o.no]]:[]),['Cakupan',c.spec.k==='filter'?c.G.length+' program · '+nProj+' proyek':c.spec.k==='prog'?nProj+' proyek':c.name],['Program',c.G.map(g=>g.p.kode+' · '+g.p.nama).join('; ')],['Periode laporan',(per().pr||'all')==='all'?'Tahun Anggaran '+S.ui.tahun:per().lab+' '+S.ui.tahun],['Tanggal laporan',rptLongDate(TODAY)],['Disusun oleh',(ME&&ME.nama?ME.nama:'—')+(ME&&ME.unit?' · '+ME.unit:'')]],
+  cover:{kicker:kick,title:c.name,subject:subj,chips:[draftFinal?'DRAFT · Belum disahkan':(o.preset==='tutup'?'Laporan akhir':'Laporan'),one?one.p.kode:c.G.length+' program',one?(one.p.jenis||''):'','TA '+S.ui.tahun,o.stage?(PMO_REPORT_LABEL[o.stage]||o.stage):(c.spec.th?tahapLab(c.spec.th):'Seluruh tahapan'),P1?'UIC '+P1.uic:''],scope:c.filter.split(' · '),
+   meta:[...(draftFinal?[['Status Dokumen','DRAFT – belum disahkan, bukan dokumen penutupan resmi']]:[]),...(o.no?[['Nomor',o.no]]:[]),['Cakupan',c.spec.k==='filter'?c.G.length+' program · '+nProj+' proyek':c.spec.k==='prog'?nProj+' proyek':c.name],['Program',c.G.map(g=>g.p.kode+' · '+g.p.nama).join('; ')],['Periode laporan',(per().pr||'all')==='all'?'Tahun Anggaran '+S.ui.tahun:per().lab+' '+S.ui.tahun],['Tanggal laporan',rptLongDate(TODAY)],['Disusun oleh',(ME&&ME.nama?ME.nama:'—')+(ME&&ME.unit?' · '+ME.unit:'')]],
    noTte:!inc.tte,tte:{city:sg.city||'Jakarta',date:sg.date||rptLongDate(TODAY),label:sg.label||'',title:sg.title||'',name:sg.name||''}},blocks:B}}
 function rptFile(c,ext){const s=x=>String(x||'').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,50);return 'Laporan_'+s(c.spec.k==='filter'?'Program_Sesuai_Filter':c.name)+'_TA'+S.ui.tahun+'_'+TODAY+'.'+ext}
 function rptXlsx(c){if(!window.XLSX){toast('Pustaka Excel belum termuat.');return}const wb=XLSX.utils.book_new(),add=(n,a,w)=>{const ws=XLSX.utils.aoa_to_sheet(a);if(w)ws['!cols']=w.map(x=>({wch:x}));XLSX.utils.book_append_sheet(wb,ws,n)},R=rptRegs(c);
