@@ -3416,6 +3416,12 @@ window.mtP0Navigate=function(target,section){
  }
  if(!allowedViews().includes(target)){toast('Menu tidak tersedia untuk hak akses Anda.');return}
  const split=String(section||'').split(':'),scope=split[0],tab=split[1];
+ if(scope==='report'&&PMO_REPORT_LABEL[tab]&&target.startsWith('pmo-')){
+  if(location.hash==='#'+target){VIEW=target;render()}else go(target);
+  setTimeout(()=>{if(VIEW===target||location.hash==='#'+target)ACT.pgRep({dataset:{k:'filter',stage:tab,preset:tab==='penutupan'?'tutup':''}})},80);
+  return;
+ }
+
  if(scope==='workspace'){
   const valid=['ringkasan','jadwal','risiko','stakeholder','issue','decision'];
   if(!valid.includes(tab))return;
@@ -9035,6 +9041,7 @@ styles += "\n/* Peta Menu v3: rapat, simetris, responsif; kartu tanpa tab tetap 
 "@media(max-width:1080px){.sk-overlay .sk-menuSections{grid-template-columns:1fr}.sk-overlay .sk-menuTiles{grid-template-columns:repeat(2,minmax(0,1fr))}}\n"+
 "@media(max-width:540px){.sk-overlay .sk-menuTiles{grid-template-columns:1fr}.sk-overlay .sk-p0-minilinks{grid-template-columns:repeat(2,minmax(0,1fr))}.sk-overlay .sk-menuSectionCount{display:none}}\n";
 styles += "\n\n/* Bantuan v4 — kepadatan, simetri, serta tautan submenu yang bisa diakses keyboard */\n.sk-overlay .sk-phaseDetails.sk-stageGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:stretch}\n.sk-overlay .sk-stageGrid>.sk-phaseDetail{min-width:0;display:flex;align-items:flex-start;gap:9px;padding:13px;border-radius:11px;box-shadow:0 2px 9px #1539600a}\n.sk-overlay .sk-stageGrid>.sk-phaseDetail:last-child:nth-child(odd){grid-column:1/-1}\n.sk-overlay .sk-stageGrid .sk-phaseBadge{width:32px;height:32px;flex:none}\n.sk-overlay .sk-stageGrid .sk-phaseDetailText h4{font-size:12.7px;margin:1px 0 3px}\n.sk-overlay .sk-stageGrid .sk-phaseDetailText p{font-size:11px;line-height:1.46;margin:0 0 9px}\n.sk-overlay .sk-stageGrid .sk-phaseLinks{display:block}\n.sk-overlay .sk-stageGrid .sk-phaseLinksLabel{display:block;padding:0 0 5px;font-size:9px;letter-spacing:.06em;text-transform:uppercase}\n.sk-overlay .sk-phaseButtons{display:flex!important;align-items:stretch;gap:6px;flex-wrap:wrap}\n.sk-overlay .sk-phaseButtons>.sk-cta,.sk-overlay .sk-phaseMenu{flex:0 1 auto;min-width:0}\n.sk-overlay .sk-phaseMenu{position:relative;border:1px solid #c7d9e9;border-radius:9px;background:#f4f8fd;max-width:100%}\n.sk-overlay .sk-phaseMenu>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:9px;padding:8px 10px;color:#143b67;font-size:10.7px;min-height:33px}\n.sk-overlay .sk-phaseMenu>summary::-webkit-details-marker{display:none}\n.sk-overlay .sk-phaseMenu>summary strong{font-weight:850}\n.sk-overlay .sk-phaseMenu>summary span{color:#83704f;font-size:9px;white-space:nowrap}\n.sk-overlay .sk-phaseMenu>summary i{font-style:normal;font-size:12px}\n.sk-overlay .sk-phaseMenu[open]{flex-basis:100%;width:100%;background:#fff}\n.sk-overlay .sk-phaseMenu[open]>summary{border-bottom:1px solid #e1eaf3;background:#eaf2fc}\n.sk-overlay .sk-phaseSub{padding:8px}\n.sk-overlay .sk-phaseSubIntro{margin-bottom:6px}\n.sk-overlay .sk-phaseSubGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}\n.sk-overlay .sk-phaseMenu:focus-within{outline:2px solid #daa532;outline-offset:1px}\n.sk-overlay .sk-shortlink{appearance:none;display:inline-flex;align-items:center;justify-content:space-between;gap:5px;text-align:left;min-width:0;border:1px solid #d4e2f0;background:#fff;border-radius:7px;padding:6px 8px;color:#163e69;font-size:10px;line-height:1.35;font-weight:770;cursor:pointer;overflow-wrap:anywhere}\n.sk-overlay .sk-shortlink .sk-ctaArrow{color:#b6852e;order:2;font-size:14px;flex:none}\n.sk-overlay .sk-shortlink:hover,.sk-overlay .sk-shortlink:focus-visible{background:#123b66!important;color:#fff!important;border-color:#123b66!important}\n.sk-overlay .sk-shortlink:hover .sk-ctaArrow,.sk-overlay .sk-shortlink:focus-visible .sk-ctaArrow{color:#ffd078!important}\n.sk-overlay .sk-compactRail{grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:0 0 11px}\n.sk-overlay .sk-compactRail .sk-phaseStop{min-height:0;padding:9px 10px;gap:3px;border-radius:9px}\n.sk-overlay .sk-compactRail.is-cmo{grid-template-columns:repeat(5,minmax(0,1fr))}\n.sk-overlay .sk-compactRail .sk-phaseBubble{min-width:24px;height:24px;font-size:10px}\n.sk-overlay .sk-compactRail .sk-phaseStop strong{font-size:10.5px}\n.sk-overlay .sk-compactRail .sk-phaseChevron{right:9px;top:9px;font-size:13px}\n.sk-overlay .sk-crStages{gap:9px}\n.sk-overlay .sk-crStages .sk-laneBox{min-height:0;padding:11px;display:flex;flex-direction:column;align-items:flex-start;gap:5px}\n.sk-overlay .sk-crStages .sk-laneBox b{margin:0!important}\n.sk-overlay .sk-crStages .sk-laneBox p{flex:1;margin:0 0 3px}\n.sk-overlay .sk-crOutcomes{margin-top:10px!important;gap:9px}\n.sk-overlay .sk-crOutcomes .sk-card{display:flex;flex-direction:column;padding:12px}\n.sk-overlay .sk-crOutcomes .sk-card p{flex:1;margin-bottom:8px}\n.sk-overlay .sk-crCross{margin-top:10px}\n.sk-overlay .sk-crCross .sk-buttons{margin-top:8px}\n.sk-overlay .sk-crTask{margin:10px 0;padding:12px}\n.sk-overlay .sk-crTask>div:last-child{flex:1}\n.sk-overlay .sk-crTask .sk-buttons{margin-top:8px}\n.sk-overlay .sk-glossLinked{margin-top:9px;gap:8px}\n.sk-overlay .sk-glossLinked .sk-term{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:9px 11px;min-width:0}\n.sk-overlay .sk-glossLinked .sk-term>div{min-width:0;flex:1}\n.sk-overlay .sk-glossLinked .sk-term p{line-height:1.4;margin-top:4px}\n.sk-overlay .sk-glossGo{flex:none}\n.sk-overlay .sk-docwrap{margin-top:9px}\n.sk-overlay .sk-docrow{padding:9px 11px;gap:8px}\n.sk-overlay .sk-docHead{padding:8px 11px}\n@media(max-width:1050px){.sk-overlay .sk-compactRail,.sk-overlay .sk-compactRail.is-cmo{grid-template-columns:repeat(3,minmax(0,1fr))}}\n@media(max-width:760px){.sk-overlay .sk-phaseDetails.sk-stageGrid{grid-template-columns:1fr}.sk-overlay .sk-stageGrid>.sk-phaseDetail:last-child:nth-child(odd){grid-column:auto}.sk-overlay .sk-compactRail{grid-template-columns:repeat(2,minmax(0,1fr))},.sk-overlay .sk-compactRail.is-cmo{grid-template-columns:repeat(2,minmax(0,1fr))}.sk-overlay .sk-glossLinked .sk-term{align-items:flex-start;flex-direction:column}.sk-overlay .sk-glossGo{align-self:flex-start}}\n@media(max-width:480px){.sk-overlay .sk-phaseSubGrid{grid-template-columns:1fr}.sk-overlay .sk-compactRail{grid-template-columns:repeat(2,minmax(0,1fr))}}\n";
+styles += "\n\n.sk-reportHelpGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}\n.sk-reportHelpCard{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid #dae6f2;border-radius:11px;background:#fff;min-width:0}\n.sk-reportNum{width:28px;height:28px;flex:none;border-radius:8px;background:#e9f1f9;color:#194976;display:grid;place-items:center;font-weight:850;font-size:11px}\n.sk-reportHelpCard>div{min-width:0;flex:1}.sk-reportHelpCard strong{display:block;font-size:12px;color:#153b61}\n.sk-reportHelpCard p{margin:4px 0 0;font-size:10.8px;line-height:1.45;color:#617892}\n.sk-reportGo{flex:none;max-width:195px}\n.sk-phaseReportInline{width:100%;padding-top:6px;border-top:1px dashed #dbe6f2;margin-top:3px}\n.sk-phaseReportInline .sk-shortlink{font-weight:860;border-color:#e0bd73;background:#fff9e9}\n@media(max-width:920px){.sk-reportHelpGrid{grid-template-columns:1fr}}\n@media(max-width:540px){.sk-reportHelpCard{flex-wrap:wrap}.sk-reportGo{margin-left:38px}}\n";
 function addStyle(){if(document.getElementById("sk-ux-style"))return;var e=document.createElement("style");e.id="sk-ux-style";e.textContent=styles;document.head.appendChild(e)}
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function src(t){return '<span class="sk-source">'+t+'</span>'}
@@ -9146,6 +9153,24 @@ function skStageLinks(kind,dest,label){
   '<div class="sk-phaseSubGrid">'+deep.map(function(t){return skQuick(t[0],t[1],t[2],'sk-shortlink')}).join('')+'</div></div></details>';
 }
 
+function helpReports(){
+ var rows=[
+ ['Gambaran & Portofolio','pmo-portofolio','gambaran','Ringkasan program, profil, dan capaian awal.'],
+ ['Perencanaan Proyek','pmo-perencanaan','perencanaan','Dokumen Proyek, charter, rencana dan status kelengkapan.'],
+ ['Pelaksanaan Proyek','pmo-wbs','pelaksanaan','Kemajuan WBS, bukti pelaksanaan, risiko, isu, dan CR.'],
+ ['Pemantauan & Pengendalian','pmo-laporan','pemantauan','Capaian, risiko, isu, keputusan, dan pekerjaan terlambat.'],
+ ['Penutupan Proyek','pmo-penutupan','penutupan','Laporan Akhir Proyek: bisa dibuat DRAFT sebelum proyek ditutup.'],
+ ['Evaluasi Pascaproyek','pmo-pascaproyek','pascaproyek','Hasil evaluasi manfaat dan tindak lanjut setelah penutupan.'],
+ ['Referensi','pmo-referensi','referensi','Ringkasan data referensi, dokumen dan tahapan.']
+ ];
+ return intro('Pintasan laporan berdasarkan fase','Laporan per Tahap Manajemen Proyek',
+  'Pilih fase untuk langsung membuka pratinjau laporan. Tombol Laporan selalu ada di sisi kanan atas setiap halaman PMO.')+
+  '<div class="sk-reportHelpGrid">'+rows.map(function(r,i){
+   return '<div class="sk-reportHelpCard"><span class="sk-reportNum">'+('0'+(i+1)).slice(-2)+'</span><div><strong>'+esc(r[0])+'</strong><p>'+esc(r[3])+'</p></div>'+
+    skQuick(r[2]==='penutupan'?'Buat Draft / Laporan Akhir':'Buka laporan',r[1],'report:'+r[2],'sk-shortlink sk-reportGo')+'</div>';
+  }).join('')+'</div>'+
+  note('Pembuatan draft laporan tidak mengubah status pengajuan atau penutupan proyek. Laporan akhir yang belum disahkan diberi keterangan DRAFT.',true);
+}
 function helpStages(kind){
  var items=kind==='pmo'?PM:CM,cm=kind==='cmo';
  var keys=cm?['01','02','03','04','05']:['01','02','03','04','05','06'];
@@ -9153,6 +9178,9 @@ function helpStages(kind){
  '<span class="sk-phaseBubble">'+(keys[i]||('0'+(i+1)).slice(-2))+'</span><strong>'+esc(a[0])+'</strong><span class="sk-phaseChevron" aria-hidden="true">↓</span></button>'}).join('')+'</div>';
  var blocks=items.map(function(a,i){
   var buttons='';for(var k=2;k<a.length;k+=2)buttons+=skStageLinks(kind,a[k],a[k+1]);
+  if(!cm){const rs=[['pmo-perencanaan','perencanaan'],['pmo-wbs','pelaksanaan'],['pmo-laporan','pemantauan'],['pmo-penutupan','penutupan'],['pmo-pascaproyek','pascaproyek'],['pmo-referensi','referensi']][i];
+   if(rs)buttons+='<div class="sk-phaseReportInline">'+skQuick(rs[1]==='penutupan'?'Laporan Akhir (Draft)':'Laporan Tahap',rs[0],'report:'+rs[1],'sk-shortlink')+'</div>';
+  }
   return '<section class="sk-phaseDetail" id="sk-phase-'+i+'" data-skphasedetail="'+i+'">'+
    '<div class="sk-phaseBadge">'+keys[i]+'</div>'+
    '<div class="sk-phaseDetailText"><h4>'+esc(a[0])+'</h4><p>'+esc(a[1])+'</p>'+
@@ -9488,7 +9516,7 @@ function coordination(){
 }
 var cfg={
  help:{
- pmo:[['menu','Peta Menu',function(){return helpMenu('pmo')}],['steps','Tahapan Manajemen Proyek',function(){return helpStages('pmo')}],['crflow','Alur Change Request',function(){return pmCR()}],['terms','Daftar Istilah PM',function(){return helpGloss('pmo')}],['docs','Dokumentasi',function(){return helpDocs('pmo')}]],
+ pmo:[['menu','Peta Menu',function(){return helpMenu('pmo')}],['steps','Tahapan Manajemen Proyek',function(){return helpStages('pmo')}],['crflow','Alur Change Request',function(){return pmCR()}],['reports','Laporan per Tahap',function(){return helpReports()}],['terms','Daftar Istilah PM',function(){return helpGloss('pmo')}],['docs','Dokumentasi',function(){return helpDocs('pmo')}]],
  cmo:[['menu','Peta Menu',function(){return helpMenu('cmo')}],['steps','Tahapan Manajemen Perubahan',function(){return helpStages('cmo')}],['terms','Daftar Istilah CM',function(){return helpGloss('cmo')}],['docs','Dokumentasi',function(){return helpDocs('cmo')}]]
  },
  sheet:{
