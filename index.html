@@ -5556,18 +5556,31 @@ function crApply(c){
 function lapData(){const y=S.ui.tahun,lu=lockU();const items=pmoScopedWbs(false);
  const prog=S.programs.filter(p=>items.some(w=>w.prog===p.akr)).map(p=>{const it=items.filter(w=>w.prog===p.akr);return {p,tw:[1,2,3,4].map(t=>sumTR(it,t*3)),a:sumTR(it,12).a}});
  const ue=UNITS.filter(u=>!lu||u===lu).map(u=>{const it=items.filter(w=>w.ue.includes(u));return {u,tw:[1,2,3,4].map(t=>sumTR(it,t*3)),a:sumTR(it,12).a}});return {prog,ue,items}}
-function pLaporan(){const L=lapData();const tw=+S.ui.ltw||3;const c=(r,t)=>t?pct(r/t*100):'—';
- const tb=(rows,lab)=>`<div class="tscroll"><table class="lap"><thead><tr><th>${lab}</th>${[1,2,3,4].map(t=>`<th class="num">TW ${t} <span class="s" style="font-weight:600;text-transform:none">(kumulatif)</span></th>`).join('')}<th class="num">Target tahunan</th><th class="num">Capaian tahunan s.d. TW${tw}</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r.l}</b></td>${r.tw.map(x=>`<td class="num"><b>${c(x.r,x.t)}</b><span class="sm">${rp(x.r)} / ${rp(x.t)}</span></td>`).join('')}<td class="num">${rp(r.a)}</td><td class="num"><b>${c(r.tw[tw-1].r,r.a)}</b></td></tr>`).join('')}</tbody></table></div><p class="s" style="margin:0;padding:8px 12px">Sel TW: capaian (realisasi / target, poin kumulatif seperti sheet Capaian T-Program).</p>`;
- const tot={l:'Total',tw:[1,2,3,4].map(t=>sumTR(L.items,t*3)),a:sumTR(L.items,12).a};
+function pLaporan(){const L=lapData();const tw=+S.ui.ltw||3,sel=capSel();
+ const shared=(kind,key,items)=>[1,2,3,4].map(q=>capVal(kind,key,items,q));
+ const c=(r,t,q)=>capPct(r,t,q);
+ const tb=(rows,lab)=>`<div class="tscroll"><table class="lap"><thead><tr><th>${lab}</th>${[1,2,3,4].map(t=>`<th class="num">TW ${t} <span class="s" style="font-weight:600;text-transform:none">(kumulatif)</span></th>`).join('')}<th class="num">Target tahunan</th><th class="num">Capaian tahunan s.d. TW${tw}</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r.l}</b></td>${r.tw.map((x,i)=>`<td class="num" title="Capaian mentah ${capRaw(x.r,x.t)}"><b>${c(x.r,x.t,i+1)}</b><span class="sm">${x.r==null?'—':rp(x.r)} / ${x.t==null?'—':rp(x.t)}</span></td>`).join('')}<td class="num">${r.tw[tw-1].a==null?'—':rp(r.tw[tw-1].a)}</td><td class="num"><b>${r.tw[tw-1].a&&r.tw[tw-1].r!=null?pct(r.tw[tw-1].r/r.tw[tw-1].a*100):'—'}</b></td></tr>`).join('')}</tbody></table></div><p class="s" style="margin:0;padding:8px 12px">Sel TW menggunakan arsip laporan per periode atau WBS berjalan, sama dengan Overview. TW I–II maksimum 100%; TW III–IV maksimum 120%. Bobot target/realisasi tidak dibatasi.</p>`;
+ const tot={l:'Total',tw:shared(sel.kind,sel.key,L.items)};
  return vh('L','pmo','Laporan Triwulan','Capaian T-Program, per UE I, dan output IKU K-Wide per triwulan.',`<a class="btn" href="http://s.kemenkeu.go.id/LaporanNarasiTProgram2026" target="_blank" rel="noopener">Arsip narasi ›</a><a class="btn" href="#pmo-narasi">Laporan narasi TW (PPT) ›</a><button class="btn pri" data-act="lapexp">Export Excel</button>`)+pmoTabs('laporan')+
  `
- <div class="card"><div class="ch"><h3>Capaian T-Program</h3></div>${tb([...L.prog.map(x=>({l:x.p.nama,tw:x.tw,a:x.a})),tot],'T-Program')}</div>
- <div class="card"><div class="ch"><h3>Capaian per UE I</h3><span class="r s">berdasarkan kolom cakupan UE I</span></div>${tb(L.ue.map(x=>({l:x.u,tw:x.tw,a:x.a})),'UE I')}</div>`+
+ <div class="card"><div class="ch"><h3>Capaian T-Program</h3></div>${tb([...L.prog.map(x=>({l:x.p.nama,tw:shared(sel.sc==='unit'?'combo':'prog',sel.sc==='unit'?sel.u+'|'+x.p.akr:x.p.akr,L.items.filter(w=>w.prog===x.p.akr))})),tot],'T-Program')}</div>
+ <div class="card"><div class="ch"><h3>Capaian per UE I</h3><span class="r s">berdasarkan kolom cakupan UE I</span></div>${tb(L.ue.map(x=>({l:x.u,tw:shared(sel.pk?'combo':'ue',sel.pk?x.u+'|'+sel.pk:x.u,L.items.filter(w=>w.ue.includes(x.u)))})),'UE I')}</div>`+
  tbl('kw',{ent:'output IKU',title:'Output IKU K-Wide per TW',add:true,edit:true,del:true,list:()=>S.kwide,rows:()=>S.kwide,canAdd:()=>lv('lap').includes('C'),canEdit:()=>lv('lap').includes('U'),canDel:()=>lv('lap').includes('D'),label:x=>x.prog,
   foot:all=>[1,2,3,4].map(t=>{const r=all.filter(x=>x.tw===t);return `<span>TW${t}: ${r.reduce((a,x)=>a+(+x.r||0),0)}/${r.reduce((a,x)=>a+(+x.t||0),0)}</span>`}).join(''),
   cols:[{k:'tw',l:'TW',t:'sel',o:[[1,'TW 1'],[2,'TW 2'],[3,'TW 3'],[4,'TW 4']],r:x=>'TW '+x.tw},{k:'prog',l:'Program Transformasi',req:true},{k:'out',l:'Target output',t:'ta',w:1,r:x=>`<span style="white-space:pre-line">${esc(x.out)}</span>`},{k:'t',l:'Jumlah target',t:'num',num:1},{k:'r',l:'Jumlah realisasi',t:'num',num:1,r:x=>x.r===''||x.r==null?'—':x.r}],onSave:x=>{x.tw=+x.tw}})}
-function exportLaporan(){const L=lapData();const row=(l,tw,a)=>{const o={Nama:l};tw.forEach((x,i)=>o['Target TW'+(i+1)]=x.t);tw.forEach((x,i)=>o['Realisasi TW'+(i+1)]=x.r);tw.forEach((x,i)=>o['Capaian TW'+(i+1)]=x.t?Math.round(x.r/x.t*1000)/10:'');o['Target Tahunan']=a;return o};
- xlsxSave([{sheet:'Capaian T-Program',rows:L.prog.map(x=>row(x.p.nama,x.tw,x.a))},{sheet:'Capaian per UE1',rows:L.ue.map(x=>row(x.u,x.tw,x.a))},{sheet:'Capaian K-Wide',rows:S.kwide.map(x=>({TW:x.tw,Program:x.prog,'Target Output':x.out,'Jumlah Target':x.t,'Jumlah Realisasi':x.r}))}],`Laporan_TW_${S.ui.tahun}.xlsx`)}
+function exportLaporan(){const L=lapData(),sel=capSel();
+ const values=(kind,key,items)=>[1,2,3,4].map(q=>capVal(kind,key,items,q));
+ const row=(name,tw)=>{const x={Nama:name};tw.forEach((v,i)=>{
+  x['Target TW'+(i+1)]=v.t??'';x['Realisasi TW'+(i+1)]=v.r??'';
+  x['Capaian TW'+(i+1)+' (%)']=capValue(v.r,v.t,i+1)??'';
+  x['Capaian Mentah TW'+(i+1)+' (%)']=v.t>0&&v.r!=null?v.r/v.t*100:'';
+  x['Target Tahunan TW'+(i+1)]=v.a??'';
+ });return x};
+ const programs=L.prog.map(x=>row(x.p.nama,values(sel.sc==='unit'?'combo':'prog',sel.sc==='unit'?sel.u+'|'+x.p.akr:x.p.akr,L.items.filter(w=>w.prog===x.p.akr))));
+ programs.push(row('Total',values(sel.kind,sel.key,L.items)));
+ const units=L.ue.map(x=>row(x.u,values(sel.pk?'combo':'ue',sel.pk?x.u+'|'+sel.pk:x.u,L.items.filter(w=>w.ue.includes(x.u)))));
+ xlsxSave([{sheet:'Capaian T-Program',rows:programs},{sheet:'Capaian per UE1',rows:units},{sheet:'Capaian K-Wide',rows:S.kwide.map(x=>({TW:x.tw,Program:x.prog,'Target Output':x.out,'Jumlah Target':x.t,'Jumlah Realisasi':x.r}))}],`Laporan_TW_${S.ui.tahun}.xlsx`);
+}
 
 /* ======================== Alur PMO: Siklus, Program, Perencanaan, Penutupan, Narasi TW ======================== */
 const PSTG=[['plan','Perencanaan',1,'#C8A84B'],['exec','Pelaksanaan & pemantauan',2,'#1F66C9'],['close','Penutupan',4,'#16807F']];
@@ -5866,7 +5879,7 @@ function capBreakdown(quarters,num){
  };
  return `<div class="card ov-capbreak"><div class="ch"><h3>Rincian Capaian per T-Program dan Total</h3><span class="r s">Target dan realisasi sama dengan kartu TW di atas</span></div><div class="pad">${quarters.map(renderQuarter).join('')}</div></div>`;
 }
-function capMatrix(kindTab,num){capAutoLock();const {sc,u,pk}=capSel(),cd=Math.max(1,Math.min(4,curTwDone()||1)),all=pmoAllWbs().filter(w=>!pk||w.prog===pk);
+function capMatrix(kindTab,num){capAutoLock();const {sc,u,pk}=capSel(),quarterChoice=per().pr,cd=Math.max(1,Math.min(4,/^[1-4]$/.test(quarterChoice)?+quarterChoice:(curTwDone()||1))),all=pmoAllWbs().filter(w=>!pk||w.prog===pk);
  let ent=[];
  if(kindTab==='prog'){const base=sc==='unit'?all.filter(w=>w.ue.includes(u)):all;
   ent=S.programs.filter(p=>base.some(w=>w.prog===p.akr)).map(p=>{const it=base.filter(w=>w.prog===p.akr);return {name:p.nama,tw:[1,2,3,4].map(t=>sc==='unit'?capVal('combo',u+'|'+p.akr,it,t):capVal('prog',p.akr,it,t))}});
