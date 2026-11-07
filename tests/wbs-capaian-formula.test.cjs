@@ -79,7 +79,7 @@ test('Arsip Excel TW I tidak berubah oleh realisasi terkini 192,1%',()=>{
  const S={ui:{tahun:2026},cfg:{capSnap:{'2026-1':{tot:[5618,10792,89812],how:'manual',by:'Simulasi laporan terlambat'}}}};
  const body=section('function capSnap(y,tw)','function capScope()')+
  String.fromCharCode(10)+section('function capOff(kind,key,tw)','const capPct=')+
- '\\n({capSnap,capVal})';
+ String.fromCharCode(10)+'({capSnap,capVal})';
  const ctx={S,window:ref.window,TODAY:'2026-11-07',
    capDeadline:(y,tw)=>y===2026&&tw<=3?'2026-10-05':'2027-01-05',
    capLive:()=>({t:5618,r:10792,a:89812,src:'live'}),
@@ -97,7 +97,7 @@ test('Triwulan ditutup tanpa arsip tidak boleh memakai realisasi terbaru',()=>{
  const S={ui:{tahun:2027},cfg:{}};
  const body=section('function capSnap(y,tw)','function capScope()')+
  String.fromCharCode(10)+section('function capOff(kind,key,tw)','const capPct=')+
- '\\n({capVal})';
+ String.fromCharCode(10)+'({capVal})';
  const fn=vm.runInNewContext(body,{S,window:{},TODAY:'2027-11-07',
    capDeadline:()=> '2027-04-05',
    capLive:()=>({t:100,r:150,src:'live'}),
@@ -105,4 +105,36 @@ test('Triwulan ditutup tanpa arsip tidak boleh memakai realisasi terbaru',()=>{
  const tw1=fn.capVal('tot','',[],1);
  assert.equal(tw1.src,'missing');
  assert.equal(tw1.t,null);
+});
+
+test('Rekap Excel terbaru TW II sama untuk lima program dan total',()=>{
+ const ctx={window:{}};
+ vm.runInNewContext(fs.readFileSync(path.join(__dirname,'..','wbs-cap-2026-reference.js'),'utf8'),ctx);
+ const q2=ctx.window.WBS_CAP_REFERENSI_2026['2026-2'];
+ assert.equal(q2.tot[0],33664);
+ assert.equal(q2.tot[1],34589);
+ assert.equal(q2.tot[2],95885);
+ const expected={OA:[6942,7392,16478],CORE:[25213,25688,63757],SP:[660,660,9070],SD:[616,616,1195],SSB:[233,233,5385]};
+ for(const [code,v] of Object.entries(expected)){
+   assert.ok(q2.prog[code],code+' absent');
+   assert.equal(q2.prog[code][0],v[0],code+' target');
+   assert.equal(q2.prog[code][1],v[1],code+' realisasi');
+   assert.equal(q2.prog[code][2],v[2],code+' tahunan');
+ }
+ assert.equal(Object.keys(q2.prog).length,5);
+ assert.equal(q2.participants.length,5);
+});
+test('Capaian dibatasi TW I-II 100% dan TW III-IV 120%, bobot asli utuh',()=>{
+ const body=section('const capMax=','function capSel()')+String.fromCharCode(10)+'({capValue,capMax})';
+ const {capValue,capMax}=vm.runInNewContext(body,{pct:v=>v});
+ assert.equal(capMax(1),100);
+ assert.equal(capMax(2),100);
+ assert.equal(capMax(3),120);
+ assert.equal(capMax(4),120);
+ assert.equal(capValue(10430,5618,1),100);
+ assert.equal(capValue(34589,33664,2),100);
+ assert.equal(capValue(47054,45800,3),47054/45800*100);
+ assert.equal(capValue(130,100,3),120);
+ assert.equal(capValue(130,100,4),120);
+ assert.equal(capValue(null,100,2),null);
 });
