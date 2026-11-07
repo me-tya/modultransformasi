@@ -5804,7 +5804,12 @@ function capVal(kind,key,items,tw){
  if(capClosed(tw)){const frozen=capOff(kind,key,tw);return frozen||{t:null,r:null,a:null,ct:null,on:null,early:null,nT:null,nOn:null,nE:null,src:'missing'}};
  return kind==='tot'?capLiveTot(items,tw):capLive(items,tw);
 }
-const capPct=(r,t)=>t?pct(r/t*100):'—';
+/* Batas resmi capaian TW: TW I dan II 100%, TW III dan IV 120%.
+    Batas hanya berlaku pada nilai capaian; bobot target/realisasi tetap asli. */
+const capMax=tw=>tw<=2?100:120;
+const capValue=(r,t,tw)=>t>0&&r!=null?Math.min(capMax(tw),Math.max(0,r/t*100)):null;
+const capPct=(r,t,tw)=>tw?pct(capValue(r,t,tw)):(t>0&&r!=null?pct(r/t*100):'—');
+const capRaw=(r,t)=>t>0&&r!=null?pct(r/t*100):'—';
 function capSel(){const sc=capScope(),u=curUnit(),pk=S.ui.prog;return {sc,u,pk,kind:sc==='unit'?(pk?'combo':'ue'):(pk?'prog':'tot'),key:sc==='unit'?(pk?u+'|'+pk:u):pk}}
 function capCtl(){const {sc,u}=capSel();
  const seg=(k,cur,L)=>`<span class="cap-seg" role="group">${L.map(([v,l,t])=>`<button type="button" data-act="capSet" data-k="${k}" data-v="${v}" class="${cur===v?'on':''}" aria-pressed="${cur===v}" title="${esc(t||'')}">${esc(l)}</button>`).join('')}</span>`;
@@ -5823,23 +5828,51 @@ ACT.capUnlock=el=>{const tw=+el.dataset.v,y=+S.ui.tahun;if(capSnap(y,tw)?.how===
 function capQuarter(quarters,num){capAutoLock();const {sc,u,pk,kind,key}=capSel(),items=capItems(sc),cd=curTwDone(),y=+S.ui.tahun,adm=lv('lap').includes('U')&&!lockU();
  const card=t=>{const st=t<=cd?'done':t===cd+1?'run':'plan',v=capVal(kind,key,items,t);
   const chip=v.src==='lock'?(v.lock.how==='excel-reference'?`<span class="chip c-ok" title="Sumber: ${esc(v.lock.source)} · ${esc(v.lock.by)}">Arsip Excel TW ${ROM[t]}</span>`:`<span class="chip c-ok" title="Dikunci ${esc(v.lock.by)} · ${esc(v.lock.at)}">🔒 Cut-off ${fmtD(v.cut)}</span>`):v.src==='missing'?'<span class="chip c-warn">Rekap TW belum tersedia</span>':st==='run'?'<span class="chip c-info">Berjalan · s.d. hari ini</span>':st==='plan'?'<span class="chip c-gray">Belum berjalan</span>':'<span class="chip c-info">WBS periode berjalan</span>';
-  const big=st==='plan'?'—':capPct(v.r,v.t);
+  const big=st==='plan'?'—':capPct(v.r,v.t,t);
   const brk=st!=='plan'&&v.on!=null&&v.early>0?`<span class="cap-b"><b>${num(v.on)}</b> dari task yang jatuh tempo s.d. TW ${ROM[t]}${v.nT!=null?' ('+v.nOn+'/'+v.nT+' task)':''} + <b>${num(v.early)}</b> dari ${v.nE!=null?v.nE+' ':''}task yang selesai lebih cepat dari jadwal</span>`:st!=='plan'&&v.nT!=null?`<span class="cap-b">${v.nOn}/${v.nT} task jatuh tempo s.d. TW ${ROM[t]} selesai &amp; tervalidasi</span>`:'';
   const lv2='';
   const sn=capSnap(y,t);
   const lk=adm&&st==='done'&&sn?.how!=='excel-reference'?(sn?`<button type="button" class="btn sm" data-act="capUnlock" data-v="${t}">Buka kunci</button>`:`<button type="button" class="btn sm" data-act="capLock" data-v="${t}">🔒 Kunci TW ${ROM[t]}</button>`):'';
-  return `<div class="ov-q cap-q ${st}"><div class="cap-h"><small>TRIWULAN ${ROM[t]}</small>${chip}</div><b class="big">${big}</b><div class="bar"><i style="width:${st==='plan'?0:Math.min(100,v.t?v.r/v.t*100:0)}%;background:var(--blue)"></i></div><span>${v.src==='missing'?'Rincian periode historis belum diarsipkan':st==='plan'?'Target '+num(v.t):num(v.r)+' realisasi / '+num(v.t)+' target'}</span>${brk}<div class="cap-y"><span>Capaian tahunan${v.a?'<small style="display:block;font-weight:600;font-size:10.5px;letter-spacing:0;color:#6B7D96">target tahunan '+num(v.a)+'</small>':''}</span><b>${st==='plan'||v.ct==null?'—':pct(v.ct)}</b></div>${lv2}${lk}</div>`};
+  return `<div class="ov-q cap-q ${st}"><div class="cap-h"><small>TRIWULAN ${ROM[t]}</small>${chip}</div><b class="big" title="Capaian mentah ${capRaw(v.r,v.t)} · maksimum pelaporan ${capMax(t)}%">${big}</b><div class="bar"><i style="width:${st==='plan'?0:Math.min(100,v.t?v.r/v.t*100:0)}%;background:var(--blue)"></i></div><span>${v.src==='missing'?'Rincian periode historis belum diarsipkan':st==='plan'?'Target '+num(v.t):num(v.r)+' realisasi / '+num(v.t)+' target'}</span>${brk}<div class="cap-y"><span>Capaian tahunan${v.a?'<small style="display:block;font-weight:600;font-size:10.5px;letter-spacing:0;color:#6B7D96">target tahunan '+num(v.a)+'</small>':''}</span><b>${st==='plan'||v.ct==null?'—':pct(v.ct)}</b></div>${lv2}${lk}</div>`};
  const scopeLab=sc==='unit'?'UE I '+u+' (kolom cakupan UE I = "Ya")':'Kemenkeu'+(pk?' · '+((progOf(pk)||{}).nama||pk):' · seluruh T-Program');
  return `<div class="card"><div class="ch"><h3>Capaian per Triwulan</h3>${capCtl()}</div><div class="ov-qgrid">${quarters.map(card).join('')}</div>`+
  `<div class="ov-filter-status"><b>Lingkup:</b> ${esc(scopeLab)} · TW selesai menggunakan rekap historis sesuai periode; TW berjalan dihitung dari WBS${sc==='unit'&&pk?' · <i>Rincian kombinasi UE I × program lama tidak ditampilkan bila tidak ada arsip, agar tidak memakai angka terkini</i>':''}</div>`+
- `<p class="cap-note">TW I–III 2026 menggunakan rekap formula yang tersimpan dalam workbook WBS 2026 (arsip historis). TW berjalan dan periode berikutnya dihitung dari WBS, lalu dikunci sebagai snapshot setelah cut-off. Metode: <b>target</b> = bobot (hari) task yang jatuh tempo s.d. akhir TW, kumulatif; <b>realisasi</b> = bobot task yang sudah ditandai 100% s.d. bulan itu dan buktinya tervalidasi, termasuk task yang selesai lebih cepat dari jadwal. <b>Kunci cut-off</b> dibuat otomatis oleh sistem ${capCutHK()} hari kerja setelah TW berakhir (batas pengisian realisasi), agar angka yang dilaporkan tidak berubah oleh realisasi susulan atau CR.</p></div>`}
+ `<p class="cap-note">TW I dan III 2026 berasal dari workbook WBS (8)(1); TW II 2026 menggunakan tabel Excel terbaru yang dilampirkan; TW berjalan dihitung dari WBS. Capaian pelaporan dibatasi 100% pada TW I–II dan 120% pada TW III–IV, tanpa mengubah target dan realisasi. Metode: <b>target</b> = bobot (hari) task yang jatuh tempo s.d. akhir TW, kumulatif; <b>realisasi</b> = bobot task yang sudah ditandai 100% s.d. bulan itu dan buktinya tervalidasi, termasuk task yang selesai lebih cepat dari jadwal. <b>Kunci cut-off</b> dibuat otomatis oleh sistem ${capCutHK()} hari kerja setelah TW berakhir (batas pengisian realisasi), agar angka yang dilaporkan tidak berubah oleh realisasi susulan atau CR.</p></div>`+capBreakdown(quarters,num)}
+/* Rincian quarter memakai capVal() yang sama dengan kartu dan tab T-Program:
+   tidak ada salinan nilai atau formula kedua di markup ini. */
+function capBreakdown(quarters,num){
+ const y=+S.ui.tahun,{sc,u,pk}=capSel(),all=capItems(sc),cd=curTwDone();
+ const renderQuarter=t=>{
+   const sn=capClosed(t)?capSnap(y,t):null;
+   const allCodes=sn&&Array.isArray(sn.participants)?sn.participants.slice():[...new Set(all.map(w=>w.prog))];
+   const codes=pk?allCodes.filter(code=>code===pk):allCodes;
+   const entries=codes.map(code=>{
+     const it=all.filter(w=>w.prog===code);
+     const kind=sc==='unit'?'combo':'prog',key=sc==='unit'?u+'|'+code:code;
+     return {code,name:(progOf(code)||{}).nama||code,v:capVal(kind,key,it,t)};
+   }).filter(e=>e.v.src!=='missing'&&(e.v.t!=null||e.v.r!=null));
+   const v=pk?capVal(sc==='unit'?'combo':'prog',sc==='unit'?u+'|'+pk:pk,all.filter(w=>w.prog===pk),t):
+     capVal(sc==='unit'?'ue':'tot',sc==='unit'?u:'',all,t);
+   const row=(name,x,total)=>{
+     const empty=x.src==='missing'||x.t==null;
+     const raw=capRaw(x.r,x.t);
+     return `<tr${total?' style="background:#F1F5FB;font-weight:800"':''}><td><b>${esc(name)}</b></td><td class="num">${empty?'—':num(x.t)}</td><td class="num">${empty?'—':num(x.r)}</td><td class="num" title="Capaian mentah ${raw} · batas ${capMax(t)}%"><b>${empty?'—':capPct(x.r,x.t,t)}</b></td><td class="num">${x.a==null?'—':num(x.a)}</td><td class="num">${x.a>0&&x.r!=null?pct(x.r/x.a*100):'—'}</td></tr>`;
+   };
+   const msg=sn?.source?'Sumber: '+esc(sn.source):(capClosed(t)?'Snapshot saat batas pelaporan TW':'Dihitung dari WBS tahun '+y);
+   return `<details class="ov-detailq" ${quarters.length===1||t===Math.max(1,cd)?'open':''}><summary><b>Rincian TW ${ROM[t]}</b> <span>${v.t!=null?num(v.r)+' realisasi / '+num(v.t)+' target · '+capPct(v.r,v.t,t):'belum tersedia'}</span></summary>
+     <div class="tscroll"><table class="lap"><thead><tr><th>T-Program</th><th class="num">Target TW</th><th class="num">Realisasi TW</th><th class="num">Capaian TW</th><th class="num">Target Tahunan</th><th class="num">Capaian Tahunan</th></tr></thead>
+     <tbody>${entries.map(e=>row(e.name,e.v,false)).join('')||'<tr><td colspan="6">Rincian historis untuk filter ini belum tersedia.</td></tr>'}${row('Total'+(sc==='unit'?' '+u:''),v,true)}</tbody></table></div>
+     <p class="s" style="padding:8px 13px;margin:0">${msg}. Capaian TW dibatasi maks. ${capMax(t)}% (bobot tidak dibatasi). Total hanya menjumlah program dalam lingkup pelaporan periode tersebut.</p></details>`;
+ };
+ return `<div class="card ov-capbreak"><div class="ch"><h3>Rincian Capaian per T-Program dan Total</h3><span class="r s">Target dan realisasi sama dengan kartu TW di atas</span></div><div class="pad">${quarters.map(renderQuarter).join('')}</div></div>`;
+}
 function capMatrix(kindTab,num){capAutoLock();const {sc,u,pk}=capSel(),cd=Math.max(1,Math.min(4,curTwDone()||1)),all=pmoAllWbs().filter(w=>!pk||w.prog===pk);
  let ent=[];
  if(kindTab==='prog'){const base=sc==='unit'?all.filter(w=>w.ue.includes(u)):all;
   ent=S.programs.filter(p=>base.some(w=>w.prog===p.akr)).map(p=>{const it=base.filter(w=>w.prog===p.akr);return {name:p.nama,tw:[1,2,3,4].map(t=>sc==='unit'?capVal('combo',u+'|'+p.akr,it,t):capVal('prog',p.akr,it,t))}});
   if(!pk)ent.push({name:'Total'+(sc==='unit'?' '+u:''),tot:1,tw:[1,2,3,4].map(t=>sc==='unit'?capVal('ue',u,base,t):capVal('tot','',base,t))})}
  else{const us=sc==='unit'?[u]:UNITS;ent=us.map(x=>{const it=all.filter(w=>w.ue.includes(x));return {name:x,me:x===u,tw:[1,2,3,4].map(t=>pk?capVal('combo',x+'|'+pk,it,t):capVal('ue',x,it,t))}}).filter(e=>e.tw.some(v=>v.t||v.r))}
- const cell=(v,t)=>`<td class="num"><b>${t>cd+1?'—':capPct(v.r,v.t)}</b><span class="sm">${v.src==='missing'?'Belum tersedia':num(v.r)+' / '+num(v.t)}</span>${v.src==='lock'?'<span class="src">🔒 rekap TW</span>':''}</td>`;
+ const cell=(v,t)=>`<td class="num" title="Capaian sebelum batas: ${capRaw(v.r,v.t)} · batas TW ${ROM[t]} ${capMax(t)}%"><b>${t>cd+1?'—':capPct(v.r,v.t,t)}</b><span class="sm">${v.src==='missing'?'Belum tersedia':num(v.r)+' / '+num(v.t)}</span>${v.src==='lock'?'<span class="src">🔒 rekap TW</span>':''}</td>`;
  const title=kindTab==='prog'?'Capaian T-Program':'Capaian per Unit Eselon I';
  return `<div class="card ov-matrix"><div class="ch"><h3>${title}</h3>${capCtl()}</div><div class="tscroll"><table class="lap"><thead><tr><th>${kindTab==='prog'?'T-Program':'UE I'}</th>${[1,2,3,4].map(t=>`<th class="num">TW ${ROM[t]}</th>`).join('')}<th class="num">Target tahunan</th><th class="num">Capaian tahunan s.d. TW ${ROM[cd]}</th></tr></thead><tbody>${ent.map(e=>{const v=e.tw[cd-1];return `<tr${e.tot?' style="background:#F4F7FC"':''}><td><b>${esc(e.name)}</b>${e.me&&sc!=='unit'?' <span class="chip c-info">unit saya</span>':''}</td>${e.tw.map((x,i)=>cell(x,i+1)).join('')}<td class="num">${num(v.a)}</td><td class="num"><b>${v.ct==null?'—':pct(v.ct)}</b></td></tr>`}).join('')}</tbody></table></div><p class="cap-note">Sel TW: realisasi periode ÷ target kumulatif periode. TW yang sudah ditutup memakai rekap laporan atau snapshot cut-off; TW berjalan dihitung dari WBS saat ini. Jika arsip kombinasi filter lama tidak tersedia, angka tidak ditampilkan.</p></div>`}
 function pOverview(){
@@ -5862,7 +5895,7 @@ function pOverview(){
  '<div class="ov-tabs" role="tablist" aria-label="Jenis capaian">'+[['tw','Capaian per Triwulan'],['kwide','Capaian K-Wide'],['tprog','Capaian T-Program'],['ue','Capaian per UE I']].map(([v,l])=>'<button type="button" data-act="ovTab" data-v="'+v+'" role="tab" aria-selected="'+(tab===v)+'" class="'+(tab===v?'on':'')+'">'+l+'</button>').join('')+'</div>'+
  (tab==='tw'?quarter+(data.items.length?'':'<div class="note w">WBS tahun ini belum tersedia di aplikasi. Impor sheet Kompilasi untuk mengisi capaian WBS.</div>'):
   tab==='kwide'?kTable:tab==='tprog'?capMatrix('prog',num):capMatrix('ue',num))+
- '<p class="s ov-source">Perhitungan capaian WBS mengikuti bobot, jadwal, realisasi dan status validasi pada aplikasi. K-Wide 2026 menggunakan angka output dari workbook rujukan, sehingga keduanya tidak boleh disamakan.</p>';
+ '<p class="s ov-source">Capaian TW yang sudah ditutup mengikuti rekap historis per TW; TW berjalan dihitung dari WBS. Target dan realisasi tidak dipotong, hanya persentase capaian pelaporan yang dibatasi 100% (TW I–II) dan 120% (TW III–IV). K-Wide adalah indikator terpisah.</p>';
 }
 ACT.ovTab=el=>{S.ui.overviewTab=el.dataset.v;save();render()};
 
