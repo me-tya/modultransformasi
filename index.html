@@ -6690,12 +6690,13 @@ function ddEval(src,c){const n=c.items.length;
 
 /* --- konteks laporan sesuai cakupan & filter --- */
 function rptCtx(spec){spec=spec||{k:'filter'};let G=pgGroups();
+ if(!G.length&&spec.allowEmpty)G=progVis().filter(p=>!spec.p||p.akr===spec.p).map(p=>({p,P:[],items:[],x:pgStat([])}));
  if(spec.k!=='filter')G=G.filter(g=>g.p.akr===spec.p);
  if(spec.k==='proj'||spec.k==='sub')G=G.map(g=>{let P=g.P.filter(r=>r.n===spec.j);
    if(spec.k==='sub')P=P.map(r=>{const x=(r.subItems||[]).find(s=>s.name===spec.s);return x?Object.assign({},r,pgStat(x.rows||[]),{a:x.rows||[],subItems:[x],only:x.name}):null}).filter(Boolean);
    const items=[...new Set([].concat(...P.map(r=>r.a)))];return Object.assign({},g,{P,items,x:pgStat(items)})}).filter(g=>g.P.length);
  if(spec.th)G=G.map(g=>{const P=g.P.map(r=>{const a=r.a.filter(w=>tahapMatch(w,spec.th));if(!a.length)return null;const subs=(r.subItems||[]).map(x=>{const rows=(x.rows||[]).filter(w=>tahapMatch(w,spec.th));return rows.length?Object.assign({},x,pgStat(rows),{rows,count:rows.length}):null}).filter(Boolean);return Object.assign({},r,pgStat(a),{a,subItems:subs})}).filter(Boolean);const items=[...new Set([].concat(...P.map(r=>r.a)))];return Object.assign({},g,{P,items,x:pgStat(items)})});
- G=G.filter(g=>g.P.length);
+ G=G.filter(g=>g.P.length||(spec.allowEmpty&&['filter','prog'].includes(spec.k)));
  const items=[...new Set([].concat(...G.map(g=>g.items)))];
  const scopes=[].concat(...G.map(g=>g.P.map(r=>spec.k==='sub'?projectKey(g.p.akr,r.n,r.only):projectKey(g.p.akr,r.n))));
  const pr=G.length===1?G[0].p:null;
@@ -6976,7 +6977,15 @@ function tpModal(p,r,tab){const k=tpKey(p,r.n,r.sub);p.closing=p.closing||{};con
  ov.querySelectorAll('[data-tpt]').forEach(b=>b.addEventListener('click',()=>{S.ui.tpTab=b.dataset.tpt;ov.querySelectorAll('[data-tpt]').forEach(x=>x.classList.toggle('on',x===b));ov.querySelectorAll('[data-sec]').forEach(s=>s.hidden=s.dataset.sec!==b.dataset.tpt)}))}
 /* ---- Bagian laporan: Penutupan ---- */
 function rptTutupBlocks(c){const B=[];B.push({t:'h1',text:'Penutupan Proyek'});const pill=s=>({text:s,fill:{'Belum diajukan':'98A2B3',Draft:'98A2B3',Diajukan:'2F5BD3',Dikembalikan:'E25563',Ditutup:'16A37F'}[s]||'5B6B82',color:'FFFFFF'});
- const all=[].concat(...c.G.map(g=>tpUnits(g.p,g.P).filter(r=>!(c.spec&&c.spec.k==='sub'&&c.spec.s)||!r.sub||r.sub===c.spec.s).map(r=>({g,r,c:tpGet(g.p,r.n,r.sub)||{},st:tpSt(g.p,r.n,r.sub)}))));
+ const all=[].concat(...c.G.map(g=>{
+  const eligible=tpUnits(g.p,g.P),rows=[];
+  g.P.forEach(r=>{const selected=eligible.filter(x=>x.n===r.n);
+   if(c.spec.k==='sub'&&r.only){const found=selected.find(x=>x.sub===r.only);rows.push(found||Object.assign({},r,{sub:r.only,label:r.only}))}
+   else if(selected.length)rows.push(...selected);
+   else rows.push(Object.assign({},r,{sub:'',label:r.n}));
+  });
+  return rows.map(r=>({g,r,c:tpGet(g.p,r.n,r.sub)||{},st:tpSt(g.p,r.n,r.sub)}));
+ }));
  B.push({t:'table',caption:'Status penutupan proyek',head:['Proyek','UIC','Progres','Kriteria','Dokumen','Alasan penutupan','Status'],widths:[28,9,8,9,9,24,13],rows:all.map(({g,r,c:cl,st})=>{const R=tpReady(g.p,r),D=tpDocScore(tpDocs(g.p,r));return [{text:tpLab(r),bold:true},r.uic,R.x.pg+'%',R.K.length?R.kOk+'/'+R.K.length:'—',D.ok+'/'+D.n,tpAlasan(cl)||'—',pill(st)]})});
  all.forEach(({g,r,c:cl,st})=>{const R=tpReady(g.p,r);B.push({t:'h2',text:tpLab(r)});
   B.push({t:'kv',rows:[['Status penutupan',st+(cl.subAt?' · diajukan '+fmtD(cl.subAt):'')],['Alasan penutupan',tpAlasan(cl)||'—'],['Tanggal penyelesaian',cl.tgl?fmtD(cl.tgl):'—'],['Ringkasan hasil',cl.ringkas||'—'],['Capaian output & outcome',cl.capaian||'—'],['Item belum selesai & tindak lanjut',(R.undone.length?R.undone.length+' item belum selesai. ':'Seluruh item WBS selesai. ')+(cl.sisa||'')],['Serah terima operasional',[(cl.op||{}).unit,(cl.op||{}).ba,(cl.op||{}).tgl?fmtD(cl.op.tgl):''].filter(Boolean).join(' · ')||'—'],['Anggaran (rencana / realisasi)',[(cl.ang||{}).rencana,(cl.ang||{}).realisasi].some(Boolean)?((cl.ang||{}).rencana||'—')+' / '+((cl.ang||{}).realisasi||'—'):'—'],...(cl.note?[['Catatan telaah',cl.note]]:[])]});
