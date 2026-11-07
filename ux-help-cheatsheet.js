@@ -331,14 +331,15 @@ function coordination(){var diagram=(typeof window.koHtml==='function')?window.k
  '<div class="sk-coordination">'+(diagram||note('Diagram koordinasi tidak dapat ditampilkan. Silakan muat ulang halaman.',true))+'</div>'+
  note('Fase penutupan proyek dan penutupan CM berbeda: penutupan proyek mengikuti acceptance criteria, sedangkan penutupan CM mengikuti evaluasi adopsi, transisi, kesiapan layanan resmi, dan pengalihan tanggung jawab.');
 }
+function pmReference(){return typeof window.txFormulaReferenceHtml==='function'?window.txFormulaReferenceHtml():note('Referensi belum termuat. Muat ulang halaman untuk mengambil materi terbaru.',true)}
 var cfg={
  help:{
  pmo:[['menu','Peta Menu',function(){return helpMenu('pmo')}],['steps','Tahapan Manajemen Proyek',function(){return helpStages('pmo')}],['terms','Daftar Istilah PM',function(){return helpGloss('pmo')}],['docs','Dokumentasi',function(){return helpDocs('pmo')}]],
  cmo:[['menu','Peta Menu',function(){return helpMenu('cmo')}],['steps','Tahapan Manajemen Perubahan',function(){return helpStages('cmo')}],['terms','Daftar Istilah CM',function(){return helpGloss('cmo')}],['docs','Dokumentasi',function(){return helpDocs('cmo')}]]
  },
  sheet:{
- pmo:[['pmbok','Framework PMBOK',pmFramework],['tata','Tata Kelola PM',pmGovernance],['charter','Charter',pmCharter],['wbs','WBS',pmWBS],['cr','Change Request',pmCR],['ko','Alur Koordinasi',coordination]],
- cmo:[['framework','Framework',cmFramework],['tata','Tata Kelola CM',cmGovernance],['kom','Komunikasi',cmCommunication],['pel','Pelatihan',cmTraining],['trans','Transisi & Tiket',cmTransition],['ko','Alur Koordinasi',coordination]]
+ pmo:[['pmbok','Framework PMBOK',pmFramework],['ref','Referensi',pmReference],['tata','Tata Kelola PM',pmGovernance],['charter','Charter',pmCharter],['wbs','WBS',pmWBS],['cr','Change Request',pmCR],['ko','Alur Koordinasi',coordination]],
+ cmo:[['framework','Framework',cmFramework],['ref','Referensi',pmReference],['tata','Tata Kelola CM',cmGovernance],['kom','Komunikasi',cmCommunication],['pel','Pelatihan',cmTraining],['trans','Transisi & Tiket',cmTransition],['ko','Alur Koordinasi',coordination]]
  }
 };
 var active=null,lastFocus=null,modalKind=null,modalMode=null;
@@ -369,6 +370,6 @@ function currentKind(){try{return typeof VIEW==='string'&&VIEW.indexOf('pmo-')==
 window.openTxCheatsheet=function(mode,selected){return open('sheet',mode||currentKind(),selected==='koordinasi'?'ko':selected)};
 window.showGuideHome=function(){return open('help',currentKind())};
 window.showHelp=function(v){return open('help',String(v||'').indexOf('pmo-')===0?'pmo':String(v||'').indexOf('cmo-')===0?'cmo':currentKind(),'menu')};
-window.skHelpCheatsheetVersion='20261106-release-1';
+window.skHelpCheatsheetVersion='20261107-referensi-1';
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addStyle);else addStyle();
 })();
