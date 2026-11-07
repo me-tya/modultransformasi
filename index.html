@@ -2431,6 +2431,59 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 @media(max-width:900px){.md.tp-md{max-width:99vw;width:99vw}.tp-doc-scroll{margin-inline:-2px}}
 @media(max-width:600px){.tp-doc-summary{align-items:flex-start}.tp-doc-summary-side{justify-content:flex-start}.tp-doc-legend{display:none}}
 </style>
+<style id="compact-transformasi-ux">
+/* Rapi, ringkas, satu baris pada desktop */
+#app .view{gap:10px;padding-top:12px}
+#app .vh{min-height:49px;gap:10px}
+#app .vh .pic{width:38px;height:38px;font-size:13px}
+#app .vh h1{font-size:19px;line-height:1.2}
+#app .vh p{font-size:11.7px}
+#app .view .kpis{gap:8px}
+#app .view .kpi{padding:9px 11px;border-radius:10px}
+#app .view .kpi .v{font-size:21px}
+#app .card>.ch,#app .tbar{padding-top:9px;padding-bottom:9px}
+#app .mhead{padding:11px 13px;gap:10px;border-radius:12px;box-shadow:0 4px 14px rgba(11,31,69,.11)}
+#app .mhead .kvs div{padding:5px 8px;min-width:95px}
+#app .cm-journey{gap:3px;padding:5px;margin:6px 0 8px;border-radius:12px;box-shadow:0 2px 8px rgba(14,35,72,.045)}
+#app .cm-journey>.cm-step{min-height:40px;gap:5px;padding:5px 6px;font-size:11.6px}
+#app .cm-step-number{width:21px;height:21px;flex-basis:21px;font-size:10px}
+#app .flt.pmo-unified{grid-template-columns:145px minmax(0,1fr)!important;grid-template-rows:42px auto!important;box-shadow:none!important}
+#app .flt.pmo-unified>.lp{height:42px!important;padding:0 12px!important;gap:8px!important}
+#app .flt.pmo-unified>.lp .gi{width:29px!important;height:29px!important}
+#app .flt.pmo-unified>.lp .lt b{font-size:14px!important}
+#app .flt.pmo-unified .ftop{height:42px!important;min-height:42px!important;padding:0 6px 0 12px!important}
+#app .flt.pmo-unified .fcar{width:29px!important;height:29px!important;flex-basis:29px!important}
+#app .flt.pmo-unified .fbar{padding:8px 10px 12px!important;gap:8px!important}
+/* ADP: navigasi di kiri, status dan tombol tepat di kanan */
+#app .adp-workbar{display:flex;flex-wrap:nowrap;align-items:center;justify-content:space-between;gap:8px;padding:5px 8px;min-width:0}
+#app .adp-nav{flex:1 1 auto;min-width:0;overflow:hidden}
+#app .adp-nav>.subt{display:flex;align-items:center;flex-wrap:nowrap;white-space:nowrap;overflow-x:auto;overflow-y:hidden;width:100%;max-width:none;margin:0;padding:2px;gap:2px;border:0;background:transparent;scrollbar-width:thin}
+#app .adp-nav>.subt a{flex:0 0 auto;min-height:33px;padding:6px 10px;font-size:11.5px;white-space:nowrap}
+#app .adp-tools{margin-left:auto;display:flex;align-items:center;justify-content:flex-end;flex:0 0 auto;flex-wrap:nowrap;gap:5px;padding:0;width:auto;max-width:none}
+#app .adp-state{font-size:10.6px;padding:5px 7px;line-height:1.25;white-space:nowrap}
+#app .adp-tools .btn{height:31px;min-height:31px;padding:0 9px;font-size:11.5px;white-space:nowrap}
+#app .adp-tools .ui-info-control{padding:3px 5px;min-height:30px;font-size:10.5px}
+#app .adp-tools .ui-info-dot{width:20px;height:20px}
+/* PMO: laporan dan 1-on-1 masuk menu aksi, bukan header */
+#app .pm-stage-shell{display:flex;align-items:stretch;gap:6px;min-width:0;position:relative}
+#app .pm-stage-shell>.pmo-journey{flex:1 1 auto;min-width:0;display:flex;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;gap:2px;padding:4px;border-radius:11px;box-shadow:none}
+#app .pm-stage-shell>.pmo-journey>a{flex:0 0 auto;min-width:0;max-width:none;min-height:36px;height:36px;padding:0 9px;font-size:11.3px;gap:4px;border-radius:8px}
+#app .pm-stage-shell>.pmo-journey>a em{width:20px;height:20px;flex-basis:20px;font-size:10px}
+#app .pm-stage-shell>.pmo-journey>a b{padding:0 5px;font-size:10px}
+#app .pm-stage-tools{position:relative;align-self:stretch;flex:0 0 auto}
+#app .pm-stage-tools>summary{display:flex;align-items:center;justify-content:center;gap:6px;height:100%;min-width:66px;padding:0 11px;cursor:pointer;list-style:none;border:1px solid #d7e1ee;border-radius:10px;background:#fff;color:#193f69;font-weight:800;font-size:11.5px}
+#app .pm-stage-tools>summary::-webkit-details-marker{display:none}
+#app .pm-stage-tools>summary:hover,#app .pm-stage-tools[open]>summary{background:#eaf2ff;border-color:#abc5e4}
+#app .pm-stage-menu{display:flex;flex-direction:column;gap:2px;position:absolute;z-index:220;right:0;top:calc(100% + 6px);min-width:200px;background:#fff;padding:5px;border:1px solid #d8e3ef;border-radius:9px;box-shadow:0 10px 28px rgba(11,31,69,.16)}
+#app .pm-stage-menu .pm-stage-item{display:flex;align-items:center;justify-content:flex-start;width:100%;min-height:34px;padding:7px 9px;gap:8px;text-align:left;white-space:normal;font-size:11.5px;font-weight:750;color:#1b466f;background:transparent;border:0;border-radius:7px;text-decoration:none;cursor:pointer}
+#app .pm-stage-menu .pm-stage-item:hover,#app .pm-stage-menu .pm-stage-item:focus-visible{background:#edf4ff}
+#app .subt.ctabs{gap:3px;padding:4px;margin:5px 0;min-height:34px}
+#app .subt.ctabs>a{padding:6px 10px;font-size:11.7px}
+#app .wbs-with-actions{gap:5px!important;padding:4px 2px 6px!important;margin:4px 0 6px!important}
+#app .wbs-actionbar>.btn,#app .wbs-actionbar>.wbs-import,#app .wbs-more>summary{height:32px!important;padding-inline:10px;font-size:11.5px}
+@media(max-width:1200px){#app .adp-state{display:none}}
+@media(max-width:760px){#app .adp-workbar{flex-wrap:wrap}#app .adp-nav{flex-basis:100%}#app .adp-tools{flex-basis:100%;justify-content:flex-end}#app .flt.pmo-unified{grid-template-columns:112px minmax(0,1fr)!important}}
+</style>
 <div id="root"></div>
 <div class="toast" id="toast" role="status"></div>
 <script type="application/json" id="d0">{"S":[],"W":[],"K":[]}</script>
