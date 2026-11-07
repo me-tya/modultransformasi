@@ -20,7 +20,7 @@
    const real=participants.reduce((n,k)=>n+program[k][q+3],0);
    const annual=annuals.reduce((n,k)=>n+program[k][3],0);
    const tot=[target,real,annual,annual?Math.round(real/annual*10000)/100:null,null,null,null,null];
-   s['2026-'+q]={cut:['2026-03-31','2026-06-30','2026-09-30'][q-1],
+   s['2026-'+q]={participants:participants.slice(),cut:['2026-03-31','2026-06-30','2026-09-30'][q-1],
      at:'2026-11-07',by:'Rekap workbook WBS 2026',how:'excel-reference',source:'Capaian T-Program / Capaian per UE1',n:null,
      tot,prog:p,ue:u};
  }
@@ -36,6 +36,7 @@
  };
  const q2=s['2026-2'],entry=x=>[x[0],x[1],x[2],x[2]?x[1]/x[2]*100:null,null,null,null,null];
  q2.prog=Object.fromEntries(Object.entries(newerTw2).map(([code,v])=>[code,entry(v)]));
+ q2.participants=Object.keys(newerTw2);
  const rows=Object.values(newerTw2);
  q2.tot=entry([rows.reduce((n,v)=>n+v[0],0),rows.reduce((n,v)=>n+v[1],0),rows.reduce((n,v)=>n+v[2],0)]);
  if(q2.tot[0]!==33664||q2.tot[1]!==34589||q2.tot[2]!==95885)throw Error('Rekap TW II 2026 tidak konsisten');
