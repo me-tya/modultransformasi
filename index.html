@@ -2905,6 +2905,27 @@ function ensureBkFlow(){if(!S||!S.akses||S.bkF===1)return;const A=S.akses,up=(r,
 /* Source-of-truth integration: Dashboard CM retains its own Firebase project,
    authentication, permissions, Priority, CRA, CM Team and Squad Team datasets.
    This iframe reads/writes the original records; no bulk import or duplication. */
+/* Project Selection: authoritative PMO WBS tree, sent only to embedded same-origin CM view. */
+window.addEventListener('message',function(ev){
+ if(ev.origin!==location.origin||!ev.source||!ev.data||ev.data.type!=='MT_CARRY_SOURCE_REQUEST')return;
+ try{
+  const target=Number(S.ui.tahun)||new Date().getFullYear(),from=target-1;
+  const groups=(S.programs||[]).map(p=>{
+   const items=(S.wbs||[]).filter(w=>!w.arsip&&w.prog===p.akr&&yrOf(w)===from);
+   const moduleMap=new Map();
+   items.forEach(w=>{
+    const names=Array.isArray(w.p)?w.p.filter(Boolean):[];
+    const moduleName=names[0]||w.d||'Modul lainnya';
+    if(!moduleMap.has(moduleName))moduleMap.set(moduleName,{id:p.akr+'::'+moduleName,name:moduleName,submodules:[]});
+    const mod=moduleMap.get(moduleName);
+    const subName=names.length>1?names.slice(1).join(' › '):(w.d||'');
+    if(subName&&!mod.submodules.some(x=>x.name===subName))mod.submodules.push({id:w.k,name:subName});
+   });
+   return {id:p.akr,name:p.nama||p.akr,unit:p.uic||'',modules:[...moduleMap.values()]};
+  }).filter(p=>p.modules.length);
+  ev.source.postMessage({type:'MT_CARRY_SOURCE_RESPONSE',requestId:ev.data.requestId,from,target,programs:groups},ev.origin);
+ }catch(err){console.warn('Carry-over WBS source unavailable',err)}
+});
 function viewCmShared(view){
  const defs={
   'project-selection':['Project Selection','priority','Salinan langsung menu Priority dari Dashboard CM.'],
