@@ -134,10 +134,10 @@ a{color:var(--blue)}
 .ptabs a{flex:1 0 auto;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 12px;border-radius:10px;font-weight:700;font-size:12px;color:var(--ink-3);text-decoration:none;white-space:nowrap;position:relative}
 .ptabs a b{font-size:10px;font-family:var(--mono);background:var(--line-2);color:var(--ink-3);border-radius:10px;padding:0 6px}
 .ptabs a.on{background:linear-gradient(135deg,#0B1F45,#17457F);color:#fff;box-shadow:0 6px 14px rgba(11,31,69,.22)}
-.ptabs a.on:after{content:"";position:absolute;left:22%;right:22%;bottom:5px;height:2.5px;border-radius:2px;background:var(--yellow)}
+
 .ptabs a.on b{background:var(--yellow);color:var(--navy)}
 .ptabs a{transition:background .15s,color .15s}
-.ptabs a em{font-style:normal;font-size:10px;width:17px;height:17px;border-radius:50%;background:var(--navy);color:#fff;display:inline-grid;place-items:center}
+.ptabs a em{font-style:normal;font-size:11px;font-weight:850;width:22px;height:22px;flex:0 0 22px;border-radius:50%;background:#EDF2F9;color:#486080;display:inline-grid;place-items:center}
 .ptabs a.on em{background:var(--yellow);color:#0B1F45}
 .subt{display:flex;gap:4px;padding:5px;margin:8px;background:#EEF2F8;border:1px solid #E1E7F0;border-radius:11px;overflow-x:auto;overflow-y:hidden;width:max-content;max-width:calc(100% - 16px)}
 .subt a{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;font-weight:700;font-size:12px;color:var(--ink-3);border-radius:8px;text-decoration:none;white-space:nowrap;cursor:pointer;transition:background .15s,color .15s}
@@ -994,6 +994,15 @@ table.ext td{font-size:12.5px;vertical-align:top;white-space:normal}
 .pm-program-chevron{font-size:26px;font-weight:900;line-height:1}
 .ptabs,.subt{min-height:54px;scrollbar-gutter:stable}
 .ptabs a{min-width:104px}
+/* PMO main steps: fit all nine groups without horizontal scrolling at 90% desktop zoom.
+   When space is narrower, wrap to a second row rather than creating a horizontal scrollbar. */
+.ptabs.pmo-journey{flex-wrap:wrap;overflow:visible;scrollbar-gutter:auto;max-width:100%;gap:4px}
+.ptabs.pmo-journey a+a:before{display:none}
+.subt.ctabs{width:100%;max-width:100%;flex-wrap:wrap;overflow-x:visible;scrollbar-gutter:auto}
+.ptabs.pmo-journey>a{flex:1 1 auto;min-width:max-content;max-width:100%;height:44px;justify-content:flex-start;gap:6px;padding:0 12px;font-size:12px;white-space:nowrap;cursor:pointer}
+.ptabs.pmo-journey>a>span{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+@media(max-width:1180px){.ptabs.pmo-journey>a{padding-inline:9px;font-size:11.5px;gap:4px}}
+@media(max-width:700px){.ptabs.pmo-journey>a{flex:1 1 auto;padding-inline:10px}}
 .chbc{min-height:22px}
 button[disabled]{cursor:not-allowed;opacity:.45}
 button[aria-label*="Bantuan"],button[title*="Bantuan"],.help-icon,.hint-icon{background:var(--yellow);color:#142C4D;border:1px solid var(--yellow);transition:background .16s,color .16s,box-shadow .16s}
@@ -2045,7 +2054,10 @@ button.nt-chip{font:inherit;cursor:pointer}
 .chstep{padding:8px 14px!important}
 .ch-tabbar{display:flex;align-items:center;gap:10px;margin:10px 0;position:sticky;top:0;z-index:22;background:var(--bg,#F3F5F9);padding:2px 0}
 .menu .bl-r{display:flex;align-items:center;gap:6px}.menu .bl-t{flex:1}.menu .bl-x{border:0;background:transparent;color:#8A97AB;cursor:pointer;font-size:13px;padding:2px 6px;border-radius:5px;opacity:.55}.menu .bl-r:hover .bl-x,.menu .bl-x:focus{opacity:1}.menu .bl-x:hover{background:#E8EEF8;color:#0B2A55}.menu .bl-off{opacity:.6}.menu .bl-hd{padding:6px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#8A97AB;border-top:1px solid #E3E8F0}.menu .bl-all{font-size:11.5px;color:#1F5FB8;text-decoration:none;white-space:nowrap}.menu .bl-all:hover{text-decoration:underline}
-.hq{margin-left:auto;align-self:center;flex:none;width:24px;height:24px;border-radius:50%;border:0;background:var(--navy,#0B2A55);color:#fff;font:800 13px/24px inherit;cursor:pointer;padding:0;text-align:center}.hq:hover{background:#1A4A8C}.hq:focus-visible{outline:2px solid var(--yellow,#F6B800);outline-offset:2px}.subt .hq{margin-left:6px}h1 .hq{margin-left:6px;vertical-align:middle;width:22px;height:22px;line-height:22px;font-size:12px}.hq-b{padding:6px 12px 10px;font-size:12.5px;line-height:1.5;color:var(--ink-2,#33445C)}.hq-n+.hq-n{margin-top:8px;padding-top:8px;border-top:1px solid #E3E8F0}
+.hq{margin-left:auto;align-self:center;flex:none;width:24px;height:24px;border-radius:50%;border:0;background:var(--navy,#0B2A55);color:#fff;font:800 13px/24px inherit;cursor:pointer;padding:0;text-align:center}.hq:hover{background:#1A4A8C}.hq:focus-visible{outline:2px solid var(--yellow,#F6B800);outline-offset:2px}.subt .hq{margin-left:6px}h1 .hq{margin-left:6px;vertical-align:middle;width:22px;height:22px;line-height:22px;font-size:12px}
+.vh .vh-heading{display:flex;align-items:center;justify-content:flex-start;gap:8px;min-width:0;max-width:100%}
+.vh .vh-heading h1{flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vh .vh-heading .hq{flex:0 0 22px;margin:0;align-self:center}.hq-b{padding:6px 12px 10px;font-size:12.5px;line-height:1.5;color:var(--ink-2,#33445C)}.hq-n+.hq-n{margin-top:8px;padding-top:8px;border-top:1px solid #E3E8F0}
 .chxa{display:flex;align-items:center;gap:6px;padding:7px 12px;border-top:1px solid var(--line,#E3E8F0);font-size:12px;color:var(--mut,#5B6B82)}.chxa span{flex:1}.chxa button{border:1px solid var(--line,#D5DCE6);background:#fff;border-radius:6px;padding:3px 10px;font:600 11.5px inherit;cursor:pointer;color:var(--navy,#0B2A55)}.chxa button:hover{background:#F3F6FB}
 
 .md.kertas{max-width:1100px}
@@ -2360,7 +2372,7 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 .flt.cm-unified .fbar{padding:10px 14px 12px!important;gap:9px 12px!important}.flt.cm-unified .fbar .fg{gap:4px}.flt.cm-unified .fbar .sel{height:36px!important;padding-right:8px}.flt.cm-unified .fbar .pseg{height:36px}.flt.cm-unified .fbar .pseg button{padding-inline:4px}.flt.cm-unified .ftop{padding-left:12px!important}.flt.cm-unified>.lp{padding-inline:12px!important}
 /* Keep CM navigation above CRA with PMO-like tab spacing. */
 /* Use the same content-sized, scrollable tab behavior as PMO: avoid number/label overlap. */
-.cm-journey{display:flex!important;grid-template-columns:none!important;gap:4px!important;margin:0!important;padding:6px!important;overflow-x:auto!important;overflow-y:hidden!important;scroll-snap-type:x proximity;scrollbar-width:thin;border-radius:14px!important;box-shadow:0 1px 0 #fff inset,0 4px 14px rgba(11,31,69,.06)!important}
+.cm-journey{display:flex!important;flex-wrap:wrap!important;grid-template-columns:none!important;gap:4px!important;margin:0!important;padding:6px!important;overflow-x:visible!important;overflow-y:visible!important;scroll-snap-type:none;scrollbar-width:none;border-radius:14px!important;box-shadow:0 1px 0 #fff inset,0 4px 14px rgba(11,31,69,.06)!important}
 .cm-step{flex:1 0 auto!important;min-width:max-content!important;min-height:40px!important;height:40px!important;justify-content:flex-start!important;gap:8px!important;padding:0 12px!important;font-size:12px!important;white-space:nowrap!important;text-align:left!important;cursor:pointer!important;scroll-snap-align:center}
 .cm-step-label{white-space:nowrap!important;line-height:1.1!important;text-align:center!important}
 .cm-step-number{width:22px!important;height:22px!important;flex:0 0 22px!important}
@@ -2403,9 +2415,9 @@ const SCOPES=['Semua','Unit','Modul'];
 const SCOPE_DESK={Semua:'seluruh data',Unit:'data yang unitnya UIC Utama',Modul:'modul yang ditugaskan'};
 const UNREAD_SCOPED=['dash','porto','wbs','mil','risk','cr','crok','bukti','valid','lap','ref','adopsi','adp','reviu','usul','user','akses','sinkron','log'];
 const CMT=[['adp','ADP'],['rencana','Perencanaan'],['jaringan','Jaringan Perubahan'],['cra','CRA'],['pelaksanaan','Pelaksanaan'],['monev','Monev'],['pasca','Evaluasi Pasca'],['closing','Penutupan CM']];
-const PMT=[['siklus','Overview','porto'],['portofolio','Portofolio','porto'],['program','Program','porto'],['perencanaan','Dokumen Proyek','charter'],['wbsplan','WBS','wbs'],['wbs','WBS & progres','wbs'],['bukti','Bukti Dukung','bukti'],['cr','Change Request','cr'],['milestone','Milestone','mil'],['risiko','Risiko & Isu','risk'],['laporan','Capaian TW','lap'],['narasi','Narasi T-Program','lap'],['oneonone','Jadwal 1-on-1','wbs'],['penutupan','Penutupan','porto'],['pascaproyek','Evaluasi Pascaproyek','porto'],['referensi','Referensi Kode','ref']];
+const PMT=[['siklus','Overview','porto'],['portofolio','Portofolio','porto'],['program','Program','porto'],['perencanaan','Dokumen Proyek','charter'],['wbsplan','WBS','wbs'],['wbs','WBS & progres','wbs'],['bukti','Bukti Dukung','bukti'],['cr','Change Request','cr'],['milestone','Milestone','mil'],['risiko','Risiko & Isu','risk'],['laporan','Capaian TW','lap'],['narasi','Narasi T-Program','lap'],['oneonone','Jadwal 1-on-1','wbs'],['penutupan','Penutupan','porto'],['pascaproyek','Pascaproyek','porto'],['referensi','Referensi Kode','ref']];
 /* kelompok tab PMO mengikuti alur Draft KEP Kepala BaTii: perencanaan → pelaksanaan → pemantauan → penutupan */
-const PMG=[['siklus','Overview',0,['siklus']],['portofolio','Portofolio',0,['portofolio']],['program','Program',0,['program']],['plan','Perencanaan',1,['perencanaan','wbsplan']],['exec','Pelaksanaan',2,['wbs','narasi','bukti','cr']],['mon','Pemantauan',3,['milestone','risiko','laporan','oneonone']],['close','Penutupan',4,['penutupan']],['eval','Evaluasi Pascaproyek',5,['pascaproyek']],['ref','Referensi',0,['referensi']]];
+const PMG=[['siklus','Overview',0,['siklus']],['portofolio','Portofolio',0,['portofolio']],['program','Program',0,['program']],['plan','Perencanaan',1,['perencanaan','wbsplan']],['exec','Pelaksanaan',2,['wbs','narasi','bukti','cr']],['mon','Pemantauan',3,['milestone','risiko','laporan','oneonone']],['close','Penutupan',4,['penutupan']],['eval','Pascaproyek',5,['pascaproyek']],['ref','Referensi',0,['referensi']]];
 const STN=[['set-pengguna','Pengguna','user'],['set-akses','Hak Akses Peran','akses'],['set-sinkron','Aturan Sinkron CM','sinkron'],['set-log','Log Aktivitas','log'],['set-db','Database','user']];
 const LV_UB=['—','Minor','Moderate','Significant'], LV_RS=['—','Rendah','Sedang','Tinggi'];
 const DIMS=[['P','Proses Bisnis'],['O','Organisasi'],['S','SDM'],['T','Teknologi'],['R','Regulasi']];
@@ -3000,7 +3012,7 @@ function render(){try{upgradeEvalRecords()}catch(e){}try{ensureBkFlow()}catch(e)
  v.innerHTML=h;window.CM_CRA_NAV=()=>cmoTabs('cra',null);if(VIEW==='cra'&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}if(VIEW==='pengelola'&&window.PENGELOLA_NATIVE){window.PENGELOLA_NATIVE.attach({S,ME,save,toast});return;}if((VIEW==='cmo-cra'||/^modul-.+-t-cra$/.test(VIEW))&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}try{foldNotes(v)}catch(e){}
 }
 const yearsOpt=()=>{const ys=new Set([S.ui.tahun]);S.wbs.forEach(w=>{const y=yrOf(w);if(y>=2020)ys.add(y)});return [...ys].sort()};
-function foldNotes(v){const host=v.querySelector('.subt.ctabs')||v.querySelector('.subt')||v.querySelector('.vh h1');if(!host)return;
+function foldNotes(v){const host=v.querySelector('.subt.ctabs')||v.querySelector('.subt')||v.querySelector('.vh .vh-heading')||v.querySelector('.vh h1');if(!host)return;
  const ns=[...v.children].filter(n=>n.matches&&n.matches('.note.i,.note.g')&&!n.querySelector('button,input,select,[data-act]')&&(n.textContent||'').trim().length>40);if(!ns.length)return;
  const html=ns.map(n=>`<div class="hq-n">${n.innerHTML}</div>`).join('');ns.forEach(n=>n.remove());
  /* Menu Referensi & Penutupan: cukup satu ikon ? di judul (panduan lengkap ada di sana), tanpa ikon ? kedua. */
@@ -3073,7 +3085,7 @@ function onChange(el){const k=el.dataset.on,v=el.value;if(k==='impwbs')return;
  else if(k==='kepf'){const f=el.files[0];if(!f)return;if(f.size>(FB.on?7e5:1.5e6)){toast(FB.on?'Ukuran KEP maksimal 700 KB pada mode Firestore.':'Ukuran KEP maksimal 1,5 MB pada prototipe.');return}const rd=new FileReader();rd.onload=()=>{const j=jjm(el.dataset.m);j.kepFile=rd.result;j.kepName=f.name;log('Unggah KEP',f.name);save();toast('KEP terunggah.');render()};rd.readAsDataURL(f);return}
  save();render()}
 const jjm=mk=>S.jjMod[mk]||(S.jjMod[mk]={link:'',kepNo:'',kepTgl:'',kepFile:'',kepName:'',aktif:'Belum'});
-function vh(ic,cls,title,desc,acts){if(cls==='pmo'&&typeof VIEW!=='undefined'&&VIEW.startsWith('pmo-')&&typeof PMG!=='undefined'){let k=VIEW.slice(4);if(k==='charter')k='perencanaan';const g=PMG.find(x=>x[3].includes(k));if(g&&g[1]!==String(title).replace(/<[^>]+>/g,'')){const pt=String(title).replace(/<[^>]+>/g,'');desc=`<b class="vh-sub">${esc(pt)}</b><span class="vh-dot">·</span>${desc}`;title=g[1]}if(g)ic=g[2]?String(g[2]):g[1].charAt(0)}const tt=esc(String(title).replace(/<[^>]+>/g,''));if(cls==='pmo'&&typeof oneBadge==='function'){const ob=oneBadge();if(ob)acts=(acts||'')+'<span class="one-slot">'+ob+'</span>'}return `<div class="vh"><div class="pic ${cls}">${ic}</div><div style="min-width:0"><h1>${title}</h1><p title="${esc(String(desc).replace(/<[^>]+>/g,''))}">${desc}</p></div>${acts?`<div class="acts">${acts}</div>`:''}</div><!--vh-->`}
+function vh(ic,cls,title,desc,acts){if(cls==='pmo'&&typeof VIEW!=='undefined'&&VIEW.startsWith('pmo-')&&typeof PMG!=='undefined'){let k=VIEW.slice(4);if(k==='charter')k='perencanaan';const g=PMG.find(x=>x[3].includes(k));if(g&&g[1]!==String(title).replace(/<[^>]+>/g,'')){const pt=String(title).replace(/<[^>]+>/g,'');desc=`<b class="vh-sub">${esc(pt)}</b><span class="vh-dot">·</span>${desc}`;title=g[1]}if(g)ic=g[2]?String(g[2]):g[1].charAt(0)}const tt=esc(String(title).replace(/<[^>]+>/g,''));if(cls==='pmo'&&typeof oneBadge==='function'){const ob=oneBadge();if(ob)acts=(acts||'')+'<span class="one-slot">'+ob+'</span>'}return `<div class="vh"><div class="pic ${cls}">${ic}</div><div style="min-width:0"><div class="vh-heading"><h1>${title}</h1></div><p title="${esc(String(desc).replace(/<[^>]+>/g,''))}">${desc}</p></div>${acts?`<div class="acts">${acts}</div>`:''}</div><!--vh-->`}
 function setTabs(){return `<nav class="ptabs" aria-label="Pengaturan">${STN.filter(t=>lv(t[2])!=='-').map(([k,l])=>`<a href="#${k}" class="${k===VIEW?'on':''}"><span>${l}</span></a>`).join('')}</nav>`}
 function subNav(key,list,def){const cur=S.ui.sub[key]||def;return `<div class="subt" role="tablist">${list.map(([k,l])=>`<a data-act="sub" data-k="${key}" data-v="${k}" class="${cur===k?'on':''}" role="tab" aria-selected="${cur===k}">${l}</a>`).join('')}</div>`}
 ACT.tsort=el=>{const id=el.dataset.t,k=el.dataset.k;S.ui.sort=S.ui.sort||{};const cur=sortOf(id);S.ui.sort[id]=cur&&cur.k===k?(cur.d==='asc'?{k,d:'desc'}:{k:'',d:''}):{k,d:'asc'};if(!S.ui.sort[id].k)S.ui.sort[id]={k:'_none',d:''};PG[id]=0;save();redrawT(id);const sel=document.querySelector(`[data-wsort="${id}"]`);if(sel)sel.value=sortVal(id)};
@@ -3784,11 +3796,11 @@ function pmoTabs(cur0){let cur=VIEW.startsWith('pmo-')?VIEW.slice(4):cur0;if(cur
  const G=PMG.map(g=>({g,ks:g[3].filter(k=>vis.has(k))})).filter(x=>x.ks.length);const on=G.find(x=>x.ks.includes(cur))||G[0];
  const gc=x=>x.ks.reduce((a,k)=>a+(+cnt[k]||0),0);
  const sub=on&&on.ks.length>1?`<div class="subt ctabs" role="tablist" aria-label="${esc(on.g[1])}">${on.ks.map(k=>`<a href="#pmo-${k}" class="${k===cur?'on':''}" role="tab" aria-selected="${k===cur}">${L(k)}${cnt[k]!==''&&cnt[k]!=null&&+cnt[k]>0?` <b class="sb">${cnt[k]}</b>`:''}</a>`).join('')}</div>`:'';
- return `<nav class="ptabs" aria-label="Tab PMO">${G.map(x=>{const n=x.g[2];const c=x.ks.length>1?gc(x):cnt[x.ks[0]];const tgt=x.ks.includes(cur)?cur:x.ks[0];return `<a href="#pmo-${tgt}" class="${x===on?'on':''}"><span>${n?`<em>${n}</em> `:''}${x.g[1]}</span>${c!==''&&c!=null&&+c>0?` <b>${c}</b>`:''}</a>`}).join('')}</nav>`+pmoFilterPanel(cur)+sub}
+ return `<nav class="ptabs pmo-journey" aria-label="Tab PMO">${G.map(x=>{const n=x.g[2];const c=x.ks.length>1?gc(x):cnt[x.ks[0]];const tgt=x.ks.includes(cur)?cur:x.ks[0];return `<a href="#pmo-${tgt}" class="${x===on?'on':''}"><span>${n?`<em>${n}</em> `:''}${x.g[1]}</span>${c!==''&&c!=null&&+c>0?` <b>${c}</b>`:''}</a>`}).join('')}</nav>`+pmoFilterPanel(cur)+sub}
 /* Evaluasi Pascaproyek PMO — KMK v6, dilaksanakan paling cepat 3 bulan setelah proyek ditutup. */
 function pEval(){
  S.projectDecisions=S.projectDecisions||[];
- return vh('E','pmo','Evaluasi Pascaproyek','Penilaian kebermanfaatan proyek paling cepat 3 bulan setelah proyek ditutup; berbeda dari evaluasi adopsi dan penutupan CM.')+pmoTabs('pascaproyek')+
+ return vh('E','pmo','Pascaproyek','Penilaian kebermanfaatan proyek paling cepat 3 bulan setelah proyek ditutup; berbeda dari evaluasi adopsi dan penutupan CM.')+pmoTabs('pascaproyek')+
  '<div class="note i"><span><b>Ketentuan draft KMK:</b> PMO Kemenkeu mengoordinasikan evaluasi pascaproyek paling cepat <b>3 bulan setelah penutupan proyek</b>. Fokus penilaian meliputi efisiensi biaya, perbaikan proses bisnis, dan pemenuhan layanan. Dokumentasikan temuan serta rekomendasi tindak lanjut. Penutupan CM dikelola secara terpisah.</span></div>'+
  tbl('projectEval',{ent:'evaluasi pascaproyek',title:'Register Evaluasi Manfaat Proyek',add:true,edit:true,del:true,wide:true,addLabel:'Hasil Evaluasi',list:()=>S.projectDecisions,rows:()=>S.projectDecisions.filter(x=>x.jenisCatatan==='EVAL-PASCAPROYEK'),onSave:x=>{x.jenisCatatan='EVAL-PASCAPROYEK'},
  canAdd:()=>['SA','PMOK','PMOU'].includes(ME.role),canEdit:()=>['SA','PMOK','PMOU'].includes(ME.role),canDel:()=>['SA','PMOK'].includes(ME.role),label:x=>x.proyek||x.program,
@@ -8106,7 +8118,7 @@ const KO_PHASES=[
  {id:6,nm:'Penutupan Manajemen Perubahan',when:'Setelah evaluasi dan kesiapan pengalihan terpenuhi',cols:5,
   st:[['6.1','CU',0,'Memastikan isu masa transisi tertangani atau dialihkan'],['6.2','PB',1,'Memastikan layanan operasional dan kanal resmi siap'],['6.3','CK',2,'Mengonfirmasi kesiapan penutupan CM'],['6.4','CU',3,'Mengakhiri kanal sementara dan menyampaikan kanal resmi'],['6.5','PB',4,'Menerima serah terima pendampingan dan operasional']],
   ed:[['6.1','6.3','n'],['6.2','6.3','n'],['6.3','6.4','n'],['6.4','6.5','n']]},
- {id:7,nm:'Evaluasi Pascaproyek PMO',when:'Paling cepat 3 bulan setelah proyek ditutup',cols:5,
+ {id:7,nm:'Pascaproyek PMO',when:'Paling cepat 3 bulan setelah proyek ditutup',cols:5,
   st:[['7.1','PK',0,'Mengoordinasikan evaluasi manfaat proyek'],['7.2','PU',1,'Menghimpun capaian dan bukti hasil proyek'],['7.3','PB',2,'Menyampaikan dampak biaya, proses, dan layanan'],['7.4','PK',3,'Mengonsolidasikan hasil evaluasi pascaproyek'],['7.5','P',4,'Menggunakan evaluasi sebagai masukan perbaikan',1]],
   ed:[['7.1','7.2','n'],['7.2','7.3','n'],['7.3','7.4','n'],['7.4','7.5','g']]}
 ];
@@ -8141,7 +8153,7 @@ function koHtml(){
  const track=(title,kind,items)=>'<div class="txcs-koTrack"><div class="txcs-koTrackTitle '+kind+'">'+title+'</div><div class="txcs-koTrackSteps">'+items.map((a,i)=>'<div class="txcs-koTrackStep"><small>'+('0'+(i+1)).slice(-2)+'</small><b>'+esc(a[0])+'</b><span>'+esc(a[1])+'</span></div>').join('')+'</div></div>';
  const over='<div class="txcs-ko-over">'+
   '<div class="txcs-koHead"><div><h4>Dua lintasan, titik penutupan berbeda</h4><p>Penutupan proyek tidak otomatis mengakhiri pendampingan perubahan. Kedua fungsi saling berkoordinasi, tetapi mempunyai evaluasi dan kriteria penutupan masing-masing.</p></div><span class="txcs-koStatus">Draft KMK (6)</span></div>'+
-  track('PMO · Manajemen Proyek','pmo',[['Perencanaan','Dokumen Proyek & WBS'],['Pelaksanaan','Hasil kerja & Change Request'],['Pemantauan','Progres dan bukti'],['Penutupan','Kriteria proyek terpenuhi'],['Evaluasi Pascaproyek','≥ 3 bulan setelah ditutup']])+
+  track('PMO · Manajemen Proyek','pmo',[['Perencanaan','Dokumen Proyek & WBS'],['Pelaksanaan','Hasil kerja & Change Request'],['Pemantauan','Progres dan bukti'],['Penutupan','Kriteria proyek terpenuhi'],['Pascaproyek','≥ 3 bulan setelah ditutup']])+
   track('CMO · Manajemen Perubahan','cmo',[['Perencanaan','Analisis & strategi CM'],['Pelaksanaan','Aktivasi jaringan, komunikasi & pelatihan'],['Pemantauan','Adopsi dan tindak lanjut'],['Evaluasi Pascaimplementasi','≥ 1 bulan sejak implementasi'],['Penutupan CM','Pengalihan ke operasional']])+
   '<p class="txcs-ko-bridge"><b>Keterkaitan:</b> pengukuran adopsi CMO dapat berlangsung ketika proyek sudah ditutup. Evaluasi pascaproyek PMO dan penutupan CM tidak harus terjadi dalam urutan yang sama untuk setiap proyek.</p>'+
   '<h4 class="txcs-koChoicesTitle">Pilih fase untuk melihat diagram koordinasi per peran</h4>'+
@@ -8700,7 +8712,7 @@ document.addEventListener('change',async e=>{
 </script>
 <script>
 /* Tooltip navigasi memakai tujuan menu, bukan teks tombol. */
-const DESTINASI_PMO={siklus:'Overview',oneonone:'Pemantauan - Jadwal 1-on-1',portofolio:'Portofolio',program:'Program',perencanaan:'Perencanaan - Dokumen Proyek',charter:'Perencanaan - Dokumen Proyek',wbsplan:'Perencanaan - WBS',wbs:'Pelaksanaan - WBS & Progres',bukti:'Pelaksanaan - Bukti Dukung',cr:'Pelaksanaan - Change Request',milestone:'Pemantauan - Milestone',risiko:'Pemantauan - Risiko & Isu',laporan:'Pemantauan - Capaian Triwulanan',narasi:'Pelaksanaan - Narasi T-Program',penutupan:'Penutupan Proyek',pascaproyek:'Evaluasi Pascaproyek',referensi:'Referensi Kode'};
+const DESTINASI_PMO={siklus:'Overview',oneonone:'Pemantauan - Jadwal 1-on-1',portofolio:'Portofolio',program:'Program',perencanaan:'Perencanaan - Dokumen Proyek',charter:'Perencanaan - Dokumen Proyek',wbsplan:'Perencanaan - WBS',wbs:'Pelaksanaan - WBS & Progres',bukti:'Pelaksanaan - Bukti Dukung',cr:'Pelaksanaan - Change Request',milestone:'Pemantauan - Milestone',risiko:'Pemantauan - Risiko & Isu',laporan:'Pemantauan - Capaian Triwulanan',narasi:'Pelaksanaan - Narasi T-Program',penutupan:'Penutupan Proyek',pascaproyek:'Pascaproyek',referensi:'Referensi Kode'};
 const DESTINASI_CMO={pasca:'Evaluasi Pascaimplementasi Perubahan',adp:'Perencanaan - Analisis Dampak Perubahan',rencana:'Perencanaan - Rencana Manajemen Perubahan',impl:'Implementasi Manajemen Perubahan',monev:'Monitoring dan Evaluasi',closing:'Penutupan Manajemen Perubahan'};
 function tujuanMenu(href){const dest=String(href||'').replace(/^#/,'');if(dest.startsWith('pmo-'))return DESTINASI_PMO[dest.slice(4)]||'PMO - '+dest.slice(4);if(dest.startsWith('cmo-'))return DESTINASI_CMO[dest.slice(4)]||'CMO - '+dest.slice(4);if(dest==='dashboard')return 'Dashboard Eksekutif';return ''}
 document.addEventListener('mouseover',function(e){const el=e.target.closest('a[href^="#"],button[data-act],button[data-seg]');if(!el)return;let h=el.getAttribute('href')||'';const action=el.dataset.act||'';if(!h){if(action==='gowbs')h='#pmo-wbs';else if(action==='pchipgo')h='#pmo-wbs';else if(action==='chopen')h='#pmo-perencanaan';else if(action==='portoTab'){el.title='Tampilkan tab '+(el.textContent||'').trim();return}else return}
@@ -8817,7 +8829,7 @@ var PM=[
 ['Pelaksanaan','Jalankan WBS, lampirkan bukti, ajukan perubahan resmi apabila lingkup, jadwal, atau biaya berubah.','pmo-wbs','WBS & Progres','pmo-bukti','Bukti Dukung','pmo-cr','Change Request','pmo-narasi','Narasi T-Program'],
 ['Pemantauan dan Pengendalian','Lihat capaian, risiko, milestone, jadwal, serta progres yang dilaporkan PMO Unit kepada PMO Kemenkeu.','pmo-siklus','Overview','pmo-milestone','Milestone','pmo-risiko','Risiko & Isu','pmo-laporan','Capaian TW','pmo-oneonone','Jadwal 1-on-1'],
 ['Penutupan Proyek','Penutupan berdasarkan acceptance criteria, pengalihan menjadi proyek unit, atau keluar dari program transformasi.','pmo-penutupan','Penutupan Proyek'],
-['Evaluasi Pascaproyek','Paling cepat tiga bulan setelah proyek ditutup; nilai efisiensi biaya, proses bisnis, dan pemenuhan layanan.','pmo-pascaproyek','Evaluasi Pascaproyek'],
+['Pascaproyek','Paling cepat tiga bulan setelah proyek ditutup; nilai efisiensi biaya, proses bisnis, dan pemenuhan layanan.','pmo-pascaproyek','Pascaproyek'],
 ['Pengelolaan Referensi','Gunakan kode program, master tahapan, dan referensi item WBS untuk konsistensi data.','pmo-referensi','Referensi Kode']
 ];
 var menuPM=[
@@ -8826,7 +8838,7 @@ var menuPM=[
 ['WBS & Progres','Pelaksanaan, target, realisasi','pmo-wbs'],['Bukti Dukung','Unggah dan validasi bukti','pmo-bukti'],['Change Request','Pengendalian perubahan baseline','pmo-cr'],
 ['Milestone','Tonggak waktu proyek','pmo-milestone'],['Risiko & Isu','Risiko dan tindak lanjut','pmo-risiko'],['Capaian Triwulanan','Laporan kinerja periodik','pmo-laporan'],
 ['Narasi T-Program','Uraian pelaksanaan per program','pmo-narasi'],['Jadwal 1-on-1','Rencana pertemuan koordinasi','pmo-oneonone'],
-['Penutupan','Kriteria dan dokumen penyelesaian','pmo-penutupan'],['Evaluasi Pascaproyek','Evaluasi manfaat proyek','pmo-pascaproyek'],['Referensi Kode','Kamus data dan standar kode','pmo-referensi']
+['Penutupan','Kriteria dan dokumen penyelesaian','pmo-penutupan'],['Pascaproyek','Evaluasi manfaat proyek','pmo-pascaproyek'],['Referensi Kode','Kamus data dan standar kode','pmo-referensi']
 ];
 var menuCM=[
 ['Analisis Dampak (ADP)','As-Is, To-Be, POSTeR, risiko','cmo-adp'],['Perencanaan','Stakeholder, komunikasi, pelatihan','cmo-rencana'],
