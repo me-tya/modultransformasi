@@ -101,3 +101,38 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadUnifiedTabs,{once:true});
  else loadUnifiedTabs();
 })();
+
+/* Tab seragam — bridge iframe Dashboard CM */
+;(function(){
+ function inject(frame){
+  try{
+   var d=frame.contentDocument;
+   if(!d||!d.head||!d.documentElement)return;
+   d.documentElement.classList.add('mt-ui-embedded');
+   if(d.getElementById('mt-unified-tabs-styles'))return;
+   var l=d.createElement('link');l.id='mt-unified-tabs-styles';l.rel='stylesheet';
+   l.href='ui-tabs-unified.css?v=20261107-3';d.head.appendChild(l);
+  }catch(e){/* iframe lintas origin: tidak diubah */ }
+ }
+ function bind(){
+  document.querySelectorAll('iframe.mt-cm-frame').forEach(function(frame){
+   if(frame.dataset.mtTabsBridge)return;
+   frame.dataset.mtTabsBridge='1';
+   frame.addEventListener('load',function(){inject(frame)});
+   if(frame.contentDocument&&frame.contentDocument.readyState==='complete')inject(frame);
+  });
+ }
+ function start(){
+  bind();
+  var obs=new MutationObserver(function(muts){
+   if(muts.some(function(m){
+    return Array.from(m.addedNodes||[]).some(function(n){
+     return n.nodeType===1&&(n.matches&&n.matches('iframe.mt-cm-frame')||n.querySelector&&n.querySelector('iframe.mt-cm-frame'));
+    });
+   }))bind();
+  });
+  obs.observe(document.body,{childList:true,subtree:true});
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
+ else start();
+})();
