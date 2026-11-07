@@ -50,10 +50,10 @@ function dbDetail(groups,n){
  const filt=(g,m)=>{const s=dxAt(m,n);return (!q||(m.n+' '+g.p.nama+' '+m.x.uic+' '+Object.keys(m.subs).join(' ')).toLowerCase().includes(q))&&(!st||s.st===st)};
  const sections=groups.map((g,i)=>{
   const filtered=g.mods.filter(m=>filt(g,m));if(!filtered.length)return '';
-  const isOpen=S.ui.dbOpened===g.p.akr||(S.ui.dbOpened==null&&i===0);
+  const isOpen=S.ui.dbOpened==='__all__'||S.ui.dbOpened===g.p.akr||(S.ui.dbOpened==null&&i===0);
   return '<section class="db-program"><div class="db-programhead"><button data-act="dbOpen" data-p="'+dbEsc(g.p.akr)+'" aria-expanded="'+isOpen+'"><span class="dx-num">'+g.mods.length+'</span><strong>'+dbEsc(g.p.nama)+'</strong><span class="code">'+dbEsc(g.p.kode)+'</span><small>UIC Utama '+dbEsc(g.p.uic||'—')+'</small><span class="db-chev">'+(isOpen?'⌃':'⌄')+'</span></button><button class="db-link" data-act="dxProg" data-p="'+dbEsc(g.p.akr)+'">Detail program ›</button></div>'+(isOpen?'<div class="db-modgrid">'+filtered.map(m=>dbCard(m,g,n)).join('')+'</div>':'')+'</section>';
  }).join('');
- return '<div class="db-detailtoolbar"><label class="db-search"><span>⌕</span><input data-on="dbSearch" value="'+dbEsc(S.ui.dbSearch||'')+'" placeholder="Cari modul, submodul, atau UIC…" aria-label="Cari modul"></label><label>Status <select class="db-select" data-on="dbStatus"><option value="">Semua status</option>'+['Tercapai','Berjalan','Terlambat','Terjadwal'].map(s=>'<option '+((S.ui.dbStatus||'')===s?'selected':'')+'>'+s+'</option>').join('')+'</select></label><button class="db-link" data-act="dbExpand">Buka Semua</button></div>'+sections||'<p>Tidak ada modul yang sesuai.</p>';
+ return '<div class="db-detailtoolbar"><label class="db-search"><span>⌕</span><input data-on="dbSearch" value="'+dbEsc(S.ui.dbSearch||'')+'" placeholder="Cari modul, submodul, atau UIC…" aria-label="Cari modul"></label><label>Status <select class="db-select" data-on="dbStatus"><option value="">Semua status</option>'+['Tercapai','Berjalan','Terlambat','Terjadwal'].map(s=>'<option '+((S.ui.dbStatus||'')===s?'selected':'')+'>'+s+'</option>').join('')+'</select></label><button class="db-link" data-act="dbExpand">Buka Semua</button></div>'+(sections||'<p class="db-empty">Tidak ada modul sesuai pencarian atau filter.</p>');
 }
 function dbSummaryTable(groups,n){
  const arr=groups.map(g=>{const a=dbSummary(g.mods.map(m=>({m})),n);return {g,a,count:g.mods.length,p:dbPct(a.Tercapai,g.mods.length)};}).sort((a,b)=>b.p-a.p);
@@ -78,7 +78,7 @@ function dbRender(){
 }
 ACT.dbTab=el=>{S.ui.dbTab2=el.dataset.tab;save();render()};
 ACT.dbOpen=el=>{S.ui.dbOpened=S.ui.dbOpened===el.dataset.p?'__none__':el.dataset.p;save();render()};
-ACT.dbExpand=()=>{S.ui.dbOpened=null;save();render()};
+ACT.dbExpand=()=>{S.ui.dbOpened='__all__';save();render()};
 ACT.dbQuarter=el=>{S.ui.pr=String(el.dataset.q);S.ui.dbTab2='detail';save();render()};
 ACT.dbKpi=el=>{S.ui.dbStatus=({ok:'Tercapai',run:'Berjalan',late:'Terlambat',wait:'Terjadwal'})[el.dataset.k]||'';S.ui.dbTab2='detail';save();render()};
 const oldOnChange=onChange;
@@ -88,6 +88,7 @@ onChange=function(el){const k=el.dataset.on,v=el.value;
  if(k==='dbSearch'){S.ui.dbSearch=v;save();render();const f=document.querySelector('.db-search input');if(f){f.focus();f.setSelectionRange(v.length,v.length)}return}
  return oldOnChange(el)
 };
+document.addEventListener('input',function(e){if(e.target&&e.target.dataset.on==='dbSearch'){S.ui.dbSearch=e.target.value;const pos=e.target.selectionStart;save();render();const input=document.querySelector('.db-search input');if(input){input.focus();input.setSelectionRange(pos,pos)}}});
 viewDash=dbRender;
 if(typeof VIEW!=='undefined'&&VIEW==='dashboard'&&typeof ME!=='undefined'&&ME)render();
 })();
