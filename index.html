@@ -3415,6 +3415,12 @@ window.mtP0Navigate=function(target,section){
   modal('Pilih proyek untuk tab Penutupan','<p class="s">Pilih proyek atau submodul sebelum membuka tab penutupan.</p><label class="fld">Proyek<select id="p0help-closure" class="sel">'+options.map(x=>'<option value="'+esc(x.key)+'">'+esc(x.name)+'</option>').join('')+'</select></label>','Buka tab',()=>open($('#p0help-closure').value));
   return;
  }
+ if(scope==='cr'&&['open','done',''].includes(tab))S.ui.crseg=tab;
+ if(scope==='home'&&tab==='tasks'){
+  if(location.hash==='#beranda')render();else go('beranda');
+  setTimeout(()=>{var h=Array.from(document.querySelectorAll('#view .ch h3')).find(x=>x.textContent.trim()==='Tugas Saya');if(h)h.closest('.card')?.scrollIntoView({block:'center',behavior:'smooth'})},120);
+  return;
+ }
  if(scope==='overview'&&['tw','kwide','tprog','ue'].includes(tab))S.ui.overviewTab=tab;
  if(scope==='porto'&&['daftar','capaian','milestone'].includes(tab))S.ui.portoTab=tab;
  if(scope==='cra'&&window.CRA_NATIVE&&typeof window.CRA_NATIVE.setTab==='function')window.CRA_NATIVE.setTab(tab);
@@ -8966,6 +8972,7 @@ styles += "\n/* Peta Menu v3: rapat, simetris, responsif; kartu tanpa tab tetap 
 ".sk-overlay .sk-menuSection[hidden],.sk-overlay .sk-p0-wrap[hidden]{display:none!important}\n"+
 "@media(max-width:1080px){.sk-overlay .sk-menuSections{grid-template-columns:1fr}.sk-overlay .sk-menuTiles{grid-template-columns:repeat(2,minmax(0,1fr))}}\n"+
 "@media(max-width:540px){.sk-overlay .sk-menuTiles{grid-template-columns:1fr}.sk-overlay .sk-p0-minilinks{grid-template-columns:repeat(2,minmax(0,1fr))}.sk-overlay .sk-menuSectionCount{display:none}}\n";
+styles += "\n\n/* Bantuan v4 — kepadatan, simetri, serta tautan submenu yang bisa diakses keyboard */\n.sk-overlay .sk-phaseDetails.sk-stageGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:stretch}\n.sk-overlay .sk-stageGrid>.sk-phaseDetail{min-width:0;display:flex;align-items:flex-start;gap:9px;padding:13px;border-radius:11px;box-shadow:0 2px 9px #1539600a}\n.sk-overlay .sk-stageGrid>.sk-phaseDetail:last-child:nth-child(odd){grid-column:1/-1}\n.sk-overlay .sk-stageGrid .sk-phaseBadge{width:32px;height:32px;flex:none}\n.sk-overlay .sk-stageGrid .sk-phaseDetailText h4{font-size:12.7px;margin:1px 0 3px}\n.sk-overlay .sk-stageGrid .sk-phaseDetailText p{font-size:11px;line-height:1.46;margin:0 0 9px}\n.sk-overlay .sk-stageGrid .sk-phaseLinks{display:block}\n.sk-overlay .sk-stageGrid .sk-phaseLinksLabel{display:block;padding:0 0 5px;font-size:9px;letter-spacing:.06em;text-transform:uppercase}\n.sk-overlay .sk-phaseButtons{display:flex!important;align-items:stretch;gap:6px;flex-wrap:wrap}\n.sk-overlay .sk-phaseButtons>.sk-cta,.sk-overlay .sk-phaseMenu{flex:0 1 auto;min-width:0}\n.sk-overlay .sk-phaseMenu{position:relative;border:1px solid #c7d9e9;border-radius:9px;background:#f4f8fd;max-width:100%}\n.sk-overlay .sk-phaseMenu>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:9px;padding:8px 10px;color:#143b67;font-size:10.7px;min-height:33px}\n.sk-overlay .sk-phaseMenu>summary::-webkit-details-marker{display:none}\n.sk-overlay .sk-phaseMenu>summary strong{font-weight:850}\n.sk-overlay .sk-phaseMenu>summary span{color:#83704f;font-size:9px;white-space:nowrap}\n.sk-overlay .sk-phaseMenu>summary i{font-style:normal;font-size:12px}\n.sk-overlay .sk-phaseMenu[open]{flex-basis:100%;width:100%;background:#fff}\n.sk-overlay .sk-phaseMenu[open]>summary{border-bottom:1px solid #e1eaf3;background:#eaf2fc}\n.sk-overlay .sk-phaseSub{padding:8px}\n.sk-overlay .sk-phaseSubIntro{margin-bottom:6px}\n.sk-overlay .sk-phaseSubGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}\n.sk-overlay .sk-phaseMenu:focus-within{outline:2px solid #daa532;outline-offset:1px}\n.sk-overlay .sk-shortlink{appearance:none;display:inline-flex;align-items:center;justify-content:space-between;gap:5px;text-align:left;min-width:0;border:1px solid #d4e2f0;background:#fff;border-radius:7px;padding:6px 8px;color:#163e69;font-size:10px;line-height:1.35;font-weight:770;cursor:pointer;overflow-wrap:anywhere}\n.sk-overlay .sk-shortlink .sk-ctaArrow{color:#b6852e;order:2;font-size:14px;flex:none}\n.sk-overlay .sk-shortlink:hover,.sk-overlay .sk-shortlink:focus-visible{background:#123b66!important;color:#fff!important;border-color:#123b66!important}\n.sk-overlay .sk-shortlink:hover .sk-ctaArrow,.sk-overlay .sk-shortlink:focus-visible .sk-ctaArrow{color:#ffd078!important}\n.sk-overlay .sk-compactRail{grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:0 0 11px}\n.sk-overlay .sk-compactRail .sk-phaseStop{min-height:0;padding:9px 10px;gap:3px;border-radius:9px}\n.sk-overlay .sk-compactRail .sk-phaseBubble{min-width:24px;height:24px;font-size:10px}\n.sk-overlay .sk-compactRail .sk-phaseStop strong{font-size:10.5px}\n.sk-overlay .sk-compactRail .sk-phaseChevron{right:9px;top:9px;font-size:13px}\n.sk-overlay .sk-crStages{gap:9px}\n.sk-overlay .sk-crStages .sk-laneBox{min-height:0;padding:11px;display:flex;flex-direction:column;align-items:flex-start;gap:5px}\n.sk-overlay .sk-crStages .sk-laneBox b{margin:0!important}\n.sk-overlay .sk-crStages .sk-laneBox p{flex:1;margin:0 0 3px}\n.sk-overlay .sk-crOutcomes{margin-top:10px!important;gap:9px}\n.sk-overlay .sk-crOutcomes .sk-card{display:flex;flex-direction:column;padding:12px}\n.sk-overlay .sk-crOutcomes .sk-card p{flex:1;margin-bottom:8px}\n.sk-overlay .sk-crCross{margin-top:10px}\n.sk-overlay .sk-crCross .sk-buttons{margin-top:8px}\n.sk-overlay .sk-crTask{margin:10px 0;padding:12px}\n.sk-overlay .sk-crTask>div:last-child{flex:1}\n.sk-overlay .sk-crTask .sk-buttons{margin-top:8px}\n.sk-overlay .sk-glossLinked{margin-top:9px;gap:8px}\n.sk-overlay .sk-glossLinked .sk-term{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:9px 11px;min-width:0}\n.sk-overlay .sk-glossLinked .sk-term>div{min-width:0;flex:1}\n.sk-overlay .sk-glossLinked .sk-term p{line-height:1.4;margin-top:4px}\n.sk-overlay .sk-glossGo{flex:none}\n.sk-overlay .sk-docwrap{margin-top:9px}\n.sk-overlay .sk-docrow{padding:9px 11px;gap:8px}\n.sk-overlay .sk-docHead{padding:8px 11px}\n@media(max-width:1050px){.sk-overlay .sk-compactRail{grid-template-columns:repeat(3,minmax(0,1fr))}}\n@media(max-width:760px){.sk-overlay .sk-phaseDetails.sk-stageGrid{grid-template-columns:1fr}.sk-overlay .sk-stageGrid>.sk-phaseDetail:last-child:nth-child(odd){grid-column:auto}.sk-overlay .sk-compactRail{grid-template-columns:repeat(2,minmax(0,1fr))}.sk-overlay .sk-glossLinked .sk-term{align-items:flex-start;flex-direction:column}.sk-overlay .sk-glossGo{align-self:flex-start}}\n@media(max-width:480px){.sk-overlay .sk-phaseSubGrid{grid-template-columns:1fr}.sk-overlay .sk-compactRail{grid-template-columns:repeat(2,minmax(0,1fr))}}\n";
 function addStyle(){if(document.getElementById("sk-ux-style"))return;var e=document.createElement("style");e.id="sk-ux-style";e.textContent=styles;document.head.appendChild(e)}
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function src(t){return '<span class="sk-source">'+t+'</span>'}
@@ -9065,20 +9072,35 @@ var docCM=[
 ['BAST / Dokumen Sejenis','Pengalihan tanggung jawab dan kanal layanan','CMO Unit + pemilik probis / operasional','Setelah transisi dan evaluasi','cmo-closing']
 ];
 function stepCards(ph){return '<div class="sk-steps">'+ph.map(function(a,i){return '<article class="sk-step"><div class="sk-stephead"><span class="sk-num">'+(i+1)+'</span><b>'+a[0]+'</b></div><div class="sk-stepbody"><p>'+a[1]+'</p><div class="sk-buttons">'+a.slice(2).filter(function(x,i){return i%2===0}).map(function(dst,i){return jump(a[3+i*2],dst)}).join('')+'</div></div></article>'}).join('')+'</div>'}
+/* Pintasan konsisten untuk seluruh halaman Bantuan (menu maupun tab sebenarnya). */
+function skQuick(label,dest,section,cls){
+ return '<button type="button" class="'+(cls||'sk-cta')+'" '+(section?'data-skdeep="'+esc(dest)+'" data-sksub="'+esc(section)+'"':'data-skgo="'+esc(dest)+'"')+' title="Buka '+esc(label)+'"><span class="sk-ctaArrow" aria-hidden="true">↗</span><span>'+esc(label)+'</span></button>';
+}
+function skStageLinks(kind,dest,label){
+ var deep=(kind==='pmo'?skDeepTabsPM:skDeepTabsCM)[dest]||[];
+ if(!deep.length)return skQuick(label,dest,'','sk-cta sk-phaseDirect');
+ return '<details class="sk-phaseMenu"><summary><strong>'+esc(label)+'</strong><span>'+deep.length+' tab <i aria-hidden="true">⌄</i></span></summary>'+
+  '<div class="sk-phaseSub"><div class="sk-phaseSubIntro">'+skQuick('Buka menu',dest,'','sk-cta sk-phaseMain')+'</div>'+
+  '<div class="sk-phaseSubGrid">'+deep.map(function(t){return skQuick(t[0],t[1],t[2],'sk-shortlink')}).join('')+'</div></div></details>';
+}
+
 function helpStages(kind){
  var items=kind==='pmo'?PM:CM,cm=kind==='cmo';
  var keys=cm?['01','02','03','04','05']:['01','02','03','04','05','06'];
- var rail='<div class="sk-phaseRail">'+items.map(function(a,i){return '<button type="button" class="sk-phaseStop" data-skstage="'+i+'" title="Lihat rincian '+esc(a[0])+'">'+
- '<span class="sk-phaseBubble">'+(keys[i]||('0'+(i+1)).slice(-2))+'</span><strong>'+esc(a[0])+'</strong><span class="sk-phaseChevron" aria-hidden="true">→</span></button>'}).join('')+'</div>';
- var blocks=items.map(function(a,i){var buttons='';for(var k=2;k<a.length;k+=2)buttons+=jump(a[k+1],a[k]);
- return '<section class="sk-phaseDetail" id="sk-phase-'+i+'" data-skphasedetail="'+i+'"><div class="sk-phaseBadge">'+(keys[i]||('0'+(i+1)).slice(-2))+'</div><div class="sk-phaseDetailText"><h4>'+esc(a[0])+'</h4><p>'+esc(a[1])+'</p><div class="sk-phaseLinks"><span class="sk-phaseLinksLabel">Menu terkait</span><div class="sk-buttons">'+buttons+'</div></div></div></section>';
+ var rail='<div class="sk-phaseRail sk-compactRail">'+items.map(function(a,i){return '<button type="button" class="sk-phaseStop" data-skstage="'+i+'" title="Lihat fase '+esc(a[0])+'">'+
+ '<span class="sk-phaseBubble">'+(keys[i]||('0'+(i+1)).slice(-2))+'</span><strong>'+esc(a[0])+'</strong><span class="sk-phaseChevron" aria-hidden="true">↓</span></button>'}).join('')+'</div>';
+ var blocks=items.map(function(a,i){
+  var buttons='';for(var k=2;k<a.length;k+=2)buttons+=skStageLinks(kind,a[k],a[k+1]);
+  return '<section class="sk-phaseDetail" id="sk-phase-'+i+'" data-skphasedetail="'+i+'">'+
+   '<div class="sk-phaseBadge">'+keys[i]+'</div>'+
+   '<div class="sk-phaseDetailText"><h4>'+esc(a[0])+'</h4><p>'+esc(a[1])+'</p>'+
+   '<div class="sk-phaseLinks"><span class="sk-phaseLinksLabel">Menu dan submenu</span><div class="sk-buttons sk-phaseButtons">'+buttons+'</div></div></div></section>';
  }).join('');
  return intro('Panduan langkah kerja','Tahapan '+(cm?'Manajemen Perubahan':'Manajemen Proyek'),
- cm?'Lima fase CM sesuai rancangan RKMK: klik tahap pada alur untuk menemukan kegiatan dan pintasan fitur yang perlu diisi.':'Ikuti siklus proyek dari perencanaan sampai evaluasi manfaat; setiap fase dilengkapi shortcut menu yang digunakan.')+
- rail+'<div class="sk-phaseDetails">'+blocks+'</div>'+
- note(cm?'<b>Urutan CM:</b> Perencanaan → Pelaksanaan → Pemantauan dan Evaluasi → Evaluasi Pascaimplementasi (paling cepat 1 bulan) → Penutupan CM setelah transisi dan pengalihan.':'<b>Urutan PMO:</b> Perencanaan → Pelaksanaan → Pemantauan dan Pengendalian → Penutupan Proyek → Evaluasi Pascaproyek (paling cepat 3 bulan).');
+  'Pilih tahap, lalu gunakan pintasan menu. Untuk menu bertab, buka daftar tab dari tombol panah bawah pada kartu.')+
+  rail+'<div class="sk-phaseDetails sk-stageGrid'+(cm?' is-cmo':' is-pmo')+'">'+blocks+'</div>'+
+  note(cm?'<b>Urutan CM:</b> Perencanaan → Pelaksanaan → Pemantauan dan Evaluasi → Evaluasi Pascaimplementasi (paling cepat 1 bulan) → Penutupan CM setelah transisi dan pengalihan.':'<b>Urutan PMO:</b> Perencanaan → Pelaksanaan → Pemantauan dan Pengendalian → Penutupan Proyek → Evaluasi Pascaproyek (paling cepat 3 bulan).');
 }
-
 /* Peta menu: gunakan tab yang memang tersedia di aplikasi; menu tunggal tidak diberi tab semu. */
 var skDeepTabsPM={
  'pmo-siklus':[
@@ -9174,10 +9196,63 @@ function helpMenu(kind){
   '<div class="sk-menutop"><div class="sk-menuSearch"><span aria-hidden="true">⌕</span><input class="sk-search" type="search" data-skfilter placeholder="Cari menu, tab, fungsi atau fase..." aria-label="Cari menu dan tab"></div><div class="sk-menuSearchHint">'+items.length+' menu · '+totalTabs+' pintasan tab</div></div>'+
   '<div class="sk-menuSections">'+sections+'</div>';
 }
-function helpGloss(kind){return intro('Istilah penting','Daftar Istilah '+(kind==='pmo'?'Project Management':'Change Management'),'Glosarium ringkas untuk memahami singkatan, label, dan istilah yang muncul dalam menu aplikasi.')+
- '<input class="sk-search" type="search" data-skfilter placeholder="Cari istilah..." aria-label="Cari istilah"><div class="sk-gloss" style="margin-top:13px">'+(kind==='pmo'?termsPM:termsCM).map(function(a){return '<div class="sk-term sk-filtered" data-skitem="'+esc(a.join(' ').toLowerCase())+'"><b>'+a[0]+'</b><p>'+a[1]+'</p></div>'}).join('')+'</div>'}
-function helpDocs(kind){var docs=kind==='pmo'?docPM:docCM;return intro('Katalog artefak','Dokumentasi & Output '+(kind==='pmo'?'Manajemen Proyek':'Manajemen Perubahan'),'Daftar dokumen dan keluaran yang disebutkan atau dijabarkan dalam draft RKMK. Klik shortcut untuk menuju menu pengisian/pencatatannya.','Draft RKMK (6) · Bagian J')+
- '<input class="sk-search" type="search" data-skfilter placeholder="Cari dokumen, penanggung jawab, atau tahap..." aria-label="Cari dokumentasi"><div class="sk-docwrap" style="margin-top:12px"><div class="sk-docHead"><span>No.</span><span>Dokumen / keluaran</span><span>Penanggung jawab</span><span>Waktu / fase</span><span>Menu</span></div>'+docs.map(function(a,i){return '<div class="sk-docrow sk-filtered" data-skitem="'+esc(a.join(' ').toLowerCase())+'"><span class="sk-docnum">'+(i+1)+'</span><div><b>'+a[0]+'</b><p>'+a[1]+'</p></div><span class="sk-owner">'+a[2]+'</span><span class="sk-when">'+a[3]+'</span>'+(kind==='pmo'&&i<7?'<button type="button" class="sk-cta" data-skdeep="pmo-charter" data-sksub="'+['asis','tobe','cs','ch','kp','mf','rk'][i]+'">↗ Buka tab</button>':jump(menuName(a[4]),a[4]))+'</div>'}).join('')+'</div>'+note('Dokumen dipakai sebagai katalog keluaran kerja. Ketersediaan tombol pembuatan atau unggah mengikuti hak akses dan kemampuan menu masing-masing, bukan tautan unduhan template yang belum tersedia.',true)}
+var skGlossRoutesPM={
+ 'PMO':['pmo-siklus','overview:tw'],'UIC':['pmo-portofolio','porto:daftar'],
+ 'Charter':['pmo-charter','ch'],'WBS':['pmo-wbsplan',''],
+ 'Baseline':['pmo-cr','cr:open'],'Acceptance Criteria':['pmo-charter','kp'],
+ 'Change Request':['pmo-cr','cr:open'],'Milestone':['pmo-milestone',''],
+ 'Deliverable':['pmo-wbs',''],'Dependensi':['pmo-wbsplan',''],
+ 'Risiko':['pmo-risiko',''],'Isu':['pmo-risiko',''],
+ 'Bukti Dukung':['pmo-bukti',''],'Penutupan Proyek':['pmo-penutupan','closure:siap'],
+ 'Evaluasi Pascaproyek':['pmo-pascaproyek',''],'PMBOK':['pmo-perencanaan','']
+};
+var skGlossRoutesCM={
+ 'CM / CMO':['cmo-rencana','rencana:sh'],'ADP':['cmo-adp','adp:dampak'],
+ 'POSTeR':['cmo-adp','adp:poster'],'Stakeholder':['cmo-rencana','rencana:sh'],
+ 'Sponsor':['cmo-jaringan',''],'Jaringan Perubahan':['cmo-jaringan',''],
+ 'T-Agent':['cmo-jaringan',''],'Change Champion':['cmo-jaringan',''],
+ 'CRA':['cmo-cra','cra:analytics'],'TNA':['cmo-rencana','rencana:pel'],
+ 'ADKAR':['cmo-monev','monev:pan'],'Adopsi':['cmo-monev','monev:ado'],
+ 'Resistensi':['cmo-adp','adp:reg'],'Monitoring & Evaluasi':['cmo-monev','monev:pan'],
+ 'Evaluasi Pascaimplementasi':['cmo-pasca',''],'Masa Transisi':['cmo-pasca',''],
+ 'BAST':['cmo-closing',''],'Closing CM':['cmo-closing','']
+};
+function helpGloss(kind){
+ var terms=kind==='pmo'?termsPM:termsCM,routes=kind==='pmo'?skGlossRoutesPM:skGlossRoutesCM;
+ return intro('Istilah penting','Daftar Istilah '+(kind==='pmo'?'Project Management':'Change Management'),
+  'Setiap istilah dilengkapi pintasan ke tempat penerapan di aplikasi.')+
+  '<input class="sk-search" type="search" data-skfilter placeholder="Cari istilah..." aria-label="Cari istilah">'+
+  '<div class="sk-gloss sk-glossLinked">'+terms.map(function(a){
+   var route=routes[a[0]];
+   return '<div class="sk-term sk-filtered" data-skitem="'+esc(a.join(' ').toLowerCase())+'"><div><b>'+esc(a[0])+'</b><p>'+esc(a[1])+'</p></div>'+
+   (route?skQuick('Lihat di aplikasi',route[0],route[1],'sk-shortlink sk-glossGo'):'')+'</div>';
+  }).join('')+'</div>';
+}
+function helpDocs(kind){
+ var docs=kind==='pmo'?docPM:docCM;
+ var routes=kind==='pmo'?[
+  ['pmo-charter','asis'],['pmo-charter','tobe'],['pmo-charter','cs'],
+  ['pmo-charter','ch'],['pmo-charter','kp'],['pmo-charter','mf'],['pmo-charter','rk'],
+  ['pmo-perencanaan',''],['pmo-wbsplan',''],['pmo-bukti',''],
+  ['pmo-cr','cr:open'],['pmo-laporan',''],['pmo-penutupan','closure:aju'],['pmo-pascaproyek','']
+ ]:[
+  ['cmo-adp','adp:dampak'],['cmo-adp','adp:reg'],
+  ['cmo-rencana','rencana:sh'],['cmo-jaringan',''],['cmo-cra','cra:analytics'],
+  ['cmo-rencana','rencana:kom'],['cmo-rencana','rencana:pel'],
+  ['cmo-pelaksanaan',''],['cmo-pelaksanaan',''],['cmo-monev','monev:pan'],
+  ['cmo-pasca',''],['cmo-closing','']
+ ];
+ return intro('Katalog artefak','Dokumentasi & Output '+(kind==='pmo'?'Manajemen Proyek':'Manajemen Perubahan'),
+  'Klik nama dokumen atau tombolnya untuk menuju lokasi pengisian dan pemantauan yang sesuai.','Draft RKMK (6) · Bagian J')+
+  '<input class="sk-search" type="search" data-skfilter placeholder="Cari dokumen, penanggung jawab, atau tahap..." aria-label="Cari dokumentasi">'+
+  '<div class="sk-docwrap"><div class="sk-docHead"><span>No.</span><span>Dokumen / keluaran</span><span>Penanggung jawab</span><span>Waktu / fase</span><span>Menu</span></div>'+
+  docs.map(function(a,i){var r=routes[i]||[a[4],''];
+   return '<div class="sk-docrow sk-filtered" data-skitem="'+esc(a.join(' ').toLowerCase())+'"><span class="sk-docnum">'+(i+1)+'</span>'+
+    '<div><b>'+esc(a[0])+'</b><p>'+esc(a[1])+'</p></div><span class="sk-owner">'+esc(a[2])+'</span><span class="sk-when">'+esc(a[3])+'</span>'+
+    skQuick('Buka lokasi',r[0],r[1],'sk-cta')+'</div>';
+  }).join('')+'</div>'+
+  note('Tautan menunjuk tempat kerja yang tersedia; hak membuat, mengubah, dan memvalidasi tetap mengikuti peran pengguna. Dokumen formal mengikuti ketentuan RKMK.',true);
+}
 function cmFramework(){
  var plan=[
  ['Analisis Dampak Perubahan',['As-Is → To-Be, POSTeR','Risiko perubahan & resistensi','Indikator keberhasilan CM']],
@@ -9316,21 +9391,32 @@ function pmWBS(){return intro('Work Breakdown Structure','Dari Strategi ke Paket
  '<div class="sk-sectiontitle">Pengendalian pekerjaan</div>'+cards([['Rencana','Uraikan target, tanggal, bobot, serta dependensi antaritem agar baseline dapat dipantau.'],['Pelaksanaan','Pemilik pekerjaan memutakhirkan progres dan melampirkan bukti; PMO menilai capaian.']])+
  '<div class="sk-buttons" style="margin-top:12px">'+jump('Susun WBS','pmo-wbsplan')+jump('Progres & Bukti','pmo-wbs')+jump('Laporan Capaian','pmo-laporan')+'</div>';
 }
-function pmCR(){var stages=[
- ['PMO Unit','Mengajukan usulan perubahan lingkup, jadwal, atau biaya.'],
- ['PMO Kemenkeu','Menelaah alasan, dampak, risiko, jadwal, dan keterkaitan proyek.'],
- ['Ketua Organisasi','Memberi keputusan persetujuan sebelum perubahan dilaksanakan.'],
- ['PMO Kemenkeu','Setelah persetujuan Ketua, PIC PMO menerapkan perubahan WBS. Jejak perubahan dan pihak terkait tercatat.']
+function pmCR(){
+ var stages=[
+  ['PMO Unit','Mengajukan usulan perubahan lingkup, jadwal, atau biaya.','pmo-cr','cr:open','Lihat CR terbuka'],
+  ['PMO Kemenkeu','Menelaah alasan, dampak, risiko, jadwal, dan keterkaitan proyek.','pmo-cr','cr:open','Buka register telaah'],
+  ['Ketua Organisasi','Memberi keputusan persetujuan sebelum perubahan dilaksanakan.','pmo-cr','cr:open','Lihat CR menunggu keputusan'],
+  ['PMO Kemenkeu','Setelah persetujuan Ketua, PIC PMO menerapkan perubahan WBS. Jejak perubahan dan pihak terkait tercatat.','pmo-cr','cr:open','Lihat CR untuk penerapan']
  ];
- return intro('Pengendalian Perubahan','Alur Change Request (CR)','Menjaga keterkendalian baseline proyek. Perubahan tidak boleh langsung dilaksanakan sebelum ditelaah dan disetujui sesuai kewenangan.','Draft RKMK (6) · hlm 49')+
- '<div class="sk-laneFlow">'+stages.map(function(x,i){return '<div class="sk-laneBox" style="border-top-color:'+(i===2?'#cc9222':'#184d80')+'"><span class="sk-pill sk-pgold">'+('0'+(i+1)).slice(-2)+'</span><b style="margin-top:7px">'+x[0]+'</b><p>'+x[1]+'</p></div>'}).join('')+'</div>'+
- '<div class="sk-grid3" style="margin-top:13px">'+[
- ['Disetujui','Perubahan diterapkan sesuai keputusan; data WBS dan jadwal dimutakhirkan.'],
- ['Dikembalikan','Lengkapi data, analisis dampak, atau bukti pendukung sebelum telaah lanjutan.'],
- ['Ditolak','Baseline semula tetap berlaku dan alasan keputusan terdokumentasi.']
- ].map(function(x){return '<div class="sk-card"><strong>'+x[0]+'</strong><p>'+x[1]+'</p></div>'}).join('')+'</div>'+
- note('<b>Hubungan PMO–CMO:</b> bila Change Request mengubah proses atau jadwal implementasi, CMO memutakhirkan rencana komunikasi, pelatihan, atau kesiapan pengguna.')+
- '<div class="sk-feature" style="margin-top:12px"><div class="sk-featureIcon">✓</div><div><b>Bagaimana tugas diterima?</b><span>Setiap tahap diarahkan ke akun PIC, terlihat pada Tugas Saya dan lonceng notifikasi. Jika PIC belum tersedia, Superadmin menetapkan akun atau mengalihkan PIC pada Register CR. Nomor keputusan Ketua wajib dicatat sebelum WBS boleh diubah.</span></div></div>'+ '<div style="margin-top:12px">'+jump('Buka Change Request','pmo-cr')+'</div>';
+ var outcomes=[
+  ['Disetujui','Perubahan diterapkan sesuai keputusan; data WBS dan jadwal dimutakhirkan.','pmo-cr','cr:open','Lihat CR belum diterapkan'],
+  ['Dikembalikan','Lengkapi data, analisis dampak, atau bukti pendukung sebelum telaah lanjutan.','pmo-cr','cr:open','Lihat CR dikembalikan'],
+  ['Ditolak','Baseline semula tetap berlaku dan alasan keputusan terdokumentasi.','pmo-cr','cr:done','Lihat keputusan final']
+ ];
+ return intro('Pengendalian Perubahan','Alur Change Request (CR)',
+  'Menjaga keterkendalian baseline proyek. Perubahan tidak boleh langsung dilaksanakan sebelum ditelaah dan disetujui sesuai kewenangan.','Draft RKMK (6) · hlm 49')+
+  '<div class="sk-laneFlow sk-crStages">'+stages.map(function(x,i){return '<div class="sk-laneBox" style="border-top-color:'+(i===2?'#cc9222':'#184d80')+'"><span class="sk-pill sk-pgold">'+('0'+(i+1)).slice(-2)+'</span><b>'+esc(x[0])+'</b><p>'+esc(x[1])+'</p>'+
+  skQuick(x[4],x[2],x[3],'sk-shortlink sk-crGo')+'</div>'}).join('')+'</div>'+
+  '<div class="sk-grid3 sk-crOutcomes">'+outcomes.map(function(x){return '<div class="sk-card"><strong>'+esc(x[0])+'</strong><p>'+esc(x[1])+'</p>'+
+  skQuick(x[4],x[2],x[3],'sk-shortlink sk-crGo')+'</div>'}).join('')+'</div>'+
+  '<div class="sk-note sk-crCross"><b>Hubungan PMO–CMO:</b> jika CR mengubah proses atau jadwal implementasi, CMO memperbarui strategi perubahan.'+
+  '<div class="sk-buttons">'+skQuick('Rencana Komunikasi','cmo-rencana','rencana:kom','sk-shortlink')+
+  skQuick('Rencana Pelatihan','cmo-rencana','rencana:pel','sk-shortlink')+
+  skQuick('CRA / Rencana Aksi','cmo-cra','cra:actions','sk-shortlink')+'</div></div>'+
+  '<div class="sk-feature sk-crTask"><div class="sk-featureIcon">✓</div><div><b>Bagaimana tugas diterima?</b><span>Setiap tahap diarahkan ke akun PIC, terlihat pada Tugas Saya dan notifikasi. Apabila PIC belum tersedia, Superadmin menetapkan akun atau mengalihkan PIC di Register CR. Nomor keputusan Ketua dicatat sebelum WBS boleh diubah.</span>'+
+  '<div class="sk-buttons">'+skQuick('Tugas Saya','beranda','home:tasks','sk-shortlink')+
+  skQuick('Register Change Request','pmo-cr','cr:open','sk-shortlink')+
+  skQuick('WBS & Progres','pmo-wbs','','sk-shortlink')+'</div></div></div>';
 }
 function coordination(){
  var diagram=typeof window.koHtml==='function'?window.koHtml():'';
@@ -9378,7 +9464,7 @@ function currentKind(){try{return typeof VIEW==='string'&&VIEW.indexOf('pmo-')==
 window.openTxCheatsheet=function(mode,selected){return open('sheet',mode||currentKind(),selected==='koordinasi'?'ko':selected)};
 window.showGuideHome=function(){return open('help',currentKind())};
 window.showHelp=function(v){return open('help',String(v||'').indexOf('pmo-')===0?'pmo':String(v||'').indexOf('cmo-')===0?'cmo':currentKind(),'menu')};
-window.skHelpCheatsheetVersion='20261106-release-2';
+window.skHelpCheatsheetVersion='20261107-stage-shortcuts-v4';
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addStyle);else addStyle();
 })();
 </script>
