@@ -24,5 +24,24 @@
      at:'2026-11-07',by:'Rekap workbook WBS 2026',how:'excel-reference',source:'Capaian T-Program / Capaian per UE1',n:null,
      tot,prog:p,ue:u};
  }
+ /* Koreksi TW II 2026: tabel Excel terbaru pada gambar pengguna (7 Nov 2026).
+    Berbeda dengan workbook (8)(1) terdahulu. Setiap nilai disimpan sebagai
+    target, realisasi dan target tahunan; persentase SELALU dihitung saat tampil. */
+ const newerTw2={
+  OA:[6942,7392,16478],
+  CORE:[25213,25688,63757],
+  SP:[660,660,9070],
+  SD:[616,616,1195],
+  SSB:[233,233,5385]
+ };
+ const q2=s['2026-2'],entry=x=>[x[0],x[1],x[2],x[2]?x[1]/x[2]*100:null,null,null,null,null];
+ q2.prog=Object.fromEntries(Object.entries(newerTw2).map(([code,v])=>[code,entry(v)]));
+ const rows=Object.values(newerTw2);
+ q2.tot=entry([rows.reduce((n,v)=>n+v[0],0),rows.reduce((n,v)=>n+v[1],0),rows.reduce((n,v)=>n+v[2],0)]);
+ if(q2.tot[0]!==33664||q2.tot[1]!==34589||q2.tot[2]!==95885)throw Error('Rekap TW II 2026 tidak konsisten');
+ q2.ue={}; // Rekap UE I untuk versi TW II terbaru belum diberikan; jangan gunakan UE I versi lama.
+ q2.source='Tabel Excel Capaian TW II terbaru (gambar pengguna, 7 November 2026)';
+ q2.by='Rekap TW II dari gambar Excel terbaru';
+ q2.at='2026-11-07';
  window.WBS_CAP_REFERENSI_2026=s;
 })();
