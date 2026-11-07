@@ -5,6 +5,20 @@
 <!DOCTYPE html>
 <html lang="id" data-access="guest">
 <head>
+<script>
+/* Activate module isolation before the Dashboard CM scripts render their default Overview. */
+(function(){var m=new URLSearchParams(location.search).get('mt_module');if(['priority','survey','resource','contact'].includes(m)){document.documentElement.classList.add('mt-embedded');document.documentElement.setAttribute('data-mt-target',m);}})();
+</script>
+<style>
+/* An embedded module must never reveal unrelated Dashboard CM tabs during startup or auth changes. */
+html.mt-embedded #tab-analytics,
+html.mt-embedded .tab-panel:not(#tab-priority):not(#tab-survey):not(#tab-resource):not(#tab-contact){display:none!important}
+html.mt-embedded[data-mt-target="priority"] .tab-panel:not(#tab-priority),
+html.mt-embedded[data-mt-target="survey"] .tab-panel:not(#tab-survey),
+html.mt-embedded[data-mt-target="resource"] .tab-panel:not(#tab-resource),
+html.mt-embedded[data-mt-target="contact"] .tab-panel:not(#tab-contact){display:none!important}
+html.mt-embedded #appHeader,html.mt-embedded .tabs-row,html.mt-embedded .app-footer{display:none!important}
+</style>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -20347,7 +20361,12 @@ html.mt-embedded body {padding-bottom:30px!important}
       var button=document.querySelector('.tab-btn[data-tab="'+target+'"]');
       if(button && typeof switchTab==='function'){
         if(!button.classList.contains('active')) switchTab(target);
-        return button.classList.contains('active');
+        var selected=button.classList.contains('active');
+        // Auth may temporarily deny selection; never leak Overview into embedded views.
+        if(!selected){
+          document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.add('hidden')});
+        }
+        return selected;
       }
     }catch(e){}
     return false;
