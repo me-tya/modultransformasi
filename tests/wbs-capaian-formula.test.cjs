@@ -62,7 +62,7 @@ test('Change Request tanggal akhir menghitung ulang durasi dan bulan target',()=
  const dates=(s,f)=>Math.round((Date.parse(f+'T00:00:00Z')-Date.parse(s+'T00:00:00Z'))/86400000)+1;
  const crApply=vm.runInNewContext(section('function crApply(c){','/* --- Laporan TW --- */')+'\ncrApply',{
   wbsBy:()=>item,crCanAct:()=>true,crGet:(w,k)=>w[k],toast:()=>{},
-  durW:dates,isD:s=>/^20\\d\\d-\\d\\d-\\d\\d$/.test(s),
+  durW:dates,isD:s=>/^20\d\d-\d\d-\d\d$/.test(s),
   yrOf:w=>+(w.f||w.s||'').slice(0,4),S:{wbs:[item]}
  });
  const change={st:'Disetujui Ketua',keputusan:{by:'Ketua'},item:'CORE-1',
