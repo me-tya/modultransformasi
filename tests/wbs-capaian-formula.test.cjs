@@ -138,3 +138,26 @@ test('Capaian dibatasi TW I-II 100% dan TW III-IV 120%, bobot asli utuh',()=>{
  assert.equal(capValue(130,100,4),120);
  assert.equal(capValue(null,100,2),null);
 });
+
+test('Impor ulang rekap Excel TW II memakai kolom target/realisasi per program',()=>{
+ const code=section('function capReadRekap(wb){',"document.addEventListener('change',e=>")+
+   String.fromCharCode(10)+'capReadRekap';
+ const mock={S:{ui:{tahun:2026},programs:[]},XLSX:{utils:{sheet_to_json:sheet=>sheet.mockRows}}};
+ const parse=vm.runInNewContext(code,mock);
+ const rows=[
+  ['T-Program','Target TW2','Target Tahunan','Realisasi TW2'],
+  ['Digitalisasi Office Automation',6942,16478,7392],
+  ['Integrated Core System',25213,63757,25688],
+  ['Pengembangan Single Profile',660,9070,660],
+  ['Satu Data Kemenkeu',616,1195,616],
+  ['Seamless Services untuk Bendahara Pemerintah',233,5385,233],
+  ['Total',33664,95885,34589]
+ ];
+ const rec=parse({SheetNames:['Capaian T-Program'],Sheets:{'Capaian T-Program':{mockRows:rows}}});
+ assert.equal(rec.length,1);
+ assert.equal(rec[0].tw,2);
+ assert.equal(rec[0].tot[0],33664);
+ assert.equal(rec[0].tot[1],34589);
+ assert.equal(rec[0].tot[2],95885);
+ assert.equal(rec[0].participants.length,5);
+});
