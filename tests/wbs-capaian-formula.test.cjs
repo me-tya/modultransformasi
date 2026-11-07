@@ -42,7 +42,7 @@ test('Target otomatis mengikuti bulan dan bobot baseline yang berubah',()=>{
 });
 test('Pengecualian historis 2026 tidak menular ke 2027–2029',()=>{
  const S={ui:{tahun:2026},cfg:{}};
- const scope=vm.runInNewContext(section('function capTotItems(items,tw)','function capLive(items,tw)')+'\ncapTotItems',{S});
+ const scope=vm.runInNewContext(section('function capTotItems(items,tw,yHint)','function capLive(items,tw)')+'\ncapTotItems',{S});
  const items=[{prog:'CORE'},{prog:'TKD'},{prog:'SD'}];
  assert.equal(scope(items,1).map(w=>w.prog).join(','),'CORE,TKD,SD');
  assert.equal(scope(items,2).map(w=>w.prog).join(','),'CORE,SD');
