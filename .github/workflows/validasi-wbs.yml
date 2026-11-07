@@ -4,11 +4,19 @@ on:
     paths:
       - 'index.html'
       - 'tests/wbs-capaian-formula.test.cjs'
+      - 'tests/cheatsheet-referensi.test.cjs'
+      - 'cheatsheet-referensi.js'
+      - 'ux-help-cheatsheet.js'
+      - 'wbs-cap-2026-reference.js'
       - '.github/workflows/validasi-wbs.yml'
   pull_request:
     paths:
       - 'index.html'
       - 'tests/wbs-capaian-formula.test.cjs'
+      - 'tests/cheatsheet-referensi.test.cjs'
+      - 'cheatsheet-referensi.js'
+      - 'ux-help-cheatsheet.js'
+      - 'wbs-cap-2026-reference.js'
       - '.github/workflows/validasi-wbs.yml'
 permissions:
   contents: read
@@ -21,4 +29,4 @@ jobs:
         with:
           node-version: '22'
       - name: Uji logika capaian terhadap perubahan WBS
-        run: node --test tests/wbs-capaian-formula.test.cjs
+        run: node --test tests/*.test.cjs
