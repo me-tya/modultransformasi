@@ -2798,7 +2798,22 @@ html.cm-svc-open #toastContainer{z-index:9500}
 @media (hover:none){.cm-svcp-chips label[data-tip]::after,.cm-svcp-chips label[data-tip]::before{display:none!important}}
 </style>
 
-</head>
+<style>
+.prio-page .prio-hero>.prio-hero-actions{display:none!important}
+.mtcarry-tab-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid #d9e2ef;margin:0 0 12px}
+.mtcarry-tab-row .prio-subtabs{border-bottom:0!important;margin-bottom:0!important;flex:1;min-width:350px}
+.mtcarry-toolbar,.mtcarry-toolbar>.prio-hero-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mtcarry-backdrop{position:fixed;z-index:99999;inset:0;background:rgba(9,26,55,.55);display:flex;align-items:center;justify-content:center;padding:18px}
+.mtcarry-dialog{background:#fff;color:#102c50;border-radius:16px;width:min(820px,100%);max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 70px #061a3855;overflow:hidden}
+.mtcarry-head{padding:20px 24px 12px;display:flex;justify-content:space-between;gap:20px;align-items:flex-start}.mtcarry-head h3{font-size:20px;margin:0 0 4px}.mtcarry-head p{margin:0;color:#60728a;font-size:13px}
+.mtcarry-head>button{border:0;background:#eef3fa;border-radius:8px;padding:8px 12px;cursor:pointer}
+.mtcarry-year{margin:0 24px 12px;background:#edf4fc;border-radius:8px;padding:10px 12px;font-size:13px}
+.mtcarry-scroll{padding:0 24px;overflow:auto;min-height:120px;flex:1}
+.mtcarry-program{border:1px solid #dce5ef;border-radius:10px;margin-bottom:10px;overflow:hidden}.mtcarry-prhead{padding:12px;display:flex;align-items:center;justify-content:space-between;background:#f7f9fd;gap:12px}.mtcarry-prhead label{display:flex;align-items:center;gap:8px}.mtcarry-prhead button{background:transparent;color:#155a9b;border:0;cursor:pointer;font-weight:600}.mtcarry-program small{color:#7a899d;font-weight:400}
+.mtcarry-modules{padding:8px 14px}.mtcarry-module{padding:8px 0;border-bottom:1px solid #e9eef4}.mtcarry-module:last-child{border-bottom:0}.mtcarry-module>label{display:flex;gap:8px;align-items:center}.mtcarry-subs{margin:7px 0 2px 23px;display:grid;gap:6px}.mtcarry-subs label{font-size:13px;color:#435874;display:flex;gap:8px;align-items:center}
+.mtcarry-footer{border-top:1px solid #e2e9f2;padding:14px 24px;display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap}.mtcarry-footer span{margin-right:auto;color:#5d6e86;font-size:12px}
+@media(max-width:900px){.mtcarry-tab-row{align-items:flex-start}.mtcarry-tab-row .prio-subtabs{min-width:100%}.mtcarry-toolbar{width:100%;justify-content:flex-end}}
+</style></head>
 <body>
 
 <div id="cmLoginGate" class="cm-login-gate">
@@ -16231,6 +16246,53 @@ async function prioBulkDelete(){
  const ids=new Set(list.map(p=>p.id));prioState.projects=prioState.projects.filter(p=>!ids.has(p.id));ids.forEach(id=>prioUi.open.delete(id));prioUi.sel.clear();
  await prioPersist();renderPriority();toast(uiText(`${list.length} project(s) deleted.`,`${list.length} proyek dihapus.`),'success');
 }
+(function carryFeature(){
+ const k='mtCarry',d=window[k]||(window[k]={data:null,selected:new Set(),requestId:''});
+ const h=(v)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ function selectedCount(){return d.selected.size}
+ function children(m){return m.submodules&&m.submodules.length?m.submodules:[{id:m.id,name:m.name}]}
+ function tree(){
+  const src=d.data;if(!src)return '<p>Memuat sumber data dari PMO...</p>';
+  if(!src.programs.length)return '<p>Tidak ada program/modul pada tahun '+h(src.from)+'. Pastikan WBS tahun sebelumnya tersedia.</p>';
+  return src.programs.map(p=>{const all=p.modules.flatMap(children);const count=all.filter(a=>d.selected.has(p.id+'|'+a.id)).length;
+   return `<section class="mtcarry-program"><div class="mtcarry-prhead"><label><input type="checkbox" data-carry-prog="${h(p.id)}" ${count===all.length?'checked':''}> <b>${h(p.name)}</b> <small>${count}/${all.length} dipilih</small></label><button type="button" data-carry-expand="${h(p.id)}">${d.open?.has(p.id)?'Sembunyikan':'Lihat proyek / modul'}</button></div>${d.open?.has(p.id)?`<div class="mtcarry-modules">${p.modules.map(m=>{const subs=children(m),n=subs.filter(x=>d.selected.has(p.id+'|'+x.id)).length;return `<div class="mtcarry-module"><label><input type="checkbox" data-carry-mod="${h(p.id)}" data-mid="${h(m.id)}" ${n===subs.length?'checked':''}> <strong>${h(m.name)}</strong> <small>${n}/${subs.length}</small></label><div class="mtcarry-subs">${subs.map(x=>`<label><input type="checkbox" data-carry-sub="${h(p.id)}" data-sid="${h(x.id)}" ${d.selected.has(p.id+'|'+x.id)?'checked':''}> ${h(x.name)}</label>`).join('')}</div></div>`}).join('')}</div>`:''}</section>`;
+  }).join('');
+ }
+ function draw(){
+  const root=document.getElementById('mtCarryModal');if(!root)return;
+  root.innerHTML=`<div class="mtcarry-dialog" role="dialog" aria-modal="true" aria-label="Carry over program dan proyek"><div class="mtcarry-head"><div><h3>Carry Over Program & Proyek</h3><p>Salin pilihan dari WBS tahun sebelumnya. Data sumber tidak berubah.</p></div><button aria-label="Tutup" data-carry-close>✕</button></div><div class="mtcarry-year">Tahun sumber <strong>${h(d.data?.from||'—')}</strong> → Tahun tujuan <strong>${h(d.data?.target||'—')}</strong></div><div class="mtcarry-scroll">${tree()}</div><div class="mtcarry-footer"><span><b>${selectedCount()}</b> submodul dipilih · proyek yang sudah disalin akan dilewati</span><button class="btn btn-outline btn-sm" data-carry-close>Batal</button><button class="btn btn-gold btn-sm" id="mtCarryConfirm" ${!selectedCount()?'disabled':''}>+ Tambahkan yang Dipilih</button></div></div>`;
+  root.querySelectorAll('[data-carry-close]').forEach(x=>x.onclick=close);
+  root.querySelectorAll('[data-carry-expand]').forEach(x=>x.onclick=()=>{d.open=d.open||new Set();d.open.has(x.dataset.carryExpand)?d.open.delete(x.dataset.carryExpand):d.open.add(x.dataset.carryExpand);draw()});
+  root.querySelectorAll('[data-carry-prog]').forEach(x=>x.onchange=()=>{const p=d.data.programs.find(p=>p.id===x.dataset.carryProg);p?.modules.flatMap(children).forEach(a=>{const id=p.id+'|'+a.id;x.checked?d.selected.add(id):d.selected.delete(id)});draw()});
+  root.querySelectorAll('[data-carry-mod]').forEach(x=>x.onchange=()=>{const p=d.data.programs.find(p=>p.id===x.dataset.carryMod),m=p?.modules.find(m=>m.id===x.dataset.mid);if(m)children(m).forEach(a=>{const id=p.id+'|'+a.id;x.checked?d.selected.add(id):d.selected.delete(id)});draw()});
+  root.querySelectorAll('[data-carry-sub]').forEach(x=>x.onchange=()=>{const id=x.dataset.carrySub+'|'+x.dataset.sid;x.checked?d.selected.add(id):d.selected.delete(id);draw()});
+  root.querySelector('#mtCarryConfirm')?.addEventListener('click',save);
+ }
+ function close(){document.getElementById('mtCarryModal')?.remove();window.removeEventListener('message',receive)}
+ function receive(ev){if(ev.origin!==location.origin||ev.source!==window.parent||ev.data?.type!=='MT_CARRY_SOURCE_RESPONSE'||ev.data.requestId!==d.requestId)return;d.data=ev.data;d.selected.clear();d.open=new Set();draw()}
+ async function save(){
+  if(!d.data||!d.selected.size||!cmCanMutate())return;
+  const btn=document.getElementById('mtCarryConfirm');if(btn)btn.disabled=true;
+  let added=0,skipped=0;
+  d.data.programs.forEach(p=>p.modules.forEach(m=>{const subs=children(m).filter(x=>d.selected.has(p.id+'|'+x.id));if(!subs.length)return;
+    const key=d.data.target+'|'+p.id+'|'+m.id;
+    const existing=prioState.projects.find(x=>x.carrySourceKey===key);
+    if(existing){skipped++;return}
+    const sourceNames=subs.map(x=>x.name);
+    const pr=prioNormalizeProject({nama:m.name,deskripsi:'Carry over WBS '+d.data.from+' → '+d.data.target+' · Program: '+p.name+' · Submodul: '+sourceNames.join('; '),uic:p.unit,status:'Usulan',jenis:'berkelanjutan'});
+    pr.carrySourceKey=key;pr.carryFromYear=d.data.from;pr.carryToYear=d.data.target;pr.carryProgramId=p.id;pr.carryModuleId=m.id;pr.carrySubmodules=subs.map(x=>({id:x.id,name:x.name}));pr.carryFrom='PMO WBS';prioState.projects.push(pr);added++;
+  }));
+  if(added)await prioPersist();close();renderPriority();toast(added+' proyek/modul ditambahkan dari '+d.data.from+(skipped?' · '+skipped+' dilewati (sudah ada)':''),'success');
+ }
+ window.mtCarryOpen=function(){
+  if(!cmCanMutate())return cmDenyMutation();
+  document.getElementById('mtCarryModal')?.remove();const root=document.createElement('div');root.id='mtCarryModal';root.className='mtcarry-backdrop';document.body.append(root);
+  root.addEventListener('click',e=>{if(e.target===root)close()});d.data=null;d.selected.clear();d.open=new Set();d.requestId=String(Date.now());draw();
+  window.addEventListener('message',receive);
+  if(window.parent===window){root.querySelector('.mtcarry-scroll').textContent='Buka Project Selection melalui Modul Transformasi agar data WBS dapat dibaca.';return}
+  window.parent.postMessage({type:'MT_CARRY_SOURCE_REQUEST',requestId:d.requestId},location.origin);
+ };
+})();
 function renderPriority(){
  prioLoadLocal();if(!prioRemoteTried)prioLoadRemote();
  const el=document.getElementById('tab-priority');if(!el)return;
@@ -16257,9 +16319,12 @@ function renderPriority(){
  else body=prioReferenceTabHtml(can,rows);
  el.innerHTML=`<div class="prio-page">
   <div class="prio-hero"><div><h2>${uiText('CM Project Priority','Prioritas Proyek CM')}</h2><p>${uiText('Ranking of change management assistance projects using the SMART method (Simple Multi-Attribute Rating Technique).','Pemeringkatan proyek/inisiatif pendampingan Change Management dengan metode SMART (Simple Multi-Attribute Rating Technique).')}</p></div><div class="prio-hero-actions">${can?`<button class="btn btn-gold btn-sm" id="prioAdd">+ ${uiText('Add Project','Tambah Proyek')}</button>`:''}<button class="btn btn-outline btn-sm prio-btn-light" id="prioExport" ${prioState.projects.length?'':'disabled'}>${iconDownload()} Excel</button><button class="btn btn-outline btn-sm prio-btn-light" id="prioReport" ${prioState.projects.length?'':'disabled'}>📄 ${uiText('Report','Laporan')}</button></div></div>
-  <div class="cm-survey-subtabs prio-subtabs" role="tablist">${tabs.map(([k,l,n])=>`<button type="button" role="tab" aria-selected="${tab===k}" class="cm-survey-subtab ${tab===k?'active':''}" data-prio-tab="${k}">${l}${n!==null?` <em class="prio-tab-n">${n}</em>`:''}${k!=='projects'&&prioUi.wEdit&&prioDraftDirty()?' <i class="prio-tab-dot" title="'+uiText('Unsaved weights','Bobot belum disimpan')+'"></i>':''}</button>`).join('')}</div>
+  <div class="mtcarry-tab-row"><div class="cm-survey-subtabs prio-subtabs" role="tablist">${tabs.map(([k,l,n])=>`<button type="button" role="tab" aria-selected="${tab===k}" class="cm-survey-subtab ${tab===k?'active':''}" data-prio-tab="${k}">${l}${n!==null?` <em class="prio-tab-n">${n}</em>`:''}${k!=='projects'&&prioUi.wEdit&&prioDraftDirty()?' <i class="prio-tab-dot" title="'+uiText('Unsaved weights','Bobot belum disimpan')+'"></i>':''}</button>`).join('')}</div><div class="mtcarry-toolbar">${can?`<button class="btn btn-outline btn-sm" id="mtCarryOpen">↻ Carry Over</button>`:'' }<div class="prio-hero-actions">${can?`<button class="btn btn-gold btn-sm" id="prioAdd2">+ Tambah Proyek</button>`:'' }<button class="btn btn-outline btn-sm prio-btn-light" id="prioExport2" ${prioState.projects.length?'':'disabled'}>↓ Excel</button><button class="btn btn-outline btn-sm prio-btn-light" id="prioReport2" ${prioState.projects.length?'':'disabled'}>▤ Laporan</button></div></div></div>
   ${body}</div>`;
  el.querySelector('#prioAdd')?.addEventListener('click',()=>prioOpenForm(''));
+ el.querySelector('#prioAdd2')?.addEventListener('click',()=>prioOpenForm(''));
+ el.querySelector('#mtCarryOpen')?.addEventListener('click',window.mtCarryOpen);
+ el.querySelector('#prioReport2')?.addEventListener('click',()=>el.querySelector('#prioReport')?.click());
  el.querySelector('#prioExport')?.addEventListener('click',prioExportExcel);
  el.querySelector('#prioExport2')?.addEventListener('click',prioExportExcel);
  el.querySelector('#prioToggleDone')?.addEventListener('click',()=>{prioUi.showDone=!prioUi.showDone;renderPriority();});
