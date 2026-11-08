@@ -3350,7 +3350,7 @@ function scrollActiveCompactNav(v){
 }
 function subNav(key,list,def){const cur=S.ui.sub[key]||def;return `<div class="subt" role="tablist">${list.map(([k,l,full])=>`<a data-act="sub" data-k="${key}" data-v="${k}" class="${cur===k?'on':''}" role="tab" aria-selected="${cur===k}" title="${esc(full||l)}" aria-label="${esc(full||l)}">${l}</a>`).join('')}</div>`}
 ACT.tsort=el=>{const id=el.dataset.t,k=el.dataset.k;S.ui.sort=S.ui.sort||{};const cur=sortOf(id);S.ui.sort[id]=cur&&cur.k===k?(cur.d==='asc'?{k,d:'desc'}:{k:'',d:''}):{k,d:'asc'};if(!S.ui.sort[id].k)S.ui.sort[id]={k:'_none',d:''};PG[id]=0;save();redrawT(id);const sel=document.querySelector(`[data-wsort="${id}"]`);if(sel)sel.value=sortVal(id)};
-ACT.tplwbs=()=>{try{const bin=atob(TPLX),u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);const url=URL.createObjectURL(new Blob([u8],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));const a=document.createElement('a');a.href=url;a.download='Template_WBS_Transformation_Program.xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);log('Unduh template WBS','');toast('Template diunduh. Ganti tahun di sheet Petunjuk bila perlu, isi sheet program, lalu Import WBS.')}catch(e){toast('Unduh gagal: '+e.message)}};
+ACT.tplwbs=()=>{try{if(window.MT_STD_WBS_TEMPLATE?.download){window.MT_STD_WBS_TEMPLATE.download();log('Unduh Template WBS Standar','Contoh level 1–6 dan referensi');toast('Template WBS standar telah diunduh. Lengkapi tanggal, UIC, serta kode unik sebelum impor.');return}const bin=atob(TPLX),u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);const url=URL.createObjectURL(new Blob([u8],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));const a=document.createElement('a');a.href=url;a.download='Template_WBS_Transformation_Program.xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);log('Unduh template WBS','');toast('Template diunduh. Ganti tahun di sheet Petunjuk bila perlu, isi sheet program, lalu Import WBS.')}catch(e){toast('Unduh gagal: '+e.message)}};
 ACT.adpunlock=el=>{const m=el.dataset.m;S.modMeta[m]=S.modMeta[m]||{};S.modMeta[m].adp='Draft';log('Status ADP',m+' → Draft (buka kunci)');save();toast(`ADP ${m} kembali ke Draft dan bisa diubah.`);render()};
 ACT.adpedit=el=>{const id=el.dataset.i;S.ui.sub.adp='dampak';save();render();const s=S.sub.find(x=>x.id===id);if(s&&T.adp)formModal('adp',s)};
 ACT.adpview=el=>{const s=S.sub.find(x=>x.id===el.dataset.i);if(s)adpView(s)};
@@ -10249,3 +10249,5 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 
 <script src="planning-tabs-v2.js?v=20261108-3"></script>
+
+<script src="standard-wbs-template.js?v=20261109-1"></script>
