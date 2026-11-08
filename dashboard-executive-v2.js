@@ -106,10 +106,18 @@ const oldOnChange=onChange;
 onChange=function(el){const k=el.dataset.on,v=el.value;
  if(k==='dbChart'){S.ui.dbChart=v;save();render();return}
  if(k==='dbStatus'){S.ui.dbStatus=v;save();render();return}
- if(k==='dbSearch'){S.ui.dbSearch=v;save();render();const f=document.querySelector('.db-search input');if(f){f.focus();f.setSelectionRange(v.length,v.length)}return}
+ if(k==='dbSearch'){S.ui.dbSearch=v;save();return}
  return oldOnChange(el)
 };
-document.addEventListener('input',function(e){if(e.target&&e.target.dataset.on==='dbSearch'){S.ui.dbSearch=e.target.value;const pos=e.target.selectionStart;save();render();const input=document.querySelector('.db-search input');if(input){input.focus();input.setSelectionRange(pos,pos)}}});
+document.addEventListener('input',function(e){
+ if(!e.target||e.target.dataset.on!=='dbSearch')return;
+ S.ui.dbSearch=e.target.value;const pos=e.target.selectionStart;save();
+ clearTimeout(window.__mtDashboardSearchTimer);
+ window.__mtDashboardSearchTimer=setTimeout(function(){
+  render();const input=document.querySelector('.db-search input');
+  if(input){input.focus({preventScroll:true});try{input.setSelectionRange(pos,pos)}catch(_){}}
+ },260);
+});
 viewDash=dbRender;
 if(typeof VIEW!=='undefined'&&VIEW==='dashboard'&&typeof ME!=='undefined'&&ME)render();
 })();
