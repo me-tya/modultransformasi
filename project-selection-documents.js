@@ -441,7 +441,7 @@ async function exportFormalPdf(model,file,{preview=false}={}){
   const heading=pdf.splitTextToSize(String(model.cover?.title||'DOKUMEN PROGRAM'),170);
   pdf.text(heading,left,43);pdf.setFontSize(12);pdf.text(pdf.splitTextToSize(String(model.cover?.subject||''),170),left,68);
   y=129;line((model.cover?.chips||[]).join('   |   '),10,true,8);
-  if(model.cover?.meta?.length)drawTable(['IDENTITAS DOKUMEN','KETERANGAN'],model.cover.meta,[35,65]);
+  if(model.cover?.meta?.length)drawTable(['IDENTITAS DOKUMEN','KETERANGAN'],typeof mtRptOrderedMeta==='function'?mtRptOrderedMeta(model.cover.meta):model.cover.meta,[35,65]);
  }else{
   const banner=typeof mtRptCoverBanner==='function'?mtRptCoverBanner():null;
   if(banner)pdf.addImage(banner.src,'PNG',left,17,bw,bw*212/1400);
