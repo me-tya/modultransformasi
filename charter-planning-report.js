@@ -135,7 +135,7 @@ ACT.cpReport=el=>{
  <label>Keterangan<input data-cp-sign="label" value="${esc(sg.label)}" placeholder="Mengetahui, / Menyetujui,"></label>
  <label>Kota<input data-cp-sign="city" value="${esc(sg.city)}"></label><label>Tanggal<input data-cp-sign="date" value="${esc(sg.date)}"></label>
  <label>Nomor dokumen (opsional)<input id="cp-no" value="${esc(config.no||'')}" placeholder="Nomor / kode dokumen"></label></div></details>
- </div><div class="cp-frame-wrap"><div class="cp-preview-h"><b>Pratinjau Dokumen Perencanaan Proyek</b><span id="cp-state">Menyusun pratinjau…</span></div><iframe id="cp-report-frame" title="Pratinjau dokumen perencanaan proyek"></iframe></div></div>`;
+ </div><div class="cp-frame-wrap"><div class="cp-preview-h"><b>Pratinjau Dokumen Perencanaan Proyek</b><span id="cp-state">Menyusun pratinjau…</span></div><iframe id="cp-report-frame" title="Pratinjau dokumen perencanaan proyek"></iframe><div class="psbank-actual-view" data-doc-actual="project" hidden><small data-actual-progress>Menyiapkan pratinjau dari file DOCX…</small></div></div></div>`;
  let model=null;
  const extra='<button class="btn" data-mx="pdf">⬇ PDF (Simpan)</button><button class="btn" data-mx="docx">⬇ Word (.docx)</button><button class="btn pri" data-mx="pptx">⬇ PowerPoint (.pptx)</button>';
  const isInline=!!el.dataset.inline;
@@ -199,6 +199,18 @@ ACT.cpReport=el=>{
      ov.querySelector('[data-cp-slide-count]').textContent='Slide '+(slides.length?slideIndex+1:0)+' / '+slides.length;
      ov.querySelector('[data-cp-prev]').disabled=slideIndex<=0;
      ov.querySelector('[data-cp-next]').disabled=slideIndex>=slides.length-1;
+    }
+   }
+   const view=ov.querySelector('[data-doc-actual="project"]');
+   if(view){
+    view.hidden=true;
+    const fmt=isInline?(ov.querySelector('[data-cp-output].on')?.dataset.cpOutput||'docx'):'docx';
+    if(fmt==='docx'&&window.MT_PS_DOC?.showActualDocumentPreview){
+     window.MT_PS_DOC.showActualDocumentPreview(ov,model,'word').then(ok=>{
+      if(!view.isConnected)return;
+      if(isInline&&(ov.querySelector('[data-cp-output].on')?.dataset.cpOutput||'docx')!=='docx')return;
+      view.hidden=!ok;frame.hidden=!!ok;
+     }).catch(()=>{if(view.isConnected){view.hidden=true;frame.hidden=false}});
     }
    }
   }catch(e){status.textContent='Gagal menyusun pratinjau';toast('Gagal membuat dokumen: '+e.message)}
