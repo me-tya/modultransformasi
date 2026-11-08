@@ -4,6 +4,7 @@
 <link rel="stylesheet" href="dashboard-executive-v2.css?v=20261108-2">
 <link rel="stylesheet" href="project-selection-flow.css?v=20261108-6">
 <link rel="stylesheet" href="project-selection-governance.css?v=20261108-1">
+<link rel="stylesheet" href="project-selection-workflow-2027.css?v=20261108-1">
 
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -3041,7 +3042,7 @@ const go=h=>{location.hash=h};
 const TASK_PRE={'pmo-bukti':{bseg:'Menunggu validasi'},'pmo-cr':{crseg:'open'},'pmo-milestone':{mseg:'late'}};
 const goTask=h=>{const z=String(h||'').match(/^pmo-penutupan@([^@]+)@(.+)$/);if(z){const prog=decodeURIComponent(z[1]),key=decodeURIComponent(z[2]);S.ui.p0CloseFocus={prog,key};S.ui.tpSt='';S.ui.prog='';S.ui.unit='';save();if(location.hash==='#pmo-penutupan'){VIEW='pmo-penutupan';render()}else go('pmo-penutupan');return}const m=String(h||'').match(/^pmo-cr@(.+)$/);if(m){const c=(S.crs||[]).find(x=>x.id===m[1]);if(!c)return;S.ui.p0CrFocus=m[1];S.ui.crseg='';S.ui.prog='';S.ui.unit='';const y=+(String(c.tgl||c.efektif||'').slice(0,4));if(y>2000)S.ui.tahun=y;save();if(location.hash==='#pmo-cr'){VIEW='pmo-cr';render()}else go('pmo-cr');return}const p=TASK_PRE[h];if(p){Object.assign(S.ui,p,{prog:''});save()}go(h)};
 window.addEventListener('hashchange',()=>{readHash();render();window.scrollTo(0,0)});
-function readHash(){VIEW=(location.hash||'').slice(1)||'beranda';if(VIEW==='pmo-portofolio'){VIEW='project-selection';S.ui.psFlow=S.ui.psFlow||{};S.ui.psFlow.tab='portfolio';S.ui.psFlow.psGovNavV=1}if(VIEW==='tim-cm'||VIEW==='squad-team')VIEW='pengelola';if(VIEW==='cra')VIEW='cmo-cra';if(VIEW==='cmo-siklus'||VIEW==='cmo-adopsi')VIEW='cmo-adp';if(VIEW==='cmo-impl')VIEW='cmo-pelaksanaan';VIEW=VIEW.replace(/^(modul-.+-t-)impl$/,'$1pelaksanaan').replace(/^(modul-.+-t-)siklus$/,'$1adp')}
+function readHash(){VIEW=(location.hash||'').slice(1)||'beranda';if(VIEW==='pmo-portofolio'){VIEW='project-selection';S.ui.psFlow=S.ui.psFlow||{};S.ui.psFlow.tab='usulan';S.ui.psFlow.psGovNavV=1}if(VIEW==='tim-cm'||VIEW==='squad-team')VIEW='pengelola';if(VIEW==='cra')VIEW='cmo-cra';if(VIEW==='cmo-siklus'||VIEW==='cmo-adopsi')VIEW='cmo-adp';if(VIEW==='cmo-impl')VIEW='cmo-pelaksanaan';VIEW=VIEW.replace(/^(modul-.+-t-)impl$/,'$1pelaksanaan').replace(/^(modul-.+-t-)siklus$/,'$1adp')}
 
 /* ======================== login ======================== */
 const sess=()=>{try{return sessionStorage.getItem('mt_me')}catch(e){return null}};
@@ -3646,8 +3647,9 @@ window.mtP0Navigate=function(target,section){
  if(!allowedViews().includes(target)){toast('Menu tidak tersedia untuk hak akses Anda.');return}
  const split=String(section||'').split(':'),scope=split[0],tab=split[1];
  if(target==='project-selection'&&scope==='ps'){
-  const allowed=['portfolio','program','projects','criteria','monev','reference'];
-  S.ui.psFlow=S.ui.psFlow||{};S.ui.psFlow.tab=allowed.includes(tab)?tab:'portfolio';S.ui.psFlow.psGovNavV=1;save();
+  const allowed=['usulan','mapping','prioritasi','charter','penetapan','rkmk'];
+  const oldMap={portfolio:'usulan',program:'usulan',projects:'mapping',criteria:'prioritasi',monev:'prioritasi',reference:'prioritasi'};
+  S.ui.psFlow=S.ui.psFlow||{};S.ui.psFlow.tab=allowed.includes(tab)?tab:(oldMap[tab]||'usulan');S.ui.psFlow.psGovNavV=1;save();
   if(location.hash==='#project-selection'){VIEW='project-selection';render()}else go('project-selection');
   return;
  }
@@ -9775,12 +9777,12 @@ var skDeepTabsPM={
   ['T-Program','pmo-siklus','overview:tprog'],
   ['Per UE I','pmo-siklus','overview:ue']],
  'project-selection':[
-  ['Portofolio','project-selection','ps:portfolio'],
-  ['Program · Profil & Register','project-selection','ps:program'],
-  ['Seleksi Proyek','project-selection','ps:projects'],
-  ['Kriteria & Bobot SMART','project-selection','ps:criteria'],
-  ['Monev & Manfaat','project-selection','ps:monev'],
-  ['Referensi & Formula','project-selection','ps:reference']],
+  ['Usulan Program','project-selection','ps:usulan'],
+  ['Pemetaan Proyek','project-selection','ps:mapping'],
+  ['Prioritasi Proyek','project-selection','ps:prioritasi'],
+  ['Charter Program','project-selection','ps:charter'],
+  ['Penetapan','project-selection','ps:penetapan'],
+  ['Draft RKMK','project-selection','ps:rkmk']],
  'pmo-program':[
   ['Ringkasan Proyek','pmo-program','workspace:ringkasan'],
   ['Jadwal & Bukti','pmo-program','workspace:jadwal'],
@@ -10159,7 +10161,7 @@ window.showHelp=function(v,title){
  if(kind==='pmo'||kind==='cmo')return open('help',kind,'menu');
  return originalContextGuide(page,title);
 };
-window.skHelpCheatsheetVersion='20261108-project-selection-pmi-v5';
+window.skHelpCheatsheetVersion='20261108-project-selection-workflow-v6';
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addStyle);else addStyle();
 })();
 </script>
@@ -10172,6 +10174,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 <script src="project-selection-flow.js?v=20261108-6"></script>
 <script src="project-selection-governance.js?v=20261108-1"></script>
+<script src="project-selection-workflow-2027.js?v=20261108-1"></script>
 
 
 <script src="planning-tabs-v2.js?v=20261108-2"></script>

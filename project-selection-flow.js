@@ -44,7 +44,7 @@ const uid2=t=>(t||'ps')+'-'+Date.now().toString(36)+'-'+Math.random().toString(3
 const clean=v=>String(v==null?'':v).trim();
 const programs=()=>{
  const y=year(),a=allPrograms().filter(p=>+p.psYear===y);
- if(y===2026)allPrograms().filter(p=>!p.psYear&&+p.mulai<=y&&(String(p.periode||'').includes('2026')||+p.mulai===y)).forEach(p=>a.push(p));
+ if(y===2026)allPrograms().filter(p=>{if(p.psYear)return false;const yrs=String(p.periode||'').match(/20\d{2}/g)||[];const start=+p.mulai||+(yrs[0]||0),end=+(yrs[yrs.length-1]||start);return start&&start<=y&&end>=y}).forEach(p=>a.push(p));
  return a;
 };
 const norm=p=>{
@@ -443,7 +443,7 @@ function programModal(p){
    psOutcome:val(box,'outcome'),psRisks:p?.psRisks||'',psThemes:val(box,'themes'),psYear:y,
    psUpdatedAt:new Date().toISOString(),psUpdatedBy:ME.email||''});
   if(isNew)allPrograms().push(target);
-  state().prog=target.id;state().tab='program';if(isNew)S.ui.psGov={step:'identity'};save();close();render();toast('Program tersimpan. '+(isNew?'Lengkapi profil, manfaat, stakeholder, risiko, dan tata kelola.':'Kembali ke tahapan kelengkapan program.'));
+  state().prog=target.id;state().tab='program';S.ui.ps27=S.ui.ps27||{};S.ui.ps27.usulanSub='detail';if(isNew)S.ui.psGov={step:'identity'};save();close();render();toast('Program tersimpan. '+(isNew?'Lengkapi profil, manfaat, stakeholder, risiko, dan tata kelola.':'Kembali ke tahapan kelengkapan program.'));
  },isNew?'Tambah Program':'Simpan Program');
 }
 function deleteProgram(p){
@@ -545,7 +545,7 @@ function finalize(p){
  if(list.some(x=>!x.name||!x.uic)){toast('Lengkapi nama dan UIC semua proyek terpilih.');return}
  if(!window.confirm('Tetapkan '+list.length+' proyek untuk program '+p.nama+' tahun '+p.psYear+'? Proyek terpilih akan tampil di Project Management sebagai calon WBS.'))return;
  p.psStatus='Ditetapkan';p.psDraft=false;p.psFinalizedAt=new Date().toISOString();p.psFinalizedBy=ME.email||'';p.psSelectedProjectIds=list.map(x=>x.id);
- p.status='Perencanaan';S.ui.prog=p.akr;save();render();toast('Program dan proyek ditetapkan. RKMK Word siap digenerate; lanjutkan WBS setelah reviu.');
+ p.status='Perencanaan';S.ui.prog=p.akr;const wbsCount=window.MT_PS_WORKFLOW?.syncWbs(p)||0;save();render();toast('Program dan proyek ditetapkan. '+(wbsCount?wbsCount+' item WBS draft telah tersedia untuk disesuaikan.':'Lanjut susun WBS pada Project Management.'));
 }
 function reopen(p){
  if(!ownerOk(p)||p.psStatus!=='Ditetapkan')return;
@@ -605,9 +605,9 @@ function open(mode){
    The generated document is a proposal; it is NOT a ministerial decision. */
 function wx(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;')}
 function wp(txt,kind){
- const isTitle=kind==='title',isHead=kind==='head';
+ const isTitle=kind==='title',isHead=kind==='head',isWarn=kind==='warn';
  const fs=isTitle?32:isHead?25:21,after=isTitle?250:isHead?180:90;
- return '<w:p><w:pPr><w:spacing w:before="0" w:after="'+after+'"/>'+(isHead?'<w:keepNext/>':'')+'</w:pPr><w:r><w:rPr>'+(isTitle||isHead?'<w:b/>':'')+'<w:sz w:val="'+fs+'"/><w:color w:val="'+(isTitle||isHead?'17365B':'233B57')+'"/></w:rPr><w:t xml:space="preserve">'+wx(txt)+'</w:t></w:r></w:p>';
+ return '<w:p><w:pPr><w:spacing w:before="0" w:after="'+after+'"/>'+(isHead?'<w:keepNext/>':'')+'</w:pPr><w:r><w:rPr>'+(isTitle||isHead?'<w:b/>':'')+'<w:sz w:val="'+fs+'"/>'+(isWarn?'<w:highlight w:val="yellow"/>':'')+'<w:color w:val="'+(isTitle||isHead?'17365B':'233B57')+'"/></w:rPr><w:t xml:space="preserve">'+wx(txt)+'</w:t></w:r></w:p>';
 }
 function wt(rows){
  const out=rows.map((r,i)=>'<w:tr>'+r.map(v=>'<w:tc><w:tcPr><w:tcW w:w="2000" w:type="dxa"/><w:shd w:fill="'+(i===0?'DDE8F4':'FFFFFF')+'"/></w:tcPr><w:p><w:pPr><w:spacing w:after="30"/></w:pPr><w:r><w:rPr>'+(i===0?'<w:b/>':'')+'<w:sz w:val="19"/></w:rPr><w:t xml:space="preserve">'+wx(v)+'</w:t></w:r></w:p></w:tc>').join('')+'</w:tr>').join('');
@@ -633,9 +633,15 @@ function rkmkContent(p,blank){
   ['UIC Utama',prop('uic')],
   ['UIC Pendukung',prop('pend')],
   ['Sponsor/Penanggung Jawab',prop('sponsor')],
-  ['Status Penyusunan',blank?'TEMPLATE BELUM DIISI':'DRAF berdasarkan proyek yang ditetapkan']
+  ['Status Penyusunan',blank?'TEMPLATE BELUM DIISI':p.psStatus==='Ditetapkan'?'DRAF berdasarkan proyek yang ditetapkan':'DRAF USULAN – BELUM DITETAPKAN']
  ]));
- out.push(wp('B. CHARTER INISIATIF','head'));
+ const nr=p&&!blank?p.psRkmk:null;
+  if(nr){out.push(wp('A1. DRAF NARASI RKMK – AREA KUNING PERLU REVIU','head'));
+   [['latar','Latar belakang'],['tujuan','Tujuan'],['kondisi','As-is'],['target','To-be / target'],['strategi','Strategi'],['output','Output'],['manfaat','Manfaat'],['milestone','Milestone'],['risiko','Risiko']].forEach(q=>{
+    out.push(wp(q[1],'head'));out.push(wp(nr[q[0]]||'[Perlu dilengkapi dan direviu tahun '+y+']',p.psRkmkReviewed?.[q[0]]?'':'warn'));
+   });
+  }
+  out.push(wp('B. CHARTER INISIATIF','head'));
  out.push(wt([
   ['Komponen Charter','Uraian'],
   ['Tujuan Inisiatif',prop('psObjective')],
@@ -672,7 +678,7 @@ function rkmkContent(p,blank){
  return out.join('');
 }
 async function word(p,blank){
- if(!blank&&(!p||p.psStatus!=='Ditetapkan')){toast('Tetapkan proyek terlebih dahulu untuk generate RKMK.');return}
+ if(!blank&&!p){toast('Pilih program terlebih dahulu untuk menyusun draft RKMK.');return}
  try{
   if(!window.JSZip){
    if(typeof chLib==='function')await chLib('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',()=>!!window.JSZip);
@@ -701,7 +707,7 @@ async function word(p,blank){
 }
 
 /* Export global API after all model/view/actions are initialized. */
-window.MT_PROJECT_SELECTION={page,mount,open,version:'20261108-portfolio-program-pmi-2026-v2',criteria:PS_CRITERIA.map(c=>({code:c.code,name:c.name,w:c.w}))};
+window.MT_PROJECT_SELECTION={page,mount,open,version:'20261108-portfolio-program-pmi-2026-v3',criteria:PS_CRITERIA.map(c=>({code:c.code,name:c.name,w:c.w})),internals:{state,year,programs,pickedProgram,norm,projectsPage,criteriaPage,monevPage,referencePage,programModal,projectModal,removeProject,finalize,reopen,word,chosen,calc,readonly,mount}};
 if(typeof VIEW!=='undefined'&&VIEW==='project-selection'&&ME)render();
 
 })();
