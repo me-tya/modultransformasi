@@ -44,17 +44,21 @@ test('Bank across all years shows requested columns and no Program yang dikerjak
  assert.ok(m.bank.records().some(x=>x.year===2026&&x.p.akr==='CORE'));
  assert.ok(m.bank.records().some(x=>x.year===2027&&x.p.akr==='NON'));
 });
-test('Detail Program workspace contains eight tabs including inline document builder',()=>{
- const m=boot();m.S.ui.psBank={tab:'detail',workspace:m.target.id,wtab:'docs'};
+test('Detail Program removes duplicate workspace and exposes inline versioned document builder',()=>{
+ const m=boot();m.S.ui.psBank={tab:'detail',wtab:'docs'};
  const html=m.app.page();
  assert.match(html,/Detail Program/);
- assert.match(html,/Workspace Program/);
- assert.match(html,/Buat Dokumen/);
- assert.match(html,/Pratinjau Word/);
- assert.match(html,/Substansi dokumen/);
- assert.match(html,/Word \(\.docx\)/);
- assert.match(html,/PDF \(\.pdf\)/);
- assert.match(html,/PowerPoint \(\.pptx\)/);
+ assert.match(html,/data-bank-detailrow/);
+ assert.match(html,/Buat Dokumen Portofolio/);
+ assert.doesNotMatch(html,/Workspace Program/);
+ assert.doesNotMatch(html,/data-bank-new.*Daftar Program/);
+ const p=m.docs.builder(m.target);
+ assert.match(p,/Pratinjau Word/);
+ assert.match(p,/Substansi dokumen/);
+ assert.match(p,/data-doc-format-btn="word"/);
+ assert.match(p,/data-doc-format-btn="pdf"/);
+ assert.match(p,/data-doc-format-btn="pptx"/);
+ assert.match(p,/Riwayat Dokumen/);
  assert.match(m.docs.paper(m.core,'identity',2026),/Integrasi APBN/);
 });
 test('Carry-over copies source registers, charter and WBS, then opens Detail Program',()=>{
@@ -121,7 +125,7 @@ test('Program detail uses clickable rows and seven tabs with Buat Dokumen instea
  const sourceText=source['project-selection-program-bank.js'];
  assert.match(sourceText,/aria-label="Detail Program"/);
  assert.match(sourceText,/STEPS.filter\(x=>x\[0\]!=='review'\)/);
- assert.match(sourceText,/Docs.builder\(rec.p\)/);
+ assert.match(sourceText,/Docs.builder\(p\)/);
  assert.match(sourceText,/openCarry\(\[btn.dataset.bankAdd\]\)/);
 });
 test('PPTX and PDF have differentiated previews, while section selector controls document content',()=>{
@@ -156,4 +160,51 @@ test('Buat Dokumen Perencanaan Proyek uses inline settings and live format previ
  assert.doesNotMatch(planning,/Pratinjau & Pilih Isi/);
  const m=boot();
  assert.equal(m.bank.codeFor({jenis:'Berkelanjutan',kode:'B25-CORE',akr:'CORE'},2027),'B27-CORE');
+});
+
+
+test('Compact one-row global filter and single mapping destination source of truth',()=>{
+ const workflow=source['project-selection-workflow-2027.js'];
+ const scope=source['project-selection-scope-map.js'];
+ assert.match(workflow,/ps27-filter-compact/);
+ assert.match(workflow,/data-ps27-status/);
+ assert.match(workflow,/data-ps27-query/);
+ assert.match(workflow,/data-ps27-year/);
+ assert.match(scope,/Program Tujuan:/);
+ assert.doesNotMatch(scope,/data-scope-target/);
+});
+test('Portfolio builder supports selection, format preview and real exports',()=>{
+ const m=boot(),d=m.docs,html=d.portfolioBuilder();
+ assert.match(html,/Buat Dokumen Portofolio/);
+ assert.match(html,/data-port-program/);
+ assert.match(html,/data-port-section/);
+ assert.match(html,/data-port-format/);
+ assert.match(html,/data-port-export/);
+ assert.match(source['project-selection-documents.js'],/async function portfolioExport/);
+ assert.match(source['project-selection-documents.js'],/registerExport\('portfolio'/);
+});
+test('Version counter does not advance after generation, advances only after uploaded signed proof',()=>{
+ const m=boot(),d=m.docs;
+ assert.equal(d.nextVersion('program',m.target.id,2027),1);
+ d.registerExport('program',m.target.id,2027,'word','draft-v1.docx');
+ d.registerExport('program',m.target.id,2027,'pdf','draft-v1.pdf');
+ assert.equal(d.nextVersion('program',m.target.id,2027),1);
+ assert.equal(d.history('program',m.target.id,2027).length,2);
+ const code=source['project-selection-documents.js'];
+ assert.match(code,/async function confirmSigned/);
+ assert.match(code,/await localProof\(proof,file\)/);
+ assert.match(code,/status:'signed'/);
+});
+test('Global table sorting is delegated without changing WBS model order',()=>{
+ const code=source['project-selection-program-bank.js'];
+ assert.match(code,/installUniversalSort/);
+ assert.match(code,/tbody.appendChild/);
+ assert.match(code,/table\.dataset\.sortDir/);
+ assert.match(code,/wbs-hierarchy/);
+});
+test('Program Carry Over allows editing acronym and updates year code',()=>{
+ const m=boot();
+ assert.equal(m.bank.codeFor({kode:'B25-CORE',jenis:'Berkelanjutan',akr:'CORE'},2027,'NONAPBN'),'B27-NONAPBN');
+ assert.match(source['project-selection-program-bank.js'],/data-carry-akronim/);
+ assert.match(source['project-selection-program-bank.js'],/data-carry-code/);
 });
