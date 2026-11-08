@@ -73,6 +73,7 @@ pCharter=function(){
  const content=wantsDoc?docPanel(c):S.ui.cht==='ch'?charterPanel(c):null;
  if(content!=null)html=html.slice(0,start)+'<section id="ch-active-document">'+content+'</section>'+html.slice(end+10);
  if(!wantsDoc&&S.ui.cht==='ch')setTimeout(fitSlides,30);
+ if(wantsDoc)setTimeout(()=>window.cpInitInline?.(c.id),0);
  return html;
 };
 function fitSlides(){
@@ -88,12 +89,11 @@ function charterPanel(c){
  return '<div class="cp-charter-panel"><div class="cp-panel-head"><div><h3>Charter Program Transformasi</h3><p>Tampilan mengikuti slide pertama template PowerPoint resmi. Isi menggunakan Charter versi yang dipilih.</p></div><div class="cp-panel-btns"><button type="button" class="btn" data-act="cpDeck3">Pratinjau 3 Slide</button><button type="button" class="btn pri" data-act="cpCharterPptx">⇩ Ekspor Charter PPTX</button></div></div><div class="cp-slide-frame"><div class="dk-scale">'+slide+'</div></div><div class="cp-slide-caption">Slide 1 — Charter Program. Slide 2 Kriteria dan slide 3 Linimasa tetap mengikuti template asli pada ekspor.</div></div>';
 }
 function docPanel(c){
- const inc=(S.ui.cpReport||{})[c.prog]?.inc||{};
- const included=order.filter(([k])=>inc[k]!==0);
- const status=chDocOk(c);
- const labels=order.map(([k,l],i)=>'<div class="cp-source"><span class="cp-source-n">'+(i+1)+'</span><span>'+safe(l)+'</span><small>'+(status[k==='ch'?'ch':k]?'Terisi':'Perlu dilengkapi')+'</small></div>').join('');
- return '<div class="cp-create"><div class="cp-panel-head"><div><h3>Buat Dokumen Perencanaan Proyek</h3><p>Gabungkan tujuh tab yang sudah ada. PDF dan Word menampilkan substansi lengkap; PowerPoint merangkum setiap tab menjadi slide yang dapat diedit.</p></div></div><div class="cp-source-grid">'+labels+'</div><div class="cp-create-bar"><span>Substansi dipilih: '+included.length+' dari 7</span><div class="cp-panel-btns"><button type="button" class="btn" data-act="cpReport" data-id="'+safe(c.id)+'" data-format="preview">Pratinjau & Pilih Isi</button><button type="button" class="btn" data-act="cpDeckPreview">Pratinjau PPTX Ringkas</button><button type="button" class="btn pri" data-act="cpReport" data-id="'+safe(c.id)+'" data-format="docx">Ekspor PDF / Word / PPTX</button></div></div></div>';
+ return '<section class="cp-create" aria-label="Buat Dokumen Perencanaan Proyek"><div class="cp-panel-head"><div><h3>Dokumen Perencanaan Proyek · Pratinjau & Ekspor</h3><p>Pilih substansi, identitas dokumen, dan format ekspor pada panel kiri. Pratinjau Word, PDF, atau PowerPoint tampil langsung di panel kanan.</p></div></div>'+
+ '<div id="cp-doc-inline" data-cp-charter="'+safe(c.id)+'" class="cp-report-inline"><div class="cp-note">Memuat formulir dokumen…</div></div></section>';
 }
+window.cpInlinePptxSlides=(c,inc)=>deck(c,inc).slides;
+
 ACT.cpGoDoc=()=>{S.ui.cht='buat';save();render()};
 ACT.cpDeck3=()=>{const c=S.charters.find(v=>v.id===S.ui.chv&&v.prog===S.ui.chp)||chCur(S.ui.chp);if(c)chDeckOpen(c)};
 ACT.cpCharterPptx=async()=>{const c=S.charters.find(v=>v.id===S.ui.chv&&v.prog===S.ui.chp)||chCur(S.ui.chp);if(!c)return;try{await dkPptx(chDeck3(c));toast('Ekspor Charter PPTX dijalankan.')}catch(err){toast('Gagal mengekspor PPTX: '+err.message)}};
