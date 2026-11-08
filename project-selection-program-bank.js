@@ -365,21 +365,75 @@ function mount(){
    applying=true;inp.value=f.search;inp.dispatchEvent(new Event('input',{bubbles:true}));applying=false;
   }
  }
+ function findIcon(panel){
+  const existing=panel.querySelector('[data-mt-filter-icon]');
+  if(existing)return existing;
+  const trigger=[...panel.querySelectorAll('button')].find(x=>{
+   const label=compact(x.textContent).replace(/[▽▼⌄⌃]/g,'');
+   return label==='filter'||label.startsWith('filter ')&&label.length<23;
+  });
+  if(!trigger)return null;
+  const icon=trigger.querySelector('.filter-ic,.filter-icon,.flt-ic,.ficon,.flt-icon,.fl-ico,.ico,svg,i');
+  if(icon){icon.setAttribute('data-mt-filter-icon','');return icon}
+  const el=document.createElement('span');el.className='mt-filter-icon-fallback';el.setAttribute('data-mt-filter-icon','');
+  el.innerHTML='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16l-6.5 7.8v5.2L10.5 20v-7.2z"/></svg>';
+  trigger.insertBefore(el,trigger.firstChild);return el;
+ }
  function inject(){
   const f=saved();
+  document.querySelectorAll('.mt-shared-filter').forEach(x=>x.remove());
   panels().forEach(panel=>{
-   if(panel.querySelector('.mt-shared-filter'))return;
-   const label=document.createElement('label');label.className='mt-shared-filter';
-   const input=document.createElement('input');input.type='checkbox';input.className='mt-shared-filter-check';input.checked=!!f.enabled;
-   input.setAttribute('aria-label','Terapkan filter di semua menu');
-   const span=document.createElement('span');span.textContent='Terapkan di semua menu';
-   label.appendChild(input);label.appendChild(span);panel.appendChild(label);
+   const icon=findIcon(panel);if(icon){
+    icon.classList.toggle('mt-filter-global-on',!!f.enabled);
+    icon.setAttribute('title',f.enabled?'Klik untuk batalkan filter di semua menu':'Klik untuk terapkan filter di semua menu');
+    icon.setAttribute('aria-label',f.enabled?'Batalkan filter di semua menu':'Terapkan filter di semua menu');
+    icon.setAttribute('aria-pressed',String(!!f.enabled));
+    if(!icon.hasAttribute('tabindex'))icon.setAttribute('tabindex','0');
+    icon.setAttribute('role','button');
+   }
+   if(panel.querySelector('[data-ps27-reset],[data-mt-filter-reset]'))return;
+   const hasReset=[...panel.querySelectorAll('button')].some(x=>/atur ulang|reset filter|bersihkan/i.test(x.textContent||''));
+   if(hasReset)return;
+   const header=panel.querySelector('.ps27-filter-active,.filter-summary,.filter-active,.flt-summary')||panel.querySelector('button')?.parentElement;
+   if(!header)return;
+   const reset=document.createElement('button');reset.type='button';reset.className='mt-filter-reset';
+   reset.dataset.mtFilterReset='';reset.title='Atur ulang filter menu ini';reset.textContent='↺ Atur ulang';
+   header.appendChild(reset);
   });
-  document.querySelectorAll('.mt-shared-filter-check').forEach(x=>{x.checked=!!f.enabled});
  }
+ function resetActiveFilter(panel){
+  const f=saved();const root=panel?.closest('#view')||document.querySelector('#view');
+  if(f.enabled)Object.assign(f,{year:String(S.ui.tahun||''),program:'',programName:'',status:'',search:'',unit:'all',unitRole:'all',period:'all'});
+  const selects=[...(root?.querySelectorAll('select')||[])].filter(x=>x.closest('.ps27-filter,.filter-fields,.flt-fields,.filter-body')&&!x.closest('.psbank-project-editor'));
+  const fields=[...selects,...(root?.querySelectorAll('input[type="search"]')||[])];
+  fields.forEach(el=>{
+   const values=el.tagName==='SELECT'?[...el.options]:[];
+   const initial=values.find(o=>/semua|setahun|pilih/i.test(o.textContent||''))||values[0];
+   const target=el.tagName==='SELECT'?initial?.value??'':'';
+   if(el.value===target) return;
+   el.value=target;el.dispatchEvent(new Event(el.tagName==='SELECT'?'change':'input',{bubbles:true}));
+  });
+  if(root?.querySelector('.ps27-filter-panel')&&window.MT_PS_WORKFLOW) {
+   const ws=S.ui.ps27||(S.ui.ps27={});ws.filterOpen=false;
+  }
+  save();if(typeof render==='function')render();
+ }
+ document.addEventListener('click',ev=>{
+  const icon=ev.target.closest?.('[data-mt-filter-icon]');
+  if(icon){
+   ev.preventDefault();ev.stopImmediatePropagation();
+   const f=saved();f.enabled=!f.enabled;
+   if(f.enabled)capture();
+   save();inject();if(typeof render==='function')render();
+   return;
+  }
+  const reset=ev.target.closest?.('[data-mt-filter-reset]');
+  if(reset){ev.preventDefault();ev.stopImmediatePropagation();resetActiveFilter(reset.closest('.ps27-filter,[class*="filter"],[class*="flt"]'));return}
+ },true);
+ document.addEventListener('keydown',ev=>{
+  if((ev.key==='Enter'||ev.key===' ')&&ev.target.matches?.('[data-mt-filter-icon]')){ev.preventDefault();ev.target.click()}
+ },true);
  document.addEventListener('change',event=>{
-  const box=event.target.closest?.('.mt-shared-filter-check');
-  if(box){const f=saved();f.enabled=box.checked;if(f.enabled)capture();save();inject();return}
   if(applying)return;
   if(saved().enabled&&event.target.closest?.('#view')&&event.target.matches?.('select,input[type="search"]')){capture();save()}
  },true);
