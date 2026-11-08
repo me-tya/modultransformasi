@@ -103,11 +103,20 @@ test('PPTX and PDF have differentiated previews, while section selector controls
  const m=boot(),d=m.docs;
  m.S.ui.psBank={doc:{format:'pptx',sections:['identity','case'],cover:true,toc:true,annex:false,sign:false,slide:1}};
  assert.match(d.builder(m.target),/Pratinjau PowerPoint/);
- assert.match(d.builder(m.target),/Slide 2 \/ 2/);
+ assert.match(d.builder(m.target),/Slide 2 \/ \d+/);
  assert.equal(d.sections(m.target).length,2);
  m.S.ui.psBank.doc.format='pdf';
  assert.match(d.builder(m.target),/Pratinjau PDF/);
  assert.match(source['project-selection-documents.js'],/JSZip/);
  assert.match(source['project-selection-documents.js'],/PptxGenJS/);
  assert.match(source['project-selection-documents.js'],/jspdf/);
+});
+
+test('PPTX continuation slides retain all content instead of truncating fields',()=>{
+ const m=boot(),d=m.docs,full='X'.repeat(1200);m.target.psBusinessCase=full;
+ m.S.ui.psBank={doc:{format:'pptx',sections:['case'],cover:true,toc:false,annex:false,sign:false,slide:0}};
+ const parts=d.slidePages(m.target).flatMap(x=>x.rows).filter(x=>String(x[0]).startsWith('Business Case')).map(x=>x[1]);
+ assert.equal(parts.join(''),full);
+ assert.ok(d.slidePages(m.target).length>1);
+ assert.match(d.builder(m.target),/Pratinjau PowerPoint/);
 });
