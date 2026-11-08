@@ -569,7 +569,7 @@ test('Detail Program action icons distinguish draft and established programs',()
  m.target.psStatus='Ditetapkan';
  html=m.bank.detail();
  assert.match(html,/psbank-phase established/);
- assert.match(html,/Ditetapkan/);
+ assert.match(html,/Sudah ditetapkan/);
 });
 test('Auto-save on program detail tab changes persists edit state and no discard warning',()=>{
  const sourceCode=source['project-selection-program-bank.js'];
@@ -608,4 +608,66 @@ test('Main nav, filters, dialog tabs and export panels have unified dimensions',
  assert.match(bankCss,/\.psbank-docscroll\{height:auto!important/);
  assert.match(priorityCss,/translateY\(-2px\)!important/);
  assert.match(dashboardCss,/\.db-kpi:hover\{transform:translateY\(-2px\)/);
+});
+
+test('Project Selection year filter is local and drives all selection registries without changing global PM year',()=>{
+ const m=boot();
+ m.S.ui.tahun=2026;
+ m.S.ui.psSelectedYear=2027;
+ m.S.ui.psBank={tab:'detail',filterYear:'2027',filterScopes:{'usulan:detail':{year:'2027',status:'all'}}};
+ const html=m.bank.detail();
+ assert.match(html,/Digitalisasi Core Non APBN/);
+ assert.doesNotMatch(html,/Integrated Core System APBN/);
+ assert.equal(m.S.ui.tahun,2026);
+ assert.match(source['project-selection-workflow-2027.js'],/S\.ui\.psSelectedYear=Number\(val\)/);
+ assert.match(source['project-selection-scope-map.js'],/\+S\.ui\.psSelectedYear/);
+ assert.match(source['project-selection-documents.js'],/\+S\.ui\.psSelectedYear/);
+ assert.match(source['project-selection-flow.js'],/\+S\.ui\.psSelectedYear/);
+});
+test('Bank Program paginates 10, 20, 50, 100 records without inner vertical scroll',()=>{
+ const m=boot();
+ for(let i=0;i<23;i++)m.S.programs.push({
+  id:'extra-'+i,akr:'X'+i,kode:'B27-X'+i,nama:'Uji Program '+i,psYear:2027,psDraft:true,psStatus:'Draft',psProjects:[]
+ });
+ m.S.ui.psBank={tab:'bank',bankPage:1,bankPageSize:10};
+ const first=m.bank.bank();
+ assert.equal((first.match(/data-bank-row="/g)||[]).length,10);
+ assert.match(first,/data-bank-page-size/);
+ assert.match(first,/value="20"/);
+ assert.match(first,/value="50"/);
+ assert.match(first,/value="100"/);
+ assert.match(first,/data-bank-page-step="1"/);
+ m.S.ui.psBank.bankPage=2;
+ const second=m.bank.bank();
+ assert.equal((second.match(/data-bank-row="/g)||[]).length,10);
+ assert.notEqual(first,second);
+ m.S.ui.psBank.bankPageSize=100;m.S.ui.psBank.bankPage=1;
+ assert.ok((m.bank.bank().match(/data-bank-row="/g)||[]).length>23);
+ const style=readFileSync('project-selection-program-bank.css','utf8');
+ assert.match(style,/psbank-history-table\) \.psbank-tablewrap\{max-height:none/);
+});
+test('TTE settings exist in all three selection document generators and program shares final-report engine',()=>{
+ const m=boot(),doc=m.docs;
+ let html=doc.builder(m.target);
+ assert.match(html,/Atur TTE/);
+ assert.match(html,/data-doc-tte="name"/);
+ assert.match(html,/data-doc-tte-enabled/);
+ const model=doc.programReportModel(m.target);
+ assert.equal(model.formal,true);
+ assert.equal(model.cover.noTte,true);
+ assert.ok(model.blocks.some(x=>x.t==='table'));
+ m.S.ui.psBank.doc.sign=true;
+ m.S.ui.psBank.doc.tte={name:'Pejabat Penguji',title:'Kepala Unit',date:'8 November 2026',city:'Jakarta',label:'Menyetujui,',number:'001'};
+ const signed=doc.programReportModel(m.target);
+ assert.equal(signed.cover.tte.name,'Pejabat Penguji');
+ assert.ok(signed.blocks.some(x=>x.t==='tte'));
+ assert.equal(signed.cover.noTte,false);
+ html=doc.portfolioBuilder();
+ assert.match(html,/Atur TTE/);
+ assert.match(html,/data-port-tte="name"/);
+ assert.match(html,/data-port-include-tte/);
+ assert.match(source['project-selection-documents.js'],/mtRptDocx\(programReportModel\(p\)\)/);
+ assert.match(source['project-selection-documents.js'],/mtRptHtml\(programReportModel\(p\)\)/);
+ assert.match(source['project-selection-documents.js'],/exportFormalPdf\(programReportModel\(p\)/);
+ assert.match(readFileSync('charter-planning-report.js','utf8'),/Atur TTE/);
 });
