@@ -51,6 +51,20 @@ test('concept deletion is blocked for established, archived and contract-recorde
  S.psWideTargets[2027]={contract:{status:'Ditetapkan',programIds:['legacy']}};
  p[1].psListStatus='Legacy';p[1].arsip=false;assert.equal(life.canDelete(p[1]),false);
 });
+test('official PMO project closing allows archive without deleting historical WBS',()=>{
+ const {S,p}=setup();
+ const id='new',name='Modul TKD';
+ p[0].psProjects=[{id:'proj1',name,status:'Berjalan'}];
+ S.wbs=[{k:'WBS-TKD',prog:'N27',arsip:false}];
+ const from=bank.slice(bank.indexOf('function labelStatus('),bank.indexOf('function programAction('));
+ const life=new Function('S','ME','year','E',from+';return {archiveReadiness};')(S,{role:'PMOK'},()=>2027,esc);
+ assert.equal(life.archiveReadiness(p[0]).blocked,true);
+ p[0].closing={'N27|Modul%20TKD|':{st:'Diajukan'}};
+ assert.equal(life.archiveReadiness(p[0]).blocked,true);
+ p[0].closing['N27|Modul%20TKD|'].st='Ditutup';
+ assert.equal(life.archiveReadiness(p[0]).blocked,false);
+ assert.equal(S.wbs.length,1);
+});
 test('program finalization is gated on an established K-Wide contract',()=>{
  assert.match(flow,/contract\?\.status!=='Ditetapkan'/);
  assert.match(flow,/contract\.programIds\?\.includes\(String\(p.id\)\)/);
