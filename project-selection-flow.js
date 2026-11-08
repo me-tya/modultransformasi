@@ -245,4 +245,226 @@ function referencePage(p){
  return h;
 }
 
+function mount(){
+ const root=document.querySelector('#view .pswf');if(!root)return;
+ root.addEventListener('click',e=>{
+  const b=e.target.closest('button,[data-pswf-detail]');if(!b)return;
+  const p=pickedProgram(),a=b.dataset.pswf;
+  if(b.dataset.pswfTab){state().tab=b.dataset.pswfTab;save();render();return}
+  if(b.dataset.pswfFilter){state().filter=b.dataset.pswfFilter;save();render();return}
+  if(b.dataset.pswfSort){state().sort=b.dataset.pswfSort;save();render();return}
+  if(b.dataset.pswfView){state().view=b.dataset.pswfView;save();render();return}
+  if(b.dataset.pswfMv){state().monevView=b.dataset.pswfMv;save();render();return}
+  if(b.dataset.pswfDetail){const u=state(),id=b.dataset.pswfDetail;u.open=u.open||[];u.open=u.open.includes(id)?u.open.filter(x=>x!==id):u.open.concat(id);save();render();return}
+  if(b.dataset.pswfProject){if(p)projectModal(p,b.dataset.pswfProject);return}
+  if(b.dataset.pswfRemove){if(p)removeProject(p,b.dataset.pswfRemove);return}
+  if(b.dataset.pswfMvadd){if(p)monevModal(p,state().monevPid,b.dataset.pswfMvadd,-1);return}
+  if(b.dataset.pswfMvedit){if(p){const t=b.dataset.pswfMvedit.split(':');monevModal(p,state().monevPid,t[0],+t[1])}return}
+  switch(a){
+   case 'add-program':programModal(null);return;
+   case 'edit-program':if(p)programModal(p);return;
+   case 'delete-program':if(p)deleteProgram(p);return;
+   case 'add-project':if(p)projectModal(p,'');return;
+   case 'save-weights':if(p)saveWeights(p,root);return;
+   case 'reset-weights':if(p)resetWeights(p);return;
+   case 'finalize':if(p)finalize(p);return;
+   case 'reopen':if(p)reopen(p);return;
+   case 'go-wbs':if(p){S.ui.prog=p.akr;save();location.hash='#pmo-wbsplan'}return;
+   case 'template-word':word(p,true);return;
+   case 'generate-word':if(p)word(p,false);return;
+   case 'excel':exportCsv(p,'projects');return;
+   case 'excel-reference':exportCsv(p,'criteria');return;
+   case 'report':printReport(p);return;
+   case 'monev-report':exportCsv(p,'monev');return;
+   case 'ambil-wbs':if(p)importLegacyProjects(p);return;
+  }
+ });
+ root.addEventListener('change',e=>{
+  const q=e.target,p=pickedProgram();
+  if(q.id==='pswf-year'){S.ui.tahun=+q.value;state().prog='';state().q='';state().filter='all';save();render()}
+  else if(q.id==='pswf-program'){state().prog=q.value;state().q='';state().filter='all';save();render()}
+  else if(q.id==='pswf-prioritize'&&p&&!readonly(p)){p.psPrioritize=q.checked;save();render()}
+  else if(q.id==='pswf-threshold'&&p&&!readonly(p)){const v=Number(q.value);if(v<0||v>99||!Number.isFinite(v)){toast('Ambang harus antara 0–99.');return}p.psThreshold=v;save();render()}
+  else if(q.dataset.pswfInclude&&p&&!readonly(p)){const x=rowsFor(p).find(x=>x.id===q.dataset.pswfInclude);if(x){x.included=q.checked;save();render()}}
+  else if(q.id==='pswf-mv-project'){state().monevPid=q.value;save();render()}
+  else if(q.id==='pswf-formula'){state().formula=q.checked;save();render()}
+  else if(q.id==='pswf-params'){state().params=q.checked;save();render()}
+ });
+ const search=root.querySelector('#pswf-search');
+ if(search)search.addEventListener('input',()=>{state().q=search.value;const n=search.selectionStart;save();render();const next=document.querySelector('#pswf-search');if(next){next.focus();next.setSelectionRange(n,n)}});
+}
+function modal(title,body,saveFn,saveLabel){
+ const overlay=document.createElement('div');overlay.className='pswf-overlay';
+ overlay.innerHTML='<section class="pswf-modal" role="dialog" aria-modal="true" aria-label="'+esc2(title)+'"><header><h2>'+esc2(title)+'</h2><button type="button" data-close aria-label="Tutup">✕</button></header><main>'+body+'</main><footer><button class="btn" type="button" data-close>Batal</button><button class="btn pri" type="button" data-save>'+(saveLabel||'Simpan')+'</button></footer></section>';
+ document.body.appendChild(overlay);
+ const close=()=>overlay.remove();
+ overlay.addEventListener('click',e=>{if(e.target===overlay||e.target.closest('[data-close]'))close();else if(e.target.closest('[data-save]'))saveFn(overlay,close)});
+ overlay.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+ overlay.querySelector('input,select,textarea,button')?.focus();
+ return overlay;
+}
+const val=(root,key)=>{const el=root.querySelector('[data-f="'+key+'"]');return el?clean(el.value):''};
+const field=(k,l,v='',type='text',need=false,extra='')=>'<label class="pswf-field"><span>'+l+(need?' *':'')+'</span><input type="'+type+'" data-f="'+k+'" value="'+esc2(v)+'" '+extra+'></label>';
+const area=(k,l,v='')=>'<label class="pswf-field span2"><span>'+l+'</span><textarea data-f="'+k+'" rows="3">'+esc2(v)+'</textarea></label>';
+const sel=(k,l,opts,v)=>'<label class="pswf-field"><span>'+l+'</span><select data-f="'+k+'">'+opts.map(x=>'<option value="'+esc2(x)+'"'+(x===v?' selected':'')+'>'+esc2(x)+'</option>').join('')+'</select></label>';
+const units=()=>typeof UNITS!=='undefined'&&Array.isArray(UNITS)?UNITS:['Setjen','Itjen','DJA','DJP','DJBC','DJPb','DJPK','DJKN','DJPPR','DJSEF','DJSPSK','BPPK','BaTii','LNSW'];
+function programModal(p){
+ if(!editOk())return;
+ if(p&&!ownerOk(p))return;
+ if(p&&p.psStatus==='Ditetapkan'){toast('Buka revisi program terlebih dahulu.');return}
+ const isNew=!p,y=year();
+ const body='<div class="pswf-form-grid">'+
+ field('nama','Nama Program Transformasi',p?.nama||'','text',true,'maxlength="180"')+
+ field('kode','Kode Program',p?.kode||'','text',true,'maxlength="40"')+
+ sel('jenis','Jenis Program',['Berkelanjutan','Tematik','Lainnya'],p?.jenis||'Berkelanjutan')+
+ sel('uic','UIC Utama',units(),p?.uic||'BaTii')+
+ field('pend','UIC Pendukung (pisahkan koma)',p?.pend||'')+
+ field('sponsor','Sponsor / Penanggung Jawab',p?.sponsor||'')+
+ area('objective','Tujuan / sasaran strategis program',p?.psObjective||'')+
+ area('background','Latar belakang dan kebutuhan transformasi',p?.psBackground||'')+
+ area('strategy','Terobosan / pendekatan pelaksanaan',p?.psStrategy||'')+
+ area('outcome','Outcome yang diharapkan',p?.psOutcome||'')+
+ area('risks','Risiko strategis program',p?.psRisks||'')+
+ area('themes','Tema / keterkaitan kebijakan (opsional)',p?.psThemes||'')+
+ '</div><p class="pswf-note">Program disimpan untuk Tahun '+y+'. Selama berstatus Draft, program tidak masuk daftar kerja Project Management/WBS.</p>';
+ modal((isNew?'Tambah':'Ubah')+' Program Transformasi · '+y,body,(box,close)=>{
+  const name=val(box,'nama'),code=val(box,'kode'),uic=val(box,'uic');
+  if(!name||!code||!uic){toast('Nama, kode, dan UIC Utama wajib diisi.');return}
+  const dup=allPrograms().some(o=>o!==p&&String(o.kode||'').toLowerCase()===code.toLowerCase()&&+o.psYear===y);
+  if(dup){toast('Kode program sudah digunakan pada tahun '+y+'.');return}
+  const target=p||{id:uid2('program'),akr:'PS'+y+'-'+uid2('p'),psYear:y,psDraft:true,psStatus:'Draft',psThreshold:80,psPrioritize:false,psProjects:[],psWeights:{},mulai:y,periode:y+'–'+y,status:'Perencanaan'};
+  Object.assign(target,{nama:name,kode:code,jenis:val(box,'jenis'),uic,pend:val(box,'pend'),sponsor:val(box,'sponsor'),
+   psObjective:val(box,'objective'),psBackground:val(box,'background'),psStrategy:val(box,'strategy'),
+   psOutcome:val(box,'outcome'),psRisks:val(box,'risks'),psThemes:val(box,'themes'),psYear:y,
+   psUpdatedAt:new Date().toISOString(),psUpdatedBy:ME.email||''});
+  if(isNew)allPrograms().push(target);
+  state().prog=target.id;save();close();render();toast('Program tersimpan. Tambahkan calon proyek di dalamnya.');
+ },isNew?'Tambah Program':'Simpan Program');
+}
+function deleteProgram(p){
+ if(!ownerOk(p)||p.psStatus==='Ditetapkan')return;
+ if((S.wbs||[]).some(w=>w.prog===p.akr&&!w.arsip)){toast('Program yang sudah memiliki WBS tidak boleh dihapus.');return}
+ if(!window.confirm('Hapus draf program '+p.nama+' beserta daftar calon proyek?'))return;
+ S.programs=S.programs.filter(x=>x!==p);state().prog='';save();render();toast('Draf program dihapus.');
+}
+function projectModal(p,id){
+ if(!ownerOk(p)||readonly(p))return;
+ const x=id?rowsFor(p).find(x=>x.id===id):null; if(id&&!x)return;
+ const g=(k,v)=>x&&x[k]!=null?x[k]:v||'';
+ const body='<div class="pswf-form-grid">'+
+ field('name','Nama Proyek / Modul',g('name'),'text',true,'maxlength="180"')+
+ field('uic','UIC / Unit Pemilik',g('uic',p.uic),'text',true,'maxlength="140"')+
+ field('pic','PIC / Project Owner',g('pic'))+
+ sel('status','Status',['Usulan','Berjalan','Ditunda','Selesai'],g('status','Usulan'))+
+ field('start','Rencana mulai',g('start'),'date')+
+ field('goLive','Target go-live',g('goLive'),'date')+
+ field('users','Jumlah pengguna terdampak (dasar C2)',g('users'),'number',false,'min="0"')+
+ field('readiness','Skor kesiapan / CRA (%) (dasar C5)',g('readiness'),'number',false,'min="0" max="100"')+
+ area('description','Latar belakang / Deskripsi proyek',g('description'))+
+ area('outputs','Output / deliverable proyek',g('outputs'))+
+ area('outcome','Outcome / manfaat strategis',g('outcome'))+
+ area('accepted','Kriteria penyelesaian (acceptance criteria)',g('accepted'))+
+ area('notes','Catatan penilaian dan keputusan',g('notes'))+'</div>'+
+ '<details class="pswf-detail-form" '+(p.psPrioritize?'open':'')+'><summary>Penilaian SMART · 12 kriteria (opsional jika prioritisasi tidak digunakan)</summary>'+
+ '<div class="pswf-score-grid">'+PS_CRITERIA.map(c=>{
+  const chosen=+(x?.scores||{})[c.code]||0;
+  return '<label><b>'+c.code+' · '+esc2(c.name)+'</b><small>'+esc2(c.note||'')+'</small><select data-score="'+c.code+'"><option value="">'+(c.auto?'Gunakan nilai otomatis / belum tersedia':'Belum dinilai')+'</option>'+
+  [1,2,3,4,5].map((v,i)=>'<option value="'+v+'"'+(chosen===v?' selected':'')+'>'+v+' · '+esc2(c.rubric[i])+'</option>').join('')+'</select></label>';
+ }).join('')+'</div>'+
+ '<h4>POSTER (untuk C6 otomatis)</h4><div class="pswf-minigrid">'+[['P','Proses'],['O','Organisasi'],['S','SDM'],['T','Teknologi'],['R','Regulasi']].map(d=>'<label>'+d[1]+' <select data-poster="'+d[0]+'"><option value="">—</option>'+[1,2,3,4,5].map(v=>'<option value="'+v+'"'+(+(x?.poster||{})[d[0]]===v?' selected':'')+'>'+v+'</option>').join('')+'</select></label>').join('')+'</div>'+
+ '<h4>Risiko implementasi (untuk C12 otomatis)</h4><div class="pswf-minigrid">'+[['res','Resistensi'],['op','Operasional'],['dep','Ketergantungan']].map(d=>'<label>'+d[1]+' <select data-risk="'+d[0]+'"><option value="">—</option>'+[['1','Rendah'],['2','Sedang'],['3','Tinggi']].map(z=>'<option value="'+z[0]+'"'+(String((x?.risks||{})[d[0]])===z[0]?' selected':'')+'>'+z[1]+'</option>').join('')+'</select></label>').join('')+'</div></details>';
+ modal((x?'Ubah':'Tambah')+' Calon Proyek · '+p.nama,body,(box,close)=>{
+  if(!val(box,'name')||!val(box,'uic')){toast('Nama Proyek dan UIC wajib diisi.');return}
+  const z=x||{id:uid2('proj'),included:true,scores:{},poster:{},risks:{},indicators:[],benefits:[]};
+  for(const k of ['name','uic','pic','status','start','goLive','users','readiness','description','outputs','outcome','accepted','notes'])z[k]=val(box,k);
+  z.scores=z.scores||{};z.poster=z.poster||{};z.risks=z.risks||{};
+  box.querySelectorAll('[data-score]').forEach(el=>{if(el.value)z.scores[el.dataset.score]=+el.value;else delete z.scores[el.dataset.score]});
+  box.querySelectorAll('[data-poster]').forEach(el=>{if(el.value)z.poster[el.dataset.poster]=+el.value;else delete z.poster[el.dataset.poster]});
+  box.querySelectorAll('[data-risk]').forEach(el=>{if(el.value)z.risks[el.dataset.risk]=+el.value;else delete z.risks[el.dataset.risk]});
+  z.updatedAt=new Date().toISOString();z.updatedBy=ME.email||'';
+  if(!x)p.psProjects.push(z);
+  save();close();render();toast('Calon proyek tersimpan.');
+ },x?'Simpan Perubahan':'Tambah Calon Proyek');
+}
+function removeProject(p,id){
+ if(!ownerOk(p)||readonly(p))return;
+ const x=rowsFor(p).find(z=>z.id===id);if(!x)return;
+ if(!window.confirm('Hapus calon proyek "'+x.name+'"?'))return;
+ p.psProjects=p.psProjects.filter(z=>z!==x);save();render();toast('Calon proyek dihapus.');
+}
+function importLegacyProjects(p){
+ if(!ownerOk(p)||p.psStatus==='Ditetapkan'||+p.psYear>2026)return;
+ const old=progProjects(p);if(!old.length){toast('Belum ada proyek WBS yang dapat diambil.');return}
+ const existing=new Set(rowsFor(p).map(x=>x.name.toLowerCase()));
+ let n=0;old.forEach(x=>{if(existing.has(x.n.toLowerCase()))return;
+  rowsFor(p).push({id:uid2('proj'),name:x.n,uic:x.uic||p.uic,pic:'',users:'',goLive:x.f||'',start:x.s||'',status:'Berjalan',included:true,scores:{},poster:{},risks:{},indicators:[],benefits:[]});n++;
+ });p.psYear=year();save();render();toast(n+' proyek diambil dari WBS lama.');
+}
+function saveWeights(p,root){
+ if(readonly(p))return;const w={};let valid=true;
+ root.querySelectorAll('[data-pswf-weight]').forEach(q=>{const n=+q.value;if(!Number.isInteger(n)||n<1||n>7)valid=false;else w[q.dataset.pswfWeight]=n});
+ if(!valid){toast('Bobot harus bilangan bulat 1–7.');return}
+ p.psWeights=w;save();render();toast('Bobot SMART tersimpan.');
+}
+function resetWeights(p){if(readonly(p))return;p.psWeights={};save();render();toast('Bobot dikembalikan ke bawaan Priority.')}
+function finalize(p){
+ if(!ownerOk(p)||p.psStatus==='Ditetapkan')return;
+ const list=chosen(p);
+ if(!list.length){toast('Belum ada proyek yang dipilih untuk ditetapkan.');return}
+ if(list.some(x=>!x.name||!x.uic)){toast('Lengkapi nama dan UIC semua proyek terpilih.');return}
+ if(!window.confirm('Tetapkan '+list.length+' proyek untuk program '+p.nama+' tahun '+p.psYear+'? Proyek terpilih akan tampil di Project Management sebagai calon WBS.'))return;
+ p.psStatus='Ditetapkan';p.psDraft=false;p.psFinalizedAt=new Date().toISOString();p.psFinalizedBy=ME.email||'';p.psSelectedProjectIds=list.map(x=>x.id);
+ p.status='Perencanaan';S.ui.prog=p.akr;save();render();toast('Program dan proyek ditetapkan. RKMK Word siap digenerate; lanjutkan WBS setelah reviu.');
+}
+function reopen(p){
+ if(!ownerOk(p)||p.psStatus!=='Ditetapkan')return;
+ if((S.wbs||[]).some(w=>w.prog===p.akr&&!w.arsip)){toast('Program sudah memiliki WBS. Revisi perlu mengikuti mekanisme Change Request / pengendalian baseline.');return}
+ if(!window.confirm('Buka kembali penetapan? Program akan sementara ditarik dari Project Management sampai ditetapkan ulang.'))return;
+ p.psStatus='Draft';p.psDraft=true;delete p.psFinalizedAt;delete p.psFinalizedBy;save();render();toast('Program kembali ke status Draft.');
+}
+function monevModal(p,pid,type,index){
+ if(!ownerOk(p))return;
+ const project=rowsFor(p).find(x=>x.id===pid),list=project&&project[type];if(!list)return;
+ const old=index>=0?list[index]:null;
+ const body='<div class="pswf-form-grid">'+field('name','Nama indikator / manfaat',old?.name||'','text',true)+
+ field('base','Baseline',old?.base||'')+field('target','Target',old?.target||'')+field('actual','Realisasi',old?.actual||'')+
+ field('unit','Satuan',old?.unit||'')+field('due','Target selesai / evaluasi',old?.due||'','date')+
+ area('note','Catatan pemantauan',old?.note||'')+'</div>';
+ modal((type==='indicators'?'Indikator Keberhasilan CM':'Register Manfaat')+' · '+project.name,body,(box,close)=>{
+  if(!val(box,'name')){toast('Nama indikator/manfaat wajib diisi.');return}
+  const obj=old||{id:uid2('mv')};
+  for(const k of ['name','base','target','actual','unit','due','note'])obj[k]=val(box,k);
+  if(!old)list.push(obj);save();close();render();toast('Data Monev tersimpan.');
+ });
+}
+function exportCsv(p,type){
+ if(!p){toast('Pilih program dahulu.');return}
+ let data=[];
+ if(type==='criteria')data=[['Kode','Kriteria','Kelompok','Jenis','Bobot','Normalisasi (%)'],...PS_CRITERIA.map(c=>[c.code,c.name,(PS_GROUPS.find(g=>g[0]===c.g)||[])[1],c.type,weight(p,c.code),(weight(p,c.code)/PS_CRITERIA.reduce((n,x)=>n+weight(p,x.code),0)*100).toFixed(1)])];
+ else if(type==='monev')data=[['Tahun','Program','Proyek','Jenis','Indikator/Manfaat','Baseline','Target','Realisasi','Satuan','Tenggat'],...rowsFor(p).flatMap(x=>['indicators','benefits'].flatMap(k=>x[k].map(o=>[year(),p.nama,x.name,k==='indicators'?'Indikator':'Manfaat',o.name,o.base,o.target,o.actual,o.unit,o.due])))];
+ else data=[['Tahun','Program','Proyek','UIC','PIC','Status','Skor SMART','Terpilih','Go-live','Output','Acceptance Criteria'],...rowsFor(p).map(x=>[year(),p.nama,x.name,x.uic,x.pic,x.status,calc(x,p).score??'',included(x,p)?'Ya':'Tidak',x.goLive,x.outputs,x.accepted])];
+ const csv='\ufeff'+data.map(r=>r.map(c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+ const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');
+ a.href=url;a.download='Project_Selection_'+type+'_'+year()+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+function printReport(p){
+ if(!p)return;const rows=rowsFor(p);
+ const html='<h2>Laporan Project Selection · '+year()+'</h2><h3>'+esc2(p.nama)+'</h3><p>Prioritisasi: '+(p.psPrioritize?'SMART > '+p.psThreshold+'%':'Pemilihan manual')+' · '+esc2(p.psStatus)+'</p><table><thead><tr><th>No</th><th>Proyek</th><th>UIC</th><th>Skor</th><th>Dipilih</th></tr></thead><tbody>'+
+ rows.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc2(x.name)+'</td><td>'+esc2(x.uic)+'</td><td>'+labelScore(calc(x,p))+'</td><td>'+(included(x,p)?'Ya':'Tidak')+'</td></tr>').join('')+'</tbody></table>';
+ const w=window.open('','_blank');if(!w){toast('Izinkan pop-up untuk mencetak laporan.');return}
+ w.document.write('<!doctype html><html lang="id"><meta charset="utf-8"><title>Laporan Project Selection</title><style>body{font:12px Arial;color:#17345e;margin:30px}table{width:100%;border-collapse:collapse}td,th{border:1px solid #ddd;padding:8px}th{background:#e9eff6}</style><body>'+html+'</body></html>');w.document.close();w.focus();w.print();
+}
+function open(mode){
+ const p=pickedProgram(),body='<p><b>Alur Project Selection</b>: tetapkan tahun, isi program dan daftar calon proyek, gunakan prioritisasi SMART bila diperlukan, kemudian tetapkan proyek dan generate RKMK Word. Setelah itu lanjutkan WBS di Project Management.</p>'+
+ '<p><b>Ambang</b>: jika menggunakan SMART, skor harus lengkap dan lebih besar dari ambang yang dipilih (bawaan 80). Jika tidak menggunakan SMART, centang proyek secara manual.</p>'+
+ '<p><b>Rujukan</b>: kriteria SMART dari menu Priority Dashboard CM; struktur dokumen rancangan RKMK mengacu pada Lampiran II KMK Nomor 132 Tahun 2025 (Charter, Acceptance Criteria, Rencana Kerja).</p>';
+ const box=document.createElement('div');box.className='pswf-overlay';box.innerHTML='<section class="pswf-modal" role="dialog" aria-modal="true"><header><h2>'+(mode==='help'?'Bantuan Project Selection':'Cheatsheet Project Selection')+'</h2><button data-close>✕</button></header><main>'+body+'</main><footer><button class="btn pri" data-close>Tutup</button></footer></section>';
+ document.body.appendChild(box);box.addEventListener('click',e=>{if(e.target===box||e.target.closest('[data-close]'))box.remove()});
+}
+
+
+/* Export global API after all model/view/actions are initialized. */
+window.MT_PROJECT_SELECTION={page,mount,open,version:'20261108-upstream-program-first-RKMK-v1',criteria:PS_CRITERIA.map(c=>({code:c.code,name:c.name,w:c.w}))};
+if(typeof VIEW!=='undefined'&&VIEW==='project-selection'&&ME)render();
+
 })();
