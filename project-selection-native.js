@@ -157,7 +157,14 @@ function mount(){
  });
  root.addEventListener('change',evt=>{if(evt.target.id==='psnv-prog'){UI().prog=evt.target.value;UI().ue='';UI().km=false;save();render()}else if(evt.target.id==='psnv-ue'){UI().ue=evt.target.value;UI().prog='';UI().km=false;save();render()}});
  const input=root.querySelector('#psnv-search');
- if(input)input.addEventListener('input',()=>{UI().q=input.value;const n=input.selectionStart;save();render();const next=document.querySelector('#psnv-search');if(next){next.focus();next.setSelectionRange(n,n)}});
+ if(input)input.addEventListener('input',()=>{
+  UI().q=input.value;const cursor=input.selectionStart;save();
+  clearTimeout(window.__mtPsnvSearchTimer);
+  window.__mtPsnvSearchTimer=setTimeout(()=>{
+   render();const next=document.querySelector('#view #psnv-search');
+   if(next){next.focus({preventScroll:true});try{next.setSelectionRange(cursor,cursor)}catch(_){}}
+  },260);
+ });
 }
 function deleteProject(id){
  if(!ME||!['SA','PMOK','PMOU'].includes(ME.role))return;
