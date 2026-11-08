@@ -394,6 +394,7 @@ async function exportFormalPdf(model,file,{preview=false}={}){
  await load('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',()=>!!window.jspdf?.jsPDF);
  const pdf=new window.jspdf.jsPDF({unit:'mm',format:'a4'});
  const ink=[21,45,78],navy=[14,41,81],pale=[237,244,251],gold=[250,181,36],gray=[93,110,137],W=210,left=19,right=191,bw=172;
+ const headingPages=[];
  let y=25;
  const setColor=a=>pdf.setTextColor(...a),line=(v,size=10,bold=false,space=4)=>{
   const lines=pdf.splitTextToSize(String(v??'—'),bw);
@@ -498,8 +499,8 @@ async function exportFormalPdf(model,file,{preview=false}={}){
  if(model.formal&&contents.length){pdf.addPage();y=27;title('DAFTAR ISI');contents.forEach((b,i)=>line((b.level===2?'   ':'')+(i+1)+'. '+b.text,10,b.level===1,2));}
  pdf.addPage();y=29;
  for(const b of model.blocks||[]){
-  if(b.t==='h1')title(b.text);
-  else if(b.t==='h2'){if(y>251){pdf.addPage();y=26}line(b.text,12,true,5)}
+  if(b.t==='h1'){headingPages.push({text:b.text,page:pdf.getNumberOfPages(),level:1});title(b.text);headingPages[headingPages.length-1].page=pdf.getNumberOfPages();}
+  else if(b.t==='h2'){if(y>251){pdf.addPage();y=26}headingPages.push({text:b.text,page:pdf.getNumberOfPages(),level:2});line(b.text,12,true,5)}
   else if(b.t==='p')line(b.text,10,false,7);
   else if(b.t==='kv')drawTable(['Komponen','Informasi'],b.rows||[],[34,66]);
   else if(b.t==='table'){if(b.caption)line('Tabel: '+b.caption,9,true,3);drawTable(b.head||[],b.rows||[],b.widths)}
@@ -510,6 +511,34 @@ async function exportFormalPdf(model,file,{preview=false}={}){
    line(t.label||'Mengetahui,',10,false,16);line(t.title||'[Jabatan Pejabat]',11,true,24);
    line('Ditandatangani secara elektronik',9,false,8);line(t.name||'[Nama Pejabat]',11,true,5);
   }
+ }
+ // Page references are resolved only after all sections have been laid out.
+ // These are actual PDF page positions, never estimated or hard-coded values.
+ if(model.formal&&contents.length){
+  pdf.setPage(2);pdf.setFillColor(255,255,255);pdf.rect(left,34,bw,242,'F');
+  let ty=42;
+  headingPages.forEach((item,i)=>{
+   if(ty>267)return;
+   const name=(i+1)+'. '+String(item.text||'');
+   const maxWidth=bw-25-(item.level===2?6:0);
+   pdf.setFont('helvetica',item.level===1?'bold':'normal');pdf.setFontSize(item.level===1?10:9);
+   pdf.setTextColor(...ink);
+   const items=pdf.splitTextToSize(name,maxWidth);
+   const x=left+(item.level===2?6:0);
+   items.forEach((part,j)=>{
+    if(ty>267)return;
+    pdf.text(part,x,ty);
+    if(j===items.length-1){
+     const textWidth=pdf.getTextWidth(part),end=right-17;
+     pdf.setDrawColor(181,195,210);pdf.setLineDashPattern?.([.5,1.5],0);
+     if(x+textWidth+3<end)pdf.line(x+textWidth+3,ty-.6,end,ty-.6);
+     pdf.setLineDashPattern?.([],0);
+     pdf.text(String(item.page),right,ty,{align:'right'});
+    }
+    ty+=5.9;
+   });
+   ty+=item.level===1?2:0;
+  });
  }
  const pages=pdf.getNumberOfPages();
  for(let i=1;i<=pages;i++){pdf.setPage(i);pdf.setDrawColor(210,222,234);pdf.line(left,283,right,283);
