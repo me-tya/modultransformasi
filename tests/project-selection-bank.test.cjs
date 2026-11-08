@@ -900,3 +900,14 @@ test('Project Management planning Word preview renders actual DOCX instead of se
  assert.match(src,/window\.MT_PS_DOC\.showActualDocumentPreview\(ov,model,'word'\)/);
  assert.match(src,/view\.hidden=!ok;frame\.hidden=!!ok/);
 });
+
+test('Final Project Management report previews same DOCX package that is downloaded',()=>{
+ const src=source['project-selection-documents.js'];
+ assert.match(src,/function installFinalReportPreview\(\)/);
+ assert.match(src,/const original=mtRptHtml/);
+ assert.match(src,/window\.mtRptHtml=wrapped/);
+ assert.match(src,/showActualDocumentPreview\(parent,model,'word'\)/);
+ assert.match(src,/frame\.style\.position='absolute'/);
+ assert.match(src,/if\(!view\)return html/);
+ assert.match(src,/installFinalReportPreview\(\);\s*window\.MT_PS_DOC=/);
+});
