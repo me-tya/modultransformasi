@@ -148,9 +148,15 @@ function mapping(p){
 }
 function prioritasi(p){
  if(!p)return '<div class="ps27-card ps27-empty">Pilih program untuk mengurutkan prioritas proyeknya.</div>';
- const sub=ws().prioritySub||'ranking';
- return '<div class="ps27-minitabs"><button data-ps27-sub="ranking" class="'+(sub==='ranking'?'on':'')+'">Penilaian & Peringkat</button><button data-ps27-sub="criteria" class="'+(sub==='criteria'?'on':'')+'">Kriteria & Bobot</button><button data-ps27-sub="monev" class="'+(sub==='monev'?'on':'')+'">Monev & Manfaat</button></div>'+
- (sub==='criteria'?I.criteriaPage(p):sub==='monev'?I.monevPage(p):I.projectsPage(p));
+ const sub=ws().prioritySub||'ranking',readOnly=I.readonly(p);
+ const mode='<label class="ps27-smart-toggle"><input type="checkbox" id="pswf-prioritize" '+(p.psPrioritize?'checked':'')+' '+(readOnly?'disabled':'')+'><span>Gunakan prioritisasi SMART</span></label>';
+ const threshold=p.psPrioritize?'<label class="ps27-smart-threshold">Ambang skor &gt; <input type="number" id="pswf-threshold" min="0" max="99" value="'+E(p.psThreshold??80)+'" '+(readOnly?'disabled':'')+' aria-label="Ambang skor SMART"> %</label>':'';
+ const tip='<button class="ps27-smart-info" type="button" data-pswf="smart-info" title="Aturan pemilihan: 12 kriteria lengkap dan skor absolut lebih besar dari ambang" aria-label="Informasi aturan seleksi otomatis SMART">i</button>';
+ return '<div class="ps27-priority-head"><nav class="ps27-minitabs" role="tablist" aria-label="Tab Prioritasi">'+
+ [['ranking','Penilaian & Peringkat'],['criteria','Kriteria & Bobot'],['monev','Monev & Manfaat'],['reference','Referensi & Formula']].map(x=>
+ '<button role="tab" type="button" data-ps27-sub="'+x[0]+'" aria-selected="'+(sub===x[0])+'" class="'+(sub===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+'</nav>'+
+ '<div class="ps27-smart-actions">'+mode+threshold+tip+'</div></div>'+
+ (sub==='reference'?I.referencePage(p):sub==='criteria'?I.criteriaPage(p):sub==='monev'?I.monevPage(p):I.projectsPage(p));
 }
 function charter(p){
  if(!p)return '<div class="ps27-card ps27-empty">Pilih program untuk menampilkan Charter Program.</div>';
@@ -216,7 +222,7 @@ function page(){
  h+='<section class="pswf ps27" aria-label="Project Selection">';
  h+='<div class="pm-stage-shell ps27-stage"><nav class="ptabs pmo-journey ps27-tabs" role="tablist" aria-label="Submenu Project Selection">'+
  TABS.map((t,i)=>'<button type="button" role="tab" aria-selected="'+(u.tab===t[0])+'" class="'+(u.tab===t[0]?'on':'')+'" data-ps27-tab="'+t[0]+'"><span><em>'+(''+(i+1))+'</em> '+t[1]+'</span>'+(t[0]==='usulan'&&T.length?'<b>'+T.length+'</b>':t[0]==='mapping'&&countAll?'<b>'+countAll+'</b>':'')+'</button>').join('')+
- '</nav><div class="ps27-stage-action"><button class="btn" data-ps27="help">? Bantuan Alur</button></div></div>';
+ '</nav></div>';
  h+=filter(p)+actionBar(p);
  if(u.tab==='usulan')h+=usulan(p);
  else if(u.tab==='mapping')h+=mapping(p);
@@ -241,7 +247,7 @@ function mount(){
   ev.stopImmediatePropagation();
   if(b.dataset.ps27Tab){navigate(b.dataset.ps27Tab);return}
   if(b.dataset.ps27Pick){state().prog=b.dataset.ps27Pick;ws().usulanSub='detail';save();render();return}
-  if(b.dataset.ps27Sub){ws().prioritySub=b.dataset.ps27Sub;save();render();return}
+  if(b.dataset.ps27Sub){ws().prioritySub=b.dataset.ps27Sub;if(ws().prioritySub==='reference'&&!ws().referenceVisited){I.state().formula=true;I.state().params=true;ws().referenceVisited=true}save();render();return}
   if(b.dataset.ps27Usul){ws().usulanSub=b.dataset.ps27Usul;save();render();return}
   if(b.dataset.ps27Remove){markWbsForRemoval(current(),b.dataset.ps27Remove);return}
   const a=b.dataset.ps27;
