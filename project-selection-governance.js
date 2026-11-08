@@ -126,7 +126,7 @@ function mount(pick,rerender){
   if(!p||!editable(p))return;
   if(b.dataset.govAdd){regModal(p,b.dataset.govAdd,-1);return}
   if(b.dataset.govEdit){const a=b.dataset.govEdit.split(':');regModal(p,a[0],+a[1]);return}
-  if(b.dataset.govDelete){const a=b.dataset.govDelete.split(':'),d=regs[a[0]];if(d&&window.confirm('Hapus entri '+d.one+' ini?')){items(p,d.key).splice(+a[1],1);save();rerender()}return}
+  if(b.dataset.govDelete){const a=b.dataset.govDelete.split(':'),d=regs[a[0]];if(d)window.MT_PS_CONFIRM?.('Hapus Entri Register?','Entri '+d.one+' akan dikeluarkan dari program ini.',()=>{items(p,d.key).splice(+a[1],1);save();rerender()},'danger');return}
   if(b.dataset.govSave){
    const type=b.dataset.govSave,keys=type==='case'?['psAlignment','psBusinessCase','psAlternatives','psFinancialEstimate','psSuccessCriteria']:['psManager','psDecisionAuthority','psGovernanceCadence','psRoadmap','psResourcePlan','psDependencies','psAssumptions','psConstraints'];
    keys.forEach(k=>p[k]=tidy(root.querySelector('[data-gov-field="'+k+'"]')?.value));p.psUpdatedAt=new Date().toISOString();save();
