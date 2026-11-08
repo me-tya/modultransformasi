@@ -180,7 +180,7 @@ function lookup(el,label){
  if(el.closest('[role="tablist"]')||el.getAttribute('role')==='tab')return PLAIN[n]||null;
  return null;
 }
-var selector=['#app .nav .nv','#app .ps27-tabs button','#app .psbank-subtabs button','#app .psbank-mapping-tabs button','#app .ps27-minitabs button','#app .ps27-kwide-tabs button','#app .pswf-tabs button','#app .ptabs a','#app .subt a','#app .subt button','#app .cm-step','#app .chtabs button','#app .chebar [role="tab"]','#app .act-tabs a','#app .cra-tabs button','#app .cra2-tabs button','#app .pg-tabs button','#app [role="tab"]','[data-sktab]','[data-ps27-htab]','.sk-tab'].join(',');
+var selector=['#app .nav .nv','#app .ps27-tabs button','#app .psbank-subtabs button','#app .psbank-mapping-tabs button','#app .ps27-minitabs button','#app .ps27-kwide-tabs button','#app .pswf-tabs button','#app .ptabs a','#app .subt a','#app .subt button','#app .cm-step','#app .chtabs button','#app .chebar [role="tab"]','#app .act-tabs a','#app .cra-tabs button','#app .cra2-tabs button','#app .pg-tabs button','#app [role="tab"]','[role="tab"]','nav[role="tablist"] button','nav[role="tablist"] a','nav[class*="tabs"] button','nav[class*="tabs"] a','[data-sktab]','[data-ps27-htab]','.sk-tab'].join(',');
 var tooltip=null,active=null,showTimer=0,previousTitle=null,previousDesc=null;
 function targetFor(node){return node&&node.closest?node.closest(selector):null;}
 function hide(){
