@@ -542,18 +542,23 @@ function mount(){
  Docs.hydratePortfolio?.(root);
  root.addEventListener('click',onClick);
  root.addEventListener('change',onChange);
- root.querySelector('[data-bank-search]')?.addEventListener('input',e=>{
-  const b=store(),v=e.target.value,pos=e.target.selectionStart;b.search=v;saveUI();
-  const r=document.querySelector('[data-bank-search]');if(r){r.focus();r.setSelectionRange(pos,pos)}
- });
- root.querySelector('[data-scope-search]')?.addEventListener('input',e=>{
-  Scope.bank().map.q=e.target.value;const at=e.target.selectionStart;saveUI();
-  const n=document.querySelector('[data-scope-search]');if(n){n.focus();n.setSelectionRange(at,at)}
- });
- root.querySelector('[data-scope-history-search]')?.addEventListener('input',e=>{
-  const st=Scope.bank();st.historySearch=e.target.value;const at=e.target.selectionStart;saveUI();
-  const n=document.querySelector('[data-scope-history-search]');if(n){n.focus();n.setSelectionRange(at,at)}
- });
+ // Search fields share a delayed refresh so rerendering never steals focus mid-word.
+ const liveSearch=(selector,update)=>{
+  const field=root.querySelector(selector);if(!field)return;
+  field.addEventListener('input',ev=>{
+   const input=ev.currentTarget,value=input.value,pos=input.selectionStart;
+   update(value);save();
+   clearTimeout(window.__mtPsBankSearchTimer);
+   window.__mtPsBankSearchTimer=setTimeout(()=>{
+    render();
+    const replacement=document.querySelector('#view .pswf '+selector);
+    if(replacement){replacement.focus({preventScroll:true});try{replacement.setSelectionRange(pos,pos)}catch(_){}}
+   },260);
+  });
+ };
+ liveSearch('[data-bank-search]',v=>{store().search=v;store().bankPage=1;});
+ liveSearch('[data-scope-search]',v=>{Scope.bank().map.q=v;});
+ liveSearch('[data-scope-history-search]',v=>{Scope.bank().historySearch=v;});
 }
 
 /* Reusable column sorting for all regular data tables in Modul Transformasi.
