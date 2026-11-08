@@ -283,4 +283,5 @@ function open(mode){
 }
 B.page=page;B.mount=mount;B.open=open;B.version='20261108-six-step-carryover-full-wbs-rkmk';
 window.MT_PS_WORKFLOW={carrySelected,cloneProgram,syncWbs,navigate,version:B.version};
+if(typeof VIEW!=='undefined'&&VIEW==='project-selection'&&ME)render();
 })();
