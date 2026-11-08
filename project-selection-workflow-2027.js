@@ -47,6 +47,7 @@ function cloneProgram(src,from,to){
  p.psCarry={sourceId:src.id,sourceAkr:src.akr,sourceYear:from,createdAt:new Date().toISOString(),reviewed:false};
  p.psSnapshots=[];p.psSelectedProjectIds=[];delete p.psFinalizedAt;delete p.psFinalizedBy;delete p.psWbsSynced;
  p.psProjects=sourceProjects(src,from).map(x=>{x.sourceProjectId=x.id;x.id=uid('proj');x.included=x.included!==false;x.status='Usulan';if(x.start)x.start=shiftDate(x.start,from,to);if(x.goLive)x.goLive=shiftDate(x.goLive,from,to);return x});
+ window.MT_PS_SCOPE?.normalizeProjectCodes?.(p);
  /* Carry-over copies the project directory, not historical WBS. Plan new WBS in Project Management. */
  p.psWbsDraft=[];p.psCarry.wbsNotCarried=true;
  const ch=foundCharter(src,from);
