@@ -64,18 +64,42 @@ function deleteConcept(p){
  if(typeof window.MT_PS_CONFIRM==='function')window.MT_PS_CONFIRM('Hapus Konsep Program?', 'Hapus "'+p.nama+'"? Seluruh isian usulan tahun ini akan dihapus. Program yang sudah ditetapkan tidak dapat dihapus.',perform,'danger');
  else if(window.confirm('Hapus konsep program "'+p.nama+'"?'))perform();
 }
+/* Project Management closure records are stored at p.closing[projectKey] with st='Ditutup'.
+   WBS history can remain non-archived AFTER a valid project closing decision. */
+function archiveReadiness(p){
+ const recs=Object.entries(p.closing||{}).filter(([key])=>{
+  try{return decodeURIComponent(String(key).split('|')[0]||'')===String(p.akr)}catch(_){return false}
+ });
+ const matchProject=x=>{
+  if(x.psClosure?.approved||x.psClosedAt||x.psClosureStatus==='Ditutup')return true;
+  const name=String(x.name||x.n||'').trim().toLowerCase();if(!name)return false;
+  const matched=recs.filter(([key])=>{
+   try{return decodeURIComponent(String(key).split('|')[1]||'').trim().toLowerCase()===name}catch(_){return false}
+  });
+  return matched.length>0&&matched.every(([,c])=>c?.st==='Ditutup');
+ };
+ const projects=p.psProjects||[],unclosed=projects.filter(x=>!matchProject(x));
+ const wbsPresent=(S.wbs||[]).some(w=>w.prog===p.akr&&!w.arsip);
+ let units=[];try{if(typeof tpUnits==='function')units=tpUnits(p)||[]}catch(_){}
+ const allPmClosed=units.length?units.every(x=>{
+  const key=typeof projectKey==='function'?projectKey(p.akr,x.n,x.sub||''):[p.akr,x.n,x.sub||''].map(encodeURIComponent).join('|');
+  return p.closing?.[key]?.st==='Ditutup';
+ }):recs.length>0&&recs.every(([,c])=>c?.st==='Ditutup');
+ const projectAllClosed=projects.length>0&&!unclosed.length;
+ return {unclosed,wbsPresent,hasClosure:allPmClosed||projectAllClosed,
+  blocked:unclosed.length>0||(wbsPresent&&!allPmClosed&&!projectAllClosed)};
+}
 function archiveProgram(p){
  if(!canManage(p)||labelStatus(p)==='Arsip'){toast('Program tidak dapat diarsipkan.');return}
- const activeWbs=(S.wbs||[]).some(w=>w.prog===p.akr&&!w.arsip);
- const unclosed=(p.psProjects||[]).filter(x=>!['Selesai','Ditutup','Dihentikan','Arsip'].includes(String(x.status||''))&&!x.psClosedAt&&!x.psClosure?.approved);
- if(activeWbs||unclosed.length){toast('Penutupan proyek harus diselesaikan terlebih dahulu. Masih ada WBS aktif atau '+unclosed.length+' proyek yang belum ditutup.');return}
+ const readiness=archiveReadiness(p);
+ if(readiness.blocked){toast('Proses penutupan proyek belum selesai: '+readiness.unclosed.length+' proyek belum ditutup atau dokumen penutupan PMO belum disetujui.');return}
  const d=document.createElement('div');d.className='psbank-overlay psbank-archive-overlay';
  d.innerHTML='<section class="psbank-dialog psbank-archive-dialog" role="dialog" aria-modal="true" aria-label="Arsipkan Program">'+
   '<header><div><b>Arsipkan Program</b><small>'+E(p.kode||p.akr)+' · '+E(p.nama)+'</small></div><button type="button" data-archive-close aria-label="Tutup">✕</button></header>'+
   '<main class="psbank-dialogbody"><p class="psbank-archive-note">Status Arsip hanya dapat diberikan setelah proses penutupan proyek/program selesai. Program tetap tercatat dalam riwayat dan tidak akan dihapus.</p>'+
   '<div class="psbank-archive-form"><label>Alasan Penutupan <span aria-hidden="true">*</span><textarea rows="3" data-archive-reason placeholder="Jelaskan alasan program ditutup, dihentikan, atau diganti" required></textarea></label>'+
   '<label>Nomor / Tautan Dokumen Penutupan <span aria-hidden="true">*</span><input type="text" data-archive-evidence placeholder="Nomor dokumen, referensi keputusan, atau tautan bukti" required></label>'+
-  '<small>Pastikan tidak ada WBS aktif atau proyek yang belum diselesaikan melalui proses penutupan.</small><p class="psbank-archive-error" role="alert" hidden></p></div></main>'+
+  '<small>Pastikan penutupan seluruh proyek disetujui melalui Project Management → Penutupan. Data WBS historis tetap dipertahankan.</small><p class="psbank-archive-error" role="alert" hidden></p></div></main>'+
   '<footer><span>Histori program dan output K-Wide terdahulu tetap tersimpan.</span><div><button type="button" class="btn" data-archive-close>Batal</button><button type="button" class="btn pri" data-archive-confirm>Arsipkan Program</button></div></footer></section>';
  (document.querySelector('#app')||document.body).appendChild(d);
  const close=()=>d.remove();
@@ -86,9 +110,8 @@ function archiveProgram(p){
   const evidence=d.querySelector('[data-archive-evidence]').value.trim();
   const err=d.querySelector('.psbank-archive-error');
   if(!reason||!evidence){err.textContent='Alasan dan referensi dokumen penutupan wajib diisi.';err.hidden=false;return}
-  if((S.wbs||[]).some(w=>w.prog===p.akr&&!w.arsip)||
-    (p.psProjects||[]).some(x=>!['Selesai','Ditutup','Dihentikan','Arsip'].includes(String(x.status||''))&&!x.psClosedAt&&!x.psClosure?.approved)){
-   err.textContent='Terdapat WBS aktif atau proyek yang belum ditutup. Lakukan proses penutupan terlebih dahulu.';err.hidden=false;return;
+  if(archiveReadiness(p).blocked){
+   err.textContent='Penutupan proyek belum selesai atau belum mendapat status Ditutup pada menu Project Management → Penutupan.';err.hidden=false;return;
   }
   p.psListStatus='Arsip';p.psArchivedAt=new Date().toISOString();p.psArchivedBy=ME?.email||'';
   p.psArchiveReason=reason;p.psArchiveEvidence=evidence;p.psArchivedFromStatus=p.psStatus;
