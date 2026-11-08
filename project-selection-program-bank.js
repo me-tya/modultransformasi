@@ -13,7 +13,7 @@ const all=()=>S.programs||[];
 const get=id=>all().find(p=>String(p.id)===String(id));
 const active=()=>I.programs();
 const store=()=>{S.ui.psBank=S.ui.psBank||{};const b=S.ui.psBank;b.tab=b.tab||'bank';b.names=b.names||{};b.check=b.check||[];b.filterYear=b.filterYear||'all';b.search=b.search||'';b.wtab=b.wtab||'identity';return b;};
-const current=()=>get(store().workspace)||I.pickedProgram()||active()[0]||null;
+const current=()=>{const p=get(store().workspace);return p&&+p.psYear===year()?p:I.pickedProgram()||active()[0]||null};
 function historyYears(p){
  if(p.psYear)return [+p.psYear];
  const start=+p.mulai||+(String(p.periode||'').match(/20\d{2}/)||[])[0]||2026;
@@ -30,7 +30,7 @@ function records(){
  return all().flatMap(p=>historyYears(p).map(y=>({p,year:y,key:String(p.id)+':'+y}))).sort((a,b)=>b.year-a.year||String(a.p.nama||'').localeCompare(String(b.p.nama||''),'id'));
 }
 function labelStatus(p){
- return p.arsip||p.status==='Arsip'||p.psStatus==='Arsip'?'Arsip':p.psDraft&&(!p.psCarry||p.psYear>2026)?'Baru':'Legacy';
+ return p.arsip||p.status==='Arsip'||p.psStatus==='Arsip'?'Arsip':p.psCarry?'Legacy':p.psDraft?'Baru':'Legacy';
 }
 function bank(){
  const b=store(),q=String(b.search||'').toLowerCase(),rows=records().filter(x=>(b.filterYear==='all'||+b.filterYear===x.year)&&[x.p.nama,x.p.kode,x.p.uic,x.p.akr].join(' ').toLowerCase().includes(q)),to=year();
