@@ -81,3 +81,13 @@ test('Navigation and help focus on workflow; prioritization formula lives in che
  assert.equal(m.S.ui.psFlow.tab,'rkmk');
  assert.match(m.app.page(),/Pilih program untuk menyusun Draft RKMK/);
 });
+
+test('Historical carried WBS remains review-only even if present in older stored programs',()=>{
+ const m=boot(),copy=m.api.cloneProgram(m.p,2026,2027);
+ m.S.programs.push(copy);copy.psStatus='Ditetapkan';copy.psDraft=false;
+ copy.psSelectedProjectIds=copy.psProjects.map(x=>x.id);
+ copy.psWbsDraft=[{k:'OLD-COPY-1',id:'OLD-COPY-1',prog:copy.akr,p:[copy.akr,'Legacy','e-Perjadin'],psCarryDraft:true,psSourceWbs:'OA-11',s:'2027-01-01',f:'2027-10-31',rm:0,v:0}];
+ assert.equal(m.api.syncWbs(copy),0,'Old-year WBS must never be automatically activated');
+ assert.equal(m.S.wbs.length,2);
+ assert.ok(copy.psWbsDraft.length===1,'Keep legacy draft for explicit review rather than deleting it');
+});
