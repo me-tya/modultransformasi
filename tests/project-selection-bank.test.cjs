@@ -856,3 +856,47 @@ test('Setahun displays all TW 1–4 per Executive Dashboard module; quarterly se
  assert.match(quarterly,/TW 4 2027/);
  assert.doesNotMatch(ctx.window.__dbtest.dbDetail([{p:prog.p,mods:[module]}],4),/data-act="dxMod"/);
 });
+
+test('Program Word/PDF previews are hydrated from exactly the downloadable document engines',()=>{
+ const m=boot();m.S.ui.psBank={doc:{format:'word',sections:['identity','case'],cover:true,toc:true,sign:false,annex:false,slide:0}};
+ const word=m.docs.documentPreview(m.target);
+ assert.match(word,/data-doc-actual="program"/);
+ assert.match(word,/Pratinjau awal dokumen/);
+ const src=source['project-selection-documents.js'];
+ assert.match(src,/await mtRptDocx\(model\);if\(!alive\(\)\)return false/);
+ assert.match(src,/await exportFormalPdf\(model,'', \{preview:true\}\)/);
+ assert.match(src,/await window\.docx\.renderAsync\(blob,target,null/);
+ assert.match(src,/async function exportFormalPdf\(model,file,\{preview=false\}=\{\}\)/);
+ assert.match(src,/if\(preview\)return pdf\.output\('blob'\)/);
+ assert.match(source['project-selection-program-bank.js'],/Docs\.hydrateProgram\?\.\(area,p\)/);
+ assert.match(source['project-selection-program-bank.js'],/Docs\.hydratePortfolio\?\.\(root\)/);
+ m.S.ui.psBank.doc.format='pdf';
+ assert.match(m.docs.documentPreview(m.target),/data-doc-actual="program" data-doc-format="pdf"/);
+ const portfolio=readFileSync('project-selection-documents.js','utf8');
+ assert.match(portfolio,/actualPreviewShell\('portfolio',d\.format/);
+});
+test('Program PPTX preview and export share cover, slide order, content and footer',()=>{
+ const m=boot();
+ m.S.ui.psBank={doc:{format:'pptx',sections:['identity','case'],cover:true,toc:true,sign:false,annex:false,slide:0}};
+ const deck=m.docs.programDeck(m.target);
+ assert.equal(deck[0].kind,'cover');
+ assert.ok(deck.slice(1).every(x=>x.kind==='section'));
+ assert.equal(deck.length,m.docs.slidePages(m.target).length+1);
+ assert.match(m.docs.documentPreview(m.target),/psbank-export-cover/);
+ assert.match(m.docs.documentPreview(m.target),/Slide 1 \/ \d+/);
+ m.S.ui.psBank.doc.slide=1;
+ assert.match(m.docs.documentPreview(m.target),/psbank-export-section/);
+ assert.match(m.docs.documentPreview(m.target),new RegExp(deck[1].title));
+ m.S.ui.psBank.doc.cover=false;
+ assert.equal(m.docs.programDeck(m.target).length,m.docs.slidePages(m.target).length);
+ const src=source['project-selection-documents.js'];
+ assert.match(src,/const deck=programDeck\(p\),count=deck\.length/);
+ assert.match(src,/return programSlideHtml\(p,slide,n,slides\.length\|\|1,version\)/);
+ assert.match(src,/const cards=page\.rows\|\|\[\],cols=2/);
+});
+test('Project Management planning Word preview renders actual DOCX instead of separate HTML',()=>{
+ const src=readFileSync('charter-planning-report.js','utf8');
+ assert.match(src,/data-doc-actual="project"/);
+ assert.match(src,/window\.MT_PS_DOC\.showActualDocumentPreview\(ov,model,'word'\)/);
+ assert.match(src,/view\.hidden=!ok;frame\.hidden=!!ok/);
+});
