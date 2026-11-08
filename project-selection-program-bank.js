@@ -158,7 +158,8 @@ function editForm(p,tab,y=year()){
 function showPreview(key,initialTab='identity',startEdit=false){
  const rec=records().find(x=>x.key===key);if(!rec)return;
  const p=rec.p,d=document.createElement('div');d.className='psbank-overlay';
- const b=store();const isTarget=rec.year===year()&&active().some(x=>x.id===p.id);
+ const b=store();b.doc=b.doc||{};b.doc.format='word';b.doc.slide=0;
+ const isTarget=rec.year===year()&&active().some(x=>x.id===p.id);
  const editable=isTarget&&can(p);
  b.preview={key,tab:initialTab,edit:!!startEdit&&editable,dirty:false};
  const tabs=isTarget?STEPS.filter(x=>x[0]!=='review'):STEPS.filter(x=>x[0]!=='docs');
