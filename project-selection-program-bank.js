@@ -738,3 +738,16 @@ A.page=page;A.mount=mount;A.version='20261109-project-selection-ui-v7';
 window.MT_PS_BANK_CORE={records,bank,detail,usulan,addOne,bulk,openCarry,codeFor,programStatus:labelStatus,syncProgramStatuses,showPreview,editablePaper:editForm,openDetailTab:tab=>{const p=current();if(p)showPreview(String(p.id)+':'+year(),tab)},current,openWorkspace,version:A.version};
 if(typeof VIEW!=='undefined'&&VIEW==='project-selection'&&ME)render();
 })();
+
+/* Global navigation help is loaded from this shared, app-wide bundle.
+ * Project Selection scripts are present on all Modul Transformasi routes. */
+(function(){
+ 'use strict';
+ if(typeof window==='undefined'||typeof document==='undefined'||window.MT_MENU_TOOLTIP_LOADER)return;
+ if(!document.createElement||!document.head||typeof document.head.appendChild!=='function')return;
+ window.MT_MENU_TOOLTIP_LOADER=true;
+ var script=document.createElement('script');
+ script.src='ui-menu-tooltips.js?v=20261109-function-boundaries-v1';
+ script.async=true;
+ document.head.appendChild(script);
+})();
