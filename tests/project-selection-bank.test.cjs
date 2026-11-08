@@ -32,6 +32,7 @@ test('Assets are loaded in correct order and compile as valid JavaScript',()=>{
 });
 test('Bank across all years shows requested columns and no Program yang dikerjakan selector',()=>{
  const m=boot(),html=m.app.page();
+ assert.match(html,/Riwayat Program/);
  assert.match(html,/Daftar Program/);
  assert.match(html,/data-bank-checkall/);
   assert.match(html,/data-bank-check=/);
@@ -47,7 +48,7 @@ test('Bank across all years shows requested columns and no Program yang dikerjak
 test('Detail Program removes duplicate workspace and exposes inline versioned document builder',()=>{
  const m=boot();m.S.ui.psBank={tab:'detail',wtab:'docs'};
  const html=m.app.page();
- assert.match(html,/Detail Program/);
+ assert.match(html,/<h3>Daftar Program · 2027<\/h3>/);
  assert.match(html,/data-bank-detailrow/);
  assert.match(html,/Buat Dokumen Portofolio/);
  assert.doesNotMatch(html,/Workspace Program/);
@@ -561,15 +562,16 @@ test('Detail Program action icons distinguish draft and established programs',()
  m.S.ui.psBank={tab:'detail'};
  let html=m.bank.detail();
  assert.match(html,/psbank-baru/);
- assert.match(html,/Draf usulan/);
+ assert.doesNotMatch(html,/Draf usulan|Referensi historis|psbank-phase/);
  assert.match(html,/data-bank-doc="tgt-non"/);
  assert.match(html,/data-bank-edit-doc="tgt-non"/);
+ assert.match(html,/data-bank-upload="tgt-non"/);
  assert.match(html,/data-bank-map="tgt-non"/);
  assert.doesNotMatch(html,/>Pemetaan<\/button>/);
  m.target.psStatus='Ditetapkan';
  html=m.bank.detail();
- assert.match(html,/psbank-phase established/);
- assert.match(html,/Sudah ditetapkan/);
+ assert.doesNotMatch(html,/psbank-phase|Sudah ditetapkan/);
+ assert.match(html,/psbank-baru/);
 });
 test('Auto-save on program detail tab changes persists edit state and no discard warning',()=>{
  const sourceCode=source['project-selection-program-bank.js'];
@@ -693,4 +695,53 @@ test('No header year selector, compact spacing and no nested vertical bank scrol
  assert.match(unified,/\.ps27 \.ps27-filter\.ps27-filter-panel\{margin:0 0 7px!important/);
  assert.match(bank,/psbank-pagination/);
  assert.match(bank,/overflow-y:visible!important/);
+});
+
+
+test('Riwayat Program and Daftar Program have a separate UIC column without inline phase badges',()=>{
+ const m=boot();
+ m.S.ui.psBank={tab:'bank'};
+ const history=m.bank.bank(),detail=m.bank.detail();
+ assert.match(history,/<h3>Riwayat Program<\/h3>/);
+ assert.match(history,/<th>Nama Program<\/th><th>UIC<\/th><th>Kode Program<\/th>/);
+ assert.match(history,/<td><b>Integrated Core System APBN<\/b><\/td><td>BaTii<\/td>/);
+ assert.match(detail,/<h3>Daftar Program · 2027<\/h3>/);
+ assert.match(detail,/<th>Nama Program<\/th><th>UIC<\/th><th>Kode Program<\/th>/);
+ assert.match(detail,/<td><b>Digitalisasi Core Non APBN<\/b><\/td><td>BaTii<\/td>/);
+ assert.doesNotMatch(detail,/psbank-phase|Draf usulan|Referensi historis/);
+ assert.match(detail,/psbank-baru/);
+});
+test('Daftar Program action icons include a working upload before mapping with tooltip',()=>{
+ const m=boot(),detail=m.bank.detail();
+ assert.match(detail,/title="Unggah Dokumen Program"/);
+ assert.match(detail,/aria-label="Unggah Dokumen Program"/);
+ assert.ok(detail.indexOf('data-bank-upload="tgt-non"')<detail.indexOf('data-bank-map="tgt-non"'));
+ assert.match(source['project-selection-program-bank.js'],/function showUploadProgram\(id\)/);
+ assert.match(source['project-selection-program-bank.js'],/if\(btn\.dataset\.bankUpload\)\{showUploadProgram/);
+ assert.match(source['project-selection-program-bank.js'],/Docs\.uploadProgramAttachment\(p,year\(\),file,note\)/);
+ assert.match(source['project-selection-program-bank.js'],/Docs\.confirmSigned\('program',p\.id,year\(\),file/);
+ assert.match(source['project-selection-program-bank.js'],/Docs\.openSignedProof\(ev\)/);
+ const css=readFileSync('project-selection-program-bank.css','utf8');
+ assert.match(css,/\.psbank-program-action\.upload/);
+ assert.match(css,/\.psbank-upload-dialog/);
+});
+test('Manual document uploads go to the same ledger but do not advance signed version',async()=>{
+ const m=boot();
+ const db={objectStoreNames:{contains:()=>true},transaction(){
+  const tx={oncomplete:null,onerror:null,objectStore(){return {put(){queueMicrotask(()=>tx.oncomplete?.())}}}};
+  return tx;
+ },close(){}};
+ m.ctx.window.indexedDB={open(){const req={result:db};queueMicrotask(()=>req.onsuccess?.());return req}};
+ const first=await m.docs.uploadProgramAttachment(m.target,2027,{name:'Dokumen_Program.pdf',size:100},'Hasil reviu');
+ const hist=m.docs.history('program',m.target.id,2027);
+ assert.equal(first.version,1);
+ assert.equal(hist.length,1);
+ assert.equal(hist[0].status,'uploaded');
+ assert.equal(hist[0].description,'Hasil reviu');
+ assert.equal(m.docs.nextVersion('program',m.target.id,2027),1);
+ await assert.rejects(m.docs.uploadProgramAttachment(m.target,2027,{name:'virus.exe',size:123}),/Format dokumen/);
+ await assert.rejects(m.docs.uploadProgramAttachment(m.target,2027,{name:'laporan.docx',size:30*1024*1024}),/25 MB/);
+ const html=m.docs.versionPanel('program',m.target.id,2027);
+ assert.match(html,/Dokumen Program diunggah/);
+ assert.match(html,/data-doc-proof-open=/);
 });
