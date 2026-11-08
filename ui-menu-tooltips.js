@@ -80,6 +80,14 @@ var CHARTER={
  'isi':['Mengisi isi charter dan keluaran yang direncanakan.','Belum menggantikan keputusan pengesahan.'],
  'ms':['Mengisi milestone, risiko, dan dependensi awal.','Bukan pencatatan realisasi WBS.']
 };
+var CRA={
+ 'create':['Menyusun konfigurasi, bank pertanyaan, dan rancangan survei kesiapan.','Survei yang masih konsep tidak mengumpulkan respons sampai diaktifkan.'],
+ 'active':['Melihat survei aktif dan memantau respons.','Persentase respons tidak otomatis menunjukkan kesiapan memadai.'],
+ 'analytics':['Menganalisis skor, dimensi kesiapan, dan kesenjangan.','Hasil survei merupakan masukan intervensi, bukan keputusan go-live.'],
+ 'actions':['Menyusun rencana aksi dari kesenjangan kesiapan.','Rencana aksi belum berarti tindak lanjut telah dilaksanakan.'],
+ 'compare':['Membandingkan hasil survei kesiapan antarperiode.','Perbandingan memerlukan cakupan responden dan instrumen yang sebanding.'],
+ 'history':['Melihat survei yang telah ditutup beserta hasil terdahulu.','Riwayat adalah arsip; bukan tempat mengubah respons lampau.']
+};
 var ACTIVITY={
  'daftar':['Menampilkan dan mengelola daftar kegiatan transformasi.','Status kegiatan bukan otomatis realisasi output proyek.'],
  'overview':['Melihat rekap agregat dan tren aktivitas.','Angka mengikuti daftar kegiatan yang tercatat.'],
@@ -147,6 +155,10 @@ function lookup(el,label){
  if(data.act==='actTab')return ACTIVITY[data.v]||null;
  if(data.act==='dxTab')return ({peta:['Melihat sebaran modul dan capaian per triwulan.','Capaian bersumber dari data WBS yang tercatat.'],perhatian:['Menemukan proyek yang perlu perhatian atau terlambat.','Indikator bukan keputusan penutupan atau perubahan baseline.'],ringkas:ROUTES.dashboard})[data.v]||null;
  if(data.act==='chtab'||data.act==='chws')return CHARTER[data.v]||null;
+ if(data.cra2==='tab')return CRA[data.v]||null;
+ if(data.pg==='tab')return data.val==='program'
+  ?['Melihat pengelola dan penanggung jawab program transformasi.','Kewenangan program tetap mengikuti penugasan resmi dan hak akses.']
+  :['Melihat daftar personel dan ketersediaan tim pengelola.','Data personel bukan persetujuan penugasan atau perubahan struktur organisasi.'];
  if(data.ps27Htab!==undefined||data.sktab!==undefined)return PLAIN[n]||['Membuka bagian '+label+' pada panduan/cheatsheet.','Informasi merupakan referensi penggunaan dan tidak mengubah data.'];
  if(el.closest('.pmo-journey')){
   var groups={'overview':ROUTES['pmo-siklus'],'workspace proyek':ROUTES['pmo-program'],'perencanaan':['Membuka dokumen dan penyusunan WBS tahap perencanaan proyek.','Dokumen masih memerlukan pengesahan; WBS pelaksanaan tidak berubah otomatis.'],'pelaksanaan':['Memantau WBS, bukti, narasi, dan Change Request selama pelaksanaan.','Perubahan baseline harus melalui proses persetujuan.'],'pemantauan':['Memantau milestone, risiko, capaian, serta koordinasi pelaporan.','Pemantauan tidak mengganti validasi WBS atau bukti.'],'penutupan':ROUTES['pmo-penutupan'],'pascaproyek':ROUTES['pmo-pascaproyek'],'referensi':ROUTES['pmo-referensi']};
@@ -168,7 +180,7 @@ function lookup(el,label){
  if(el.closest('[role="tablist"]')||el.getAttribute('role')==='tab')return PLAIN[n]||null;
  return null;
 }
-var selector=['#app .nav .nv','#app .ps27-tabs button','#app .psbank-subtabs button','#app .psbank-mapping-tabs button','#app .ps27-minitabs button','#app .ps27-kwide-tabs button','#app .pswf-tabs button','#app .ptabs a','#app .subt a','#app .subt button','#app .cm-step','#app .chtabs button','#app .chebar [role="tab"]','#app .act-tabs a','#app .cra-tabs button','#app [role="tab"]','[data-sktab]','[data-ps27-htab]','.sk-tab'].join(',');
+var selector=['#app .nav .nv','#app .ps27-tabs button','#app .psbank-subtabs button','#app .psbank-mapping-tabs button','#app .ps27-minitabs button','#app .ps27-kwide-tabs button','#app .pswf-tabs button','#app .ptabs a','#app .subt a','#app .subt button','#app .cm-step','#app .chtabs button','#app .chebar [role="tab"]','#app .act-tabs a','#app .cra-tabs button','#app .cra2-tabs button','#app .pg-tabs button','#app [role="tab"]','[data-sktab]','[data-ps27-htab]','.sk-tab'].join(',');
 var tooltip=null,active=null,showTimer=0,previousTitle=null,previousDesc=null;
 function targetFor(node){return node&&node.closest?node.closest(selector):null;}
 function hide(){
