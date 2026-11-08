@@ -6,7 +6,7 @@ const E=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').repla
 const X=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
 const STEPS=[['identity','Identitas'],['case','Business Case'],['benefits','Manfaat'],['stakeholders','Stakeholder'],['risks','Risiko'],['governance','Tata Kelola']];
 const year=()=>+S.ui.psSelectedYear||+S.ui.tahun||2026;
-const cfg=()=>{S.ui.psBank=S.ui.psBank||{};const b=S.ui.psBank;b.doc=b.doc||{format:'word',sections:STEPS.map(x=>x[0]),cover:true,toc:true,sign:false,annex:true,slide:0};b.doc.sections=b.doc.sections||STEPS.map(x=>x[0]);return b.doc};
+const cfg=()=>{S.ui.psBank=S.ui.psBank||{};const b=S.ui.psBank;b.doc=b.doc||{format:'word',sections:STEPS.map(x=>x[0]),cover:true,toc:true,sign:true,annex:true,slide:0};b.doc.sections=b.doc.sections||STEPS.map(x=>x[0]);return b.doc};
 const title=k=>STEPS.find(s=>s[0]===k)?.[1]||(k==='review'?'Reviu':k);
 
 /* Versi resmi terkunci hanya sesudah PDF hasil TTE diunggah sebagai bukti.
@@ -603,7 +603,7 @@ function projectFields(x,section){
 function portCfg(){
  S.ui.psBank=S.ui.psBank||{};
  const mode=projectMode(),key=mode?'proposalDocument':'portfolioDoc';
- const d=S.ui.psBank[key]||(S.ui.psBank[key]={format:'word',selected:[],sections:(mode?PROJECT_SECTIONS:STEPS).map(x=>x[0]),toc:true,slide:0,initialized:false});
+ const d=S.ui.psBank[key]||(S.ui.psBank[key]={format:'word',selected:[],sections:(mode?PROJECT_SECTIONS:STEPS).map(x=>x[0]),toc:true,sign:true,slide:0,initialized:false});
  if(!d.initialized){d.selected=portPrograms().map(p=>String(p.id));d.initialized=true}
  return d;
 }
