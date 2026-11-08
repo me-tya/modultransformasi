@@ -215,7 +215,7 @@ function programAccordion(programs,on){
  const state=mapState();
  return '<div class="psbank-all-programs psbank-program-accordion">'+programs.map(p=>{
   const rows=proposalRows(p),expanded=!!state.programOpen[p.id];
-  const head='<summary data-scope-program-toggle="'+E(p.id)+'"><span class="psbank-chevron">'+(expanded?'▾':'▸')+'</span><span class="psbank-accordion-name"><b>'+E(p.nama)+'</b><small>'+E(p.kode||p.akr)+' · '+E(p.uic||'—')+'</small></span><span class="psbank-accordion-count">'+rows.length+' proyek</span></summary>';
+  const head='<summary data-scope-program-toggle="'+E(p.id)+'"><span class="psbank-chevron" aria-hidden="true">▸</span><span class="psbank-accordion-name"><b>'+E(p.nama)+'</b><small>'+E(p.kode||p.akr)+' · '+E(p.uic||'—')+'</small></span><span class="psbank-accordion-count">'+rows.length+' proyek</span></summary>';
   const body=(on==='mapping'||on==='docs')?
    '<div class="psbank-accordion-body"><div class="psbank-accordion-projects">'+(rows.length?rows.map(x=>'<div><b>'+E(x.name)+'</b><small>'+E(currentCode(p,x))+' · '+E(x.uic||p.uic||'—')+'</small></div>').join(''):'<p>Belum ada proyek di program ini.</p>')+'</div><div class="psbank-accordion-actions"><button type="button" class="btn btn-outline" data-scope-choose="'+E(p.id)+'">Buka Program</button></div></div>':
    '<div class="psbank-accordion-body"><div class="psbank-tablewrap psbank-accordion-tablewrap"><table class="psbank-table"><thead><tr><th>Kode Proyek</th><th>Nama Proyek / Modul</th><th>UIC</th><th>Kategori</th><th>Status</th><th>Aksi</th></tr></thead><tbody>'+
