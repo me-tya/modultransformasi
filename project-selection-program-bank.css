@@ -239,3 +239,13 @@
 #app table thead th[data-sort-active="desc"]:after{content:" ↓";color:#c48b02;font-size:12px}
 @media(max-width:1050px){.psbank-dialogbody .psbank-docbuilder,#app .psbank-portfolio-doc .psbank-docbuilder{grid-template-columns:1fr}.psbank-dialogbody .psbank-docsettings{max-height:260px}}
 @media(max-width:680px){.psbank-editgrid,#app .psbank-summary{grid-template-columns:1fr 1fr}.psbank-carry-item{grid-template-columns:1fr}.psbank-overlay:not(.psbank-carry-overlay) .psbank-dialog{width:99vw;height:95vh}}
+
+#app .psbank-mapping-summary{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 0 11px;color:#536c84;font-size:11.5px}
+#app .psbank-mapping-summary b{color:#17436e}
+#app .psbank-inputsummary{margin-top:11px;background:#fff;border:1px solid #dde7f0;border-radius:10px}
+#app .psbank-inputsummary>summary{padding:11px 13px;font:750 12px 'Inter',sans-serif;color:#17436a;cursor:pointer}
+#app .psbank-inputsummary-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:9px;padding:11px}
+#app .psbank-inputsummary article{min-width:0;border:1px solid #e0e9f2;background:#fafcfe;padding:11px;border-radius:8px}
+#app .psbank-inputsummary article b{font-size:12px;color:#153d64}
+#app .psbank-inputsummary article small{display:block;color:#768ca2;margin:4px 0 9px;font-size:10px}
+#app .psbank-inputsummary article p{margin:5px 0;font-size:11px;line-height:1.45;color:#3d5470;overflow-wrap:anywhere}
