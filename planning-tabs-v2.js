@@ -133,4 +133,4 @@ css.textContent=`
 if(typeof VIEW!=='undefined'&&VIEW==='pmo-charter'&&typeof ME!=='undefined'&&ME)render();
 })();
 /* Document Experience v3 — loaded after all existing PMO and Project Selection plugins. */
-(function(){var script=document.createElement('script');script.src='document-experience-v3.js?v=20261108-1';script.defer=true;document.head.appendChild(script)})();
+(function(){var script=document.createElement('script');script.src='document-experience-v3.js?v=20261108-2';script.defer=true;document.head.appendChild(script)})();
