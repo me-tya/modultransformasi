@@ -292,7 +292,57 @@ async function onAction(btn){
   }else try{await dkPptx(D);toast('PPTX '+D.file+'.pptx berhasil dibuat.')}catch(err){toast('Ekspor gagal: '+(err.message||err))}
  }
 }
+async function showProofPreview(btn){
+ const id=btn.dataset.docProofPreview,name=String(btn.dataset.docProofName||'Dokumen Unggahan');
+ const ov=document.createElement('div');ov.className='mt-proof-preview-overlay';
+ ov.innerHTML='<section class="mt-proof-preview-dialog" role="dialog" aria-modal="true" aria-label="Pratinjau dokumen unggahan"><header><div><b>Pratinjau Dokumen Program</b><small>'+E(name)+'</small></div><button type="button" data-mt-proof-close aria-label="Tutup pratinjau">×</button></header><div class="mt-proof-preview-body"><p class="mt-proof-loading">Membaca berkas unggahan lokal…</p></div><footer><small>Pratinjau berasal dari berkas tersimpan pada browser ini.</small><button class="btn" type="button" data-mt-proof-close>Tutup</button></footer></section>';
+ document.body.appendChild(ov);let fileUrl='';
+ const close=()=>{if(fileUrl)URL.revokeObjectURL(fileUrl);ov.remove();document.removeEventListener('keydown',key)};
+ const key=e=>{if(e.key==='Escape'){e.preventDefault();close()}};
+ ov.addEventListener('click',e=>{if(e.target===ov||e.target.closest('[data-mt-proof-close]'))close()});
+ document.addEventListener('keydown',key);
+ const body=ov.querySelector('.mt-proof-preview-body');
+ try{
+  const file=await window.MT_PS_DOC?.readLocalProof?.(id);
+  if(!file)throw new Error('Berkas lokal tidak ditemukan. Periksa perangkat tempat unggahan disimpan.');
+  if(!body.isConnected)return;
+  const ext=(name.split('.').pop()||'').toLowerCase();
+  if(ext==='pdf'||/pdf/i.test(file.type||'')){
+   fileUrl=URL.createObjectURL(file);
+   body.replaceChildren();
+   const frame=document.createElement('iframe');frame.title='Pratinjau PDF '+name;frame.src=fileUrl+'#toolbar=1';
+   frame.className='mt-proof-preview-frame';body.appendChild(frame);
+  }else if(ext==='docx'){
+   if(!window.docx?.renderAsync)await chLib('https://cdn.jsdelivr.net/npm/docx-preview@0.4.1/dist/docx-preview.min.js',()=>!!window.docx?.renderAsync);
+   if(!body.isConnected)return;
+   body.replaceChildren();const pages=document.createElement('div');pages.className='mt-proof-docx-pages';body.appendChild(pages);
+   await window.docx.renderAsync(file,pages,null,{breakPages:true,useBase64URL:true,renderHeaders:true,renderFooters:true});
+  }else if(ext==='pptx'){
+   if(!window.JSZip)await chLib('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',()=>!!window.JSZip);
+   const zip=await JSZip.loadAsync(file);
+   const files=Object.keys(zip.files).filter(p=>/^ppt\/slides\/slide\d+\.xml$/.test(p)).sort((a,b)=>Number(a.match(/slide(\d+)/)?.[1])-Number(b.match(/slide(\d+)/)?.[1]));
+   if(!body.isConnected)return;
+   body.replaceChildren();
+   const note=document.createElement('p');note.className='mt-proof-preview-note';note.textContent='Pratinjau isi PPTX per slide (teks); bukan render visual PowerPoint.';body.appendChild(note);
+   for(const [i,path] of files.slice(0,80).entries()){
+    const xml=await zip.file(path).async('string');if(!body.isConnected)return;
+    const dom=new DOMParser().parseFromString(xml,'application/xml');
+    const contents=[...dom.getElementsByTagNameNS('*','t')].map(x=>x.textContent.trim()).filter(Boolean);
+    const slide=document.createElement('section');slide.className='mt-proof-slide';
+    const h=document.createElement('b');h.textContent='Slide '+(i+1);slide.appendChild(h);
+    const p=document.createElement('p');p.textContent=contents.join(' · ')||'Tidak ada teks pada slide ini';slide.appendChild(p);body.appendChild(slide);
+   }
+   if(files.length>80){const p=document.createElement('p');p.textContent='Menampilkan 80 slide pertama dari '+files.length+' slide.';body.appendChild(p)}
+  }else throw new Error('Pratinjau hanya mendukung PDF, DOCX, dan PPTX.');
+ }catch(error){
+  if(!body.isConnected)return;
+  body.replaceChildren();
+  const p=document.createElement('p');p.className='mt-proof-preview-error';p.textContent='Pratinjau belum dapat dibuka: '+(error.message||String(error));body.appendChild(p);
+ }
+}
 document.addEventListener('click',ev=>{
+ const proofPreview=ev.target.closest('[data-doc-proof-preview]');
+ if(proofPreview){ev.preventDefault();ev.stopImmediatePropagation();showProofPreview(proofPreview);return}
  const row=ev.target.closest('[data-bank-detailrow],[data-bank-doc],[data-bank-edit-doc],[data-bank-upload]');
  if(row)lastProgramId=row.dataset.bankDetailrow||row.dataset.bankDoc||row.dataset.bankEditDoc||row.dataset.bankUpload||lastProgramId;
  const tb=ev.target.closest('table.pdocs tbody tr');
@@ -498,7 +548,20 @@ const css=document.createElement('style');css.textContent=`
 .psbank-dialogtabs [data-mt-program-charter]{white-space:nowrap}
 .psbank-dialogbody .mt-doc-content{padding:12px 3px}
 .psbank-dialog>footer .mt-doc-actions{justify-content:flex-end}
-table.pdocs tbody tr{cursor:pointer}table.pdocs tbody tr:hover{background:#eef5ff}table.pdocs tbody tr:focus-visible{outline:2px solid #16538a;outline-offset:-2px}\n.mt-row-download{background:#eef5ff;color:#17436c;border:1px solid #cddff4;border-radius:7px;padding:6px 8px;font:700 11px inherit;white-space:nowrap;cursor:pointer}.mt-file-select{display:flex;align-items:center;flex:0 0 auto;padding:6px}.mt-bulk-tools{display:flex;gap:9px;align-items:center;flex-wrap:wrap;font-size:12px}
+table.pdocs tbody tr{cursor:pointer}table.pdocs tbody tr:hover{background:#eef5ff}table.pdocs tbody tr:focus-visible{outline:2px solid #16538a;outline-offset:-2px}\n.mt-proof-preview-overlay{position:fixed;inset:0;z-index:30050;display:flex;justify-content:center;align-items:center;background:rgba(7,26,49,.72);padding:18px;font-family:Inter,sans-serif}
+.mt-proof-preview-dialog{display:flex;flex-direction:column;width:min(1060px,96vw);height:min(90dvh,900px);background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 18px 60px #05182a70}
+.mt-proof-preview-dialog>header{display:flex;align-items:center;justify-content:space-between;background:#0e2e52;color:#fff;padding:15px 21px;min-height:62px}
+.mt-proof-preview-dialog>header b{font-size:16px}.mt-proof-preview-dialog>header small{display:block;color:#bed0e1;font-size:12px;margin-top:4px;overflow-wrap:anywhere}
+.mt-proof-preview-dialog>header button{background:transparent;color:#fff;border:1px solid #8ca9c7;border-radius:8px;width:34px;height:34px;cursor:pointer;font-size:22px}
+.mt-proof-preview-body{flex:1;min-height:0;overflow:auto;background:#e9edf4;padding:18px}
+.mt-proof-preview-frame{width:100%;height:100%;min-height:60vh;border:0;background:#fff}
+.mt-proof-docx-pages{width:100%;overflow:auto}.mt-proof-docx-pages .docx-wrapper{background:transparent}
+.mt-proof-preview-note,.mt-proof-loading,.mt-proof-preview-error{padding:12px 14px;background:#fff;border-radius:8px;color:#294b6c;font-size:12px}
+.mt-proof-slide{background:#fff;border:1px solid #d4dfed;border-radius:9px;padding:14px;margin-bottom:10px;overflow-wrap:anywhere}
+.mt-proof-slide>b{color:#143b68}.mt-proof-slide>p{white-space:pre-wrap;line-height:1.5}
+.mt-proof-preview-dialog>footer{min-height:55px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 16px;border-top:1px solid #dce5ef}
+.mt-proof-preview-dialog>footer small{color:#6b7890;font-size:11px}
+.mt-row-download{background:#eef5ff;color:#17436c;border:1px solid #cddff4;border-radius:7px;padding:6px 8px;font:700 11px inherit;white-space:nowrap;cursor:pointer}.mt-file-select{display:flex;align-items:center;flex:0 0 auto;padding:6px}.mt-bulk-tools{display:flex;gap:9px;align-items:center;flex-wrap:wrap;font-size:12px}
 .mt-bulk-tools button{border:1px solid #c4d5e9;background:#f4f8ff;border-radius:7px;color:#113b65;font-weight:800;padding:7px;cursor:pointer}
 @media(max-width:840px){.mt-doc-grid{grid-template-columns:minmax(0,1fr)}.mt-doc-dialog{width:100%;height:95vh}.mt-doc-actions{justify-content:center}.mt-doc-scroll{padding:10px}}
 `;document.head.appendChild(css);
