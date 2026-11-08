@@ -359,6 +359,19 @@ document.addEventListener('keydown',ev=>{
  }
  if(ev.key==='Escape'&&active&&!active.native&&active.host?.isConnected){active.host.remove();active=null}
 },true);
+/* Deep link aman untuk Peta Menu PM: hanya membuka subtab dari program yang sudah dipilih. */
+window.MT_DOC_EXPERIENCE=Object.assign(window.MT_DOC_EXPERIENCE||{},{
+ openProjectTab:function(tab){
+  const key=String(tab||'asis'),valid=KEYS.some(x=>x[0]===key);
+  if(!valid)return false;
+  const k=String(S.ui.prog||''),c=String(S.ui.chp||'');
+  const p=(S.programs||[]).find(x=>(x.id===k||x.akr===k))||
+   (S.programs||[]).find(x=>x.akr===c);
+  if(!p){toast('Pilih program di tabel Dokumen Proyek, lalu buka tab '+(KEYS.find(x=>x[0]===key)?.[1]||key)+'.');return false}
+  if(active?.host?.isConnected)return false;
+  openProject(p,key,false);return true;
+ }
+});
 function decorate(){
  document.querySelectorAll('table.pdocs tbody tr').forEach(row=>{
   if(row.tabIndex!==0)row.tabIndex=0;
