@@ -269,7 +269,8 @@ function widePanel(){
   '</tbody><tfoot><tr><th colspan="4">TOTAL TW '+q+'</th><th>'+sum[q-1].target+'</th><th>'+sum[q-1].actual+'</th><th>'+(sum[q-1].pct===null?'—':sum[q-1].pct+'%')+'</th></tr></tfoot></table></div>'+
   '<div class="ps27-kwide-foot"><div><strong>'+filled.length+' / '+active.length+' program aktif mempunyai target output.</strong><small>Program berstatus Arsip tidak dimasukkan. Data tahun sebelumnya tetap tersimpan.</small></div>'+
   '<div><button type="button" class="btn" data-ps27="wide-save">Simpan '+(fixed?'Realisasi':'Konsep')+'</button>'+
-   (!fixed?'<button type="button" class="btn pri" data-ps27="wide-finalize" '+(!can()?'disabled':'')+'>Catat Penetapan K-Wide</button>':'<span class="ps27-status">Kontrak telah dicatat</span>')+
+   (!fixed?'<button type="button" class="btn pri" data-ps27="wide-finalize" '+(!can()?'disabled':'')+'>Catat Penetapan K-Wide</button>':
+   '<button type="button" class="btn" data-ps27="wide-revise" '+(!can()?'disabled':'')+'>Revisi Kontrak K-Wide</button><span class="ps27-status">Kontrak telah dicatat</span>')+
   '</div></div></section>';
 }
 function collectWide(root){
@@ -301,7 +302,7 @@ function penetapan(p){
  '<div class="ps27-tablewrap"><table class="ps27-table"><thead><tr><th>Proyek / Modul</th><th>UIC</th><th>Target</th><th>Skor</th><th>Status</th></tr></thead><tbody>'+
  (a.length?a.map(x=>'<tr><td><b>'+E(x.name)+'</b></td><td>'+E(x.uic||p.uic||'—')+'</td><td>'+E(x.goLive||'—')+'</td><td>'+(p.psPrioritize?(I.calc(x,p).score??'Belum lengkap'):'Manual')+'</td><td>'+E(already?'Ditetapkan':'Siap ditetapkan')+'</td></tr>').join(''):'<tr><td colspan="5" class="ps27-center">Belum ada proyek dipilih. Kembali ke Pemetaan/Prioritasi.</td></tr>')+
  '</tbody></table></div><div class="ps27-footer">'+(already?'<span>Program ditetapkan. Susun WBS baru melalui Project Management.</span><button class="btn" data-pswf="reopen">Buka Revisi</button><button class="btn pri" data-ps27="go-wbs">Buka WBS ›</button>':
- '<span>Penetapan proyek mengikuti kontrak kinerja K-Wide yang sudah dicatat. WBS baru disusun setelah penetapan.</span><button class="btn pri" data-pswf="finalize" '+(!can(p)||!a.length||((+p.psYear||yr())>=2027&&wideState().contract.status!=='Ditetapkan')?'disabled':'')+'>Tetapkan Program & Proyek</button>')+'</div></div>';
+ '<span>Penetapan proyek mengikuti kontrak kinerja K-Wide yang sudah dicatat. WBS baru disusun setelah penetapan.</span><button class="btn pri" data-pswf="finalize" '+(!can(p)||!a.length||((+p.psYear||yr())>=2027&&(wideState().contract.status!=='Ditetapkan'||!wideState().contract.programIds?.includes(String(p.id))))?'disabled':'')+'>Tetapkan Program & Proyek</button>')+'</div></div>';
 }
 const RKMK_FIELDS=[['latar','Latar Belakang'],['tujuan','Tujuan / Sasaran'],['kondisi','Kondisi As-is'],['target','Kondisi To-be / Target'],['strategi','Strategi / Terobosan'],['output','Output / Deliverable'],['manfaat','Manfaat / Outcome'],['milestone','Milestone & Jadwal'],['risiko','Risiko & Mitigasi']];
 function rkmk(p){
@@ -399,6 +400,20 @@ function mount(){
    S.ui.ps27WideQuarter=+b.dataset.wideQuarter||1;render();return;
   }
   if(a==='wide-save'){try{collectWide(root);save();render();toast('Target output K-Wide TW '+wideState().quarter+' tersimpan.')}catch(e){toast(e.message||String(e))}return}
+  if(a==='wide-revise'){
+   const d=wideState();if(d.contract.status!=='Ditetapkan'||!can()){toast('Revisi kontrak tidak tersedia.');return}
+   const revise=()=>{
+    d.history=d.history||[];
+    d.history.push({revision:+d.contract.revision||1,contract:clone(d.contract),rows:clone(d.rows),archivedAt:new Date().toISOString()});
+    const prev=d.contract;
+    d.contract={number:'',date:'',link:'',signer:prev.signer||'',status:'Konsep',revision:(+prev.revision||1)+1,previousNumber:prev.number||''};
+    S.ui.ps27WideQuarter=2;save();render();
+    toast('Revisi K-Wide dibuat. Kontrak sebelumnya tersimpan dalam riwayat; lengkapi target dan nomor kontrak revisi.');
+   };
+   if(typeof window.MT_PS_CONFIRM==='function')window.MT_PS_CONFIRM('Buat Revisi Kontrak K-Wide?', 'Kontrak yang telah dicatat akan disimpan sebagai histori, sementara target output tahun berjalan dapat diperbarui melalui revisi.',revise);
+   else if(window.confirm('Buat revisi kontrak K-Wide?'))revise();
+   return;
+  }
   if(a==='wide-finalize'){
    let d;try{d=collectWide(root)}catch(e){toast(e.message||String(e));return}
    const contract=d.contract,active=list().filter(x=>x.psListStatus!=='Arsip'&&!x.arsip);
