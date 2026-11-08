@@ -104,7 +104,7 @@ function filter(p){
   period=f.period||'all',unit=f.unit||'all',role=f.unitRole||'all';
  const statusOf=x=>x.arsip||x.psStatus==='Arsip'?'Arsip':x.psCarry?'Legacy':x.psDraft?'Baru':'Legacy';
  const matchesUnit=x=>{if(!unit||unit==='all')return true;const a=String(x.uic||'').toLowerCase().includes(unit.toLowerCase()),b=String(x.pend||x.psSupportingUic||'').toLowerCase().includes(unit.toLowerCase());return role==='utama'?a:role==='pendukung'?b:a||b};
- const matchesQuarter=x=>{const m=/^TW\s*(\d)$/i.exec(period);if(!m)return true;const ds=(x.psProjects||[]).map(z=>String(z.goLive||z.start||'')).filter(t=>/^\d{4}-\d\d-\d\d/.test(t));return !ds.length||ds.some(t=>Math.ceil(+t.slice(5,7)/3)===+m[1])};
+ const matchesQuarter=x=>{const m=/^TW\s*(\d)$/i.exec(period),ds=(x.psProjects||[]).map(z=>String(z.goLive||z.start||'')).filter(t=>/^\d{4}-\d\d-\d\d/.test(t));if(!ds.length)return true;if(m)return ds.some(t=>Math.ceil(+t.slice(5,7)/3)===+m[1]);if(period==='range'){const from=f.rangeFrom||'',to=f.rangeTo||'';return !from&&!to||ds.some(t=>(!from||t>=from)&&(!to||t<=to))}return true};
  const listOptions=opts.filter(x=>(!q||[x.nama,x.kode,x.akr,x.uic].join(' ').toLowerCase().includes(q))&&(st==='all'||statusOf(x)===st)&&matchesUnit(x)&&matchesQuarter(x));
  const units=[...new Set(opts.flatMap(x=>[x.uic,x.pend||x.psSupportingUic].flatMap(v=>String(v||'').split(/[,;]/).map(k=>k.trim()))).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id'));
  const active=[];
@@ -134,7 +134,7 @@ function filter(p){
  '<label>Peran Unit <select data-ps27-role>'+[['all','Utama/Pendukung'],['utama','UIC Utama'],['pendukung','UIC Pendukung']].map(x=>'<option value="'+x[0]+'" '+(role===x[0]?'selected':'')+'>'+x[1]+'</option>').join('')+'</select></label>'+
  '<label>Status <select data-ps27-status>'+[['all','Semua Status'],['Baru','Baru'],['Legacy','Legacy'],['Arsip','Arsip']].map(x=>'<option value="'+x[0]+'" '+(st===x[0]?'selected':'')+'>'+x[1]+'</option>').join('')+'</select></label>'+
  '<label class="ps27-filter-search">Cari <input type="search" data-ps27-query value="'+E(f.search||'')+'" placeholder="Nama, kode, UIC..."></label>'+
- '</div>'+(period==='range'?'<p class="ps27-filter-notice">Rentang waktu khusus menggunakan filter tahun serta jadwal proyek pada tahap Project Management.</p>':'')+'</div>':'')+'</div>';
+ '</div>'+(period==='range'?'<div class="ps27-filter-range"><label>Dari <input type="date" data-ps27-range-from value="'+E(f.rangeFrom||'')+'"></label><label>Sampai <input type="date" data-ps27-range-to value="'+E(f.rangeTo||'')+'"></label><small>Menampilkan program dengan rencana proyek pada rentang terpilih; program tanpa jadwal tetap ditampilkan.</small></div>':'')+'</div>':'')+'</div>';
 }
 function actionBar(){return '<div class="ps27-actionbar" hidden></div>';}
 function sourcePicker(){
@@ -285,7 +285,7 @@ function mount(){
   if(b.dataset.ps27Usul){ws().usulanSub=b.dataset.ps27Usul;save();render();return}
   if(b.dataset.ps27Remove){toast('Hapus proyek hanya tersedia di Pemetaan Proyek → Usulan Proyek.');return}
   if(b.hasAttribute('data-ps27-reset')){
-   const f=localFilter();Object.assign(f,{search:'',status:'all',program:'',programName:'',unit:'all',unitRole:'all',period:'all',year:String(yr())});
+   const f=localFilter();Object.assign(f,{search:'',status:'all',program:'',programName:'',unit:'all',unitRole:'all',period:'all',rangeFrom:'',rangeTo:'',year:String(yr())});
    if(S.ui.mtSharedFilter?.enabled)Object.assign(S.ui.mtSharedFilter,{search:'',status:'all',program:'',programName:'',unit:'all',unitRole:'all',period:'all',year:String(yr())});
    const st=S.ui.psBank||(S.ui.psBank={});st.filterProgram='';st.detailProgram='';st.search='';st.filterStatus='all';st.filterYear=String(yr());
    save();render();return;
@@ -313,6 +313,8 @@ function mount(){
    if(el.dataset.ps27Status!==undefined){S.ui.psBank=S.ui.psBank||{};setFilterField('status',el.value);save();render();return}
    if(el.dataset.ps27Unit!==undefined){setFilterField('unit',el.value);save();render();return}
    if(el.dataset.ps27Role!==undefined){setFilterField('unitRole',el.value);save();render();return}
+   if(el.dataset.ps27RangeFrom!==undefined){setFilterField('rangeFrom',el.value);save();render();return}
+   if(el.dataset.ps27RangeTo!==undefined){setFilterField('rangeTo',el.value);save();render();return}
   if(el.dataset.ps27Year!==undefined){
     S.ui.psBank=S.ui.psBank||{};
     if(state().tab==='usulan'&&S.ui.psBank.tab==='bank'){setFilterField('year',el.value)}
