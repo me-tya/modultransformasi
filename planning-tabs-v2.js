@@ -62,7 +62,7 @@ pCharter=function(){
  const tabStart=html.indexOf('<div class="chtabs" role="tablist">');
  const tabEnd=tabStart<0?-1:html.indexOf('</div>',tabStart);
  if(tabEnd>=0)html=html.slice(0,tabEnd)+'<button type="button" role="tab" data-act="cpGoDoc" class="'+(wantsDoc?'on':'')+'" aria-selected="'+wantsDoc+'"><i>8</i><span><b>Buat Dokumen</b></span></button>'+html.slice(tabEnd);
- html=html.replace('data-act="cpJump">▤ Dokumen Lengkap ↓','data-act="cpGoDoc">▤ Buat Dokumen');
+ html=html.replace('class="hb gold" type="button" data-act="cpJump">▤ Dokumen Lengkap ↓','class="hb" type="button" data-act="cpGoDoc">▤ Buat Dokumen');
  html=html.replace(/<div class="chbc"><a href="#pmo-perencanaan">‹ Semua program<\/a> \/ Dokumen Perencanaan Proyek<\/div>/,'');
  const barEnd='</div><section id="ch-active-document">';
  if(html.includes(barEnd))html=html.replace(barEnd,'<a href="#pmo-perencanaan" class="cp-back-link">‹ Semua Program</a>'+barEnd);
@@ -95,8 +95,8 @@ function docPanel(c){
  return '<div class="cp-create"><div class="cp-panel-head"><div><h3>Buat Dokumen Perencanaan Proyek</h3><p>Gabungkan tujuh tab yang sudah ada. PDF dan Word menampilkan substansi lengkap; PowerPoint merangkum setiap tab menjadi slide yang dapat diedit.</p></div></div><div class="cp-source-grid">'+labels+'</div><div class="cp-create-bar"><span>Substansi dipilih: '+included.length+' dari 7</span><div class="cp-panel-btns"><button type="button" class="btn" data-act="cpReport" data-id="'+safe(c.id)+'" data-format="preview">Pratinjau & Pilih Isi</button><button type="button" class="btn" data-act="cpDeckPreview">Pratinjau PPTX Ringkas</button><button type="button" class="btn pri" data-act="cpReport" data-id="'+safe(c.id)+'" data-format="docx">Ekspor PDF / Word / PPTX</button></div></div></div>';
 }
 ACT.cpGoDoc=()=>{S.ui.cht='buat';save();render()};
-ACT.cpDeck3=()=>{const c=chCur(S.ui.chp);if(c)chDeckOpen(c)};
-ACT.cpCharterPptx=async()=>{const c=chCur(S.ui.chp);if(!c)return;try{await dkPptx(chDeck3(c));toast('Ekspor Charter PPTX dijalankan.')}catch(err){toast('Gagal mengekspor PPTX: '+err.message)}};
+ACT.cpDeck3=()=>{const c=S.charters.find(v=>v.id===S.ui.chv&&v.prog===S.ui.chp)||chCur(S.ui.chp);if(c)chDeckOpen(c)};
+ACT.cpCharterPptx=async()=>{const c=S.charters.find(v=>v.id===S.ui.chv&&v.prog===S.ui.chp)||chCur(S.ui.chp);if(!c)return;try{await dkPptx(chDeck3(c));toast('Ekspor Charter PPTX dijalankan.')}catch(err){toast('Gagal mengekspor PPTX: '+err.message)}};
 ACT.cpDeckPreview=()=>{
  const c=S.charters.find(v=>v.id===S.ui.chv&&v.prog===S.ui.chp)||chCur(S.ui.chp);if(!c)return;
  const inc=(S.ui.cpReport||{})[c.prog]?.inc||Object.fromEntries(order.map(([k])=>[k,1]));
@@ -108,6 +108,10 @@ ACT.cpDeckPreview=()=>{
 };
 const css=document.createElement('style');css.id='cp-tabs-v2-style';
 css.textContent=`
+#app .chhero .rt>.hgrp{order:1}
+#app .chhero .rt>button[data-act="cpGoDoc"]{order:2;background:#f2f6ff!important;color:#143d72!important;border:1px solid #cad9eb!important;box-shadow:none!important}
+#app .chhero .rt>button[data-act="chsub"],#app .chhero .rt>button[data-act="chok"]{order:3}
+#app .chhero .rt>button[data-act="chret"]{order:2}
 #app .cp-back-link{margin-left:auto;white-space:nowrap;font-size:12px;font-weight:800;color:#185b9c;align-self:center;padding:7px 11px;text-decoration:none}
 #app .cp-panel-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:15px 18px;background:#f7faff;border-bottom:1px solid #dce7f2}
 #app .cp-panel-head h3{color:#0e315e;font-size:16px;margin:0 0 4px}
