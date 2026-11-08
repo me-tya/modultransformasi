@@ -5512,11 +5512,47 @@ function wbsRows(){const P=per(),M=P.b;const u=curUnit(),um=umOf();const lvm=S.u
   &&(lvm==='sd'?lvOf(w)<=lvn:lvOf(w)===lvn)&&(!wth||tahapMatch(w,wth))&&(!wst||stP(w,P)===wst)&&(VIEW!=='pmo-wbs'||!S.ui.wbsProject||String(w.p[2]||w.p[1]||'(tanpa kelompok)')===S.ui.wbsProject))}
 function ganttCell(w){const y=yrOf(w)||S.ui.tahun;const d0=new Date(y,0,1),d1=new Date(y,11,31);const pos=d=>{if(!d)return null;const x=new Date(d+'T00:00:00');return Math.max(0,Math.min(1,(x-d0)/(d1-d0)))};const a=pos(w.s)??pos(w.f),b=pos(w.f)??a;if(a==null)return '';
  const st=stOf(w,12);const col=st==='Selesai'?'var(--ok)':st==='Terlambat'?'var(--bad)':st==='Berjalan'?'var(--blue)':'#9FB2CF';const t=pos(TODAY);return `<div class="gantt" title="${fmtD(w.s)} – ${fmtD(w.f)}"><i style="left:${a*100}%;width:${Math.max(2,(b-a)*100)}%;background:${col}"></i>${String(y)===TODAY.slice(0,4)?`<em style="left:${t*100}%"></em>`:''}</div>`}
+/* Proyek terpilih dari Project Selection menjadi acuan penyusunan WBS.
+   Tombol membuka formulir WBS bawaan Project Management dan mengisi jalur proyek,
+   tanpa otomatis menyimpan baseline atau membuat item fiktif. */
+function psWbsSelectionPanel(p){
+ if(!p||p.psStatus!=='Ditetapkan'||+p.psYear!==+S.ui.tahun)return '';
+ const selected=new Set(p.psSelectedProjectIds||[]),list=(p.psProjects||[]).filter(x=>selected.has(x.id));
+ if(!list.length)return '';
+ return '<section class="card" style="margin-bottom:12px" aria-label="Proyek ditetapkan sebagai acuan WBS">'+
+  '<div class="tbar" style="justify-content:space-between;gap:12px"><h3>Proyek Ditetapkan dari Project Selection</h3><a class="btn sm" href="#project-selection" title="Kembali melihat hasil penetapan">Lihat Project Selection ›</a></div>'+
+  '<div class="pad"><p class="s" style="margin-top:0">Program <b>'+esc(p.nama)+'</b> · Tahun '+S.ui.tahun+'. Pilih <b>Susun WBS</b> pada proyek untuk mengisi formulir item WBS dengan program, proyek, UIC dan jadwal yang telah ditetapkan. Tiap item WBS tetap harus direviu dan disimpan.</p>'+
+  '<div class="tscroll"><table class="lap"><thead><tr><th>Proyek / Modul</th><th>UIC</th><th>Target Go-live</th><th>Item WBS</th><th>Aksi</th></tr></thead><tbody>'+
+  list.map(x=>{
+   const items=S.wbs.filter(w=>!w.arsip&&w.prog===p.akr&&yrOf(w)===S.ui.tahun&&w.p.some(t=>String(t).toLowerCase()===String(x.name).toLowerCase()));
+   return '<tr><td><b>'+esc(x.name)+'</b></td><td>'+esc(x.uic||p.uic||'—')+'</td><td>'+esc(x.goLive||'Belum ditetapkan')+'</td>'+
+    '<td>'+(items.length?items.length+' item':'Belum ada WBS')+'</td><td>'+
+    (lv('wbs').includes('C')&&canW('wbs','C',x.uic||p.uic)?'<button type="button" class="btn sm" data-act="psWbsStart" data-p="'+esc(p.akr)+'" data-x="'+esc(x.id)+'">+ Susun WBS</button>':'<span class="s">Lihat saja</span>')+
+    '</td></tr>';
+  }).join('')+'</tbody></table></div></div></section>';
+}
+ACT.psWbsStart=el=>{
+ const p=S.programs.find(q=>q.akr===el.dataset.p),x=p&&(p.psProjects||[]).find(q=>q.id===el.dataset.x);
+ if(!p||!x||p.psStatus!=='Ditetapkan'||!(p.psSelectedProjectIds||[]).includes(x.id)){toast('Proyek belum ditetapkan di Project Selection.');return}
+ if(!lv('wbs').includes('C')||!canW('wbs','C',x.uic||p.uic)){toast('Anda tidak memiliki hak menyusun WBS untuk UIC proyek ini.');return}
+ if(!T.wbs){toast('Buka halaman WBS terlebih dahulu.');return}
+ S.ui.prog=p.akr;
+ formModal('wbs',null);
+ const code=String(p.kode||'').match(/[A-Za-z]{2,}/g),prefix=(code&&code.length?code[code.length-1]:'PS').toUpperCase();
+ let index=1;const used=new Set(S.wbs.map(w=>w.k));while(used.has(prefix+'-'+index))index++;
+ const data={prog:p.akr,k:prefix+'-'+index,
+  pth:[p.nama,p.lv2||'Pelaksanaan Program',x.name,x.outputs||'Rincian pekerjaan/deliverable'].join(' > '),
+  u:x.uic||p.uic||'',s:x.start||'',f:x.goLive||''};
+ Object.entries(data).forEach(([k,v])=>{const e=document.getElementById('f_'+k);if(e&&'value'in e)e.value=v});
+ const fld=document.getElementById('f_pth');if(fld)fld.focus();
+};
+
 function pWbs(){const P=per(),M=P.b,tw=P.tw;const rows=wbsRows();const yearlyRows=VIEW==='pmo-wbsplan'&&S.ui.planYear!=='year'?rows.filter(w=>yrOf(w)===S.ui.tahun):rows;const s0=sumP(yearlyRows,P);const s={t:s0.t,r:s0.r};const stc=st=>yearlyRows.filter(w=>stP(w,P)===st).length;
  const pr=S.ui.prog?progOf(S.ui.prog):null;
  const plan=VIEW==='pmo-wbsplan';
  return vh('W','pmo',plan?'WBS':'WBS & Progres',plan?'Pecah rencana kerja hingga level paling detail, impor dari Excel, lalu jadikan baseline.':'Struktur, jadwal, progres, dan bukti dukung item WBS per program.','')+pmoTabs('wbs')+(plan?`<div class="note i"><span><b>Susun WBS.</b> Impor sheet Kompilasi atau sheet program, atau tambah item manual. Bobot, target bulanan, triwulan, dan cakupan UE I dihitung otomatis dari Start–Finish. Setelah charter disahkan, WBS menjadi baseline dan perubahan berikutnya lewat Change Request. Update progres bulanan dilakukan di <a href="#pmo-wbs">Pelaksanaan › WBS &amp; progres</a>.</span></div>`:'')+
  (!plan&&S.ui.wbsProject?`<div class="note i"><span><b>Proyek:</b> ${esc(S.ui.wbsProject)} <button class="btn sm" data-act="wbsprojclear" title="Tampilkan seluruh proyek">Tampilkan semua proyek ×</button></span></div>`:'')+
+ (plan?psWbsSelectionPanel(pr):'')+
   pChips()+
  `<div class="kpis"><div class="kpi dk"><div class="l">Item sesuai filter</div><div class="v">${rp(rows.length)}</div><div class="d">${rows.filter(w=>cmType(w)).length} item CM · ${rows.filter(w=>cmType(w)==='ADP').length} ADP</div></div>
  <div class="kpi"><div class="l">Target ${esc(P.lab)}</div><div class="v">${rp(s.t)}<small>poin</small></div></div><div class="kpi"><div class="l">Realisasi tervalidasi</div><div class="v">${rp(s.r)}<small>poin</small></div><div class="bar"><i style="width:${s.t?Math.min(100,s.r/s.t*100):0}%;background:var(--ok)"></i></div><div class="d">capaian ${pct(s.t?s.r/s.t*100:null)}</div></div>
