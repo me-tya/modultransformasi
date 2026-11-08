@@ -144,7 +144,7 @@ ACT.cpReport=el=>{
   if(!CPLAN_KEYS.some(([k])=>inc[k])){toast('Pilih sekurang-kurangnya satu dokumen sumber.');return false}
   if(format==='pdf'){try{const f=win.querySelector('#cp-report-frame').contentWindow;f.focus();f.print();toast('Pilih tujuan “Save as PDF” pada dialog cetak.')}catch(e){toast('Pratinjau PDF gagal: '+e.message)}return false}
   if(format==='docx'){if(!window.JSZip){toast('Pustaka Word belum dimuat.');return false}toast('Menyusun berkas Word…');mtRptDocx(model).then(b=>{mtRptDownloadBlob(b,model.fileName+'.docx');toast('Word berhasil dibuat.')}).catch(e=>toast('Ekspor Word gagal: '+(e.message||e)));return false}
-  if(format==='pptx'){toast('Menyusun paparan PowerPoint…');rptPptx(model).then(b=>{chSaveBlob(b,model.fileName+'.pptx')}).catch(e=>toast('Ekspor PowerPoint gagal: '+(e.message||e)));return false}
+  if(format==='pptx'){toast('Menyusun paparan PowerPoint…');window.cpCompactPptx(c,inc).then(()=>{toast('PPTX ringkas berhasil dibuat dari tujuh tab.')}).catch(e=>toast('Ekspor PowerPoint gagal: '+(e.message||e)));return false}
   return false
  }});
  const frame=ov.querySelector('#cp-report-frame'),status=ov.querySelector('#cp-state');
