@@ -443,7 +443,7 @@ function programModal(p){
    psOutcome:val(box,'outcome'),psRisks:p?.psRisks||'',psThemes:val(box,'themes'),psYear:y,
    psUpdatedAt:new Date().toISOString(),psUpdatedBy:ME.email||''});
   if(isNew)allPrograms().push(target);
-  state().prog=target.id;state().tab='program';if(isNew)S.ui.psGov={step:'identity'};save();close();render();toast('Program tersimpan. '+(isNew?'Lengkapi profil, manfaat, stakeholder, risiko, dan tata kelola.':'Kembali ke tahapan kelengkapan program.'));
+  state().prog=target.id;state().tab='program';S.ui.ps27=S.ui.ps27||{};S.ui.ps27.usulanSub='detail';if(isNew)S.ui.psGov={step:'identity'};save();close();render();toast('Program tersimpan. '+(isNew?'Lengkapi profil, manfaat, stakeholder, risiko, dan tata kelola.':'Kembali ke tahapan kelengkapan program.'));
  },isNew?'Tambah Program':'Simpan Program');
 }
 function deleteProgram(p){
