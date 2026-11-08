@@ -63,18 +63,19 @@ const rowsFor=p=>p?(p.psProjects||[]):[];
 const activeCriteria=p=>PS_CRITERIA.map(c=>Object.assign({},c,(p.psRubrics||{})[c.code]||{}));
 const weight=(p,k)=>Math.min(7,Math.max(1,+((p.psWeights||{})[k]||PS_CRITERIA.find(c=>c.code===k).w)));
 const util=(c,v)=>c.type==='cost'?(5-v)/4:(v-1)/4;
-function scoreField(x,c){
+function scoreField(x,c,p){
  const given=+(x.scores||{})[c.code];if(given>=1&&given<=5)return given;
  if(c.code==='C2'&&Number.isFinite(+x.users)&&x.users!==''){const n=+x.users;return n<=1000?1:n<=10000?2:n<=50000?3:n<=100000?4:5}
  if(c.code==='C4'&&x.goLive){const n=Math.ceil((new Date(x.goLive+'T00:00:00')-new Date())/86400000);return n<=30?5:n<=90?4:n<=180?3:n<=365?2:1}
  if(c.code==='C5'&&x.readiness!==''&&x.readiness!=null){const n=+x.readiness;return n>=80?1:n>=70?2:n>=60?3:n>=50?4:5}
  if(c.code==='C6'){const v=['P','O','S','T','R'].map(k=>+(x.poster||{})[k]).filter(v=>v>=1&&v<=5);if(v.length===5){let n=Math.round(v.reduce((a,b)=>a+b,0)/5);if(v.includes(5))n=Math.max(3,n);return n}}
+ if(c.code==='C8'&&String(p?.jenis||'').toLowerCase()==='tematik'&&x.sdmAwal!==''&&x.sdmTarget!==''&&x.sdmAwal!=null&&x.sdmTarget!=null&&+x.sdmAwal>0){const pct=(+x.sdmAwal-(+x.sdmTarget))/(+x.sdmAwal)*100;return pct<=0?1:pct<10?2:pct<=25?3:pct<=50?4:5}
  if(c.code==='C12'){const v=['res','op','dep'].map(k=>+(x.risks||{})[k]).filter(v=>v>=1&&v<=3);if(v.length===3)return Math.round((v.reduce((a,b)=>a+b,0)/3-1)*2)+1}
  return null;
 }
 function calc(x,p){
  let sum=0,done=0,den=0;const details=[];
- activeCriteria(p).forEach(c=>{const v=scoreField(x,c),w=weight(p,c.code);den+=w;
+ activeCriteria(p).forEach(c=>{const v=scoreField(x,c,p),w=weight(p,c.code);den+=w;
  if(v!=null){done++;sum+=util(c,v)*w}
  details.push({c,v,w,u:v!=null?util(c,v):0});
  });
@@ -95,6 +96,8 @@ function top(p){
  h+='<div class="pswf-topbar"><label>Tahun Anggaran <select id="pswf-year">'+[2025,2026,2027,2028,2029].map(v=>'<option value="'+v+'"'+(y===v?' selected':'')+'>'+v+'</option>').join('')+'</select></label><label>Program Transformasi <select id="pswf-program">'+(num?programsOpts(p&&p.id):'<option value="">Belum ada program '+y+'</option>')+'</select></label>'+
  (editOk()?'<button type="button" class="btn pri" data-pswf="add-program">+ Tambah Program</button>':'')+
  (p&&ownerOk(p)&&p.psStatus!=='Ditetapkan'?'<button type="button" class="btn" data-pswf="edit-program">Ubah Program</button>':'')+
+ (p&&ownerOk(p)&&p.psDraft?'<button type="button" class="btn" data-pswf="delete-program">Hapus Draft</button>':'')+
+ (p&&ownerOk(p)&&p.psStatus!=='Ditetapkan'&&year()===2026&&!p.psDraft?'<button type="button" class="btn" data-pswf="ambil-wbs">Ambil Proyek WBS 2026</button>':'')+
  '<span class="pswf-sp"></span><span class="pswf-count">'+num+' program · '+ct+' calon proyek · '+approved+' dipilih</span></div>';
  if(p){
  h+='<div class="prio-hero"><div><h2>'+esc2(p.nama)+'</h2><p>'+esc2(p.kode||p.akr)+' · '+esc2(p.jenis||'Program')+' · UIC '+esc2(p.uic||'Belum ditetapkan')+' · '+esc2(p.psStatus)+'</p></div><div class="prio-hero-actions">'+
@@ -458,6 +461,7 @@ function projectModal(p,id){
  field('goLive','Target go-live',g('goLive'),'date')+
  field('users','Jumlah pengguna terdampak (dasar C2)',g('users'),'number',false,'min="0"')+
  field('readiness','Skor kesiapan / CRA (%) (dasar C5)',g('readiness'),'number',false,'min="0" max="100"')+
+ (String(p.jenis||'').toLowerCase()==='tematik'?field('sdmAwal','SDM awal (basis otomatis C8 tematik)',g('sdmAwal'),'number',false,'min="0"')+field('sdmTarget','Target SDM setelah perubahan',g('sdmTarget'),'number',false,'min="0"'):'')+
  area('description','Latar belakang / Deskripsi proyek',g('description'))+
  area('outputs','Output / deliverable proyek',g('outputs'))+
  area('outcome','Outcome / manfaat strategis',g('outcome'))+
@@ -474,7 +478,7 @@ function projectModal(p,id){
  modal((x?'Ubah':'Tambah')+' Calon Proyek · '+p.nama,body,(box,close)=>{
   if(!val(box,'name')||!val(box,'uic')){toast('Nama Proyek dan UIC wajib diisi.');return}
   const z=x||{id:uid2('proj'),included:true,scores:{},poster:{},risks:{},indicators:[],benefits:[]};
-  for(const k of ['name','uic','pic','status','start','goLive','users','readiness','description','outputs','outcome','accepted','notes'])z[k]=val(box,k);
+  for(const k of ['name','uic','pic','status','start','goLive','users','readiness','sdmAwal','sdmTarget','description','outputs','outcome','accepted','notes'])z[k]=val(box,k);
   z.scores=z.scores||{};z.poster=z.poster||{};z.risks=z.risks||{};
   box.querySelectorAll('[data-score]').forEach(el=>{if(el.value)z.scores[el.dataset.score]=+el.value;else delete z.scores[el.dataset.score]});
   box.querySelectorAll('[data-poster]').forEach(el=>{if(el.value)z.poster[el.dataset.poster]=+el.value;else delete z.poster[el.dataset.poster]});
