@@ -127,6 +127,7 @@ function controls(){
  (a.native?'':'<button data-mt-doc="close" type="button">Tutup</button>')+
  '<input type="file" data-mt-import-file accept=".pptx" hidden></div>';
 }
+function aKindIsProgram(){return !!active&&active.native&&active.kind==='program'}
 function paint(){
  if(!active||!active.host?.isConnected)return;
  const host=active.host,project=active.kind==='project';
@@ -134,7 +135,19 @@ function paint(){
  const doc='<div class="mt-doc-content"><div class="mt-doc-title"><div><small>DOKUMEN '+(project?(KEYS.findIndex(x=>x[0]===active.tab)+1)+' DARI 7':'CHARTER PROGRAM')+'</small><h3>'+(project?KEYS.find(x=>x[0]===active.tab)?.[1]:'Charter Program')+'</h3><p>'+E(active.p.kode+' · '+active.p.nama)+' · '+(active.source?.st||'Draft')+' · v'+(active.draft.ver||1)+'</p></div></div><div class="mt-doc-form" data-mt-form>'+form()+'</div></div>';
  if(active.native){
   const body=host.querySelector('.psbank-dialogbody');if(body)body.innerHTML=doc;
-  const footer=host.querySelector('.psbank-dialog>footer>div');if(footer)footer.innerHTML=controls();
+  const footer=host.querySelector('.psbank-dialog>footer>div');
+  if(footer&&aKindIsProgram()){
+   const editable=canEdit(active.p,active.kind,active.source);
+   footer.innerHTML='<div class="mt-charter-tools">'+
+    '<button type="button" class="btn" data-mt-doc="import">↑ Import PPTX</button>'+
+    '<button type="button" class="btn" data-mt-doc="preview">Pratinjau 3 Slide</button>'+
+    '<button type="button" class="btn pri" data-mt-doc="export">↓ Unduh PPTX</button>'+
+    '<input type="file" data-mt-import-file accept=".pptx" hidden></div>'+
+    '<div class="mt-charter-default-actions">'+
+    '<button type="button" class="btn" data-bank-preview-edit '+(!editable?'disabled':'')+'>✎ Ubah</button>'+
+    '<button type="button" class="btn" data-bank-preview-save '+(!editable||!active.edit?'disabled':'')+'>Simpan</button>'+
+    '<button type="button" class="btn pri" data-bank-preview-saveclose> Simpan &amp; Tutup</button></div>';
+  }else if(footer)footer.innerHTML=controls();
  }else{
   host.innerHTML='<section class="mt-doc-dialog" role="dialog" aria-modal="true" aria-label="Detail Dokumen Proyek"><header><div><b>Detail Dokumen Proyek</b><small>'+E(active.p.nama)+' · '+E(active.p.kode)+' · '+active.draft.tahun+'</small></div><button type="button" data-mt-doc="close" title="Tutup">×</button></header>'+nav+'<main class="mt-doc-scroll">'+doc+'</main><footer>'+controls()+'</footer></section>';
  }
@@ -306,12 +319,31 @@ document.addEventListener('click',ev=>{
   dialog.querySelectorAll('.psbank-dialogtabs button').forEach(x=>{x.classList.toggle('on',x===pro);x.setAttribute('aria-selected',String(x===pro))});
   start(p,'program',dialog,true);inline=active;return;
  }
+ if(inline&&active===inline&&inline.native){
+  const nativeAction=ev.target.closest('[data-bank-preview-edit],[data-bank-preview-save],[data-bank-preview-saveclose]');
+  if(nativeAction&&inline.host?.contains(nativeAction)){
+   ev.preventDefault();ev.stopImmediatePropagation();
+   if(nativeAction.hasAttribute('data-bank-preview-edit')){
+    if(canEdit(inline.p,inline.kind,inline.source)){inline.edit=true;paint()}
+   }else if(nativeAction.hasAttribute('data-bank-preview-save')){
+    if(inline.edit)persist();
+   }else{
+    if(inline.edit&&!persist())return;
+    const host=inline.host;active=null;inline=null;host?.remove();
+    render();
+   }
+   return;
+  }
+ }
  const b=ev.target.closest('[data-mt-doc]');
  if(b&&active?.host?.contains(b)){
   ev.preventDefault();ev.stopImmediatePropagation();onAction(b);return;
  }
  if(inline&&active===inline&&ev.target.closest('.psbank-dialogtabs [data-bank-pstep]')){
-  if(inline.edit)persist();active=null;inline=null;
+  if(inline.edit&&!persist()){ev.preventDefault();ev.stopImmediatePropagation();return}
+  const nav=inline.host?.querySelector('.psbank-dialogtabs');
+  nav?.querySelectorAll('[data-mt-program-charter]').forEach(x=>{x.classList.remove('on');x.setAttribute('aria-selected','false')});
+  active=null;inline=null;
  }
 },true);
 document.addEventListener('change',ev=>{
@@ -404,6 +436,13 @@ document.addEventListener('click',async ev=>{
  }catch(err){toast('Unduh ZIP gagal: '+(err.message||err))}
 },true);
 const css=document.createElement('style');css.textContent=`
+ .psbank-dialog>footer>div:has(.mt-charter-tools){display:flex;align-items:center;gap:8px;min-width:0;flex:1;justify-content:flex-end}
+ .mt-charter-tools,.mt-charter-default-actions{display:flex;align-items:center;gap:7px;flex:0 0 auto}
+ .mt-charter-tools{margin-right:auto}
+ .mt-charter-tools>.btn,.mt-charter-default-actions>.btn{height:38px;white-space:nowrap;font:750 12px 'Inter',sans-serif}
+ .psbank-dialogtabs>[data-mt-program-charter]:not([aria-selected="true"]){background:transparent!important;border-color:transparent!important;border-bottom:3px solid transparent!important;box-shadow:none!important;color:#5d718b!important}
+ .psbank-dialogtabs>[data-mt-program-charter][aria-selected="true"]{background:#fff!important;border-bottom:3px solid #ffb71b!important;color:#153c67!important}
+ @media(max-width:1100px){.psbank-dialog>footer>div:has(.mt-charter-tools){flex-wrap:wrap}.mt-charter-tools{margin-right:0}}
  #toast{z-index:29000!important}\n.mt-doc-overlay{position:fixed;inset:0;background:#06162bd1;z-index:22000;display:grid;place-items:center;padding:16px;font-family:inherit}
 .mt-doc-dialog{height:min(90vh,940px);width:min(1490px,96vw);background:#fff;border-radius:14px;display:flex;flex-direction:column;overflow:hidden;color:#102d50;box-shadow:0 22px 70px #03152a66}
 .mt-doc-dialog>header{display:flex;align-items:center;justify-content:space-between;gap:16px;background:#0d2d52;color:#fff;padding:15px 21px;min-height:68px}
