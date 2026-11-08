@@ -645,3 +645,30 @@ html.mt-ui-embedded :is(.tabs .count-badge,.cm-ap-cnt,.prio-tab-n){
 @media(prefers-reduced-motion:reduce){
  #app .cm-journey>.cm-step,#app .ptabs.pmo-journey>a,#app .ps27 .ps27-tabs>button{transition:none!important}
 }
+
+
+/* PM navigation: distribute eight primary tabs over the full available row.
+   The previous flex:0 0 auto left a blank strip at the right. */
+#app .pm-stage-shell{width:100%!important;min-width:0!important}
+#app .pm-stage-shell>nav.ptabs.pmo-journey{
+ display:flex!important;flex:1 1 auto!important;flex-wrap:nowrap!important;
+ width:100%!important;min-width:0!important;max-width:none!important;
+ justify-content:stretch!important;align-items:stretch!important;
+ gap:4px!important;overflow-x:auto!important;overflow-y:hidden!important;
+ padding:0!important;margin:0!important;scrollbar-width:thin!important;
+}
+#app .pm-stage-shell>nav.ptabs.pmo-journey>a{
+ display:flex!important;flex:1 1 auto!important;justify-content:center!important;
+ align-items:center!important;min-width:max-content!important;
+ max-width:none!important;box-sizing:border-box!important;
+ margin:0!important;padding:0 8px!important;white-space:nowrap!important;
+ text-align:center!important;font-size:11.6px!important;gap:5px!important;
+}
+#app .pm-stage-shell>nav.ptabs.pmo-journey>a>span{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ gap:6px!important;white-space:nowrap!important;
+}
+#app .pm-stage-shell>nav.ptabs.pmo-journey>a>b{flex:0 0 auto}
+@media(max-width:1190px){
+ #app .pm-stage-shell>nav.ptabs.pmo-journey>a{padding-inline:7px!important;font-size:11.1px!important}
+}
