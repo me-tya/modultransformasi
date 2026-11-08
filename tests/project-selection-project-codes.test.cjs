@@ -45,7 +45,7 @@ test('copy from project history produces new year code but does not mutate sourc
  assert.equal(S.ui.psBank.mappingTab,'results');
 });
 test('programs display as native accordions with direct open-program actions',()=>{
- const {scope,S}=setup();S.ui.psBank.filterScopes.mapping.allProgramsSelected=true;
+ const {scope,S}=setup();S.ui.psBank.filterScopes.mapping.allProgramsSelected=true;S.ui.psBank.mappingTab='mapping';
  const html=scope.render();
  assert.match(html,/<details class="psbank-accordion-program"/);
  assert.match(html,/data-scope-program-toggle/);
@@ -57,7 +57,7 @@ test('results use page scroll and right-aligned summary outside blue banner',()=
  assert.match(html,/psbank-tab-summary/);
  assert.match(html,/psbank-results-open/);
  assert.doesNotMatch(html,/psbank-workspace-banner/);
- assert.match(css,/\.psbank-results-tablewrap[^\n]*overflow-y:visible/);
+ assert.match(css,/\.psbank-results-tablewrap[^}]*overflow-y:visible/s);
 });
 test('existing year 2027 projects persist codes when rendered',()=>{
  const {scope,dst}=setup();
