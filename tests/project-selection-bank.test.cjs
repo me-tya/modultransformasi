@@ -824,6 +824,7 @@ test('Project Management tabs stretch over the complete navigation row',()=>{
 });
 test('Setahun displays all TW 1–4 per Executive Dashboard module; quarterly selection still filters',()=>{
  const dash=readFileSync('dashboard-executive-v2.js','utf8');
+ assert.match(dash,/const n=dbIsAnnual\(\)\?4:dxTw\(\)/,'Annual KPI must use TW4 year-end snapshot, not default current or future quarter');
  const mock={ui:{tahun:2027,pr:'all',dbStatus:'',dbOpened:'__all__'}};
  const work=[
   {tm:2,v:1,id:'q1',done:true},{tm:5,v:0,id:'q2',done:false},
