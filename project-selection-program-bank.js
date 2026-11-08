@@ -12,7 +12,10 @@ const state=()=>I.state();
 const all=()=>S.programs||[];
 const get=id=>all().find(p=>String(p.id)===String(id));
 const active=()=>I.programs();
-const store=()=>{S.ui.psBank=S.ui.psBank||{};const b=S.ui.psBank;b.tab=b.tab||'bank';b.names=b.names||{};b.check=b.check||[];b.filterYear=b.filterYear||'all';b.search=b.search||'';b.wtab=b.wtab||'identity';b.bankPage=Math.max(1,+b.bankPage||1);b.bankPageSize=[10,20,50,100].includes(+b.bankPageSize)?+b.bankPageSize:10;return b;};
+const store=()=>{S.ui.psBank=S.ui.psBank||{};const b=S.ui.psBank;b.tab=b.tab||'bank';b.names=b.names||{};b.check=b.check||[];b.filterYear=b.filterYear||'all';b.search=b.search||'';b.wtab=b.wtab||'identity';b.bankPage=Math.max(1,+b.bankPage||1);b.bankPageSize=[10,20,50,100].includes(+b.bankPageSize)?+b.bankPageSize:10;
+ b.detailPage=Math.max(1,+b.detailPage||1);
+ b.detailPageSize=[10,20,50,100].includes(+b.detailPageSize)?+b.detailPageSize:10;
+ return b;};
 const current=()=>{const p=get(store().workspace);return p&&+p.psYear===year()?p:I.pickedProgram()||active()[0]||null};
 function historyYears(p){
  if(p.psYear)return [+p.psYear];
@@ -88,11 +91,22 @@ function bank(){
 function detail(){
  const b=store(),q=String(b.search||'').toLowerCase(),status=b.filterStatus||'all';
  const rows=active().filter(p=>(!b.detailProgram||p.id===b.detailProgram)&&[p.nama,p.kode,p.uic,p.akr].join(' ').toLowerCase().includes(q)&&(status==='all'||labelStatus(p)===status)&&matchesUnit(p,b.filterUnit,b.filterRole)&&matchesPeriod(p,b.filterPeriod,b.filterRangeFrom,b.filterRangeTo));
+ const size=b.detailPageSize,pages=Math.max(1,Math.ceil(rows.length/size));
+ b.detailPage=Math.min(Math.max(1,+b.detailPage||1),pages);
+ const from=(b.detailPage-1)*size,visibleRows=rows.slice(from,from+size);
  const allRows=active(),complete=p=>window.MT_PS_GOV?.readiness(p)||{done:0,total:7};
  return '<div class="psbank-card"><div class="psbank-sectionhead"><div><h3>Daftar Program · '+year()+'</h3><p>Klik program untuk melihat atau mengubah dokumen. Tidak ada Workspace terpisah.</p></div><span class="psbank-count">'+rows.length+' program</span></div>'+
  '<div class="psbank-tablewrap"><table class="psbank-table psbank-detail-table"><colgroup><col><col><col><col><col><col><col><col><col></colgroup><thead><tr><th>Tahun</th><th>Nama Program</th><th>UIC</th><th>Kode Program</th><th>Asal</th><th>Status</th><th>Kelengkapan</th><th>Modul</th><th>Aksi</th></tr></thead><tbody>'+
- (rows.length?rows.map(p=>{const readiness=complete(p);return '<tr tabindex="0" data-bank-detailrow="'+E(p.id)+'" class="psbank-clickrow" title="Buka Detail Program"><td>'+year()+'</td><td><b>'+E(p.nama)+'</b></td><td>'+E(p.uic||'—')+'</td><td>'+E(p.kode||p.akr)+'</td><td>'+E(p.psCarry?'Dari '+p.psCarry.sourceYear:'Program baru')+'</td><td><span class="psbank-tag psbank-'+labelStatus(p).toLowerCase()+'">'+labelStatus(p)+'</span></td><td><b>'+readiness.done+'/'+readiness.total+'</b><small>'+E(readiness.ok?'Siap direviu':'Perlu dilengkapi')+'</small></td><td>'+Scope.modules(p,year()).length+'</td>'+
- '<td class="psbank-rowactions psbank-program-actions">'+programAction('document',p.id,'Lihat Dokumen Program')+programAction('edit',p.id,'Edit Dokumen Program')+programAction('upload',p.id,'Unggah Dokumen Program')+programAction('map',p.id,'Pemetaan Proyek')+'</td></tr>'}).join(''):'<tr><td colspan="9" class="psbank-empty">Belum ada program sesuai filter. Tambahkan program dari Riwayat Program.</td></tr>')+'</tbody></table></div></div>'+
+ (visibleRows.length?visibleRows.map(p=>{const readiness=complete(p);return '<tr tabindex="0" data-bank-detailrow="'+E(p.id)+'" class="psbank-clickrow" title="Buka Detail Program"><td>'+year()+'</td><td><b>'+E(p.nama)+'</b></td><td>'+E(p.uic||'—')+'</td><td>'+E(p.kode||p.akr)+'</td><td>'+E(p.psCarry?'Dari '+p.psCarry.sourceYear:'Program baru')+'</td><td><span class="psbank-tag psbank-'+labelStatus(p).toLowerCase()+'">'+labelStatus(p)+'</span></td><td><b>'+readiness.done+'/'+readiness.total+'</b><small>'+E(readiness.ok?'Siap direviu':'Perlu dilengkapi')+'</small></td><td>'+Scope.modules(p,year()).length+'</td>'+
+ '<td class="psbank-rowactions psbank-program-actions">'+programAction('document',p.id,'Lihat Dokumen Program')+programAction('edit',p.id,'Edit Dokumen Program')+programAction('upload',p.id,'Unggah Dokumen Program')+programAction('map',p.id,'Pemetaan Proyek')+'</td></tr>'}).join(''):'<tr><td colspan="9" class="psbank-empty">Belum ada program sesuai filter. Tambahkan program dari Riwayat Program.</td></tr>')+'</tbody></table></div>'+
+ '<div class="psbank-pagination" aria-label="Navigasi halaman Daftar Program">'+
+ '<label>Baris per halaman <select data-bank-detail-page-size aria-label="Jumlah baris Daftar Program per halaman">'+[10,20,50,100].map(n=>'<option value="'+n+'" '+(size===n?'selected':'')+'>'+n+'</option>').join('')+'</select></label>'+
+ '<span>'+(!rows.length?'0':from+1)+'–'+Math.min(from+size,rows.length)+' dari '+rows.length+' program</span>'+
+ '<div class="psbank-pagination-steps">'+
+ '<button type="button" data-bank-detail-page-step="-1" title="Halaman sebelumnya" aria-label="Halaman sebelumnya" '+(b.detailPage<=1?'disabled':'')+'>‹</button>'+
+ '<strong>Halaman '+b.detailPage+' / '+pages+'</strong>'+
+ '<button type="button" data-bank-detail-page-step="1" title="Halaman berikutnya" aria-label="Halaman berikutnya" '+(b.detailPage>=pages?'disabled':'')+'>›</button>'+
+ '</div></div></div>'+
  '<div class="psbank-summary"><span><b>'+allRows.length+'</b> Program</span><span><b>'+allRows.reduce((n,p)=>n+Scope.modules(p,year()).length,0)+'</b> Modul</span><span><b>'+allRows.filter(p=>complete(p).ok).length+'</b> Siap Direviu</span><span><b>'+allRows.filter(p=>!complete(p).ok).length+'</b> Perlu Dilengkapi</span></div>'+ 
  '<details class="psbank-inputsummary"><summary>Ringkasan Isian Program ('+rows.length+')</summary><div class="psbank-inputsummary-list">'+rows.map(p=>'<article><b>'+E(p.nama)+'</b><small>'+E(p.kode||p.akr)+' · Diperbarui '+E((p.psUpdatedAt||p.psCarry?.createdAt||'Belum ada tanggal').slice(0,10))+'</small><p><strong>Tujuan:</strong> '+E(p.psObjective||'Belum diisi')+'</p><p><strong>Business Case:</strong> '+E(p.psBusinessCase||'Belum diisi')+'</p><p><strong>Outcome:</strong> '+E(p.psOutcome||'Belum diisi')+'</p></article>').join('')+'</div></details>';
 }
@@ -362,9 +376,10 @@ function onClick(ev){
  if(Scope.click(ev))return;
  if(Docs.portfolioClick?.(ev))return;
  if(Docs.click(ev,current()))return;
- const b=store(),btn=ev.target.closest('[data-bank-tab],[data-bank-preview],[data-bank-add],[data-bank-work],[data-bank-map],[data-bank-doc],[data-bank-edit-doc],[data-bank-upload],[data-bank-wtab],[data-bank-row],[data-bank-detailrow],[data-bank-new],[data-bank-bulk],[data-bank-closework],[data-bank-page-step]');
+ const b=store(),btn=ev.target.closest('[data-bank-tab],[data-bank-preview],[data-bank-add],[data-bank-work],[data-bank-map],[data-bank-doc],[data-bank-edit-doc],[data-bank-upload],[data-bank-wtab],[data-bank-row],[data-bank-detailrow],[data-bank-new],[data-bank-bulk],[data-bank-closework],[data-bank-page-step],[data-bank-detail-page-step]');
  if(!btn)return;
  if(btn.dataset.bankPageStep){b.bankPage=Math.max(1,(+b.bankPage||1)+Number(btn.dataset.bankPageStep));saveUI();return}
+ if(btn.dataset.bankDetailPageStep){b.detailPage=Math.max(1,(+b.detailPage||1)+Number(btn.dataset.bankDetailPageStep));saveUI();return}
  if(btn.dataset.bankTab){b.tab=btn.dataset.bankTab;b.workspace='';saveUI();return}
  if(btn.dataset.bankWtab){b.wtab=btn.dataset.bankWtab;S.ui.psGov=S.ui.psGov||{};S.ui.psGov.step=b.wtab;saveUI();return}
  if(btn.dataset.bankDoc){showPreview(String(btn.dataset.bankDoc)+':'+year(),'identity',false);return}
@@ -385,6 +400,7 @@ function onChange(ev){
  if(Scope.change(ev)||Docs.portfolioChange?.(ev)||Docs.change(ev))return;
  const q=ev.target,b=store();
  if(q.dataset.bankPageSize!==undefined){b.bankPageSize=Number(q.value);b.bankPage=1;saveUI();return}
+ if(q.dataset.bankDetailPageSize!==undefined){b.detailPageSize=Number(q.value);b.detailPage=1;saveUI();return}
  if(q.dataset.bankYear!==undefined){b.filterYear=q.value;b.bankPage=1;saveUI();return}
  if(q.dataset.bankCheckall!==undefined){
   const filtered=records().filter(x=>(b.filterYear==='all'||+b.filterYear===x.year)&&(!b.filterProgram||x.p.id===b.filterProgram)&&(b.filterStatus==='all'||!b.filterStatus||labelStatus(x.p)===b.filterStatus)&&matchesUnit(x.p,b.filterUnit,b.filterRole)&&matchesPeriod(x.p,b.filterPeriod,b.filterRangeFrom,b.filterRangeTo)&&[x.p.nama,x.p.kode,x.p.uic,x.p.akr].join(' ').toLowerCase().includes(String(b.search||'').toLowerCase()));
