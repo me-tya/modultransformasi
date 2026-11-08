@@ -567,6 +567,10 @@
 #app .psbank-program-actions>.psbank-program-action{margin:0 2px!important}
 #app .psbank-program-action.upload{color:#4f55a0;background:#f4f4ff;border-color:#d2d5fa}
 #app .psbank-program-action.upload:hover{background:#e6e8ff;border-color:#aaaee3}
+#app .psbank-program-action.download{color:#215c91;background:#eef6ff;border-color:#bcd5ef}
+#app .psbank-program-action.download:hover{background:#dfedff;border-color:#90b9e2}
+#app .psbank-detail-table td.psbank-program-actions{width:175px!important;min-width:175px!important;max-width:175px!important;text-align:center!important}
+#app .psbank-program-actions .psbank-program-action{vertical-align:middle!important}
 #app .psbank-upload-backdrop{position:fixed;inset:0;background:#091c37ae;z-index:9100;display:flex;align-items:center;justify-content:center;padding:15px;box-sizing:border-box;font-family:'Inter',sans-serif}
 #app .psbank-upload-dialog{display:flex;flex-direction:column;background:#fff;border-radius:15px;border:1px solid #cadbea;box-shadow:0 24px 75px #04132d55;width:min(920px,96vw);max-height:min(90dvh,800px);min-height:0;overflow:hidden}
 #app .psbank-upload-dialog>header{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#102e53;color:#fff;padding:15px 19px;flex:0 0 auto}
