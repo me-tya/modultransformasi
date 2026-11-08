@@ -93,22 +93,47 @@ function setFilterField(key,val){
  if(key==='year')b.filterYear=val;
 }
 function filter(p){
- const b=S.ui.psBank||(S.ui.psBank={}),u=state(),arr=list(),tab=b.tab||'bank',
+ const b=S.ui.psBank||(S.ui.psBank={}),u=state(),arr=list(),tab=b.tab||'bank',w=ws(),
   f=S.ui.mtSharedFilter?.enabled?S.ui.mtSharedFilter:localFilter(),
   q=String(f.search||'').toLowerCase(),st=f.status||'all';
  b.search=f.search||'';b.filterStatus=st;b.filterYear=f.year||'all';
  if(u.tab==='usulan'&&tab==='bank')b.filterProgram=f.program||'';
  if(u.tab==='usulan'&&tab==='detail')b.detailProgram=f.program||'';
- const onBank=u.tab==='usulan'&&tab==='bank';
- const opts=onBank?(S.programs||[]):arr;
- const filtered=opts.filter(x=>(!q||[x.nama,x.kode,x.akr,x.uic].join(' ').toLowerCase().includes(q))&&(st==='all'||(x.arsip||x.psStatus==='Arsip'?'Arsip':x.psCarry?'Legacy':x.psDraft?'Baru':'Legacy')===st));
- const yFilter=onBank?(f.year||'all'):String(yr());
- return '<div class="ps27-filter ps27-filter-compact" role="search" aria-label="Filter Project Selection">'+
- '<label>Tahun <select data-ps27-year><option value="all" '+(yFilter==='all'?'selected':'')+'>Semua tahun</option>'+[2025,2026,2027,2028,2029].map(y=>'<option value="'+y+'" '+(String(yFilter)===String(y)?'selected':'')+'>'+y+'</option>').join('')+'</select></label>'+
- '<label class="ps27-filter-program">Nama Program <select data-ps27-prog><option value="">Semua Program</option>'+filtered.map(x=>'<option value="'+E(x.id)+'" '+((onBank?String(b.filterProgram)===String(x.id):u.tab==='usulan'&&tab==='detail'?String(b.detailProgram)===String(x.id):p&&x.id===p.id)?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label>'+
+ const onBank=u.tab==='usulan'&&tab==='bank',opts=onBank?(S.programs||[]):arr,
+  years=[2025,2026,2027,2028,2029],yFilter=onBank?(f.year||'all'):String(yr()),
+  period=f.period||'all',unit=f.unit||'all',role=f.unitRole||'all';
+ const statusOf=x=>x.arsip||x.psStatus==='Arsip'?'Arsip':x.psCarry?'Legacy':x.psDraft?'Baru':'Legacy';
+ const listOptions=opts.filter(x=>(!q||[x.nama,x.kode,x.akr,x.uic].join(' ').toLowerCase().includes(q))&&
+ (st==='all'||statusOf(x)===st)&&(!unit||unit==='all'||[x.uic,x.pend,x.unit].join(' ').toLowerCase().includes(unit.toLowerCase())));
+ const units=[...new Set(opts.flatMap(x=>String(x.uic||'').split(/[,;]/).map(k=>k.trim())).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id'));
+ const active=[];
+ if(period!=='all')active.push(period==='range'?'Rentang periode':period);
+ if(f.programName)active.push(f.programName);
+ else if(f.program)active.push(opts.find(x=>x.id===f.program)?.nama||'Program');
+ if(unit!=='all')active.push(unit);
+ if(st!=='all')active.push(st);
+ if(q)active.push('Cari: '+q);
+ if(role!=='all')active.push(role==='utama'?'UIC Utama':'UIC Pendukung');
+ const on=!!S.ui.mtSharedFilter?.enabled,
+   filterIcon='<span class="ps27-filter-ic" data-mt-filter-icon title="'+(on?'Klik untuk batalkan filter di semua menu':'Klik untuk terapkan filter di semua menu')+'" role="button" tabindex="0" aria-label="'+(on?'Batalkan filter di semua menu':'Terapkan filter di semua menu')+'" aria-pressed="'+on+'">'+
+   '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16l-6.5 7.8v5.2L10.5 20v-7.2z"/></svg></span>';
+ return '<div class="ps27-filter ps27-filter-panel'+(w.filterOpen?' is-open':'')+'" aria-label="Filter Project Selection" role="search">'+
+ '<div class="ps27-filter-header"><div class="ps27-filter-titlebar">'+filterIcon+
+ '<button type="button" class="ps27-filter-label" data-ps27="filter" aria-expanded="'+!!w.filterOpen+'">Filter</button></div>'+
+ '<div class="ps27-filter-active"><b>FILTER AKTIF</b><span>'+(active.length?active.map(t=>'<em>'+E(t)+'</em>').join(''):'Belum ada — semua data')+'</span>'+
+ '<span class="ps27-filter-spacer"></span><small>'+listOptions.length+' dari '+opts.length+' program</small>'+
+ '<button type="button" class="ps27-filter-reset" data-ps27-reset title="Atur ulang filter di menu ini">↺ Atur ulang</button>'+
+ '<button type="button" class="ps27-filter-expand" data-ps27="filter" title="'+(w.filterOpen?'Tutup filter':'Buka filter')+'" aria-label="'+(w.filterOpen?'Tutup filter':'Buka filter')+'">'+(w.filterOpen?'▴':'▾')+'</button></div></div>'+
+ (w.filterOpen?'<div class="ps27-filter-body"><div class="ps27-filter-fields">'+
+ '<label>Tahun <select data-ps27-year><option value="all" '+(yFilter==='all'?'selected':'')+'>Semua tahun</option>'+years.map(y=>'<option value="'+y+'" '+(String(yFilter)===String(y)?'selected':'')+'>'+y+'</option>').join('')+'</select></label>'+
+ '<div class="ps27-filter-period"><b>Periode</b><div class="ps27-filter-periodset">'+[['all','Setahun'],['TW 1','TW 1'],['TW 2','TW 2'],['TW 3','TW 3'],['TW 4','TW 4'],['range','Rentang']].map(x=>
+ '<button type="button" data-ps27-period="'+x[0]+'" class="'+(period===x[0]?'on':'')+'" aria-pressed="'+(period===x[0])+'">'+x[1]+'</button>').join('')+'</div></div>'+
+ '<label>Program <select data-ps27-prog><option value="">Semua Program</option>'+listOptions.map(x=>'<option value="'+E(x.id)+'" '+((onBank?String(b.filterProgram)===String(x.id):u.tab==='usulan'&&tab==='detail'?String(b.detailProgram)===String(x.id):p&&x.id===p.id)?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label>'+
+ '<label>Unit <select data-ps27-unit><option value="all">Semua UE I</option>'+units.map(x=>'<option value="'+E(x)+'" '+(unit===x?'selected':'')+'>'+E(x)+'</option>').join('')+'</select></label>'+
+ '<label>Peran Unit <select data-ps27-role>'+[['all','Utama/Pendukung'],['utama','UIC Utama'],['pendukung','UIC Pendukung']].map(x=>'<option value="'+x[0]+'" '+(role===x[0]?'selected':'')+'>'+x[1]+'</option>').join('')+'</select></label>'+
  '<label>Status <select data-ps27-status>'+[['all','Semua Status'],['Baru','Baru'],['Legacy','Legacy'],['Arsip','Arsip']].map(x=>'<option value="'+x[0]+'" '+(st===x[0]?'selected':'')+'>'+x[1]+'</option>').join('')+'</select></label>'+
  '<label class="ps27-filter-search">Cari <input type="search" data-ps27-query value="'+E(f.search||'')+'" placeholder="Nama, kode, UIC..."></label>'+
- '</div>';
+ '</div>'+(period==='range'?'<p class="ps27-filter-notice">Rentang waktu khusus menggunakan filter tahun serta jadwal proyek pada tahap Project Management.</p>':'')+'</div>':'')+'</div>';
 }
 function actionBar(){return '<div class="ps27-actionbar" hidden></div>';}
 function sourcePicker(){
@@ -250,7 +275,7 @@ function page(){
 function mount(){
  const root=document.querySelector('#view .pswf');if(!root)return;
  root.addEventListener('click',function(ev){
-  const b=ev.target.closest('[data-ps27],[data-ps27-tab],[data-ps27-pick],[data-ps27-remove],[data-ps27-sub],[data-ps27-usul]');
+  const b=ev.target.closest('[data-ps27],[data-ps27-tab],[data-ps27-pick],[data-ps27-remove],[data-ps27-sub],[data-ps27-usul],[data-ps27-reset],[data-ps27-period]');
   if(!b)return;
   ev.stopImmediatePropagation();
   if(b.dataset.ps27Tab){navigate(b.dataset.ps27Tab);return}
@@ -258,6 +283,13 @@ function mount(){
   if(b.dataset.ps27Sub){ws().prioritySub=b.dataset.ps27Sub;if(ws().prioritySub==='reference'&&!ws().referenceVisited){I.state().formula=true;I.state().params=true;ws().referenceVisited=true}save();render();return}
   if(b.dataset.ps27Usul){ws().usulanSub=b.dataset.ps27Usul;save();render();return}
   if(b.dataset.ps27Remove){toast('Hapus proyek hanya tersedia di Pemetaan Proyek → Usulan Proyek.');return}
+  if(b.hasAttribute('data-ps27-reset')){
+   const f=localFilter();Object.assign(f,{search:'',status:'all',program:'',programName:'',unit:'all',unitRole:'all',period:'all',year:String(yr())});
+   if(S.ui.mtSharedFilter?.enabled)Object.assign(S.ui.mtSharedFilter,{search:'',status:'all',program:'',programName:'',unit:'all',unitRole:'all',period:'all',year:String(yr())});
+   const st=S.ui.psBank||(S.ui.psBank={});st.filterProgram='';st.detailProgram='';st.search='';st.filterStatus='all';st.filterYear=String(yr());
+   save();render();return;
+  }
+  if(b.hasAttribute('data-ps27-period')){setFilterField('period',b.dataset.ps27Period);save();render();return}
   const a=b.dataset.ps27;
   if(a==='filter'){ws().filterOpen=!ws().filterOpen;save();render();return}
   if(a==='carry'){carrySelected();return}
@@ -278,6 +310,8 @@ function mount(){
     save();render();return
    }
    if(el.dataset.ps27Status!==undefined){S.ui.psBank=S.ui.psBank||{};setFilterField('status',el.value);save();render();return}
+   if(el.dataset.ps27Unit!==undefined){setFilterField('unit',el.value);save();render();return}
+   if(el.dataset.ps27Role!==undefined){setFilterField('unitRole',el.value);save();render();return}
   if(el.dataset.ps27Year!==undefined){
     S.ui.psBank=S.ui.psBank||{};
     if(state().tab==='usulan'&&S.ui.psBank.tab==='bank'){setFilterField('year',el.value)}
