@@ -257,6 +257,11 @@
 #app .ps27 .ps27-kwide-table textarea,#app .ps27 .ps27-kwide-table input{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;border:1px solid #cfdeed;border-radius:5px;padding:6px;font:500 11px 'Inter',sans-serif;color:#193e65;background:#fff}
 #app .ps27 .ps27-kwide-table textarea{resize:vertical;min-height:57px;max-height:190px}
 #app .ps27 .ps27-kwide-table tfoot th{background:#e9f1f9;color:#0e315d;font-weight:800}
+#app .ps27 .ps27-approval-panel{min-width:0;margin:0 0 12px}
+#app .ps27 .ps27-approval-select{display:flex;align-items:flex-end;gap:9px;margin:0 0 10px}
+#app .ps27 .ps27-approval-select label{display:flex;flex-direction:column;gap:5px;flex:1;min-width:0;max-width:540px;font:700 11px 'Inter',sans-serif;color:#244b78}
+#app .ps27 .ps27-approval-select select{box-sizing:border-box;width:100%;min-width:0;height:36px;padding:6px 10px;border:1px solid #cbd8e7;border-radius:8px;background:#fff;color:#102f55;font:650 12px 'Inter',sans-serif}
+#app .ps27 .ps27-approval-panel .ps27-footer .btn{white-space:nowrap}
 #app .ps27 .ps27-kwide-foot{display:flex;gap:12px;justify-content:space-between;align-items:center;margin-top:9px}
 #app .ps27 .ps27-kwide-foot>div{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 #app .ps27 .ps27-kwide-foot small{font-size:10.5px;color:#647b92}
