@@ -420,7 +420,7 @@ function programModal(p){
  const isNew=!p,y=year();
  const body='<div class="pswf-form-grid">'+
  field('nama','Nama Program Transformasi',p?.nama||'','text',true,'maxlength="180"')+
- field('kode','Kode Program',p?.kode||'','text',true,'maxlength="40"')+
+ field('kode','Akronim / Kode Program (B/T + Tahun + Akronim)',p?.kode||'','text',false,'maxlength="40"')+
  sel('jenis','Jenis Program',['Berkelanjutan','Tematik','Lainnya'],p?.jenis||'Berkelanjutan')+
  sel('uic','UIC Utama',units(),p?.uic||'BaTii')+
  field('pend','UIC Pendukung (pisahkan koma)',p?.pend||'')+
@@ -433,8 +433,12 @@ function programModal(p){
  area('themes','Tema / keterkaitan kebijakan (opsional)',p?.psThemes||'')+
  '</div><p class="pswf-note">Program disimpan untuk Tahun '+y+'. Selama berstatus Draft, program tidak masuk daftar kerja Project Management/WBS.</p>';
  modal((isNew?'Tambah':'Ubah')+' Program Transformasi · '+y,body,(box,close)=>{
-  const name=val(box,'nama'),code=val(box,'kode'),uic=val(box,'uic');
-  if(!name||!code||!uic){toast('Nama, kode, dan UIC Utama wajib diisi.');return}
+  const name=val(box,'nama'),uic=val(box,'uic'),jenis=val(box,'jenis'),typed=String(val(box,'kode')||'').toUpperCase().trim();
+  if(!name||!uic){toast('Nama dan UIC Utama wajib diisi.');return}
+  const prefix=jenis==='Tematik'?'T':'B';
+  const oldPattern=typed.match(/^[BT]\d{2}-([A-Z0-9-]+)$/);
+  const short=typed?(oldPattern?oldPattern[1]:typed.replace(/[^A-Z0-9-]/g,'')):name.trim().split(/\s+/).map(x=>x[0]||'').join('').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  const code=prefix+String(y).slice(-2)+'-'+(short||'PROG');
   const dup=allPrograms().some(o=>o!==p&&String(o.kode||'').toLowerCase()===code.toLowerCase()&&+o.psYear===y);
   if(dup){toast('Kode program sudah digunakan pada tahun '+y+'.');return}
   const target=p||{id:uid2('program'),akr:'PS'+y+'-'+uid2('p'),psYear:y,psDraft:true,psStatus:'Draft',psThreshold:80,psPrioritize:false,psProjects:[],psWeights:{},psGovernanceV:1,psBenefits:[],psStakeholders:[],psRiskRegister:[],mulai:y,periode:y+'–'+y,status:'Perencanaan'};
