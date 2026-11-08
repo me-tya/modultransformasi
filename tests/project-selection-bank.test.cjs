@@ -271,3 +271,30 @@ test('Shared filter checkbox is opt-in and local tab filter states are scoped in
  assert.match(workflow,/filterScopes/);
  assert.match(workflow,/S\.ui\.mtSharedFilter\?\.enabled/);
 });
+
+test('Portfolio report uses structured headings and tables, never flat unformatted text',()=>{
+ const m=boot(),model=m.docs.portfolioModel();
+ assert.equal(model.formal,true);
+ assert.match(model.cover.title,/PORTOFOLIO/);
+ assert.ok(model.blocks.some(b=>b.t==='h1'&&b.text==='Ringkasan Eksekutif'));
+ assert.ok(model.blocks.some(b=>b.t==='table'&&b.head.includes('Kode Program')));
+ assert.ok(model.blocks.some(b=>b.t==='h1'&&/Program 01/.test(b.text)));
+});
+test('Portfolio PowerPoint segments long values into readable cards within each slide',()=>{
+ const m=boot();m.target.psBusinessCase='Latar belakang transformasi '.repeat(120);
+ const slides=m.docs.portSlides(),sections=slides.filter(s=>s.kind==='section');
+ assert.ok(slides[0].kind==='cover');
+ assert.ok(slides.some(s=>s.kind==='overview'));
+ assert.ok(slides.some(s=>s.kind==='divider'));
+ assert.ok(sections.length>0);
+ assert.ok(sections.every(s=>s.rows.length<=4));
+ assert.ok(sections.every(s=>s.rows.every(row=>row[1].length<=176)));
+});
+test('Portfolio overview pagination fits at most twelve programs per slide',()=>{
+ const m=boot();
+ for(let i=0;i<17;i++)m.S.programs.push({id:'later-'+i,akr:'P'+i,kode:'T27-P'+i,nama:'Usulan '+i,psYear:2027,psProjects:[]});
+ const deck=m.docs.portSlides();
+ const overview=deck.filter(s=>s.kind==='overview');
+ assert.ok(overview.length>=2);
+ assert.ok(overview.every(s=>s.programs.length<=12));
+});
