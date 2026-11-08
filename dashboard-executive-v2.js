@@ -37,23 +37,41 @@ function dbOverview(rows,groups,n){
  '<section class="db-panel db-progress"><div class="db-ph"><div><h3>Capaian Kumulatif</h3><small>Modul tercapai s.d. TW '+n+' '+S.ui.tahun+'</small></div></div><div class="db-progressbody"><div class="db-ring" style="--p:'+p+'%"><span><b>'+p+'%</b><small>Tercapai</small></span></div><div class="db-figures">'+[['Tercapai',a.Tercapai,'ok'],['Berjalan',a.Berjalan,'run'],['Terlambat',a.Terlambat,'late'],['Terjadwal',a.Terjadwal,'wait']].map(([l,v,c])=>'<div><i class="db-swatch db-sw-'+c+'"></i><span>'+l+'</span><strong>'+dbN(v)+'</strong></div>').join('')+'</div></div></section>'+
  '<section class="db-side"><div class="db-panel db-quick"><h3>Ringkasan Cepat</h3><p>'+dbN(groups.length)+' program terpantau</p><p>'+dbN(a.Tercapai)+' modul tercapai</p><p>'+dbN(a.Berjalan)+' modul berjalan</p></div><div class="db-panel db-attention"><div class="db-ph"><h3>Perlu Perhatian</h3><button data-act="dbTab" data-tab="terlambat">Lihat Semua ›</button></div><div class="db-alert"><strong>'+dbN(late.length)+' modul terlambat</strong><small>'+(late.length?dbEsc(late[0].m.n):'Tidak ada modul terlambat')+'</small></div></div></section></div>';
 }
+function dbIsAnnual(){return per().pr==='all'}
 function dbCard(m,g,n){
  const s=dxAt(m,n),total=m.a.length,ns=Object.keys(m.subs).length,st=s.st,col=(DX_ST[st]||DX_ST.Terjadwal)[1];
+ const annual=dbIsAnnual();
+ const quarterBlocks=annual?'<div class="db-module-quarters" aria-label="Target dan realisasi setiap triwulan">'+
+  [1,2,3,4].map(q=>{
+   const a=m.a.filter(w=>+w.tm>=(q-1)*3+1&&+w.tm<=q*3);
+   const achieved=a.filter(w=>doneAt(w,q*3)&&w.v).length;
+   const qs=dxAt(m,q),color=(DX_ST[qs.st]||DX_ST.Terjadwal)[1];
+   return '<div class="db-quarter-tile '+(a.length?'has-target':'no-target')+'" style="--qcolor:'+color+'">'+
+     '<strong>TW '+q+'</strong><span>'+ (a.length?dbEsc(qs.st):'Tanpa target')+'</span>'+
+     '<b>'+achieved+'/'+a.length+' <small>item</small></b>'+
+     '<i class="db-quarter-track"><em style="width:'+(a.length?achieved/a.length*100:0)+'%"></em></i></div>';
+  }).join('')+'</div>':'';
+
  return '<button class="dx-card db-modcard" style="--c:'+col+'" data-act="dxMod" data-p="'+dbEsc(g.p.akr)+'" data-j="'+dbEsc(m.n)+'" title="Buka rincian modul">'+
  '<span class="dx-top"><span class="dx-st" style="--s:'+col+'">'+dbEsc(st)+'</span>'+(s.cm?'<span class="dx-cm">★ CM</span>':'')+'</span><b class="dx-name">'+dbEsc(m.n)+'</b>'+
  '<span class="dx-sub">'+ns+' sub modul</span><span class="dx-uic">UIC: '+dbEsc(m.x.uic||'—')+'</span>'+
- '<span class="dx-tgt"><em>TW '+ROM[n]+' '+S.ui.tahun+'</em><b>'+dbEsc(s.lab)+'</b></span>'+
+ '<span class="dx-tgt"><em>'+(annual?'Ringkasan akhir tahun':'TW '+ROM[n]+' '+S.ui.tahun)+'</em><b>'+dbEsc(s.lab)+'</b></span>'+quarterBlocks+
  '<span class="dx-pg"><i style="width:'+s.pg+'%;background:'+col+'"></i></span><span class="dx-meta">'+s.done+'/'+s.cum+' item selesai · '+s.pg+'% tervalidasi</span></button>';
 }
 function dbDetail(groups,n){
  const q=(S.ui.dbSearch||'').trim().toLowerCase(),st=S.ui.dbStatus||'';
- const filt=(g,m)=>{const s=dxAt(m,n);return (!q||(m.n+' '+g.p.nama+' '+m.x.uic+' '+Object.keys(m.subs).join(' ')).toLowerCase().includes(q))&&(!st||s.st===st)};
+ const filt=(g,m)=>{
+  const matchesStatus=!st||(dbIsAnnual()?[1,2,3,4].some(t=>dxAt(m,t).st===st):dxAt(m,n).st===st);
+  return (!q||(m.n+' '+g.p.nama+' '+m.x.uic+' '+Object.keys(m.subs).join(' ')).toLowerCase().includes(q))&&matchesStatus;
+ };
  const sections=groups.map((g,i)=>{
   const filtered=g.mods.filter(m=>filt(g,m));if(!filtered.length)return '';
   const isOpen=S.ui.dbOpened==='__all__'||S.ui.dbOpened===g.p.akr||(S.ui.dbOpened==null&&i===0);
   return '<section class="db-program"><div class="db-programhead"><button data-act="dbOpen" data-p="'+dbEsc(g.p.akr)+'" aria-expanded="'+isOpen+'"><span class="dx-num">'+g.mods.length+'</span><strong>'+dbEsc(g.p.nama)+'</strong><span class="code">'+dbEsc(g.p.kode)+'</span><small>UIC Utama '+dbEsc(g.p.uic||'—')+'</small><span class="db-chev">'+(isOpen?'⌃':'⌄')+'</span></button><button class="db-link" data-act="dxProg" data-p="'+dbEsc(g.p.akr)+'">Detail program ›</button></div>'+(isOpen?'<div class="db-modgrid">'+filtered.map(m=>dbCard(m,g,n)).join('')+'</div>':'')+'</section>';
  }).join('');
- return '<div class="db-detailtoolbar"><label class="db-search"><span>⌕</span><input data-on="dbSearch" value="'+dbEsc(S.ui.dbSearch||'')+'" placeholder="Cari modul, submodul, atau UIC…" aria-label="Cari modul"></label><label>Status <select class="db-select" data-on="dbStatus"><option value="">Semua status</option>'+['Tercapai','Berjalan','Terlambat','Terjadwal'].map(s=>'<option '+((S.ui.dbStatus||'')===s?'selected':'')+'>'+s+'</option>').join('')+'</select></label><button class="db-link" data-act="dbExpand">Buka Semua</button></div>'+(sections||'<p class="db-empty">Tidak ada modul sesuai pencarian atau filter.</p>');
+ return '<div class="db-detailtoolbar"><label class="db-search"><span>⌕</span><input data-on="dbSearch" value="'+dbEsc(S.ui.dbSearch||'')+'" placeholder="Cari modul, submodul, atau UIC…" aria-label="Cari modul"></label><label>Status <select class="db-select" data-on="dbStatus"><option value="">Semua status</option>'+['Tercapai','Berjalan','Terlambat','Terjadwal'].map(s=>'<option '+((S.ui.dbStatus||'')===s?'selected':'')+'>'+s+'</option>').join('')+'</select></label><button class="db-link" data-act="dbExpand">Buka Semua</button></div>'+
+ (dbIsAnnual()?'<p class="db-annual-hint">Setahun · Seluruh TW 1–TW 4 ditampilkan pada setiap modul. Filter status memeriksa semua triwulan; KPI ringkasan menunjukkan kondisi akhir tahun.</p>':'')+
+ (sections||'<p class="db-empty">Tidak ada modul sesuai pencarian atau filter.</p>');
 }
 function dbSummaryTable(groups,n){
  const arr=groups.map(g=>{const a=dbSummary(g.mods.map(m=>({m})),n);return {g,a,count:g.mods.length,p:dbPct(a.Tercapai,g.mods.length)};}).sort((a,b)=>b.p-a.p);
@@ -63,7 +81,10 @@ function dbQuarterAnalysis(groups){
  return '<div class="db-tablewrap"><table class="db-data"><thead><tr><th>Program</th>'+[1,2,3,4].map(n=>'<th>TW '+n+'</th>').join('')+'</tr></thead><tbody>'+groups.map(g=>'<tr><td>'+dbEsc(g.p.nama)+'</td>'+[1,2,3,4].map(n=>{const achieved=g.mods.filter(m=>dxAt(m,n).st==='Tercapai').length,p=dbPct(achieved,g.mods.length);return '<td><button class="db-cellbtn" data-act="dbQuarter" data-q="'+n+'"><div class="db-mini"><i style="width:'+p+'%"></i></div>'+achieved+'/'+g.mods.length+' ('+p+'%)</button></td>'}).join('')+'</tr>').join('')+'</tbody></table></div>';
 }
 function dbLate(groups,n){
- const late=groups.flatMap(g=>g.mods.filter(m=>dxAt(m,n).st==='Terlambat').map(m=>({g,m,s:dxAt(m,n)})));
+ const late=groups.flatMap(g=>g.mods.flatMap(m=>{
+  const lateQuarters=(dbIsAnnual()?[1,2,3,4]:[n]).filter(q=>dxAt(m,q).st==='Terlambat');
+  return lateQuarters.length?[{g,m,s:dxAt(m,lateQuarters[lateQuarters.length-1]),quarters:lateQuarters}]:[];
+ }));
  return late.length?'<div class="db-latelist">'+late.map(x=>'<button data-act="dxMod" data-p="'+dbEsc(x.g.p.akr)+'" data-j="'+dbEsc(x.m.n)+'"><span>!</span><strong>'+dbEsc(x.m.n)+'</strong><small>'+dbEsc(x.g.p.nama)+' · '+x.s.late+' item terlambat · UIC '+dbEsc(x.m.x.uic)+'</small><b>Detail ›</b></button>').join('')+'</div>':'<p class="db-empty">Tidak ada modul terlambat pada filter dan periode ini.</p>';
 }
 function dbTabPanel(groups,n){
