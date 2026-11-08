@@ -98,3 +98,15 @@ test('compact Sync keeps real Firestore saving and error statuses accessible',()
  assert.match(source,/header\.insertBefore\(control,avatar\)/);
  assert.match(source,/control\.setAttribute\('role','switch'\)/);
 });
+
+test('help/Cheatsheet icon-only and observer avoid expensive deep DOM scanning',()=>{
+ assert.match(source,/headerObserver\.observe\(root,\{childList:true\}\)/);
+ assert.doesNotMatch(source,/headerObserver\.observe\(root,\{childList:true,subtree:true\}\)/);
+ assert.match(source,/sk-hdrActions \.sk-hdrHelp span,#app \.top \.sk-hdrActions \.sk-hdrSheet span\{display:none!important\}/);
+ assert.match(source,/Pusat Bantuan: panduan penggunaan aplikasi, alur menu/);
+ assert.match(source,/Cheatsheet: referensi ringkas tata kelola/);
+ assert.match(source,/function muteNativeTitle\(node\)/);
+ assert.match(source,/if\(!enabled\)\{muteNativeTitle\(el\);return\}/);
+ assert.match(source,/header\.querySelector\('\.sk-hdrActions \.sk-hdrHelp'\)/);
+ assert.match(source,/header\.querySelector\('\.sk-hdrActions \.sk-hdrSheet'\)/);
+});
