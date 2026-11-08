@@ -480,12 +480,12 @@ test('Detail Program editable paper retains existing text and repeated registers
 });
 test('Semua Program shows all active programs and is not the first program',()=>{
  const m=boot();m.S.ui.psFlow={tab:'mapping',prog:'',psGovNavV:1};
- m.scope.bank().filterAllPrograms=true;
+ m.S.ui.psBank=m.S.ui.psBank||{};m.S.ui.psBank.filterScopes={mapping:{allProgramsSelected:true}};
  const html=m.scope.render(),js=source['project-selection-workflow-2027.js'];
  assert.match(html,/semua program/i);
  assert.match(html,/data-scope-choose=/);
  assert.match(html,/Digitalisasi Core Non APBN/);
- assert.match(js,/filterAllPrograms=!el\\.value/);
+ assert.match(js,/setFilterField\('allProgramsSelected',!el.value\)/);
  assert.match(js,/setFilterField\\('year',el.value\\)/);
 });
 test('Activity Log records changes with before-after and ignores only-UI navigation',()=>{
