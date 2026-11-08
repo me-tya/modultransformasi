@@ -378,6 +378,11 @@ function initHeaderControls(){
  '#app .top #dbb[data-mt-sync="error"]::before{content:"⚠ Sync";color:#ffc2b9}',
  '#app .top #dbb[data-mt-sync="error"]{border-color:#e7786e;background:rgba(226,77,77,.14)}',
  '#app .top #dbb[data-mt-sync="pending"]{border-color:#d7aa41;background:rgba(253,185,19,.12)}',
+ '/* Ikon ringkas: styling dasar Bantuan (putih-biru) dan Cheatsheet (emas) tetap dari template asli */',
+ '#app .top .sk-hdrActions .sk-hdrHelp,#app .top .sk-hdrActions .sk-hdrSheet{box-sizing:border-box!important;flex:0 0 36px!important;width:36px!important;min-width:36px!important;max-width:36px!important;height:36px!important;min-height:36px!important;padding:0!important;gap:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border-radius:9px!important;white-space:nowrap!important;overflow:hidden}',
+ '#app .top .sk-hdrActions .sk-hdrHelp>span,#app .top .sk-hdrActions .sk-hdrSheet>span{display:none!important}',
+ '#app .top .sk-hdrActions .sk-hdrHelp i{margin:0!important;font-size:12px!important}',
+ '#app .top .sk-hdrActions .sk-hdrSheet{font-size:17px!important}',
  '@media(min-width:901px){#app header.top{flex-wrap:nowrap!important}#app .top .role{max-width:29vw;overflow:hidden;text-overflow:ellipsis}}',
  '@media(max-width:1260px){#app .top .mt-help-switch{--mt-help-width:75px;gap:4px}#app .top .mt-help-switch .mt-help-caption{display:none}}',
  '@media(max-width:900px){#app .top .mt-help-switch{--mt-help-width:75px}#app .top .mt-help-switch .mt-help-caption{display:none}}'
@@ -396,5 +401,5 @@ if(typeof document.querySelector==='function'){
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initHeaderControls,{once:true});
  else initHeaderControls();
 }
-window.MT_MENU_TOOLTIP={hide:hide,resolve:lookup,enabled:function(){return enabled},setEnabled:setEnabled,version:'20261109-guide-restored-header-v5'};
+window.MT_MENU_TOOLTIP={hide:hide,resolve:lookup,enabled:function(){return enabled},setEnabled:setEnabled,version:'20261109-icon-shortcuts-rich-help-v6'};
 })();
