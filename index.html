@@ -7530,8 +7530,14 @@ const MT_RPT_ORG=['KEMENTERIAN KEUANGAN REPUBLIK INDONESIA','Badan Teknologi, In
 const mtRptT=(lang,i,e)=>lang==='en'?e:i;
 function mtRptHas(v){const s=String(v??'').trim();return !!s&&!/^[-–—]$/.test(s);}
 function mtRptMd(s){return esc(String(s??'')).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>');}
+function mtRptOrderedMeta(rows){
+ const all=Array.isArray(rows)?rows.filter(r=>Array.isArray(r)&&r.length>=2).slice():[];
+ const i=all.findIndex(r=>/^(?:(?:nomor|no\.?)\s*(?:dokumen|laporan)?|nomor dokumen)$/i.test(String(r[0]||'').trim()));
+ const first=i>=0?all.splice(i,1)[0]:['Nomor Dokumen','Belum ditetapkan'];
+ return [['Nomor Dokumen',first[1]??'Belum ditetapkan'],...all];
+}
 function mtRptHtml(model){
-  const c=model.cover,L=(i,e)=>mtRptT(model.lang,i,e),F=!!model.formal;let n=0,m2=0,fg=0,tb=0,nn=false,an=0;const toc=[],figs=[],tabs=[];
+  const c=model.cover,L=(i,e)=>mtRptT(model.lang,i,e),F=!!model.formal;c.meta=mtRptOrderedMeta(c.meta);let n=0,m2=0,fg=0,tb=0,nn=false,an=0;const toc=[],figs=[],tabs=[];
   const tte0=c.tte||{};
   const tteHtml=`<div class="tte">${tte0.date?`<div class="tdt">${esc(tte0.city?tte0.city+', '+tte0.date:tte0.date)}</div>`:''}${tte0.label?`<div class="tlb">${esc(tte0.label)}</div>`:''}<div class="tj">${esc(tte0.title||L('[Jabatan]','[Position]'))}</div><div class="qrph" role="img" aria-label="Placeholder QR Digital Signature">QR TTE</div><div class="tl">${L('Ditandatangani secara elektronik','Electronically signed')}</div><div class="tn">${esc(tte0.name||L('[Nama Pejabat]','[Signer Name]'))}</div></div>`;
   const cell=v=>{if(v&&typeof v==='object'){const st=[v.fill?`background:#${v.fill}`:'',v.bg?`background:#${v.bg}`:'',v.color?`color:#${v.color}`:'',v.bold?'font-weight:700':'',v.align?`text-align:${v.align}`:''].filter(Boolean).join(';');return `<td style="${st}">${v.fill?`<span class="pill">${mtRptMd(v.text)}</span>`:mtRptMd(v.text)}</td>`;}return `<td>${mtRptMd(v)}</td>`;};
@@ -7660,7 +7666,7 @@ async function mtRptDocx(model){
   const addImg=(img,widthTw)=>{if(!img||!img.src)return '';const m=img.src.match(/^data:image\/(png|jpe?g);base64,(.*)$/);if(!m)return '';const ext=m[1]==='png'?'png':'jpeg';const id=`rIdImg${media.length+1}`;media.push({id,ext,data:m[2],name:`image${media.length+1}.${ext==='png'?'png':'jpg'}`});
     const cx=Math.round(widthTw*EMU),cy=Math.round(cx*(img.h/img.w));const n=docPr++;
     return `<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${cx}" cy="${cy}"/><wp:docPr id="${n}" name="Gambar ${n}"/><wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic><pic:nvPicPr><pic:cNvPr id="${n}" name="${media[media.length-1].name}"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="${id}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`;};
-  const c=model.cover,x=[];
+  const c=model.cover,x=[];c.meta=mtRptOrderedMeta(c.meta);
   // WYSIWYG navy gradient + five-color accent, embedded as lossless PNG.
   const coverBanner=model.template!=='classic'?mtRptCoverBanner():null;
   if(coverBanner)x.push(mtDxP(addImg(coverBanner,W),{after:130}));
@@ -7956,6 +7962,7 @@ async function rptPptx(model){if(!window.PptxGenJS){try{await chLib('https://cdn
  if(!window.PptxGenJS)throw new Error('Pustaka PowerPoint gagal dimuat. Periksa koneksi jaringan.');
  const ppt=new PptxGenJS();ppt.layout='LAYOUT_WIDE';ppt.title=model.fileName;ppt.author='Modul Transformasi';
  const F='Arial',NV='12275A',NV2='1F3F86',GD='F2A93B',INK='1D2433',MU='667085',SW=13.333,X0=0.45,CW=SW-0.9,Y0=1.12,YMAX=6.95,FS=12,c=model.cover;
+ c.meta=mtRptOrderedMeta(c.meta);
  const strip=t=>String(t??'').replace(/\*\*(.+?)\*\*/g,'$1');
  const runs=(t,o={})=>String(t??'').split(/(\*\*[^*]+\*\*)/g).filter(x=>x!=='').map(p=>/^\*\*.*\*\*$/.test(p)?{text:p.slice(2,-2),options:Object.assign({bold:true},o)}:{text:p,options:o});
  const lineRuns=(arr,o={})=>arr.map((l,i)=>{const r=runs(l,Object.assign({},o));if(!r.length)r.push({text:' ',options:Object.assign({},o)});if(o.bullet)r.slice(1).forEach(x=>{delete x.options.bullet});r.forEach(x=>{delete x.options.breakLine});if(i<arr.length-1)r[r.length-1].options.breakLine=true;if(!o.bullet)return r;r[0].options.bullet=true;return r}).flat();
@@ -8006,12 +8013,26 @@ async function rptPptx(model){if(!window.PptxGenJS){try{await chLib('https://cdn
   e.addText([t.city&&t.date?t.city+', '+t.date:(t.date||''),t.label||'',t.title||'[Jabatan]','','','','Ditandatangani secara elektronik',t.name||'[Nama Pejabat]'].map((x,i,a)=>({text:x||' ',options:{color:i===6?'A0A4AB':INK,breakLine:i<a.length-1}})),{x:7.6,y:2.0,w:5,h:3.6,fontSize:14,fontFace:F,margin:0,valign:'top'});
   e.addText(c.title||'',{x:X0,y:1.3,w:6.5,h:1,fontSize:16,color:MU,fontFace:F,margin:0,valign:'top'});}
  return ppt.write({outputType:'blob'})}
+function pDocsActions(p,c,can,miss){
+ const viewIcon='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+ const editIcon='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.8 3.8a2.2 2.2 0 0 1 3.1 3.1L9 17.8l-4.5 1 1-4.5z"/></svg>';
+ if(!c)return chCan('C',p)?'<button type="button" class="btn sm pri" data-act="chnew" data-p="'+esc(p.akr)+'" title="Buat Detail Dokumen Perencanaan Proyek">+ Buat</button>':'';
+ let out='<button type="button" class="pdocs-action-icon view" data-act="chopen" data-p="'+esc(p.akr)+'" title="Lihat Detail Dokumen Perencanaan Proyek" aria-label="Lihat Detail Dokumen Perencanaan Proyek">'+viewIcon+'</button>';
+ const mayRevise=c.st==='Disahkan'&&chCan('U',p),mayEdit=can||mayRevise;
+ if(mayEdit){
+  const act=can?'ched':'chver',tab=miss?.[0]||'ch';
+  out+='<button type="button" class="pdocs-action-icon edit" data-act="'+act+'" data-p="'+esc(p.akr)+'" data-id="'+esc(c.id)+'" data-s="'+esc(tab)+'" title="Ubah Detail Dokumen Perencanaan Proyek" aria-label="Ubah Detail Dokumen Perencanaan Proyek">'+editIcon+'</button>';
+ }else{
+  out+='<button type="button" class="pdocs-action-icon edit" disabled title="Ubah Detail Dokumen Perencanaan Proyek — tidak memiliki hak akses" aria-label="Ubah Detail Dokumen Perencanaan Proyek" aria-disabled="true">'+editIcon+'</button>';
+ }
+ return out;
+}
 /* --- Perencanaan: 7 dokumen proyek --- */
 function pPerencanaan(){const PV=pmoProgramList();const D=CHPG.map(x=>x[0]);
  return vh('C','pmo','Dokumen Proyek','Tujuh dokumen proyek per program sesuai Draft KEP Kepala BaTii, disusun pada T-1.',lv('charter').includes('C')?'<label class="btn pri">Import Charter (PPTX)<input type="file" accept=".pptx" hidden data-on="impcharter"></label>':'')+pmoTabs('perencanaan')+
  `<div class="note i"><span>Dokumen proyek ditetapkan dengan ND/Kesepakatan Bersama paling lambat <b>15 hari kerja</b> pada awal tahun proyek, lalu rencana kerja dirinci menjadi WBS paling lambat <b>15 hari kerja</b> setelahnya (<a href="#pmo-wbsplan">Susun WBS</a>).</span></div>
- <div class="card"><div class="tscroll"><table class="lap pdocs"><thead><tr><th>Program</th><th>Charter</th>${CHPG.map((x,i)=>`<th class="ctr" title="${esc(x[2]||x[1])}"><b class="dn2">${i+1}</b><span class="sm">${x[1]}</span></th>`).join('')}<th></th></tr></thead><tbody>${PV.map(p=>{const c=chList(p.akr).find(x=>x.st==='Draft')||chList(p.akr).find(x=>x.st==='Reviu')||chCur(p.akr);const ok=c?chDocOk(c):{};const n=c?chPagesFilled(c):0;const can=c&&chCan('U',p)&&(c.st==='Draft'||(c.st==='Reviu'&&chApprover()));const miss=c?CHW.find(w=>w[0]!=='rv'&&!chChk(c)[w[0]].ok):null;
-  return `<tr><td><b>${esc(p.nama)}</b><span class="sm">${esc(p.kode)} · ${n}/7 dokumen</span></td><td>${c?chLab(c):'<span class="chip c-gray">Belum dibuat</span>'}</td>${D.map(k=>`<td class="ctr">${ok[k]?'<span class="dok y" title="Terisi">✓</span>':'<span class="dok" title="Belum diisi">○</span>'}</td>`).join('')}<td class="r" style="white-space:nowrap;width:1%"><span class="row" style="gap:6px;justify-content:flex-end;flex-wrap:nowrap">${c?`<a class="btn sm" href="#pmo-charter" data-act="chopen" data-p="${p.akr}">Buka</a>${can&&miss?`<button class="btn sm pri" data-act="ched" data-p="${p.akr}" data-id="${c.id}" data-s="${miss[0]}">Lengkapi</button>`:(c.st==='Disahkan'&&miss&&chCan('U',p)?`<button class="btn sm pri" data-act="chver" data-id="${c.id}" data-s="${miss[0]}" title="Charter sudah disahkan: membuat versi baru (Draft) dan langsung membuka bagian yang belum diisi">Lengkapi</button>`:'')}`:chCan('C',p)?`<button class="btn sm pri" data-act="chnew" data-p="${p.akr}">+ Buat</button>`:''}</span></td></tr>`}).join('')}</tbody></table></div></div>`}
+ <div class="card"><div class="tscroll"><table class="lap pdocs"><thead><tr><th>Program</th><th>Charter</th>${CHPG.map((x,i)=>`<th class="ctr" title="${esc(x[2]||x[1])}"><b class="dn2">${i+1}</b><span class="sm">${x[1]}</span></th>`).join('')}<th class="r" style="width:102px;text-align:center">AKSI</th></tr></thead><tbody>${PV.map(p=>{const c=chList(p.akr).find(x=>x.st==='Draft')||chList(p.akr).find(x=>x.st==='Reviu')||chCur(p.akr);const ok=c?chDocOk(c):{};const n=c?chPagesFilled(c):0;const can=c&&chCan('U',p)&&(c.st==='Draft'||(c.st==='Reviu'&&chApprover()));const miss=c?CHW.find(w=>w[0]!=='rv'&&!chChk(c)[w[0]].ok):null;
+  return `<tr><td><b>${esc(p.nama)}</b><span class="sm">${esc(p.kode)} · ${n}/7 dokumen</span></td><td>${c?chLab(c):'<span class="chip c-gray">Belum dibuat</span>'}</td>${D.map(k=>`<td class="ctr">${ok[k]?'<span class="dok y" title="Terisi">✓</span>':'<span class="dok" title="Belum diisi">○</span>'}</td>`).join('')}<td class="r" style="white-space:nowrap;width:1%"><span class="row" style="gap:6px;justify-content:flex-end;flex-wrap:nowrap">${pDocsActions(p,c,can,miss)}</span></td></tr>`}).join('')}</tbody></table></div></div>`}
 /* --- Penutupan --- */
 const kpTok=x=>String(x||'').toLowerCase().replace(/^\(\d+\)\s*/,'').replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>3);
 function kpProg(p,kp){const m=kpItems(p,kp);if(!m.length)return null;let t=0,d=0,nv=0;m.forEach(w=>{const b=+w.w||1;t+=b;if(doneAt(w,12)&&w.v){d+=b;nv++}});return {n:m.length,nv,pg:Math.round(d/t*100),man:!!(kp.wbs&&kp.wbs.length)}}
