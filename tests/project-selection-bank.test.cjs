@@ -298,3 +298,57 @@ test('Portfolio overview pagination fits at most twelve programs per slide',()=>
  assert.ok(overview.length>=2);
  assert.ok(overview.every(s=>s.programs.length<=12));
 });
+
+test('Priority menu: aligned SMART controls, info icon, four tabs, no redundant Bantuan Alur',()=>{
+ const workflow=source['project-selection-workflow-2027.js'];
+ const m=boot();
+ m.S.ui.psFlow.tab='prioritasi';
+ m.S.ui.ps27=m.S.ui.ps27||{};m.S.ui.ps27.prioritySub='ranking';
+ const html=m.app.page();
+ assert.match(html,/Penilaian & Peringkat/);
+ assert.match(html,/Referensi & Formula/);
+ assert.match(html,/ps27-smart-actions/);
+ assert.match(html,/pswf-prioritize/);
+ assert.match(html,/ps27-smart-info/);
+ assert.doesNotMatch(html,/Bantuan Alur/);
+ assert.match(workflow,/openDetailTab\(item\)/);
+ assert.match(workflow,/mappingTab=\['proposal'/);
+});
+test('Priority KPI cards filter ranking without duplicate search/chip strip and cannot delete projects',()=>{
+ const m=boot(),internals=m.ctx.window.MT_PROJECT_SELECTION.internals;
+ const html=internals.projectsPage(m.target);
+ assert.match(html,/data-pswf-kpi="all"/);
+ assert.match(html,/data-pswf-kpi="high"/);
+ assert.match(html,/data-pswf-kpi="mid"/);
+ assert.match(html,/data-pswf-kpi="low"/);
+ assert.match(html,/data-pswf-kpi="top"/);
+ assert.doesNotMatch(html,/id="pswf-search"/);
+ assert.doesNotMatch(html,/data-pswf-filter=/);
+ assert.doesNotMatch(html,/data-pswf-remove=/);
+ assert.doesNotMatch(html,/Hapus calon proyek/);
+});
+test('Reference & Formula reproduces Dashboard CM four-step SMART mathematics',()=>{
+ const m=boot(),internals=m.ctx.window.MT_PROJECT_SELECTION.internals;
+ internals.state().formula=true;internals.state().params=true;
+ const html=internals.referencePage(m.target);
+ assert.match(html,/Tabel 1 · Kriteria dan Bobot/);
+ assert.match(html,/Cara skor SMART dihitung/);
+ assert.match(html,/Normalisasi bobot/);
+ assert.match(html,/Nilai kriteria/);
+ assert.match(html,/Utility/);
+ assert.match(html,/Skor akhir & kategori/);
+ assert.match(html,/S<sub>i<\/sub>/);
+ assert.equal((html.match(/class="prio-fstep"/g)||[]).length,4);
+ assert.match(html,/Edwards, 1977/);
+});
+test('Snapshot history is visible and comparative, with named actions',()=>{
+ const src=source['project-selection-flow.js'],m=boot(),internals=m.ctx.window.MT_PROJECT_SELECTION.internals;
+ m.target.psSnapshots=[{id:'s1',at:'2026-10-01T11:05:00Z',by:'PMO',rows:[{id:'proj-1',score:67.5,selected:false}]}];
+ const html=internals.projectsPage(m.target);
+ assert.match(html,/Riwayat Snapshot/);
+ assert.match(html,/Simpan Snapshot Penilaian/);
+ assert.match(html,/Lihat Riwayat \(1\)/);
+ assert.match(src,/function openSnapshots/);
+ assert.match(src,/data-snapshot-compare/);
+ assert.match(src,/Proyek hanya dapat dihapus dari Pemetaan Proyek/);
+});
