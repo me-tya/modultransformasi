@@ -140,9 +140,46 @@ function splitSlideValue(value){
  }
  out.push(rest);return out;
 }
+/* One Charter Program = the exact three-slide deck used by the Charter Program tab.
+   Do not flatten Charter fields into generic report cards. */
+function programCharterSource(p){
+ const stored=p.psProgramCharter;
+ const legacy=charter(p,year());
+ const y0=+(p.mulai||p.psYear||year())||year();
+ const years=String(p.periode||'').match(/20\\d{2}/g)||[];
+ const y1=Math.max(y0,+(years[years.length-1]||y0));
+ const fallback={prog:p.akr,judul:p.nama||'',tahun:year(),ver:1,st:'Draft',
+  p1:y0,p2:y1,tujuan:p.psObjective||'',lb:[p.psBackground||''].filter(Boolean),
+  tb:p.psStrategy||'',out:[],oc:[p.psOutcome||''].filter(Boolean),ms:[],ris:[],
+  pk:[],ch:p.sponsor||'',ow:[p.uic||''].filter(Boolean),kp:[],rk:[]};
+ const fromLegacy=legacy&&!stored?Object.assign({},legacy,{
+  tahun:+p.psYear||year(),st:'Draft',
+  tujuan:p.psObjective||legacy.tujuan,
+  lb:p.psBackground?[p.psBackground]:legacy.lb,
+  tb:p.psStrategy||legacy.tb,
+  oc:p.psOutcome?[p.psOutcome]:legacy.oc
+ }):null;
+ const source=Object.assign({},fallback,fromLegacy||{},stored||{});
+ source.prog=p.akr;
+ source.p1=+source.p1||y0;source.p2=Math.max(source.p1,+source.p2||y1);
+ return source;
+}
+function charterPptSlides(p){
+ if(typeof chDeck3!=='function')throw new Error('Template Charter Program resmi tidak tersedia.');
+ const deck=chDeck3(programCharterSource(p));
+ if(!deck?.slides||deck.slides.length!==3)throw new Error('Template Charter Program harus berisi tiga slide.');
+ return deck.slides.map((native,i)=>({
+  title:native.n||['Charter Program','Kriteria Penyelesaian','Rencana Kerja'][i],
+  key:'charter',kind:'native-charter',native
+ }));
+}
 function slidePages(p){
  const out=[];
  sections(p).forEach(section=>{
+  if(section.key==='charter'){
+   out.push(...charterPptSlides(p));
+   return;
+  }
   const all=section.rows.flatMap(r=>splitSlideValue(r[1]).map((v,i)=>[String(r[0])+(i?' (lanjutan '+(i+1)+')':''),v]));
   for(let j=0;j<all.length;j+=5)out.push({title:section.title+(j?' (lanjutan)':''),key:section.key,rows:all.slice(j,j+5)});
  });
@@ -342,9 +379,24 @@ function actualPreviewShell(mode,format,markup){
  '<small class="psbank-actual-progress" data-actual-progress>Menyiapkan pratinjau file '+(format==='word'?'DOCX':'PDF')+'…</small>'+
  markup+'</div>';
 }
+function fitNativeCharterPreview(root){
+ const box=root?.querySelector?.('[data-doc-charter-canvas]');
+ if(!box)return false;
+ const el=box.querySelector('.dk-scale');
+ if(!el)return false;
+ const fit=()=>{if(!box.isConnected)return;const w=box.clientWidth;if(w)el.style.transform='scale('+(w/1280)+')'};
+ fit();requestAnimationFrame(fit);
+ if(typeof ResizeObserver==='function'){
+  const observer=new ResizeObserver(()=>{if(!box.isConnected){observer.disconnect();return}fit()});
+  observer.observe(box);
+ }
+ return true;
+}
 function hydrateProgram(root,p){
- const d=cfg(),node=root?.querySelector?.('[data-doc-actual="program"]');
- if(!node||!p||d.format==='pptx')return Promise.resolve(false);
+ const d=cfg();
+ if(d.format==='pptx'){fitNativeCharterPreview(root);return Promise.resolve(true)}
+ const node=root?.querySelector?.('[data-doc-actual="program"]');
+ if(!node||!p)return Promise.resolve(false);
  return showActualDocumentPreview(root,programReportModel(p),d.format);
 }
 function hydratePortfolio(root){
@@ -357,9 +409,13 @@ function hydratePortfolio(root){
 function programDeck(p){
  const d=cfg();
  return (d.cover?[{kind:'cover',title:'DOKUMEN PERENCANAAN PROGRAM',rows:[]}]:[])
-  .concat(slidePages(p).map(x=>({...x,kind:'section'})));
+  .concat(slidePages(p).map(x=>({...x,kind:x.kind||'section'})));
 }
 function programSlideHtml(p,slide,idx,count,version){
+ if(slide.kind==='native-charter'){
+  return '<div class="psbank-native-charter-slide" data-doc-charter-canvas style="position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#fff;border:1px solid #dbe4ef;border-radius:3px">'+
+    '<div class="dk-scale" style="position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0">'+dkHtml(slide.native)+'</div></div>';
+ }
  if(slide.kind==='cover')return '<div class="psbank-slidepreview psbank-export-cover">'+
   '<div class="psbank-slide-export-kicker">KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</div>'+
   '<h2>DOKUMEN PERENCANAAN PROGRAM</h2><h3>'+E(p.nama)+'</h3>'+
@@ -602,6 +658,28 @@ async function exportFile(p){
    const deck=programDeck(p),count=deck.length;
    deck.forEach((page,i)=>{
     const sl=ppt.addSlide();
+    if(page.kind==='native-charter'){
+     const native=page.native;sl.background={color:native.bg||'FFFFFF'};
+     // Mirror dkPptx(): shapes, typography, dimensions, bullets and editable text.
+     (native.E||[]).forEach(e=>{
+      if(e.t==='r'||e.t==='e'){
+       sl.addShape(e.t==='e'?ppt.ShapeType.ellipse:(e.rad?ppt.ShapeType.roundRect:ppt.ShapeType.rect),{
+        x:e.x,y:e.y,w:e.w,h:e.h,
+        fill:{color:e.fill,transparency:e.tr||0},
+        line:e.line?{color:e.line,width:e.lw||.75}:{type:'none'},
+        rectRadius:e.rad?Math.min(e.w,e.h)*e.rad:undefined
+       });
+       return;
+      }
+      const options={x:e.x,y:e.y,w:e.w,h:e.h,fontFace:'Calibri',fontSize:e.s,
+       color:e.c||'12275A',bold:!!e.b,italic:!!e.i,align:e.a||'left',
+       valign:e.v||'top',margin:2,charSpacing:e.sp||0,paraSpaceAfter:e.bul?3:0};
+      if(Array.isArray(e.txt))sl.addText(e.txt.map((t,j)=>({text:t,options:{
+       bullet:e.bul?{indent:12}:false,breakLine:j<e.txt.length-1}})),options);
+      else sl.addText(String(e.txt||''),options);
+     });
+     return;
+    }
     if(page.kind==='cover'){
      sl.background={color:'0B2447'};
      sl.addShape(ppt.ShapeType.rect,{x:.61,y:.57,w:.14,h:5.4,line:{color:'FDB913',transparency:100},fill:{color:'FDB913'}});
@@ -898,7 +976,7 @@ function click(ev,p,inline=false){
  const format=ev.target.closest('[data-doc-format-btn]');
  if(format){const d=cfg();d.format=format.dataset.docFormatBtn;d.slide=0;save();if(!inline)render();return true}
  const slide=ev.target.closest('[data-doc-slide]');
- if(slide){const d=cfg();d.slide=Math.max(0,Math.min(slidePages(p).length-1,(+d.slide||0)+ +slide.dataset.docSlide));save();if(!inline)render();return true}
+ if(slide){const d=cfg();d.slide=Math.max(0,Math.min(programDeck(p).length-1,(+d.slide||0)+ +slide.dataset.docSlide));save();if(!inline)render();return true}
  if(ev.target.closest('[data-doc-export]')){exportFile(p);return true}
  if(ev.target.closest('[data-doc-signed-kind]')){processSigned(ev);return true}
  if(ev.target.closest('[data-doc-proof-open]')){openSignedProof(ev);return true}
@@ -916,5 +994,5 @@ function change(ev,inline=false){
 }
 // Laporan Akhir Proyek: pertahankan iframe HTML asli agar scroll per halaman bekerja.
 // installFinalReportPreview();
-window.MT_PS_DOC={readLocalProof,fields,sections,slidePages,programDeck,programSlideHtml,paper,builder,exportFile,click,change,documentPreview,programReportModel,tteControls,hydrateProgram,hydratePortfolio,showActualDocumentPreview,versionPanel,nextVersion,registerExport,confirmSigned,uploadProgramAttachment,history,processSigned,openSignedProof,portfolioModel,portSlides,splitPortText,portfolioBuilder,portfolioClick,portfolioChange,portfolioExport,version:'20261109-program-document-builder-v4'};
+window.MT_PS_DOC={readLocalProof,fields,sections,slidePages,programDeck,programSlideHtml,paper,builder,exportFile,click,change,documentPreview,programReportModel,tteControls,hydrateProgram,hydratePortfolio,showActualDocumentPreview,versionPanel,nextVersion,registerExport,confirmSigned,uploadProgramAttachment,history,processSigned,openSignedProof,portfolioModel,portSlides,splitPortText,portfolioBuilder,portfolioClick,portfolioChange,portfolioExport,version:'20261109-program-document-builder-v5-native-charter'};
 })();
