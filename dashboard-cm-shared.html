@@ -8101,7 +8101,7 @@ function cmRptHtml(model){
   .endtte{display:flex;justify-content:flex-end;break-inside:avoid}.endtte .tte{margin:36px 0 10px auto}
   @media print{html{background:#fff}.sheet{box-shadow:none;margin:0;width:auto;border-radius:0}.cover{min-height:265mm;break-after:page}.front{break-after:page}h2.sec.pb{break-before:page}.front h2.fm.pb{break-before:page;margin-top:0}.content>h2.sec:first-of-type{break-before:auto}.content{padding:0}.runhead{display:none}}
   @media (max-width:640px){.band,.ctitle,.content{padding-left:20px;padding-right:20px}.scope,.meta{margin-left:20px;margin-right:20px;width:calc(100% - 40px)}.big{font-size:26px}.kpis{grid-template-columns:1fr 1fr}.charts.n2,.gallery{grid-template-columns:1fr}.tte{margin:24px 20px;width:auto}}
-  </style></head><body>
+  ${model.template==='classic'?'.band{background:#12275A!important}.band:after{display:none!important}.stripe{background:#F2A93B!important}':''}</style></head><body>
   <div class="sheet cover"><div class="band"><div class="org"><b>${escapeHtml(CM_RPT_ORG[0])}</b><br>${escapeHtml(CM_RPT_ORG[1])}<br>${escapeHtml(CM_RPT_ORG[2])}</div></div><div class="stripe"></div>
   <div class="ctitle"><div class="kick">${escapeHtml(c.kicker)}</div><div class="big">${escapeHtml(c.title)}</div><div class="subj">${escapeHtml(c.subject)}</div><div class="chips">${(c.chips||[]).filter(cmRptHas).map(x=>`<span class="chip">${escapeHtml(x)}</span>`).join('')}</div></div>
   ${c.scope&&c.scope.length?`<div class="scope"><b>${L('Filter yang digunakan','Filters used')}:</b> ${c.scope.map(escapeHtml).join(' • ')}</div>`:''}
@@ -8133,6 +8133,23 @@ function cmDxTable(rows,widths,o={}){
   const bc=o.borderColor||'E4E7EC',border=o.noBorder?'<w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders>':`<w:tblBorders><w:top w:val="single" w:sz="4" w:color="${bc}"/><w:left w:val="single" w:sz="4" w:color="${bc}"/><w:bottom w:val="single" w:sz="4" w:color="${bc}"/><w:right w:val="single" w:sz="4" w:color="${bc}"/><w:insideH w:val="single" w:sz="4" w:color="${bc}"/><w:insideV w:val="single" w:sz="4" w:color="${bc}"/></w:tblBorders>`;
   return `<w:tbl><w:tblPr><w:tblW w:w="${total}" w:type="dxa"/>${o.jc?`<w:jc w:val="${o.jc}"/>`:''}<w:tblLayout w:type="fixed"/>${border}</w:tblPr><w:tblGrid>${widths.map(w=>`<w:gridCol w:w="${w}"/>`).join('')}</w:tblGrid>${rows.map(r=>`<w:tr><w:trPr><w:cantSplit/>${r.header?'<w:tblHeader/>':''}</w:trPr>${r.cells.join('')}</w:tr>`).join('')}</w:tbl>${o.after===false?'':cmDxP('',{after:o.after??120})}`;
 }
+function cmRptCoverBanner(){
+ if(typeof document==='undefined')return null;
+ try{
+  const c=document.createElement('canvas');c.width=1400;c.height=212;const x=c.getContext('2d');if(!x)return null;
+  const bg=x.createLinearGradient(0,0,1400,0);bg.addColorStop(0,'#12275A');bg.addColorStop(.6,'#1F3F86');bg.addColorStop(1,'#2F5BD3');
+  x.fillStyle=bg;x.fillRect(0,0,1400,202);
+  x.fillStyle='rgba(242,169,59,.22)';x.beginPath();x.arc(1360,10,295,0,2*Math.PI);x.fill();
+  x.fillStyle='#FFFFFF';x.textBaseline='middle';x.font='bold 25px Arial';
+  x.fillText(CM_RPT_ORG[0].toUpperCase(),78,77,1240);
+  x.font='19px Arial';x.fillText(CM_RPT_ORG[1],78,111,1240);x.fillText(CM_RPT_ORG[2],78,142,1240);
+  const g=x.createLinearGradient(0,0,1400,0);
+  [['#F2A93B',0],['#E25563',.24],['#7C5CE0',.49],['#1BA7C9',.74],['#16A37F',1]].forEach(([v,p])=>g.addColorStop(p,v));
+  x.fillStyle=g;x.fillRect(0,202,1400,10);
+  return {src:c.toDataURL('image/png'),w:1400,h:212};
+ }catch(err){return null}
+}
+
 async function cmRptDocx(model){
   if(typeof JSZip==='undefined')throw new Error('JSZip not available');
   const W=9638,EMU=635,media=[],L=(i,e)=>cmRptT(model.lang,i,e);let docPr=1;
@@ -8140,8 +8157,10 @@ async function cmRptDocx(model){
     const cx=Math.round(widthTw*EMU),cy=Math.round(cx*(img.h/img.w));const n=docPr++;
     return `<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${cx}" cy="${cy}"/><wp:docPr id="${n}" name="Gambar ${n}"/><wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic><pic:nvPicPr><pic:cNvPr id="${n}" name="${media[media.length-1].name}"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="${id}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`;};
   const c=model.cover,x=[];
-  // cover
-  x.push(cmDxTable([{cells:[cmDxCell(cmDxP(cmDxRuns(CM_RPT_ORG[0],{b:true,color:'FFFFFF',sz:22}),{after:40})+cmDxP(cmDxRuns(CM_RPT_ORG[1],{color:'DCE4F5',sz:19}),{after:20})+cmDxP(cmDxRuns(CM_RPT_ORG[2],{color:'DCE4F5',sz:19}),{after:20}),W,{fill:'12275A',padT:260,padB:260,padL:300,padR:300,noBorder:true})]},{cells:[cmDxCell(cmDxP('',{after:0,line:120}),W,{fill:'F2A93B',padT:20,padB:20,noBorder:true})]}],[W],{noBorder:true,after:false}));
+  // WYSIWYG navy gradient + five-color accent, embedded as lossless PNG.
+  const coverBanner=model.template!=='classic'?cmRptCoverBanner():null;
+  if(coverBanner)x.push(cmDxP(addImg(coverBanner,W),{after:130}));
+  else x.push(cmDxTable([{cells:[cmDxCell(cmDxP(cmDxRuns(CM_RPT_ORG[0],{b:true,color:'FFFFFF',sz:22}),{after:40})+cmDxP(cmDxRuns(CM_RPT_ORG[1],{color:'DCE4F5',sz:19}),{after:20})+cmDxP(cmDxRuns(CM_RPT_ORG[2],{color:'DCE4F5',sz:19}),{after:20}),W,{fill:'12275A',padT:260,padB:260,padL:300,padR:300,noBorder:true})]},{cells:[cmDxCell(cmDxP('',{after:0,line:120}),W,{fill:'F2A93B',padT:20,padB:20,noBorder:true})]}],[W],{noBorder:true,after:false}));
   x.push(cmDxP('',{after:360}));
   x.push(cmDxP(cmDxRuns(c.kicker,{b:true,color:'2F5BD3',sz:26}),{after:80}));
   x.push(cmDxP(cmDxRuns(c.title,{b:true,color:'12275A',sz:52}),{after:120,line:240}));
