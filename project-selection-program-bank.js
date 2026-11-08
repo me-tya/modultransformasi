@@ -6,7 +6,7 @@ if(!A||!F||!I||!Docs||!Scope)return;
 const oldPage=A.page,oldMount=A.mount;
 const E=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const year=()=>+S.ui.psSelectedYear||+S.ui.tahun||2026;
-const can=p=>!!ME&&['SA','PMOK','PMOU'].includes(ME.role)&&(!p||ME.role!=='PMOU'||!p.uic||p.uic===ME.unit)&&(!p||p.psStatus!=='Ditetapkan');
+const can=p=>!!ME&&['SA','PMOK','PMOU'].includes(ME.role)&&(!p||ME.role!=='PMOU'||!p.uic||p.uic===ME.unit)&&(!p||p.psStatus!=='Ditetapkan'&&!p.arsip&&p.psListStatus!=='Arsip');
 const saveUI=()=>{save();render()};
 const state=()=>I.state();
 const all=()=>S.programs||[];
@@ -299,7 +299,7 @@ function addOne(key,renderNow=true,to=year(),newName=null,newAkronim=null){
  const baseCode=codeFor(rec.p,to,newAkronim);let candidate=baseCode,seq=2;
  while(all().some(x=>+x.psYear===to&&String(x.kode||'').toUpperCase()===candidate.toUpperCase()))candidate=baseCode+'-'+seq++;
  p.kode=candidate;
- p.psCarry.sourceYear=rec.year;p.psSourceYear=rec.year;all().push(p);
+ p.psCarry.sourceYear=rec.year;p.psSourceYear=rec.year;p.psListStatus='Legacy';p.arsip=false;all().push(p);
  const b=store();state().prog=p.id;Scope.bank().target=p.id;b.workspace='';b.tab='detail';b.check=b.check.filter(x=>x!==key);state().tab='usulan';
  if(renderNow){saveUI();toast('Program '+p.nama+' berhasil ditambahkan ke Daftar Program tahun '+to+'.')}
  return p;
