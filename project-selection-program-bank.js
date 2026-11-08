@@ -37,16 +37,18 @@ function matchesUnit(p,unit='all',role='all'){
  const needle=String(unit).toLowerCase(),main=String(p.uic||'').toLowerCase().includes(needle),support=String(p.pend||p.psSupportingUic||'').toLowerCase().includes(needle);
  return role==='utama'?main:role==='pendukung'?support:main||support;
 }
-function matchesPeriod(p,period='all'){
- if(!period||period==='all'||period==='range')return true;
- const quarter=/^TW\s*(\d)$/i.exec(period);if(!quarter)return true;
- const months=(p.psProjects||[]).map(x=>String(x.goLive||x.start||'')).filter(x=>/^\d{4}-\d{2}-\d{2}/.test(x));
- if(!months.length)return true; // no project timetable yet; do not hide undeveloped proposals
- return months.some(x=>Math.ceil(Number(x.slice(5,7))/3)===Number(quarter[1]));
+function matchesPeriod(p,period='all',from='',to=''){
+ if(!period||period==='all')return true;
+ const quarter=/^TW\s*(\d)$/i.exec(period);
+ const dates=(p.psProjects||[]).map(x=>String(x.goLive||x.start||'')).filter(x=>/^\d{4}-\d{2}-\d{2}/.test(x));
+ if(!dates.length)return true; // proposals without planned dates remain visible
+ if(quarter)return dates.some(x=>Math.ceil(Number(x.slice(5,7))/3)===Number(quarter[1]));
+ if(period==='range')return (!from&&!to)||dates.some(x=>(!from||x>=from)&&(!to||x<=to));
+ return true;
 }
 function bank(){
  const b=store(),q=String(b.search||'').toLowerCase(),list=records();
- const rows=list.filter(x=>(b.filterYear==='all'||+b.filterYear===x.year)&&(!b.filterProgram||x.p.id===b.filterProgram)&&(b.filterStatus==='all'||!b.filterStatus||labelStatus(x.p)===b.filterStatus)&&matchesUnit(x.p,b.filterUnit,b.filterRole)&&matchesPeriod(x.p,b.filterPeriod)&&[x.p.nama,x.p.kode,x.p.uic,x.p.akr].join(' ').toLowerCase().includes(q));
+ const rows=list.filter(x=>(b.filterYear==='all'||+b.filterYear===x.year)&&(!b.filterProgram||x.p.id===b.filterProgram)&&(b.filterStatus==='all'||!b.filterStatus||labelStatus(x.p)===b.filterStatus)&&matchesUnit(x.p,b.filterUnit,b.filterRole)&&matchesPeriod(x.p,b.filterPeriod,b.filterRangeFrom,b.filterRangeTo)&&[x.p.nama,x.p.kode,x.p.uic,x.p.akr].join(' ').toLowerCase().includes(q));
  const years=[...new Set(list.map(x=>x.year))].sort((a,c)=>c-a);
  const checked=rows.length>0&&rows.every(x=>b.check.includes(x.key));
  return '<div class="psbank-card"><div class="psbank-sectionhead"><div><h3>Daftar Program</h3><p>Bank histori seluruh program lintas tahun. Klik baris untuk melihat dokumen lama; gunakan + atau centang beberapa program untuk disalin ke tahun pilihan.</p></div><span class="psbank-count">'+rows.length+' entri</span></div>'+
@@ -65,7 +67,7 @@ function bank(){
 }
 function detail(){
  const b=store(),q=String(b.search||'').toLowerCase(),status=b.filterStatus||'all';
- const rows=active().filter(p=>(!b.detailProgram||p.id===b.detailProgram)&&[p.nama,p.kode,p.uic,p.akr].join(' ').toLowerCase().includes(q)&&(status==='all'||labelStatus(p)===status)&&matchesUnit(p,b.filterUnit,b.filterRole)&&matchesPeriod(p,b.filterPeriod));
+ const rows=active().filter(p=>(!b.detailProgram||p.id===b.detailProgram)&&[p.nama,p.kode,p.uic,p.akr].join(' ').toLowerCase().includes(q)&&(status==='all'||labelStatus(p)===status)&&matchesUnit(p,b.filterUnit,b.filterRole)&&matchesPeriod(p,b.filterPeriod,b.filterRangeFrom,b.filterRangeTo));
  const allRows=active(),complete=p=>window.MT_PS_GOV?.readiness(p)||{done:0,total:7};
  return '<div class="psbank-card"><div class="psbank-sectionhead"><div><h3>Detail Program · '+year()+'</h3><p>Klik program untuk melihat atau mengubah dokumen. Tidak ada Workspace terpisah.</p></div><span class="psbank-count">'+rows.length+' program</span></div>'+
  '<div class="psbank-tablewrap"><table class="psbank-table psbank-detail-table"><thead><tr><th>Tahun</th><th>Nama Program</th><th>Kode Program</th><th>Asal</th><th>Status</th><th>Kelengkapan</th><th>Modul</th><th>Aksi</th></tr></thead><tbody>'+
@@ -419,7 +421,7 @@ function mount(){
  }
  function resetActiveFilter(panel){
   const f=saved();const root=panel?.closest('#view')||document.querySelector('#view');
-  if(f.enabled)Object.assign(f,{year:String(S.ui.tahun||''),program:'',programName:'',status:'',search:'',unit:'all',unitRole:'all',period:'all'});
+  if(f.enabled)Object.assign(f,{year:String(S.ui.tahun||''),program:'',programName:'',status:'',search:'',unit:'all',unitRole:'all',period:'all',rangeFrom:'',rangeTo:''});
   const selects=[...(root?.querySelectorAll('select')||[])].filter(x=>x.closest('.ps27-filter,.filter-fields,.flt-fields,.filter-body')&&!x.closest('.psbank-project-editor'));
   const fields=[...selects,...(root?.querySelectorAll('input[type="search"]')||[])];
   fields.forEach(el=>{
