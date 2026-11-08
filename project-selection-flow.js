@@ -124,24 +124,26 @@ function page(){
 }
 function projectsPage(p){
  const u=state(),arr=rowsFor(p),scored=arr.map(x=>({x,r:calc(x,p)})),ranks=scored.filter(z=>z.r.score!=null),high=ranks.filter(z=>z.r.score>=70),mid=ranks.filter(z=>z.r.score>=40&&z.r.score<70),low=ranks.filter(z=>z.r.score<40),top=ranks.slice().sort((a,b)=>b.r.score-a.r.score)[0];
- let h='<div class="pswf-process"><label class="pswf-check"><input type="checkbox" id="pswf-prioritize" '+(p.psPrioritize?'checked':'')+' '+(readonly(p)?'disabled':'')+'><span><b>Gunakan prioritisasi SMART</b><small>Opsional. Jika tidak diaktifkan, proyek dipilih manual tanpa skor.</small></span></label>'+
- (p.psPrioritize?'<label>Ambang pemilihan <span class="pswf-inline"><b>Skor &gt;</b><input type="number" id="pswf-threshold" min="0" max="99" step="1" value="'+esc2(p.psThreshold)+'" '+(readonly(p)?'disabled':'')+'><b>%</b></span></label>':'')+
- '<span class="pswf-sp"></span><span class="pswf-status">'+esc2(p.psStatus)+'</span></div>';
+ let h='';
  h+='<div class="pswf-scope"><b>LINGKUP PERINGKAT</b><span class="pswf-chip on">Program: '+esc2(p.nama)+'</span><span class="pswf-chip">Tahun '+year()+'</span><span class="pswf-sp"></span><span>Program dan proyek tahun lain tidak tercampur.</span></div>';
- h+='<div class="prio-kpis"><div class="prio-kpi"><b>'+arr.length+'</b><small>Calon proyek</small></div><div class="prio-kpi k-high"><b>'+high.length+'</b><small>P1 Tinggi (≥70)</small></div><div class="prio-kpi k-mid"><b>'+mid.length+'</b><small>P2 Sedang (40–69)</small></div><div class="prio-kpi k-low"><b>'+low.length+'</b><small>P3 Rendah (&lt;40)</small></div><div class="prio-kpi k-top"><small>Prioritas teratas</small><b>'+(top?esc2(top.x.name):'—')+'</b><small>'+(top?labelScore(top.r):'Belum ada penilaian')+'</small></div></div>';
- h+='<div class="prio-toolbar"><input type="search" class="prio-search" id="pswf-search" value="'+esc2(u.q||'')+'" placeholder="Cari proyek, unit, PIC…">'+
- '<div class="prio-chips">'+[['all','Semua'],['Usulan','Usulan'],['Berjalan','Berjalan'],['high','P1 Tinggi'],['mid','P2 Sedang'],['low','P3 Rendah'],['selected','Terpilih']].map(t=>'<button type="button" class="prio-chip'+(u.filter===t[0]?' on':'')+'" data-pswf-filter="'+t[0]+'">'+t[1]+'</button>').join('')+'</div>'+
- '<span class="pswf-sp"></span><div class="prio-seg">'+[['score','Skor ↓'],['golive','Go-live'],['name','Nama']].map(t=>'<button type="button" class="'+(u.sort===t[0]?'on':'')+'" data-pswf-sort="'+t[0]+'">'+t[1]+'</button>').join('')+'</div>'+
+ const active=u.filter||'all';
+ const kpi=(key,value,label,klass='')=>'<button type="button" class="prio-kpi '+klass+(active===key?' is-filtered':'')+'" data-pswf-kpi="'+key+'" aria-pressed="'+(active===key)+'" title="Tampilkan '+esc2(label)+'"><b>'+value+'</b><small>'+label+'</small></button>';
+ h+='<div class="prio-kpis prio-kpis-clickable">'+kpi('all',arr.length,'Calon proyek')+
+ kpi('high',high.length,'P1 Tinggi (≥70)','k-high')+
+ kpi('mid',mid.length,'P2 Sedang (40–69)','k-mid')+
+ kpi('low',low.length,'P3 Rendah (<40)','k-low')+
+ '<button type="button" class="prio-kpi k-top'+(active==='top'?' is-filtered':'')+'" data-pswf-kpi="top" aria-pressed="'+(active==='top')+'" title="Tampilkan proyek skor tertinggi"><small>Prioritas teratas</small><b>'+(top?esc2(top.x.name):'—')+'</b><small>'+(top?labelScore(top.r):'Belum ada penilaian')+'</small></button></div>';
+ h+='<div class="prio-toolbar prio-toolbar-compact"><span class="pswf-sp"></span><span class="prio-toolbar-label">Urutkan</span><div class="prio-seg">'+[['score','Skor ↓'],['golive','Go-live'],['name','Nama']].map(t=>'<button type="button" class="'+(u.sort===t[0]?'on':'')+'" data-pswf-sort="'+t[0]+'">'+t[1]+'</button>').join('')+'</div>'+
  '<div class="prio-seg">'+[['list','☰ Daftar'],['quad','◫ Kuadran']].map(t=>'<button type="button" class="'+(u.view===t[0]?'on':'')+'" data-pswf-view="'+t[0]+'">'+t[1]+'</button>').join('')+'</div></div>';
- if(p.psPrioritize)h+='<div class="pswf-note">Proyek dipilih otomatis apabila 12 kriteria lengkap dan <b>skor absolut &gt; '+esc2(p.psThreshold)+'</b>. Bukan berdasarkan urutan ranking semata.</div>';
  const filtered=scored.filter(z=>{
   const x=z.x,r=z.r,st=x.status||'Usulan',sel=included(x,p);
+  if(u.filter==='top'&&(!top||top.x.id!==x.id))return false;
   if(u.filter==='selected'&&!sel)return false;
   if(['Usulan','Berjalan'].includes(u.filter)&&st!==u.filter)return false;
   if(['high','mid','low'].includes(u.filter)&&level(r)!==u.filter)return false;
-  const query=clean(u.q).toLowerCase();return !query||(x.name+' '+x.uic+' '+x.pic+' '+x.description).toLowerCase().includes(query);
+  return true; /* Project search uses the shared filter above, not a duplicate toolbar. */
  }).sort((a,b)=>u.sort==='name'?a.x.name.localeCompare(b.x.name):u.sort==='golive'?String(a.x.goLive||'9999').localeCompare(String(b.x.goLive||'9999')):(b.r.score??-1)-(a.r.score??-1));
- h+='<div class="pswf-snapshot"><label>Bandingkan dengan <select id="pswf-snapshot"><option value="">— tanpa pembanding —</option>'+p.psSnapshots.map(z=>'<option value="'+esc2(z.id)+'"'+(u.snapshot===z.id?' selected':'')+'>'+esc2(z.at.slice(0,16).replace('T',' '))+' · '+esc2(z.by||'PMO')+'</option>').join('')+'</select></label>'+(ownerOk(p)?'<button type="button" class="btn" data-pswf="save-snapshot">▣ Simpan snapshot</button>':'')+'</div>';
+ h+='<div class="pswf-snapshot"><label>Riwayat Snapshot <select id="pswf-snapshot"><option value="">— tanpa pembanding —</option>'+p.psSnapshots.map(z=>'<option value="'+esc2(z.id)+'"'+(u.snapshot===z.id?' selected':'')+'>'+esc2(z.at.slice(0,16).replace('T',' '))+' · '+esc2(z.by||'PMO')+'</option>').join('')+'</select></label>'+(ownerOk(p)?'<button type="button" class="btn" data-pswf="save-snapshot">▣ Simpan Snapshot Penilaian</button>':'')+'<button type="button" class="btn" data-pswf="history-snapshots">Lihat Riwayat ('+p.psSnapshots.length+')</button></div>';
  if(u.view==='quad'&&p.psPrioritize)h+=quadrant(p,filtered);
  else {
  h+='<section class="prio-list"><div class="prio-list-head">'+(!p.psPrioritize&&ownerOk(p)&&p.psStatus!=='Ditetapkan'?'<button type="button" class="btn btn-outline btn-sm" data-pswf="select-all">☑ Pilih semua</button><button type="button" class="btn btn-outline btn-sm" data-pswf="clear-all">□ Kosongkan</button>':'')+'<h3>Peringkat prioritas</h3><span>Batang C1–C12: utility tiap kriteria · '+filtered.length+' proyek</span></div>';
@@ -153,7 +155,7 @@ function projectsPage(p){
   (sel?'<span class="pswf-picked">✓ Dipilih</span>':'<span class="pswf-rejected">Belum dipilih</span>')+'</div><div class="prio-utils">'+r.details.map(d=>'<span class="prio-u" title="'+esc2(d.c.code+' '+d.c.name)+'"><span class="prio-ub"><i style="height:'+Math.max(3,Math.round(d.u*100))+'%"></i></span><em>'+d.c.code+'</em></span>').join('')+'</div></div>'+
   '<div class="prio-score"><b>'+(p.psPrioritize?labelScore(r):'—')+'</b><div class="prio-bar"><i style="width:'+(r.score||0)+'%"></i></div><span class="prio-cat">'+(p.psPrioritize?'Prioritas '+label:'Seleksi manual')+'</span>'+snapshotDelta(p,x,r)+'</div>'+
   '<div class="prio-actions"><button type="button" class="btn btn-outline btn-sm" data-pswf-detail="'+esc2(x.id)+'">'+(on?'Tutup':'Rincian')+'</button>'+
-  (ownerOk(p)&&p.psStatus!=='Ditetapkan'?'<button type="button" class="btn btn-ghost btn-sm" title="Edit proyek" data-pswf-project="'+esc2(x.id)+'">✎</button><button type="button" class="btn btn-ghost btn-sm" title="Hapus calon proyek" data-pswf-remove="'+esc2(x.id)+'">✕</button>':'')+
+  (ownerOk(p)&&p.psStatus!=='Ditetapkan'?'<button type="button" class="btn btn-ghost btn-sm" title="Ubah penilaian proyek" data-pswf-project="'+esc2(x.id)+'">✎</button>':'')+
   (!p.psPrioritize&&ownerOk(p)&&p.psStatus!=='Ditetapkan'?'<label class="pswf-select"><input type="checkbox" data-pswf-include="'+esc2(x.id)+'" '+(sel?'checked':'')+'> Pilih</label>':'')+'</div>'+
   (on?detail(p,x,r):'')+'</article>';
  });
@@ -176,6 +178,40 @@ function saveSnapshot(p){
   rows:rowsFor(p).map(x=>({id:x.id,score:calc(x,p).score,selected:included(x,p)}))};
  p.psSnapshots.unshift(snap);p.psSnapshots=p.psSnapshots.slice(0,20);
  state().snapshot=snap.id;save();render();toast('Snapshot peringkat dan pemilihan disimpan.');
+}
+
+function smartSelectionInfo(p){
+ const threshold=p?.psThreshold??80;
+ const overlay=document.createElement('div');overlay.className='pswf-overlay';
+ overlay.innerHTML='<section class="pswf-modal" role="dialog" aria-modal="true" aria-label="Aturan prioritisasi SMART">'+
+ '<header><h2>Aturan Pemilihan Proyek SMART</h2><button type="button" data-close>✕</button></header>'+
+ '<main><p>Proyek dipilih secara otomatis hanya jika <b>12 kriteria penilaian lengkap</b> dan <b>skor absolut &gt; '+esc2(threshold)+'</b>. Nilai yang sama dengan ambang tidak lolos.</p>'+
+ '<p>Urutan peringkat bukan dasar pemilihan otomatis. Kriteria benefit dan biaya menggunakan arah utility yang berbeda, dengan bobot yang dinormalisasi.</p>'+
+ '<p>Rumus dan rubrik lengkap tersedia di <b>Prioritasi → Referensi & Formula</b>.</p></main>'+
+ '<footer><button class="btn pri" type="button" data-close>Tutup</button></footer></section>';
+ document.body.appendChild(overlay);
+ overlay.addEventListener('click',e=>{if(e.target===overlay||e.target.closest('[data-close]'))overlay.remove()});
+}
+function openSnapshots(p){
+ const overlay=document.createElement('div');overlay.className='pswf-overlay';
+ const snapshots=(p?.psSnapshots||[]).slice().sort((a,b)=>String(b.at).localeCompare(String(a.at)));
+ overlay.innerHTML='<section class="pswf-modal pswf-snapshot-modal" role="dialog" aria-modal="true" aria-label="Riwayat Snapshot Prioritasi">'+
+ '<header><h2>Riwayat Snapshot · '+esc2(p.nama)+'</h2><button type="button" data-close>✕</button></header>'+
+ '<main><p>Snapshot menyimpan skor dan status pemilihan proyek pada saat penilaian. Pilih salah satu snapshot untuk membandingkan peringkat sekarang dengan kondisi sebelumnya.</p>'+
+ (snapshots.length?snapshots.map((z,i)=>{
+  const rows=z.rows||[];
+  return '<article class="pswf-snapshot-entry"><div><b>Snapshot '+(snapshots.length-i)+' · '+esc2(String(z.at).slice(0,16).replace('T',' '))+'</b>'+
+  '<small>Oleh '+esc2(z.by||'PMO')+' · '+rows.length+' proyek · '+rows.filter(x=>x.selected).length+' dipilih</small></div>'+
+  '<button class="btn" type="button" data-snapshot-compare="'+esc2(z.id)+'">Bandingkan</button>'+
+  '<details><summary>Lihat nilai proyek</summary><table><thead><tr><th>Proyek</th><th>Skor</th><th>Terpilih</th></tr></thead><tbody>'+
+  rows.map(row=>{const proj=rowsFor(p).find(x=>String(x.id)===String(row.id));return '<tr><td>'+esc2(proj?.name||'Proyek historis')+'</td><td>'+(row.score==null?'—':esc2(row.score))+'</td><td>'+(row.selected?'Ya':'Tidak')+'</td></tr>'}).join('')+'</tbody></table></details></article>';
+ }).join(''):'<p>Belum ada snapshot yang disimpan untuk program ini.</p>')+
+ '</main><footer><button type="button" class="btn pri" data-close>Tutup</button></footer></section>';
+ document.body.appendChild(overlay);
+ overlay.addEventListener('click',e=>{
+  if(e.target===overlay||e.target.closest('[data-close]')){overlay.remove();return}
+  const cmp=e.target.closest('[data-snapshot-compare]');if(cmp){state().snapshot=cmp.dataset.snapshotCompare;save();overlay.remove();render()}
+ });
 }
 function detail(p,x,r){
  return '<div class="prio-detail"><div class="prio-prog-detail"><span><b>Program:</b> '+esc2(p.nama)+'</span><span><b>UIC:</b> '+esc2(x.uic||p.uic)+'</span><span><b>Deskripsi:</b> '+esc2(x.description||'—')+'</span></div>'+
@@ -349,13 +385,14 @@ function mount(){
   const b=e.target.closest('button,[data-pswf-detail]');if(!b)return;
   const p=pickedProgram(),a=b.dataset.pswf;
   if(b.dataset.pswfTab){state().tab=b.dataset.pswfTab;save();render();return}
+  if(b.dataset.pswfKpi){state().filter=state().filter===b.dataset.pswfKpi?'all':b.dataset.pswfKpi;save();render();return}
   if(b.dataset.pswfFilter){state().filter=b.dataset.pswfFilter;save();render();return}
   if(b.dataset.pswfSort){state().sort=b.dataset.pswfSort;save();render();return}
   if(b.dataset.pswfView){state().view=b.dataset.pswfView;save();render();return}
   if(b.dataset.pswfMv){state().monevView=b.dataset.pswfMv;save();render();return}
   if(b.dataset.pswfDetail){const u=state(),id=b.dataset.pswfDetail;u.open=u.open||[];u.open=u.open.includes(id)?u.open.filter(x=>x!==id):u.open.concat(id);save();render();return}
   if(b.dataset.pswfProject){if(p)projectModal(p,b.dataset.pswfProject);return}
-  if(b.dataset.pswfRemove){if(p)removeProject(p,b.dataset.pswfRemove);return}
+  if(b.dataset.pswfRemove){toast('Proyek hanya dapat dihapus dari Pemetaan Proyek → Usulan Proyek.');return}
   if(b.dataset.pswfMvadd){if(p)monevModal(p,state().monevPid,b.dataset.pswfMvadd,-1);return}
   if(b.dataset.pswfMvedit){if(p){const t=b.dataset.pswfMvedit.split(':');monevModal(p,state().monevPid,t[0],+t[1])}return}
   switch(a){
@@ -364,6 +401,8 @@ function mount(){
    case 'delete-program':if(p)deleteProgram(p);return;
    case 'add-project':if(p)projectModal(p,'');return;
    case 'save-snapshot':if(p)saveSnapshot(p);return;
+   case 'history-snapshots':if(p)openSnapshots(p);return;
+   case 'smart-info':smartSelectionInfo(p);return;
    case 'select-all':if(p&&!p.psPrioritize&&!readonly(p)){rowsFor(p).forEach(x=>x.included=true);save();render()}return;
    case 'clear-all':if(p&&!p.psPrioritize&&!readonly(p)){rowsFor(p).forEach(x=>x.included=false);save();render()}return;
    case 'save-weights':if(p)saveWeights(p,root);return;
