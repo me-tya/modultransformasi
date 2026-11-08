@@ -421,7 +421,7 @@ function mount(){
    case 'save-weights':if(p)saveWeights(p,root);return;
    case 'reset-weights':if(p)resetWeights(p);return;
    case 'edit-text':if(p)editRubrics(p);return;
-   case 'reset-text':if(p&&!readonly(p)&&window.confirm('Pulihkan teks semua kriteria ke versi Dashboard CM?')){p.psRubrics={};save();render()}return;
+   case 'reset-text':if(p&&!readonly(p))window.MT_PS_CONFIRM?.('Pulihkan Teks Kriteria?','Seluruh penyesuaian teks rubrik SMART akan diganti dengan versi default Dashboard CM.',()=>{p.psRubrics={};save();render()});return;
    case 'finalize':if(p)finalize(p);return;
    case 'reopen':if(p)reopen(p);return;
    case 'go-wbs':if(p){S.ui.prog=p.akr;save();location.hash='#pmo-wbsplan'}return;
@@ -505,8 +505,7 @@ function programModal(p){
 function deleteProgram(p){
  if(!ownerOk(p)||p.psStatus==='Ditetapkan')return;
  if((S.wbs||[]).some(w=>w.prog===p.akr&&!w.arsip)){toast('Program yang sudah memiliki WBS tidak boleh dihapus.');return}
- if(!window.confirm('Hapus draf program '+p.nama+' beserta daftar calon proyek?'))return;
- S.programs=S.programs.filter(x=>x!==p);state().prog='';save();render();toast('Draf program dihapus.');
+ window.MT_PS_CONFIRM?.('Hapus Draf Program?','Program '+p.nama+' beserta seluruh usulan proyeknya akan dihapus dari tahun ini.',()=>{S.programs=S.programs.filter(x=>x!==p);state().prog='';save();render();toast('Draf program dihapus.');},'danger');
 }
 function projectModal(p,id){
  if(!ownerOk(p)||readonly(p))return;
@@ -551,8 +550,7 @@ function projectModal(p,id){
 function removeProject(p,id){
  if(!ownerOk(p)||readonly(p))return;
  const x=rowsFor(p).find(z=>z.id===id);if(!x)return;
- if(!window.confirm('Hapus calon proyek "'+x.name+'"?'))return;
- p.psProjects=p.psProjects.filter(z=>z!==x);save();render();toast('Calon proyek dihapus.');
+ window.MT_PS_CONFIRM?.('Hapus Proyek?','Proyek '+x.name+' akan dikeluarkan dari usulan.',()=>{p.psProjects=p.psProjects.filter(z=>z!==x);save();render();toast('Calon proyek dihapus.');},'danger');
 }
 function importLegacyProjects(p){
  if(!ownerOk(p)||p.psStatus==='Ditetapkan'||+p.psYear>2026)return;
@@ -599,15 +597,12 @@ function finalize(p){
  const list=chosen(p);
  if(!list.length){toast('Belum ada proyek yang dipilih untuk ditetapkan.');return}
  if(list.some(x=>!x.name||!x.uic)){toast('Lengkapi nama dan UIC semua proyek terpilih.');return}
- if(!window.confirm('Tetapkan '+list.length+' proyek untuk program '+p.nama+' tahun '+p.psYear+'? Proyek terpilih akan tampil di Project Management sebagai calon WBS.'))return;
- p.psStatus='Ditetapkan';p.psDraft=false;p.psFinalizedAt=new Date().toISOString();p.psFinalizedBy=ME.email||'';p.psSelectedProjectIds=list.map(x=>x.id);
- p.status='Perencanaan';S.ui.prog=p.akr;const wbsCount=window.MT_PS_WORKFLOW?.syncWbs(p)||0;save();render();toast('Program dan proyek ditetapkan. '+(wbsCount?wbsCount+' item WBS draft telah tersedia untuk disesuaikan.':'Lanjut susun WBS pada Project Management.'));
+ window.MT_PS_CONFIRM?.('Tetapkan Program dan Proyek?','Tetapkan '+list.length+' proyek pada '+p.nama+' tahun '+p.psYear+'? Daftar terpilih menjadi dasar perencanaan Project Management.',()=>{p.psStatus='Ditetapkan';p.psDraft=false;p.psFinalizedAt=new Date().toISOString();p.psFinalizedBy=ME.email||'';p.psSelectedProjectIds=list.map(x=>x.id);p.status='Perencanaan';S.ui.prog=p.akr;const wbsCount=window.MT_PS_WORKFLOW?.syncWbs(p)||0;save();render();toast('Program dan proyek ditetapkan. '+(wbsCount?wbsCount+' item WBS tersedia untuk direviu.':'Lanjut menyusun WBS di Project Management.'));});
 }
 function reopen(p){
  if(!ownerOk(p)||p.psStatus!=='Ditetapkan')return;
  if((S.wbs||[]).some(w=>w.prog===p.akr&&!w.arsip)){toast('Program sudah memiliki WBS. Revisi perlu mengikuti mekanisme Change Request / pengendalian baseline.');return}
- if(!window.confirm('Buka kembali penetapan? Program akan sementara ditarik dari Project Management sampai ditetapkan ulang.'))return;
- p.psStatus='Draft';p.psDraft=true;delete p.psFinalizedAt;delete p.psFinalizedBy;save();render();toast('Program kembali ke status Draft.');
+ window.MT_PS_CONFIRM?.('Buka Revisi Program?','Program akan kembali menjadi Draft dan ditarik sementara dari daftar yang ditetapkan.',()=>{p.psStatus='Draft';p.psDraft=true;delete p.psFinalizedAt;delete p.psFinalizedBy;save();render();toast('Program kembali ke status Draft.');});
 }
 function monevModal(p,pid,type,index){
  if(!ownerOk(p))return;
