@@ -219,6 +219,87 @@ async function load(src,check){
 }
 const para=(text,bold=false)=>'<w:p><w:pPr><w:spacing w:after="110"/></w:pPr><w:r><w:rPr>'+(bold?'<w:b/>':'')+'<w:rFonts w:ascii="Aptos" w:hAnsi="Aptos"/><w:sz w:val="'+(bold?25:20)+'"/></w:rPr><w:t xml:space="preserve">'+X(text)+'</w:t></w:r></w:p>';
 function table(rows){return '<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/><w:tblBorders><w:top w:val="single" w:sz="4" w:color="DDE7F0"/><w:bottom w:val="single" w:sz="4" w:color="DDE7F0"/><w:insideH w:val="single" w:sz="4" w:color="E0E7F1"/></w:tblBorders></w:tblPr>'+rows.map(r=>'<w:tr>'+r.map((v,i)=>'<w:tc><w:tcPr><w:tcW w:w="'+(i===0?'2700':'6100')+'" w:type="dxa"/>'+(i===0?'<w:shd w:fill="EFF4FA"/>':'')+'</w:tcPr><w:p><w:r><w:rPr><w:rFonts w:ascii="Aptos" w:hAnsi="Aptos"/><w:sz w:val="19"/></w:rPr><w:t xml:space="preserve">'+X(v||'Belum diisi')+'</w:t></w:r></w:p></w:tc>').join('')+'</w:tr>').join('')+'</w:tbl>';}
+
+/* Shared PDF layout for all document builders: formal report cover, contents,
+   structured chapters, readable tables, and optional TTE. */
+async function exportFormalPdf(model,file){
+ await load('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',()=>!!window.jspdf?.jsPDF);
+ const pdf=new window.jspdf.jsPDF({unit:'mm',format:'a4'});
+ const ink=[21,45,78],navy=[14,41,81],pale=[237,244,251],gold=[250,181,36],gray=[93,110,137],W=210,left=19,right=191,bw=172;
+ let y=25;
+ const setColor=a=>pdf.setTextColor(...a),line=(v,size=10,bold=false,space=4)=>{
+  const lines=pdf.splitTextToSize(String(v??'—'),bw);
+  pdf.setFont('helvetica',bold?'bold':'normal');pdf.setFontSize(size);setColor(ink);
+  for(const txt of lines){if(y>274){pdf.addPage();y=25}pdf.text(txt,left,y);y+=Math.max(4.6,size*.48+1)}
+  y+=space;
+ };
+ const title=(v)=>{
+  if(y>240){pdf.addPage();y=26}
+  pdf.setFillColor(...gold);pdf.rect(left,y-6,3,8,'F');pdf.setFont('helvetica','bold');pdf.setFontSize(15);setColor(navy);
+  const lines=pdf.splitTextToSize(String(v),160);
+  for(const t of lines){if(y>269){pdf.addPage();y=26}pdf.text(t,left+8,y);y+=7.4}
+  y+=6;
+ };
+ const drawTable=(head,rows,widths)=>{
+  const sum=(widths||[]).reduce((a,b)=>a+b,0),w=(widths?.length===head.length)?widths.map(x=>bw*x/sum):Array(head.length).fill(bw/head.length);
+  const cellRow=(values,isHead=false)=>{
+   const parts=values.map((v,i)=>{
+    pdf.setFont('helvetica',isHead?'bold':'normal');pdf.setFontSize(isHead?9.2:9.2);
+    return pdf.splitTextToSize(String(v??'—'),Math.max(9,w[i]-5));
+   });
+   const max=Math.max(1,...parts.map(x=>x.length));
+   for(let start=0;start<max;start+=30){
+    const rows=parts.map(x=>x.slice(start,start+30)),h=Math.max(9.8,...rows.map(x=>x.length*4.5+4.2));
+    if(y+h>272){pdf.addPage();y=25}
+    let x=left;
+    values.forEach((_,i)=>{
+     const fill=isHead?navy:(i===0&&start===0?pale:[255,255,255]);
+     pdf.setFillColor(...fill);pdf.rect(x,y,w[i],h,'F');
+     pdf.setDrawColor(218,228,240);pdf.rect(x,y,w[i],h);
+     pdf.setFont('helvetica',isHead?'bold':'normal');pdf.setFontSize(9.2);
+     setColor(isHead?[255,255,255]:ink);pdf.text(rows[i]||[],x+2.5,y+4.5);x+=w[i];
+    });y+=h;
+   }
+  };
+  if(head.length)cellRow(head,true);
+  for(const row of rows)cellRow(row);
+  y+=7;
+ };
+ /* Formal cover */
+ pdf.setFillColor(...navy);pdf.rect(0,0,W,110,'F');pdf.setFillColor(...gold);pdf.rect(left,27,32,2,'F');
+ pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.setTextColor(245,191,64);
+ pdf.text('KEMENTERIAN KEUANGAN REPUBLIK INDONESIA',left,20);
+ pdf.setTextColor(255,255,255);pdf.setFontSize(24);
+ const heading=pdf.splitTextToSize(String(model.cover?.title||'DOKUMEN PROGRAM'),170);
+ pdf.text(heading,left,43);pdf.setFontSize(12);pdf.text(pdf.splitTextToSize(String(model.cover?.subject||''),170),left,68);
+ y=129;line((model.cover?.chips||[]).join('   |   '),10,true,8);
+ if(model.cover?.meta?.length)drawTable(['IDENTITAS DOKUMEN','KETERANGAN'],model.cover.meta,[35,65]);
+ const contents=(model.blocks||[]).filter(b=>b.t==='h1'||b.t==='h2').map(b=>({text:b.text,level:b.t==='h1'?1:2}));
+ if(model.formal&&contents.length){pdf.addPage();y=27;title('DAFTAR ISI');contents.forEach((b,i)=>line((b.level===2?'   ':'')+(i+1)+'. '+b.text,10,b.level===1,2));}
+ pdf.addPage();y=29;
+ for(const b of model.blocks||[]){
+  if(b.t==='h1')title(b.text);
+  else if(b.t==='h2'){if(y>251){pdf.addPage();y=26}line(b.text,12,true,5)}
+  else if(b.t==='p')line(b.text,10,false,7);
+  else if(b.t==='kv')drawTable(['Komponen','Informasi'],b.rows||[],[34,66]);
+  else if(b.t==='table'){if(b.caption)line('Tabel: '+b.caption,9,true,3);drawTable(b.head||[],b.rows||[],b.widths)}
+  else if(b.t==='bullets')for(const x of b.items||[])line('• '+x,10,false,3);
+  else if(b.t==='tte'&&!model.cover?.noTte){
+   pdf.addPage();y=34;title('PENANDATANGANAN ELEKTRONIK');
+   const t=model.cover?.tte||{};line((t.city||'')+(t.date?', '+t.date:''),10,false,12);
+   line(t.label||'Mengetahui,',10,false,16);line(t.title||'[Jabatan Pejabat]',11,true,24);
+   line('Ditandatangani secara elektronik',9,false,8);line(t.name||'[Nama Pejabat]',11,true,5);
+  }
+ }
+ const pages=pdf.getNumberOfPages();
+ for(let i=1;i<=pages;i++){pdf.setPage(i);pdf.setDrawColor(210,222,234);pdf.line(left,283,right,283);
+  pdf.setFontSize(8);pdf.setFont('helvetica','normal');setColor(gray);
+  pdf.text(String(model.header||'Modul Transformasi Kementerian Keuangan').slice(0,100),left,289);
+  pdf.text(i+' / '+pages,right,289,{align:'right'});
+ }
+ pdf.save(file);
+}
+
 async function exportFile(p){
  if(!p||!cfg().sections.length){toast('Pilih minimal satu substansi.');return}
  const d=cfg(),list=sections(p),version=nextVersion('program',p.id||p.akr,year()),file=basename(p)+'_v'+version;
@@ -243,21 +324,7 @@ async function exportFile(p){
    a.href=url;a.download=file+'.docx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2500);
    }
   }else if(d.format==='pdf'){
-   await load('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',()=>!!window.jspdf?.jsPDF);
-   const pdf=new window.jspdf.jsPDF({unit:'mm',format:'a4'});let y=23;
-   const text=(v,bold=false)=>{
-    pdf.setFont('helvetica',bold?'bold':'normal');pdf.setFontSize(bold?12:10);
-    const lines=pdf.splitTextToSize(String(v||'Belum diisi'),170);
-    if(y+lines.length*5>280){pdf.addPage();y=20}
-    pdf.text(lines,20,y);y+=lines.length*5+2;
-   };
-   if(d.cover){pdf.setFillColor(11,36,71);pdf.rect(0,0,210,50,'F');pdf.setTextColor(255,255,255);pdf.setFontSize(14);pdf.text('DOKUMEN PERENCANAAN PROGRAM',20,24);pdf.setFontSize(10);pdf.text(p.nama.slice(0,85),20,35);pdf.setTextColor(18,43,80);y=62}
-   text('KEMENTERIAN KEUANGAN · '+year()+' · Versi '+version,true);text('Draf untuk reviu, bukan dokumen keputusan.');
-   if(d.toc){text('DAFTAR ISI',true);list.forEach((r,i)=>text((i+1)+'. '+r.title))}
-   list.forEach((r,i)=>{text((i+1)+'. '+r.title.toUpperCase(),true);r.rows.forEach(a=>{text(a[0],true);text(a[1])});y+=3});
-   if(d.annex&&annex(p).length){text('LAMPIRAN CHARTER',true);annex(p).forEach(a=>{text(a[0],true);text(a[1])})}
-   if(d.sign){text('Mengetahui / menyetujui',true);y+=18;text('Pejabat Berwenang')}
-   pdf.save(file+'.pdf');
+   await exportFormalPdf(programReportModel(p),file+'.pdf');
   }else{
    await load('https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js',()=>!!window.PptxGenJS);
    const ppt=new window.PptxGenJS();ppt.layout='LAYOUT_WIDE';ppt.author='PMO Kementerian Keuangan';
@@ -426,58 +493,7 @@ async function portfolioExport(){
    const blob=await mtRptDocx(model);
    mtRptDownloadBlob(blob,file+'.docx');
   }else if(d.format==='pdf'){
-   await load('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',()=>!!window.jspdf?.jsPDF);
-   const pdf=new window.jspdf.jsPDF({unit:'mm',format:'a4'}),blue=[15,48,89],ink=[27,50,81],gold=[245,177,25],pale=[239,245,251];
-   const W=210,left=18,right=192,bodyW=174;let y=24;
-   const setColor=(color)=>pdf.setTextColor(...color);
-   const ensure=h=>{if(y+h>274){pdf.addPage();y=27}};
-   const line=(text,sz=10,bold=false,space=4)=>{
-    pdf.setFont('helvetica',bold?'bold':'normal');pdf.setFontSize(sz);setColor(ink);
-    const lines=pdf.splitTextToSize(String(text||'—'),bodyW);
-    lines.forEach(t=>{ensure(sz*.49+2);pdf.text(t,left,y);y+=sz*.49+1});y+=space;
-   };
-   pdf.setFillColor(...blue);pdf.rect(0,0,W,112,'F');
-   pdf.setFillColor(...gold);pdf.rect(18,38,22,2.2,'F');
-   pdf.setFont('helvetica','bold');pdf.setFontSize(12);pdf.setTextColor(255,198,60);pdf.text('KEMENTERIAN KEUANGAN REPUBLIK INDONESIA',18,27);
-   pdf.setTextColor(255,255,255);pdf.setFontSize(27);pdf.text(mode?'DOKUMEN USULAN':'PORTOFOLIO PROGRAM',18,57);pdf.text(mode?'PROYEK':'TRANSFORMASI',18,73);
-   pdf.setFontSize(14);pdf.text('Tahun Anggaran '+year()+'  |  Versi '+version,18,90);
-   y=133;line(data.length+' PROGRAM TERPILIH  |  '+data.reduce((n,o)=>n+(o.p.psProjects||[]).length,0)+' USULAN PROYEK',14,true,8);
-   line('DOKUMEN PERENCANAAN · DRAFT — BELUM DISAHKAN',10,false,6);
-   pdf.setDrawColor(218,226,238);pdf.line(18,165,192,165);
-   y=182;line('Dokumen ini disusun otomatis berdasarkan informasi yang dipilih dari Modul Transformasi Kementerian Keuangan.',11,false,7);
-   const tableBlock=b=>{
-    const values=b.rows||[],head=b.head||[],n=Math.max(head.length,...values.map(row=>row.length)),weights=(b.widths&&b.widths.length===n?b.widths:Array(n).fill(100/n)),den=weights.reduce((a,v)=>a+v,0),widths=weights.map(x=>bodyW*x/den);
-    const draw=(cells,header=false)=>{
-     const sizes=cells.map((v,i)=>{pdf.setFont('helvetica',header?'bold':'normal');pdf.setFontSize(header?9.3:9);
-      return pdf.splitTextToSize(String(v||'—'),Math.max(10,widths[i]-4.6))});
-     const maxLines=Math.max(1,...sizes.map(x=>x.length));
-     for(let part=0;part<maxLines;part+=28){
-      const slices=sizes.map(lines=>lines.slice(part,part+28)),height=Math.max(11,...slices.map(lines=>lines.length*4.4+5.5));
-      ensure(height+2);let x=left;
-      cells.forEach((v,i)=>{
-       pdf.setFillColor(...(header?blue:(part===0&&i===0?pale:[255,255,255])));pdf.rect(x,y,widths[i],height,'F');
-       pdf.setDrawColor(219,227,237);pdf.rect(x,y,widths[i],height);
-       pdf.setFont('helvetica',header?'bold':'normal');pdf.setFontSize(header?9.3:9);
-       setColor(header?[255,255,255]:ink);pdf.text(slices[i]||[],x+2.4,y+4.6);
-       x+=widths[i];
-      });y+=height;
-     }
-    };
-    if(head.length)draw(head,true);
-    values.forEach(row=>draw(row));
-    y+=6;
-   };
-   model.blocks.forEach(b=>{
-    if(b.t==='h1'){pdf.addPage();y=28;pdf.setFillColor(...gold);pdf.rect(left,y-6,17,2,'F');line(b.text,17,true,7)}
-    else if(b.t==='h2'){ensure(16);pdf.setFillColor(...gold);pdf.rect(left,y-5,3,8,'F');pdf.setFont('helvetica','bold');pdf.setFontSize(12);setColor(blue);pdf.text(b.text,left+7,y+1);y+=13}
-    else if(b.t==='p')line(b.text,10,false,7);
-    else if(b.t==='kv'){const rows=b.rows||[];tableBlock({head:['Keterangan','Informasi'],rows,widths:[32,68]})}
-    else if(b.t==='table')tableBlock(b);
-    else if(b.t==='bullets')(b.items||[]).forEach(t=>line('• '+t,9.7,false,4));
-   });
-   const pages=pdf.internal.getNumberOfPages();
-   for(let i=1;i<=pages;i++){pdf.setPage(i);pdf.setFillColor(...blue);pdf.rect(0,285,210,12,'F');pdf.setFont('helvetica','normal');pdf.setFontSize(8);pdf.setTextColor(255,255,255);pdf.text('PORTOFOLIO TRANSFORMASI · '+year()+' · v'+version,18,292);pdf.text(i+' / '+pages,192,292,{align:'right'})}
-   pdf.save(file+'.pdf');
+   await exportFormalPdf(portfolioModel(),file+'.pdf');
   }else{
    await load('https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js',()=>!!window.PptxGenJS);
    const ppt=new window.PptxGenJS();ppt.layout='LAYOUT_WIDE';ppt.author='PMO Kementerian Keuangan';
