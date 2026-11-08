@@ -268,17 +268,17 @@ test('Portfolio now uses formal Project Management report model for Word and vis
  assert.match(docs,/rect\(sl/);
  assert.match(docs,/fontFace:'Aptos'/);
 });
-test('Global filter icon is opt-in and local tab filter scopes remain independent',()=>{
+test('Filters are isolated per menu and no global synchronization runs',()=>{
  const bank=source['project-selection-program-bank.js'];
  const workflow=source['project-selection-workflow-2027.js'];
- assert.match(bank,/data-mt-filter-icon/);
- assert.match(bank,/mt-filter-global-on/);
- assert.match(bank,/resetActiveFilter/);
- assert.doesNotMatch(bank,/data-mt-filter-icon.*checked=/);
- assert.match(bank,/MutationObserver/);
+ assert.match(bank,/MT_FILTER_LOCAL_ONLY=true/);
+ assert.doesNotMatch(bank,/function apply\(\)/);
+ assert.doesNotMatch(bank,/mt-shared-filter-check/);
+ assert.match(workflow,/data-mt-filter-icon/);
  assert.match(workflow,/function localFilter/);
  assert.match(workflow,/filterScopes/);
- assert.match(workflow,/S\.ui\.mtSharedFilter\?\.enabled/);
+ assert.match(workflow,/Never alter filter state in another menu/);
+ assert.doesNotMatch(workflow,/S\.ui\.tahun=\+el\.value/);
 });
 
 test('Portfolio report uses structured headings and tables, never flat unformatted text',()=>{
@@ -456,4 +456,54 @@ test('Project Selection confirmations use designed modal instead of browser conf
  assert.match(source['project-selection-scope-map.js'],/psbank-confirm-card/);
  assert.match(source['project-selection-scope-map.js'],/role="alertdialog"/);
  assert.match(source['project-selection-scope-map.js'],/window\.MT_PS_CONFIRM/);
+});
+
+test('Usulan Proyek rows open modal detail, never inline appendix',()=>{
+ const m=boot();m.scope.bank().target=m.target.id;
+ m.target.psProjects.push({id:'usul-A',name:'FRSW',applicationName:'FRSW',description:'Pilot 2027',uic:'BaTii'});
+ m.scope.bank().mappingTab='proposal';
+ const html=m.scope.render(),js=source['project-selection-scope-map.js'];
+ assert.match(html,/data-scope-proposal-focus="usul-A"/);
+ assert.doesNotMatch(html,/psbank-proposal-detail/);
+ assert.match(js,/if\\(focus\\)\\{projectEditor\\(focus.dataset.scopeProposalFocus,true\\)/);
+ assert.match(js,/data-scope-editor-edit/);
+});
+test('Detail Program editable paper retains existing text and repeated registers',()=>{
+ const src=source['project-selection-program-bank.js'];
+ assert.match(src,/psbank-paper-edit/);
+ assert.match(src,/Docs\\.fields\\(p,tab,y\\)/);
+ assert.match(src,/data-bank-editfield/);
+ assert.match(src,/data-bank-entry-add/);
+ assert.match(src,/data-bank-entry-remove/);
+ assert.match(src,/psStakeholders/);
+ assert.match(src,/data-bank-inline-edit/);
+});
+test('Semua Program shows all active programs and is not the first program',()=>{
+ const m=boot();m.S.ui.psFlow={tab:'mapping',prog:'',psGovNavV:1};
+ m.scope.bank().filterAllPrograms=true;
+ const html=m.scope.render(),js=source['project-selection-workflow-2027.js'];
+ assert.match(html,/Semua Program/);
+ assert.match(html,/data-scope-choose=/);
+ assert.match(html,/Digitalisasi Core Non APBN/);
+ assert.match(js,/filterAllPrograms=!el\\.value/);
+ assert.match(js,/setFilterField\\('year',el.value\\)/);
+});
+test('Activity Log records changes with before-after and ignores only-UI navigation',()=>{
+ const m=boot();
+ const audit=m.ctx.window.MT_AUDIT;
+ assert.ok(audit?.ready,'Audit trail initialized');
+ const before=audit.history().length;
+ m.S.ui.psFlow={tab:'usulan'};m.ctx.save();
+ assert.equal(audit.history().length,before,'UI-only change should not be recorded');
+ m.target.psObjective='Menambahkan dukungan lintas program';
+ m.ctx.save();
+ const last=audit.history().at(-1);
+ assert.ok(last);
+ assert.ok(last.changes.some(x=>x.path.includes('psObjective')));
+ assert.match(String(last.by),/test@kemenkeu.go.id|Pengguna aktif/);
+ assert.ok(last.at);
+ const src=source['project-selection-program-bank.js'];
+ assert.match(src,/Activity Log/);
+ assert.match(src,/mt-audit-controls/);
+ assert.match(src,/prototype audit only|Local prototype audit only/i);
 });
