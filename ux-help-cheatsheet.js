@@ -91,7 +91,7 @@ var CM=[
 ['Penutupan Manajemen Perubahan','Setelah evaluasi dan masa transisi; alihkan pendampingan ke pemilik probis/unit operasional.','cmo-closing','Penutupan CM']
 ];
 var PM=[
-['Persiapan dan Perencanaan','Petakan program dan UIC, susun Dokumen Proyek (As-Is, To-Be, Charter, kriteria selesai, rencana kerja), lalu tetapkan melalui ND bersama.','pmo-portofolio','Portofolio','pmo-program','Program','pmo-perencanaan','Dokumen Proyek','pmo-wbsplan','Susun WBS'],
+['Persiapan dan Perencanaan','Petakan program dan UIC, susun tujuh bagian Dokumen Proyek (As-is, To-be, Perbandingan, Charter, Kriteria, Manfaat, Linimasa), lalu tetapkan melalui ND bersama.','pmo-portofolio','Portofolio','pmo-program','Program','pmo-perencanaan','Dokumen Proyek','pmo-wbsplan','Susun WBS'],
 ['Pelaksanaan','Jalankan WBS, lampirkan bukti, ajukan perubahan resmi apabila lingkup, jadwal, atau biaya berubah.','pmo-wbs','WBS & Progres','pmo-bukti','Bukti Dukung','pmo-cr','Change Request','pmo-narasi','Narasi T-Program'],
 ['Pemantauan dan Pengendalian','Lihat capaian, risiko, milestone, jadwal, serta progres yang dilaporkan PMO Unit kepada PMO Kemenkeu.','pmo-siklus','Overview','pmo-milestone','Milestone','pmo-risiko','Risiko & Isu','pmo-laporan','Capaian TW','pmo-oneonone','Jadwal 1-on-1'],
 ['Penutupan Proyek','Penutupan berdasarkan acceptance criteria, pengalihan menjadi proyek unit, atau keluar dari program transformasi.','pmo-penutupan','Penutupan Proyek'],
@@ -101,7 +101,7 @@ var PM=[
 var menuPM=[
 ['Project Selection','Pemilihan program, dokumen program, unggahan, pemetaan hingga penetapan','project-selection'],
 ['Overview','Capaian dan ringkasan kinerja','pmo-siklus'],['Portofolio','Program dan UIC utama/pendukung','pmo-portofolio'],['Program','Proyek dan penugasan','pmo-program'],
-['Dokumen Proyek','As-Is, To-Be, Charter, persetujuan','pmo-perencanaan'],['WBS Perencanaan','Penyusunan aktivitas dan bobot','pmo-wbsplan'],
+['Dokumen Proyek','Tujuh bagian: As-is, To-be, Perbandingan, Charter, Kriteria, Manfaat, Linimasa; aksi mata/pensil','pmo-perencanaan'],['WBS Perencanaan','Penyusunan aktivitas dan bobot','pmo-wbsplan'],
 ['WBS & Progres','Pelaksanaan, target, realisasi','pmo-wbs'],['Bukti Dukung','Unggah dan validasi bukti','pmo-bukti'],['Change Request','Pengendalian perubahan baseline','pmo-cr'],
 ['Milestone','Tonggak waktu proyek','pmo-milestone'],['Risiko & Isu','Risiko dan tindak lanjut','pmo-risiko'],['Capaian Triwulanan','Laporan kinerja periodik','pmo-laporan'],
 ['Narasi T-Program','Uraian pelaksanaan per program','pmo-narasi'],['Jadwal 1-on-1','Rencana pertemuan koordinasi','pmo-oneonone'],
@@ -331,11 +331,12 @@ function pmCharter(){var parts=[
  ['Gap As-Is → To-Be','Perbandingan kondisi saat ini dan target.'],
  ['Project Charter','Ruang lingkup, tujuan, sponsor, hasil dan tanggung jawab.'],
  ['Acceptance Criteria','Parameter penyelesaian serta penerimaan hasil.'],
+ ['Manfaat Proyek','Manfaat dan ukuran keberhasilan yang hendak dicapai.'],
  ['Rencana Kerja','Jadwal, milestone, aktivitas, PIC dan sumber daya.']
  ];
- return intro('Dokumen Proyek · Charter','Enam Komponen Perencanaan Detil Proyek','Charter merupakan salah satu komponen Dokumen Proyek dalam RKMK, bukan satu-satunya dokumen. Gunakan sebagai dasar lingkup, hasil, dan kendali perubahan.','Draft RKMK (6) · hlm 48–49')+
+ return intro('Dokumen Proyek · Charter','Tujuh Komponen Dokumen Perencanaan Proyek','Charter merupakan salah satu komponen Dokumen Proyek dalam RKMK, bukan satu-satunya dokumen. Gunakan sebagai dasar lingkup, hasil, dan kendali perubahan.','Draft RKMK (6) · hlm 48–49')+
  '<div class="sk-grid3">'+parts.map(function(a,i){return '<div class="sk-card"><span class="sk-pill sk-pgold">0'+(i+1)+'</span><strong style="margin-top:9px">'+a[0]+'</strong><p>'+a[1]+'</p></div>'}).join('')+'</div>'+
- '<div class="sk-feature"><div class="sk-featureIcon">✓</div><div><b>Penetapan dan penurunan rencana</b><span>Dokumen Proyek ditetapkan dengan Nota Dinas bersama paling lambat 15 hari kerja setelah kontrak kinerja Kemenkeu Wide. WBS disusun paling lambat 15 hari kerja setelah ND bersama.</span></div></div>'+jump('Buka Dokumen Proyek','pmo-perencanaan');
+ '<div class="sk-feature"><div class="sk-featureIcon">✓</div><div><b>Penetapan dan penurunan rencana</b><span>Dokumen Proyek ditetapkan dengan Nota Dinas bersama paling lambat 15 hari kerja setelah kontrak kinerja Kemenkeu Wide. WBS disusun paling lambat 15 hari kerja setelah ND bersama.</span></div></div>'+jump('Buka Tab Charter Proyek','pmo-perencanaan|ch');
 }
 function pmWBS(){return intro('Work Breakdown Structure','Dari Strategi ke Paket Kerja yang Terukur','WBS mengurai rencana kerja menjadi aktivitas, keluaran, target, penanggung jawab, jadwal, dan bukti yang dapat dikendalikan.','Draft RKMK (6) · hlm 49')+
  '<div class="sk-tree">'+[
