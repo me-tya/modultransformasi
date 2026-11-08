@@ -152,16 +152,6 @@ function projectEditor(id,readonly=false){
  if(id&&!existing)return;
  const d=document.createElement('div');d.className='psbank-overlay psbank-project-editor';
  const groups=[...new Set(PROJECT_FIELDS.map(x=>x[3]))];
- const field=([key,label,type])=>{
-  const value=projectValue(existing||{},key),disabled=readonly?'disabled':'';
-  if(type==='select'||type==='status'){
-   const arr=type==='status'?['Usulan','Berjalan','Ditunda','Selesai']:['',...CAT];
-   return '<label>'+E(label)+'<select data-scope-field="'+key+'" '+disabled+'>'+arr.map(x=>'<option value="'+E(x)+'" '+(x===value?'selected':'')+'>'+E(x||'Pilih kategori')+'</option>').join('')+'</select></label>';
-  }
-  return '<label class="'+(type==='textarea'?'psbank-editor-long':'')+'">'+E(label)+(key==='name'?' *':'')+
-   (type==='textarea'?'<textarea rows="3" data-scope-field="'+key+'" '+disabled+'>'+E(value)+'</textarea>':
-    '<input type="'+type+'" data-scope-field="'+key+'" value="'+E(value)+'" '+disabled+'></label>'.slice(0,-8));
- };
  const control=([key,label,type])=>type==='select'||type==='status'?
    '<label>'+E(label)+'<select data-scope-field="'+key+'" '+(readonly?'disabled':'')+'>'+((type==='status')?['Usulan','Berjalan','Ditunda','Selesai']:['',...CAT]).map(x=>'<option value="'+E(x)+'" '+(x===projectValue(existing||{},key)?'selected':'')+'>'+E(x||'Pilih kategori')+'</option>').join('')+'</select></label>':
    '<label class="'+(type==='textarea'?'psbank-editor-long':'')+'">'+E(label)+(key==='name'?' *':'')+
@@ -230,7 +220,7 @@ function click(ev){
  const focus=ev.target.closest('[data-scope-proposal-focus]');if(focus){mapState().proposalFocus=focus.dataset.scopeProposalFocus;save();window.render();return true}
  const tab=ev.target.closest('[data-scope-tab]');
  if(tab){mapState().mappingTab=tab.dataset.scopeTab;save();window.render();return true}
- const rm=ev.target.closest('[data-scope-remove]');if(rm){remove(rm.dataset.scopeRemove);return true}
+ const rm=ev.target.closest('[data-scope-project-remove],[data-scope-remove]');if(rm){remove(rm.dataset.scopeProjectRemove||rm.dataset.scopeRemove);return true}
  if(ev.target.closest('[data-scope-transfer]')){transfer();return true}
  const nw=ev.target.closest('[data-scope-project-new]');if(nw){projectEditor();return true}
  const view=ev.target.closest('[data-scope-project-view]');if(view){projectEditor(view.dataset.scopeProjectView,true);return true}
