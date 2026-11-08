@@ -47,14 +47,8 @@ function cloneProgram(src,from,to){
  p.psCarry={sourceId:src.id,sourceAkr:src.akr,sourceYear:from,createdAt:new Date().toISOString(),reviewed:false};
  p.psSnapshots=[];p.psSelectedProjectIds=[];delete p.psFinalizedAt;delete p.psFinalizedBy;delete p.psWbsSynced;
  p.psProjects=sourceProjects(src,from).map(x=>{x.sourceProjectId=x.id;x.id=uid('proj');x.included=x.included!==false;x.status='Usulan';if(x.start)x.start=shiftDate(x.start,from,to);if(x.goLive)x.goLive=shiftDate(x.goLive,from,to);return x});
- const used=new Set((S.wbs||[]).map(w=>w.k)),rows=sourceWbs(src,from);
- p.psWbsDraft=rows.map((x,i)=>{
-  const w=clone(x);let n=i+1,key;do{key=p.akr+'-'+n++;}while(used.has(key));used.add(key);
-  w.id=key;w.k=key;w.prog=p.akr;w.s=shiftDate(w.s,from,to);w.f=shiftDate(w.f,from,to);
-  w.tm=w.f?+w.f.slice(5,7):0;w.rm=0;w.v=0;w.arsip=false;w.psSourceWbs=x.k;w.psCarryDraft=true;
-  delete w.actual;delete w.realisasi;delete w.aktual;delete w.bukti;
-  return w;
- });
+ /* Carry-over copies the project directory, not historical WBS. Plan new WBS in Project Management. */
+ p.psWbsDraft=[];p.psCarry.wbsNotCarried=true;
  const ch=foundCharter(src,from);
  if(ch){
   const c=clone(ch);c.id=uid('charter');c.prog=p.akr;c.ver=1;c.st='Draft';c.p1=to;c.p2=to;c.kpY=to;c.log=[];delete c.disahkanAt;delete c.disahkanBy;
@@ -74,13 +68,13 @@ function carrySelected(){
  if(from===to){toast('Tahun sumber dan tahun tujuan harus berbeda. Pilih tahun tujuan pada header aplikasi.');return}
  if(from>to){toast('Tahun sumber tidak boleh lebih baru daripada tahun tujuan.');return}
  const arr=sourcePrograms().filter(p=>ids.has(String(p.id)));if(!arr.length){toast('Pilih minimal satu program sumber.');return}
- let n=0,w=0,docs=0;arr.forEach(src=>{
+ let n=0,docs=0;arr.forEach(src=>{
   if((S.programs||[]).some(p=>+p.psYear===to&&p.psCarry?.sourceId===src.id)){return}
-  const p=cloneProgram(src,from,to);S.programs.push(p);n++;w+=p.psWbsDraft.length;docs+=(S.charters||[]).some(c=>c.prog===p.akr)?1:0;state().prog=p.id;
+  const p=cloneProgram(src,from,to);S.programs.push(p);n++;docs+=(S.charters||[]).some(c=>c.prog===p.akr)?1:0;state().prog=p.id;
  });
  if(!n){toast('Program terpilih sudah pernah dibawa ke tahun '+to+'.');return}
  ws().selected=[];ws().usulanSub='daftar';state().tab='usulan';save();render();
- toast(n+' program disalin lengkap sebagai Draft '+to+'; '+docs+' charter dan '+w+' item WBS tersedia untuk direviu.');
+ toast(n+' program disalin sebagai Draft '+to+' beserta '+docs+' charter. WBS baru disusun di Project Management.');
 }
 function count(p){return p?(p.psProjects||[]).length:0;}
 function navItem(tab,label,num){const on=state().tab===tab;return '<button type="button" role="tab" aria-selected="'+on+'" class="'+(on?'on':'')+'" data-ps27-tab="'+tab+'"><span>'+label+'</span>'+(num?'<b>'+num+'</b>':'')+'</button>';}
