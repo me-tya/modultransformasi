@@ -162,7 +162,7 @@ function annex(p){const c=charter(p,year());if(!c)return[];return [['Analisis As
    program DOCX and print previews. A single TTE form is reused in every builder. */
 function tteState(d){
  if(!d.tte||typeof d.tte!=='object')d.tte={};
- const defaults={city:'Jakarta',date:new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}),label:'Mengetahui,',title:'',name:'',number:''};
+ const defaults={city:'',date:'',label:'',title:'',name:'',number:''};
  for(const [key,val] of Object.entries(defaults))if(d.tte[key]===undefined)d.tte[key]=val;
  return d.tte;
 }
@@ -646,7 +646,7 @@ function portfolioModel(){
   header:(mode?'Dokumen Usulan Proyek · ':'Dokumen Portofolio Program Transformasi · ')+year(),
   cover:{kicker:mode?'DOKUMEN USULAN PROYEK':'DOKUMEN PORTOFOLIO',title:mode?String(projectTarget()?.nama||'Usulan Proyek'):'Portofolio Program Transformasi',subject:'Tahun Anggaran '+year(),
    chips:['Tahun '+year(),data.length+(mode?' usulan proyek':' program'),'Versi v'+version],scope:[],
-   meta:[['Tahun Anggaran',String(year())],['Versi','v'+version],[mode?'Jumlah Usulan Proyek':'Jumlah Program',String(data.length)],['Unit Pengelola','PMO Kementerian Keuangan'],['Nomor Dokumen',signer.number||'Belum ditetapkan']],noTte:!d.sign,tte:{name:signer.name,title:signer.title,label:signer.label,city:signer.city,date:signer.date}},blocks:B};
+   meta:[['Tahun Anggaran',String(year())],['Versi','v'+version],[mode?'Jumlah Usulan Proyek':'Jumlah Program',String(data.length)],['Unit Pengelola',String(ME?.unit||'—')],['Nomor Dokumen',signer.number||'Belum ditetapkan']],noTte:!d.sign,tte:{name:signer.name,title:signer.title,label:signer.label,city:signer.city,date:signer.date}},blocks:B};
 }
 function splitPortText(text,limit=176){
  const value=String(text||'Belum diisi').trim().replace(/\s+/g,' '),words=value.split(' '),out=[];let line='';
