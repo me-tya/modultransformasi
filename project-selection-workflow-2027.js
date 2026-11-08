@@ -131,7 +131,7 @@ function filter(p){
  if(role!=='all')active.push(role==='utama'?'UIC Utama':'UIC Pendukung');
  const on=!!w.filterOpen,
    filterIcon='<span class="ps27-filter-ic" aria-hidden="true">'+
-   '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16l-6.5 7.8v5.2L10.5 20v-7.2z"/></svg></span>';
+   '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg></span>';
  return '<div class="ps27-filter ps27-filter-panel'+(w.filterOpen?' is-open':'')+'" aria-label="Filter Project Selection" role="search">'+
  '<div class="ps27-filter-header" data-ps27="filter" role="button" tabindex="0" aria-expanded="'+!!w.filterOpen+'" aria-label="'+(w.filterOpen?'Sembunyikan':'Tampilkan')+' filter Project Selection" title="Klik area filter untuk '+(w.filterOpen?'menyembunyikan':'menampilkan')+' pilihan filter"><div class="ps27-filter-titlebar">'+filterIcon+
  '<button type="button" class="ps27-filter-label" data-ps27="filter" aria-expanded="'+!!w.filterOpen+'">Filter</button></div>'+
