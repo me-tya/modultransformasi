@@ -382,3 +382,24 @@
 .psbank-confirm-card footer .psbank-confirm-accept.danger{background:#b43b3b;border-color:#b43b3b}
 @media(max-width:920px){#app .psbank-workspace-banner{align-items:flex-start;flex-wrap:wrap}#app .psbank-proposal-kv{grid-template-columns:1fr}#app .psbank-mapping-tabs{overflow-x:auto}}
 @media(max-width:680px){#app .psbank-workspace-kpis{justify-content:start}#app .psbank-project-editor .psbank-project-dialog{width:96vw!important;height:91vh!important;max-height:91vh!important}#app .psbank-proj-editor-grid{grid-template-columns:1fr}}
+
+/* In-place editing on the same document-paper grid and modal size. */
+#app .psbank-paper-edit .psbank-paper-body{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 12px;padding:14px 17px}
+#app .psbank-paper-edit .psbank-paper-editrow{min-width:0;margin:0;border:1px solid #d9e5f2;border-radius:8px;background:#fafcff;padding:9px 10px;display:flex;flex-direction:column;gap:5px}
+#app .psbank-paper-editrow b{font:800 11.5px 'Inter',sans-serif;color:#244c77}
+#app .psbank-paper-editrow textarea,#app .psbank-paper-editrow select{width:100%;min-width:0;min-height:36px;resize:vertical;border:1px solid #cad9e8;border-radius:7px;background:#fff;color:#15375d;padding:7px 9px;font:550 11.5px/1.5 'Inter',sans-serif;box-sizing:border-box}
+#app .psbank-paper-editrow textarea:focus,#app .psbank-register-grid textarea:focus{outline:2px solid #f2bd33;outline-offset:1px;border-color:#bf9541}
+#app .psbank-paper-edit .psbank-register-toolbar{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:9px;padding:5px 1px}
+#app .psbank-register-toolbar b{display:block;color:#193e6c;font:800 13px 'Inter',sans-serif}
+#app .psbank-register-toolbar small{display:block;font:500 10.5px 'Inter',sans-serif;color:#74889a;margin-top:3px}
+#app .psbank-paper-edit [data-bank-entry-list]{grid-column:1/-1;display:grid;grid-template-columns:1fr;gap:10px}
+#app .psbank-register-card{border:1px solid #d7e2ef;border-radius:10px;background:#fff;overflow:hidden}
+#app .psbank-register-head{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:#eef5fc;border-bottom:1px solid #dce6f0}
+#app .psbank-register-head b{font:800 12px 'Inter',sans-serif;color:#234e7a}
+#app .psbank-register-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px;padding:10px}
+#app .psbank-register-grid label{display:flex;flex-direction:column;gap:4px;min-width:0}
+#app .psbank-register-grid label span{font:750 11px 'Inter',sans-serif;color:#4c6885}
+#app .psbank-register-grid textarea{width:100%;min-height:58px;box-sizing:border-box;padding:8px 9px;border:1px solid #cddceb;background:#fff;border-radius:8px;resize:vertical;color:#173b64;font:550 11.5px/1.5 'Inter',sans-serif}
+#app .psbank-paper-edit [data-bank-entry-template]{display:none}
+#app .psbank-dialog .psbank-dialogbody:has(.psbank-paper-edit){scrollbar-gutter:stable}
+@media(max-width:790px){#app .psbank-paper-edit .psbank-paper-body,#app .psbank-register-grid{grid-template-columns:1fr}}
