@@ -157,7 +157,7 @@ function aggregateView(){
 }
 function render(){
  if(!!S.ui?.psBank?.filterScopes?.mapping?.allProgramsSelected)return aggregateView();
- const p=target();if(!p)return '<div class="psbank-card psbank-empty">Belum ada program tahun '+year()+'. Tambahkan dari Daftar Program terlebih dahulu.</div>';
+ const p=target();if(!p)return '<div class="psbank-card psbank-empty">Belum ada program tahun '+year()+'. Tambahkan dari Riwayat Program atau Daftar Program terlebih dahulu.</div>';
  const b=mapState(),on=['mapping','proposal','results','docs'].includes(b.mappingTab)?b.mappingTab:'mapping';
  const tabs=[['mapping','Pemetaan'],['proposal','Usulan Proyek'],['results','Hasil Pemetaan'],['docs','Buat Dokumen Usulan Proyek']];
  return '<div class="psbank-card psbank-scope-stage"><div class="psbank-sectionhead"><div><h3>Pemetaan Proyek / Modul</h3><p>Tentukan ruang lingkup program, lengkapi detail usulan, tinjau hasil, lalu buat dokumen.</p></div></div>'+
