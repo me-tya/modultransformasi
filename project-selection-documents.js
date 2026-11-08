@@ -134,7 +134,7 @@ function paper(p,key,y){
 function annex(p){const c=charter(p,year());if(!c)return[];return [['Analisis As-is',join(c.asis?.pb)||join(c.lb)],['Analisis To-be',join(c.tobe?.pb)||join(c.tb)],['Perbandingan',join(c.cs)],['Charter Program',c.tujuan],['Kriteria Penyelesaian',join(c.kp)],['Manfaat',join(c.mf)||join(c.oc)],['Linimasa',join(c.rk)||join(c.ms)]]}
 function documentPreview(p){
  const d=cfg(),list=sections(p),version=nextVersion('program',p.id||p.akr,year());
- if(d.format='pptx'){
+ if(d.format==='pptx'){
   const slides=slidePages(p),n=Math.max(0,Math.min(+d.slide||0,slides.length-1)),s=slides[n]||{title:'Pilih substansi dokumen',rows:[]};
   return '<div class="psbank-slidepreview"><div class="psbank-slidetop"><span>KEMENTERIAN KEUANGAN</span><strong>'+E(p.kode||p.akr)+'</strong></div><h3>'+E(s.title)+'</h3><small>'+E(p.nama)+' · '+year()+'</small>'+
   '<div class="psbank-slidebody">'+s.rows.map(r=>'<article><b>'+E(r[0])+'</b><p>'+E(String(r[1]||'Belum diisi'))+'</p></article>').join('')+'</div>'+
