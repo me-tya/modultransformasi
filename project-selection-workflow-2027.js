@@ -358,16 +358,16 @@ function mount(){
 }
 function helpPage(tab){
  const items=[
-  ['usulan','Usulan Program','Riwayat Program lintas tahun, Daftar Program yang dapat diedit, serta ekspor dokumen program maupun portofolio.'],
+  ['usulan','Usulan Program','Klik seluruh header Filter untuk menampilkan/menyembunyikan pilihan Tahun, Periode, Program, Unit, Peran, dan Status. Daftar Program: klik baris untuk Detail; aksi dari kiri Pemetaan, Edit, Unggah, dan Unduh apabila ada berkas. Pilih berkas dengan checkbox untuk preview atau ZIP.'],
   ['mapping','Pemetaan Proyek','Tab Pemetaan memilih proyek sumber dan tujuan; tab Usulan Proyek mengelola identitas proyek (lihat, tambah, ubah, hapus). WBS baru dibuat di Project Management.'],
   ['prioritasi','Prioritasi','SMART opsional; 12 kriteria lengkap, bobot normalisasi, skor absolut, dan penetapan ambang. Snapshot menyimpan kondisi penilaian untuk pembandingan.'],
-  ['charter','Charter Program','Perencanaan proyek menggunakan As-is, To-be, Perbandingan, Charter, Kriteria, Manfaat, dan Linimasa.'],
+  ['charter','Charter Program','Perencanaan proyek menggunakan As-is, To-be, Perbandingan, Charter, Kriteria, Manfaat, dan Linimasa. Tombol bawah: Import PPTX, Pratinjau 3 Slide, Unduh PPTX, Ubah, Simpan, Simpan & Tutup.'],
   ['penetapan','Penetapan','Memfinalkan program dan proyek terpilih tanpa otomatis mengaktifkan WBS tahun sebelumnya.'],
   ['rkmk','Draft RKMK','Mereviu narasi rancangan RKMK; isian sumber ditandai sampai dikonfirmasi untuk tahun tujuan.']
  ];
  if(tab==='map'){
   const deep=[
-   [['Riwayat Program','usulan:bank'],['Daftar Program','usulan:detail'],['Dokumen Portofolio','usulan:portfolio'],['Identitas','usulan:detail:identity'],['Business Case','usulan:detail:case'],['Manfaat','usulan:detail:benefits'],['Stakeholder','usulan:detail:stakeholders'],['Risiko','usulan:detail:risks'],['Tata Kelola','usulan:detail:governance'],['Buat Dokumen Program','usulan:detail:docs']],
+   [['Riwayat Program','usulan:bank'],['Daftar Program · Kelola & Unggah / Unduh','usulan:detail'],['Dokumen Portofolio','usulan:portfolio'],['Identitas','usulan:detail:identity'],['Business Case','usulan:detail:case'],['Manfaat','usulan:detail:benefits'],['Stakeholder','usulan:detail:stakeholders'],['Risiko','usulan:detail:risks'],['Tata Kelola','usulan:detail:governance'],['Buat Dokumen Program','usulan:detail:docs']],
    [['Pemetaan','mapping:mapping'],['Usulan Proyek','mapping:proposal'],['Hasil Pemetaan','mapping:results'],['Buat Dokumen Usulan Proyek','mapping:docs']],
    [['Penilaian & Peringkat','prioritasi:ranking'],['Kriteria & Bobot','prioritasi:criteria'],['Monev & Manfaat','prioritasi:monev'],['Referensi & Formula','prioritasi:reference']],
    [['As-is','charter:asis'],['To-be','charter:tobe'],['Perbandingan','charter:cs'],['Charter','charter:ch'],['Kriteria','charter:kp'],['Manfaat','charter:mf'],['Linimasa','charter:rk']],
@@ -379,7 +379,7 @@ function helpPage(tab){
  if(tab==='flow')return '<div class="ps27-helpflow">'+items.map((x,i)=>'<div><b>'+(i+1)+' · '+x[1]+'</b><p>'+x[2]+'</p></div>').join('')+'</div>';
  if(tab==='roles')return '<div class="ps27-helpprose"><h3>Pembagian Peran</h3><p><b>PMO Kementerian:</b> standar, reviu, konsolidasi dan koordinasi penetapan. <b>PMO Unit/UIC:</b> usulan program dan proyek, pengkinian dokumen, serta perencanaan WBS sesuai kewenangan. <b>Pemilik proses bisnis:</b> outcome, target, dan kriteria penyelesaian. <b>Sponsor/pejabat berwenang:</b> keputusan penetapan.</p><p>Detail rencana dan WBS baru dikelola di Project Management setelah program ditetapkan.</p></div>';
  if(tab==='terms')return '<div class="ps27-helpprose"><h3>Istilah Utama</h3><p><b>Program:</b> sekumpulan proyek terkait yang dikelola bersama untuk manfaat yang tidak diperoleh bila terpisah. <b>Proyek/Modul:</b> komponen hasil/layanan. <b>WBS:</b> pemecahan pekerjaan menjadi deliverable dan paket kerja. <b>Carry-over:</b> menyalin identitas, referensi, serta proyek sebagai rancangan tahun tujuan; tidak memindahkan realisasi ataupun mengaktifkan WBS lama. <b>Snapshot:</b> rekaman skor dan pilihan proyek pada satu waktu untuk dibandingkan dengan hasil penilaian terbaru.</p></div>';
- return '<div class="ps27-helpprose"><h3>Checklist Pekerjaan</h3><p>Riwayat Program → Daftar Program → Pemetaan → Usulan Proyek → Prioritasi (SMART opsional) → Charter → Penetapan → Draft RKMK → Project Management (WBS baru).</p><p>Untuk membandingkan skor sebelum/sesudah perubahan gunakan <b>Prioritasi → Penilaian & Peringkat → Riwayat Snapshot</b>.</p></div>';
+ return '<div class="ps27-helpprose"><h3>Checklist Pekerjaan</h3><p>Riwayat Program → Daftar Program (klik baris untuk melihat, ikon Pemetaan/Edit/Unggah; ikon Unduh hanya bila berkas sudah ada) → Pemetaan Proyek → Prioritasi → Charter → Penetapan → RKMK → Project Management (Dokumen Proyek dan WBS baru).</p><p>Filter dapat dibuka/ditutup dengan mengklik seluruh header. Dokumen program hasil unggahan dapat dipilih dengan checkbox, dipratinjau dan diunduh dalam ZIP.</p><p>Untuk membandingkan skor sebelum/sesudah perubahan gunakan <b>Prioritasi → Penilaian & Peringkat → Riwayat Snapshot</b>.</p></div>';
 }
 
 function sheetPage(tab){
