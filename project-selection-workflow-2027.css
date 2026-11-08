@@ -201,3 +201,8 @@
 @media(max-width:1200px){#app .ps27 .ps27-filter-fields{grid-template-columns:100px minmax(230px,1.7fr) minmax(160px,1.3fr)}#app .ps27 .ps27-filter-fields .ps27-filter-search{grid-column:span 2}}
 @media(max-width:750px){#app .ps27 .ps27-filter-titlebar{flex-basis:132px}#app .ps27 .ps27-filter-fields{grid-template-columns:repeat(2,minmax(0,1fr))}#app .ps27 .ps27-filter-period{grid-column:1/-1}#app .ps27 .ps27-filter-fields .ps27-filter-search{grid-column:1/-1}#app .ps27 .ps27-filter-active small{display:none}}
 @media(prefers-reduced-motion:reduce){#app .pswf .prio-kpis-clickable .prio-kpi{transition:none;transform:none!important}}
+
+#app .ps27 .ps27-filter-range{display:flex;align-items:end;gap:10px;flex-wrap:wrap;margin-top:9px;border-top:1px solid #dbe4f0;padding-top:9px}
+#app .ps27 .ps27-filter-range label{display:flex;flex-direction:column;gap:5px;font:800 10.5px 'Inter',sans-serif;color:#234e7a}
+#app .ps27 .ps27-filter-range input{height:34px;border:1px solid #c6d8ea;border-radius:8px;padding:5px 9px;font:650 12px 'Inter',sans-serif}
+#app .ps27 .ps27-filter-range small{font:500 10.5px 'Inter',sans-serif;color:#6a8298;align-self:center}
