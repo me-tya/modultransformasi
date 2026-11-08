@@ -1,0 +1,153 @@
+/* Project Selection Bank + Documents: compact, aligned to Project Management; header global unchanged. */
+#app .psbank-subhead{display:flex;align-items:stretch;justify-content:space-between;gap:9px;min-height:47px;border-bottom:1px solid #dce4ef;margin-bottom:1px}
+#app .psbank-subtabs{display:flex;align-items:stretch;gap:4px;overflow-x:auto}
+#app .psbank-subtabs button{background:transparent;border:1px solid transparent;border-bottom:3px solid transparent;border-radius:9px 9px 0 0;padding:9px 17px;color:#63748e;white-space:nowrap;font:750 12.5px 'Inter',sans-serif;cursor:pointer}
+#app .psbank-subtabs button.on{background:#fff;color:#0d305a;border-color:#dbe3ef;border-bottom-color:#ffc12b}
+#app .psbank-subtabs b{background:#e6eef9;border-radius:15px;padding:3px 7px;margin-left:5px;font-size:10px;color:#244f78}
+#app .psbank-subhead>.btn{align-self:center;white-space:nowrap}
+#app .psbank-card{background:#fff;border:1px solid #dce4ef;border-radius:13px;padding:14px 16px;min-width:0;font-family:'Inter',sans-serif;font-size:12.5px}
+#app .psbank-sectionhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px}
+#app .psbank-sectionhead h3{font:800 15px/1.3 'Inter',sans-serif;color:#102f57;margin:0 0 3px}
+#app .psbank-sectionhead p{font:400 12px/1.5 'Inter',sans-serif;color:#697d94;margin:0}
+#app .psbank-sectionhead>.btn{white-space:nowrap}
+#app .psbank-count{display:inline-flex;align-items:center;padding:6px 10px;background:#eff5fc;color:#22547f;border-radius:7px;font-weight:750;font-size:11px;white-space:nowrap}
+#app .psbank-toolbar{display:flex;align-items:end;gap:10px;flex-wrap:wrap;padding:0 0 12px}
+#app .psbank-toolbar label{display:flex;flex-direction:column;gap:5px;font-weight:750;font-size:11.5px;color:#274d74}
+#app .psbank-toolbar label.psbank-grow{flex:1;min-width:170px}
+#app .psbank-toolbar label.psbank-grow input{width:100%}
+#app .psbank-toolbar select,#app .psbank-toolbar input,#app .psbank-rowactions input[type=text],#app .psbank-table input[type=text]{height:36px;max-width:100%;border-radius:8px;border:1px solid #cbd9e9;background:#fff;color:#173a61;padding:8px 10px;font:600 12px 'Inter',sans-serif}
+#app .psbank-sp{flex:1}
+#app .psbank-tablewrap{border:1px solid #dfe6ef;border-radius:10px;overflow-x:auto;max-height:56vh;overscroll-behavior:contain}
+#app .psbank-table{width:100%;border-collapse:collapse;font:12px 'Inter',sans-serif}
+#app .psbank-table th{position:sticky;top:0;z-index:1;background:#eff4fb;color:#2b4f77;font-weight:800;font-size:11.5px;text-align:left;white-space:nowrap;padding:11px 12px}
+#app .psbank-table td{border-top:1px solid #e8edf4;padding:9px 12px;vertical-align:middle;color:#304a66;line-height:1.4}
+#app .psbank-table td:nth-child(2){min-width:190px}
+#app .psbank-table td:nth-child(3){min-width:175px}
+#app .psbank-table td:nth-child(3) input{width:100%;min-width:150px}
+#app .psbank-table td b{color:#173a60;font-weight:750}
+#app .psbank-table td small{display:block;margin-top:3px;color:#7c8fa1;font-size:10.8px}
+#app .psbank-table .psbank-clickrow{cursor:pointer}
+#app .psbank-table .psbank-clickrow:hover td{background:#f5f9ff}
+#app .psbank-table .psbank-selected td{background:#f0f6ff}
+#app .psbank-rowactions{display:flex;align-items:center;gap:5px;white-space:nowrap}
+#app .psbank-rowactions .btn{padding:7px 10px;white-space:nowrap}
+#app .psbank-rowcheck{display:inline-flex;align-items:center;justify-content:center;width:28px;height:29px;cursor:pointer}
+#app .psbank-rowcheck input{width:16px;height:16px;accent-color:#0b396d}
+#app .psbank-tag{display:inline-flex;align-items:center;font-size:11px;font-weight:750;padding:5px 9px;border-radius:7px;background:#eaf2fa;color:#27587f;white-space:nowrap}
+#app .psbank-tag.psbank-baru{background:#eaf9ef;color:#24734f}
+#app .psbank-tag.psbank-legacy{background:#eaf2fb;color:#2f6089}
+#app .psbank-tag.psbank-arsip{background:#eef0f2;color:#6c7885}
+#app .psbank-note{margin-top:11px;font-size:11.5px;line-height:1.5;color:#647a8e}
+#app .psbank-muted{font-size:11px;color:#8797a5}
+#app .psbank-empty{padding:23px 14px;text-align:center;color:#73859c}
+#app .psbank-workspace{margin-top:13px}
+#app .psbank-steptabs{display:flex;overflow-x:auto;gap:0;border:1px solid #dfe7f1;background:#f2f5fb;border-radius:10px;margin-bottom:11px;scrollbar-width:thin}
+#app .psbank-steptabs button{display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;flex:1;min-height:47px;padding:9px 11px;font:750 11.5px 'Inter',sans-serif;border:0;border-right:1px solid #dce5ee;background:transparent;color:#58718b;cursor:pointer}
+#app .psbank-steptabs button:last-child{border-right:0}
+#app .psbank-steptabs button.on{background:#1f5280;color:#fff}
+#app .psbank-steptabs em{font-style:normal;font-size:10.5px;color:inherit}
+#app .psbank-native .psgov{margin:0}
+#app .psbank-native .psgov-main{padding:9px 0 0}
+#app .psbank-native .psgov-summ{margin-bottom:8px}
+#app .psbank-native .psgov-footer{padding:10px 6px}
+#app .psbank-mapcols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:12px;align-items:start}
+#app .psbank-mapbox{min-width:0;background:#fbfcfe;border:1px solid #dce5ef;border-radius:11px;padding:13px}
+#app .psbank-mapbox h4{color:#1a466f;margin:0 0 3px;font:800 13px 'Inter',sans-serif}
+#app .psbank-mapbox p{margin:0 0 12px;color:#6c7f93;font-size:11.5px;line-height:1.5}
+#app .psbank-mapitems{display:flex;flex-direction:column;gap:6px;max-height:490px;overflow:auto;padding-right:3px;scrollbar-width:thin}
+#app .psbank-mapitems>article{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;border:1px solid #e2e9f2;border-radius:9px;padding:9px 11px}
+#app .psbank-mapitems>article>div:first-child{min-width:0;flex:1}
+#app .psbank-mapitems>article b{display:block;color:#20436b;font-size:12px;line-height:1.35}
+#app .psbank-mapitems>article small,#app .psbank-catalogitem small{display:block;color:#788a9b;font-size:10.5px;margin-top:4px}
+#app .psbank-mapcontrols{display:grid;grid-template-columns:130px minmax(0,1fr);gap:8px;margin-bottom:10px}
+#app .psbank-mapcontrols label,.psbank-searchlabel,#app .psbank-toolbar label{min-width:0}
+#app .psbank-mapcontrols label,.psbank-searchlabel{display:flex;flex-direction:column;gap:5px;color:#315574;font-size:11.5px;font-weight:750}
+#app .psbank-mapcontrols select,.psbank-searchlabel input{height:36px;border:1px solid #d1ddec;border-radius:8px;padding:7px 9px;font:650 11.7px 'Inter',sans-serif;background:white;color:#18375d;min-width:0;width:100%}
+#app .psbank-searchlabel{margin-bottom:10px}
+#app .psbank-catalog{max-height:350px}
+#app .psbank-catalogitem{display:flex;align-items:center;gap:9px;padding:10px;border:1px solid #e1e8ef;background:white;border-radius:8px;cursor:pointer}
+#app .psbank-catalogitem:has(input:checked){border-color:#84b0d5;background:#eff6fd}
+#app .psbank-catalogitem input{width:15px;height:15px;accent-color:#16527d}
+#app .psbank-catalogitem span{flex:1;min-width:0}
+#app .psbank-catalogitem b{color:#234b74;display:block;font-size:11.8px}
+#app .psbank-mapfoot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;font-size:11.5px;color:#647892}
+#app .psbank-mapfoot .btn{white-space:nowrap}
+#app .psbank-toolbar label select{min-width:140px}
+.psbank-overlay{position:fixed;inset:0;z-index:3100;background:#061e38a8;display:flex;align-items:center;justify-content:center;padding:22px;font:13px 'Inter',sans-serif}
+.psbank-dialog{height:min(85vh,790px);width:min(1080px,96vw);background:white;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 25px 70px #031d3652}
+.psbank-dialog>header{background:#0e2e52;color:#fff;padding:15px 21px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.psbank-dialog>header b{display:block;font-size:17px}
+.psbank-dialog>header small{display:block;color:#bed0e1;font-size:11.5px;margin-top:4px}
+.psbank-dialog>header button{background:transparent;border:1px solid #92acc7;color:#fff;border-radius:8px;padding:6px 12px;cursor:pointer}
+.psbank-dialogtabs{display:flex;overflow-x:auto;background:#edf3fb;border-bottom:1px solid #d8e2ef;padding:5px 12px;gap:3px}
+.psbank-dialogtabs button{padding:10px 16px;font:750 12px 'Inter',sans-serif;color:#5d718b;border:0;border-radius:8px;background:transparent;cursor:pointer;white-space:nowrap;flex:1}
+.psbank-dialogtabs button.on{background:#fff;color:#153c67;box-shadow:0 2px 6px #09284615;border-bottom:3px solid #ffbe2b}
+.psbank-dialogbody{flex:1;min-height:0;overflow:auto;padding:14px 21px;background:#f7f9fc}
+.psbank-dialog>footer{border-top:1px solid #dfe7ef;background:#fff;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px;color:#6a7c92;font-size:12px}
+.psbank-dialog>footer>div{display:flex;align-items:center;gap:6px}
+.psbank-paper{background:#fff;border:1px solid #dde6ef;border-radius:11px;overflow:hidden;box-shadow:0 2px 10px #1026440a}
+.psbank-paper-head{background:#0e2e55;border-top:5px solid #ffb72a;color:white;padding:19px 25px}
+.psbank-paper-head small{display:block;letter-spacing:.12em;font-weight:750;color:#f4bf40;font-size:10px}
+.psbank-paper-head h3{margin:10px 0 6px;font:800 21px 'Inter',sans-serif}
+.psbank-paper-head span{font-size:12px;color:#c6d6e6}
+.psbank-paper-body{padding:17px 24px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.psbank-paper-row{border:1px solid #e2eaf2;border-radius:9px;padding:11px 13px;background:#fbfdff;min-width:0}
+.psbank-paper-row b{font-size:11px;color:#1a4975;border-left:3px solid #ffc42b;padding-left:8px;display:block}
+.psbank-paper-row p{font-size:12px;color:#394f67;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;margin:9px 0 0}
+.psbank-paper-foot{display:flex;justify-content:space-between;padding:12px 24px;color:#647b92;background:#eff4fa;font-size:10.5px}
+.psbank-editform{padding:17px 23px;background:white;border-radius:10px}
+.psbank-editform>h3{margin:0 0 12px;color:#153e68}
+.psbank-editform>label{display:flex;flex-direction:column;gap:5px;color:#315270;font-size:12px;font-weight:750;margin:0 0 10px}
+.psbank-editform textarea{width:100%;min-height:68px;border:1px solid #d1deea;border-radius:8px;padding:10px;resize:vertical;font:400 12.5px 'Inter',sans-serif}
+#app .psbank-docbuilder{display:grid;grid-template-columns:minmax(300px,.94fr) minmax(0,1.3fr);gap:12px;align-items:stretch;min-height:580px}
+#app .psbank-docsettings,#app .psbank-docpreview{background:#f5f8fc;border:1px solid #dae4ef;border-radius:10px;overflow:hidden;min-width:0}
+#app .psbank-docsettings{padding:14px;display:flex;flex-direction:column;gap:11px}
+#app .psbank-docsetting-head h3{font:800 14px 'Inter',sans-serif;color:#17395e;margin:0 0 4px}
+#app .psbank-docsetting-head p{font-size:11.5px;color:#718298;line-height:1.45;margin:0}
+#app .psbank-doccheckhead{display:flex;align-items:center;justify-content:space-between;gap:6px;color:#1a466f;font-weight:800;font-size:12px}
+#app .psbank-doccheckhead span{color:#647b93;font-size:11px}
+#app .psbank-docchecks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:9px;background:#fff;border:1px solid #dce6ef;border-radius:9px}
+#app .psbank-docchecks label,#app .psbank-docextras label{display:flex;align-items:center;gap:8px;border:1px solid #e1e9f1;border-radius:8px;background:#fff;padding:9px 11px;font-size:11.5px;color:#365777;min-width:0;line-height:1.4;cursor:pointer}
+#app .psbank-docchecks label input,#app .psbank-docextras label input{accent-color:#1f5a8c;width:15px;height:15px;flex-shrink:0}
+#app .psbank-docextras{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+#app .psbank-docsettings-foot{display:flex;align-items:end;justify-content:space-between;gap:9px;margin-top:auto;flex-wrap:wrap}
+#app .psbank-docsettings-foot label{display:flex;flex-direction:column;gap:5px;flex:1;color:#345779;font-size:11px;font-weight:750}
+#app .psbank-docsettings-foot select{height:37px;min-width:130px;padding:6px 8px}
+#app .psbank-docsettings-foot button{min-height:37px}
+#app .psbank-docpreview{display:flex;flex-direction:column;min-height:0}
+#app .psbank-docpreview-head{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#e8f0fa;border-bottom:1px solid #d9e4ef;padding:10px 13px}
+#app .psbank-docpreview-head b{display:block;color:#244c72;font-size:12.5px}
+#app .psbank-docpreview-head small{display:block;color:#6e8298;font-size:10.5px;margin-top:3px}
+#app .psbank-docpreview-head>span{white-space:nowrap;color:#73889c;font-size:11px}
+#app .psbank-docscroll{height:590px;max-height:65vh;overflow:auto;padding:14px;background:#e4eaf3;scrollbar-width:thin}
+#app .psbank-docpaper{max-width:750px;margin:0 auto;min-height:850px;background:white;box-shadow:0 3px 12px #0e2e5530;padding:26px 32px;color:#1b3350;font:12px 'Inter',sans-serif}
+#app .psbank-doccover{border-top:5px solid #ffc22d;border-bottom:1px solid #e3e9f1;padding:25px 0 20px}
+#app .psbank-doccover small{font-size:10px;letter-spacing:.09em;font-weight:750;color:#667a90}
+#app .psbank-doccover h2{font-size:18px;color:#143c66;margin:16px 0 6px}
+#app .psbank-doccover h3{font-size:14px;color:#1b466f;margin:0 0 8px}
+#app .psbank-doccover p{color:#607a93}
+#app .psbank-doccover span{color:#9a751d;font-size:10.5px}
+#app .psbank-doctoc{border:1px solid #e3ebf3;padding:13px;margin-top:15px;display:flex;flex-direction:column;gap:6px;color:#3c5671}
+#app .psbank-doctoc b{color:#183c63;margin-bottom:4px}
+#app .psbank-docsection{padding:16px 0;border-bottom:1px solid #e2e8f1}
+#app .psbank-docsection h4{font-size:13px;color:#123d68;margin:0 0 9px;border-left:4px solid #ffc22d;padding-left:10px}
+#app .psbank-docsection table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:10.8px}
+#app .psbank-docsection th{width:33%;text-align:left;background:#eff4fa;color:#204b71;font-weight:750}
+#app .psbank-docsection th,#app .psbank-docsection td{border:1px solid #dfe7ef;padding:8px 10px;vertical-align:top;overflow-wrap:anywhere;line-height:1.5}
+#app .psbank-docsignature{margin:30px 0;text-align:right;padding-right:15px}
+#app .psbank-docfoot{font-size:10px;color:#7b8ca0;text-align:right;margin:20px 0 0}
+#app .psbank-slidepreview{aspect-ratio:16/9;width:100%;min-height:420px;background:white;border-top:7px solid #ffbb21;box-shadow:0 3px 13px #0b24472a;padding:22px 26px;display:flex;flex-direction:column}
+#app .psbank-slidetop{display:flex;justify-content:space-between;color:#255075;font-size:10px;font-weight:800;letter-spacing:.08em}
+#app .psbank-slidetop strong{background:#102d55;color:#ffc62d;padding:6px 13px;border-radius:18px;font-size:10px}
+#app .psbank-slidepreview h3{font-size:22px;color:#123960;margin:13px 0 4px}
+#app .psbank-slidepreview>small{color:#73869c;font-size:11px}
+#app .psbank-slidebody{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;flex:1;margin:16px 0;align-content:start}
+#app .psbank-slidebody article{border:1px solid #dce5ef;border-left:4px solid #ffc02c;background:#f5f8fc;border-radius:7px;padding:9px 10px;min-width:0}
+#app .psbank-slidebody b{display:block;color:#19456f;font-size:11px}
+#app .psbank-slidebody p{color:#415974;font-size:10.5px;line-height:1.5;margin:5px 0 0;overflow-wrap:anywhere}
+#app .psbank-slidefoot{display:flex;justify-content:space-between;border-top:1px solid #dbe3ed;padding-top:7px;color:#8494a7;font-size:10px}
+#app .psbank-slidecontrols{display:flex;justify-content:space-between;align-items:center;gap:7px;margin:12px auto 0}
+#app .psbank-slidecontrols>span{font-size:11.5px;color:#637a91}
+@media(max-width:1150px){#app .psbank-docbuilder{grid-template-columns:minmax(260px,.9fr) minmax(0,1.1fr)}#app .psbank-mapcols{grid-template-columns:1fr}#app .psbank-mapbox .psbank-mapitems{max-height:320px}}
+@media(max-width:780px){#app .psbank-docbuilder{grid-template-columns:1fr}#app .psbank-docscroll{max-height:530px}#app .psbank-paper-body{grid-template-columns:1fr}#app .psbank-subhead{flex-wrap:wrap}#app .psbank-docchecks,#app .psbank-docextras{grid-template-columns:1fr}}
+@media(max-width:510px){.psbank-overlay{padding:6px}.psbank-dialog{width:99vw;height:96vh}.psbank-dialogbody{padding:9px}.psbank-dialog>footer{flex-wrap:wrap}#app .psbank-card{padding:10px}#app .psbank-steptabs button{min-width:110px}}
