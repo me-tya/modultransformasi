@@ -27,6 +27,24 @@ function fields(p,key,y){
  const ready=window.MT_PS_GOV?.readiness(p);return ready?.items?.map(a=>[a[1],a[2]?'Lengkap':'Belum lengkap'])||[['Kesiapan',empty]];
 }
 const sections=p=>STEPS.filter(s=>cfg().sections.includes(s[0])).map(s=>({key:s[0],title:s[1],rows:fields(p,s[0],year())}));
+/* Tahapan panjang otomatis dipecah menjadi slide lanjutan tanpa kehilangan data. */
+function splitSlideValue(value){
+ let rest=String(value==null||value===''?'Belum diisi':value),out=[];
+ while(rest.length>190){
+  let k=rest.lastIndexOf(' ',190);
+  if(k<80)k=190;
+  out.push(rest.slice(0,k).trim());rest=rest.slice(k).trimStart();
+ }
+ out.push(rest);return out;
+}
+function slidePages(p){
+ const out=[];
+ sections(p).forEach(section=>{
+  const all=section.rows.flatMap(r=>splitSlideValue(r[1]).map((v,i)=>[String(r[0])+(i?' (lanjutan '+(i+1)+')':''),v]));
+  for(let j=0;j<all.length;j+=5)out.push({title:section.title+(j?' (lanjutan)':''),key:section.key,rows:all.slice(j,j+5)});
+ });
+ return out;
+}
 function paper(p,key,y){
  return '<article class="psbank-paper"><div class="psbank-paper-head"><small>KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</small><h3>'+E(title(key))+'</h3><span>'+E(p.nama)+' · '+y+' · '+E(p.kode||p.akr)+'</span></div>'+
  '<div class="psbank-paper-body">'+fields(p,key,y).map(([a,b])=>'<div class="psbank-paper-row"><b>'+E(a)+'</b><p>'+E(b||'Belum diisi').replace(/\n/g,'<span class="psbank-line"></span>')+'</p></div>').join('')+'</div>'+
@@ -36,11 +54,11 @@ function annex(p){const c=charter(p,year());if(!c)return[];return [['Analisis As
 function documentPreview(p){
  const d=cfg(),list=sections(p);
  if(d.format==='pptx'){
-  const n=Math.max(0,Math.min(+d.slide||0,list.length-1)),s=list[n]||{title:'Pilih substansi dokumen',rows:[]};
+  const slides=slidePages(p),n=Math.max(0,Math.min(+d.slide||0,slides.length-1)),s=slides[n]||{title:'Pilih substansi dokumen',rows:[]};
   return '<div class="psbank-slidepreview"><div class="psbank-slidetop"><span>KEMENTERIAN KEUANGAN</span><strong>'+E(p.kode||p.akr)+'</strong></div><h3>'+E(s.title)+'</h3><small>'+E(p.nama)+' · '+year()+'</small>'+
-  '<div class="psbank-slidebody">'+s.rows.slice(0,7).map(r=>'<article><b>'+E(r[0])+'</b><p>'+E(String(r[1]||'Belum diisi').slice(0,260))+'</p></article>').join('')+'</div>'+
-  '<div class="psbank-slidefoot"><span>Program Transformasi · '+year()+'</span><span>Slide '+(n+1)+' / '+(list.length||1)+'</span></div></div>'+
-  '<div class="psbank-slidecontrols"><button class="btn" data-doc-slide="-1" '+(n===0?'disabled':'')+'>‹ Sebelumnya</button><span>'+E(s.title)+'</span><button class="btn" data-doc-slide="1" '+(n>=list.length-1?'disabled':'')+'>Berikutnya ›</button></div>';
+  '<div class="psbank-slidebody">'+s.rows.map(r=>'<article><b>'+E(r[0])+'</b><p>'+E(String(r[1]||'Belum diisi'))+'</p></article>').join('')+'</div>'+
+  '<div class="psbank-slidefoot"><span>Program Transformasi · '+year()+'</span><span>Slide '+(n+1)+' / '+(slides.length||1)+'</span></div></div>'+
+  '<div class="psbank-slidecontrols"><button class="btn" data-doc-slide="-1" '+(n===0?'disabled':'')+'>‹ Sebelumnya</button><span>'+E(s.title)+'</span><button class="btn" data-doc-slide="1" '+(n>=slides.length-1?'disabled':'')+'>Berikutnya ›</button></div>';
  }
  return '<article class="psbank-docpaper">'+(d.cover?'<header class="psbank-doccover"><small>KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</small><h2>DOKUMEN PERENCANAAN PROGRAM</h2><h3>'+E(p.nama)+'</h3><p>'+E(p.kode||p.akr)+' · Tahun '+year()+'</p><span>Rancangan untuk reviu — belum disahkan</span></header>':'')+
  (d.toc?'<section class="psbank-doctoc"><b>DAFTAR ISI</b>'+list.map((x,i)=>'<div>'+(i+1)+'. '+E(x.title)+'</div>').join('')+'</section>':'')+
@@ -114,18 +132,19 @@ async function exportFile(p){
    cover.addText('DOKUMEN PERENCANAAN PROGRAM',{x:.6,y:2,w:12,h:.75,fontFace:'Aptos',fontSize:26,color:'FFFFFF',bold:true});
    cover.addText(p.nama,{x:.6,y:3,w:12,h:.85,fontFace:'Aptos',fontSize:20,color:'FFFFFF'});
    cover.addText('Tahun '+year()+'  ·  '+(p.kode||p.akr),{x:.6,y:5.9,w:11,h:.3,fontFace:'Aptos',fontSize:13,color:'FDB913'});
-   list.forEach((r,i)=>{
+   const pptSlides=slidePages(p);
+   pptSlides.forEach((r,i)=>{
     const s=ppt.addSlide();s.background={color:'FFFFFF'};
     s.addShape(ppt.ShapeType.rect,{x:0,y:0,w:13.33,h:.14,line:{color:'FDB913'},fill:{color:'FDB913'}});
     s.addText(r.title,{x:.55,y:.35,w:12,h:.5,fontFace:'Aptos',fontSize:23,bold:true,color:'0B2447'});
     s.addText(p.nama+' · '+year(),{x:.55,y:.95,w:12,h:.3,fontFace:'Aptos',fontSize:10,color:'627892'});
-    const rows=r.rows.slice(0,8),h=5.4/Math.max(1,rows.length);
+    const rows=r.rows,h=5.4/Math.max(1,rows.length);
     rows.forEach((a,j)=>{
      const yy=1.38+j*h;s.addShape(ppt.ShapeType.rect,{x:.55,y:yy,w:12.2,h:h-.06,line:{color:'DCE6F0'},fill:{color:j%2?'FFFFFF':'F2F6FB'}});
      s.addText(String(a[0]),{x:.75,y:yy+.08,w:3,h:h-.15,fontFace:'Aptos',fontSize:11,bold:true,color:'183C65',margin:0,valign:'mid'});
-     s.addText(String(a[1]||'Belum diisi').slice(0,315),{x:3.95,y:yy+.08,w:8.45,h:h-.15,fontFace:'Aptos',fontSize:Math.max(9,12-rows.length/4),color:'30445C',margin:0,valign:'mid'});
+     s.addText(String(a[1]||'Belum diisi'),{x:3.95,y:yy+.08,w:8.45,h:h-.15,fontFace:'Aptos',fontSize:Math.max(9,12-rows.length/4),color:'30445C',margin:0,valign:'mid'});
     });
-    s.addText((i+1)+' / '+list.length,{x:11.8,y:7.1,w:.85,h:.2,fontFace:'Aptos',fontSize:9,color:'627892'});
+    s.addText((i+1)+' / '+pptSlides.length,{x:11.8,y:7.1,w:.85,h:.2,fontFace:'Aptos',fontSize:9,color:'627892'});
    });
    await ppt.writeFile({fileName:file+'.pptx'});
   }
@@ -133,7 +152,7 @@ async function exportFile(p){
  }catch(err){toast('Ekspor gagal: '+(err.message||err))}
 }
 function click(ev,p){
- const slide=ev.target.closest('[data-doc-slide]');if(slide){const d=cfg();d.slide=Math.max(0,Math.min(sections(p).length-1,(+d.slide||0)+ +slide.dataset.docSlide));save();render();return true}
+ const slide=ev.target.closest('[data-doc-slide]');if(slide){const d=cfg();d.slide=Math.max(0,Math.min(slidePages(p).length-1,(+d.slide||0)+ +slide.dataset.docSlide));save();render();return true}
  if(ev.target.closest('[data-doc-export]')){exportFile(p);return true}
  return false;
 }
@@ -144,5 +163,5 @@ function change(ev){
  if(q.dataset.docFormat!==undefined){d.format=q.value;d.slide=0;save();render();return true}
  return false;
 }
-window.MT_PS_DOC={fields,sections,paper,builder,exportFile,click,change,documentPreview,version:'20261108-program-document-builder-v1'};
+window.MT_PS_DOC={fields,sections,slidePages,paper,builder,exportFile,click,change,documentPreview,version:'20261108-program-document-builder-v2'};
 })();
