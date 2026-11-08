@@ -51,7 +51,7 @@ function bank(){
   '<td>'+E(p.kode||p.akr||'—')+'</td><td><span class="psbank-tag psbank-'+labelStatus(p).toLowerCase()+'">'+labelStatus(p)+'</span></td><td>'+num+' modul</td>'+
   '<td class="psbank-rowactions"><button type="button" class="btn pri btn-sm psbank-icon-add" data-bank-add="'+E(key)+'" aria-label="Tambahkan Program ke tahun" title="Tambahkan Program ke tahun">+</button></td></tr>';
  }).join(''):'<tr><td colspan="7" class="psbank-empty">Tidak ada program sesuai filter.</td></tr>')+'</tbody></table></div>'+
- '<div class="psbank-note">Tidak ada batasan status Baru, Legacy, atau Arsip untuk memilih program sebagai sumber. Data historis tetap utuh; nama, kode, dan dokumen salinannya dapat disesuaikan pada tahun tujuan.</div></div>';
+ '<div class="psbank-note">Semua program dapat dipilih sebagai sumber, termasuk dari tahun yang sama; kode salinan akan dibuat unik. Data historis tetap utuh; nama, kode, dan dokumen salinannya dapat disesuaikan pada tahun tujuan.</div></div>';
 }
 function detail(){
  const b=store(),rows=active();
@@ -120,13 +120,13 @@ function codeFor(p,to){
 function addOne(key,renderNow=true,to=year(),newName=null){
  const rec=records().find(x=>x.key===key);if(!rec||!can())return null;
  to=+to;if(to<2025||to>2029){toast('Pilih tahun tujuan 2025–2029.');return null}
- if(+rec.p.psYear===to){toast('Program sumber sudah tercatat pada tahun '+to+'. Pilih tahun tujuan lain.');return null}
  const duplicate=all().find(p=>+p.psYear===to&&p.psCarry?.sourceId===rec.p.id&&+p.psCarry?.sourceYear===rec.year);
  if(duplicate){toast('Program '+rec.p.nama+' dari '+rec.year+' sudah ditambahkan ke '+to+'.');return null}
  const p=F.cloneProgram(rec.p,rec.year,to);
  p.nama=String(newName??store().names[key]??rec.p.nama).trim()||rec.p.nama;
- p.kode=codeFor(rec.p,to);
- if(all().some(x=>+x.psYear===to&&x.kode===p.kode)){toast('Kode '+p.kode+' sudah terpakai pada '+to+'. Ubah akronim melalui Workspace atau pilih program lain.');S.charters=(S.charters||[]).filter(c=>c.prog!==p.akr);return null}
+ const baseCode=codeFor(rec.p,to);let candidate=baseCode,seq=2;
+ while(all().some(x=>+x.psYear===to&&String(x.kode||'').toUpperCase()===candidate.toUpperCase()))candidate=baseCode+'-'+seq++;
+ p.kode=candidate;
  p.psCarry.sourceYear=rec.year;p.psSourceYear=rec.year;all().push(p);
  const b=store();state().prog=p.id;Scope.bank().target=p.id;b.workspace='';b.tab='detail';b.check=b.check.filter(x=>x!==key);state().tab='usulan';
  if(renderNow){saveUI();toast('Program '+p.nama+' berhasil ditambahkan ke Detail Program tahun '+to+'.')}
