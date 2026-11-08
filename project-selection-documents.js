@@ -132,8 +132,55 @@ function paper(p,key,y){
  '<div class="psbank-paper-foot"><span>Pratinjau dokumen program</span><span>Tahun '+y+'</span></div></article>';
 }
 function annex(p){const c=charter(p,year());if(!c)return[];return [['Analisis As-is',join(c.asis?.pb)||join(c.lb)],['Analisis To-be',join(c.tobe?.pb)||join(c.tb)],['Perbandingan',join(c.cs)],['Charter Program',c.tujuan],['Kriteria Penyelesaian',join(c.kp)],['Manfaat',join(c.mf)||join(c.oc)],['Linimasa',join(c.rk)||join(c.ms)]]}
+
+/* The same formal report engine as Project Management's Final Report drives
+   program DOCX and print previews. A single TTE form is reused in every builder. */
+function tteState(d){
+ if(!d.tte||typeof d.tte!=='object')d.tte={};
+ const defaults={city:'Jakarta',date:new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}),label:'Mengetahui,',title:'',name:'',number:''};
+ for(const [key,val] of Object.entries(defaults))if(d.tte[key]===undefined)d.tte[key]=val;
+ return d.tte;
+}
+function tteControls(d,where){
+ const t=tteState(d),att=where==='port'?'data-port-tte':'data-doc-tte',en=where==='port'?'data-port-include-tte':'data-doc-tte-enabled';
+ const checked=where==='port'?!!d.sign:!!d.sign;
+ return '<details class="psbank-tte-settings" '+(d.tteOpen?'open':'')+'><summary>✎ Atur TTE <small>Penandatangan & identitas dokumen</small></summary>'+
+  '<div class="psbank-tte-fields"><label class="psbank-tte-check"><input type="checkbox" '+en+' '+(checked?'checked':'')+'> Sertakan halaman penandatanganan</label>'+
+  [['number','Nomor Dokumen'],['name','Nama Pejabat'],['title','Jabatan'],['label','Keterangan'],['city','Kota'],['date','Tanggal']].map(x=>
+   '<label>'+x[1]+'<input type="text" '+att+'="'+x[0]+'" value="'+E(t[x[0]])+'" placeholder="'+E(x[1])+'"></label>').join('')+
+  '<small>Identitas untuk layout TTE; belum merupakan TTE yang tervalidasi. Unggah PDF hasil TTE di Riwayat Dokumen & Versi untuk menetapkan nomor versi.</small></div></details>';
+}
+function programReportModel(p){
+ const d=cfg(),t=tteState(d),parts=sections(p),v=nextVersion('program',p.id||p.akr,year()),blocks=[];
+ const name=String(p.nama||'Program Transformasi'),code=String(p.kode||p.akr||'—');
+ blocks.push({t:'h1',text:'Ringkasan Eksekutif'});
+ blocks.push({t:'p',text:'Dokumen Perencanaan Program '+name+' ('+code+') Tahun Anggaran '+year()+
+  ' merangkum identitas, landasan pelaksanaan, manfaat, pemangku kepentingan, risiko, dan tata kelola program sesuai substansi yang dipilih. Dokumen merupakan rancangan sampai disahkan.'});
+ blocks.push({t:'kv',rows:[['Nama Program',name],['Kode Program',code],['Tahun Anggaran',String(year())],['UIC Utama',p.uic||'—'],['Tahap',p.psStatus==='Ditetapkan'?'Ditetapkan':'Usulan / Draf'],['Versi','v'+v]]});
+ parts.forEach((part,i)=>{
+  blocks.push({t:'h1',text:part.title});
+  const rows=part.rows.map(r=>[String(r[0]),String(r[1]??'Belum diisi')]);
+  blocks.push({t:'table',caption:'Substansi '+part.title,head:['Komponen','Uraian'],widths:[32,68],rows:rows.length?rows:[['Substansi','Belum diisi']]});
+ });
+ if(d.annex&&annex(p).length){
+  blocks.push({t:'h1',text:'Lampiran Charter',nonum:true});
+  blocks.push({t:'table',caption:'Rangkuman Charter',head:['Komponen','Uraian'],widths:[32,68],rows:annex(p)});
+ }
+ if(d.sign)blocks.push({t:'tte'});
+ return {lang:'id',formal:!!d.toc,header:'Dokumen Perencanaan Program · '+name,
+  fileName:'Perencanaan_Program_'+year()+'_'+code.replace(/[^A-Za-z0-9_-]/g,'_')+'_v'+v,
+  cover:{kicker:'KEMENTERIAN KEUANGAN REPUBLIK INDONESIA · DRAFT',title:'DOKUMEN PERENCANAAN PROGRAM',
+   subject:name+' · Tahun Anggaran '+year()+' · v'+v,
+   chips:[code,'Tahun '+year(),p.psStatus==='Ditetapkan'?'Ditetapkan':'Usulan / Draf'],
+   scope:parts.map(x=>x.title),meta:[['Kode Program',code],['Tahun Anggaran',String(year())],['Versi','v'+v],
+     ['UIC Utama',String(p.uic||'—')],['Status','Draft, menunggu pengesahan'],['Nomor Dokumen',t.number||'Belum ditetapkan']],
+   noTte:!d.sign,tte:{name:t.name,title:t.title,label:t.label,date:t.date,city:t.city}},
+  blocks};
+}
+
 function documentPreview(p){
  const d=cfg(),list=sections(p),version=nextVersion('program',p.id||p.akr,year());
+ if(d.format!=='pptx'&&typeof mtRptHtml==='function')return '<iframe class="psbank-program-report-frame" title="Pratinjau dokumen perencanaan program" srcdoc="'+E(mtRptHtml(programReportModel(p)))+'"></iframe>';
  if(d.format==='pptx'){
   const slides=slidePages(p),n=Math.max(0,Math.min(+d.slide||0,slides.length-1)),s=slides[n]||{title:'Pilih substansi dokumen',rows:[]};
   return '<div class="psbank-slidepreview"><div class="psbank-slidetop"><span>KEMENTERIAN KEUANGAN</span><strong>'+E(p.kode||p.akr)+'</strong></div><h3>'+E(s.title)+'</h3><small>'+E(p.nama)+' · '+year()+'</small>'+
@@ -157,6 +204,7 @@ function builder(p){
  '<label><input type="checkbox" data-doc-extra="toc" '+(d.toc?'checked':'')+'> Daftar isi</label>'+
  '<label><input type="checkbox" data-doc-extra="annex" '+(d.annex?'checked':'')+'> Lampiran charter</label>'+
  '<label><input type="checkbox" data-doc-extra="sign" '+(d.sign?'checked':'')+'> Halaman penandatanganan</label></div>'+
+ tteControls(d,'doc')+
  '<div class="psbank-docformat"><strong>Format Ekspor</strong><div class="psbank-formatbuttons" role="group" aria-label="Format Ekspor">'+
  [['pdf','PDF'],['word','DOCX'],['pptx','PPTX']].map(x=>'<button type="button" class="btn '+(fmt===x[0]?'on':'')+'" data-doc-format-btn="'+x[0]+'" aria-pressed="'+(fmt===x[0])+'">'+x[1]+'</button>').join('')+'</div></div>'+
  versionPanel('program',p.id||p.akr,year())+
@@ -177,6 +225,9 @@ async function exportFile(p){
  try{
   if(d.format==='word'){
    await load('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',()=>!!window.JSZip);
+   if(typeof mtRptDocx==='function'&&typeof mtRptDownloadBlob==='function'){
+    const blob=await mtRptDocx(programReportModel(p));mtRptDownloadBlob(blob,file+'.docx');
+   }else{
    const zip=new window.JSZip();let body='';
    if(d.cover)body+=para('KEMENTERIAN KEUANGAN REPUBLIK INDONESIA',true)+para('DOKUMEN PERENCANAAN PROGRAM',true)+para(p.nama,true)+para((p.kode||p.akr)+' • Tahun '+year());
    body+=para('Versi '+version+' — Rancangan untuk reviu. Belum ditandatangani secara elektronik.');
@@ -190,6 +241,7 @@ async function exportFile(p){
    zip.file('word/document.xml',xml);
    const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'}),url=URL.createObjectURL(blob),a=document.createElement('a');
    a.href=url;a.download=file+'.docx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2500);
+   }
   }else if(d.format==='pdf'){
    await load('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',()=>!!window.jspdf?.jsPDF);
    const pdf=new window.jspdf.jsPDF({unit:'mm',format:'a4'});let y=23;
@@ -277,7 +329,7 @@ function portData(){
  return portSelected().map(p=>({p,blocks:steps.filter(x=>d.sections.includes(x[0])).map(x=>({title:x[1],rows:mode?projectFields(p,x[0]):fields(p,x[0],year())}))}));
 }
 function portfolioModel(){
- const d=portCfg(),data=portData(),mode=projectMode(),version=nextVersion(docKind(),docId(),year()),B=[];
+ const d=portCfg(),data=portData(),mode=projectMode(),version=nextVersion(docKind(),docId(),year()),B=[],signer=tteState(d);
  const h1=x=>B.push({t:'h1',text:x}),h2=x=>B.push({t:'h2',text:x});
  const meaningful=rows=>rows.filter(x=>String(x[1]??'').trim()&&!/^belum diisi$/i.test(String(x[1]).trim()));
  h1('Ringkasan Eksekutif');
@@ -300,11 +352,12 @@ function portfolioModel(){
  });
  h1('Catatan Penggunaan dan Pembaruan Dokumen');
  B.push({t:'bullets',items:['Dokumen memuat data program yang dipilih pada saat ekspor; perubahan isian setelah ekspor tidak otomatis mengubah berkas yang telah diunduh.','Nomor versi dokumen baru diterbitkan setelah PDF hasil TTE diunggah kembali sebagai bukti dukung.','Status dan bukti tanda tangan elektronik memerlukan verifikasi melalui layanan resmi sebelum dianggap sah.']});
+ if(d.sign)B.push({t:'tte'});
  return {lang:'id',formal:true,fileName:(mode?'Dokumen_Usulan_Proyek_':'Dokumen_Portofolio_Transformasi_')+year()+'_v'+version,
   header:(mode?'Dokumen Usulan Proyek · ':'Dokumen Portofolio Program Transformasi · ')+year(),
   cover:{kicker:'KEMENTERIAN KEUANGAN REPUBLIK INDONESIA · DRAFT',title:mode?'DOKUMEN USULAN PROYEK':'DOKUMEN PORTOFOLIO PROGRAM TRANSFORMASI',subject:'Tahun Anggaran '+year()+' · Versi '+version,
    chips:['Tahun '+year(),data.length+(mode?' usulan proyek':' program'),'Draft — belum disahkan'],scope:d.sections.map(x=>docSections().find(z=>z[0]===x)?.[1]||x),
-   meta:[['Tahun Anggaran',String(year())],['Versi','v'+version],[mode?'Jumlah Usulan Proyek':'Jumlah Program',String(data.length)],['Status','Draft'],['Sumber','Modul Transformasi Kementerian Keuangan']],noTte:true},blocks:B};
+   meta:[['Tahun Anggaran',String(year())],['Versi','v'+version],[mode?'Jumlah Usulan Proyek':'Jumlah Program',String(data.length)],['Status','Draft'],['Sumber','Modul Transformasi Kementerian Keuangan'],['Nomor Dokumen',signer.number||'Belum ditetapkan']],noTte:!d.sign,tte:{name:signer.name,title:signer.title,label:signer.label,city:signer.city,date:signer.date}},blocks:B};
 }
 function splitPortText(text,limit=176){
  const value=String(text||'Belum diisi').trim().replace(/\s+/g,' '),words=value.split(' '),out=[];let line='';
@@ -356,6 +409,7 @@ function portfolioBuilder(){
  '<div class="psbank-docbuilder"><div class="psbank-docsettings"><div class="psbank-doccheckhead"><b>Pilih Program</b><button class="btn" type="button" data-port-all>'+(chosen.length===all.length?'Kosongkan':'Pilih Semua')+'</button></div>'+
  '<div class="psbank-portfolio-checks">'+(all.length?all.map(p=>'<label><input type="checkbox" data-port-program="'+E(p.id)+'" '+(d.selected.includes(String(p.id))?'checked':'')+'><span><b>'+E(p.nama)+'</b><small>'+E(p.kode||p.akr)+'</small></span></label>').join('') :'<p>Belum ada '+(mode?'usulan proyek':'program')+' pada tahun ini.</p>')+'</div>'+
  '<div class="psbank-doccheckhead"><b>Substansi</b><span>'+d.sections.length+'/'+steps.length+' dipilih</span></div><div class="psbank-docchecks">'+steps.map((x,i)=>'<label><input type="checkbox" data-port-section="'+x[0]+'" '+(d.sections.includes(x[0])?'checked':'')+'>'+(i+1)+'. '+x[1]+'</label>').join('')+'</div>'+
+ tteControls(d,'port')+
  '<div class="psbank-docformat"><strong>Format Ekspor</strong><div class="psbank-formatbuttons">'+[['pdf','PDF'],['word','DOCX'],['pptx','PPTX']].map(x=>'<button type="button" class="btn '+(d.format===x[0]?'on':'')+'" data-port-format="'+x[0]+'" aria-pressed="'+(d.format===x[0])+'">'+x[1]+'</button>').join('')+'</div></div>'+
  versionPanel(docKind(),docId(),year())+'</div>'+
  '<div class="psbank-docpreview"><div class="psbank-docpreview-head"><div><b>Pratinjau '+(d.format==='pptx'?'PowerPoint':d.format==='pdf'?'PDF':'Word')+'</b><small>Portofolio Transformasi '+year()+'</small></div><span>v'+ver+' · '+chosen.length+(mode?' proyek':' program')+'</span></div>'+
@@ -506,6 +560,8 @@ function portfolioClick(ev){
 }
 function portfolioChange(ev){
  const q=ev.target,d=portCfg();
+ if(q.dataset.portTte!==undefined){tteState(d)[q.dataset.portTte]=q.value;d.tteOpen=true;save();render();return true}
+ if(q.hasAttribute('data-port-include-tte')){d.sign=q.checked;d.tteOpen=true;save();render();return true}
  if(q.dataset.portProgram!==undefined){const id=q.dataset.portProgram;d.selected=q.checked?[...new Set([...d.selected,id])]:d.selected.filter(x=>x!==id);d.slide=0;save();render();return true}
  if(q.dataset.portSection!==undefined){const k=q.dataset.portSection;d.sections=q.checked?[...new Set([...d.sections,k])]:d.sections.filter(x=>x!==k);d.slide=0;save();render();return true}
  return false;
@@ -536,10 +592,12 @@ function click(ev,p,inline=false){
 }
 function change(ev,inline=false){
  const q=ev.target,d=cfg();
+ if(q.dataset.docTte!==undefined){tteState(d)[q.dataset.docTte]=q.value;d.tteOpen=true;save();if(!inline)render();return true}
+ if(q.hasAttribute('data-doc-tte-enabled')){d.sign=q.checked;d.tteOpen=true;save();if(!inline)render();return true}
  if(q.dataset.docSection!==undefined){const k=q.dataset.docSection;d.sections=q.checked?[...new Set([...d.sections,k])]:d.sections.filter(x=>x!==k);d.slide=0;save();if(!inline)render();return true}
  if(q.dataset.docExtra!==undefined){d[q.dataset.docExtra]=q.checked;save();if(!inline)render();return true}
  if(q.dataset.docFormat!==undefined){d.format=q.value;d.slide=0;save();if(!inline)render();return true}
  return false;
 }
-window.MT_PS_DOC={fields,sections,slidePages,paper,builder,exportFile,click,change,documentPreview,versionPanel,nextVersion,registerExport,confirmSigned,history,processSigned,openSignedProof,portfolioModel,portSlides,splitPortText,portfolioBuilder,portfolioClick,portfolioChange,portfolioExport,version:'20261108-program-document-builder-v3'};
+window.MT_PS_DOC={fields,sections,slidePages,paper,builder,exportFile,click,change,documentPreview,programReportModel,tteControls,versionPanel,nextVersion,registerExport,confirmSigned,history,processSigned,openSignedProof,portfolioModel,portSlides,splitPortText,portfolioBuilder,portfolioClick,portfolioChange,portfolioExport,version:'20261108-program-document-builder-v3'};
 })();
