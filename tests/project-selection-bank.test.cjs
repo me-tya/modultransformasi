@@ -780,3 +780,78 @@ test('Shared CM/PM/Project Selection geometry fixes route navigation and filter 
  assert.match(css,/#app \.pswf\.ps27\{[\s\S]*?gap:6px!important/);
  assert.match(css,/#app \.psbank-subtabs button\{[\s\S]*?min-height:38px!important/);
 });
+
+
+test('Daftar Program paginates independently with 10, 20, 50, and 100 records',()=>{
+ const m=boot();
+ for(let i=0;i<25;i++)m.S.programs.push({
+  id:'detail-extra-'+i,akr:'D'+i,kode:'B27-D'+i,nama:'Program Baru '+i,
+  uic:'BaTii',psYear:2027,psDraft:true,psStatus:'Draft',psProjects:[]
+ });
+ m.S.ui.psBank={tab:'detail',detailPageSize:10,detailPage:1};
+ const first=m.bank.detail();
+ assert.equal((first.match(/data-bank-detailrow="/g)||[]).length,10);
+ assert.match(first,/data-bank-detail-page-size/);
+ for(const n of [10,20,50,100])assert.match(first,new RegExp('<option value="'+n+'"'));
+ assert.match(first,/data-bank-detail-page-step="1"/);
+ m.S.ui.psBank.detailPage=2;
+ const second=m.bank.detail();
+ assert.equal((second.match(/data-bank-detailrow="/g)||[]).length,10);
+ assert.notEqual(first,second);
+ m.S.ui.psBank.detailPage=3;
+ assert.equal((m.bank.detail().match(/data-bank-detailrow="/g)||[]).length,6);
+ m.S.ui.psBank.detailPageSize=50;m.S.ui.psBank.detailPage=1;
+ assert.equal((m.bank.detail().match(/data-bank-detailrow="/g)||[]).length,26);
+ assert.match(source['project-selection-program-bank.js'],/if\(btn\.dataset\.bankDetailPageStep\)/);
+ assert.match(source['project-selection-program-bank.js'],/if\(q\.dataset\.bankDetailPageSize!==undefined\)/);
+});
+test('Both program tables have no nested vertical scroll in final CSS declaration',()=>{
+ const css=readFileSync('project-selection-program-bank.css','utf8');
+ const tail=css.slice(css.lastIndexOf('Explicitly disable both scroll axes'));
+ assert.match(tail,/\.psbank-detail-table\) > \.psbank-tablewrap/);
+ assert.match(tail,/\.psbank-history-table\) > \.psbank-tablewrap/);
+ assert.match(tail,/overflow:visible!important;overflow-x:visible!important;overflow-y:visible!important/);
+ assert.match(tail,/max-height:none!important/);
+});
+test('Project Management tabs stretch over the complete navigation row',()=>{
+ const css=readFileSync('ui-tabs-unified.css','utf8');
+ const tail=css.slice(css.lastIndexOf('PM navigation: distribute eight'));
+ assert.match(tail,/>nav\.ptabs\.pmo-journey/);
+ assert.match(tail,/width:100%!important/);
+ assert.match(tail,/flex:1 1 auto!important/);
+ assert.match(tail,/justify-content:center!important/);
+ assert.match(tail,/min-width:max-content!important/);
+});
+test('Setahun displays all TW 1–4 per Executive Dashboard module; quarterly selection still filters',()=>{
+ const dash=readFileSync('dashboard-executive-v2.js','utf8');
+ const mock={ui:{tahun:2027,pr:'all',dbStatus:'',dbOpened:'__all__'}};
+ const work=[
+  {tm:2,v:1,id:'q1',done:true},{tm:5,v:0,id:'q2',done:false},
+  {tm:8,v:1,id:'q3',done:true},{tm:11,v:0,id:'q4',done:false}
+ ];
+ const statuses=['Tercapai','Terlambat','Berjalan','Terjadwal'];
+ const prog={p:{akr:'TEST',kode:'B27-TEST',nama:'Uji Program',uic:'BaTii'}};
+ const module={n:'Modul Uji',a:work,subs:{},x:{uic:'BaTii'}};
+ const ctx=vm.createContext({
+  S:mock,ACT:{},VIEW:'beranda',ME:null,window:{},viewDash:null,
+  onChange(){},save(){},render(){},document:{addEventListener(){}},
+  esc:x=>String(x??''),ROM:['',1,2,3,4],
+  per:()=>({pr:mock.ui.pr}),
+  doneAt:w=>!!w.done,
+  dxAt:(_m,q)=>({st:statuses[q-1],lab:'Tahap '+q,done:0,cum:4,late:q===2?1:0,pg:0,cm:false}),
+  DX_ST:{Tercapai:['ok','#168252'],Terlambat:['late','#a22'],Berjalan:['run','#36a'],Terjadwal:['wait','#bbc']}
+ });
+ vm.runInContext(dash.replace('viewDash=dbRender;', 'window.__dbtest={dbCard,dbDetail,dbLate,dbIsAnnual};viewDash=dbRender;'),ctx);
+ const annual=ctx.window.__dbtest.dbCard(module,prog,4);
+ assert.match(annual,/db-module-quarters/);
+ for(let q=1;q<=4;q++)assert.match(annual,new RegExp('TW '+q));
+ assert.match(annual,/Ringkasan akhir tahun/);
+ mock.ui.dbStatus='Terlambat';
+ assert.match(ctx.window.__dbtest.dbDetail([{p:prog.p,mods:[module]}],4),/Modul Uji/);
+ assert.match(ctx.window.__dbtest.dbLate([{p:prog.p,mods:[module]}],4),/Modul Uji/);
+ mock.ui.pr='4';
+ const quarterly=ctx.window.__dbtest.dbCard(module,prog,4);
+ assert.doesNotMatch(quarterly,/db-module-quarters/);
+ assert.match(quarterly,/TW 4 2027/);
+ assert.doesNotMatch(ctx.window.__dbtest.dbDetail([{p:prog.p,mods:[module]}],4),/data-act="dxMod"/);
+});
