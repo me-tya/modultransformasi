@@ -192,7 +192,7 @@ function programReportModel(p){
   blocks.push({t:'table',caption:'Rangkuman Charter',head:['Komponen','Uraian'],widths:[32,68],rows:annex(p)});
  }
  if(d.sign)blocks.push({t:'tte'});
- return {lang:'id',formal:!!d.toc,header:'Dokumen Perencanaan Program · '+name,
+ return {lang:'id',formal:true,toc:!!d.toc,header:'Dokumen Perencanaan Program · '+name,
   fileName:'Perencanaan_Program_'+year()+'_'+code.replace(/[^A-Za-z0-9_-]/g,'_')+'_v'+v,
   cover:{kicker:'KEMENTERIAN KEUANGAN REPUBLIK INDONESIA · DRAFT',title:'DOKUMEN PERENCANAAN PROGRAM',
    subject:name+' · Tahun Anggaran '+year()+' · v'+v,
@@ -226,6 +226,18 @@ async function showActualDocumentPreview(root,model,format){
     useBase64URL:true,renderHeaders:true,renderFooters:true
    });if(!alive())return false;
    node.replaceChildren(target);
+   // Fit every Word page into the preview pane without changing the actual A4
+   // geometry; the same blob is downloaded and rendered by docx-preview.
+   const fitPage=()=>{
+    if(!node.isConnected)return;
+    target.style.zoom='1';
+    const page=target.querySelector('.docx');
+    const width=page?.offsetWidth||794,room=Math.max(320,node.clientWidth-28);
+    const scale=Math.min(1,room/width);
+    target.style.zoom=scale.toFixed(3);
+    target.dataset.previewScale=String(Math.round(scale*100));
+   };
+   requestAnimationFrame(fitPage);
    return true;
   }
   if(format==='pdf'){
@@ -442,24 +454,15 @@ async function exportFile(p){
  const d=cfg(),list=sections(p),version=nextVersion('program',p.id||p.akr,year()),file=basename(p)+'_v'+version;
  try{
   if(d.format==='word'){
-   await load('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',()=>!!window.JSZip);
-   if(typeof mtRptDocx==='function'&&typeof mtRptDownloadBlob==='function'){
-    const blob=await mtRptDocx(programReportModel(p));mtRptDownloadBlob(blob,file+'.docx');
-   }else{
-   const zip=new window.JSZip();let body='';
-   if(d.cover)body+=para('KEMENTERIAN KEUANGAN REPUBLIK INDONESIA',true)+para('DOKUMEN PERENCANAAN PROGRAM',true)+para(p.nama,true)+para((p.kode||p.akr)+' • Tahun '+year());
-   body+=para('Versi '+version+' — Rancangan untuk reviu. Belum ditandatangani secara elektronik.');
-   if(d.toc)body+=para('DAFTAR ISI',true)+list.map((x,i)=>para((i+1)+'. '+x.title)).join('');
-   list.forEach((x,i)=>{body+=para((i+1)+'. '+x.title,true)+table(x.rows)});
-   if(d.annex&&annex(p).length)body+=para('LAMPIRAN CHARTER',true)+table(annex(p));
-   if(d.sign)body+=para('Mengetahui / menyetujui',true)+para('Pejabat Berwenang');
-   const xml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+body+'<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1080" w:right="1080" w:bottom="1080" w:left="1080"/></w:sectPr></w:body></w:document>';
-   zip.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
-   zip.file('_rels/.rels','<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
-   zip.file('word/document.xml',xml);
-   const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'}),url=URL.createObjectURL(blob),a=document.createElement('a');
-   a.href=url;a.download=file+'.docx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2500);
+   // All exports use the one formal renderer also used by Laporan Akhir Proyek.
+   // Do not fall back to the deprecated plain XML document template.
+   if(typeof mtRptDocx!=='function'||typeof mtRptDownloadBlob!=='function'){
+    throw new Error('Template Word resmi belum tersedia. Muat ulang aplikasi sebelum mengunduh.');
    }
+   await load('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',()=>!!window.JSZip);
+   const model=programReportModel(p);
+   const blob=await mtRptDocx(model);
+   mtRptDownloadBlob(blob,file+'.docx');
   }else if(d.format==='pdf'){
    await exportFormalPdf(programReportModel(p),file+'.pdf');
   }else{
@@ -567,7 +570,7 @@ function portfolioModel(){
  h1('Catatan Penggunaan dan Pembaruan Dokumen');
  B.push({t:'bullets',items:['Dokumen memuat data program yang dipilih pada saat ekspor; perubahan isian setelah ekspor tidak otomatis mengubah berkas yang telah diunduh.','Nomor versi dokumen baru diterbitkan setelah PDF hasil TTE diunggah kembali sebagai bukti dukung.','Status dan bukti tanda tangan elektronik memerlukan verifikasi melalui layanan resmi sebelum dianggap sah.']});
  if(d.sign)B.push({t:'tte'});
- return {lang:'id',formal:true,fileName:(mode?'Dokumen_Usulan_Proyek_':'Dokumen_Portofolio_Transformasi_')+year()+'_v'+version,
+ return {lang:'id',formal:true,toc:true,fileName:(mode?'Dokumen_Usulan_Proyek_':'Dokumen_Portofolio_Transformasi_')+year()+'_v'+version,
   header:(mode?'Dokumen Usulan Proyek · ':'Dokumen Portofolio Program Transformasi · ')+year(),
   cover:{kicker:'KEMENTERIAN KEUANGAN REPUBLIK INDONESIA · DRAFT',title:mode?'DOKUMEN USULAN PROYEK':'DOKUMEN PORTOFOLIO PROGRAM TRANSFORMASI',subject:'Tahun Anggaran '+year()+' · Versi '+version,
    chips:['Tahun '+year(),data.length+(mode?' usulan proyek':' program'),'Draft — belum disahkan'],scope:d.sections.map(x=>docSections().find(z=>z[0]===x)?.[1]||x),
