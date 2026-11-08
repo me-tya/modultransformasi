@@ -187,3 +187,55 @@
 #app .psbank-bulkfoot{display:flex;align-items:center;justify-content:flex-end;gap:13px;padding:10px 2px 0;min-height:49px;font:700 11.5px 'Inter',sans-serif;color:#365c7c}
 #app .psbank-bulkfoot b{font-size:13px;color:#0f3864}
 #app .psbank-bulkfoot .btn{min-width:166px}
+
+/* Fixed-size Detail Program window across every tab, including document export. */
+.psbank-overlay:not(.psbank-carry-overlay){padding:15px}
+.psbank-overlay:not(.psbank-carry-overlay) .psbank-dialog,
+.psbank-overlay:not(.psbank-carry-overlay) .psbank-dialog:has(.psbank-docbuilder){width:min(1430px,96vw);height:min(88vh,855px);min-height:540px;max-width:none;max-height:none;transition:none}
+.psbank-dialog>header{flex:0 0 auto;min-height:75px}
+.psbank-dialogtabs{flex:0 0 auto;min-height:54px}
+.psbank-dialogbody{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:12px 17px}
+.psbank-dialog>footer{flex:0 0 auto;min-height:64px}
+.psbank-dialogbody .psbank-docbuilder{grid-template-columns:minmax(285px,.76fr) minmax(0,1.48fr);gap:11px;min-height:0;height:100%}
+.psbank-dialogbody .psbank-docsettings{max-height:calc(88vh - 212px);overflow-y:auto;padding:11px}
+.psbank-dialogbody .psbank-docscroll{height:calc(88vh - 255px)!important;max-height:none;overflow:auto;padding:12px}
+.psbank-docformat{display:flex;flex-direction:column;gap:7px;font:750 11px 'Inter',sans-serif;color:#1c446b}
+.psbank-formatbuttons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.psbank-formatbuttons .btn{font:800 11.5px 'Inter',sans-serif;padding:9px 5px;color:#254f76;border:1px solid #cbdbea;border-radius:8px;background:white}
+.psbank-formatbuttons .btn.on{background:#173a68;border-color:#173a68;color:white}
+.psbank-editform{padding:14px}
+.psbank-editgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.psbank-editform .psbank-editgrid label{margin:0;min-width:0}
+.psbank-editform .psbank-editgrid textarea,.psbank-editform .psbank-editgrid select{width:100%;min-height:38px;height:auto;padding:9px;border:1px solid #d1deea;border-radius:8px;font:500 12px 'Inter',sans-serif;background:white;color:#183d62}
+.psbank-edit-entry{border:1px solid #dae5f0;background:#fbfdff;border-radius:10px;padding:10px;margin:8px 0}
+.psbank-entryhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+#app .psbank-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:10px}
+#app .psbank-summary span{padding:12px;background:#fff;border:1px solid #dce6f0;border-radius:9px;text-align:center;font-size:11.5px;color:#5e738a}
+#app .psbank-summary b{color:#153d69;font-size:19px;margin-right:4px}
+.psbank-carry-item{grid-template-columns:minmax(0,1.2fr) minmax(180px,1.25fr) minmax(100px,.6fr) 112px}
+.psbank-carry-item label{min-width:0}
+#app .psbank-version-panel{margin:9px 0 0;background:#fff;border:1px solid #dce6ef;border-radius:9px;overflow:hidden;font:11px 'Inter',sans-serif}
+#app .psbank-version-panel>summary{padding:10px 11px;font-weight:800;color:#173e69;cursor:pointer}
+#app .psbank-version-panel>summary b{margin-left:7px;color:#855d00}
+#app .psbank-version-panel p{margin:8px 11px;font-size:10.7px;line-height:1.5;color:#62778c}
+#app .psbank-version-upload{padding:8px 11px;display:flex;flex-direction:column;gap:8px}
+#app .psbank-version-upload>label{display:flex;flex-direction:column;gap:5px;color:#2b5070;font-weight:750}
+#app .psbank-version-upload input[type=file]{font-size:10px;max-width:100%}
+#app .psbank-version-upload .psbank-version-attest{display:flex;flex-direction:row;align-items:flex-start}
+#app .psbank-version-rows{max-height:140px;overflow:auto;border-top:1px solid #dae4ee}
+#app .psbank-version-rows>div{padding:7px 11px;border-bottom:1px solid #e6edf4}
+#app .psbank-version-rows b{display:block;color:#183d63;font-size:10.5px}
+#app .psbank-version-rows span{display:block;color:#6b8094;font-size:10px;margin-top:3px}
+#app .psbank-version-disclaimer{font-size:10px!important}
+#app .psbank-portfolio-doc .psbank-docbuilder{grid-template-columns:minmax(310px,.76fr) minmax(0,1.5fr);gap:12px;min-height:510px}
+#app .psbank-portfolio-checks{display:flex;flex-direction:column;gap:5px;max-height:200px;overflow:auto}
+#app .psbank-portfolio-checks label{display:flex;align-items:center;gap:9px;padding:8px;border:1px solid #dce6f0;border-radius:7px;font-size:11px}
+#app .psbank-portfolio-checks small{display:block;color:#71869c;margin-top:2px}
+#app .psbank-portfolio-download{display:flex;justify-content:flex-end;padding:10px 12px;background:#fff;border-top:1px solid #dfe7ef}
+#app .psbank-portfolio-doc .psbank-docscroll{height:580px;max-height:65vh}
+#app table th:not([data-nosort]){user-select:none}
+#app table:not(.wbs-tree):not(.wbs-hierarchy) thead th:not(:has(button,input,select)){cursor:pointer}
+#app table thead th[data-sort-active="asc"]:after{content:" ↑";color:#c48b02;font-size:12px}
+#app table thead th[data-sort-active="desc"]:after{content:" ↓";color:#c48b02;font-size:12px}
+@media(max-width:1050px){.psbank-dialogbody .psbank-docbuilder,#app .psbank-portfolio-doc .psbank-docbuilder{grid-template-columns:1fr}.psbank-dialogbody .psbank-docsettings{max-height:260px}}
+@media(max-width:680px){.psbank-editgrid,#app .psbank-summary{grid-template-columns:1fr 1fr}.psbank-carry-item{grid-template-columns:1fr}.psbank-overlay:not(.psbank-carry-overlay) .psbank-dialog{width:99vw;height:95vh}}
