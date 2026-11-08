@@ -434,3 +434,26 @@ test('Project Selection PM filter includes reset, year, period, program, unit an
  assert.match(css,/ps27-filter-panel/);
  assert.doesNotMatch(html,/mt-shared-filter-check/);
 });
+
+test('Program filter applies supporting UIC, quarter and custom date range correctly',()=>{
+ const m=boot(),b=m.S.ui.psBank={tab:'bank',filterYear:'all',filterStatus:'all',filterUnit:'DJPK',filterRole:'pendukung',filterPeriod:'TW 2'};
+ m.target.pend='DJPK';m.target.psProjects=[{id:'m',name:'SIPK',goLive:'2027-05-10'}];
+ let html=m.bank.bank();
+ assert.match(html,/Digitalisasi Core Non APBN/);
+ b.filterRole='utama';html=m.bank.bank();
+ assert.doesNotMatch(html,/data-bank-row="tgt-non:2027"/);
+ b.filterRole='pendukung';b.filterPeriod='TW 4';html=m.bank.bank();
+ assert.doesNotMatch(html,/data-bank-row="tgt-non:2027"/);
+ b.filterPeriod='range';b.filterRangeFrom='2027-05-01';b.filterRangeTo='2027-05-31';
+ assert.match(m.bank.bank(),/data-bank-row="tgt-non:2027"/);
+ b.filterRangeFrom='2027-06-01';
+ assert.doesNotMatch(m.bank.bank(),/data-bank-row="tgt-non:2027"/);
+});
+test('Project Selection confirmations use designed modal instead of browser confirm',()=>{
+ for(const file of ['project-selection-scope-map.js','project-selection-program-bank.js','project-selection-flow.js','project-selection-governance.js']){
+  assert.doesNotMatch(source[file],/window\.confirm\(/);
+ }
+ assert.match(source['project-selection-scope-map.js'],/psbank-confirm-card/);
+ assert.match(source['project-selection-scope-map.js'],/role="alertdialog"/);
+ assert.match(source['project-selection-scope-map.js'],/window\.MT_PS_CONFIRM/);
+});
