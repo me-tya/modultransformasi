@@ -139,20 +139,31 @@ ACT.cpReport=el=>{
  let model=null;
  const extra='<button class="btn" data-mx="pdf">⬇ PDF (Simpan)</button><button class="btn" data-mx="docx">⬇ Word (.docx)</button><button class="btn pri" data-mx="pptx">⬇ PowerPoint (.pptx)</button>';
  const isInline=!!el.dataset.inline;
+ const Version=window.MT_PS_DOC||null;
+ const docYear=+(c.tahun||S.ui.tahun||2026),docId=String(c.id||c.prog);
+ const version=()=>Version?.nextVersion('project',docId,docYear)||1;
+ const markExport=(format)=>Version?.registerExport('project',docId,docYear,format,(model?.fileName||'Dokumen_Perencanaan_Proyek')+'.'+(format==='docx'?'docx':format==='pptx'?'pptx':'pdf'),{sections:CPLAN_KEYS.filter(([k])=>inc[k]).map(x=>x[0])});
+ 
  const doExport=(format,win)=>{
   if(!model)return false;
   if(!CPLAN_KEYS.some(([k])=>inc[k])){toast('Pilih sekurang-kurangnya satu dokumen sumber.');return false}
-  if(format==='pdf'){try{const f=win.querySelector('#cp-report-frame').contentWindow;f.focus();f.print();toast('Pilih tujuan “Save as PDF” pada dialog cetak.')}catch(e){toast('Pratinjau PDF gagal: '+e.message)}return false}
-  if(format==='docx'){if(!window.JSZip){toast('Pustaka Word belum dimuat.');return false}toast('Menyusun berkas Word…');mtRptDocx(model).then(b=>{mtRptDownloadBlob(b,model.fileName+'.docx');toast('Word berhasil dibuat.')}).catch(e=>toast('Ekspor Word gagal: '+(e.message||e)));return false}
-  if(format==='pptx'){toast('Menyusun paparan PowerPoint…');window.cpCompactPptx(c,inc).then(()=>toast('PPTX berhasil dibuat dari dokumen terpilih.')).catch(e=>toast('Ekspor PowerPoint gagal: '+(e.message||e)));return false}
+  if(format==='pdf'){try{const f=win.querySelector('#cp-report-frame').contentWindow;f.focus();f.print();markExport('pdf');toast('Pratinjau PDF dikirim ke dialog simpan/cetak.')}catch(e){toast('PDF gagal: '+e.message)}return false}
+  if(format==='docx'){if(!window.JSZip){toast('Pustaka Word belum dimuat.');return false}mtRptDocx(model).then(b=>{mtRptDownloadBlob(b,model.fileName+'.docx');markExport('docx');toast('Word berhasil dibuat.')}).catch(e=>toast('Ekspor Word gagal: '+(e.message||e)));return false}
+  if(format==='pptx'){window.cpCompactPptx(c,inc).then(()=>{markExport('pptx');toast('PowerPoint berhasil diunduh.')}).catch(e=>toast('Ekspor PowerPoint gagal: '+(e.message||e)));return false}
   return false;
  };
- const ov=isInline?document.getElementById('cp-doc-inline'):modal('<span class="exh">Dokumen Perencanaan Proyek · Pratinjau & Ekspor</span>',body,null,null,
+  const ov=isInline?document.getElementById('cp-doc-inline'):modal('<span class="exh">Dokumen Perencanaan Proyek · Pratinjau & Ekspor</span>',body,null,null,
  {cancel:'Tutup',size:'wide rpt cp-report-modal',extra,onExtra:doExport});
  if(!ov)return;
  if(isInline){
-  ov.innerHTML='<div class="cp-inline-top"><span><b>Pengaturan dan Pratinjau Dokumen</b><small>'+esc(chJudul(c))+'</small></span><label>Format pratinjau <select data-cp-output><option value="docx">Word (.docx)</option><option value="pdf">PDF (.pdf)</option><option value="pptx">PowerPoint (.pptx)</option></select></label><button type="button" class="btn pri" data-cp-inline-export>↓ Ekspor Word</button></div>'+
-  body.replace('<iframe id="cp-report-frame" title="Pratinjau dokumen perencanaan proyek"></iframe>','<iframe id="cp-report-frame" title="Pratinjau dokumen perencanaan proyek"></iframe><div class="cp-inline-slides" hidden><div class="cp-inline-slidebox"></div><div class="cp-inline-slidecontrols"><button type="button" class="btn" data-cp-prev>‹ Sebelumnya</button><span data-cp-slide-count></span><button type="button" class="btn" data-cp-next>Berikutnya ›</button></div></div>');
+  const chooser='<div class="cp-inline-top"><span><b>Format Ekspor</b><small>'+esc(chJudul(c))+'</small></span><div class="cp-inline-formats" role="group" aria-label="Format Ekspor">'+
+   [['pdf','PDF'],['docx','DOCX'],['pptx','PPTX']].map(a=>'<button type="button" class="btn '+(a[0]==='docx'?'on':'')+'" data-cp-output="'+a[0]+'" aria-pressed="'+(a[0]==='docx')+'">'+a[1]+'</button>').join('')+'</div></div>';
+  const ledger=Version?.versionPanel?.('project',docId,docYear)||'';
+  let contents=body.replace(/<\/div><div class="cp-frame-wrap">/,ledger+'</div><div class="cp-frame-wrap">');
+  contents=contents.replace('<iframe id="cp-report-frame" title="Pratinjau dokumen perencanaan proyek"></iframe>',
+   '<iframe id="cp-report-frame" title="Pratinjau dokumen perencanaan proyek"></iframe><div class="cp-inline-slides" hidden><div class="cp-inline-slidebox"></div><div class="cp-inline-slidecontrols"><button type="button" class="btn" data-cp-prev>‹ Sebelumnya</button><span data-cp-slide-count></span><button type="button" class="btn" data-cp-next>Berikutnya ›</button></div></div>'+
+   '<div class="cp-inline-download"><span>Dokumen v'+version()+' · belum TTE</span><div><button type="button" class="btn pri" data-cp-inline-export>↓ Unduh</button><button type="button" class="btn" data-cp-inline-close>Tutup</button></div></div>');
+  ov.innerHTML=chooser+contents;
  }
 
  const frame=ov.querySelector('#cp-report-frame'),status=ov.querySelector('#cp-state');
@@ -161,17 +172,19 @@ ACT.cpReport=el=>{
  const update=()=>{
   try{
    model=cpModel(c,inc,sg,ov.querySelector('#cp-no').value.trim());
+   model.fileName=String(model.fileName||'Perencanaan_Proyek').replace(/_v\d+$/,'')+'_v'+version();
+   model.cover.chips=[...(model.cover.chips||[]).filter(x=>!/^Versi Dokumen /.test(x)),'Versi Dokumen '+version()];
    frame.srcdoc=mtRptHtml(model);
    const n=CPLAN_KEYS.filter(([k])=>inc[k]).length;
    status.textContent=n+' dari 7 dokumen · '+(inc.toc?'format laporan lengkap':'format ringkas');
    ov.querySelector('#cp-count').textContent=n+'/7 dipilih';
    ov.querySelector('#cp-ttebox').open=!!inc.tte;
    if(isInline){
-    const fmt=ov.querySelector('[data-cp-output]').value;
+    const fmt=ov.querySelector('[data-cp-output].on')?.dataset.cpOutput||'docx';
     const slidesPanel=ov.querySelector('.cp-inline-slides');
     const slideBox=ov.querySelector('.cp-inline-slidebox');
     const exportButton=ov.querySelector('[data-cp-inline-export]');
-    exportButton.textContent='↓ Ekspor '+(fmt==='docx'?'Word':fmt==='pdf'?'PDF':'PowerPoint');
+    exportButton.textContent='↓ Unduh';
     exportButton.disabled=!n;
     slidesPanel.hidden=fmt!=='pptx';frame.hidden=fmt==='pptx';
     ov.querySelector('.cp-preview-h b').textContent='Pratinjau '+(fmt==='docx'?'Word':fmt==='pdf'?'PDF':'PowerPoint');
@@ -196,11 +209,15 @@ ACT.cpReport=el=>{
  ov.querySelectorAll('[data-cp-sign]').forEach(input=>input.addEventListener('change',()=>{sg[input.dataset.cpSign]=input.value.trim();persist();update()}));
  ov.querySelector('#cp-no').addEventListener('change',()=>{persist();update()});
  if(isInline){
-  const format=ov.querySelector('[data-cp-output]');
-  format.addEventListener('change',()=>{slideIndex=0;update()});
-  ov.querySelector('[data-cp-inline-export]').addEventListener('click',()=>doExport(format.value,ov));
+  ov.querySelectorAll('[data-cp-output]').forEach(button=>button.addEventListener('click',()=>{
+   ov.querySelectorAll('[data-cp-output]').forEach(b=>{const on=b===button;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))});
+   slideIndex=0;update();
+  }));
+  ov.querySelector('[data-cp-inline-export]').addEventListener('click',()=>doExport(ov.querySelector('[data-cp-output].on')?.dataset.cpOutput||'docx',ov));
+  ov.querySelector('[data-cp-inline-close]').addEventListener('click',()=>{S.ui.cht='ch';save();render()});
   ov.querySelector('[data-cp-prev]').addEventListener('click',()=>{slideIndex--;update()});
   ov.querySelector('[data-cp-next]').addEventListener('click',()=>{slideIndex++;update()});
+  ov.addEventListener('click',ev=>{if(ev.target.closest('[data-doc-signed-kind]'))Version?.processSigned(ev)});
  }
  update();
  if(el.dataset.format&&el.dataset.format!=='preview'){status.title='Format dipilih: '+el.dataset.format.toUpperCase()+' — periksa isi lalu klik tombol unduh di bagian bawah.'}
