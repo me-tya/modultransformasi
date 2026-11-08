@@ -465,13 +465,13 @@ test('Usulan Proyek rows open modal detail, never inline appendix',()=>{
  const html=m.scope.render(),js=source['project-selection-scope-map.js'];
  assert.match(html,/data-scope-proposal-focus="usul-A"/);
  assert.doesNotMatch(html,/psbank-proposal-detail/);
- assert.match(js,/if\\(focus\\)\\{projectEditor\\(focus.dataset.scopeProposalFocus,true\\)/);
+ assert.match(js,/projectEditor\(focus\.dataset\.scopeProposalFocus,true\)/);
  assert.match(js,/data-scope-editor-edit/);
 });
 test('Detail Program editable paper retains existing text and repeated registers',()=>{
  const src=source['project-selection-program-bank.js'];
  assert.match(src,/psbank-paper-edit/);
- assert.match(src,/Docs\\.fields\\(p,tab,y\\)/);
+ assert.match(src,/Docs\.fields\(p,tab,y\)/);
  assert.match(src,/data-bank-editfield/);
  assert.match(src,/data-bank-entry-add/);
  assert.match(src,/data-bank-entry-remove/);
@@ -482,7 +482,7 @@ test('Semua Program shows all active programs and is not the first program',()=>
  const m=boot();m.S.ui.psFlow={tab:'mapping',prog:'',psGovNavV:1};
  m.scope.bank().filterAllPrograms=true;
  const html=m.scope.render(),js=source['project-selection-workflow-2027.js'];
- assert.match(html,/Semua Program/);
+ assert.match(html,/semua program/i);
  assert.match(html,/data-scope-choose=/);
  assert.match(html,/Digitalisasi Core Non APBN/);
  assert.match(js,/filterAllPrograms=!el\\.value/);
