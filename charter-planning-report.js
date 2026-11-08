@@ -217,7 +217,7 @@ ACT.cpReport=el=>{
   ov.querySelector('[data-cp-inline-close]').addEventListener('click',()=>{S.ui.cht='ch';save();render()});
   ov.querySelector('[data-cp-prev]').addEventListener('click',()=>{slideIndex--;update()});
   ov.querySelector('[data-cp-next]').addEventListener('click',()=>{slideIndex++;update()});
-  ov.addEventListener('click',ev=>{if(ev.target.closest('[data-doc-signed-kind]'))Version?.processSigned(ev)});
+  ov.addEventListener('click',ev=>{if(ev.target.closest('[data-doc-signed-kind]'))Version?.processSigned(ev);if(ev.target.closest('[data-doc-proof-open]'))Version?.openSignedProof(ev)});
  }
  update();
  if(el.dataset.format&&el.dataset.format!=='preview'){status.title='Format dipilih: '+el.dataset.format.toUpperCase()+' — periksa isi lalu klik tombol unduh di bagian bawah.'}
