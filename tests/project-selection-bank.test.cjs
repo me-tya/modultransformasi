@@ -538,3 +538,74 @@ test('Audit trail records deletion and addition with readable field paths',()=>{
  assert.equal(last.kind,'Dihapus');
  assert.ok(last.changes.some(c=>c.path.includes('TEST-A')));
 });
+
+test('Program document preview respects selected DOCX, PDF, and PPTX instead of forcing PPTX',()=>{
+ const m=boot();m.S.ui.psBank={doc:{format:'word',sections:['identity','case'],cover:true,toc:true,sign:false,annex:false,slide:0}};
+ const word=m.docs.documentPreview(m.target);
+ assert.match(word,/psbank-docpaper/);
+ assert.match(word,/Pratinjau Word/);
+ assert.equal(m.S.ui.psBank.doc.format,'word');
+ m.S.ui.psBank.doc.format='pdf';
+ const pdf=m.docs.documentPreview(m.target);
+ assert.match(pdf,/psbank-docpaper/);
+ assert.match(pdf,/Pratinjau PDF/);
+ assert.equal(m.S.ui.psBank.doc.format,'pdf');
+ m.S.ui.psBank.doc.format='pptx';
+ const ppt=m.docs.documentPreview(m.target);
+ assert.match(ppt,/psbank-slidepreview/);
+ assert.equal(m.S.ui.psBank.doc.format,'pptx');
+ assert.doesNotMatch(source['project-selection-documents.js'],/if\(d\.format='pptx'\)/);
+});
+test('Detail Program action icons distinguish draft and established programs',()=>{
+ const m=boot();
+ m.S.ui.psBank={tab:'detail'};
+ let html=m.bank.detail();
+ assert.match(html,/psbank-usulan/);
+ assert.match(html,/Usulan/);
+ assert.match(html,/data-bank-doc="tgt-non"/);
+ assert.match(html,/data-bank-edit-doc="tgt-non"/);
+ assert.match(html,/data-bank-map="tgt-non"/);
+ assert.doesNotMatch(html,/>Pemetaan<\/button>/);
+ m.target.psStatus='Ditetapkan';
+ html=m.bank.detail();
+ assert.match(html,/psbank-ditetapkan/);
+ assert.match(html,/Ditetapkan/);
+});
+test('Auto-save on program detail tab changes persists edit state and no discard warning',()=>{
+ const sourceCode=source['project-selection-program-bank.js'];
+ assert.match(sourceCode,/function showPreview\(key,initialTab='identity',startEdit=false\)/);
+ assert.match(sourceCode,/const saveForm=\(keepEditing=false\)/);
+ assert.match(sourceCode,/if\(step\)\{autoSaveAnd/);
+ assert.match(sourceCode,/v\(\)\.edit=!!keepEditing/);
+ assert.match(sourceCode,/v\(\)\.edit=!!startEdit&&editable/);
+ assert.doesNotMatch(sourceCode,/Abaikan Perubahan\?/);
+});
+test('Move confirmation describes each duplicate module with source and destination',()=>{
+ const src=source['project-selection-scope-map.js'],css=readFileSync('project-selection-program-bank.css','utf8');
+ assert.match(src,/itemName:item\.name/);
+ assert.match(src,/Proyek terdampak/);
+ assert.match(src,/psbank-confirm-transfer-list/);
+ assert.match(src,/from:x\.other\.nama/);
+ assert.match(src,/to:p\.nama/);
+ assert.match(css,/psbank-confirm-transfer-row/);
+});
+test('Main nav, filters, dialog tabs and export panels have unified dimensions',()=>{
+ const shared=readFileSync('ui-tabs-unified.css','utf8');
+ const bankCss=readFileSync('project-selection-program-bank.css','utf8');
+ const priorityCss=readFileSync('project-selection-workflow-2027.css','utf8');
+ const dashboardCss=readFileSync('dashboard-executive-v2.css','utf8');
+ assert.match(shared,/\.pm-stage-shell>\.pm-stage-tools\{display:none!important\}/);
+ assert.match(shared,/\.cm-journey/);
+ assert.match(shared,/\.ptabs\.pmo-journey/);
+ assert.match(shared,/\.ps27 \.ps27-stage/);
+ assert.match(shared,/\.flt\.pmo-unified/);
+ assert.match(shared,/\.flt\.cm-unified/);
+ assert.match(shared,/min-height:55px!important;height:55px!important/);
+ assert.match(bankCss,/psbank-dialogtabs>button/);
+ assert.match(bankCss,/height:43px!important/);
+ assert.match(bankCss,/height:min\(91dvh,900px\)/);
+ assert.match(bankCss,/\.psbank-docsettings\{height:100%!important/);
+ assert.match(bankCss,/\.psbank-docscroll\{height:auto!important/);
+ assert.match(priorityCss,/translateY\(-2px\)!important/);
+ assert.match(dashboardCss,/\.db-kpi:hover\{transform:translateY\(-2px\)/);
+});
