@@ -352,3 +352,31 @@ test('Snapshot history is visible and comparative, with named actions',()=>{
  assert.match(src,/data-snapshot-compare/);
  assert.match(src,/Proyek hanya dapat dihapus dari Pemetaan Proyek/);
 });
+
+test('Bantuan deep links navigate to real submenu/tab and open Detail Program section',()=>{
+ const m=boot(),nav=m.ctx.window.MT_PS_WORKFLOW.navigate;
+ nav('mapping:proposal');
+ assert.equal(m.S.ui.psFlow.tab,'mapping');
+ assert.equal(m.scope.bank().mappingTab,'proposal');
+ nav('prioritasi:reference');
+ assert.equal(m.S.ui.psFlow.tab,'prioritasi');
+ assert.equal(m.S.ui.ps27.prioritySub,'reference');
+ assert.equal(m.S.ui.psFlow.formula,true);
+ nav('usulan:portfolio');
+ assert.equal(m.S.ui.psFlow.tab,'usulan');
+ assert.equal(m.S.ui.psBank.tab,'portfolio');
+ let opened='';
+ m.ctx.window.MT_PS_BANK_CORE.openDetailTab=tab=>{opened=tab};
+ nav('usulan:detail:docs');
+ assert.equal(m.S.ui.psBank.tab,'detail');
+ assert.equal(opened,'docs');
+});
+test('SMART selection is score-threshold gated, not top-N rank based',()=>{
+ const m=boot(),I=m.ctx.window.MT_PROJECT_SELECTION.internals;
+ const p=I.norm(m.target);p.psPrioritize=true;p.psThreshold=80;
+ const low={id:'l',name:'A',scores:{}},hi={id:'h',name:'B',scores:{}};
+ m.target.psProjects=[low,hi];
+ assert.equal(I.chosen(p).length,0,'Incomplete 12 criteria cannot pass');
+ assert.match(source['project-selection-flow.js'],/score>\\+p.psThreshold|score>\\+p.psThreshold/);
+ assert.match(source['project-selection-flow.js'],/12 kriteria lengkap/);
+});
