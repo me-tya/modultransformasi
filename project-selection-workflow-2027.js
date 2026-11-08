@@ -247,13 +247,6 @@ function page(){
  else h+=rkmk(p);
  h+='</section>';return h;
 }
-function markWbsForRemoval(p,id){
- const x=(p.psProjects||[]).find(z=>z.id===id);if(!x)return;
- const n=(p.psWbsDraft||[]).filter(w=>(w.p||[]).some(t=>String(t).toLowerCase()===String(x.name).toLowerCase())).length;
- if(n&&window.confirm('Hapus proyek "'+x.name+'" dan '+n+' item WBS draft terkait dari usulan?')!==true)return;
- if(n)p.psWbsDraft=p.psWbsDraft.filter(w=>!(w.p||[]).some(t=>String(t).toLowerCase()===String(x.name).toLowerCase()));
- I.removeProject(p,id);
-}
 function mount(){
  const root=document.querySelector('#view .pswf');if(!root)return;
  root.addEventListener('click',function(ev){
@@ -264,7 +257,7 @@ function mount(){
   if(b.dataset.ps27Pick){state().prog=b.dataset.ps27Pick;ws().usulanSub='detail';save();render();return}
   if(b.dataset.ps27Sub){ws().prioritySub=b.dataset.ps27Sub;if(ws().prioritySub==='reference'&&!ws().referenceVisited){I.state().formula=true;I.state().params=true;ws().referenceVisited=true}save();render();return}
   if(b.dataset.ps27Usul){ws().usulanSub=b.dataset.ps27Usul;save();render();return}
-  if(b.dataset.ps27Remove){markWbsForRemoval(current(),b.dataset.ps27Remove);return}
+  if(b.dataset.ps27Remove){toast('Hapus proyek hanya tersedia di Pemetaan Proyek → Usulan Proyek.');return}
   const a=b.dataset.ps27;
   if(a==='filter'){ws().filterOpen=!ws().filterOpen;save();render();return}
   if(a==='carry'){carrySelected();return}
