@@ -145,3 +145,15 @@ test('PPTX continuation slides retain all content instead of truncating fields',
  assert.ok(d.slidePages(m.target).length>1);
  assert.match(d.builder(m.target),/Pratinjau PowerPoint/);
 });
+
+test('Buat Dokumen Perencanaan Proyek uses inline settings and live format preview, not an extra modal',()=>{
+ const report=readFileSync('charter-planning-report.js','utf8');
+ const planning=readFileSync('planning-tabs-v2.js','utf8');
+ assert.match(report,/window\.cpInitInline/);
+ assert.match(report,/data-cp-output/);
+ assert.match(report,/cp-inline-slidecontrols/);
+ assert.match(planning,/id="cp-doc-inline"/);
+ assert.doesNotMatch(planning,/Pratinjau & Pilih Isi/);
+ const m=boot();
+ assert.equal(m.bank.codeFor({jenis:'Berkelanjutan',kode:'B25-CORE',akr:'CORE'},2027),'B27-CORE');
+});
