@@ -41,7 +41,7 @@ function deck(c,inc){
  s.rk=D.slides[2];
  const slides=order.filter(([k])=>inc[k]).map(([k])=>s[k]);
  if(!slides.length)throw new Error('Pilih minimal satu substansi.');
- return {title:'Dokumen Perencanaan Proyek — '+chJudul(c),file:'Dokumen_Perencanaan_Paparan_'+String(chProg(c).kode||c.prog).replace(/[^A-Za-z0-9]+/g,'_')+'_v'+c.ver,slides};
+ return {title:'Dokumen Perencanaan Proyek — '+chJudul(c),file:'Dokumen_Perencanaan_Paparan_'+String(chProg(c).kode||c.prog).replace(/[^A-Za-z0-9]+/g,'_')+'_v'+(window.MT_PS_DOC?.nextVersion('project',String(c.id||c.prog),+(c.tahun||S.ui.tahun||2026))||c.ver),slides};
 }
 async function download(c,inc){const D=deck(c,inc);await dkPptx(D);return D}
 window.cpCompactPptx=download;
