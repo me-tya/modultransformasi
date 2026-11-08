@@ -331,19 +331,20 @@ function mount(){
  function capture(){
   const f=saved(),root=document.querySelector('#view');if(!root)return;
   const yearEl=chooseSelect(root,'year'),prog=chooseSelect(root,'program'),stat=chooseSelect(root,'status'),search=searchInput(root);
-  f.year=yearEl?.value&&yearEl.value!=='all'?yearEl.value:String(S.ui.tahun||'');
-  f.programName=prog?.selectedOptions?.[0]&&prog.value?String(prog.selectedOptions[0].textContent||'').trim():'';
-  f.status=stat?.value&&stat.value!=='all'?stat.value:'';
-  f.search=search?.value||'';
+  if(yearEl)f.year=yearEl.value&&yearEl.value!=='all'?yearEl.value:String(S.ui.tahun||'');
+  else if(!f.year)f.year=String(S.ui.tahun||'');
+  if(prog)f.programName=prog.selectedOptions?.[0]&&prog.value?String(prog.selectedOptions[0].textContent||'').trim():'';
+  if(stat)f.status=stat.value&&stat.value!=='all'?stat.value:'';
+  if(search)f.search=search.value||'';
  }
  let applying=false;
  function apply(){
   const f=saved(),root=document.querySelector('#view');if(!f.enabled||!root||applying)return;
   const targets=[['year',f.year],['program',f.programName],['status',f.status]];
   for(const [kind,desired] of targets){
-   if(!desired)continue;
+   if(!desired&&kind==='year')continue;
    const select=chooseSelect(root,kind);if(!select)continue;
-   const option=[...select.options].find(o=>kind==='program'?
+   const option=[...select.options].find(o=>!desired?(!o.value||/semua/i.test(o.textContent)):kind==='program'?
     compact(o.textContent)===compact(desired)||compact(o.textContent).includes(compact(desired))||compact(desired).includes(compact(o.textContent))&&o.value:
     String(o.value)===String(desired)||compact(o.textContent)===compact(desired));
    if(!option||select.value===option.value)continue;
