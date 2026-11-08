@@ -319,14 +319,23 @@ function mount(){
   const root=document.querySelector('#view')||document.querySelector('#app')||document.body;
   if(!root)return[];
   const x=new Set([...root.querySelectorAll('.ps27-filter')]);
-  [...root.querySelectorAll('button')].forEach(btn=>{
+  [...root.querySelectorAll('button,[role="button"]')].forEach(btn=>{
    const word=compact(btn.textContent).replace(/[▽▼⌄⌃]/g,'');
    if(word!=='filter'&&!/^filter\b/.test(word))return;
    let panel=btn.parentElement,walk=0;
    while(panel&&walk<4&&!/(filter|flt|fbar)/i.test(panel.className||'')){panel=panel.parentElement;walk++}
    if(panel&&panel!==root)x.add(panel);
   });
-  return [...x].filter(el=>!el.closest('.psbank-overlay')&&!el.matches('.mt-shared-filter'));
+  [...root.querySelectorAll('[class*="filter"],[class*="Filter"],[class*="flt"],[class*="Flt"]')].forEach(el=>{
+   if(!el.parentElement||el.closest('.psbank-overlay')||el.matches('.mt-shared-filter'))return;
+   const text=compact(el.textContent);
+   if(!text.includes('filter aktif')&&!/^filter\b/.test(text))return;
+   const rect=el.getBoundingClientRect?.();
+   if(rect&&rect.width>300&&rect.height>=32&&rect.height<=125)x.add(el);
+  });
+  const candidates=[...x].filter(el=>!el.closest('.psbank-overlay')&&!el.matches('.mt-shared-filter'));
+  return candidates.filter(el=>!candidates.some(parent=>parent!==el&&parent.contains(el)&&parent.querySelector('.mt-shared-filter')));
+
  }
  function capture(){
   const f=saved(),root=document.querySelector('#view');if(!root)return;
