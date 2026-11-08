@@ -136,7 +136,7 @@ function transfer(){
   p.psProjects=p.psProjects||[];p.psProjects.push(z);n++;
   /* Proposal only: do not copy historical WBS or actuals. WBS will be drafted afresh in PM. */
  });
- m.selected=[];p.psUpdatedAt=new Date().toISOString();save();window.render();
+ m.selected=[];bank().mappingTab='proposal';p.psUpdatedAt=new Date().toISOString();save();window.render();
  toast(n+' proyek berhasil dipetakan. Lengkapi identitas pada tab Usulan Proyek; WBS disusun kemudian.');
 }
 function click(ev){
