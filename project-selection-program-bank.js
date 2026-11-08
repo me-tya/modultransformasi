@@ -281,6 +281,76 @@ function openCarry(keys){
  d.addEventListener('keydown',ev=>{if(ev.key==='Escape')d.remove()});
  d.querySelector('[data-carry-year]')?.focus();
 }
+
+/* Upload Dokumen Program: independent from document generation; attachments do not
+   increment the official version. Signed PDF uses the established TTE workflow. */
+function showUploadProgram(id){
+ const p=get(id);if(!p||+p.psYear!==year()){toast('Program tujuan tidak ditemukan untuk tahun terpilih.');return}
+ const d=document.createElement('div');d.className='psbank-upload-backdrop';
+ const history=()=>Docs.history('program',p.id,year()).filter(x=>['uploaded','signed'].includes(x.status)).slice().reverse();
+ const fileHistory=()=>{
+  const items=history();
+  return items.length?items.map(x=>'<article class="psbank-upload-record"><span class="psbank-upload-recordicon">'+(x.status==='signed'?'✓':'▤')+'</span>'+
+   '<div><b>'+E(x.fileName||'Dokumen Program')+'</b><small>'+E(x.status==='signed'?'Bukti TTE v'+x.version+' · belum diverifikasi':'Dokumen Program · v'+x.version+' (tidak menetapkan versi)')+
+   ' · '+E((x.createdAt||'').slice(0,16).replace('T',' '))+(x.description?' · '+E(x.description):'')+'</small></div>'+
+   '<button type="button" class="psbank-upload-download" data-doc-proof-open="'+E(x.id)+'" data-doc-proof-name="'+E(x.fileName)+'" title="Unduh berkas" aria-label="Unduh '+E(x.fileName)+'">↓</button></article>').join(''):
+   '<div class="psbank-upload-empty">Belum ada dokumen yang diunggah untuk program ini.</div>';
+ };
+ d.innerHTML='<section class="psbank-upload-dialog" role="dialog" aria-modal="true" aria-label="Unggah Dokumen Program">'+
+ '<header><div><b>Unggah Dokumen Program</b><small>'+E(p.nama)+' · '+year()+' · '+E(p.kode||p.akr)+'</small></div>'+
+ '<button type="button" data-bank-upload-close title="Tutup" aria-label="Tutup">✕</button></header>'+
+ '<main class="psbank-upload-content"><div class="psbank-upload-form">'+
+ '<label>Jenis Unggahan<select data-bank-upload-type><option value="attachment">Dokumen Program / Lampiran</option><option value="signed">PDF hasil TTE (pengesahan versi)</option></select></label>'+
+ '<label>Unggah Berkas <small>PDF, DOCX, PPTX · Maksimum 25 MB</small><input data-bank-upload-file type="file" accept=".pdf,.docx,.pptx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation"></label>'+
+ '<label>Catatan Dokumen (opsional)<input type="text" maxlength="250" data-bank-upload-note placeholder="Contoh: Dokumen Program hasil reviu"></label>'+
+ '<label class="psbank-upload-attest" data-bank-upload-attest-wrap hidden><input type="checkbox" data-bank-upload-attest> Saya menyatakan PDF ini sudah ditandatangani secara elektronik.</label>'+
+ '<p class="psbank-upload-help" data-bank-upload-hint>Unggahan biasa masuk riwayat program dan tidak mengubah nomor versi dokumen.</p>'+
+ '<div class="psbank-upload-error" data-bank-upload-error aria-live="polite" hidden></div></div>'+
+ '<section class="psbank-upload-history"><div class="psbank-upload-hist-head"><b>Riwayat Unggahan</b><span>'+history().length+' berkas</span></div>'+
+ '<div data-bank-upload-history>'+fileHistory()+'</div></section></main>'+
+ '<footer><small>Prototipe: berkas tersimpan di browser ini. Belum tersedia sinkronisasi lintas perangkat atau validasi TTE kriptografis.</small>'+
+ '<div><button type="button" class="btn" data-bank-upload-close>Batal / Tutup</button><button type="button" class="btn pri" data-bank-upload-save>Simpan Dokumen</button></div></footer></section>';
+ (document.querySelector('#app')||document.body).appendChild(d);
+ const close=()=>d.remove();
+ const mode=d.querySelector('[data-bank-upload-type]');
+ const syncMode=()=>{
+  const signed=mode.value==='signed';
+  d.querySelector('[data-bank-upload-attest-wrap]').hidden=!signed;
+  const input=d.querySelector('[data-bank-upload-file]');
+  input.accept=signed?'.pdf,application/pdf':'.pdf,.docx,.pptx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation';
+  d.querySelector('[data-bank-upload-hint]').textContent=signed?
+   'Bukti TTE wajib PDF untuk versi '+Docs.nextVersion('program',p.id,year())+'. Dokumen versi ini harus digenerasikan terlebih dahulu. Keaslian tanda tangan belum diverifikasi secara kriptografis.':
+   'Unggahan biasa disimpan sebagai arsip program, tanpa menaikkan versi dokumen.';
+  input.value='';
+ };
+ mode.addEventListener('change',syncMode);
+ d.addEventListener('click',async ev=>{
+  if(ev.target===d||ev.target.closest('[data-bank-upload-close]')){close();return}
+  if(ev.target.closest('[data-doc-proof-open]')){await Docs.openSignedProof(ev);return}
+  const submit=ev.target.closest('[data-bank-upload-save]');if(!submit)return;
+  const file=d.querySelector('[data-bank-upload-file]')?.files?.[0],note=d.querySelector('[data-bank-upload-note]').value,
+   err=d.querySelector('[data-bank-upload-error]');
+  err.hidden=true;err.textContent='';submit.disabled=true;submit.textContent='Menyimpan…';
+  try{
+   if(mode.value==='signed'){
+    const version=await Docs.confirmSigned('program',p.id,year(),file,!!d.querySelector('[data-bank-upload-attest]').checked);
+    toast('Bukti TTE v'+version+' telah dicatat. Draft berikutnya v'+(version+1)+'.');
+   }else{
+    await Docs.uploadProgramAttachment(p,year(),file,note);
+    toast('Dokumen Program berhasil diunggah ke riwayat.');
+   }
+   d.querySelector('[data-bank-upload-file]').value='';d.querySelector('[data-bank-upload-note]').value='';
+   d.querySelector('[data-bank-upload-attest]').checked=false;
+   d.querySelector('[data-bank-upload-history]').innerHTML=fileHistory();
+   d.querySelector('.psbank-upload-hist-head span').textContent=history().length+' berkas';
+   syncMode();
+  }catch(error){err.textContent=error.message||String(error);err.hidden=false}
+  finally{submit.disabled=false;submit.textContent='Simpan Dokumen'}
+ });
+ d.addEventListener('keydown',ev=>{if(ev.key==='Escape')close()});
+ d.querySelector('[data-bank-upload-file]')?.focus();
+}
+
 function bulk(){openCarry(store().check)}
 
 function openWorkspace(id){const p=get(id);if(p)showPreview(String(p.id)+':'+year())}
@@ -296,13 +366,14 @@ function onClick(ev){
  if(Scope.click(ev))return;
  if(Docs.portfolioClick?.(ev))return;
  if(Docs.click(ev,current()))return;
- const b=store(),btn=ev.target.closest('[data-bank-tab],[data-bank-preview],[data-bank-add],[data-bank-work],[data-bank-map],[data-bank-doc],[data-bank-edit-doc],[data-bank-wtab],[data-bank-row],[data-bank-detailrow],[data-bank-new],[data-bank-bulk],[data-bank-closework],[data-bank-page-step]');
+ const b=store(),btn=ev.target.closest('[data-bank-tab],[data-bank-preview],[data-bank-add],[data-bank-work],[data-bank-map],[data-bank-doc],[data-bank-edit-doc],[data-bank-upload],[data-bank-wtab],[data-bank-row],[data-bank-detailrow],[data-bank-new],[data-bank-bulk],[data-bank-closework],[data-bank-page-step]');
  if(!btn)return;
  if(btn.dataset.bankPageStep){b.bankPage=Math.max(1,(+b.bankPage||1)+Number(btn.dataset.bankPageStep));saveUI();return}
  if(btn.dataset.bankTab){b.tab=btn.dataset.bankTab;b.workspace='';saveUI();return}
  if(btn.dataset.bankWtab){b.wtab=btn.dataset.bankWtab;S.ui.psGov=S.ui.psGov||{};S.ui.psGov.step=b.wtab;saveUI();return}
  if(btn.dataset.bankDoc){showPreview(String(btn.dataset.bankDoc)+':'+year(),'identity',false);return}
  if(btn.dataset.bankEditDoc){showPreview(String(btn.dataset.bankEditDoc)+':'+year(),'identity',true);return}
+ if(btn.dataset.bankUpload){showUploadProgram(btn.dataset.bankUpload);return}
  if(btn.dataset.bankPreview){showPreview(btn.dataset.bankPreview);return}
  if(btn.dataset.bankAdd){openCarry([btn.dataset.bankAdd]);return}
  if(btn.dataset.bankWork){openWorkspace(btn.dataset.bankWork);return}
