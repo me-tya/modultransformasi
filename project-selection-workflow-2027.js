@@ -171,8 +171,8 @@ function penetapan(p){
  (r&&r.applies&&!r.ok?'<div class="ps27-warning">Kelengkapan program belum memenuhi persyaratan: '+E(r.missing.join(', '))+'. <button class="btn btn-outline btn-sm" data-ps27-tab="usulan">Lengkapi Usulan</button></div>':'')+
  '<div class="ps27-tablewrap"><table class="ps27-table"><thead><tr><th>Proyek / Modul</th><th>UIC</th><th>Target</th><th>Skor</th><th>Status</th></tr></thead><tbody>'+
  (a.length?a.map(x=>'<tr><td><b>'+E(x.name)+'</b></td><td>'+E(x.uic||p.uic||'—')+'</td><td>'+E(x.goLive||'—')+'</td><td>'+(p.psPrioritize?(I.calc(x,p).score??'Belum lengkap'):'Manual')+'</td><td>'+E(already?'Ditetapkan':'Siap ditetapkan')+'</td></tr>').join(''):'<tr><td colspan="5" class="ps27-center">Belum ada proyek dipilih. Kembali ke Pemetaan/Prioritasi.</td></tr>')+
- '</tbody></table></div><div class="ps27-footer">'+(already?'<span>Program telah ditetapkan. WBS yang dibawa siap disesuaikan di Project Management.</span><button class="btn" data-pswf="reopen">Buka Revisi</button><button class="btn pri" data-ps27="go-wbs">Buka WBS ›</button>':
- '<span>Penetapan menyinkronkan draft WBS, tanpa memindahkan realisasi tahun sumber.</span><button class="btn pri" data-pswf="finalize" '+(!can(p)||!a.length?'disabled':'')+'>Tetapkan Program & Proyek</button>')+'</div></div>';
+ '</tbody></table></div><div class="ps27-footer">'+(already?'<span>Program ditetapkan. Susun WBS baru melalui Project Management.</span><button class="btn" data-pswf="reopen">Buka Revisi</button><button class="btn pri" data-ps27="go-wbs">Buka WBS ›</button>':
+ '<span>Penetapan program dan proyek tidak membawa WBS historis. WBS baru disusun setelah penetapan.</span><button class="btn pri" data-pswf="finalize" '+(!can(p)||!a.length?'disabled':'')+'>Tetapkan Program & Proyek</button>')+'</div></div>';
 }
 const RKMK_FIELDS=[['latar','Latar Belakang'],['tujuan','Tujuan / Sasaran'],['kondisi','Kondisi As-is'],['target','Kondisi To-be / Target'],['strategi','Strategi / Terobosan'],['output','Output / Deliverable'],['manfaat','Manfaat / Outcome'],['milestone','Milestone & Jadwal'],['risiko','Risiko & Mitigasi']];
 function rkmk(p){
@@ -188,6 +188,7 @@ function syncWbs(p){
  if(!p||p.psStatus!=='Ditetapkan'||!Array.isArray(p.psWbsDraft))return 0;
  const ids=new Set(p.psSelectedProjectIds||[]),all=p.psProjects||[],removed=all.filter(x=>!ids.has(x.id)),rows=p.psWbsDraft,existing=new Set((S.wbs||[]).map(w=>w.k)),transfer=[];
  rows.forEach(w=>{
+  if(w.psCarryDraft||w.psSourceWbs)return; // prior-year WBS must not become active automatically
   if(removed.some(x=>(w.p||[]).some(t=>String(t).toLowerCase()===String(x.name).toLowerCase())))return;
   if(existing.has(w.k))return;
   const z=clone(w);z.psCarryDraft=false;z.psNeedsReview=true;z.rm=0;z.v=0;z.arsip=false;existing.add(z.k);transfer.push(z);
