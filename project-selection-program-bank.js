@@ -40,7 +40,7 @@ function bank(){
  return '<div class="psbank-card"><div class="psbank-sectionhead"><div><h3>Daftar Program</h3><p>Bank histori seluruh program lintas tahun. Klik baris untuk melihat dokumen lama; gunakan + atau centang beberapa program untuk disalin ke tahun pilihan.</p></div><span class="psbank-count">'+rows.length+' entri</span></div>'+
  '<div class="psbank-toolbar"><label>Tahun <select data-bank-year><option value="all">Semua tahun</option>'+years.map(y=>'<option value="'+y+'" '+(String(b.filterYear)===String(y)?'selected':'')+'>'+y+'</option>').join('')+'</select></label>'+
  '<label class="psbank-grow">Cari Program <input type="search" data-bank-search value="'+E(b.search)+'" placeholder="Nama, kode, UIC"></label><span class="psbank-sp"></span>'+
- '<button class="btn pri" data-bank-bulk '+(!b.check.length?'disabled':'')+'>+ Tambahkan Program'+(b.check.length?' ('+b.check.length+')':'')+'</button></div>'+
+ '<span class="psbank-muted">Centang program untuk tambah massal</span></div>'+
  '<div class="psbank-tablewrap"><table class="psbank-table psbank-history-table"><thead><tr>'+
  '<th class="psbank-checkcol"><input type="checkbox" data-bank-checkall '+(checked?'checked':'')+' aria-label="Pilih semua program yang ditampilkan" title="Pilih semua program yang ditampilkan"></th>'+
  '<th>Tahun</th><th>Nama Program</th><th>Kode Program</th><th>Status</th><th>Jumlah Modul</th><th>Aksi</th></tr></thead><tbody>'+
@@ -50,7 +50,8 @@ function bank(){
   '<td><b>'+y+'</b></td><td><b>'+E(p.nama)+'</b><small>'+E(p.uic||'—')+'</small></td>'+
   '<td>'+E(p.kode||p.akr||'—')+'</td><td><span class="psbank-tag psbank-'+labelStatus(p).toLowerCase()+'">'+labelStatus(p)+'</span></td><td>'+num+' modul</td>'+
   '<td class="psbank-rowactions"><button type="button" class="btn pri btn-sm psbank-icon-add" data-bank-add="'+E(key)+'" aria-label="Tambahkan Program ke tahun" title="Tambahkan Program ke tahun">+</button></td></tr>';
- }).join(''):'<tr><td colspan="7" class="psbank-empty">Tidak ada program sesuai filter.</td></tr>')+'</tbody></table></div>'+
+ }).join(''):'<tr><td colspan="7" class="psbank-empty">Tidak ada program sesuai filter.</td></tr>')+'</tbody></table></div>'+ 
+ (b.check.length?'<div class="psbank-bulkfoot"><span><b>'+b.check.length+'</b> program dipilih</span><button type="button" class="btn pri" data-bank-bulk>+ Tambahkan Program</button></div>':'')+
  '<div class="psbank-note">Semua program dapat dipilih sebagai sumber, termasuk dari tahun yang sama; kode salinan akan dibuat unik. Data historis tetap utuh; nama, kode, dan dokumen salinannya dapat disesuaikan pada tahun tujuan.</div></div>';
 }
 function detail(){
