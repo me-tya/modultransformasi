@@ -147,7 +147,7 @@ function proposalView(p){
  '<div class="psbank-tablewrap"><table class="psbank-table psbank-proposal-table"><thead><tr><th>No</th><th>Nama Aplikasi / Proyek</th><th>Fungsi Utama / Modul</th><th>UIC</th><th>Kategori</th><th>Status</th><th>Asal</th></tr></thead><tbody>'+
  (rows.length?rows.map((x,i)=>'<tr class="psbank-clickrow" data-scope-proposal-focus="'+E(x.id)+'" tabindex="0" role="button" aria-label="Lihat Detail Usulan Proyek '+E(x.name)+'" title="Buka Detail Usulan Proyek">'+
  '<td>'+(i+1)+'</td><td><b>'+E(x.applicationName||x.name)+'</b><small>'+E(currentCode(p,x))+'</small></td><td>'+E(projectValue(x,'mainFunction')||'—')+'</td><td>'+E(x.uic||p.uic||'—')+'</td><td>'+E(x.category||'—')+'</td><td>'+E(x.status||'Usulan')+'</td><td>'+E(x.psOriginYear?x.psOriginProgram+' · '+x.psOriginYear:'Usulan baru')+'</td></tr>').join(''):
- '<tr><td colspan="7" class="psbank-empty">Belum ada usulan. Buka Pemetaan untuk memilih proyek atau tambahkan dari Hasil Pemetaan.</td></tr>')+'</tbody></table></div>';
+ '<tr><td colspan="7" class="psbank-empty">Belum ada usulan. Buka Riwayat Proyek untuk memilih proyek atau tambahkan dari Hasil Pemetaan.</td></tr>')+'</tbody></table></div>';
 }
 function resultsView(p){
  const rows=proposalRows(p),eligible=can(p);
@@ -158,7 +158,7 @@ function resultsView(p){
  (rows.length?rows.map(x=>'<tr><td><b>'+E(currentCode(p,x))+'</b></td><td><b>'+E(x.applicationName||x.name)+'</b><small>'+E(x.mainFunction||x.name)+'</small></td><td>'+E(x.uic||p.uic||'—')+'</td><td>'+E(x.category||'Belum dikategorikan')+'</td>'+
  '<td>'+E(x.psOriginYear?x.psOriginYear+' · '+x.psOriginProgram:'Usulan baru')+'</td><td><span class="psbank-tag">'+E(x.status||'Usulan')+'</span></td>'+
  '<td class="psbank-results-actions">'+iconButton('view','view',x.id,'Lihat Detail Proyek')+(eligible?iconButton('edit','edit',x.id,'Ubah Usulan Proyek')+iconButton('delete','remove',x.id,'Hapus Usulan Proyek'):'')+'</td></tr>').join(''):
- '<tr><td colspan="7" class="psbank-empty">Belum ada hasil pemetaan. Buka tab Pemetaan atau Riwayat Proyek untuk mengambil proyek.</td></tr>')+
+ '<tr><td colspan="7" class="psbank-empty">Belum ada hasil pemetaan. Buka tab Riwayat Proyek untuk mengambil proyek.</td></tr>')+
  '</tbody></table></div></section>';
 }
 
@@ -263,7 +263,7 @@ function render(){
  if(!!S.ui?.psBank?.filterScopes?.mapping?.allProgramsSelected)return aggregateView();
  const p=target();
  if(!p)return '<div class="psbank-card psbank-empty">Belum ada program tahun '+year()+'. Tambahkan dari Riwayat Program atau Daftar Program terlebih dahulu.</div>';
- const b=mapState(),on=MAPPING_TABS.some(x=>x[0]===b.mappingTab)?b.mappingTab:'mapping';
+ const b=mapState(),on=MAPPING_TABS.some(x=>x[0]===b.mappingTab)?b.mappingTab:'history';
  return '<div class="psbank-card psbank-scope-stage"><div class="psbank-sectionhead"><div><h3>Pemetaan Proyek / Modul</h3><p>Tentukan ruang lingkup program, lengkapi detail usulan, tinjau hasil, lalu buat dokumen.</p></div></div>'+
  scopeTabs(on,proposalRows(p))+
  (on==='history'?historyView(p):on==='proposal'?proposalView(p):on==='results'?resultsView(p):on==='docs'?(window.MT_PS_DOC?.portfolioBuilder?.()||'<div class="psbank-empty">Generator dokumen belum tersedia.</div>'):mappingView(p))+'</div>';
