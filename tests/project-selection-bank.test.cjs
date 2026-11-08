@@ -90,22 +90,21 @@ test('Cross-program mapping allows FRSW and SIPK from Core APBN 2026 into Core N
  assert.match(m.scope.render(),/SIPK/);
  m.scope.transfer();
  assert.deepEqual(m.target.psProjects.map(x=>x.name).sort(),['FRSW','SIPK']);
- assert.equal(m.target.psWbsDraft.length,2);
- assert.ok(m.target.psWbsDraft.every(w=>w.v===0&&w.rm===0&&w.prog===m.target.akr));
- assert.ok(m.target.psWbsDraft.every(w=>String(w.f).startsWith('2027-')));
+ assert.equal(m.target.psWbsDraft.length,0,'Pemetaan only copies project identity, not old WBS');
+ assert.equal(m.scope.bank().mappingTab,'proposal','After transfer, show Usulan Proyek');
  assert.equal(m.S.wbs.length,2,'must not copy WBS as active before Penetapan');
  assert.equal(m.S.wbs[0].v,1,'must not mutate actual source progress');
  assert.equal(m.S.bukti['CORE-11'].link,'BA sumber');
 });
-test('After Penetapan WBS draft syncs once, source untouched',()=>{
+test('Pemetaan does not carry WBS into PM, source untouched',()=>{
  const m=boot();m.scope.bank().target=m.target.id;
  m.scope.bank().map={year:2026,program:m.core.id,q:'',selected:[m.core.id+'::FRSW']};m.scope.transfer();
  m.target.psStatus='Ditetapkan';m.target.psDraft=false;m.target.psSelectedProjectIds=m.target.psProjects.map(x=>x.id);
  const n=m.ctx.window.MT_PS_WORKFLOW.syncWbs(m.target);
- assert.equal(n,1);assert.equal(m.ctx.window.MT_PS_WORKFLOW.syncWbs(m.target),0);
- assert.equal(m.S.wbs.length,3);
+ assert.equal(n,0);assert.equal(m.ctx.window.MT_PS_WORKFLOW.syncWbs(m.target),0);
+ assert.equal(m.S.wbs.length,2);
  assert.equal(m.S.wbs.filter(w=>w.prog==='CORE').length,2);
- assert.equal(m.S.wbs.find(w=>w.prog==='NON').rm,0);
+ assert.equal(m.S.wbs.filter(w=>w.prog==='NON').length,0);
 });
 test('Bank includes archived and current-year programs without status limitation',()=>{
  const m=boot();
@@ -228,4 +227,49 @@ test('TTE upload closes v1 and next document is v2, while plain downloads keep v
  assert.equal(d.history('program',programId,2027).find(x=>x.status==='signed').hash.length,64);
  d.registerExport('program',programId,2027,'word','Perencanaan_v2.docx');
  assert.equal(d.nextVersion('program',programId,2027),2);
+});
+
+test('Pemetaan has two tabs and both sides checkbox; Usulan Proyek has CRUD without WBS counts',()=>{
+ const m=boot(),scopeText=source['project-selection-scope-map.js'];
+ m.scope.bank().target=m.target.id;
+ const mapping=m.scope.render();
+ assert.match(mapping,/data-scope-tab="mapping"/);
+ assert.match(mapping,/data-scope-tab="proposal"/);
+ assert.match(mapping,/data-scope-target-select|data-scope-target-all/);
+ assert.match(mapping,/data-scope-select/);
+ assert.doesNotMatch(mapping,/item WBS|WBS draft/);
+ m.scope.bank().mappingTab='proposal';
+ const proposal=m.scope.render();
+ assert.match(proposal,/Usulan Proyek/);
+ assert.match(proposal,/data-scope-project-new/);
+ assert.match(scopeText,/data-scope-project-view/);
+ assert.match(scopeText,/data-scope-project-edit/);
+ assert.match(scopeText,/data-scope-remove/);
+ assert.match(scopeText,/function projectEditor/);
+});
+test('Portfolio now uses formal Project Management report model for Word and visual non-clipping PPTX',()=>{
+ const docs=source['project-selection-documents.js'];
+ const m=boot();
+ const html=m.docs.portfolioBuilder();
+ assert.match(html,/Buat Dokumen Portofolio/);
+ assert.match(docs,/function portfolioModel/);
+ assert.match(docs,/Ringkasan Eksekutif/);
+ assert.match(docs,/Ikhtisar Portofolio Program/);
+ assert.match(docs,/mtRptDocx\(model\)/);
+ assert.match(docs,/mtRptHtml\(model\)/);
+ assert.match(docs,/function splitPortText/);
+ assert.match(docs,/PROGRAM TERPILIH/);
+ assert.match(docs,/PORTOFOLIO/);
+ assert.match(docs,/rect\(sl/);
+ assert.match(docs,/fontFace:'Aptos'/);
+});
+test('Shared filter checkbox is opt-in and local tab filter states are scoped independently',()=>{
+ const bank=source['project-selection-program-bank.js'];
+ const workflow=source['project-selection-workflow-2027.js'];
+ assert.match(bank,/mt-shared-filter-check/);
+ assert.match(bank,/Terapkan di semua menu/);
+ assert.match(bank,/MutationObserver/);
+ assert.match(workflow,/function localFilter/);
+ assert.match(workflow,/filterScopes/);
+ assert.match(workflow,/S\.ui\.mtSharedFilter\?\.enabled/);
 });
