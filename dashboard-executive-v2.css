@@ -27,3 +27,59 @@
 @media(max-width:1300px){.db-overview{grid-template-columns:minmax(0,1.6fr) minmax(220px,1fr)}.db-side{grid-column:1/-1;grid-template-columns:1fr 1fr;grid-template-rows:1fr}.db-modgrid{grid-template-columns:repeat(3,minmax(0,1fr))}.db-quick p{display:inline-block;margin-right:12px}}
 @media(max-width:800px){.db-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.db-overview{grid-template-columns:1fr}.db-side{grid-column:auto}.db-modgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.db-tabs button{padding:10px;font-size:11px}.db-tabpanel{height:auto;max-height:none;overflow:visible}.db-programhead small{display:none}}
 @media(max-width:520px){.db-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.db-kpi{padding:10px}.db-kpi>b{font-size:23px}.db-modgrid{grid-template-columns:1fr}.db-progressbody{justify-content:flex-start}.db-side{grid-template-columns:1fr}.db-plot .db-ph{flex-wrap:wrap}}
+
+
+/* Annual Executive Dashboard detail displays four distinct quarterly target
+   slices. Quarterly mode remains a compact single-period card. */
+#app .db-annual-hint{
+ margin:0 0 12px;padding:8px 11px;border:1px solid #d4e3f4;
+ border-radius:8px;background:#f2f7fd;color:#35587a;
+ font:600 11px/1.45 'Inter',sans-serif;
+}
+#app .db-modgrid:has(.db-module-quarters){
+ grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ gap:11px!important;
+}
+#app .db-modcard:has(.db-module-quarters){
+ min-height:250px!important;height:auto!important;
+ display:flex!important;flex-direction:column!important;
+ align-items:stretch!important;
+}
+#app .db-module-quarters{
+ width:100%;min-width:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:6px;margin:8px 0;box-sizing:border-box;
+}
+#app .db-quarter-tile{
+ display:grid;grid-template-columns:minmax(0,1fr);
+ align-content:start;gap:3px;
+ min-width:0;padding:7px 8px;border:1px solid #d9e4ef;border-left:3px solid var(--qcolor);
+ border-radius:8px;background:#f7faff;
+}
+#app .db-quarter-tile strong{
+ font:850 10px/1.3 'Inter',sans-serif;color:#173e69;
+}
+#app .db-quarter-tile>span{
+ overflow-wrap:anywhere;font:650 10px/1.3 'Inter',sans-serif;color:#456382;
+}
+#app .db-quarter-tile>b{
+ font:850 12px/1.35 'Inter',sans-serif;color:#183861;
+}
+#app .db-quarter-tile>b small{
+ font:500 9px/1.2 'Inter',sans-serif;color:#617e9a;
+}
+#app .db-quarter-track{
+ height:4px;background:#dce7f3;overflow:hidden;border-radius:10px;display:block;margin-top:2px;
+}
+#app .db-quarter-track em{
+ display:block;height:100%;background:var(--qcolor);border-radius:10px;
+}
+#app .db-quarter-tile.no-target{
+ background:#fafbfe;border-left-color:#bdc9d9;
+}
+#app .db-quarter-tile.no-target>span{color:#7d91a5}
+@media(max-width:1250px){
+ #app .db-modgrid:has(.db-module-quarters){grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:650px){
+ #app .db-modgrid:has(.db-module-quarters){grid-template-columns:1fr!important}
+}
