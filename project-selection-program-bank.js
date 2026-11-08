@@ -95,13 +95,52 @@ const REG_FIELDS={
  stakeholders:{key:'psStakeholders',fields:[['name','Stakeholder'],['unit','Unit/Institusi'],['role','Peran'],['power','Pengaruh'],['interest','Kepentingan'],['strategy','Strategi Pelibatan'],['owner','PIC']]},
  risks:{key:'psRiskRegister',fields:[['title','Risiko'],['probability','Probabilitas'],['impact','Dampak'],['response','Respons Risiko'],['owner','Risk Owner']]}
 };
-function editForm(p,tab){
- const f=EDIT_FIELDS[tab];
- if(f)return '<div class="psbank-editform"><h3>Ubah '+E(STEPS.find(x=>x[0]===tab)?.[1]||tab)+'</h3><div class="psbank-editgrid">'+f.map(x=>'<label>'+E(x[1])+(x[0]==='nama'||x[0]==='kode'?' *':'')+(x[0]==='jenis'?'<select data-bank-editfield="jenis"><option '+(p.jenis==='Berkelanjutan'?'selected':'')+'>Berkelanjutan</option><option '+(p.jenis==='Tematik'?'selected':'')+'>Tematik</option></select>':'<textarea rows="'+(['nama','kode','uic','sponsor','psFinancialEstimate'].includes(x[0])?'1':'3')+'" data-bank-editfield="'+x[0]+'">'+E(p[x[0]]||'')+'</textarea>')+'</label>').join('')+'</div></div>';
- const spec=REG_FIELDS[tab];if(!spec)return '';
- const arr=p[spec.key]||[];
- const row=(x,i)=>'<div class="psbank-edit-entry" data-bank-edit-entry><div class="psbank-entryhead"><b>Entri '+(i+1)+'</b><button type="button" class="btn" data-bank-entry-remove>Hapus</button></div><div class="psbank-editgrid">'+spec.fields.map(field=>'<label>'+E(field[1])+'<textarea rows="2" data-bank-regfield="'+field[0]+'">'+E(x?.[field[0]]||'')+'</textarea></label>').join('')+'</div></div>';
- return '<div class="psbank-editform"><div class="psbank-sectionhead"><h3>Ubah '+E(STEPS.find(x=>x[0]===tab)?.[1]||tab)+'</h3><button type="button" class="btn" data-bank-entry-add>+ Tambah Entri</button></div><div data-bank-entry-list>'+arr.map(row).join('')+'</div><template data-bank-entry-template>'+row({},arr.length)+'</template></div>';
+function editForm(p,tab,y=year()){
+ const title=STEPS.find(x=>x[0]===tab)?.[1]||tab;
+ const fallback={};
+ (Docs.fields(p,tab,y)||[]).forEach(([label,value])=>fallback[label]=String(value??''));
+ const mapLabel={psObjective:'Tujuan Strategis',psBackground:'Latar Belakang',psOutcome:'Outcome',
+  psStrategy:'Strategi',psAlignment:'Keselarasan Strategis',psBusinessCase:'Business Case',
+  psAlternatives:'Alternatif Solusi',psFinancialEstimate:'Estimasi Biaya',psSuccessCriteria:'Kriteria Keberhasilan',
+  psManager:'Manajer Program',psDecisionAuthority:'Forum/Otoritas Keputusan',psGovernanceCadence:'Mekanisme Reviu',
+  psRoadmap:'Roadmap',psResourcePlan:'Kebutuhan Sumber Daya',psDependencies:'Dependensi',
+  psAssumptions:'Asumsi',psConstraints:'Batasan'};
+ const value=(key,label)=>{
+  const raw=p[key];if(raw!==undefined&&raw!==null&&String(raw).trim()!=='')return String(raw);
+  const fb=fallback[mapLabel[key]||label];return fb&&!/^belum diisi$/i.test(fb)?fb:'';
+ };
+ const head='<div class="psbank-paper-head"><small>KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</small><h3>'+E(title)+'</h3>'+
+  '<span>'+E(p.nama)+' · '+y+' · '+E(p.kode||p.akr)+'</span></div>';
+ const form=EDIT_FIELDS[tab];
+ if(form){
+  return '<article class="psbank-paper psbank-paper-edit" data-bank-inline-edit="true">'+head+
+   '<div class="psbank-paper-body">'+form.map(([key,label])=>
+   '<div class="psbank-paper-row psbank-paper-editrow"><b>'+E(label)+'</b>'+
+   (key==='jenis'?'<select data-bank-editfield="jenis" aria-label="'+E(label)+'"><option '+(value(key,label)==='Berkelanjutan'?'selected':'')+'>Berkelanjutan</option><option '+(value(key,label)==='Tematik'?'selected':'')+'>Tematik</option></select>':
+   '<textarea rows="'+(['nama','kode','uic','sponsor','psFinancialEstimate'].includes(key)?1:3)+'" data-bank-editfield="'+key+'" aria-label="'+E(label)+'">'+E(value(key,label))+'</textarea>')+
+   '</div>').join('')+'</div><div class="psbank-paper-foot"><span>Mode Ubah · seluruh teks lama dipertahankan</span><span>Tahun '+y+'</span></div></article>';
+ }
+ const spec=REG_FIELDS[tab];
+ if(!spec)return Docs.paper(p,tab,y);
+ const raw=Array.isArray(p[spec.key])?p[spec.key]:[];
+ const list=raw.map(x=>typeof x==='string'?{[tab==='risks'?'title':'name']:x}:x&&typeof x==='object'?x:{});
+ if(!list.length){
+  const row=(Docs.fields(p,tab,y)||[])[0]||[],orig=String(row[1]||'');
+  if(orig&&orig!=='Belum diisi'){
+   list.push({[tab==='risks'?'title':'name']:orig,psFromCharter:true});
+  }
+ }
+ const row=(entry,i)=>'<section class="psbank-register-card" data-bank-edit-entry><div class="psbank-register-head"><b>Entri '+(i+1)+'</b>'+
+  '<button type="button" class="psbank-action-icon delete" data-bank-entry-remove title="Hapus entri" aria-label="Hapus entri">'+
+  '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button></div>'+
+  '<div class="psbank-register-grid">'+spec.fields.map(([key,label])=>
+  '<label><span>'+E(label)+'</span><textarea rows="2" data-bank-regfield="'+key+'">'+E(entry?.[key]??'')+'</textarea></label>').join('')+'</div></section>';
+ return '<article class="psbank-paper psbank-paper-edit" data-bank-inline-edit="true">'+head+
+  '<div class="psbank-paper-body"><div class="psbank-register-toolbar"><div><b>Daftar '+E(title)+'</b><small>Ubah langsung pada entri yang sudah ada. Tambah atau hapus sesuai kebutuhan.</small></div>'+
+  '<button type="button" class="psbank-action-icon add" data-bank-entry-add title="Tambah entri" aria-label="Tambah entri"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>'+
+  '<div data-bank-entry-list>'+list.map(row).join('')+'</div>'+
+  '<template data-bank-entry-template>'+row({},list.length)+'</template></div>'+
+  '<div class="psbank-paper-foot"><span>Mode Ubah · konten lama tetap tersedia</span><span>Tahun '+y+'</span></div></article>';
 }
 function showPreview(key,initialTab='identity'){
  const rec=records().find(x=>x.key===key);if(!rec)return;
@@ -112,7 +151,7 @@ function showPreview(key,initialTab='identity'){
  const tabs=isTarget?STEPS.filter(x=>x[0]!=='review'):STEPS.filter(x=>x[0]!=='docs');
  if(!tabs.some(x=>x[0]===initialTab))b.preview.tab='identity';
  const v=()=>b.preview;
- const view=()=>v().tab==='docs'?Docs.builder(p):editable&&v().edit?editForm(p,v().tab):Docs.paper(p,v().tab,rec.year);
+ const view=()=>v().tab==='docs'?Docs.builder(p):editable&&v().edit?editForm(p,v().tab,rec.year):Docs.paper(p,v().tab,rec.year);
  const foot=()=>{
   const x=d.querySelector('.psbank-dialog>footer>div');if(!x)return;
   if(v().tab==='docs'&&isTarget){x.innerHTML='<button type="button" class="btn pri" data-doc-export>↓ Unduh</button><button type="button" class="btn" data-bank-dismiss>Tutup</button>';return}
@@ -121,7 +160,7 @@ function showPreview(key,initialTab='identity'){
  };
  const redraw=(body=true)=>{
   d.querySelectorAll('[data-bank-pstep]').forEach(x=>{const on=x.dataset.bankPstep===v().tab;x.classList.toggle('on',on);x.setAttribute('aria-selected',String(on))});
-  if(body)d.querySelector('.psbank-dialogbody').innerHTML=view();
+  if(body){const area=d.querySelector('.psbank-dialogbody'),top=area?.scrollTop||0;if(area){area.innerHTML=view();area.scrollTop=top}}
   foot();
  };
  const askDiscard=next=>{if(!v().dirty){next();return}window.MT_PS_CONFIRM?.('Abaikan Perubahan?','Isian yang belum disimpan pada Detail Program akan hilang jika melanjutkan.',()=>{v().dirty=false;next()},'warning')};
