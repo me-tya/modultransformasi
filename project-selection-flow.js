@@ -357,6 +357,18 @@ function monevPage(p){
  h+='</div>';
  return h;
 }
+function smartFormulaPanel(p){
+ const all=activeCriteria(p),sum=all.reduce((n,c)=>n+weight(p,c.code),0);
+ const steps=[
+  ['Normalisasi bobot','<div class="prio-eq">w′<sub>j</sub> = w<sub>j</sub> / Σ w<sub>j</sub></div><p>Bobot 1–7 per kriteria; saat ini Σ W = <b>'+sum+'</b>.</p>'],
+  ['Nilai kriteria','<p>Tiap proyek dinilai 1–5 untuk 12 kriteria. C2, C4, C5, C6, C8 (tematik) dan C12 dapat dihitung otomatis dari data sumber jika tersedia.</p><div class="prio-eq">C6 = round((P + O + S + T + R) / 5)</div><p>Jika ada dimensi POSTER bernilai 5, C6 minimal 3.</p>'],
+  ['Utility','<div class="prio-eq">benefit: u<sub>ij</sub> = (c<sub>ij</sub> − c<sub>min</sub>)/(c<sub>max</sub> − c<sub>min</sub>)</div><div class="prio-eq">biaya: u<sub>ij</sub> = (c<sub>max</sub> − c<sub>ij</sub>)/(c<sub>max</sub> − c<sub>min</sub>)</div><p>Skala nilai 1–5 membuat c<sub>min</sub> = 1 dan c<sub>max</sub> = 5. C7 dan C12 adalah kriteria biaya.</p>'],
+  ['Skor akhir & kategori','<div class="prio-eq">S<sub>i</sub> = Σ w′<sub>j</sub> · u<sub>ij</sub> × 100</div><p>P1 Tinggi ≥ 70; P2 Sedang 40–69; P3 Rendah &lt; 40. Proyek dipilih otomatis hanya jika seluruh 12 kriteria lengkap dan skor <b>lebih besar</b> dari ambang program.</p>']
+ ];
+ return '<aside class="prio-formula" aria-label="Cara skor SMART dihitung"><div class="prio-f-head"><div><h3>Cara skor SMART dihitung</h3><p>Simple Multi-Attribute Rating Technique (Edwards, 1977)</p></div><button type="button" data-pswf="hide-formula">⌃ Sembunyikan</button></div>'+
+ steps.map((st,i)=>'<div class="prio-fstep"><span>'+(i+1)+'</span><div><b>'+st[0]+'</b>'+st[1]+'</div></div>').join('')+
+ '<div class="prio-worked"><b>Bobot aktif program</b><div class="prio-wk">'+all.map(c=>'<span>'+c.code+' · '+weight(p,c.code)+'</span>').join('')+'</div><p>Normalisasi otomatis menyesuaikan perubahan bobot.</p></div></aside>';
+}
 function referencePage(p){
  const u=state(),w=PS_CRITERIA.reduce((n,c)=>n+weight(p,c.code),0);
  let h='<div class="prio-card prio-t1"><div class="pswf-ref-head"><h3>Tabel 1 · Kriteria dan Bobot</h3><span class="pswf-sp"></span>'+
@@ -376,7 +388,7 @@ function referencePage(p){
  h+='</tbody><tfoot><tr><td colspan="5">Jumlah bobot</td><td>'+w+'</td><td>100%</td></tr></tfoot></table></div></div>';
  h+='<div class="prio-card"><h3>Tabel 2 · Rubrik POSTER (dasar nilai C6)</h3><p class="prio-sub">Perubahan Proses, Organisasi, SDM, Teknologi, dan Regulasi dinilai 1–5. C6 dihitung dari rata-rata; apabila terdapat nilai 5, C6 minimal 3.</p></div>';
  h+='<div class="prio-card"><h3>Tabel 3 · Panduan Implementasi</h3><p>1. Susun program dan calon proyek untuk tahun terpilih.</p><p>2. Aktifkan SMART hanya jika perlu memilih proyek berdasarkan skor.</p><p>3. Tetapkan proyek final, generate rancangan RKMK, kemudian susun WBS pada Project Management.</p><p>4. Monev mengukur adopsi dan manfaat setelah implementasi.</p></div>';
- return h;
+ return '<div class="prio-rlayout'+(u.formula?'':' noformula')+'"><div class="prio-rmain">'+h+'</div>'+(u.formula?smartFormulaPanel(p):'')+'</div>';
 }
 
 function mount(){
@@ -403,6 +415,7 @@ function mount(){
    case 'save-snapshot':if(p)saveSnapshot(p);return;
    case 'history-snapshots':if(p)openSnapshots(p);return;
    case 'smart-info':smartSelectionInfo(p);return;
+   case 'hide-formula':state().formula=false;save();render();return;
    case 'select-all':if(p&&!p.psPrioritize&&!readonly(p)){rowsFor(p).forEach(x=>x.included=true);save();render()}return;
    case 'clear-all':if(p&&!p.psPrioritize&&!readonly(p)){rowsFor(p).forEach(x=>x.included=false);save();render()}return;
    case 'save-weights':if(p)saveWeights(p,root);return;
