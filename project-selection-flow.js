@@ -39,7 +39,7 @@ const editOk=()=>!!(ME&&['SA','PMOK','PMOU'].includes(ME.role));
 const ownerOk=p=>editOk()&&(ME.role!=='PMOU'||!p.uic||p.uic===ME.unit);
 const state=()=>{const u=S.ui.psFlow||(S.ui.psFlow={tab:'portfolio',prog:'',q:'',filter:'all',sort:'score',view:'list',open:[],params:true,formula:false,showChosen:false,monevView:'proj',monevPid:'',snapshot:0});if(!u.psGovNavV){u.tab='portfolio';u.psGovNavV=1}return u};
 const allPrograms=()=>S.programs||[];
-const year=()=>+S.ui.tahun||2026;
+const year=()=>+S.ui.psSelectedYear||+S.ui.tahun||2026;
 const uid2=t=>(t||'ps')+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);
 const clean=v=>String(v==null?'':v).trim();
 const programs=()=>{
