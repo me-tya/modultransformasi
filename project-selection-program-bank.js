@@ -34,13 +34,10 @@ function labelStatus(p){
 }
 function bank(){
  const b=store(),q=String(b.search||'').toLowerCase(),list=records();
- const rows=list.filter(x=>(b.filterYear==='all'||+b.filterYear===x.year)&&[x.p.nama,x.p.kode,x.p.uic,x.p.akr].join(' ').toLowerCase().includes(q));
+ const rows=list.filter(x=>(b.filterYear==='all'||+b.filterYear===x.year)&&(!b.filterProgram||x.p.id===b.filterProgram)&&(b.filterStatus==='all'||!b.filterStatus||labelStatus(x.p)===b.filterStatus)&&[x.p.nama,x.p.kode,x.p.uic,x.p.akr].join(' ').toLowerCase().includes(q));
  const years=[...new Set(list.map(x=>x.year))].sort((a,c)=>c-a);
  const checked=rows.length>0&&rows.every(x=>b.check.includes(x.key));
  return '<div class="psbank-card"><div class="psbank-sectionhead"><div><h3>Daftar Program</h3><p>Bank histori seluruh program lintas tahun. Klik baris untuk melihat dokumen lama; gunakan + atau centang beberapa program untuk disalin ke tahun pilihan.</p></div><span class="psbank-count">'+rows.length+' entri</span></div>'+
- '<div class="psbank-toolbar"><label>Tahun <select data-bank-year><option value="all">Semua tahun</option>'+years.map(y=>'<option value="'+y+'" '+(String(b.filterYear)===String(y)?'selected':'')+'>'+y+'</option>').join('')+'</select></label>'+
- '<label class="psbank-grow">Cari Program <input type="search" data-bank-search value="'+E(b.search)+'" placeholder="Nama, kode, UIC"></label><span class="psbank-sp"></span>'+
- '<span class="psbank-muted">Centang program untuk tambah massal</span></div>'+
  '<div class="psbank-tablewrap"><table class="psbank-table psbank-history-table"><thead><tr>'+
  '<th class="psbank-checkcol"><input type="checkbox" data-bank-checkall '+(checked?'checked':'')+' aria-label="Pilih semua program yang ditampilkan" title="Pilih semua program yang ditampilkan"></th>'+
  '<th>Tahun</th><th>Nama Program</th><th>Kode Program</th><th>Status</th><th>Jumlah Modul</th><th>Aksi</th></tr></thead><tbody>'+
@@ -199,7 +196,7 @@ function openCarry(keys){
   let n=0;for(const row of rows){const added=addOne(row.key,false,to,names.get(row.key),akronims.get(row.key));if(added)n++}
   if(!n){toast('Tidak ada program baru yang ditambahkan.');return}
   S.ui.tahun=to;state().tab='usulan';store().tab='detail';store().workspace='';store().check=[];save();d.remove();render();
-  toast(n+' program masuk ke Detail Program '+to+'. Lengkapi Workspace atau lanjutkan ke Pemetaan Proyek.');
+  toast(n+' program masuk ke Detail Program '+to+'. Klik baris untuk mengedit atau lanjutkan Pemetaan Proyek.');
  });
  d.addEventListener('keydown',ev=>{if(ev.key==='Escape')d.remove()});
  d.querySelector('[data-carry-year]')?.focus();
@@ -208,7 +205,7 @@ function bulk(){openCarry(store().check)}
 
 function openWorkspace(id){const p=get(id);if(p)showPreview(String(p.id)+':'+year())}
 function page(){
- const base=oldPage(),i=base.indexOf('<div class="ps27-actionbar">');
+ const base=oldPage(),i=base.indexOf('<div class="ps27-actionbar"');
  if(i<0)return base;
  const end=base.indexOf('</div>',i)+6,left=base.slice(0,i),right=base.slice(end);
  if(state().tab==='usulan')return left+usulan()+'</section>';
@@ -217,6 +214,7 @@ function page(){
 }
 function onClick(ev){
  if(Scope.click(ev))return;
+ if(Docs.portfolioClick?.(ev))return;
  if(Docs.click(ev,current()))return;
  const b=store(),btn=ev.target.closest('[data-bank-tab],[data-bank-preview],[data-bank-add],[data-bank-work],[data-bank-map],[data-bank-wtab],[data-bank-row],[data-bank-detailrow],[data-bank-new],[data-bank-bulk],[data-bank-closework]');
  if(!btn)return;
@@ -234,11 +232,11 @@ function onClick(ev){
 }
 
 function onChange(ev){
- if(Scope.change(ev)||Docs.change(ev))return;
+ if(Scope.change(ev)||Docs.portfolioChange?.(ev)||Docs.change(ev))return;
  const q=ev.target,b=store();
  if(q.dataset.bankYear!==undefined){b.filterYear=q.value;saveUI();return}
  if(q.dataset.bankCheckall!==undefined){
-  const visible=records().filter(x=>(b.filterYear==='all'||+b.filterYear===x.year)&&[x.p.nama,x.p.kode,x.p.uic,x.p.akr].join(' ').toLowerCase().includes(String(b.search||'').toLowerCase())).map(x=>x.key);
+  const visible=records().filter(x=>(b.filterYear==='all'||+b.filterYear===x.year)&&(!b.filterProgram||x.p.id===b.filterProgram)&&(b.filterStatus==='all'||!b.filterStatus||labelStatus(x.p)===b.filterStatus)&&[x.p.nama,x.p.kode,x.p.uic,x.p.akr].join(' ').toLowerCase().includes(String(b.search||'').toLowerCase())).map(x=>x.key);
   b.check=q.checked?[...new Set([...b.check,...visible])]:b.check.filter(x=>!visible.includes(x));
   saveUI();return;
  }
@@ -259,7 +257,44 @@ function mount(){
   const n=document.querySelector('[data-scope-search]');if(n){n.focus();n.setSelectionRange(at,at)}
  });
 }
-A.page=page;A.mount=mount;A.version='20261108-program-bank-carryover-v5';
+
+/* Reusable column sorting for all regular data tables in Modul Transformasi.
+   Presentation-only; it does not reorder WBS hierarchy or persist table rows. */
+(function installUniversalSort(){
+ if(window.MT_TABLE_SORT_INSTALLED)return;window.MT_TABLE_SORT_INSTALLED=true;
+ const ignore='[data-nosort],.psbank-docpaper,.psbank-paper,.psbank-docpreview,.psbank-docsection,.psbank-editform,.rpt,.wbs-tree,.wbs-hierarchy,.tree-table';
+ const sortable=th=>{
+  const table=th?.closest('table');
+  return table&&!table.closest(ignore)&&table.tHead&&table.tBodies.length===1&&!table.querySelector('[rowspan]')&&
+   table.tBodies[0].rows.length>1&&!th.querySelector('button,input,select')&&th.colSpan<=1;
+ };
+ function apply(th){
+  if(!sortable(th))return;
+  const table=th.closest('table'),heads=[...th.parentElement.children],col=heads.indexOf(th),tbody=table.tBodies[0];
+  if(col<0)return;
+  const direction=table.dataset.sortCol===String(col)&&table.dataset.sortDir==='asc'?'desc':'asc';
+  const rows=[...tbody.rows].map((tr,i)=>({tr,i,text:tr.cells[col]?.textContent?.trim()||''}));
+  const numeric=t=>{const s=String(t).trim().replace(/\s/g,'').replace(/^(Rp|IDR)/i,'').replace(/%$/,'');if(!/^[-+]?\d[\d.,]*$/.test(s))return null;
+    const decimal=s.includes(',')&&(!s.includes('.')||s.lastIndexOf(',')>s.lastIndexOf('.'));
+    return Number(s.replace(decimal?/\./g:/,/g,'').replace(decimal?',':'.','.'));
+  };
+  rows.sort((a,b)=>{
+   const na=numeric(a.text),nb=numeric(b.text);let c;
+   if(na!=null&&nb!=null)c=na-nb;
+   else {const da=Date.parse(a.text),db=Date.parse(b.text);
+    c=Number.isFinite(da)&&Number.isFinite(db)?da-db:a.text.localeCompare(b.text,'id',{numeric:true,sensitivity:'base'});}
+   return (direction==='asc'?c:-c)||(a.i-b.i);
+  });
+  rows.forEach(o=>tbody.appendChild(o.tr));
+  heads.forEach(x=>{x.removeAttribute('data-sort-active');x.removeAttribute('aria-sort')});
+  th.dataset.sortActive=direction;th.setAttribute('aria-sort',direction==='asc'?'ascending':'descending');
+  table.dataset.sortCol=String(col);table.dataset.sortDir=direction;
+ }
+ document.addEventListener('click',ev=>{const th=ev.target.closest('th');if(th)apply(th)});
+ document.addEventListener('keydown',ev=>{if((ev.key==='Enter'||ev.key===' ')&&ev.target.matches('th')){ev.preventDefault();apply(ev.target)}});
+})();
+
+A.page=page;A.mount=mount;A.version='20261108-project-selection-ui-v6';
 window.MT_PS_BANK_CORE={records,bank,detail,usulan,addOne,bulk,openCarry,codeFor,showPreview,current,openWorkspace,version:A.version};
 if(typeof VIEW!=='undefined'&&VIEW==='project-selection'&&ME)render();
 })();
