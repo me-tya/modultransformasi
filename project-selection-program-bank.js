@@ -358,6 +358,134 @@ function mount(){
  window.MT_FILTER_LOCAL_ONLY=true;
 })();
 
+
+/* Read-only activity log across Transformasi sections.
+   Local prototype audit only; NOT a server-immutable or certified audit trail. */
+(function initTransformationAudit(){
+ if(window.MT_AUDIT?.ready||typeof S==='undefined'||typeof save!=='function')return;
+ const esc=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+ const domainKeys=()=>Object.keys(S).filter(k=>k!=='ui'&&!/^mtAudit|^audit|^_/.test(k)&&
+  (Array.isArray(S[k])||S[k]&&typeof S[k]==='object')&&
+  !/^(prefs|settings|cache|session|appConfig|navigation|auth|userState)$/i.test(k));
+ function snapshot(){
+  const o={};for(const k of domainKeys()){
+   try{o[k]=JSON.parse(JSON.stringify(S[k]))}catch(_){}
+  }return o;
+ }
+ const equal=(a,b)=>{if(a===b)return true;try{return JSON.stringify(a)===JSON.stringify(b)}catch(_){return false}};
+ const short=v=>{
+  if(v===undefined)return '—';if(v===null)return '(kosong)';
+  const text=typeof v==='string'?v:JSON.stringify(v);
+  return text.length>230?text.slice(0,227)+'…':text;
+ };
+ function diff(oldVal,newVal,path,changes,depth=0){
+  if(equal(oldVal,newVal)||changes.length>=36)return;
+  if(oldVal===undefined||newVal===undefined||oldVal===null||newVal===null||
+     typeof oldVal!=='object'||typeof newVal!=='object'||depth>5){
+   changes.push({path,kind:oldVal===undefined?'Ditambahkan':newVal===undefined?'Dihapus':'Diubah',before:short(oldVal),after:short(newVal)});return;
+  }
+  const arrayA=Array.isArray(oldVal),arrayB=Array.isArray(newVal);
+  if(arrayA&&arrayB){
+   const id=x=>x&&typeof x==='object'?(x.id??x.k??x.key??null):null;
+   if([...oldVal,...newVal].every(x=>x&&id(x)!==null)){
+    const prev=new Map(oldVal.map(x=>[String(id(x)),x])),next=new Map(newVal.map(x=>[String(id(x)),x]));
+    for(const key of new Set([...prev.keys(),...next.keys()])){
+     diff(prev.get(key),next.get(key),path+' / '+key,changes,depth+1);
+     if(changes.length>=36)return;
+    }
+   }else{
+    const max=Math.min(Math.max(oldVal.length,newVal.length),60);
+    for(let i=0;i<max;i++){diff(oldVal[i],newVal[i],path+' / #'+(i+1),changes,depth+1);if(changes.length>=36)return}
+    if(Math.max(oldVal.length,newVal.length)>max)changes.push({path,kind:'Diubah',before:oldVal.length+' entri',after:newVal.length+' entri'});
+   }
+  }else if(!arrayA&&!arrayB){
+   for(const k of new Set([...Object.keys(oldVal),...Object.keys(newVal)])){
+    if(/^psSourceProjectSnapshot$|^psCarryBackup$|^fileBlob$/.test(k))continue;
+    diff(oldVal[k],newVal[k],path+' / '+k,changes,depth+1);
+    if(changes.length>=36)return;
+   }
+  }else changes.push({path,kind:'Diubah',before:short(oldVal),after:short(newVal)});
+ }
+ const history=()=>{S.mtAuditTrail=Array.isArray(S.mtAuditTrail)?S.mtAuditTrail:[];return S.mtAuditTrail};
+ let baseline=snapshot(),recording=false;
+ const originalSave=save;
+ const auditedSave=function(...args){
+  if(recording)return originalSave.apply(this,args);
+  recording=true;
+  try{
+   const now=snapshot(),changes=[];
+   for(const k of new Set([...Object.keys(baseline),...Object.keys(now)])){
+    diff(baseline[k],now[k],k,changes);
+    if(changes.length>=36)break;
+   }
+   if(changes.length){
+    const event={id:'audit-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6),
+     at:new Date().toISOString(),by:ME?.name||ME?.nama||ME?.namaLengkap||ME?.email||'Pengguna aktif',
+     unit:ME?.unit||'',role:ME?.role||'',menu:String(location?.hash||'Transformasi'),
+     subMenu:S.ui?.psFlow?.tab||S.ui?.pmTab||S.ui?.cmTab||'',
+     kind:changes.some(x=>x.kind==='Dihapus')?'Dihapus':changes.some(x=>x.kind==='Ditambahkan')?'Ditambahkan':'Diubah',
+     changes};
+    const arr=history();arr.push(event);if(arr.length>2000)arr.splice(0,arr.length-2000);
+   }
+   baseline=now;
+   return originalSave.apply(this,args);
+  }finally{recording=false}
+ };
+ try{save=auditedSave;if(typeof window.save==='function')window.save=auditedSave}catch(_){}
+ window.MT_AUDIT={ready:true,history,open:openLog,refreshBaseline:()=>{baseline=snapshot()}};
+ function fmt(iso){try{return new Intl.DateTimeFormat('id-ID',{timeZone:'Asia/Jakarta',dateStyle:'medium',timeStyle:'short'}).format(new Date(iso))}catch(_){return iso}}
+ function openLog(){
+  if(document.querySelector('.mt-audit-overlay'))return;
+  const d=document.createElement('div');d.className='mt-audit-overlay';
+  d.innerHTML='<section class="mt-audit-dialog" role="dialog" aria-modal="true" aria-label="Activity Log Transformasi">'+
+   '<header><div class="mt-audit-title"><span class="mt-audit-symbol">↶</span><div><h3>Activity Log</h3><small>Riwayat perubahan data Modul Transformasi</small></div></div><button type="button" data-mt-audit-close aria-label="Tutup">×</button></header>'+
+   '<div class="mt-audit-controls"><input type="search" data-mt-audit-search placeholder="Cari menu, pengguna, kolom, atau perubahan...">'+
+   '<select data-mt-audit-kind><option value="">Semua Jenis Aksi</option><option>Ditambahkan</option><option>Diubah</option><option>Dihapus</option></select>'+
+   '<select data-mt-audit-time><option value="all">Semua Waktu</option><option value="7">7 Hari Terakhir</option><option value="30">30 Hari Terakhir</option></select></div>'+
+   '<div class="mt-audit-scroll"><table><thead><tr><th>No</th><th>Waktu</th><th>Jenis Aksi</th><th>Keterangan Perubahan</th><th>Oleh</th></tr></thead><tbody data-mt-audit-rows></tbody></table></div>'+
+   '<div class="mt-audit-disclaimer">ⓘ Riwayat ini bersumber dari data yang tersimpan pada prototipe. Untuk audit trail resmi yang tidak dapat diubah, diperlukan backend terpusat, kontrol akses, dan pencatatan append-only pada server.</div>'+
+   '<footer><span data-mt-audit-count></span><button type="button" data-mt-audit-close>Tutup</button></footer></section>';
+  (document.querySelector('#app')||document.body).appendChild(d);
+  const rows=d.querySelector('[data-mt-audit-rows]');
+  const draw=()=>{
+   const q=String(d.querySelector('[data-mt-audit-search]').value||'').toLowerCase(),
+    action=d.querySelector('[data-mt-audit-kind]').value,
+    days=d.querySelector('[data-mt-audit-time]').value;
+   const items=history().slice().reverse().filter(x=>(!action||x.kind===action)&&
+    (days==='all'||Date.now()-new Date(x.at).getTime()<=Number(days)*86400000)&&
+    (!q||[x.menu,x.subMenu,x.by,x.kind,...x.changes.map(z=>[z.path,z.before,z.after].join(' '))].join(' ').toLowerCase().includes(q)));
+   rows.innerHTML=items.length?items.map((item,i)=>'<tr><td>'+(i+1)+'</td><td class="mt-audit-date">'+esc(fmt(item.at))+'</td>'+
+    '<td><span class="mt-audit-chip '+esc(item.kind.toLowerCase())+'">'+esc(item.kind)+'</span></td>'+
+    '<td><b>'+esc(item.menu.replace('#',''))+'</b><small>'+item.changes.length+' rincian diperbarui</small>'+
+    '<details><summary>Lihat perubahan</summary><div class="mt-audit-changes">'+item.changes.map(c=>'<div><b>'+esc(c.path)+'</b><p><span>'+esc(c.before)+'</span><strong>→</strong><span>'+esc(c.after)+'</span></p></div>').join('')+'</div></details></td>'+
+    '<td>'+esc(item.by)+'<small>'+esc(item.unit)+'</small></td></tr>').join(''):
+    '<tr><td colspan="5" class="mt-audit-empty">Belum ada perubahan data sesuai filter. Perubahan yang terjadi sebelum pencatatan ini diaktifkan tidak bisa direkonstruksi otomatis.</td></tr>';
+   d.querySelector('[data-mt-audit-count]').textContent=items.length+' aktivitas tercatat';
+  };
+  d.addEventListener('input',ev=>{if(ev.target.matches('[data-mt-audit-search]'))draw()});
+  d.addEventListener('change',ev=>{if(ev.target.matches('[data-mt-audit-kind],[data-mt-audit-time]'))draw()});
+  d.addEventListener('click',ev=>{if(ev.target===d||ev.target.closest('[data-mt-audit-close]'))d.remove()});
+  d.addEventListener('keydown',ev=>{if(ev.key==='Escape')d.remove()});
+  draw();
+ }
+ // The title action is placed at a fixed corner; no header reflow when switching menus.
+ const inject=()=>{
+  const root=document.querySelector('#view');if(!root||root.querySelector('.mt-audit-trigger'))return;
+  const head=root.querySelector('.vh')||root.querySelector('.pswf')?.parentElement||root;
+  if(!head)return;
+  if(!head.style.position)head.style.position='relative';
+  const button=document.createElement('button');button.type='button';button.className='mt-audit-trigger';
+  button.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v6h6"/><path d="M4 9a8.5 8.5 0 1 1-1 5"/><path d="M12 7v5l3 2"/></svg><span>Activity Log</span>';
+  button.title='Lihat riwayat perubahan data';button.setAttribute('aria-label','Buka Activity Log');
+  button.addEventListener('click',openLog);
+  head.appendChild(button);
+ };
+ if(typeof MutationObserver!=='undefined'){
+  const boot=()=>{const root=document.querySelector('#view');if(!root)return;const observer=new MutationObserver(inject);observer.observe(root,{childList:true,subtree:true});inject()};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+ }
+})();
+
 A.page=page;A.mount=mount;A.version='20261108-project-selection-ui-v6';
 window.MT_PS_BANK_CORE={records,bank,detail,usulan,addOne,bulk,openCarry,codeFor,showPreview,openDetailTab:tab=>{const p=current();if(p)showPreview(String(p.id)+':'+year(),tab)},current,openWorkspace,version:A.version};
 if(typeof VIEW!=='undefined'&&VIEW==='project-selection'&&ME)render();
