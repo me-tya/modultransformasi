@@ -747,3 +747,36 @@ test('Manual document uploads go to the same ledger but do not advance signed ve
  assert.match(html,/Dokumen Program diunggah/);
  assert.match(html,/data-doc-proof-open=/);
 });
+
+test('Riwayat Program has exactly eight proportional columns and readable independent headers',()=>{
+ const m=boot(),html=m.bank.bank(),css=readFileSync('project-selection-program-bank.css','utf8');
+ const histCols=html.match(/psbank-history-table"><colgroup>(.*?)<\/colgroup>/);
+ assert.ok(histCols,'Riwayat Program must own an explicit colgroup');
+ assert.equal((histCols[1].match(/<col>/g)||[]).length,8);
+ assert.match(html,/<th>Nama Program<\/th><th>UIC<\/th><th>Kode Program<\/th><th>Status<\/th><th>Jumlah Modul<\/th><th>Aksi<\/th>/);
+ const histWidths=[...css.matchAll(/#app \.psbank-history-table col:nth-child\((\d+)\)\{width:(\d+)%\}/g)];
+ assert.equal(histWidths.length,8);
+ assert.equal(histWidths.reduce((n,x)=>n+Number(x[2]),0),100);
+ assert.match(css,/\.psbank-history-table th,([\s\S]*?)white-space:normal!important/);
+ assert.match(css,/\.psbank-history-table\{min-width:985px!important\}/);
+});
+test('Daftar Program has nine proportional columns including independent UIC and four action icons',()=>{
+ const m=boot(),html=m.bank.detail(),css=readFileSync('project-selection-program-bank.css','utf8');
+ const cols=html.match(/psbank-detail-table"><colgroup>(.*?)<\/colgroup>/);
+ assert.ok(cols);
+ assert.equal((cols[1].match(/<col>/g)||[]).length,9);
+ assert.match(html,/<th>Nama Program<\/th><th>UIC<\/th><th>Kode Program<\/th>/);
+ const widths=[...css.matchAll(/#app \.psbank-detail-table col:nth-child\((\d+)\)\{width:(\d+)%\}/g)];
+ assert.equal(widths.length,9);
+ assert.equal(widths.reduce((n,x)=>n+Number(x[2]),0),100);
+ for(const action of ['bank-doc','bank-edit-doc','bank-upload','bank-map'])assert.match(html,new RegExp('data-'+action+'="tgt-non"'));
+});
+test('Shared CM/PM/Project Selection geometry fixes route navigation and filter position',()=>{
+ const css=readFileSync('ui-tabs-unified.css','utf8');
+ assert.match(css,/#app \.vh\{[\s\S]*?height:49px!important/);
+ assert.match(css,/#app \.cm-journey,#app \.pm-stage-shell,#app \.ps27 \.ps27-stage\{[\s\S]*?height:50px!important/);
+ assert.match(css,/#app \.flt\.pmo-unified,#app \.flt\.cm-unified\{grid-template-rows:44px auto!important\}/);
+ assert.match(css,/#app \.ps27 \.ps27-filter-header\{[\s\S]*?min-height:44px!important/);
+ assert.match(css,/#app \.pswf\.ps27\{[\s\S]*?gap:6px!important/);
+ assert.match(css,/#app \.psbank-subtabs button\{[\s\S]*?min-height:38px!important/);
+});
