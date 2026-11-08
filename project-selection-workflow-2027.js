@@ -186,7 +186,8 @@ function navigate(target){
  state().tab=TABS.some(t=>t[0]===stage)?stage:'usulan';
  if(stage==='usulan'){
   if(['daftar','ambil','detail'].includes(sub))ws().usulanSub=sub;
-  if(item&&['identity','case','benefits','stakeholders','risks','governance','review'].includes(item)){S.ui.psGov=S.ui.psGov||{};S.ui.psGov.step=item;}
+  S.ui.psBank=S.ui.psBank||{};if(sub==='daftar'||sub==='ambil')S.ui.psBank.tab='bank';if(sub==='detail'){S.ui.psBank.tab='detail';const p=current();if(p)S.ui.psBank.workspace=p.id;}
+  if(item&&['identity','case','benefits','stakeholders','risks','governance','review','docs'].includes(item)){S.ui.psBank.wtab=item;S.ui.psGov=S.ui.psGov||{};S.ui.psGov.step=item;}
  }
  if(stage==='prioritasi'&&['ranking','criteria','monev'].includes(sub))ws().prioritySub=sub;
  if(stage==='charter'&&sub){
@@ -256,8 +257,8 @@ function mount(){
 }
 function helpPage(tab){
  const items=[
- ['usulan','Usulan Program','Pilih tahun tujuan, buat program baru atau multiselect dari 2026. Semua data sumber, charter dan WBS rencana menjadi draft yang dapat diedit.'],
- ['mapping','Pemetaan Proyek','Tinjau modul/proyek yang tercakup dalam program, UIC, target, dan keterkaitan item WBS. Tambah atau kurangi sesuai kebutuhan.'],
+ ['usulan','Usulan Program','Daftar Program menjadi bank lintas tahun. Detail Program mencatat program terpilih; Workspace berisi tujuh tab isian dan Buat Dokumen.'],
+ ['mapping','Pemetaan Proyek','Pilih modul dari program dan tahun sumber lainnya (mis. FRSW/SIPK pada Core APBN 2026), lalu masukkan ke program tujuan. Draft WBS ikut terbawa.'],
  ['prioritasi','Prioritasi','Pilih program, aktifkan SMART bila diperlukan; skor 12 kriteria menggunakan bobot dan ambang yang dapat disesuaikan.'],
  ['charter','Charter Program','Tujuh dokumen charter: as-is, to-be, perbandingan, charter, kriteria, manfaat dan linimasa. Menggunakan editor charter native.'],
  ['penetapan','Penetapan','Finalisasi program dan daftar proyek. Draft WBS dari tahun sumber baru disalin ke Project Management setelah penetapan, tanpa realisasi.'],
@@ -265,7 +266,7 @@ function helpPage(tab){
  ];
  if(tab==='map'){
   const deep=[
-   [['Daftar Program','usulan:daftar'],['Ambil Program','usulan:ambil'],['Identitas','usulan:detail:identity'],['Business Case','usulan:detail:case'],['Manfaat','usulan:detail:benefits'],['Stakeholder','usulan:detail:stakeholders'],['Risiko','usulan:detail:risks'],['Tata Kelola','usulan:detail:governance'],['Reviu','usulan:detail:review']],
+   [['Bank Program','usulan:daftar'],['Detail Program','usulan:detail'],['Buat Dokumen Word/PDF/PPTX','usulan:detail:docs'],['Identitas','usulan:detail:identity'],['Business Case','usulan:detail:case'],['Manfaat','usulan:detail:benefits'],['Stakeholder','usulan:detail:stakeholders'],['Risiko','usulan:detail:risks'],['Tata Kelola','usulan:detail:governance'],['Reviu','usulan:detail:review']],
    [['Daftar Proyek / Modul','mapping']],
    [['Penilaian & Peringkat','prioritasi:ranking'],['Kriteria & Bobot','prioritasi:criteria'],['Monev & Manfaat','prioritasi:monev']],
    [['As-is','charter:asis'],['To-be','charter:tobe'],['Perbandingan','charter:cs'],['Charter','charter:ch'],['Kriteria','charter:kp'],['Manfaat','charter:mf'],['Linimasa','charter:rk']],
