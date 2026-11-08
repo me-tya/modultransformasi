@@ -577,7 +577,7 @@ test('Auto-save on program detail tab changes persists edit state and no discard
  assert.match(sourceCode,/const saveForm=\(keepEditing=false\)/);
  assert.match(sourceCode,/if\(step\)\{autoSaveAnd/);
  assert.match(sourceCode,/v\(\)\.edit=!!keepEditing/);
- assert.match(sourceCode,/v\(\)\.edit=!!startEdit&&editable/);
+ assert.match(sourceCode,/edit:!!startEdit&&editable/);
  assert.doesNotMatch(sourceCode,/Abaikan Perubahan\?/);
 });
 test('Move confirmation describes each duplicate module with source and destination',()=>{
