@@ -85,19 +85,19 @@ function carrySelected(){
 function count(p){return p?(p.psProjects||[]).length:0;}
 function navItem(tab,label,num){const on=state().tab===tab;return '<button type="button" role="tab" aria-selected="'+on+'" class="'+(on?'on':'')+'" data-ps27-tab="'+tab+'"><span>'+label+'</span>'+(num?'<b>'+num+'</b>':'')+'</button>';}
 function filter(p){
- const a=list(),u=state(),w=ws(),total=a.length,chosen=p?count(p):0;
- const active=!!u.prog||!!w.search;return '<div class="ps27-filter"><button type="button" class="ps27-filter-title" data-ps27="filter" aria-expanded="'+!!w.filterOpen+'"><span class="ps27-filter-ic">▽</span> Filter</button>'+
- '<div class="ps27-filter-summary"><strong>FILTER AKTIF</strong><span>'+E(p?p.kode+' · '+p.nama:'Semua program tahun '+yr())+'</span><span class="ps27-sp"></span><b>'+total+'</b> dari '+total+' program · '+chosen+' proyek'+(active?' · terpilih':'')+'</div>'+
- '<button type="button" class="ps27-filter-toggle" data-ps27="filter" title="Perluas/perkecil filter">▾</button></div>'+
- (w.filterOpen?'<div class="ps27-filter-fields"><label>Tahun Anggaran <select data-ps27-year>'+[2025,2026,2027,2028,2029].map(y=>'<option '+(y===yr()?'selected':'')+'>'+y+'</option>').join('')+'</select></label>'+
- '<label>Program <select data-ps27-prog><option value="">— Semua program —</option>'+a.map(x=>'<option value="'+E(x.id)+'" '+(p&&x.id===p.id?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label>'+
- '<span class="ps27-filter-note">Gunakan pilihan tahun pada header aplikasi untuk berpindah tahun. Filter program tidak mengubah data.</span></div>':'');
+ const b=S.ui.psBank||(S.ui.psBank={}),u=state(),arr=list(),q=String(b.search||'').toLowerCase(),st=b.filterStatus||'all',tab=b.tab||'bank';
+ const onBank=u.tab==='usulan'&&tab==='bank';
+ const opts=onBank?(S.programs||[]):arr;
+ const filtered=opts.filter(x=>(!q||[x.nama,x.kode,x.akr,x.uic].join(' ').toLowerCase().includes(q))&&(st==='all'||(x.arsip||x.psStatus==='Arsip'?'Arsip':x.psCarry?'Legacy':x.psDraft?'Baru':'Legacy')===st));
+ const yFilter=onBank?(b.filterYear||'all'):String(yr());
+ return '<div class="ps27-filter ps27-filter-compact" role="search" aria-label="Filter Project Selection">'+
+ '<label>Tahun <select data-ps27-year><option value="all" '+(yFilter==='all'?'selected':'')+'>Semua tahun</option>'+[2025,2026,2027,2028,2029].map(y=>'<option value="'+y+'" '+(String(yFilter)===String(y)?'selected':'')+'>'+y+'</option>').join('')+'</select></label>'+
+ '<label class="ps27-filter-program">Nama Program <select data-ps27-prog><option value="">Semua Program</option>'+filtered.map(x=>'<option value="'+E(x.id)+'" '+(p&&x.id===p.id?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label>'+
+ '<label>Status <select data-ps27-status>'+[['all','Semua Status'],['Baru','Baru'],['Legacy','Legacy'],['Arsip','Arsip']].map(x=>'<option value="'+x[0]+'" '+(st===x[0]?'selected':'')+'>'+x[1]+'</option>').join('')+'</select></label>'+
+ '<label class="ps27-filter-search">Cari <input type="search" data-ps27-query value="'+E(b.search||'')+'" placeholder="Nama, kode, UIC..."></label>'+
+ '</div>';
 }
-function actionBar(p){
- const a=list();return '<div class="ps27-actionbar"><label>Program yang dikerjakan <select data-ps27-prog '+(!a.length?'disabled':'')+'>'+a.map(x=>'<option value="'+E(x.id)+'" '+(p&&x.id===p.id?'selected':'')+'>'+E(x.nama)+' · '+E(x.psStatus||'Berjalan')+'</option>').join('')+(a.length?'':'<option>Belum ada program</option>')+'</select></label>'+
- '<span class="ps27-sp"></span><span class="ps27-lab">'+(p?E(p.kode||p.akr)+' · '+E(p.psStatus||'Draft'):'Pilih atau tambah program')+'</span>'+
- (can()&&state().tab==='usulan'?'<button class="btn pri" data-pswf="add-program">+ Program Baru</button>':'')+'</div>';
-}
+function actionBar(){return '<div class="ps27-actionbar" hidden></div>';}
 function sourcePicker(){
  const w=ws(),arr=sourcePrograms().filter(p=>(p.nama+' '+p.kode+' '+p.uic).toLowerCase().includes(String(w.search||'').toLowerCase())),to=yr(),allSel=arr.length&&arr.every(p=>(w.selected||[]).includes(String(p.id)));
  return '<div class="ps27-card"><div class="ps27-cardtop"><div><h3>Ambil Program Tahun Sebelumnya</h3><p>Salin seluruh detail, charter dan dokumen, daftar proyek, serta draft WBS. Data sumber tetap utuh dan capaian tidak disalin.</p></div><span class="ps27-info">Multi-select</span></div>'+
@@ -242,8 +242,14 @@ function mount(){
  });
  root.addEventListener('change',function(ev){
   const el=ev.target;
-  if(el.dataset.ps27Prog!==undefined){state().prog=el.value;S.ui.psGov={step:'identity'};save();render();return}
-  if(el.dataset.ps27Year!==undefined){S.ui.tahun=+el.value;state().prog='';save();render();return}
+  if(el.dataset.ps27Prog!==undefined){state().prog=el.value;S.ui.psGov={step:'identity'};if(window.MT_PS_SCOPE)window.MT_PS_SCOPE.bank().target=el.value;save();render();return}
+   if(el.dataset.ps27Status!==undefined){S.ui.psBank=S.ui.psBank||{};S.ui.psBank.filterStatus=el.value;save();render();return}
+  if(el.dataset.ps27Year!==undefined){
+    S.ui.psBank=S.ui.psBank||{};
+    if(state().tab==='usulan'&&S.ui.psBank.tab==='bank'){S.ui.psBank.filterYear=el.value}
+    else if(el.value!=='all'){S.ui.tahun=+el.value;state().prog='';if(window.MT_PS_SCOPE)window.MT_PS_SCOPE.bank().target=''}
+    save();render();return
+   }
   if(el.dataset.ps27Source!==undefined){ws().sourceYear=+el.value;ws().selected=[];save();render();return}
   if(el.dataset.ps27Select!==undefined){const a=new Set(ws().selected||[]);if(el.checked)a.add(String(el.dataset.ps27Select));else a.delete(String(el.dataset.ps27Select));ws().selected=[...a];save();render();return}
   if(el.dataset.ps27Checkall!==undefined){ws().selected=el.checked?sourcePrograms().filter(p=>(p.nama+' '+p.kode+' '+p.uic).toLowerCase().includes(String(ws().search||'').toLowerCase())).map(p=>String(p.id)):[];save();render();return}
@@ -252,12 +258,17 @@ function mount(){
    root.querySelectorAll('[data-ps27-reviewed]').forEach(q=>p.psRkmkReviewed[q.dataset.ps27Reviewed]=q.checked);
    save();render();return}
  });
- root.querySelector('[data-ps27-search]')?.addEventListener('input',function(ev){ws().search=ev.target.value;const pos=ev.target.selectionStart;save();render();const t=document.querySelector('[data-ps27-search]');if(t){t.focus();t.setSelectionRange(pos,pos)}});
+ root.querySelector('[data-ps27-query]')?.addEventListener('input',ev=>{
+    S.ui.psBank=S.ui.psBank||{};const t=ev.target,v=t.value,pos=t.selectionStart;
+    S.ui.psBank.search=v;save();render();
+    const q=document.querySelector('[data-ps27-query]');if(q){q.focus();q.setSelectionRange(pos,pos)}
+   });
+   root.querySelector('[data-ps27-search]')?.addEventListener('input',function(ev){ws().search=ev.target.value;const pos=ev.target.selectionStart;save();render();const t=document.querySelector('[data-ps27-search]');if(t){t.focus();t.setSelectionRange(pos,pos)}});
  I.mount();
 }
 function helpPage(tab){
  const items=[
- ['usulan','Usulan Program','Daftar Program menjadi bank lintas tahun. Detail Program mencatat program terpilih; Workspace berisi tujuh tab isian dan Buat Dokumen.'],
+ ['usulan','Usulan Program','Daftar Program menjadi bank lintas tahun. Detail Program mencatat program terpilih; Detail Program menyediakan formulir ubah, simpan, dan Buat Dokumen Program. Dokumen Portofolio dapat dikompilasi dari program terpilih.'],
  ['mapping','Pemetaan Proyek','Pilih modul dari program dan tahun sumber lainnya (mis. FRSW/SIPK pada Core APBN 2026), lalu masukkan ke program tujuan. Draft WBS ikut terbawa.'],
  ['prioritasi','Prioritasi','Pilih program, aktifkan SMART bila diperlukan; skor 12 kriteria menggunakan bobot dan ambang yang dapat disesuaikan.'],
  ['charter','Charter Program','Tujuh dokumen charter: as-is, to-be, perbandingan, charter, kriteria, manfaat dan linimasa. Menggunakan editor charter native.'],
