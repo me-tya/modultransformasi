@@ -523,11 +523,14 @@ function monevModal(p,pid,type,index){
  const body='<div class="pswf-form-grid">'+field('name','Nama indikator / manfaat',old?.name||'','text',true)+
  field('base','Baseline',old?.base||'')+field('target','Target',old?.target||'')+field('actual','Realisasi',old?.actual||'')+
  field('unit','Satuan',old?.unit||'')+field('due','Target selesai / evaluasi',old?.due||'','date')+
- area('note','Catatan pemantauan',old?.note||'')+'</div>';
+ sel('direction','Arah indikator (untuk menghitung capaian)',['Naik','Turun'],old?.direction||'Naik')+
+ area('note','Catatan pemantauan',old?.note||'')+'</div>'+
+ (type==='indicators'?'<div class="pswf-form-grid pswf-quarter-grid">'+[['Q1','TW I'],['Q2','TW II'],['Q3','TW III'],['Q4','TW IV']].map(t=>field('quarter'+t[0],t[1]+' '+year(),(old?.quarters||{})[t[0]]||'','number')).join('')+'</div>':'');
  modal((type==='indicators'?'Indikator Keberhasilan CM':'Register Manfaat')+' · '+project.name,body,(box,close)=>{
   if(!val(box,'name')){toast('Nama indikator/manfaat wajib diisi.');return}
   const obj=old||{id:uid2('mv')};
-  for(const k of ['name','base','target','actual','unit','due','note'])obj[k]=val(box,k);
+  for(const k of ['name','base','target','actual','unit','due','direction','note'])obj[k]=val(box,k);
+  if(type==='indicators'){obj.quarters={};for(const q of ['Q1','Q2','Q3','Q4'])obj.quarters[q]=val(box,'quarter'+q);const recent=['Q4','Q3','Q2','Q1'].map(q=>obj.quarters[q]).find(v=>v!=='');if(recent!=='undefined'&&recent!=null)obj.actual=recent}
   if(!old)list.push(obj);save();close();render();toast('Data Monev tersimpan.');
  });
 }
@@ -535,7 +538,7 @@ function exportCsv(p,type){
  if(!p){toast('Pilih program dahulu.');return}
  let data=[];
  if(type==='criteria')data=[['Kode','Kriteria','Kelompok','Jenis','Bobot','Normalisasi (%)'],...PS_CRITERIA.map(c=>[c.code,c.name,(PS_GROUPS.find(g=>g[0]===c.g)||[])[1],c.type,weight(p,c.code),(weight(p,c.code)/PS_CRITERIA.reduce((n,x)=>n+weight(p,x.code),0)*100).toFixed(1)])];
- else if(type==='monev')data=[['Tahun','Program','Proyek','Jenis','Indikator/Manfaat','Baseline','Target','Realisasi','Satuan','Tenggat'],...rowsFor(p).flatMap(x=>['indicators','benefits'].flatMap(k=>x[k].map(o=>[year(),p.nama,x.name,k==='indicators'?'Indikator':'Manfaat',o.name,o.base,o.target,o.actual,o.unit,o.due])))];
+ else if(type==='monev')data=[['Tahun','Program','Proyek','Jenis','Indikator/Manfaat','Baseline','Target','Realisasi','Satuan','Arah','TW I','TW II','TW III','TW IV','Tenggat','Capaian (%)'],...rowsFor(p).flatMap(x=>['indicators','benefits'].flatMap(k=>x[k].map(o=>[year(),p.nama,x.name,k==='indicators'?'Indikator':'Manfaat',o.name,o.base,o.target,latest(o),o.unit,o.direction||'Naik',(o.quarters||{}).Q1,(o.quarters||{}).Q2,(o.quarters||{}).Q3,(o.quarters||{}).Q4,o.due,metricPct(o)??''])))];
  else data=[['Tahun','Program','Proyek','UIC','PIC','Status','Skor SMART','Terpilih','Go-live','Output','Acceptance Criteria'],...rowsFor(p).map(x=>[year(),p.nama,x.name,x.uic,x.pic,x.status,calc(x,p).score??'',included(x,p)?'Ya':'Tidak',x.goLive,x.outputs,x.accepted])];
  const csv='\ufeff'+data.map(r=>r.map(c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"').join(',')).join('\r\n');
  const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');
