@@ -304,6 +304,7 @@ function showUploadProgram(id){
   return items.length?items.map(x=>'<article class="psbank-upload-record"><span class="psbank-upload-recordicon">'+(x.status==='signed'?'✓':'▤')+'</span>'+
    '<div><b>'+E(x.fileName||'Dokumen Program')+'</b><small>'+E(x.status==='signed'?'Bukti TTE v'+x.version+' · belum diverifikasi':'Dokumen Program · v'+x.version+' (tidak menetapkan versi)')+
    ' · '+E((x.createdAt||'').slice(0,16).replace('T',' '))+(x.description?' · '+E(x.description):'')+'</small></div>'+
+   '<button type="button" class="psbank-upload-download" data-doc-proof-preview="'+E(x.id)+'" data-doc-proof-name="'+E(x.fileName)+'" title="Pratinjau dokumen unggahan" aria-label="Pratinjau '+E(x.fileName)+'"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>'+
    '<button type="button" class="psbank-upload-download" data-doc-proof-open="'+E(x.id)+'" data-doc-proof-name="'+E(x.fileName)+'" title="Unduh berkas" aria-label="Unduh '+E(x.fileName)+'">↓</button></article>').join(''):
    '<div class="psbank-upload-empty">Belum ada dokumen yang diunggah untuk program ini.</div>';
  };
