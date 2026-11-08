@@ -194,11 +194,11 @@ function programReportModel(p){
  if(d.sign)blocks.push({t:'tte'});
  return {lang:'id',formal:true,template:d.template||'activity',toc:!!d.toc,header:'Dokumen Perencanaan Program · '+name,
   fileName:'Perencanaan_Program_'+year()+'_'+code.replace(/[^A-Za-z0-9_-]/g,'_')+'_v'+v,
-  cover:{kicker:'KEMENTERIAN KEUANGAN REPUBLIK INDONESIA · DRAFT',title:'DOKUMEN PERENCANAAN PROGRAM',
-   subject:name+' · Tahun Anggaran '+year()+' · v'+v,
-   chips:[code,'Tahun '+year(),p.psStatus==='Ditetapkan'?'Ditetapkan':'Usulan / Draf'],
-   scope:parts.map(x=>x.title),meta:[['Kode Program',code],['Tahun Anggaran',String(year())],['Versi','v'+v],
-     ['UIC Utama',String(p.uic||'—')],['Status','Draft, menunggu pengesahan'],['Nomor Dokumen',t.number||'Belum ditetapkan']],
+  cover:{kicker:'DOKUMEN PROGRAM',title:name,
+   subject:'Tahun Anggaran '+year(),
+   chips:[code,'Tahun '+year(),'Versi v'+v],
+   scope:parts.map(x=>x.title),meta:[['Kode Program',code],['Program Induk',name],['UIC Utama',String(p.uic||'—')],
+     ['Tahun Anggaran',String(year())],['Versi','v'+v],['Nomor Dokumen',t.number||'Belum ditetapkan']],
    noTte:!d.sign,tte:{name:t.name,title:t.title,label:t.label,date:t.date,city:t.city}},
   blocks};
 }
@@ -632,9 +632,9 @@ function portfolioModel(){
  if(d.sign)B.push({t:'tte'});
  return {lang:'id',formal:true,template:d.template||'activity',toc:true,fileName:(mode?'Dokumen_Usulan_Proyek_':'Dokumen_Portofolio_Transformasi_')+year()+'_v'+version,
   header:(mode?'Dokumen Usulan Proyek · ':'Dokumen Portofolio Program Transformasi · ')+year(),
-  cover:{kicker:'KEMENTERIAN KEUANGAN REPUBLIK INDONESIA · DRAFT',title:mode?'DOKUMEN USULAN PROYEK':'DOKUMEN PORTOFOLIO PROGRAM TRANSFORMASI',subject:'Tahun Anggaran '+year()+' · Versi '+version,
-   chips:['Tahun '+year(),data.length+(mode?' usulan proyek':' program'),'Draft — belum disahkan'],scope:d.sections.map(x=>docSections().find(z=>z[0]===x)?.[1]||x),
-   meta:[['Tahun Anggaran',String(year())],['Versi','v'+version],[mode?'Jumlah Usulan Proyek':'Jumlah Program',String(data.length)],['Status','Draft'],['Sumber','Modul Transformasi Kementerian Keuangan'],['Nomor Dokumen',signer.number||'Belum ditetapkan']],noTte:!d.sign,tte:{name:signer.name,title:signer.title,label:signer.label,city:signer.city,date:signer.date}},blocks:B};
+  cover:{kicker:mode?'DOKUMEN USULAN PROYEK':'DOKUMEN PORTOFOLIO',title:mode?String(projectTarget()?.nama||'Usulan Proyek'):'Portofolio Program Transformasi',subject:'Tahun Anggaran '+year(),
+   chips:['Tahun '+year(),data.length+(mode?' usulan proyek':' program'),'Versi v'+version],scope:d.sections.map(x=>docSections().find(z=>z[0]===x)?.[1]||x),
+   meta:[['Tahun Anggaran',String(year())],['Versi','v'+version],[mode?'Jumlah Usulan Proyek':'Jumlah Program',String(data.length)],['Unit Pengelola','PMO Kementerian Keuangan'],['Nomor Dokumen',signer.number||'Belum ditetapkan']],noTte:!d.sign,tte:{name:signer.name,title:signer.title,label:signer.label,city:signer.city,date:signer.date}},blocks:B};
 }
 function splitPortText(text,limit=176){
  const value=String(text||'Belum diisi').trim().replace(/\s+/g,' '),words=value.split(' '),out=[];let line='';
@@ -843,6 +843,7 @@ function change(ev,inline=false){
  if(q.dataset.docFormat!==undefined){d.format=q.value;d.slide=0;save();if(!inline)render();return true}
  return false;
 }
-installFinalReportPreview();
+// Laporan Akhir Proyek: pertahankan iframe HTML asli agar scroll per halaman bekerja.
+// installFinalReportPreview();
 window.MT_PS_DOC={readLocalProof,fields,sections,slidePages,programDeck,programSlideHtml,paper,builder,exportFile,click,change,documentPreview,programReportModel,tteControls,hydrateProgram,hydratePortfolio,showActualDocumentPreview,versionPanel,nextVersion,registerExport,confirmSigned,uploadProgramAttachment,history,processSigned,openSignedProof,portfolioModel,portSlides,splitPortText,portfolioBuilder,portfolioClick,portfolioChange,portfolioExport,version:'20261108-program-document-builder-v3'};
 })();
