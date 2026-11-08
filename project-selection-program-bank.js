@@ -69,20 +69,33 @@ function archiveProgram(p){
  const activeWbs=(S.wbs||[]).some(w=>w.prog===p.akr&&!w.arsip);
  const unclosed=(p.psProjects||[]).filter(x=>!['Selesai','Ditutup','Dihentikan','Arsip'].includes(String(x.status||''))&&!x.psClosedAt&&!x.psClosure?.approved);
  if(activeWbs||unclosed.length){toast('Penutupan proyek harus diselesaikan terlebih dahulu. Masih ada WBS aktif atau '+unclosed.length+' proyek yang belum ditutup.');return}
- const reason=window.prompt('Alasan penutupan/arsip program "'+p.nama+'" (wajib diisi):','');
- if(reason===null)return;
- if(!reason.trim()){toast('Alasan pengarsipan wajib diisi.');return}
- const evidence=window.prompt('Nomor atau tautan dokumen penutupan proyek/program (wajib diisi):','');
- if(evidence===null)return;
- if(!evidence.trim()){toast('Referensi dokumen penutupan wajib diisi.');return}
- const accept=()=>{
-  if((S.wbs||[]).some(w=>w.prog===p.akr&&!w.arsip))return toast('Masih terdapat WBS aktif; pengarsipan dibatalkan.');
+ const d=document.createElement('div');d.className='psbank-overlay psbank-archive-overlay';
+ d.innerHTML='<section class="psbank-dialog psbank-archive-dialog" role="dialog" aria-modal="true" aria-label="Arsipkan Program">'+
+  '<header><div><b>Arsipkan Program</b><small>'+E(p.kode||p.akr)+' · '+E(p.nama)+'</small></div><button type="button" data-archive-close aria-label="Tutup">✕</button></header>'+
+  '<main class="psbank-dialogbody"><p class="psbank-archive-note">Status Arsip hanya dapat diberikan setelah proses penutupan proyek/program selesai. Program tetap tercatat dalam riwayat dan tidak akan dihapus.</p>'+
+  '<div class="psbank-archive-form"><label>Alasan Penutupan <span aria-hidden="true">*</span><textarea rows="3" data-archive-reason placeholder="Jelaskan alasan program ditutup, dihentikan, atau diganti" required></textarea></label>'+
+  '<label>Nomor / Tautan Dokumen Penutupan <span aria-hidden="true">*</span><input type="text" data-archive-evidence placeholder="Nomor dokumen, referensi keputusan, atau tautan bukti" required></label>'+
+  '<small>Pastikan tidak ada WBS aktif atau proyek yang belum diselesaikan melalui proses penutupan.</small><p class="psbank-archive-error" role="alert" hidden></p></div></main>'+
+  '<footer><span>Histori program dan output K-Wide terdahulu tetap tersimpan.</span><div><button type="button" class="btn" data-archive-close>Batal</button><button type="button" class="btn pri" data-archive-confirm>Arsipkan Program</button></div></footer></section>';
+ (document.querySelector('#app')||document.body).appendChild(d);
+ const close=()=>d.remove();
+ d.addEventListener('click',ev=>{
+  if(ev.target===d||ev.target.closest('[data-archive-close]')){close();return}
+  if(!ev.target.closest('[data-archive-confirm]'))return;
+  const reason=d.querySelector('[data-archive-reason]').value.trim();
+  const evidence=d.querySelector('[data-archive-evidence]').value.trim();
+  const err=d.querySelector('.psbank-archive-error');
+  if(!reason||!evidence){err.textContent='Alasan dan referensi dokumen penutupan wajib diisi.';err.hidden=false;return}
+  if((S.wbs||[]).some(w=>w.prog===p.akr&&!w.arsip)||
+    (p.psProjects||[]).some(x=>!['Selesai','Ditutup','Dihentikan','Arsip'].includes(String(x.status||''))&&!x.psClosedAt&&!x.psClosure?.approved)){
+   err.textContent='Terdapat WBS aktif atau proyek yang belum ditutup. Lakukan proses penutupan terlebih dahulu.';err.hidden=false;return;
+  }
   p.psListStatus='Arsip';p.psArchivedAt=new Date().toISOString();p.psArchivedBy=ME?.email||'';
-  p.psArchiveReason=reason.trim();p.psArchiveEvidence=evidence.trim();p.psArchivedFromStatus=p.psStatus;
-  p.arsip=true;p.psUpdatedAt=p.psArchivedAt;save();render();toast('Program diarsipkan dengan referensi penutupan. Histori tetap tersimpan.');
- };
- if(typeof window.MT_PS_CONFIRM==='function')window.MT_PS_CONFIRM('Arsipkan Program?', 'Program "'+p.nama+'" akan menjadi Arsip (tidak dihapus). Dasar: '+reason.trim()+'. Referensi: '+evidence.trim()+'.',accept,'warning');
- else if(window.confirm('Arsipkan program '+p.nama+'?'))accept();
+  p.psArchiveReason=reason;p.psArchiveEvidence=evidence;p.psArchivedFromStatus=p.psStatus;
+  p.arsip=true;p.psUpdatedAt=p.psArchivedAt;save();close();render();toast('Program diarsipkan dengan referensi penutupan. Histori tetap tersimpan.');
+ });
+ d.addEventListener('keydown',ev=>{if(ev.key==='Escape')close()});
+ d.querySelector('[data-archive-reason]')?.focus();
 }
 function programAction(kind,id,title){
  const icons={
