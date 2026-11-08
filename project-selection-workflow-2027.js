@@ -82,6 +82,7 @@ function localFilter(){
  const b=S.ui.psBank||(S.ui.psBank={}),u=state(),key=u.tab==='usulan'?'usulan:'+(b.tab||'bank'):u.tab;
  b.filterScopes=b.filterScopes||{};
  const f=b.filterScopes[key]||(b.filterScopes[key]={search:'',status:'all',program:'',year:u.tab==='usulan'&&(b.tab||'bank')==='bank'?'all':String(yr())});
+ if(key!=='usulan:bank' && String(f.year)!==String(yr()) && /^20\d{2}$/.test(String(yr())))f.year=String(yr());
  return f;
 }
 function setFilterField(key,val){
@@ -94,6 +95,10 @@ function setFilterField(key,val){
   b.bankPage=1;
   if(/^20\d{2}$/.test(String(val))){
    S.ui.psSelectedYear=Number(val);
+   // All year-specific steps refer to the same active year; history retains "all".
+   Object.entries(b.filterScopes||{}).forEach(([scope,entry])=>{
+    if(scope!=='usulan:bank'&&entry&&entry!==f&&/^20\d{2}$/.test(String(entry.year||'')))entry.year=String(val);
+   });
    const u=state();
    const active=(S.programs||[]).filter(p=>+p.psYear===Number(val));
    if(u.prog&&!active.some(p=>String(p.id)===String(u.prog)))u.prog='';
@@ -267,6 +272,10 @@ function navigate(target){
 }
 
 function page(){
+ // The selected year's data, filter label and list heading must resolve from one value
+ // before generating this view; otherwise the filter can say 2027 while the table says 2026.
+ const f=localFilter(),selected=String(f.year||'');
+ if(/^20\d{2}$/.test(selected)&&+S.ui.psSelectedYear!==+selected)S.ui.psSelectedYear=+selected;
  const p=current(),u=state(),T=list(),countAll=T.reduce((n,x)=>n+count(x),0);
  let h=vh('PS','pmo','Project Selection','Usulkan program, petakan proyek, prioritaskan, susun charter dan tetapkan dasar WBS.');
  h+='<section class="pswf ps27" aria-label="Project Selection">';
