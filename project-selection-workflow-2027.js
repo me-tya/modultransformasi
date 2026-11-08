@@ -8,7 +8,7 @@ const E=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').repla
 const clone=x=>JSON.parse(JSON.stringify(x));
 const uid=k=>(k||'ps')+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);
 const can=p=>!!ME&&['SA','PMOK','PMOU'].includes(ME.role)&&(!p||ME.role!=='PMOU'||!p.uic||p.uic===ME.unit);
-const yr=()=>+S.ui.tahun||2026;
+const yr=()=>+S.ui.psSelectedYear||+S.ui.tahun||2026;
 const state=()=>{const u=I.state();const map={portfolio:'usulan',program:'usulan',projects:'mapping',criteria:'prioritasi',monev:'prioritasi',reference:'prioritasi'};if(map[u.tab])u.tab=map[u.tab];if(!['usulan','mapping','prioritasi','charter','penetapan','rkmk'].includes(u.tab))u.tab='usulan';return u};
 const list=()=>I.programs();
 const current=()=>I.pickedProgram();
@@ -89,7 +89,16 @@ function setFilterField(key,val){
  f[key]=val; // Never alter filter state in another menu or in the application header.
  if(key==='search')b.search=val;
  if(key==='status')b.filterStatus=val;
- if(key==='year')b.filterYear=val;
+ if(key==='year'){
+  b.filterYear=val;
+  if(/^20\d{2}$/.test(String(val))){
+   S.ui.psSelectedYear=Number(val);
+   const u=state();
+   const active=(S.programs||[]).filter(p=>+p.psYear===Number(val));
+   if(u.prog&&!active.some(p=>String(p.id)===String(u.prog)))u.prog='';
+   if(b.target&&!active.some(p=>String(p.id)===String(b.target)))b.target='';
+  }
+ }
 }
 function filter(p){
  const b=S.ui.psBank||(S.ui.psBank={}),u=state(),arr=list(),tab=b.tab||'bank',w=ws(),
@@ -99,7 +108,7 @@ function filter(p){
  if(u.tab==='usulan'&&tab==='bank')b.filterProgram=f.program||'';
  if(u.tab==='usulan'&&tab==='detail')b.detailProgram=f.program||'';
  const onBank=u.tab==='usulan'&&tab==='bank',opts=onBank?(S.programs||[]):arr,
-  years=[2025,2026,2027,2028,2029],yFilter=onBank?(f.year||'all'):String(yr()),
+  years=[2025,2026,2027,2028,2029],yFilter=f.year||String(yr()),
   period=f.period||'all',unit=f.unit||'all',role=f.unitRole||'all';
  const statusOf=x=>x.arsip||x.psStatus==='Arsip'?'Arsip':x.psStatus==='Ditetapkan'||x.psFinalizedAt?'Ditetapkan':x.psDraft||x.psStatus==='Draft'?'Usulan':'Legacy';
  const matchesUnit=x=>{if(!unit||unit==='all')return true;const a=String(x.uic||'').toLowerCase().includes(unit.toLowerCase()),b=String(x.pend||x.psSupportingUic||'').toLowerCase().includes(unit.toLowerCase());return role==='utama'?a:role==='pendukung'?b:a||b};
