@@ -33,10 +33,6 @@ function labelStatus(p){
  if(p.arsip||p.status==='Arsip'||p.psStatus==='Arsip')return 'Arsip';
  return p.psCarry||!p.psYear?'Legacy':'Baru';
 }
-function stageBadge(p){
- const established=p.psStatus==='Ditetapkan'||!!p.psFinalizedAt;
- return '<span class="psbank-phase '+(established?'established':'draft')+'">'+E(established?'Sudah ditetapkan':p.psYear?'Draf usulan':'Referensi historis')+'</span>';
-}
 function programAction(kind,id,title){
  const icons={
   document:'<path d="M7 3h7l5 5v13H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm7 0v6h5"/><path d="M9 13h7M9 16h7"/>',
@@ -285,7 +281,7 @@ function openCarry(keys){
 /* Upload Dokumen Program: independent from document generation; attachments do not
    increment the official version. Signed PDF uses the established TTE workflow. */
 function showUploadProgram(id){
- const p=get(id);if(!p||+p.psYear!==year()){toast('Program tujuan tidak ditemukan untuk tahun terpilih.');return}
+ const p=get(id);if(!p||!active().some(x=>String(x.id)===String(p.id))){toast('Program tujuan tidak ditemukan untuk tahun terpilih.');return}
  const d=document.createElement('div');d.className='psbank-upload-backdrop';
  const history=()=>Docs.history('program',p.id,year()).filter(x=>['uploaded','signed'].includes(x.status)).slice().reverse();
  const fileHistory=()=>{
