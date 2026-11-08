@@ -470,12 +470,20 @@ function mount(){
    root.querySelectorAll('[data-ps27-reviewed]').forEach(q=>p.psRkmkReviewed[q.dataset.ps27Reviewed]=q.checked);
    save();render();return}
  });
- root.querySelector('[data-ps27-query]')?.addEventListener('input',ev=>{
-    S.ui.psBank=S.ui.psBank||{};const t=ev.target,v=t.value,pos=t.selectionStart;
-    setFilterField('search',v);save();render();
-    const q=document.querySelector('[data-ps27-query]');if(q){q.focus();q.setSelectionRange(pos,pos)}
-   });
-   root.querySelector('[data-ps27-search]')?.addEventListener('input',function(ev){ws().search=ev.target.value;const pos=ev.target.selectionStart;save();render();const t=document.querySelector('[data-ps27-search]');if(t){t.focus();t.setSelectionRange(pos,pos)}});
+ const searchChange=(selector,update)=>{
+  const field=root.querySelector(selector);if(!field)return;
+  field.addEventListener('input',ev=>{
+   const v=ev.currentTarget.value,cursor=ev.currentTarget.selectionStart;
+   update(v);save();
+   clearTimeout(window.__mtPs27SearchTimer);
+   window.__mtPs27SearchTimer=setTimeout(()=>{
+    render();const next=document.querySelector('#view .pswf '+selector);
+    if(next){next.focus({preventScroll:true});try{next.setSelectionRange(cursor,cursor)}catch(_){}}
+   },260);
+  });
+ };
+ searchChange('[data-ps27-query]',v=>setFilterField('search',v));
+ searchChange('[data-ps27-search]',v=>{ws().search=v;});
  I.mount();
 }
 function helpPage(tab){
