@@ -291,7 +291,7 @@ function splitPortText(text,limit=176){
 }
 function portSlides(){
  const data=portData(),slides=[{kind:'cover',title:'PORTOFOLIO PROGRAM TRANSFORMASI',programs:data.map(x=>x.p)}];
- slides.push({kind:'overview',title:'Peta Portofolio Transformasi',programs:data.map(x=>x.p)});
+ for(let o=0;o<Math.max(1,data.length);o+=12)slides.push({kind:'overview',title:'Peta Portofolio Transformasi'+(o?' (lanjutan)':''),programs:data.slice(o,o+12).map(x=>x.p),programOffset:o});
  data.forEach((o,i)=>{
   slides.push({kind:'divider',program:o.p,programIndex:i+1,totalPrograms:data.length});
   o.blocks.forEach(block=>{
@@ -310,7 +310,7 @@ function portfolioPreview(){
   const deck=portSlides(),i=Math.max(0,Math.min(+d.slide||0,Math.max(0,deck.length-1))),x=deck[i]||{},fmt=E;
   let body='';
   if(x.kind==='cover')body='<div class="psbank-port-slide-cover"><small>KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</small><div class="port-gold-rule"></div><h2>PORTOFOLIO<br>PROGRAM TRANSFORMASI</h2><p>Tahun '+year()+' · Versi '+v+'</p><strong>'+data.length+' PROGRAM TERPILIH</strong></div>';
-  else if(x.kind==='overview')body='<div class="psbank-port-slide-overview"><small>RINGKASAN EKSEKUTIF · '+year()+'</small><h2>Peta Portofolio Transformasi</h2><div class="port-preview-metrics"><span><b>'+data.length+'</b> Program</span><span><b>'+data.reduce((n,o)=>n+(o.p.psProjects||[]).length,0)+'</b> Usulan Proyek</span></div><div class="port-preview-list">'+data.map((o,j)=>'<p><b>'+String(j+1).padStart(2,'0')+'</b> '+fmt(o.p.nama)+' <small>'+fmt(o.p.kode||o.p.akr)+'</small></p>').join('')+'</div></div>';
+  else if(x.kind==='overview')body='<div class="psbank-port-slide-overview"><small>RINGKASAN EKSEKUTIF · '+year()+'</small><h2>'+fmt(x.title)+'</h2><div class="port-preview-metrics"><span><b>'+data.length+'</b> Program</span><span><b>'+data.reduce((n,o)=>n+(o.p.psProjects||[]).length,0)+'</b> Usulan Proyek</span></div><div class="port-preview-list">'+(x.programs||[]).map((p,j)=>'<p><b>'+String((x.programOffset||0)+j+1).padStart(2,'0')+'</b> '+fmt(p.nama)+' <small>'+fmt(p.kode||p.akr)+'</small></p>').join('')+'</div></div>';
   else if(x.kind==='divider')body='<div class="psbank-port-slide-cover"><small>PROGRAM '+String(x.programIndex).padStart(2,'0')+' / '+x.totalPrograms+'</small><div class="port-gold-rule"></div><h2>'+fmt(x.program?.nama||'')+'</h2><p>'+fmt(x.program?.kode||x.program?.akr)+' · '+year()+'</p><strong>SUBSTANSI PROGRAM</strong></div>';
   else body='<div class="psbank-port-slide-section"><small>PROGRAM '+String(x.programIndex).padStart(2,'0')+' · '+fmt(x.program?.kode||x.program?.akr)+'</small><h2>'+fmt(x.title)+'</h2><p>'+fmt(x.program?.nama)+'</p><div class="port-card-grid count-'+x.rows.length+'">'+x.rows.map(row=>'<article><b>'+fmt(row[0])+'</b><p>'+fmt(row[1])+'</p></article>').join('')+'</div></div>';
   return '<div class="psbank-port-slide">'+body+'<footer>MODUL TRANSFORMASI KEMENTERIAN KEUANGAN <span>v'+v+' · '+(i+1)+' / '+deck.length+'</span></footer></div>'+
@@ -439,12 +439,12 @@ async function portfolioExport(){
      tx(sl,'PROGRAM TERPILIH',1.88,2.1,4,.37,12,MID,true);
      tx(sl,String(totalProjects),7.14,2.02,1.1,.62,29,N,true);
      tx(sl,'USULAN PROYEK',8.46,2.1,3.7,.37,12,MID,true);
-     data.slice(0,12).forEach((o,j)=>{
+     (page.programs||[]).forEach((program,j)=>{
       const col=j%2,row=Math.floor(j/2),xx=.6+col*6.25,yy=3.23+row*.55;
       rect(sl,xx,yy,5.85,.48,row%2?'F6F9FD':PALE);
       tx(sl,String(j+1).padStart(2,'0'),xx+.12,yy+.09,.36,.24,10,MID,true);
-      tx(sl,o.p.nama,xx+.6,yy+.05,4.5,.37,11.5,N,true);
-      tx(sl,o.p.kode||o.p.akr,xx+5.05,yy+.13,.66,.23,8.5,MUTED,false,{align:'right'});
+      tx(sl,program.nama,xx+.6,yy+.05,4.5,.37,11.5,N,true);
+      tx(sl,program.kode||program.akr,xx+5.05,yy+.13,.66,.23,8.5,MUTED,false,{align:'right'});
      });
      footer(sl,num);return;
     }
