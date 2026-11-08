@@ -302,7 +302,7 @@ test('Portfolio overview pagination fits at most twelve programs per slide',()=>
 test('Priority menu: aligned SMART controls, info icon, four tabs, no redundant Bantuan Alur',()=>{
  const workflow=source['project-selection-workflow-2027.js'];
  const m=boot();
- m.S.ui.psFlow.tab='prioritasi';
+ m.S.ui.psFlow={...(m.S.ui.psFlow||{}),tab:'prioritasi',psGovNavV:1};
  m.S.ui.ps27=m.S.ui.ps27||{};m.S.ui.ps27.prioritySub='ranking';
  const html=m.app.page();
  assert.match(html,/Penilaian & Peringkat/);
@@ -316,7 +316,7 @@ test('Priority menu: aligned SMART controls, info icon, four tabs, no redundant 
 });
 test('Priority KPI cards filter ranking without duplicate search/chip strip and cannot delete projects',()=>{
  const m=boot(),internals=m.ctx.window.MT_PROJECT_SELECTION.internals;
- const html=internals.projectsPage(m.target);
+ const html=internals.projectsPage(internals.norm(m.target));
  assert.match(html,/data-pswf-kpi="all"/);
  assert.match(html,/data-pswf-kpi="high"/);
  assert.match(html,/data-pswf-kpi="mid"/);
@@ -344,7 +344,7 @@ test('Reference & Formula reproduces Dashboard CM four-step SMART mathematics',(
 test('Snapshot history is visible and comparative, with named actions',()=>{
  const src=source['project-selection-flow.js'],m=boot(),internals=m.ctx.window.MT_PROJECT_SELECTION.internals;
  m.target.psSnapshots=[{id:'s1',at:'2026-10-01T11:05:00Z',by:'PMO',rows:[{id:'proj-1',score:67.5,selected:false}]}];
- const html=internals.projectsPage(m.target);
+ const html=internals.projectsPage(internals.norm(m.target));
  assert.match(html,/Riwayat Snapshot/);
  assert.match(html,/Simpan Snapshot Penilaian/);
  assert.match(html,/Lihat Riwayat \(1\)/);
