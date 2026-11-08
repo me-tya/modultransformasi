@@ -893,3 +893,28 @@
 .pswf-modal .pswf-note{font-size:12px;background:#FFF7E4;color:#795B1B;padding:10px;border-radius:8px}
 @media(max-width:1120px){#app .pswf .prio-clayout{grid-template-columns:minmax(0,1fr)}#app .pswf .prio-cside{position:static}#app .pswf .prio-row{grid-template-columns:48px minmax(0,1fr) 115px}}
 @media(max-width:700px){#app .pswf .pswf-topbar select#pswf-program{min-width:240px;max-width:100%}#app .pswf .prio-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}#app .pswf .prio-row{grid-template-columns:44px minmax(0,1fr)}#app .pswf .prio-score,#app .pswf .prio-actions{grid-column:2}#app .pswf .pswf-ref-head{align-items:start}.pswf-form-grid,.pswf-score-grid{grid-template-columns:1fr}.pswf-minigrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Enhancements retained from source Priority UI, scoped to native Project Selection */
+#app .pswf .pswf-snapshot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-3px 0 3px;font-size:11.5px}
+#app .pswf .pswf-snapshot label{display:inline-flex;align-items:center;gap:7px;color:#254B78;font-weight:800}
+#app .pswf .pswf-snapshot select{min-width:195px;padding:7px 10px;border:1px solid #CAD7E8;border-radius:8px;background:#fff;color:#21466D;font:700 11.5px 'Nunito Sans',sans-serif}
+#app .pswf .pswf-delta{display:block;font-size:10px;color:#6D7F96;margin-top:4px;font-weight:700}
+#app .pswf .pswf-delta.up{color:#16845F}
+#app .pswf .pswf-delta.down{color:#C03C3C}
+#app .pswf .pswf-mv-alert{display:flex;flex-direction:column;gap:4px;background:#FEF0EE;color:#A3332B;border:1px solid #F4C2BC;border-radius:12px;padding:13px 15px;margin:9px 0 12px}
+#app .pswf .pswf-mv-alert>b{font-size:13px}
+#app .pswf .pswf-mv-alert>small{color:#8A4D45;font-size:11px}
+#app .pswf .pswf-mv-table th,#app .pswf .pswf-mv-table td{font-size:10.5px;white-space:nowrap}
+#app .pswf .pswf-mv-table td:first-child{min-width:185px;white-space:normal}
+#app .pswf .pswf-mv-table td:first-child small{display:block;color:#72849B}
+#app .pswf .pswf-mv-pct{display:inline-flex;padding:4px 7px;font-size:10.5px;font-weight:800;background:#E8F4EC;color:#147550;border-radius:9px}
+#app .pswf .pswf-mv-pct.bad{background:#FDEAE7;color:#B73B34}
+#app .pswf .pswf-trend{font-size:19px;font-weight:800;color:#1B5D98}
+#app .pswf .pswf-adoption-chart{display:block;max-width:620px;width:100%;max-height:520px;margin:auto;background:#fff}
+#app .pswf .pswf-ref-head label{font-weight:800}
+#app .pswf .pswf-thr-active{background:#FFF2D5}
+.pswf-modal .pswf-quarter-grid{margin-top:12px;padding-top:13px;border-top:1px solid #DCE5F1}
+.pswf-modal .pswf-rubric-edit details{border:1px solid #DCE5F1;border-radius:9px;margin-bottom:9px;background:#fff;padding:10px}
+.pswf-modal .pswf-rubric-edit summary{cursor:pointer;color:#19466F;font-size:12px;font-weight:900}
+.pswf-modal .pswf-rubric-edit .pswf-form-grid{margin-top:12px}
+@media(max-width:750px){#app .pswf .pswf-snapshot{align-items:stretch}#app .pswf .pswf-snapshot label{flex-wrap:wrap}#app .pswf .pswf-snapshot select{width:100%}}
