@@ -74,11 +74,12 @@ function iconButton(kind,action,id='',title=''){
  };
  return '<button type="button" class="psbank-action-icon '+kind+'" data-scope-project-'+action+'="'+E(id)+'" title="'+E(title)+'" aria-label="'+E(title)+'"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(paths[kind]||paths.view)+'</svg></button>';
 }
-function confirmDialog(title,description,onConfirm,mode='warning'){
+function confirmDialog(title,description,onConfirm,mode='warning',details=[]){
  const d=document.createElement('div');d.className='psbank-confirm-backdrop';
  d.innerHTML='<section class="psbank-confirm-card" role="alertdialog" aria-modal="true" aria-label="'+E(title)+'" aria-describedby="psbank-confirm-desc">'+
  '<div class="psbank-confirm-symbol '+E(mode)+'"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4m0 4h.01"/><path d="M10.3 3.4 2 18a2 2 0 0 0 1.7 3h16.6a2 2 0 0 0 1.7-3L13.7 3.4a2 2 0 0 0-3.4 0z"/></svg></div>'+
  '<h3>'+E(title)+'</h3><p id="psbank-confirm-desc">'+E(description)+'</p>'+
+ (details.length?'<div class="psbank-confirm-transfer-list" aria-label="Daftar proyek yang akan dipindahkan"><div class="psbank-confirm-transfer-title">Proyek terdampak · '+details.length+' modul</div>'+details.map(x=>'<div class="psbank-confirm-transfer-row"><b>'+E(x.name)+'</b><span><strong>Dari</strong> '+E(x.from)+' <em>→</em> <strong>Ke</strong> '+E(x.to)+'</span></div>').join('')+'</div>':'')+
  '<footer><button type="button" class="psbank-confirm-cancel" data-confirm-cancel>Batal</button><button type="button" class="psbank-confirm-accept '+(mode==='danger'?'danger':'')+'" data-confirm-accept>'+ (mode==='danger'?'Ya, Hapus':'Ya, Lanjutkan')+'</button></footer></section>';
  document.body.appendChild(d);
  const prior=document.activeElement;d.querySelector('[data-confirm-cancel]').focus();
@@ -210,10 +211,20 @@ function transfer(){
  const others=I.programs().filter(q=>q.id!==p.id),dupes=[];
  items.forEach(item=>others.forEach(other=>{
   const rows=(other.psProjects||[]).filter(x=>String(x.name||'').toLowerCase()===item.name.toLowerCase()&&(x.psOriginAkr===s.akr||x.psOriginAkr===s.psCarry?.sourceAkr||other.psCarry?.sourceAkr===s.akr));
-  if(rows.length)dupes.push({other,rows});
+  if(rows.length)dupes.push({other,rows,itemName:item.name});
  }));
  if(dupes.some(x=>x.other.psStatus==='Ditetapkan')){toast('Modul sudah berada pada program yang ditetapkan. Gunakan revisi/Change Request.');return}
- if(dupes.length){confirmDialog('Pindahkan Proyek ke Program Tujuan?','Sebagian proyek sudah berada di program lain pada tahun '+year()+'. Proyek akan dipindahkan ke '+p.nama+' tanpa mengubah sumber historis.',()=>completeTransfer());return;}
+ if(dupes.length){
+  const affected=dupes.map(x=>({
+   name:x.itemName,
+   from:x.other.nama+' ('+(x.other.kode||x.other.akr||'—')+' · '+year()+')',
+   to:p.nama+' ('+(p.kode||p.akr||'—')+' · '+year()+')'
+  }));
+  confirmDialog('Pindahkan Proyek ke Program Tujuan?',
+   'Proyek berikut sudah tercatat dalam program tujuan lain. Konfirmasi pemindahan akan mengubah penempatan proyek tahun '+year()+', tetapi data sumber historis tetap utuh.',
+   ()=>completeTransfer(),'warning',affected);
+  return;
+ }
  completeTransfer();
  function completeTransfer(){let n=0;
  items.forEach(item=>{
