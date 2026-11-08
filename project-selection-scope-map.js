@@ -155,7 +155,7 @@ function aggregateView(){
  '<nav class="psbank-mapping-tabs" role="tablist">'+tabs.map(x=>'<button type="button" role="tab" data-scope-tab="'+x[0]+'" aria-selected="'+(on===x[0])+'" class="'+(on===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+'</nav>'+content+'</div>';
 }
 function render(){
- if(mapState().filterAllPrograms)return aggregateView();
+ if(!!S.ui?.psBank?.filterScopes?.mapping?.allProgramsSelected)return aggregateView();
  const p=target();if(!p)return '<div class="psbank-card psbank-empty">Belum ada program tahun '+year()+'. Tambahkan dari Daftar Program terlebih dahulu.</div>';
  const b=mapState(),on=['mapping','proposal','results','docs'].includes(b.mappingTab)?b.mappingTab:'mapping';
  const tabs=[['mapping','Pemetaan'],['proposal','Usulan Proyek'],['results','Hasil Pemetaan'],['docs','Buat Dokumen Usulan Proyek']];
@@ -238,7 +238,7 @@ function click(ev){
  const chosen=ev.target.closest('[data-scope-choose],[data-scope-aggregate-view]');
  if(chosen){
   const value=chosen.dataset.scopeChoose||chosen.dataset.scopeAggregateView?.split('::')[0],p=get(value);
-  if(p){bank().target=p.id;I.state().prog=p.id;if(chosen.hasAttribute('data-scope-choose')){mapState().filterAllPrograms=false;S.ui.psBank.filterScopes=S.ui.psBank.filterScopes||{};S.ui.psBank.filterScopes.mapping=S.ui.psBank.filterScopes.mapping||{};S.ui.psBank.filterScopes.mapping.program=p.id;save();window.render()}else projectEditor(chosen.dataset.scopeAggregateView.split('::')[1],true)}
+  if(p){bank().target=p.id;I.state().prog=p.id;if(chosen.hasAttribute('data-scope-choose')){S.ui.psBank.filterScopes=S.ui.psBank.filterScopes||{};S.ui.psBank.filterScopes.mapping=S.ui.psBank.filterScopes.mapping||{};S.ui.psBank.filterScopes.mapping.allProgramsSelected=false;S.ui.psBank.filterScopes.mapping.program=p.id;save();window.render()}else projectEditor(chosen.dataset.scopeAggregateView.split('::')[1],true)}
   return true;
  }
  const focus=ev.target.closest('[data-scope-proposal-focus]');if(focus){projectEditor(focus.dataset.scopeProposalFocus,true);return true}
