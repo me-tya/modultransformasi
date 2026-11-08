@@ -14,7 +14,7 @@ function boot(y=2026,programs=[],exposeWord=false){
  const noop=()=>{};
  const document={head:{appendChild:noop},body:{appendChild:noop},querySelector:()=>null,createElement:()=>({remove:noop,click:noop})};
  const context={S,ME:{role:'SA',unit:'BaTii',email:'test@kemenkeu.go.id'},VIEW:'beranda',
-  document,window:{},location:{hash:''},UNITS:['BaTii','Setjen','DJA'],save:noop,render:noop,
+  document,window:{MT_PS_CONFIRM:(_title,_message,confirm)=>confirm()},location:{hash:''},UNITS:['BaTii','Setjen','DJA'],save:noop,render:noop,
   progProjects:()=>[],toast:m=>messages.push(m),
   esc:v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),
   vh:(_icon,_type,title)=>'<div class="vh"><h1>'+title+'</h1></div>'};
