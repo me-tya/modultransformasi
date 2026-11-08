@@ -23,7 +23,7 @@ function foundCharter(p,y){const arr=(S.charters||[]).filter(c=>c.prog===p.akr&&
 function sourceProjects(src,y){
  const a=Array.isArray(src.psProjects)?clone(src.psProjects):[];
  if(a.length)return a;
- const rows=typeof progProjects==='function'?progProjects(src):[];
+ const rows=(()=>{const g={};sourceWbs(src,y).forEach(w=>{const core=src.akr==='CORE'&&/pengembangan integrated core system apbn kemenkeu/i.test((w.p||[])[2]||'')&&(w.p||[])[3];const n=core?w.p[3]:((w.p||[])[2]||(w.p||[])[1]||'(tanpa kelompok)');if(!g[n])g[n]={n,uic:String(w.u||src.uic||'').split(/[,(]/)[0].trim(),s:w.s||'',f:w.f||''};});return Object.values(g)})();
  return rows.map(x=>({id:uid('proj'),name:x.n||x.name,uic:x.uic||src.uic,pic:'',users:'',goLive:x.f||'',start:x.s||'',outputs:'',status:'Usulan',included:true,scores:{},poster:{},risks:{},indicators:[],benefits:[]}));
 }
 function newRkmk(p,source){
@@ -62,7 +62,7 @@ function cloneProgram(src,from,to){
   S.charters=S.charters||[];S.charters.push(c);
   p.psCarry.charterSourceYear=from;
  }
- const c25=foundCharter(src,2025);
+ const c25=(S.charters||[]).find(c=>c.prog===src.akr&&c.st!=='Arsip'&&+c.p1<=2025&&+c.p2>=2025)||null;
  p.psRkmk=newRkmk(p,c25||ch);
  p.psRkmkSource=c25?'Charter 2025':ch?'Charter '+from:'Data program '+from+' (narasi 2025 tidak tersedia)';
  p.psRkmkReviewed={};
@@ -145,7 +145,7 @@ function charter(p){
  const c=foundCharter(p,yr())||(S.charters||[]).find(x=>x.prog===p.akr);
  let body='<div class="ps27-cardtop"><div><h3>Charter Program · 7 Dokumen Perencanaan</h3><p>Editor menggunakan komponen charter native Project Management: As-is, To-be, Perbandingan, Charter, Kriteria, Manfaat dan Linimasa.</p></div><span class="ps27-status">'+E(c?c.st:'Belum dibuat')+'</span></div>';
  if(typeof pCharter==='function'){
-  const old=S.ui.chv;const h=pCharter(),at=h.indexOf('<div class="chbc">');if(at>=0){let content=h.slice(at).replace('href="#pmo-perencanaan"','href="#project-selection"');body+='<div class="ps27-charter-native">'+content+'</div>';}
+  const h=pCharter(),at=h.indexOf('<div class="chbc">');if(at>=0){let content=h.slice(at).replace('href="#pmo-perencanaan"','href="#project-selection"');body+='<div class="ps27-charter-native">'+content+'</div>';}
   else body+='<div class="ps27-empty">Gunakan editor Charter lengkap.</div>';
  }else body+='<div class="ps27-empty">Editor Charter belum tersedia di lingkungan ini.</div>';
  return '<div class="ps27-card ps27-charter">'+body+'</div>';
@@ -157,7 +157,7 @@ function penetapan(p){
  '<div class="ps27-minimetrics"><span><b>'+a.length+'</b> proyek dipilih</span><span><b>'+rows.length+'</b> WBS draft</span><span><b>'+(r?r.done+'/7':'—')+'</b> kesiapan dokumen</span></div>'+
  (r&&r.applies&&!r.ok?'<div class="ps27-warning">Kelengkapan program belum memenuhi persyaratan: '+E(r.missing.join(', '))+'. <button class="btn btn-outline btn-sm" data-ps27-tab="usulan">Lengkapi Usulan</button></div>':'')+
  '<div class="ps27-tablewrap"><table class="ps27-table"><thead><tr><th>Proyek / Modul</th><th>UIC</th><th>Target</th><th>Skor</th><th>Status</th></tr></thead><tbody>'+
- (a.length?a.map(x=>'<tr><td><b>'+E(x.name)+'</b></td><td>'+E(x.uic||p.uic||'—')+'</td><td>'+E(x.goLive||'—')+'</td><td>'+(p.psPrioritize?I.calc(x,p).score??'Belum lengkap':'Manual')+'</td><td>'+E(already?'Ditetapkan':'Siap ditetapkan')+'</td></tr>').join(''):'<tr><td colspan="5" class="ps27-center">Belum ada proyek dipilih. Kembali ke Pemetaan/Prioritasi.</td></tr>')+
+ (a.length?a.map(x=>'<tr><td><b>'+E(x.name)+'</b></td><td>'+E(x.uic||p.uic||'—')+'</td><td>'+E(x.goLive||'—')+'</td><td>'+(p.psPrioritize?(I.calc(x,p).score??'Belum lengkap'):'Manual')+'</td><td>'+E(already?'Ditetapkan':'Siap ditetapkan')+'</td></tr>').join(''):'<tr><td colspan="5" class="ps27-center">Belum ada proyek dipilih. Kembali ke Pemetaan/Prioritasi.</td></tr>')+
  '</tbody></table></div><div class="ps27-footer">'+(already?'<span>Program telah ditetapkan. WBS yang dibawa siap disesuaikan di Project Management.</span><button class="btn" data-pswf="reopen">Buka Revisi</button><button class="btn pri" data-ps27="go-wbs">Buka WBS ›</button>':
  '<span>Penetapan menyinkronkan draft WBS, tanpa memindahkan realisasi tahun sumber.</span><button class="btn pri" data-pswf="finalize" '+(!can(p)||!a.length?'disabled':'')+'>Tetapkan Program & Proyek</button>')+'</div></div>';
 }
@@ -169,7 +169,7 @@ function rkmk(p){
  const s=p.psRkmk,rev=p.psRkmkReviewed,remain=RKMK_FIELDS.filter(x=>!rev[x[0]]).length,edit=can(p)&&p.psStatus!=='Ditetapkan';
  return '<div class="ps27-card"><div class="ps27-cardtop"><div><h3>Draft Narasi RKMK · '+yr()+'</h3><p>Sumber awal: <b>'+E(p.psRkmkSource||'Data usulan program')+'</b>. Prioritaskan narasi 2025 jika tersedia; bagian kuning perlu direviu untuk tahun tujuan.</p></div><span class="ps27-reviewcount">'+remain+' perlu reviu</span></div>'+
  '<div class="ps27-rkmkgrid">'+RKMK_FIELDS.map(f=>'<label class="ps27-rkmkfield '+(rev[f[0]]?'reviewed':'needs-review')+'"><span><b>'+E(f[1])+'</b><em>'+(rev[f[0]]?'Sudah direviu':'Perlu penyesuaian')+'</em></span><textarea data-ps27-rkmk="'+f[0]+'" rows="4" '+(edit?'':'disabled')+' placeholder="Lengkapi narasi '+E(f[1])+' untuk tahun '+yr()+'">'+E(s[f[0]]||'')+'</textarea><span class="ps27-reviewline"><input type="checkbox" data-ps27-reviewed="'+f[0]+'" '+(rev[f[0]]?'checked':'')+' '+(edit?'':'disabled')+'> Sudah direviu untuk tahun '+yr()+'</span></label>').join('')+'</div>'+
- '<div class="ps27-footer"><span>Highlight kuning menandai area yang memerlukan konfirmasi; bukan otomatis dinyatakan valid.</span>'+(edit?'<button class="btn pri" data-ps27="save-rkmk">Simpan Narasi</button>':'')+'<button class="btn" data-pswf="word">Unduh Draft Word</button></div></div>';
+ '<div class="ps27-footer"><span>Highlight kuning menandai area yang memerlukan konfirmasi; bukan otomatis dinyatakan valid.</span>'+(edit?'<button class="btn pri" data-ps27="save-rkmk">Simpan Narasi</button>':'')+'<button class="btn" data-pswf="generate-word">Unduh Draft Word</button></div></div>';
 }
 function syncWbs(p){
  if(!p||p.psStatus!=='Ditetapkan'||!Array.isArray(p.psWbsDraft))return 0;
@@ -233,11 +233,12 @@ function mount(){
   if(el.dataset.ps27Select!==undefined){const a=new Set(ws().selected||[]);if(el.checked)a.add(String(el.dataset.ps27Select));else a.delete(String(el.dataset.ps27Select));ws().selected=[...a];save();render();return}
   if(el.dataset.ps27Checkall!==undefined){ws().selected=el.checked?sourcePrograms().filter(p=>(p.nama+' '+p.kode+' '+p.uic).toLowerCase().includes(String(ws().search||'').toLowerCase())).map(p=>String(p.id)):[];save();render();return}
   if(el.dataset.ps27Reviewed!==undefined){const p=current();if(!p||!can(p))return;
-   const field=el.dataset.ps27Reviewed,txt=root.querySelector('[data-ps27-rkmk="'+field+'"]');if(txt)p.psRkmk[field]=txt.value;
-   p.psRkmkReviewed[field]=el.checked;save();render();return}
+   root.querySelectorAll('[data-ps27-rkmk]').forEach(q=>p.psRkmk[q.dataset.ps27Rkmk]=q.value);
+   root.querySelectorAll('[data-ps27-reviewed]').forEach(q=>p.psRkmkReviewed[q.dataset.ps27Reviewed]=q.checked);
+   save();render();return}
  });
  root.querySelector('[data-ps27-search]')?.addEventListener('input',function(ev){ws().search=ev.target.value;const pos=ev.target.selectionStart;save();render();const t=document.querySelector('[data-ps27-search]');if(t){t.focus();t.setSelectionRange(pos,pos)}});
- I.mount();window.MT_PS_GOV?.mount(current,render);
+ I.mount();
 }
 function helpPage(tab){
  const items=[
@@ -275,7 +276,7 @@ function open(mode){
   if(ev.target===root||ev.target.closest('[data-ps27-close]')){root.remove();return}
   const b=ev.target.closest('[data-ps27-htab],[data-ps27-jump]');if(!b)return;
   if(b.dataset.ps27Jump){root.remove();navigate(b.dataset.ps27Jump);return}
-  tab=b.dataset.ps27Htab;root.querySelectorAll('[data-ps27-htab]').forEach(x=>x.classList.toggle('on',x.dataset.ps27Htab===tab));root.querySelector('.ps27-helpbody').innerHTML=inner().replace(/^<div class="ps27-helpbody">|<\/div>$/g,'');
+  tab=b.dataset.ps27Htab;root.querySelectorAll('[data-ps27-htab]').forEach(x=>x.classList.toggle('on',x.dataset.ps27Htab===tab));root.querySelector('.ps27-helpbody').innerHTML=isSheet?sheetPage(tab):helpPage(tab);
  });
  root.addEventListener('keydown',function(ev){if(ev.key==='Escape')root.remove()});
 }
