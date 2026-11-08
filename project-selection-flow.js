@@ -493,7 +493,7 @@ function programModal(p){
   const code=prefix+String(y).slice(-2)+'-'+(short||'PROG');
   const dup=allPrograms().some(o=>o!==p&&String(o.kode||'').toLowerCase()===code.toLowerCase()&&+o.psYear===y);
   if(dup){toast('Kode program sudah digunakan pada tahun '+y+'.');return}
-  const target=p||{id:uid2('program'),akr:'PS'+y+'-'+uid2('p'),psYear:y,psDraft:true,psStatus:'Draft',psThreshold:80,psPrioritize:false,psProjects:[],psWeights:{},psGovernanceV:1,psBenefits:[],psStakeholders:[],psRiskRegister:[],mulai:y,periode:y+'–'+y,status:'Perencanaan'};
+  const target=p||{id:uid2('program'),akr:'PS'+y+'-'+uid2('p'),psYear:y,psDraft:true,psStatus:'Draft',psListStatus:'Baru',psThreshold:80,psPrioritize:false,psProjects:[],psWeights:{},psGovernanceV:1,psBenefits:[],psStakeholders:[],psRiskRegister:[],mulai:y,periode:y+'–'+y,status:'Perencanaan'};
   Object.assign(target,{nama:name,kode:code,jenis:val(box,'jenis'),uic,pend:val(box,'pend'),sponsor:val(box,'sponsor'),
    psObjective:val(box,'objective'),psBackground:val(box,'background'),psStrategy:val(box,'strategy'),
    psOutcome:val(box,'outcome'),psRisks:p?.psRisks||'',psThemes:val(box,'themes'),psYear:y,
