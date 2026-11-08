@@ -183,3 +183,7 @@
 #app .psbank-dialog .psbank-docscroll{height:min(51vh,520px)}
 #app .psbank-dialog:has(.psbank-docbuilder){width:min(1280px,96vw);height:min(92vh,860px)}
 @media(max-width:820px){.psbank-carry-item{grid-template-columns:1fr}.psbank-carry-year{flex-direction:column;align-items:stretch}.psbank-carry-dialog{width:98vw;height:95vh}#app .psbank-history-table{table-layout:auto}}
+
+#app .psbank-bulkfoot{display:flex;align-items:center;justify-content:flex-end;gap:13px;padding:10px 2px 0;min-height:49px;font:700 11.5px 'Inter',sans-serif;color:#365c7c}
+#app .psbank-bulkfoot b{font-size:13px;color:#0f3864}
+#app .psbank-bulkfoot .btn{min-width:166px}
