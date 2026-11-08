@@ -507,3 +507,34 @@ test('Activity Log records changes with before-after and ignores only-UI navigat
  assert.match(src,/mt-audit-controls/);
  assert.match(src,/prototype audit only|Local prototype audit only/i);
 });
+
+test('Inline stakeholder and business case editing really pre-fills existing and charter-derived content',()=>{
+ const m=boot(),p=m.target;
+ p.psStakeholders=[{name:'DJPK',role:'Pemilik proses bisnis',strategy:'Sosialisasi',owner:'PMO DJPK'}];
+ p.psBusinessCase='Proses penganggaran perlu integrasi data.';
+ let html=m.bank.editablePaper(p,'stakeholders',2027);
+ assert.match(html,/data-bank-inline-edit="true"/);
+ assert.match(html,/DJPK/);
+ assert.match(html,/Pemilik proses bisnis/);
+ assert.match(html,/Sosialisasi/);
+ assert.match(html,/data-bank-entry-add/);
+ assert.match(html,/data-bank-entry-remove/);
+ html=m.bank.editablePaper(p,'case',2027);
+ assert.match(html,/Proses penganggaran perlu integrasi data/);
+ p.psStakeholders=[];
+ p.akr='CORE';p.psYear=2026;
+ html=m.bank.editablePaper(p,'stakeholders',2026);
+ assert.match(html,/data-bank-regfield="name"/);
+ assert.match(html,/psbank-paper/);
+});
+test('Audit trail records deletion and addition with readable field paths',()=>{
+ const m=boot(),audit=m.ctx.window.MT_AUDIT;
+ m.target.psProjects.push({id:'TEST-A',name:'Proyek A',uic:'BaTii'});m.ctx.save();
+ let last=audit.history().at(-1);
+ assert.equal(last.kind,'Ditambahkan');
+ assert.ok(last.changes.some(c=>c.path.includes('TEST-A')));
+ m.target.psProjects=[];m.ctx.save();
+ last=audit.history().at(-1);
+ assert.equal(last.kind,'Dihapus');
+ assert.ok(last.changes.some(c=>c.path.includes('TEST-A')));
+});
