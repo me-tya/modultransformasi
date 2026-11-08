@@ -16,7 +16,7 @@ function boot(y=2027,programs=[],exposeWord=false){
   progProjects:()=>[],toast:m=>messages.push(m),
   esc:v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),
   vh:(_icon,_type,title)=>'<div class="vh"><h1>'+title+'</h1></div>'};
- vm.runInNewContext(exposeWord?source.replace(/\n\}\)\(\);\s*$/, '\nwindow.__testWord=word;\n})();'):source,context,{filename:'project-selection-flow.js'});
+ vm.runInNewContext(exposeWord?source.replace(/\n\}\)\(\);\s*$/, '\nwindow.__testWord=word;window.__testCalc=calc;window.__testFinalize=finalize;window.__testChosen=chosen;\n})();'):source,context,{filename:'project-selection-flow.js'});
  return {S,context,messages,app:context.window.MT_PROJECT_SELECTION};
 }
 const program=()=>({id:'program-2027',akr:'PS2027-DOA',kode:'B27-DOA',nama:'Digitalisasi Office Automation',psYear:2027,psDraft:true,psStatus:'Draft',
@@ -110,4 +110,32 @@ test('RKMK generates genuine OOXML DOCX with KMK 132 charter, acceptance and pla
  assert.match(doc,/RENCANA KERJA/);
  assert.match(doc,/Modul Kinerja/);
  assert.match(doc,/BA penerimaan disetujui/);
+});
+
+test('Ten DOA project modules: three above 80 pass, only those are finalized pre-WBS',()=>{
+ const p=program();p.psPrioritize=true;p.psThreshold=80;
+ p.psProjects=Array.from({length:10},(_,i)=>({...project(['Modul Kinerja','Modul Kompetensi','Modul Kesehatan','Modul Pelayanan','Modul Rekrutmen','Modul Pendidikan','Modul Keuangan','Modul Umum','Modul Arsip','Modul Pelaporan'][i]),id:'p'+i,scores:i<3?maxScores():{C1:3}}));
+ const m=boot(2027,[p],true);m.context.window.confirm=()=>true;
+ assert.equal(m.context.window.__testChosen(p).length,3);
+ m.context.window.__testFinalize(p);
+ assert.equal(p.psStatus,'Ditetapkan');
+ assert.equal(p.psDraft,false);
+ assert.deepEqual(Array.from(p.psSelectedProjectIds),['p0','p1','p2']);
+ assert.equal(p.psProjects.length,10,'The seven non-selected candidates must be preserved for audit/revision');
+ assert.match(m.app.page(),/3 dari 10 calon proyek memenuhi ambang/);
+});
+test('Thematic C8 calculates staff reduction when valid input is available',()=>{
+ const p=program();p.jenis='Tematik';
+ const x=project();x.scores=maxScores();delete x.scores.C8;x.sdmAwal='100';x.sdmTarget='40';
+ const m=boot(2027,[p],true);
+ const r=m.context.window.__testCalc(x,p);
+ assert.equal(r.done,12);
+ assert.equal(r.details.find(d=>d.c.code==='C8').v,5);
+});
+test('WBS project-list handoff has prefill and native PMO access checks',()=>{
+ assert.match(html,/function psWbsSelectionPanel\(p\)/);
+ assert.match(html,/ACT\.psWbsStart=el=>/);
+ assert.match(html,/formModal\('wbs',null\)/);
+ assert.match(html,/p\.psSelectedProjectIds/);
+ assert.match(html,/canW\('wbs','C',x\.uic\|\|p\.uic\)/);
 });
