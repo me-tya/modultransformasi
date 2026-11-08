@@ -365,8 +365,8 @@ function page(){
  let h=vh('PS','pmo','Project Selection','Usulkan program, petakan proyek, prioritaskan, susun charter dan tetapkan dasar WBS.');
  h+='<section class="pswf ps27" aria-label="Project Selection">';
  h+='<div class="pm-stage-shell ps27-stage"><nav class="ptabs pmo-journey ps27-tabs" role="tablist" aria-label="Submenu Project Selection">'+
- TABS.map((t,i)=>'<button type="button" role="tab" title="'+E(TOP_HELP[t[0]]||'')+'" aria-selected="'+(u.tab===t[0])+'" class="'+(u.tab===t[0]?'on':'')+'" data-ps27-tab="'+t[0]+'"><span><em>'+(''+(i+1))+'</em> '+t[1]+' <span class="ps27-helpicon" tabindex="-1" role="img" aria-label="Informasi: '+E(TOP_HELP[t[0]]||'')+'">ⓘ</span></span>'+(t[0]==='usulan'&&T.length?'<b>'+T.length+'</b>':t[0]==='mapping'&&countAll?'<b>'+countAll+'</b>':'')+'</button>').join('')+
- '</nav></div>';
+ TABS.map((t,i)=>'<button type="button" role="tab" title="'+E(TOP_HELP[t[0]]||'')+'" aria-selected="'+(u.tab===t[0])+'" class="'+(u.tab===t[0]?'on':'')+'" data-ps27-tab="'+t[0]+'"><span><em>'+(''+(i+1))+'</em> '+t[1]+'</span>'+(t[0]==='usulan'&&T.length?'<b>'+T.length+'</b>':t[0]==='mapping'&&countAll?'<b>'+countAll+'</b>':'')+'</button>').join('')+
+ '</nav><span class="ps27-contextinfo" tabindex="0" role="img" aria-label="Informasi submenu '+E(TABS.find(x=>x[0]===u.tab)?.[1]||'Project Selection')+': '+E(TOP_HELP[u.tab]||'')+'" title="'+E(TOP_HELP[u.tab]||'')+'">ⓘ</span></div>';
  h+=filter(p)+actionBar(p);
  if(u.tab==='usulan')h+=usulan(p);
  else if(u.tab==='mapping')h+=mapping(p);
