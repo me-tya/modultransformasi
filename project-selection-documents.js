@@ -146,7 +146,7 @@ function programCharterSource(p){
  const stored=p.psProgramCharter;
  const legacy=charter(p,year());
  const y0=+(p.mulai||p.psYear||year())||year();
- const years=String(p.periode||'').match(/20\\d{2}/g)||[];
+ const years=String(p.periode||'').match(/20\d{2}/g)||[];
  const y1=Math.max(y0,+(years[years.length-1]||y0));
  const fallback={prog:p.akr,judul:p.nama||'',tahun:year(),ver:1,st:'Draft',
   p1:y0,p2:y1,tujuan:p.psObjective||'',lb:[p.psBackground||''].filter(Boolean),
