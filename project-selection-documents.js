@@ -442,7 +442,7 @@ async function portfolioExport(){
      (page.programs||[]).forEach((program,j)=>{
       const col=j%2,row=Math.floor(j/2),xx=.6+col*6.25,yy=3.23+row*.55;
       rect(sl,xx,yy,5.85,.48,row%2?'F6F9FD':PALE);
-      tx(sl,String(j+1).padStart(2,'0'),xx+.12,yy+.09,.36,.24,10,MID,true);
+      tx(sl,String((page.programOffset||0)+j+1).padStart(2,'0'),xx+.12,yy+.09,.36,.24,10,MID,true);
       tx(sl,program.nama,xx+.6,yy+.05,4.5,.37,11.5,N,true);
       tx(sl,program.kode||program.akr,xx+5.05,yy+.13,.66,.23,8.5,MUTED,false,{align:'right'});
      });
