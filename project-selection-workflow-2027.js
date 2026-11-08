@@ -43,7 +43,7 @@ function newRkmk(p,source){
  };
 }
 function cloneProgram(src,from,to){
- const p=clone(src);p.id=uid('program');p.akr=nextAkr();p.kode=String(src.kode||src.akr||'PROGRAM')+'-'+to;p.nama=src.nama;p.psYear=to;p.mulai=to;p.periode=to+'–'+to;p.psStatus='Draft';p.psDraft=true;p.status='Perencanaan';p.psGovernanceV=1;
+ const p=clone(src);p.id=uid('program');p.akr=nextAkr();const m=String(src.kode||'').toUpperCase().match(/^[BT]\\d{2}-([A-Z0-9-]+)$/);const akronim=m?m[1]:String(src.akr||src.nama||'PROG').toUpperCase().replace(/[^A-Z0-9-]/g,'')||'PROG';p.kode=(/^tematik$/i.test(String(src.jenis||''))?'T':'B')+String(to).slice(-2)+'-'+akronim;p.nama=src.nama;p.psYear=to;p.mulai=to;p.periode=to+'–'+to;p.psStatus='Draft';p.psDraft=true;p.status='Perencanaan';p.psGovernanceV=1;
  p.psCarry={sourceId:src.id,sourceAkr:src.akr,sourceYear:from,createdAt:new Date().toISOString(),reviewed:false};
  p.psSnapshots=[];p.psSelectedProjectIds=[];delete p.psFinalizedAt;delete p.psFinalizedBy;delete p.psWbsSynced;
  p.psProjects=sourceProjects(src,from).map(x=>{x.sourceProjectId=x.id;x.id=uid('proj');x.included=x.included!==false;x.status='Usulan';if(x.start)x.start=shiftDate(x.start,from,to);if(x.goLive)x.goLive=shiftDate(x.goLive,from,to);return x});
