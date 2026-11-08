@@ -164,7 +164,11 @@
 
 /* PM/CM-equivalent collapsible filter, with icon-driven global filter state. */
 #app .ps27 .ps27-filter.ps27-filter-panel{display:block;min-height:0;height:auto;max-width:100%;background:#edf3fb;border:1px solid #d7e3f0;border-radius:12px;overflow:hidden;margin:0;padding:0}
-#app .ps27 .ps27-filter-header{display:flex;min-height:48px;align-items:stretch;background:#edf3fb}
+#app .ps27 .ps27-filter-header{display:flex;min-height:48px;align-items:stretch;background:#edf3fb;cursor:pointer;transition:background .16s ease}
+#app .ps27 .ps27-filter-header:hover{background:#e4edf9}
+#app .ps27 .ps27-filter-header:focus-visible{outline:2px solid #216db5;outline-offset:-3px}
+#app .ps27 .ps27-filter-header:focus-within .ps27-filter-ic{border-color:#ffc328}
+#app .ps27 .ps27-filter-header :is(.ps27-filter-reset,.ps27-filter-expand){position:relative;z-index:1}
 #app .ps27 .ps27-filter-titlebar{flex:0 0 188px;min-width:0;background:#153762;color:#fff;display:flex;align-items:center;gap:9px;padding:5px 12px}
 #app .ps27 .ps27-filter-label{border:0;background:transparent;color:#fff;font:800 13px 'Inter',sans-serif;cursor:pointer;padding:6px 0;flex:1;text-align:left}
 #app .ps27 .ps27-filter-ic{display:grid;place-items:center;width:33px;height:33px;min-width:33px;border:1px solid #edaf19;border-radius:50%;color:#f3bb30;background:transparent;cursor:pointer;transition:background .16s,color .16s,border-color .16s,transform .16s}
