@@ -161,6 +161,69 @@ function resultsView(p){
  '<tr><td colspan="7" class="psbank-empty">Belum ada hasil pemetaan. Buka tab Pemetaan atau Riwayat Proyek untuk mengambil proyek.</td></tr>')+
  '</tbody></table></div></section>';
 }
+
+function historyRecords(){
+ const y=year(),rows=[];
+ (S.programs||[]).forEach(p=>{
+  const years=p.psYear?[+p.psYear]:[...new Set([+p.mulai||2026,...(String(p.periode||'').match(/20\d{2}/g)||[]).map(Number),...(S.wbs||[]).filter(w=>w.prog===p.akr).map(w=>+(String(w.f||w.s||'').slice(0,4))||0)])];
+  years.filter(n=>n>=2024&&n<=y).forEach(n=>modules(p,n).forEach(x=>{
+   if(!x.name)return;
+   rows.push({key:[p.id,n,encodeURIComponent(x.name)].join('::'),p,y:n,x});
+  }));
+ });
+ return rows.sort((a,b)=>b.y-a.y||String(a.p.nama).localeCompare(String(b.p.nama),'id')||a.x.name.localeCompare(b.x.name,'id'));
+}
+function historyRows(p){
+ const b=mapState(),q=String(b.historySearch||'').toLowerCase();
+ return historyRecords().filter(r=>!(p&&r.p.id===p.id&&r.y===year())&&(b.historyYear==='all'||+b.historyYear===r.y)&&
+  [r.x.name,r.p.nama,r.p.kode,r.x.uic,codeFor(r.p,r.x.original||{name:r.x.name})].join(' ').toLowerCase().includes(q));
+}
+function historyView(p){
+ const b=mapState(),rows=historyRows(p),years=[...new Set(historyRecords().map(r=>r.y))],all=rows.length>0&&rows.every(r=>b.historySelected.includes(r.key));
+ return '<div class="psbank-history-projects"><div class="psbank-proposal-head"><div><h3>Riwayat Proyek</h3><p>Daftar referensi proyek lintas tahun. Pilih untuk disalin ke usulan program tujuan; WBS dan realisasi tahun sumber tidak berubah.</p></div><span class="psbank-count">'+rows.length+' proyek</span></div>'+
+ '<div class="psbank-history-project-controls"><label>Program Tujuan <select data-scope-history-target>'+I.programs().map(x=>'<option value="'+E(x.id)+'" '+(p?.id===x.id?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label>'+
+ '<label>Tahun Sumber <select data-scope-history-year><option value="all">Semua Tahun</option>'+years.sort((a,b)=>b-a).map(y=>'<option value="'+y+'" '+(String(b.historyYear)===String(y)?'selected':'')+'>'+y+'</option>').join('')+'</select></label>'+
+ '<label>Cari <input type="search" data-scope-history-search value="'+E(b.historySearch||'')+'" placeholder="Nama, kode, akronim, UIC..."></label></div>'+
+ '<div class="psbank-tablewrap psbank-project-history-wrap"><table class="psbank-table psbank-project-history-table"><thead><tr><th><input type="checkbox" data-scope-history-all '+(all?'checked':'')+' aria-label="Pilih semua hasil filter"></th><th>Tahun</th><th>Kode Proyek</th><th>Nama Proyek / Modul</th><th>Program Sumber</th><th>UIC</th><th>Aksi</th></tr></thead><tbody>'+
+ (rows.length?rows.map(r=>'<tr><td><input type="checkbox" data-scope-history-check="'+E(r.key)+'" '+(b.historySelected.includes(r.key)?'checked':'')+' aria-label="Pilih '+E(r.x.name)+'"></td><td>'+r.y+'</td><td><b>'+E(codeFor(r.p,r.x.original||{name:r.x.name}))+'</b></td><td>'+E(r.x.name)+'</td><td>'+E(r.p.nama)+'</td><td>'+E(r.x.uic||r.p.uic||'—')+'</td><td><button type="button" class="btn btn-outline btn-sm" data-scope-history-add="'+E(r.key)+'" '+(!can(p)?'disabled':'')+'>+ Tambahkan</button></td></tr>').join(''):'<tr><td colspan="7" class="psbank-empty">Tidak ada proyek sesuai filter.</td></tr>')+'</tbody></table></div>'+
+ '<div class="psbank-history-project-foot"><small>'+b.historySelected.length+' dipilih · kode proyek tujuan mengikuti program dan akronim yang dapat diedit.</small><button type="button" class="btn pri" data-scope-history-bulk '+(!can(p)||!b.historySelected.length?'disabled':'')+'>+ Tambahkan ke Program Tujuan</button></div></div>';
+}
+function addHistory(keys){
+ const p=target();if(!can(p)||!p){toast('Pilih program tujuan yang dapat diubah.');return}
+ const catalog=new Map(historyRecords().map(x=>[x.key,x]));
+ let added=0,skipped=0;
+ [...new Set(keys)].forEach(key=>{
+  const r=catalog.get(key);if(!r||r.p.id===p.id&&r.y===year())return;
+  if((p.psProjects||[]).some(x=>String(x.name||'').toLowerCase()===r.x.name.toLowerCase())){skipped++;return}
+  const original=C(r.x.original||{}),z={...original,id:uid('proj'),name:r.x.name,uic:r.x.uic||r.p.uic||p.uic,
+   psSourceProjectSnapshot:r.x.original?C(r.x.original):null,psOriginAkr:r.p.akr,psOriginProgram:r.p.nama,
+   psOriginYear:r.y,psOriginCode:codeFor(r.p,r.x.original||{name:r.x.name}),
+   status:'Usulan',included:true,scores:{},poster:{},risks:{},indicators:[],benefits:[]};
+  z.psAcronym=uniqueCode(p,assignedAcronym(r.x.original||{name:r.x.name}));z.psCode=codeFor(p,z,z.psAcronym);
+  z.start=shift(z.start,r.y,year());z.goLive=shift(z.goLive,r.y,year());
+  p.psProjects=p.psProjects||[];p.psProjects.push(z);added++;
+ });
+ if(!added){toast('Tidak ada proyek baru yang ditambahkan. Periksa duplikasi nama.');return}
+ normalizeProjectCodes(p);const b=mapState();b.historySelected=b.historySelected.filter(k=>!keys.includes(k));b.mappingTab='results';
+ p.psUpdatedAt=new Date().toISOString();save();window.render();
+ toast(added+' proyek ditambahkan'+(skipped?' ('+skipped+' duplikat dilewati)':'')+'. Kode telah mengikuti program tujuan.');
+}
+function tabsSummary(rows){
+ return '<div class="psbank-tab-summary" aria-label="Ringkasan Hasil Pemetaan"><span><b>'+rows.length+'</b> Proyek</span><span><b>'+rows.filter(x=>x.psOriginYear).length+'</b> Carry-over</span><span><b>'+rows.filter(x=>x.category).length+'</b> Berkategori</span></div>';
+}
+function programAccordion(programs,on){
+ const state=mapState();
+ return '<div class="psbank-all-programs psbank-program-accordion">'+programs.map(p=>{
+  const rows=proposalRows(p),expanded=!!state.programOpen[p.id];
+  const head='<summary data-scope-program-toggle="'+E(p.id)+'"><span class="psbank-chevron">'+(expanded?'▾':'▸')+'</span><span class="psbank-accordion-name"><b>'+E(p.nama)+'</b><small>'+E(p.kode||p.akr)+' · '+E(p.uic||'—')+'</small></span><span class="psbank-accordion-count">'+rows.length+' proyek</span></summary>';
+  const body=(on==='mapping'||on==='docs')?
+   '<div class="psbank-accordion-body"><div class="psbank-accordion-projects">'+(rows.length?rows.map(x=>'<div><b>'+E(x.name)+'</b><small>'+E(currentCode(p,x))+' · '+E(x.uic||p.uic||'—')+'</small></div>').join(''):'<p>Belum ada proyek di program ini.</p>')+'</div><div class="psbank-accordion-actions"><button type="button" class="btn btn-outline" data-scope-choose="'+E(p.id)+'">Buka Program</button></div></div>':
+   '<div class="psbank-accordion-body"><div class="psbank-tablewrap psbank-accordion-tablewrap"><table class="psbank-table"><thead><tr><th>Kode Proyek</th><th>Nama Proyek / Modul</th><th>UIC</th><th>Kategori</th><th>Status</th><th>Aksi</th></tr></thead><tbody>'+
+   (rows.length?rows.map(x=>'<tr><td>'+E(currentCode(p,x))+'</td><td><b>'+E(x.name)+'</b></td><td>'+E(x.uic||p.uic||'—')+'</td><td>'+E(x.category||'—')+'</td><td>'+E(x.status||'Usulan')+'</td><td><button type="button" class="psbank-action-icon view" data-scope-aggregate-view="'+E(p.id)+'::'+E(x.id)+'" title="Lihat proyek">◉</button></td></tr>').join(''):'<tr><td colspan="6">Belum ada proyek.</td></tr>')+'</tbody></table></div><div class="psbank-accordion-actions"><button type="button" class="btn btn-outline" data-scope-choose="'+E(p.id)+'">Buka Program</button></div></div>';
+  return '<details class="psbank-accordion-program" '+(expanded?'open':'')+'>'+head+body+'</details>';
+ }).join('')+'</div>';
+}
+
 const MAPPING_TABS=[['mapping','Pemetaan'],['history','Riwayat Proyek'],['proposal','Usulan Proyek'],['results','Hasil Pemetaan'],['docs','Buat Dokumen Usulan Proyek']];
 function scopeTabs(on,rows){
  return '<div class="psbank-scope-tabline"><nav class="psbank-mapping-tabs" role="tablist" aria-label="Tahapan Pemetaan Proyek">'+
