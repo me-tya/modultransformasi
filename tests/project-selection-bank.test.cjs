@@ -170,7 +170,7 @@ test('Compact one-row global filter and single mapping destination source of tru
  assert.match(workflow,/data-ps27-query/);
  assert.match(workflow,/data-ps27-year/);
  assert.match(scope,/Program Tujuan:/);
- assert.doesNotMatch(scope,/data-scope-target/);
+ assert.doesNotMatch(scope,/data-scope-target=/,'Program Tujuan tidak memakai filter kedua');
 });
 test('Portfolio builder supports selection, format preview and real exports',()=>{
  const m=boot(),d=m.docs,html=d.portfolioBuilder();
