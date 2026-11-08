@@ -110,7 +110,7 @@ function showPreview(key,initialTab='identity'){
   if(body)d.querySelector('.psbank-dialogbody').innerHTML=view();
   foot();
  };
- const discard=()=>!v().dirty||window.confirm('Perubahan pada formulir belum disimpan. Abaikan perubahan?');
+ const askDiscard=next=>{if(!v().dirty){next();return}window.MT_PS_CONFIRM?.('Abaikan Perubahan?','Isian yang belum disimpan pada Detail Program akan hilang jika melanjutkan.',()=>{v().dirty=false;next()},'warning')};
  const saveForm=()=>{
   if(!v().edit)return true;
   const tab=v().tab,body=d.querySelector('.psbank-dialogbody');
@@ -133,9 +133,9 @@ function showPreview(key,initialTab='identity'){
  '<main class="psbank-dialogbody">'+view()+'</main><footer><span>'+(isTarget?'Dokumen program tahun '+year():'Histori program '+rec.year)+'</span><div></div></footer></section>';
  (document.querySelector('#app')||document.body).appendChild(d);foot();
  d.addEventListener('click',ev=>{
-  if(ev.target===d||ev.target.closest('[data-bank-dismiss]')){if(discard())d.remove();return}
+  if(ev.target===d||ev.target.closest('[data-bank-dismiss]')){askDiscard(()=>d.remove());return}
   const step=ev.target.closest('[data-bank-pstep]');
-  if(step){if(!discard())return;v().tab=step.dataset.bankPstep;v().edit=false;v().dirty=false;redraw();return}
+  if(step){askDiscard(()=>{v().tab=step.dataset.bankPstep;v().edit=false;v().dirty=false;redraw()});return}
   if(v().tab==='docs'&&Docs.click(ev,p,true)){if(!ev.target.closest('[data-doc-export],[data-doc-signed-kind]'))redraw();return}
   if(ev.target.closest('[data-bank-preview-edit]')){if(!editable)return;v().edit=true;v().dirty=false;redraw();return}
   if(ev.target.closest('[data-bank-preview-save]')){if(saveForm()){redraw();toast('Detail Program tersimpan.')}return}
@@ -146,7 +146,7 @@ function showPreview(key,initialTab='identity'){
  });
  d.addEventListener('input',ev=>{if(v().edit&&ev.target.matches('input,textarea,select'))v().dirty=true});
  d.addEventListener('change',ev=>{if(v().tab==='docs'&&isTarget){if(Docs.change(ev,true))redraw()}else if(v().edit)v().dirty=true});
- d.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&discard())d.remove()});
+ d.addEventListener('keydown',ev=>{if(ev.key==='Escape')askDiscard(()=>d.remove())});
 }
 function codeFor(p,to,custom){
  const type=/^tematik$/i.test(String(p.jenis||''))?'T':'B';
