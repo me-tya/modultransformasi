@@ -339,6 +339,7 @@ function addOne(key,renderNow=true,to=year(),newName=null,newAkronim=null){
  const baseCode=codeFor(rec.p,to,newAkronim);let candidate=baseCode,seq=2;
  while(all().some(x=>+x.psYear===to&&String(x.kode||'').toUpperCase()===candidate.toUpperCase()))candidate=baseCode+'-'+seq++;
  p.kode=candidate;
+ Scope.normalizeProjectCodes?.(p);
  p.psCarry.sourceYear=rec.year;p.psSourceYear=rec.year;p.psListStatus='Legacy';p.arsip=false;all().push(p);
  const b=store();state().prog=p.id;Scope.bank().target=p.id;b.workspace='';b.tab='detail';b.check=b.check.filter(x=>x!==key);state().tab='usulan';
  if(renderNow){saveUI();toast('Program '+p.nama+' berhasil ditambahkan ke Daftar Program tahun '+to+'.')}
@@ -522,6 +523,10 @@ function mount(){
  root.querySelector('[data-scope-search]')?.addEventListener('input',e=>{
   Scope.bank().map.q=e.target.value;const at=e.target.selectionStart;saveUI();
   const n=document.querySelector('[data-scope-search]');if(n){n.focus();n.setSelectionRange(at,at)}
+ });
+ root.querySelector('[data-scope-history-search]')?.addEventListener('input',e=>{
+  const st=Scope.bank();st.historySearch=e.target.value;const at=e.target.selectionStart;saveUI();
+  const n=document.querySelector('[data-scope-history-search]');if(n){n.focus();n.setSelectionRange(at,at)}
  });
 }
 
