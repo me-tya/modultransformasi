@@ -483,7 +483,7 @@ function portfolioBuilder(){
  '<div class="psbank-docscroll">'+portfolioPreview()+'</div><div class="psbank-portfolio-download"><button type="button" class="btn pri" data-port-export '+(!chosen.length||!d.sections.length?'disabled':'')+'>↓ Unduh</button></div></div></div></div>';
 }
 async function portfolioExport(){
- const d=portCfg(),data=portData();
+ const d=portCfg(),data=portData(),mode=projectMode();
  if(!data.length||!d.sections.length){toast('Pilih program dan substansi terlebih dahulu.');return}
  const model=portfolioModel(),version=nextVersion(docKind(),docId(),year()),file=model.fileName;
  try{
