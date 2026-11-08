@@ -36,7 +36,7 @@ test('function and boundary are explicit for each important workflow',()=>{
  const {tool,element}=boot();
  const checks=[
   [element({ps27Tab:'penetapan-program'}),'Penetapan Program',/kontrak kinerja K-Wide/i,/WBS/i],
-  [element({ps27Sub:'ranking'}),'Penilaian & Peringkat',/memeringkat/i,/keputusan/i],
+  [element({ps27Sub:'ranking'}),'Penilaian & Peringkat',/urutan prioritas/i,/keputusan/i],
   [element({ps27Sub:'monev'}),'Monev & Manfaat',/indikator dan manfaat/i,/Project Management/i],
   [element({scopeTab:'history'}),'Riwayat Proyek',/proyek lintas tahun/i,/WBS dan realisasi sumber/i],
   [element({bankTab:'bank'}),'Riwayat Program',/riwayat program/i,/historis/i],
