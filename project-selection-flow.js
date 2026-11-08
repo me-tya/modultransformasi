@@ -227,28 +227,91 @@ function criteriaPage(p){
  if(!readonly(p))h+='<div class="pswf-actions"><button type="button" class="btn pri" data-pswf="save-weights">Simpan Bobot</button><button type="button" class="btn" data-pswf="reset-weights">Bobot Default</button></div>';
  h+='</section></div>';return h;
 }
+
+function latest(o){
+ const q=o.quarters||{};
+ for(const k of ['Q4','Q3','Q2','Q1'])if(q[k]!==''&&q[k]!=null)return q[k];
+ return o.actual==null?'':o.actual;
+}
+function metricPct(o){
+ const raw=latest(o),target=Number(o.target),actual=Number(raw);
+ if(raw===''||o.target===''||o.target==null||!Number.isFinite(target)||!Number.isFinite(actual)||actual<0)return null;
+ const down=o.direction==='Turun';
+ if((down&&actual<=0)||(!down&&target<=0))return null;
+ return Math.round((down?target/actual:actual/target)*1000)/10;
+}
+function metricIndex(list){
+ const vals=list.map(metricPct).filter(v=>v!=null);
+ return vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):null;
+}
+function monevSummary(x){
+ const ind=metricIndex(x.indicators||[]),today=new Date().toISOString().slice(0,10),ben=x.benefits||[];
+ const evaluated=ben.filter(o=>(o.due&&o.due<=today)||latest(o)!=='');
+ const success=evaluated.filter(o=>metricPct(o)!=null&&metricPct(o)>=100).length;
+ const benefit=metricIndex(evaluated);
+ return {ind,benefit,success,evaluated:evaluated.length,wait:ben.length-evaluated.length};
+}
+function trend(o){
+ const vals=['Q1','Q2','Q3','Q4'].map(k=>(o.quarters||{})[k]).filter(v=>v!==''&&v!=null&&Number.isFinite(+v));
+ if(vals.length<2)return '—';
+ return +vals[vals.length-1]>+vals[vals.length-2]?'↗':+vals[vals.length-1]<+vals[vals.length-2]?'↘':'→';
+}
 function monevPage(p){
  const u=state(),arr=rowsFor(p),active=arr.find(x=>x.id===u.monevPid)||arr[0];if(active)u.monevPid=active.id;
  let h='<div class="mv-top"><div class="prio-seg"><button type="button" class="'+(u.monevView==='proj'?'on':'')+'" data-pswf-mv="proj">Per proyek</button><button type="button" class="'+(u.monevView==='port'?'on':'')+'" data-pswf-mv="port">Portofolio</button></div><span class="pswf-sp"></span><button type="button" class="btn pri" data-pswf="monev-report">▤ Laporan Monev</button></div>';
  if(!arr.length)return h+'<div class="pswf-empty">Belum ada proyek. Daftarkan proyek pada tab Proyek terlebih dahulu.</div>';
  if(u.monevView==='port'){
-  const inds=arr.reduce((n,x)=>n+x.indicators.length,0),ben=arr.reduce((n,x)=>n+x.benefits.length,0);
-  h+='<div class="mv-kpis"><div class="mv-k"><b>'+arr.length+'</b><small>Proyek</small></div><div class="mv-k"><b>'+inds+'</b><small>Indikator CM</small></div><div class="mv-k"><b>'+ben+'</b><small>Manfaat</small></div><div class="mv-k ok"><b>'+chosen(p).length+'</b><small>Proyek dipilih</small></div></div>';
-  h+='<div class="prio-card"><h3>Register Indikator & Manfaat Portofolio</h3><div class="prio-likert-wrap"><table class="prio-kb-table"><thead><tr><th>Proyek</th><th>Jenis</th><th>Indikator / Manfaat</th><th>Baseline</th><th>Target</th><th>Realisasi</th><th>UIC</th></tr></thead><tbody>'+
-  arr.map(x=>x.indicators.map(o=>'<tr><td>'+esc2(x.name)+'</td><td>Indikator</td><td>'+esc2(o.name)+'</td><td>'+esc2(o.base)+'</td><td>'+esc2(o.target)+'</td><td>'+esc2(o.actual||'—')+'</td><td>'+esc2(x.uic)+'</td></tr>').join('')+x.benefits.map(o=>'<tr><td>'+esc2(x.name)+'</td><td>Manfaat</td><td>'+esc2(o.name)+'</td><td>'+esc2(o.base)+'</td><td>'+esc2(o.target)+'</td><td>'+esc2(o.actual||'—')+'</td><td>'+esc2(x.uic)+'</td></tr>').join('')).join('')+'</tbody></table></div></div>';
+  const sm=arr.map(x=>({x,m:monevSummary(x)})),ad=sm.map(z=>z.m.ind).filter(v=>v!=null),bn=sm.map(z=>z.m.benefit).filter(v=>v!=null);
+  const avg=a=>a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length)+'%':'—';
+  const warning=sm.filter(z=>(z.m.ind!=null&&z.m.ind<80)||(z.m.benefit!=null&&z.m.benefit<80));
+  h+='<div class="mv-kpis">'+
+   '<div class="mv-k"><b>'+arr.length+'</b><small>Proyek</small></div><div class="mv-k"><b>'+arr.reduce((n,x)=>n+x.indicators.length,0)+'</b><small>Indikator CM</small></div>'+
+   '<div class="mv-k"><b>'+arr.reduce((n,x)=>n+x.benefits.length,0)+'</b><small>Manfaat diregister</small></div>'+
+   '<div class="mv-k ok"><b>'+avg(ad)+'</b><small>Rerata indeks adopsi</small></div>'+
+   '<div class="mv-k ok"><b>'+avg(bn)+'</b><small>Rerata indeks manfaat</small></div>'+
+   '<div class="mv-k warn"><b>'+warning.length+'</b><small>Proyek perlu perhatian</small></div></div>';
+  h+='<div class="prio-card"><h3>Matriks Adopsi × Manfaat</h3><p class="prio-sub">Titik menunjukkan proyek yang sudah memiliki pengukuran indeks adopsi dan indeks manfaat.</p>';
+  const candidates=sm.filter(z=>z.m.ind!=null&&z.m.benefit!=null);
+  if(!candidates.length)h+='<div class="pswf-empty">Belum ada proyek dengan kedua indeks yang terukur.</div>';
+  else {
+   const xp=v=>50+Math.min(100,Math.max(0,v))*4,yp=v=>450-Math.min(100,Math.max(0,v))*4;
+   h+='<svg class="pswf-adoption-chart" viewBox="0 0 520 500" role="img" aria-label="Matriks adopsi dan realisasi manfaat"><rect x="50" y="50" width="400" height="400" fill="#F9FBFD" stroke="#DCE3EF"/>'+
+    '<line x1="50" y1="'+yp(80)+'" x2="450" y2="'+yp(80)+'" stroke="#D2A73C" stroke-dasharray="5 5"/>'+
+    '<line x1="'+xp(80)+'" y1="50" x2="'+xp(80)+'" y2="450" stroke="#D2A73C" stroke-dasharray="5 5"/>'+
+    '<text x="250" y="486" text-anchor="middle" fill="#304D70" font-size="12">Indeks Adopsi (%)</text>'+
+    '<text x="22" y="250" transform="rotate(-90 22 250)" text-anchor="middle" fill="#304D70" font-size="12">Indeks Manfaat (%)</text>'+
+    candidates.map((z,i)=>'<g><title>'+esc2(z.x.name)+' · Adopsi '+z.m.ind+'% · Manfaat '+z.m.benefit+'%</title><circle cx="'+xp(z.m.ind)+'" cy="'+yp(z.m.benefit)+'" r="7" fill="'+(z.m.ind<80||z.m.benefit<80?'#C65A50':'#1C5C93')+'"/><text x="'+(xp(z.m.ind)+9)+'" y="'+(yp(z.m.benefit)-6)+'" font-size="10" fill="#25476B">'+esc2(z.x.name.slice(0,19))+'</text></g>').join('')+'</svg>';
+  }
+  h+='</div><div class="prio-card"><h3>Register Portofolio · Realisasi Manfaat dan Adopsi</h3><div class="prio-likert-wrap"><table class="prio-kb-table"><thead><tr><th>Proyek</th><th>Adopsi</th><th>Manfaat</th><th>Indikator</th><th>Manfaat</th><th>Perlu perhatian</th></tr></thead><tbody>'+
+   sm.map(z=>'<tr><td>'+esc2(z.x.name)+'</td><td>'+(z.m.ind==null?'—':z.m.ind+'%')+'</td><td>'+(z.m.benefit==null?'—':z.m.benefit+'%')+'</td><td>'+z.x.indicators.length+'</td><td>'+z.x.benefits.length+'</td><td>'+((z.m.ind!=null&&z.m.ind<80)||(z.m.benefit!=null&&z.m.benefit<80)?'Ya':'Tidak')+'</td></tr>').join('')+'</tbody></table></div></div>';
   return h;
  }
  h+='<div class="mv-bar"><label>Proyek <select id="pswf-mv-project">'+arr.map(x=>'<option value="'+esc2(x.id)+'"'+(x.id===u.monevPid?' selected':'')+'>'+esc2(x.name)+'</option>').join('')+'</select></label><span class="pswf-sp"></span><span>Go-live: '+esc2(active.goLive||'Belum ditentukan')+'</span></div>';
- const indicators=active.indicators, benefits=active.benefits;
- h+='<div class="mv-kpis"><div class="mv-k"><b>'+indicators.length+'</b><small>Indikator CM</small></div><div class="mv-k"><b>'+benefits.length+'</b><small>Manfaat diregister</small></div><div class="mv-k"><b>'+indicators.filter(x=>x.actual!==''&&x.actual!=null).length+'</b><small>Indikator terealisasi</small></div><div class="mv-k"><b>'+benefits.filter(x=>x.actual!==''&&x.actual!=null).length+'</b><small>Manfaat terealisasi</small></div></div>';
- for(const type of ['indicators','benefits']){
-  const list=active[type],title=type==='indicators'?'Indikator Keberhasilan CM':'Register Manfaat';
-  h+='<div class="prio-card"><div class="prio-card-head"><h3>'+title+'</h3>'+(ownerOk(p)?'<button class="btn btn-outline btn-sm" type="button" data-pswf-mvadd="'+type+'">+ Tambah</button>':'')+'</div>';
-  if(!list.length)h+='<p class="prio-sub">Belum ada data. Penilaian manfaat dilakukan setelah target dan baseline ditetapkan.</p>';
-  else h+='<div class="prio-likert-wrap"><table class="prio-kb-table"><thead><tr><th>Indikator</th><th>Baseline</th><th>Target</th><th>Realisasi</th><th>Satuan</th><th>Tenggat</th><th>Aksi</th></tr></thead><tbody>'+
-   list.map((o,i)=>'<tr><td>'+esc2(o.name)+'</td><td>'+esc2(o.base||'—')+'</td><td>'+esc2(o.target||'—')+'</td><td>'+esc2(o.actual||'—')+'</td><td>'+esc2(o.unit||'—')+'</td><td>'+esc2(o.due||'—')+'</td><td>'+(ownerOk(p)?'<button type="button" class="btn btn-outline btn-sm" data-pswf-mvedit="'+type+':'+i+'">Ubah</button>':'')+'</td></tr>').join('')+'</tbody></table></div>';
-  h+='</div>';
- }
+ const m=monevSummary(active),inds=active.indicators||[],benefits=active.benefits||[];
+ h+='<div class="mv-kpis">'+
+  '<div class="mv-k"><b>'+(m.ind==null?'—':m.ind+'%')+'</b><small>Indeks adopsi (rata-rata capaian indikator CM)</small></div>'+
+  '<div class="mv-k"><b>'+(m.benefit==null?'—':m.benefit+'%')+'</b><small>Indeks manfaat (yang telah dievaluasi)</small></div>'+
+  '<div class="mv-k ok"><b>'+m.success+' / '+m.evaluated+'</b><small>Manfaat tercapai / sudah dievaluasi</small></div>'+
+  '<div class="mv-k"><b>'+m.wait+'</b><small>Manfaat belum jatuh tempo</small></div></div>';
+ if((m.ind!=null&&m.ind<80)||(m.benefit!=null&&m.benefit<80))
+  h+='<div class="pswf-mv-alert"><b>! &nbsp;Adopsi atau manfaat masih di bawah target</b><small>Perkuat adopsi pengguna dan tindak lanjut capaian indikator agar manfaat program terealisasi.</small></div>';
+ h+='<div class="prio-card"><div class="prio-card-head"><h3>■ Indikator Keberhasilan CM — Triwulanan</h3><span>Leading indicator · adopsi</span>'+(ownerOk(p)?'<button type="button" class="btn btn-outline btn-sm" data-pswf-mvadd="indicators">+ Indikator</button>':'')+'</div>';
+ if(!inds.length)h+='<p class="prio-sub">Belum ada indikator CM. Tambahkan target, baseline dan capaian triwulanan.</p>';
+ else h+='<div class="prio-likert-wrap"><table class="prio-kb-table pswf-mv-table"><thead><tr><th>Indikator</th><th>Baseline</th><th>Target</th>'+[1,2,3,4].map(i=>'<th>TW '+['I','II','III','IV'][i-1]+' '+year()+'</th>').join('')+'<th>Capaian</th><th>Tren</th><th>Aksi</th></tr></thead><tbody>'+
+  inds.map((o,i)=>{const pct=metricPct(o),level=pct==null?'—':pct>=100?'Tercapai':pct>=80?'On track':'Perlu perhatian';
+   return '<tr><td><b>'+esc2(o.name)+'</b><small>'+esc2(o.unit||'')+' · '+(o.direction==='Turun'?'turun lebih baik':'naik lebih baik')+'</small></td><td>'+esc2(o.base||'—')+'</td><td><b>'+esc2(o.target||'—')+'</b></td>'+
+    ['Q1','Q2','Q3','Q4'].map(k=>'<td>'+esc2((o.quarters||{})[k]??'—')+'</td>').join('')+
+    '<td><span class="pswf-mv-pct '+(pct!=null&&pct<80?'bad':'')+'">'+(pct==null?'Belum diukur':level+' · '+pct+'%')+'</span></td><td class="pswf-trend">'+trend(o)+'</td><td>'+(ownerOk(p)?'<button class="btn btn-outline btn-sm" data-pswf-mvedit="indicators:'+i+'">Ubah</button>':'')+'</td></tr>';
+  }).join('')+'</tbody></table></div>';
+ h+='</div><div class="prio-card"><div class="prio-card-head"><h3>■ Register Manfaat & Evaluasi</h3><span>Lagging indicator · outcome</span>'+(ownerOk(p)?'<button type="button" class="btn btn-outline btn-sm" data-pswf-mvadd="benefits">+ Manfaat</button>':'')+'</div>';
+ if(!benefits.length)h+='<p class="prio-sub">Belum ada manfaat terukur. Tetapkan baseline, target, satuan dan tenggat realisasinya.</p>';
+ else h+='<div class="prio-likert-wrap"><table class="prio-kb-table"><thead><tr><th>Manfaat</th><th>Baseline</th><th>Target</th><th>Realisasi</th><th>Tenggat</th><th>Capaian</th><th>Aksi</th></tr></thead><tbody>'+
+  benefits.map((o,i)=>{const pct=metricPct(o);
+   return '<tr><td><b>'+esc2(o.name)+'</b><small>'+esc2(o.unit||'')+'</small></td><td>'+esc2(o.base||'—')+'</td><td>'+esc2(o.target||'—')+'</td><td>'+esc2(latest(o)||'—')+'</td><td>'+esc2(o.due||'—')+'</td>'+
+    '<td><span class="pswf-mv-pct '+(pct!=null&&pct<80?'bad':'')+'">'+(pct==null?'Belum diukur':pct+'%')+'</span></td>'+
+    '<td>'+(ownerOk(p)?'<button class="btn btn-outline btn-sm" data-pswf-mvedit="benefits:'+i+'">Ubah</button>':'')+'</td></tr>';
+  }).join('')+'</tbody></table></div>';
+ h+='</div>';
  return h;
 }
 function referencePage(p){
