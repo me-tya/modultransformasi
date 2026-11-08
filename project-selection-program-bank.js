@@ -334,7 +334,7 @@ function mount(){
    if(rect&&rect.width>300&&rect.height>=32&&rect.height<=125)x.add(el);
   });
   const candidates=[...x].filter(el=>!el.closest('.psbank-overlay')&&!el.matches('.mt-shared-filter'));
-  return candidates.filter(el=>!candidates.some(parent=>parent!==el&&parent.contains(el)&&parent.querySelector('.mt-shared-filter')));
+  return candidates.filter(el=>!candidates.some(parent=>parent!==el&&parent.contains(el)));
 
  }
  function capture(){
