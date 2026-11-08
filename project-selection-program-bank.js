@@ -5,7 +5,7 @@ const A=window.MT_PROJECT_SELECTION,F=window.MT_PS_WORKFLOW,I=A?.internals,Docs=
 if(!A||!F||!I||!Docs||!Scope)return;
 const oldPage=A.page,oldMount=A.mount;
 const E=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-const year=()=>+S.ui.tahun||2026;
+const year=()=>+S.ui.psSelectedYear||+S.ui.tahun||2026;
 const can=p=>!!ME&&['SA','PMOK','PMOU'].includes(ME.role)&&(!p||ME.role!=='PMOU'||!p.uic||p.uic===ME.unit)&&(!p||p.psStatus!=='Ditetapkan');
 const saveUI=()=>{save();render()};
 const state=()=>I.state();
