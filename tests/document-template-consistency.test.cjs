@@ -16,8 +16,8 @@ test('Riwayat dan Daftar Program: Kode Program tepat sebelum Nama Program',()=>{
  assert.match(bank, /<td><b>'\+E\(p\.kode\|\|p\.akr\)\+'<\/b><\/td><td><b>'\+E\(p\.nama\)/);
 });
 test('Dokumen Program dan Portofolio selalu gunakan engine formal Laporan Akhir Proyek',()=>{
- assert.match(docs,/formal:true,toc:!!d\.toc,header:'Dokumen Perencanaan Program/);
- assert.match(docs,/return \{lang:'id',formal:true,toc:true,fileName:/);
+ assert.match(docs,/formal:true,template:d\.template\|\|'activity',toc:!!d\.toc,header:'Dokumen Perencanaan Program/);
+ assert.match(docs,/return \{lang:'id',formal:true,template:d\.template\|\|'activity',toc:true,fileName:/);
  assert.match(docs,/const blob=await assertOfficialWordTemplate\(await mtRptDocx\(model\)\)/);
  assert.match(docs,/await assertOfficialWordTemplate\(await mtRptDocx\(model\)\)/);
  assert.match(docs,/Do not fall back to the deprecated plain XML document template/);
