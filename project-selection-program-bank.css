@@ -249,3 +249,33 @@
 #app .psbank-inputsummary article b{font-size:12px;color:#153d64}
 #app .psbank-inputsummary article small{display:block;color:#768ca2;margin:4px 0 9px;font-size:10px}
 #app .psbank-inputsummary article p{margin:5px 0;font-size:11px;line-height:1.45;color:#3d5470;overflow-wrap:anywhere}
+
+/* Mapping: two-step navigation, selectable target/source, editable project houses. */
+#app .psbank-mapping-tabs{display:flex;gap:5px;border-bottom:1px solid #dce5ef;margin:-2px 0 14px;padding-bottom:4px}
+#app .psbank-mapping-tabs button{border:0;border-bottom:3px solid transparent;background:transparent;padding:10px 16px;color:#61738b;font:750 12.5px 'Inter',sans-serif;cursor:pointer;border-radius:7px 7px 0 0}
+#app .psbank-mapping-tabs button.on{border-bottom-color:#ffbc20;color:#153a68;background:#f1f6fd}
+#app .psbank-mapping-tabs button b{background:#e5effa;border-radius:12px;margin-left:5px;padding:2px 7px;font-size:11px}
+#app .psbank-maphead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#app .psbank-maphead span{font-size:11px;color:#647b94}
+#app .psbank-mapselectall{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid #dde6f0;margin-bottom:8px}
+#app .psbank-mapselectall label{display:flex;align-items:center;gap:7px;color:#345878;font-size:11.5px;cursor:pointer}
+#app .psbank-mapselectall input,#app .psbank-catalogitem input{width:16px;height:16px;accent-color:#174d81;flex-shrink:0}
+#app .psbank-mapselectall .btn{font-size:11px;min-height:30px}
+#app .psbank-target-project{cursor:pointer}
+#app .psbank-proposal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:9px 0 14px}
+#app .psbank-proposal-head h3{margin:0 0 4px;color:#163960;font-size:15px}
+#app .psbank-proposal-head p{margin:0;color:#6b8297;font-size:11.5px}
+#app .psbank-proposal-table{table-layout:auto}
+#app .psbank-proposal-table th:first-child{width:50px}
+#app .psbank-proposal-table th:last-child{min-width:195px}
+#app .psbank-proposal-table td:first-child{font-variant-numeric:tabular-nums}
+#app .psbank-proposal-table .psbank-rowactions{gap:5px;flex-wrap:nowrap}
+.psbank-project-editor .psbank-dialog{width:min(830px,93vw)!important;height:auto!important;max-height:88vh!important;min-height:0!important}
+#app .psbank-proj-editor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:12px 6px}
+#app .psbank-proj-editor-grid label{display:flex;flex-direction:column;gap:5px;font-size:11.5px;font-weight:750;color:#2a4f75}
+#app .psbank-proj-editor-grid input,#app .psbank-proj-editor-grid select{width:100%;height:37px;border:1px solid #cddce9;border-radius:8px;padding:8px;font:500 12px 'Inter',sans-serif}
+#app .psbank-proj-origin{padding:10px;background:#f2f7fd;border:1px solid #dbe7f2;border-radius:8px}
+#app .psbank-proj-origin b{font-size:11.5px;color:#244d75}
+#app .psbank-proj-origin p{margin:5px 0;color:#335979;font-size:11.5px}
+#app .psbank-proj-origin small{color:#73889b;font-size:10px}
+@media(max-width:730px){#app .psbank-proj-editor-grid{grid-template-columns:1fr}#app .psbank-proposal-table .psbank-rowactions{flex-wrap:wrap}}
