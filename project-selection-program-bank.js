@@ -39,7 +39,7 @@ function labelStatus(p){
 }
 const canManage=p=>!!ME&&['SA','PMOK','PMOU'].includes(ME.role)&&(!p||ME.role!=='PMOU'||!p.uic||p.uic===ME.unit);
 const isConcept=p=>!!p&&p.psStatus!=='Ditetapkan'&&!p.psFinalizedAt&&(p.psDraft===true||['Konsep','Draft',''].includes(String(p.psStatus||'')));
-const canDelete=p=>canManage(p)&&+p.psYear===year()&&year()>=2027&&isConcept(p)&&!p.arsip&&p.psListStatus!=='Arsip'&&
+const canDelete=p=>canManage(p)&&+p.psYear===year()&&year()>=2027&&isConcept(p)&&!p.psKwideRecordedAt&&!p.arsip&&p.psListStatus!=='Arsip'&&
  !(S.wbs||[]).some(w=>w.prog===p.akr&&!w.arsip)&&
  !(S.programs||[]).some(x=>x!==p&&x.psCarry?.sourceId===p.id)&&
  !(S.psWideTargets?.[year()]?.contract?.status==='Ditetapkan'&&S.psWideTargets[year()].contract.programIds?.includes(String(p.id)));
