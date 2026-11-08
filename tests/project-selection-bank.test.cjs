@@ -33,9 +33,11 @@ test('Assets are loaded in correct order and compile as valid JavaScript',()=>{
 test('Bank across all years shows requested columns and no Program yang dikerjakan selector',()=>{
  const m=boot(),html=m.app.page();
  assert.match(html,/Daftar Program/);
- assert.match(html,/Nama Program Baru/);
+ assert.match(html,/data-bank-checkall/);
+  assert.match(html,/data-bank-check=/);
+  assert.match(html,/data-bank-add=/);
  assert.match(html,/Kode Program/);
- assert.match(html,/Jumlah Proyek \(Modul\)/);
+ assert.match(html,/Jumlah Modul/);
  assert.match(html,/Tahun/);
  assert.match(html,/Legacy/);
  assert.doesNotMatch(html,/Program yang dikerjakan/);
@@ -55,7 +57,7 @@ test('Detail Program workspace contains eight tabs including inline document bui
  assert.match(html,/PowerPoint \(\.pptx\)/);
  assert.match(m.docs.paper(m.core,'identity',2026),/Integrasi APBN/);
 });
-test('Adding program from 2026 copies charter and WBS plans, then navigates to Pemetaan Proyek',()=>{
+test('Carry-over copies source registers, charter and WBS, then opens Detail Program',()=>{
  const m=boot();
  m.S.ui.psBank={tab:'bank',names:{'src-core:2026':'Digitalisasi Core APBN Baru'},check:[],wtab:'identity'};
  const added=m.bank.addOne('src-core:2026',false);
@@ -68,7 +70,9 @@ test('Adding program from 2026 copies charter and WBS plans, then navigates to P
  assert.equal(added.psWbsDraft[0].rm,0);
  assert.equal(added.psWbsDraft[0].v,0);
  assert.ok(m.S.charters.some(c=>c.prog===added.akr&&c.st==='Draft'));
- assert.equal(m.S.ui.psFlow.tab,'mapping');
+ assert.equal(m.S.ui.psFlow.tab,'usulan');
+  assert.equal(m.S.ui.psBank.tab,'detail');
+  assert.equal(added.kode,'B27-CORE');
  assert.equal(m.S.wbs.length,2,'source WBS should remain the only active WBS before Penetapan');
 });
 test('Cross-program mapping allows FRSW and SIPK from Core APBN 2026 into Core Non APBN 2027',()=>{
@@ -98,6 +102,27 @@ test('After Penetapan WBS draft syncs once, source untouched',()=>{
  assert.equal(m.S.wbs.length,3);
  assert.equal(m.S.wbs.filter(w=>w.prog==='CORE').length,2);
  assert.equal(m.S.wbs.find(w=>w.prog==='NON').rm,0);
+});
+test('Bank includes archived and current-year programs without status limitation',()=>{
+ const m=boot();
+ m.S.programs.push({id:'archive-2025',akr:'OLD',kode:'T25-OLD',nama:'Program Arsip Tematik',psYear:2025,psStatus:'Arsip',jenis:'Tematik',psProjects:[]});
+ const all=m.bank.records();
+ assert.ok(all.some(x=>x.p.psStatus==='Arsip'));
+ assert.ok(all.some(x=>x.year===2027));
+ assert.match(m.app.page(),/Program Arsip Tematik/);
+ assert.match(m.app.page(),/Tambahkan Program ke tahun/);
+ assert.equal(m.bank.codeFor({kode:'T25-OLD',jenis:'Tematik',akr:'OLD'},2027),'T27-OLD');
+});
+test('Program detail uses clickable rows and seven tabs with Buat Dokumen instead of Reviu',()=>{
+ const m=boot();
+ m.S.ui.psBank={tab:'detail',wtab:'identity'};
+ const html=m.app.page();
+ assert.match(html,/data-bank-detailrow/);
+ const sourceText=source['project-selection-program-bank.js'];
+ assert.match(sourceText,/aria-label="Detail Program"/);
+ assert.match(sourceText,/STEPS.filter\(x=>x\[0\]!=='review'\)/);
+ assert.match(sourceText,/Docs.builder\(rec.p\)/);
+ assert.match(sourceText,/openCarry\(\[btn.dataset.bankAdd\]\)/);
 });
 test('PPTX and PDF have differentiated previews, while section selector controls document content',()=>{
  const m=boot(),d=m.docs;
