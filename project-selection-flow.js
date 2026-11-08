@@ -202,8 +202,17 @@ function criteriaPage(p){
  let pos=0,seg=grps.map((g,i)=>{const q=groupPct(g);const t=colors[i]+' '+pos.toFixed(1)+'% '+(pos+q).toFixed(1)+'%';pos+=q;return t}).join(',');
  let h='<div class="prio-clayout"><aside class="prio-cside"><div class="prio-card"><h3>Komposisi bobot</h3><p class="prio-sub">Porsi 4 kelompok setelah normalisasi (Σ W = '+tot+')</p><div class="prio-donut" style="background:conic-gradient('+seg+')"><div><b>12</b><small>kriteria<br>4 kelompok</small></div></div><div class="prio-legend">'+grps.map((g,i)=>'<div><i style="background:'+colors[i]+'"></i><span>'+g[1]+'</span><b>'+groupPct(g).toFixed(1)+'%</b></div>').join('')+'</div>'+
  '<div class="prio-normbox"><b>Normalisasi skor</b><span>Skala absolut 1–5 untuk ambang seleksi; skor diperbandingkan antar tahun.</span></div><div class="prio-mini3"><div><b>12</b><small>kriteria</small></div><div><b>6</b><small>otomatis*</small></div><div><b>6</b><small>manual</small></div></div><small>*Nilai otomatis bergantung pada data sumber yang tersedia.</small></div></aside><section>';
- h+='<div class="prio-card"><div class="prio-card-head"><h3>Ambang lolos ke pemilihan proyek</h3></div><p class="prio-sub">Ambang pada program <b>'+esc2(p.nama)+'</b>: skor absolut harus <b>&gt; '+p.psThreshold+'%</b>, berlaku hanya jika prioritisasi SMART diaktifkan.</p>'+
- '<div class="pswf-thresholds"><span>'+rowsFor(p).length+' calon proyek</span><span>'+chosen(p).length+' dipilih</span><span>Bobot aktif '+tot+'</span></div></div>';
+ const yearPlans=programs().map(z=>norm(z));
+ h+='<div class="prio-card"><div class="prio-card-head"><h3>Ambang lolos ke pemilihan proyek · Tahun '+year()+'</h3></div>'+
+ '<p class="prio-sub">Proyek yang diprioritaskan otomatis dipilih bila <b>skor absolut > ambang program</b> dan seluruh 12 kriteria terisi. Program tanpa SMART menggunakan pilihan manual.</p>'+
+ '<div class="prio-likert-wrap"><table class="prio-thr-t"><thead><tr><th>Program</th><th>Metode</th><th>Ambang</th><th>Terpilih / Calon</th><th>&gt;70</th><th>&gt;75</th><th>&gt;80</th><th>&gt;85</th></tr></thead><tbody>'+
+ yearPlans.map(z=>{
+  const pr=rowsFor(z),scores=pr.map(x=>calc(x,z).score);
+  return '<tr'+(z.id===p.id?' class="chg"':'')+'><td><b>'+esc2(z.nama)+'</b></td><td>'+(z.psPrioritize?'SMART':'Manual')+'</td><td>'+(!z.psPrioritize?'—':'&gt;'+z.psThreshold)+'</td><td>'+chosen(z).length+' / '+pr.length+'</td>'+
+  [70,75,80,85].map(t=>'<td class="c'+(z.psThreshold===t?' sim cur':'')+'">'+scores.filter(x=>x!=null&&x>t).length+'</td>').join('')+'</tr>';
+ }).join('')+'</tbody></table></div>'+
+ '<small class="prio-thr-note">Kolom &gt;70 sampai &gt;85 menyimulasikan jumlah calon proyek dengan skor lengkap yang lolos pada setiap ambang. Nilai belum lengkap tidak dihitung lolos.</small></div>';
+ h+='<div class="pswf-thresholds"><span>Program aktif: '+esc2(p.nama)+'</span><span>Ambang: '+(p.psPrioritize?'&gt;'+p.psThreshold+'%':'Pemilihan manual')+'</span><span>Terpilih: '+chosen(p).length+'</span><span>Bobot aktif: '+tot+'</span></div>';
  h+='<div class="prio-editbar idle"><span>Bobot '+(readonly(p)?'terkunci':'dapat diubah sesuai kewenangan PMO')+'. Perubahan memengaruhi skor seluruh proyek di program ini.</span></div>';
  grps.forEach((g,gi)=>{
   h+='<div class="prio-grp"><div class="prio-grp-h" style="--gc:'+colors[gi]+'"><span>'+g[1].toUpperCase()+'</span><em>'+groupPct(g).toFixed(1)+'%</em></div><div class="prio-grp-b">';
