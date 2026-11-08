@@ -436,7 +436,7 @@ function mount(){
  });
  root.addEventListener('change',e=>{
   const q=e.target,p=pickedProgram();
-  if(q.id==='pswf-year'){S.ui.tahun=+q.value;state().prog='';state().q='';state().filter='all';save();render()}
+  if(q.id==='pswf-year'){S.ui.psSelectedYear=+q.value;state().prog='';state().q='';state().filter='all';save();render()}
   else if(q.id==='pswf-program'){state().prog=q.value;state().q='';state().filter='all';save();render()}
   else if(q.id==='pswf-prioritize'&&p&&!readonly(p)){p.psPrioritize=q.checked;save();render()}
   else if(q.id==='pswf-threshold'&&p&&!readonly(p)){const v=Number(q.value);if(v<0||v>99||!Number.isFinite(v)){toast('Ambang harus antara 0–99.');return}p.psThreshold=v;save();render()}
