@@ -206,3 +206,25 @@
 #app .ps27 .ps27-filter-range label{display:flex;flex-direction:column;gap:5px;font:800 10.5px 'Inter',sans-serif;color:#234e7a}
 #app .ps27 .ps27-filter-range input{height:34px;border:1px solid #c6d8ea;border-radius:8px;padding:5px 9px;font:650 12px 'Inter',sans-serif}
 #app .ps27 .ps27-filter-range small{font:500 10.5px 'Inter',sans-serif;color:#6a8298;align-self:center}
+
+
+/* Prioritasi: exactly the Executive Dashboard v2 KPI hover, no wobble or elevated shadow. */
+#app .pswf .prio-kpis-clickable .prio-kpi{
+ transform:none!important;transform-origin:center!important;
+ transition:transform .16s,border-color .16s!important;
+ box-shadow:0 2px 6px #0b2d5910!important;
+}
+#app .pswf .prio-kpis-clickable .prio-kpi:hover{
+ transform:translateY(-2px)!important;
+ border-color:#5c86ba!important;background:#fff!important;
+ box-shadow:0 2px 6px #0b2d5910!important;
+}
+#app .pswf .prio-kpis-clickable .prio-kpi:active{transform:translateY(-2px)!important}
+#app .pswf .prio-kpis-clickable .prio-kpi.is-filtered{
+ box-shadow:inset 0 0 0 2px #2b5b9a,0 2px 6px #0b2d5910!important;
+}
+@media(prefers-reduced-motion:reduce){
+ #app .pswf .prio-kpis-clickable .prio-kpi,
+ #app .pswf .prio-kpis-clickable .prio-kpi:hover,
+ #app .pswf .prio-kpis-clickable .prio-kpi:active{transform:none!important;transition:none!important}
+}
