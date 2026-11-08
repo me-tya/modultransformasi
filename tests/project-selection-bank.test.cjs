@@ -486,7 +486,7 @@ test('Semua Program shows all active programs and is not the first program',()=>
  assert.match(html,/data-scope-choose=/);
  assert.match(html,/Digitalisasi Core Non APBN/);
  assert.match(js,/setFilterField\('allProgramsSelected',!el.value\)/);
- assert.match(js,/setFilterField\\('year',el.value\\)/);
+ assert.match(js,/setFilterField\('year',el.value\)/);
 });
 test('Activity Log records changes with before-after and ignores only-UI navigation',()=>{
  const m=boot();
