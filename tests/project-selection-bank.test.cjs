@@ -858,7 +858,7 @@ test('Setahun displays all TW 1–4 per Executive Dashboard module; quarterly se
 });
 
 test('Program Word/PDF previews are hydrated from exactly the downloadable document engines',()=>{
- const m=boot();m.S.ui.psBank={doc:{format:'word',sections:['identity','case'],cover:true,toc:true,sign:false,annex:false,slide:0}};
+ const m=boot();m.ctx.mtRptHtml=model=>'<html><body>'+model.cover.title+'</body></html>';m.S.ui.psBank={doc:{format:'word',sections:['identity','case'],cover:true,toc:true,sign:false,annex:false,slide:0}};
  const word=m.docs.documentPreview(m.target);
  assert.match(word,/data-doc-actual="program"/);
  assert.match(word,/Pratinjau awal dokumen/);
