@@ -96,16 +96,17 @@ function filter(p){
  const b=S.ui.psBank||(S.ui.psBank={}),u=state(),arr=list(),tab=b.tab||'bank',w=ws(),
   f=S.ui.mtSharedFilter?.enabled?S.ui.mtSharedFilter:localFilter(),
   q=String(f.search||'').toLowerCase(),st=f.status||'all';
- b.search=f.search||'';b.filterStatus=st;b.filterYear=f.year||'all';
+ b.search=f.search||'';b.filterStatus=st;b.filterYear=f.year||'all';b.filterUnit=f.unit||'all';b.filterRole=f.unitRole||'all';b.filterPeriod=f.period||'all';
  if(u.tab==='usulan'&&tab==='bank')b.filterProgram=f.program||'';
  if(u.tab==='usulan'&&tab==='detail')b.detailProgram=f.program||'';
  const onBank=u.tab==='usulan'&&tab==='bank',opts=onBank?(S.programs||[]):arr,
   years=[2025,2026,2027,2028,2029],yFilter=onBank?(f.year||'all'):String(yr()),
   period=f.period||'all',unit=f.unit||'all',role=f.unitRole||'all';
  const statusOf=x=>x.arsip||x.psStatus==='Arsip'?'Arsip':x.psCarry?'Legacy':x.psDraft?'Baru':'Legacy';
- const listOptions=opts.filter(x=>(!q||[x.nama,x.kode,x.akr,x.uic].join(' ').toLowerCase().includes(q))&&
- (st==='all'||statusOf(x)===st)&&(!unit||unit==='all'||[x.uic,x.pend,x.unit].join(' ').toLowerCase().includes(unit.toLowerCase())));
- const units=[...new Set(opts.flatMap(x=>String(x.uic||'').split(/[,;]/).map(k=>k.trim())).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id'));
+ const matchesUnit=x=>{if(!unit||unit==='all')return true;const a=String(x.uic||'').toLowerCase().includes(unit.toLowerCase()),b=String(x.pend||x.psSupportingUic||'').toLowerCase().includes(unit.toLowerCase());return role==='utama'?a:role==='pendukung'?b:a||b};
+ const matchesQuarter=x=>{const m=/^TW\s*(\d)$/i.exec(period);if(!m)return true;const ds=(x.psProjects||[]).map(z=>String(z.goLive||z.start||'')).filter(t=>/^\d{4}-\d\d-\d\d/.test(t));return !ds.length||ds.some(t=>Math.ceil(+t.slice(5,7)/3)===+m[1])};
+ const listOptions=opts.filter(x=>(!q||[x.nama,x.kode,x.akr,x.uic].join(' ').toLowerCase().includes(q))&&(st==='all'||statusOf(x)===st)&&matchesUnit(x)&&matchesQuarter(x));
+ const units=[...new Set(opts.flatMap(x=>[x.uic,x.pend||x.psSupportingUic].flatMap(v=>String(v||'').split(/[,;]/).map(k=>k.trim()))).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id'));
  const active=[];
  if(period!=='all')active.push(period==='range'?'Rentang periode':period);
  if(f.programName)active.push(f.programName);
