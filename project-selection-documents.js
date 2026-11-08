@@ -242,6 +242,40 @@ async function showActualDocumentPreview(root,model,format){
  }
  return false;
 }
+
+/* Final Project Management report: keep HTML iframe as printable PDF source,
+   render the exact generated DOCX beside it for the Word preview. */
+function installFinalReportPreview(){
+ if(typeof mtRptHtml!=='function'||window.MT_FINAL_REPORT_PREVIEW_SYNC)return;
+ const original=mtRptHtml;
+ const wrapped=function(model){
+  const html=original.apply(this,arguments);
+  const frame=document.querySelector?.('#rpt-if');
+  if(!frame?.isConnected)return html;
+  const parent=frame.parentElement;
+  let view=parent?.querySelector('[data-doc-actual="final"]');
+  if(!view&&parent){
+   view=document.createElement('div');view.className='psbank-actual-view';
+   view.dataset.docActual='final';
+   view.innerHTML='<small data-actual-progress>Menyiapkan pratinjau dari file Word yang akan diunduh…</small>';
+   parent.appendChild(view);
+  }
+  if(!view)return html;
+  frame.style.position='';frame.style.left='';frame.style.height='';frame.style.width='';
+  frame.hidden=false;view.hidden=true;
+  // Defer until the report's HTML iframe has been given its srcdoc.
+  Promise.resolve().then(()=>showActualDocumentPreview(parent,model,'word')).then(ok=>{
+   if(!view.isConnected||!frame.isConnected)return;
+   view.hidden=!ok;
+   if(ok){frame.style.position='absolute';frame.style.left='-10000px';frame.style.width='1px';frame.style.height='1px'}
+  }).catch(()=>{if(view?.isConnected)view.hidden=true});
+  return html;
+ };
+ // A global function declaration in index.html remains backed by the window binding.
+ window.mtRptHtml=wrapped;
+ window.MT_FINAL_REPORT_PREVIEW_SYNC=true;
+}
+
 function actualPreviewShell(mode,format,markup){
  return '<div class="psbank-actual-view" data-doc-actual="'+mode+'" data-doc-format="'+format+'">'+
  '<small class="psbank-actual-progress" data-actual-progress>Menyiapkan pratinjau file '+(format==='word'?'DOCX':'PDF')+'…</small>'+
@@ -743,5 +777,6 @@ function change(ev,inline=false){
  if(q.dataset.docFormat!==undefined){d.format=q.value;d.slide=0;save();if(!inline)render();return true}
  return false;
 }
+installFinalReportPreview();
 window.MT_PS_DOC={fields,sections,slidePages,programDeck,programSlideHtml,paper,builder,exportFile,click,change,documentPreview,programReportModel,tteControls,hydrateProgram,hydratePortfolio,showActualDocumentPreview,versionPanel,nextVersion,registerExport,confirmSigned,uploadProgramAttachment,history,processSigned,openSignedProof,portfolioModel,portSlides,splitPortText,portfolioBuilder,portfolioClick,portfolioChange,portfolioExport,version:'20261108-program-document-builder-v3'};
 })();
