@@ -432,15 +432,55 @@ async function exportFormalPdf(model,file,{preview=false}={}){
   for(const row of rows)cellRow(row);
   y+=7;
  };
- /* Formal cover */
- pdf.setFillColor(...navy);pdf.rect(0,0,W,110,'F');pdf.setFillColor(...gold);pdf.rect(left,27,32,2,'F');
- pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.setTextColor(245,191,64);
- pdf.text('KEMENTERIAN KEUANGAN REPUBLIK INDONESIA',left,20);
- pdf.setTextColor(255,255,255);pdf.setFontSize(24);
- const heading=pdf.splitTextToSize(String(model.cover?.title||'DOKUMEN PROGRAM'),170);
- pdf.text(heading,left,43);pdf.setFontSize(12);pdf.text(pdf.splitTextToSize(String(model.cover?.subject||''),170),left,68);
- y=129;line((model.cover?.chips||[]).join('   |   '),10,true,8);
- if(model.cover?.meta?.length)drawTable(['IDENTITAS DOKUMEN','KETERANGAN'],model.cover.meta,[35,65]);
+ /* Shared activity-report cover: same gradient and rainbow band as Word/HTML. */
+ if(model.template==='classic'){
+  pdf.setFillColor(...navy);pdf.rect(0,0,W,110,'F');pdf.setFillColor(...gold);pdf.rect(left,27,32,2,'F');
+  pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.setTextColor(245,191,64);
+  pdf.text('KEMENTERIAN KEUANGAN REPUBLIK INDONESIA',left,20);
+  pdf.setTextColor(255,255,255);pdf.setFontSize(24);
+  const heading=pdf.splitTextToSize(String(model.cover?.title||'DOKUMEN PROGRAM'),170);
+  pdf.text(heading,left,43);pdf.setFontSize(12);pdf.text(pdf.splitTextToSize(String(model.cover?.subject||''),170),left,68);
+  y=129;line((model.cover?.chips||[]).join('   |   '),10,true,8);
+  if(model.cover?.meta?.length)drawTable(['IDENTITAS DOKUMEN','KETERANGAN'],model.cover.meta,[35,65]);
+ }else{
+  const banner=typeof mtRptCoverBanner==='function'?mtRptCoverBanner():null;
+  if(banner)pdf.addImage(banner.src,'PNG',left,17,bw,bw*212/1400);
+  else {
+   pdf.setFillColor(18,39,90);pdf.rect(left,17,bw,26,'F');
+   const stripe=[[242,169,59],[226,85,99],[124,92,224],[27,167,201],[22,163,127]];
+   stripe.forEach((c,i)=>{pdf.setFillColor(...c);pdf.rect(left+bw*i/5,43,bw/5,1.5,'F')});
+  }
+  y=59;pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.setTextColor(47,91,211);
+  pdf.text(String(model.cover?.kicker||'LAPORAN').toUpperCase().slice(0,84),left,y);
+  y+=6;
+  pdf.setFont('helvetica','bold');pdf.setFontSize(22);pdf.setTextColor(18,39,90);
+  const headings=pdf.splitTextToSize(String(model.cover?.title||'DOKUMEN PROGRAM'),bw);
+  headings.forEach(t=>{pdf.text(t,left,y);y+=9});
+  pdf.setFont('helvetica','normal');pdf.setFontSize(12);pdf.setTextColor(52,64,84);
+  pdf.splitTextToSize(String(model.cover?.subject||''),bw).forEach(t=>{pdf.text(t,left,y);y+=6});
+  const chips=(model.cover?.chips||[]).filter(v=>String(v||'').trim()).slice(0,4);
+  let cx=left;y+=7;
+  chips.forEach(chip=>{
+   const value=String(chip),cw=Math.min(59,Math.max(19,value.length*1.35+7));
+   if(cx+cw>right){cx=left;y+=8}
+   pdf.setFillColor(238,243,255);pdf.roundedRect(cx,y-5.5,cw,7,3,3,'F');
+   pdf.setFontSize(8.4);pdf.setFont('helvetica','bold');pdf.setTextColor(31,63,134);
+   pdf.text(value.slice(0,39),cx+3,y-1);
+   cx+=cw+3;
+  });
+  y+=14;
+  for(const pair of model.cover?.meta||[]){
+   const key=String(pair[0]||''),val=String(pair[1]||'');
+   pdf.setFont('helvetica','normal');pdf.setFontSize(9.1);pdf.setTextColor(93,110,137);
+   const vals=pdf.splitTextToSize(val,bw*.62);
+   const h=Math.max(7,vals.length*4.3+2);
+   pdf.text(key,left,y);
+   pdf.setFont('helvetica','bold');pdf.setTextColor(21,45,78);
+   vals.forEach((text,j)=>pdf.text(text,left+bw*.34,y+j*4.3));
+   pdf.setDrawColor(224,233,244);pdf.line(left,y+h-2,right,y+h-2);
+   y+=h;
+  }
+ }
  const contents=(model.blocks||[]).filter(b=>b.t==='h1'||b.t==='h2').map(b=>({text:b.text,level:b.t==='h1'?1:2}));
  if(model.formal&&contents.length){pdf.addPage();y=27;title('DAFTAR ISI');contents.forEach((b,i)=>line((b.level===2?'   ':'')+(i+1)+'. '+b.text,10,b.level===1,2));}
  pdf.addPage();y=29;
