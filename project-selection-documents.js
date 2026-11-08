@@ -41,6 +41,27 @@ function localProof(id,file){
   };
  });
 }
+
+function readLocalProof(id){
+ return new Promise((resolve,reject)=>{
+  if(!window.indexedDB)return reject(new Error('Penyimpanan lokal tidak tersedia.'));
+  const req=window.indexedDB.open('mt-signed-documents',1);
+  req.onerror=()=>reject(new Error('Gagal membuka arsip bukti pada perangkat ini.'));
+  req.onsuccess=()=>{
+   const db=req.result;if(!db.objectStoreNames.contains('proofs')){db.close();reject(new Error('Arsip lokal belum tersedia.'));return}
+   const transaction=db.transaction('proofs','readonly'),get=transaction.objectStore('proofs').get(id);
+   get.onsuccess=()=>{const file=get.result;db.close();file?resolve(file):reject(new Error('Berkas tidak ditemukan di browser ini.'))};
+   get.onerror=()=>{db.close();reject(new Error('Gagal membaca berkas.'))};
+  };
+ });
+}
+async function openSignedProof(ev){
+ const button=ev.target.closest('[data-doc-proof-open]');if(!button)return false;
+ try{const blob=await readLocalProof(button.dataset.docProofOpen),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=String(button.dataset.docProofName||'Bukti_TTE.pdf');document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),6000)}
+ catch(error){toast(error.message||String(error))}
+ return true;
+}
 async function confirmSigned(kind,id,y,file,attested){
  if(!file||!/\.pdf$/i.test(file.name)||file.type&&!/pdf/i.test(file.type))throw new Error('Unggah bukti hasil TTE dalam format PDF.');
  if(!attested)throw new Error('Konfirmasi bahwa dokumen telah ditandatangani secara elektronik.');
@@ -65,7 +86,7 @@ function versionPanel(kind,id,y){
  '<label class="psbank-version-attest"><input type="checkbox" data-doc-signed-attest> Saya menyatakan PDF sudah ditandatangani secara elektronik.</label>'+
  '<button class="btn pri" type="button" data-doc-signed-kind="'+E(kind)+'" data-doc-signed-id="'+E(id)+'" data-doc-signed-year="'+y+'">Simpan Bukti & Tetapkan v'+ver+'</button></div>'+
  '<p class="psbank-version-disclaimer">Prototype: berkas bukti disimpan di browser/perangkat ini; metadata versinya tercatat oleh aplikasi. Validasi TTE BSrE dan penyimpanan aman lintas pengguna memerlukan integrasi backend.</p>'+
- '<div class="psbank-version-rows">'+(rows.length?rows.map(x=>'<div><b>v'+x.version+' · '+E(x.status==='signed'?'Bukti TTE diunggah (belum diverifikasi)':'Dokumen digenerasi')+'</b><span>'+E(x.format||'PDF')+' · '+E(x.fileName||'')+' · '+E(x.createdAt?.slice(0,16).replace('T',' ')||'')+'</span></div>').join(''):'<small>Belum ada riwayat unduhan.</small>')+'</div></details>';
+ '<div class="psbank-version-rows">'+(rows.length?rows.map(x=>'<div><b>v'+x.version+' · '+E(x.status==='signed'?'Bukti TTE diunggah (belum diverifikasi)':'Dokumen digenerasi')+'</b><span>'+E(x.format||'PDF')+' · '+E(x.fileName||'')+' · '+E(x.createdAt?.slice(0,16).replace('T',' ')||'')+'</span>'+(x.status==='signed'?'<button class="btn" type="button" data-doc-proof-open="'+E(x.id)+'" data-doc-proof-name="'+E(x.fileName)+'">↓ Bukti TTE</button>':'')+'</div>').join(''):'<small>Belum ada riwayat unduhan.</small>')+'</div></details>';
 }
 
 const join=x=>Array.isArray(x)?x.map(a=>typeof a==='string'?a:(a.t||a.m||a.nama||'')).filter(Boolean).join(' • '):String(x||'');
@@ -339,6 +360,7 @@ function click(ev,p,inline=false){
  if(slide){const d=cfg();d.slide=Math.max(0,Math.min(slidePages(p).length-1,(+d.slide||0)+ +slide.dataset.docSlide));save();if(!inline)render();return true}
  if(ev.target.closest('[data-doc-export]')){exportFile(p);return true}
  if(ev.target.closest('[data-doc-signed-kind]')){processSigned(ev);return true}
+ if(ev.target.closest('[data-doc-proof-open]')){openSignedProof(ev);return true}
  return false;
 }
 function change(ev,inline=false){
@@ -348,5 +370,5 @@ function change(ev,inline=false){
  if(q.dataset.docFormat!==undefined){d.format=q.value;d.slide=0;save();if(!inline)render();return true}
  return false;
 }
-window.MT_PS_DOC={fields,sections,slidePages,paper,builder,exportFile,click,change,documentPreview,versionPanel,nextVersion,registerExport,confirmSigned,history,processSigned,portfolioBuilder,portfolioClick,portfolioChange,portfolioExport,version:'20261108-program-document-builder-v3'};
+window.MT_PS_DOC={fields,sections,slidePages,paper,builder,exportFile,click,change,documentPreview,versionPanel,nextVersion,registerExport,confirmSigned,history,processSigned,openSignedProof,portfolioBuilder,portfolioClick,portfolioChange,portfolioExport,version:'20261108-program-document-builder-v3'};
 })();
