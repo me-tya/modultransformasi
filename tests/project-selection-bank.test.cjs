@@ -208,3 +208,24 @@ test('Program Carry Over allows editing acronym and updates year code',()=>{
  assert.match(source['project-selection-program-bank.js'],/data-carry-akronim/);
  assert.match(source['project-selection-program-bank.js'],/data-carry-code/);
 });
+
+test('TTE upload closes v1 and next document is v2, while plain downloads keep v1',async()=>{
+ const m=boot(),d=m.docs,programId=m.target.id;
+ d.registerExport('program',programId,2027,'pdf','Perencanaan_v1.pdf');
+ const opened=[];
+ m.ctx.window.crypto={subtle:{digest:async()=>new Uint8Array(32).fill(7).buffer}};
+ m.ctx.window.indexedDB={open:()=>{
+  const req={result:{objectStoreNames:{contains:()=>true},close:()=>{},transaction:()=>{
+   const tx={objectStore:()=>({put:(file,id)=>opened.push({file,id})})};
+   setImmediate(()=>tx.oncomplete());return tx;
+  }}};
+  setImmediate(()=>req.onsuccess());return req;
+ }};
+ const file={name:'Hasil_TTE_v1.pdf',type:'application/pdf',size:1500,arrayBuffer:async()=>new Uint8Array([1,2,3]).buffer};
+ assert.equal(await d.confirmSigned('program',programId,2027,file,true),1);
+ assert.equal(d.nextVersion('program',programId,2027),2);
+ assert.equal(opened.length,1);
+ assert.equal(d.history('program',programId,2027).find(x=>x.status==='signed').hash.length,64);
+ d.registerExport('program',programId,2027,'word','Perencanaan_v2.docx');
+ assert.equal(d.nextVersion('program',programId,2027),2);
+});
