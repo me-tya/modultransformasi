@@ -261,7 +261,7 @@ function mount(){
 /* Reusable column sorting for all regular data tables in Modul Transformasi.
    Presentation-only; it does not reorder WBS hierarchy or persist table rows. */
 (function installUniversalSort(){
- if(window.MT_TABLE_SORT_INSTALLED)return;window.MT_TABLE_SORT_INSTALLED=true;
+ if(window.MT_TABLE_SORT_INSTALLED||typeof document.addEventListener!=='function')return;window.MT_TABLE_SORT_INSTALLED=true;
  const ignore='[data-nosort],.psbank-docpaper,.psbank-paper,.psbank-docpreview,.psbank-docsection,.psbank-editform,.rpt,.wbs-tree,.wbs-hierarchy,.tree-table';
  const sortable=th=>{
   const table=th?.closest('table');
