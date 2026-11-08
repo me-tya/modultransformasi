@@ -447,7 +447,14 @@ function mount(){
   else if(q.id==='pswf-params'){state().params=q.checked;save();render()}
  });
  const search=root.querySelector('#pswf-search');
- if(search)search.addEventListener('input',()=>{state().q=search.value;const n=search.selectionStart;save();render();const next=document.querySelector('#pswf-search');if(next){next.focus();next.setSelectionRange(n,n)}});
+ if(search)search.addEventListener('input',()=>{
+  state().q=search.value;const cursor=search.selectionStart;save();
+  clearTimeout(window.__mtPswfSearchTimer);
+  window.__mtPswfSearchTimer=setTimeout(()=>{
+   render();const next=document.querySelector('#view #pswf-search');
+   if(next){next.focus({preventScroll:true});try{next.setSelectionRange(cursor,cursor)}catch(_){}}
+  },240);
+ });
  if(window.MT_PS_GOV)window.MT_PS_GOV.mount(pickedProgram,render);
 }
 function modal(title,body,saveFn,saveLabel){
@@ -499,7 +506,7 @@ function programModal(p){
    psOutcome:val(box,'outcome'),psRisks:p?.psRisks||'',psThemes:val(box,'themes'),psYear:y,
    psUpdatedAt:new Date().toISOString(),psUpdatedBy:ME.email||''});
   if(isNew)allPrograms().push(target);
-  state().prog=target.id;state().tab=isNew?'mapping':'usulan';S.ui.ps27=S.ui.ps27||{};S.ui.ps27.usulanSub='detail';S.ui.psBank=S.ui.psBank||{};S.ui.psBank.tab='detail';S.ui.psBank.workspace=target.id;S.ui.psBank.wtab='identity';S.ui.psBank.target=target.id;if(isNew)S.ui.psGov={step:'identity'};save();close();render();toast('Program tersimpan. '+(isNew?'Lanjutkan Pemetaan Proyek; detail lainnya dapat dilengkapi melalui Workspace.':'Profil program telah diperbarui.'));
+  state().prog=target.id;state().tab='usulan';S.ui.ps27=S.ui.ps27||{};S.ui.ps27.usulanSub='detail';S.ui.psBank=S.ui.psBank||{};S.ui.psBank.tab='detail';S.ui.psBank.workspace=target.id;S.ui.psBank.wtab='identity';S.ui.psBank.target=target.id;if(isNew)S.ui.psGov={step:'identity'};save();close();render();toast('Program tersimpan. '+(isNew?'Program baru tersedia di Daftar Program; lengkapi detailnya sebelum melakukan pemetaan proyek.':'Profil program telah diperbarui.'));
  },isNew?'Tambah Program':'Simpan Program');
 }
 function deleteProgram(p){
