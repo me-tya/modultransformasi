@@ -688,3 +688,17 @@
 #app .psbank-card:has(.psbank-history-table) .psbank-pagination{
  margin-top:8px!important;
 }
+
+
+/* Explicitly disable both scroll axes on the data lists. Setting only overflow-y:
+   visible with overflow-x:auto computes back to auto per CSS overflow rules. */
+#app .psbank-card:has(> .psbank-tablewrap > .psbank-detail-table) > .psbank-tablewrap,
+#app .psbank-card:has(> .psbank-tablewrap > .psbank-history-table) > .psbank-tablewrap{
+ overflow:visible!important;overflow-x:visible!important;overflow-y:visible!important;
+ height:auto!important;max-height:none!important;min-height:0!important;
+ scrollbar-width:none!important;overscroll-behavior:auto!important;
+}
+#app .psbank-card:has(.psbank-detail-table) .psbank-detail-table,
+#app .psbank-card:has(.psbank-history-table) .psbank-history-table{
+ min-width:0!important;width:100%!important;
+}
