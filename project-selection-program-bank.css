@@ -714,3 +714,77 @@
 #app .psbank-docscroll:has(.psbank-actual-view){overflow:auto!important;padding:0!important}
 #app .psbank-docscroll .psbank-actual-view .psbank-port-report-frame,
 #app .psbank-docscroll .psbank-actual-view .psbank-program-report-frame{width:100%;min-height:800px}
+
+
+/* Program PowerPoint faithful slide preview: same 16:9 cover, grid placement,
+   navy/gold accents and page numbering as generated pptx. */
+#app .psbank-slidepreview.psbank-export-cover,
+#app .psbank-slidepreview.psbank-export-section{
+ position:relative;aspect-ratio:16/9;min-height:0!important;padding:0!important;
+ overflow:hidden;border:0!important;display:flex;flex-direction:column;
+ box-shadow:0 4px 13px #14345624;border-radius:3px;
+}
+#app .psbank-slidepreview.psbank-export-cover{
+ background:#0b2447;color:#fff;justify-content:flex-start;
+ padding:5% 7.5% 7%!important;border-left:8px solid #fdb913!important;
+}
+#app .psbank-export-cover .psbank-slide-export-kicker{
+ color:#fdb913;font:850 clamp(10px,1.05vw,15px)/1.3 'Inter',sans-serif;
+ margin:1% 0 11%;letter-spacing:.035em;
+}
+#app .psbank-slidepreview.psbank-export-cover h2{
+ font:850 clamp(19px,2.35vw,32px)/1.16 'Inter',sans-serif;color:#fff;
+ margin:0 0 4%!important;max-width:100%;overflow-wrap:anywhere;
+}
+#app .psbank-slidepreview.psbank-export-cover h3{
+ font:700 clamp(16px,2vw,26px)/1.2 'Inter',sans-serif;color:#fff;
+ margin:0 0 7%!important;overflow-wrap:anywhere;
+}
+#app .psbank-slidepreview.psbank-export-cover>small{
+ font:600 clamp(10px,1.05vw,16px)/1.3 'Inter',sans-serif;color:#fdb913;
+}
+#app .psbank-export-cover>footer,
+#app .psbank-export-section>footer{
+ position:absolute;bottom:0;left:0;right:0;height:4%;min-height:19px;
+ display:flex;align-items:center;justify-content:space-between;
+ padding:0 4.5%;font:650 9px 'Inter',sans-serif;letter-spacing:.02em;
+}
+#app .psbank-export-cover>footer{background:#0b2447;color:#cbdbea}
+#app .psbank-export-section>footer{background:#eaf1f8;color:#66809d}
+#app .psbank-export-cover>footer>span{color:#fdb913}
+#app .psbank-slidepreview.psbank-export-section{
+ background:#fff;padding:3.25% 4.5% 4.6%!important;
+ border-top:7px solid #fdb913!important;
+}
+#app .psbank-export-section .psbank-slide-export-kicker{
+ color:#1e507e;font:800 10px/1.4 'Inter',sans-serif;letter-spacing:.05em;
+}
+#app .psbank-slidepreview.psbank-export-section h3{
+ color:#0b2447;font:850 clamp(16px,2vw,25px)/1.13 'Inter',sans-serif;
+ margin:1.8% 0 1%!important;
+}
+#app .psbank-slidepreview.psbank-export-section>small{
+ color:#627892;font:550 11px/1.3 'Inter',sans-serif;
+}
+#app .psbank-export-section .psbank-slidebody{
+ margin:3% 0 0!important;display:grid!important;align-content:start!important;
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;
+}
+#app .psbank-export-section .psbank-slidebody article{
+ min-width:0;padding:9px 11px!important;border-radius:2px!important;
+ border:1px solid #dce6f0!important;border-left:4px solid #fdb913!important;
+ background:#f2f6fb!important;box-shadow:none!important;
+}
+#app .psbank-export-section .psbank-slidebody b{
+ display:block;font-size:11px!important;line-height:1.26!important;color:#19456f!important;
+}
+#app .psbank-export-section .psbank-slidebody p{
+ margin:6px 0 0!important;font-size:11.5px!important;line-height:1.36!important;
+ color:#415974!important;overflow-wrap:anywhere!important;max-height:5.5em;overflow:hidden;
+}
+@media(max-width:720px){
+ #app .psbank-export-section .psbank-slidebody{gap:5px!important}
+ #app .psbank-export-section .psbank-slidebody article{padding:5px!important}
+ #app .psbank-export-section .psbank-slidebody b{font-size:9px!important}
+ #app .psbank-export-section .psbank-slidebody p{font-size:9px!important;line-height:1.25!important}
+}
