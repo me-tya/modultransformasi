@@ -403,3 +403,59 @@
 #app .psbank-paper-edit [data-bank-entry-template]{display:none}
 #app .psbank-dialog .psbank-dialogbody:has(.psbank-paper-edit){scrollbar-gutter:stable}
 @media(max-width:790px){#app .psbank-paper-edit .psbank-paper-body,#app .psbank-register-grid{grid-template-columns:1fr}}
+
+/* Keep action buttons inside a real table cell: never flex the <td> itself. */
+#app td.psbank-results-actions{display:table-cell!important;text-align:center!important;white-space:nowrap;vertical-align:middle!important;width:145px;min-width:145px;padding:7px 8px!important}
+#app td.psbank-results-actions>.psbank-action-icon{display:inline-flex!important;align-items:center;justify-content:center;vertical-align:middle;width:34px!important;height:34px!important;min-height:34px!important;min-width:34px!important;max-height:34px!important;max-width:34px!important;flex:0 0 auto;padding:0!important;margin:0 2px!important;line-height:1!important;box-sizing:border-box!important}
+#app td.psbank-results-actions>.psbank-action-icon svg{display:block;width:16px!important;height:16px!important;flex:none}
+#app .psbank-proposal-table tr[data-scope-proposal-focus]{cursor:pointer}
+#app .psbank-proposal-table tr[data-scope-proposal-focus]:hover td{background:#eff5fd}
+#app .psbank-all-intro{background:#f1f6fb;border:1px solid #dce8f4;border-radius:10px;padding:12px 15px;margin-bottom:12px}
+#app .psbank-all-intro b{color:#153a6a;font:800 13px 'Inter',sans-serif}
+#app .psbank-all-intro p{font:500 11.5px/1.5 'Inter',sans-serif;color:#5e7893;margin:5px 0 0}
+#app .psbank-all-programs{display:grid;grid-template-columns:1fr;gap:7px}
+#app .psbank-all-item{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:12px 14px;border:1px solid #dbe5f0;border-radius:9px;background:#fff}
+#app .psbank-all-item b{display:block;font:800 12px 'Inter',sans-serif;color:#1a416a}
+#app .psbank-all-item small{display:block;margin-top:4px;font:500 10.5px 'Inter',sans-serif;color:#7188a1}
+/* Audit Trail actions, consistently positioned without changing header height. */
+#app .mt-audit-trigger{position:absolute;right:11px;top:8px;z-index:5;display:inline-flex;align-items:center;gap:6px;padding:7px 11px;height:33px;min-height:33px;max-height:33px;background:#f2f6fc;color:#244f83;border:1px solid #c7daee;border-radius:9px;box-shadow:0 1px 2px #122d4c0a;font:750 11px 'Inter',sans-serif;cursor:pointer;white-space:nowrap}
+#app .mt-audit-trigger:hover{background:#e8f2ff;border-color:#a5c4e7}
+#app .mt-audit-trigger svg{display:block}
+.mt-audit-overlay{position:fixed;inset:0;background:rgba(4,20,45,.63);z-index:9800;display:flex;justify-content:center;align-items:center;padding:16px;font-family:'Inter',sans-serif;backdrop-filter:blur(3px)}
+.mt-audit-dialog{width:min(1100px,96vw);height:min(80vh,780px);background:white;border:1px solid #d4e1ef;border-radius:16px;box-shadow:0 24px 80px #07162f62;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.mt-audit-dialog>header{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:17px 21px;background:#fff;border-bottom:1px solid #e2eaf4;flex:0 0 auto}
+.mt-audit-title{display:flex;gap:12px;align-items:center}
+.mt-audit-symbol{height:45px;width:45px;display:grid;place-items:center;border-radius:50%;background:#eaf1fc;color:#174b89;font-size:26px}
+.mt-audit-title h3{margin:0;color:#102e50;font:800 18px 'Inter',sans-serif}
+.mt-audit-title small{display:block;color:#72829a;margin-top:4px;font:500 11.5px 'Inter',sans-serif}
+.mt-audit-dialog>header button{border:0;background:#f1f4f9;color:#546b88;height:34px;width:34px;border-radius:9px;font-size:18px;cursor:pointer}
+.mt-audit-controls{display:grid;grid-template-columns:minmax(0,1fr) 180px 160px;gap:11px;padding:14px 20px;flex:0 0 auto}
+.mt-audit-controls input,.mt-audit-controls select{height:37px;border:1px solid #cbd8e7;border-radius:8px;padding:8px 11px;font:550 11.5px 'Inter',sans-serif;color:#263f61;background:#fff;min-width:0}
+.mt-audit-scroll{flex:1;min-height:0;overflow:auto;margin:0 20px;border:1px solid #dce5ef;border-radius:9px}
+.mt-audit-scroll table{border-collapse:collapse;width:100%;font:500 11.5px/1.5 'Inter',sans-serif;table-layout:fixed}
+.mt-audit-scroll th{background:#f0f4f9;color:#1b3963;text-align:left;padding:12px 11px;font:800 11px 'Inter',sans-serif;position:sticky;top:0;z-index:2}
+.mt-audit-scroll td{padding:12px 11px;vertical-align:top;border-top:1px solid #e6edf6;color:#314663;overflow-wrap:anywhere}
+.mt-audit-scroll th:nth-child(1){width:5%}
+.mt-audit-scroll th:nth-child(2){width:14%}
+.mt-audit-scroll th:nth-child(3){width:17%}
+.mt-audit-scroll th:nth-child(4){width:49%}
+.mt-audit-scroll th:nth-child(5){width:15%}
+.mt-audit-scroll td small{display:block;font:500 10px 'Inter',sans-serif;color:#72829a;margin-top:4px}
+.mt-audit-date{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;white-space:normal}
+.mt-audit-chip{display:inline-block;border-radius:20px;padding:5px 10px;font:800 10px 'Inter',sans-serif;background:#eaf1fc;color:#1e57a0;white-space:nowrap}
+.mt-audit-chip.ditambahkan{background:#e8f7ef;color:#108352}
+.mt-audit-chip.dihapus{background:#fce9e9;color:#c83f4b}
+.mt-audit-scroll details{margin-top:7px}
+.mt-audit-scroll summary{color:#295e93;cursor:pointer;font-size:10.5px;font-weight:750}
+.mt-audit-changes{padding:8px;background:#f5f8fc;border:1px solid #e2eaf2;border-radius:8px;display:grid;gap:7px;margin-top:6px}
+.mt-audit-changes>div{border-bottom:1px solid #e1eaf1;padding-bottom:6px}
+.mt-audit-changes b{font-size:10px;color:#315b84}
+.mt-audit-changes p{display:flex;align-items:flex-start;gap:8px;margin:4px 0 0;font-size:10px;overflow-wrap:anywhere}
+.mt-audit-changes p>span{flex:1;min-width:0}
+.mt-audit-changes p>strong{color:#d69911}
+.mt-audit-empty{text-align:center;padding:32px!important;color:#607b98}
+.mt-audit-disclaimer{margin:12px 20px;background:#edf4fc;border:1px solid #d4e3f6;border-radius:8px;padding:10px 13px;color:#3564a2;font:500 10.5px/1.6 'Inter',sans-serif}
+.mt-audit-dialog>footer{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #edf1f7}
+.mt-audit-dialog>footer span{color:#7486a0;font:600 11px 'Inter',sans-serif}
+.mt-audit-dialog>footer button{padding:8px 13px;border:1px solid #cbd9ec;background:#fff;border-radius:9px;color:#173969;font:750 11px 'Inter',sans-serif;cursor:pointer}
+@media(max-width:750px){.mt-audit-controls{grid-template-columns:1fr 1fr}.mt-audit-controls input{grid-column:1/-1}.mt-audit-scroll th:nth-child(2){width:19%}.mt-audit-scroll th:nth-child(4){width:43%}#app .mt-audit-trigger span{display:none}#app .mt-audit-trigger{width:33px;padding:0;justify-content:center}}
