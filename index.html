@@ -7877,7 +7877,7 @@ function rptModel(c,inc,o){o=o||{};const B=[],e=x=>String(x??''),R=rptRegs(c),T=
  return {lang:'id',formal:!!inc.toc,fileName:fn,header:docType+' · '+coverName,
   cover:{kicker:docType,title:coverName,subject:'Tahun '+S.ui.tahun,
    chips:[one?String(one.p.kode||''):'',o.stage?(PMO_REPORT_LABEL[o.stage]||o.stage):'',String(S.ui.tahun)],scope:[],
-   meta:identity,noTte:!inc.tte,tte:{city:sg.city||'Jakarta',date:sg.date||rptLongDate(TODAY),label:sg.label||'',title:sg.title||'',name:sg.name||''}},blocks:B}}
+   meta:identity,noTte:!inc.tte,tte:{city:sg.city||'',date:sg.date||'',label:sg.label||'',title:sg.title||'',name:sg.name||''}},blocks:B}}
 function rptFile(c,ext){const s=x=>String(x||'').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,50);return 'Laporan_'+s(c.spec.k==='filter'?'Program_Sesuai_Filter':c.name)+'_TA'+S.ui.tahun+'_'+TODAY+'.'+ext}
 function rptXlsx(c,name){if(!window.XLSX){toast('Pustaka Excel belum termuat.');return}const wb=XLSX.utils.book_new(),add=(n,a,w)=>{const ws=XLSX.utils.aoa_to_sheet(a);if(w)ws['!cols']=w.map(x=>({wch:x}));XLSX.utils.book_append_sheet(wb,ws,n)},R=rptRegs(c);
  add('Ringkasan',[[c.title],[c.name],['Filter',c.filter],['Dicetak',fmtD(TODAY)],[],['Program','Proyek','Item WBS','Progres tervalidasi (%)','Item terlambat','Item bukti valid'],[c.G.length,c.G.reduce((a,g)=>a+g.P.length,0),c.x.cnt,c.x.pg,c.x.late,c.x.valid]],[24,60,12,22,14,16]);
