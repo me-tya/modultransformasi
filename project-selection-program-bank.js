@@ -295,6 +295,95 @@ function mount(){
  document.addEventListener('keydown',ev=>{if((ev.key==='Enter'||ev.key===' ')&&ev.target.matches('th')){ev.preventDefault();apply(ev.target)}});
 })();
 
+
+/* Shared filter is opt-in; otherwise every menu/tab keeps its own local filter.
+   Apply only compatible year/program/status/search fields; do not overwrite
+   source-project selectors or arbitrary form fields. */
+(function initSharedFilters(){
+ if(typeof MutationObserver==='undefined'||typeof document.querySelectorAll!=='function'||window.MT_SHARED_FILTER_READY)return;
+ window.MT_SHARED_FILTER_READY=true;
+ const saved=()=>{S.ui=S.ui||{};return S.ui.mtSharedFilter||(S.ui.mtSharedFilter={enabled:false,year:'',programName:'',status:'',search:''})};
+ const compact=x=>String(x||'').toLowerCase().replace(/\s+/g,' ').trim();
+ const labelFor=(node)=>{
+  if(!node)return '';
+  const label=node.closest('label');return compact(label?.textContent?.replace(node.textContent||'','')||node.getAttribute('aria-label')||'');
+ };
+ const chooseSelect=(root,key)=>{
+  if(key==='year')return root.querySelector('[data-ps27-year]')||[...root.querySelectorAll('select')].find(x=>/\btahun\b/.test(labelFor(x)))||null;
+  if(key==='program')return root.querySelector('[data-ps27-prog]')||[...root.querySelectorAll('select')].find(x=>/\bprogram\b/.test(labelFor(x))&&!/sumber|tujuan/.test(labelFor(x)))||null;
+  if(key==='status')return root.querySelector('[data-ps27-status]')||[...root.querySelectorAll('select')].find(x=>/\bstatus\b/.test(labelFor(x)))||null;
+  return null;
+ };
+ const searchInput=root=>root.querySelector('[data-ps27-query]')||[...root.querySelectorAll('input[type="search"]')].find(x=>!/modul sumber|proyek sumber/i.test(x.placeholder||''))||null;
+ function panels(){
+  const root=document.querySelector('#view')||document.querySelector('#app')||document.body;
+  if(!root)return[];
+  const x=new Set([...root.querySelectorAll('.ps27-filter')]);
+  [...root.querySelectorAll('button')].forEach(btn=>{
+   const word=compact(btn.textContent).replace(/[▽▼⌄⌃]/g,'');
+   if(word!=='filter'&&!/^filter\b/.test(word))return;
+   let panel=btn.parentElement,walk=0;
+   while(panel&&walk<4&&!/(filter|flt|fbar)/i.test(panel.className||'')){panel=panel.parentElement;walk++}
+   if(panel&&panel!==root)x.add(panel);
+  });
+  return [...x].filter(el=>!el.closest('.psbank-overlay')&&!el.matches('.mt-shared-filter'));
+ }
+ function capture(){
+  const f=saved(),root=document.querySelector('#view');if(!root)return;
+  const yearEl=chooseSelect(root,'year'),prog=chooseSelect(root,'program'),stat=chooseSelect(root,'status'),search=searchInput(root);
+  f.year=yearEl?.value&&yearEl.value!=='all'?yearEl.value:String(S.ui.tahun||'');
+  f.programName=prog?.selectedOptions?.[0]&&prog.value?String(prog.selectedOptions[0].textContent||'').trim():'';
+  f.status=stat?.value&&stat.value!=='all'?stat.value:'';
+  f.search=search?.value||'';
+ }
+ let applying=false;
+ function apply(){
+  const f=saved(),root=document.querySelector('#view');if(!f.enabled||!root||applying)return;
+  const targets=[['year',f.year],['program',f.programName],['status',f.status]];
+  for(const [kind,desired] of targets){
+   if(!desired)continue;
+   const select=chooseSelect(root,kind);if(!select)continue;
+   const option=[...select.options].find(o=>kind==='program'?
+    compact(o.textContent)===compact(desired)||compact(o.textContent).includes(compact(desired))||compact(desired).includes(compact(o.textContent))&&o.value:
+    String(o.value)===String(desired)||compact(o.textContent)===compact(desired));
+   if(!option||select.value===option.value)continue;
+   applying=true;select.value=option.value;select.dispatchEvent(new Event('change',{bubbles:true}));applying=false;return;
+  }
+  const inp=searchInput(root);
+  if(inp&&f.search!=null&&inp.value!==f.search){
+   applying=true;inp.value=f.search;inp.dispatchEvent(new Event('input',{bubbles:true}));applying=false;
+  }
+ }
+ function inject(){
+  const f=saved();
+  panels().forEach(panel=>{
+   if(panel.querySelector('.mt-shared-filter'))return;
+   const label=document.createElement('label');label.className='mt-shared-filter';
+   const input=document.createElement('input');input.type='checkbox';input.className='mt-shared-filter-check';input.checked=!!f.enabled;
+   input.setAttribute('aria-label','Terapkan filter di semua menu');
+   const span=document.createElement('span');span.textContent='Terapkan di semua menu';
+   label.appendChild(input);label.appendChild(span);panel.appendChild(label);
+  });
+  document.querySelectorAll('.mt-shared-filter-check').forEach(x=>{x.checked=!!f.enabled});
+ }
+ document.addEventListener('change',event=>{
+  const box=event.target.closest?.('.mt-shared-filter-check');
+  if(box){const f=saved();f.enabled=box.checked;if(f.enabled)capture();save();inject();return}
+  if(applying)return;
+  if(saved().enabled&&event.target.closest?.('#view')&&event.target.matches?.('select,input[type="search"]')){capture();save()}
+ },true);
+ document.addEventListener('input',event=>{
+  if(applying||!saved().enabled)return;
+  if(event.target.closest?.('#view')&&event.target.matches?.('input[type="search"]')){capture()}
+ },true);
+ let running=false;
+ function update(){if(running)return;running=true;try{inject();apply()}finally{running=false}}
+ const begin=()=>{const root=document.querySelector('#view')||document.body;if(!root)return;
+  const observer=new MutationObserver(()=>update());observer.observe(root,{childList:true,subtree:true});update();
+ };
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',begin,{once:true});else begin();
+})();
+
 A.page=page;A.mount=mount;A.version='20261108-project-selection-ui-v6';
 window.MT_PS_BANK_CORE={records,bank,detail,usulan,addOne,bulk,openCarry,codeFor,showPreview,current,openWorkspace,version:A.version};
 if(typeof VIEW!=='undefined'&&VIEW==='project-selection'&&ME)render();
