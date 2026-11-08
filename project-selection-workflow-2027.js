@@ -96,7 +96,7 @@ function filter(p){
  const b=S.ui.psBank||(S.ui.psBank={}),u=state(),arr=list(),tab=b.tab||'bank',w=ws(),
   f=S.ui.mtSharedFilter?.enabled?S.ui.mtSharedFilter:localFilter(),
   q=String(f.search||'').toLowerCase(),st=f.status||'all';
- b.search=f.search||'';b.filterStatus=st;b.filterYear=f.year||'all';b.filterUnit=f.unit||'all';b.filterRole=f.unitRole||'all';b.filterPeriod=f.period||'all';
+ b.search=f.search||'';b.filterStatus=st;b.filterYear=f.year||'all';b.filterUnit=f.unit||'all';b.filterRole=f.unitRole||'all';b.filterPeriod=f.period||'all';b.filterRangeFrom=f.rangeFrom||'';b.filterRangeTo=f.rangeTo||'';
  if(u.tab==='usulan'&&tab==='bank')b.filterProgram=f.program||'';
  if(u.tab==='usulan'&&tab==='detail')b.detailProgram=f.program||'';
  const onBank=u.tab==='usulan'&&tab==='bank',opts=onBank?(S.programs||[]):arr,
