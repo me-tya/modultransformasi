@@ -18,8 +18,8 @@ test('Riwayat dan Daftar Program: Kode Program tepat sebelum Nama Program',()=>{
 test('Dokumen Program dan Portofolio selalu gunakan engine formal Laporan Akhir Proyek',()=>{
  assert.match(docs,/formal:true,toc:!!d\.toc,header:'Dokumen Perencanaan Program/);
  assert.match(docs,/return \{lang:'id',formal:true,toc:true,fileName:/);
- assert.match(docs,/const blob=await mtRptDocx\(model\)/);
- assert.match(docs,/await mtRptDocx\(programReportModel\(p\)\)|await mtRptDocx\(model\)/);
+ assert.match(docs,/const blob=await assertOfficialWordTemplate\(await mtRptDocx\(model\)\)/);
+ assert.match(docs,/await assertOfficialWordTemplate\(await mtRptDocx\(model\)\)/);
  assert.match(docs,/Do not fall back to the deprecated plain XML document template/);
  assert.doesNotMatch(docs,/const zip=new window\.JSZip\(\);let body=''/);
  assert.match(docs,/showActualDocumentPreview\(root,programReportModel\(p\),d\.format\)/);
