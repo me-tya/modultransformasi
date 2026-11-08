@@ -44,7 +44,7 @@ const uid2=t=>(t||'ps')+'-'+Date.now().toString(36)+'-'+Math.random().toString(3
 const clean=v=>String(v==null?'':v).trim();
 const programs=()=>{
  const y=year(),a=allPrograms().filter(p=>+p.psYear===y);
- if(y===2026)allPrograms().filter(p=>!p.psYear&&+p.mulai<=y&&(String(p.periode||'').includes('2026')||+p.mulai===y)).forEach(p=>a.push(p));
+ if(y===2026)allPrograms().filter(p=>{if(p.psYear)return false;const yrs=String(p.periode||'').match(/20\d{2}/g)||[];const start=+p.mulai||+(yrs[0]||0),end=+(yrs[yrs.length-1]||start);return start&&start<=y&&end>=y}).forEach(p=>a.push(p));
  return a;
 };
 const norm=p=>{
