@@ -463,6 +463,98 @@ function open(mode){
 }
 
 
+
+/* DOCX OOXML generator: editable Word, not an HTML file renamed .docx.
+   Draft format references KMK 132/2025 Lampiran II: Charter, acceptance criteria, work plan.
+   The generated document is a proposal; it is NOT a ministerial decision. */
+function wx(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;')}
+function wp(txt,kind){
+ const isTitle=kind==='title',isHead=kind==='head';
+ const fs=isTitle?32:isHead?25:21,after=isTitle?250:isHead?180:90;
+ return '<w:p><w:pPr><w:spacing w:before="0" w:after="'+after+'"/>'+(isHead?'<w:keepNext/>':'')+'</w:pPr><w:r><w:rPr>'+(isTitle||isHead?'<w:b/>':'')+'<w:sz w:val="'+fs+'"/><w:color w:val="'+(isTitle||isHead?'17365B':'233B57')+'"/></w:rPr><w:t xml:space="preserve">'+wx(txt)+'</w:t></w:r></w:p>';
+}
+function wt(rows){
+ const out=rows.map((r,i)=>'<w:tr>'+r.map(v=>'<w:tc><w:tcPr><w:tcW w:w="2000" w:type="dxa"/><w:shd w:fill="'+(i===0?'DDE8F4':'FFFFFF')+'"/></w:tcPr><w:p><w:pPr><w:spacing w:after="30"/></w:pPr><w:r><w:rPr>'+(i===0?'<w:b/>':'')+'<w:sz w:val="19"/></w:rPr><w:t xml:space="preserve">'+wx(v)+'</w:t></w:r></w:p></w:tc>').join('')+'</w:tr>').join('');
+ return '<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/><w:tblBorders>'+
+ ['top','left','bottom','right','insideH','insideV'].map(k=>'<w:'+k+' w:val="single" w:sz="4" w:color="CCD7E5"/>').join('')+'</w:tblBorders><w:tblCellMar><w:top w:w="90" w:type="dxa"/><w:left w:w="90" w:type="dxa"/><w:bottom w:w="90" w:type="dxa"/><w:right w:w="90" w:type="dxa"/></w:tblCellMar></w:tblPr>'+out+'</w:tbl>'+wp('');
+}
+function rkmkContent(p,blank){
+ const selected=p&&!blank?chosen(p):[];
+ const filler='[Diisi sesuai hasil penetapan/keputusan]';
+ const y=p&&p.psYear||year();
+ const prop=k=>p&&!blank&&clean(p[k])?p[k]:filler;
+ const out=[];
+ out.push(wp('RANCANGAN RKMK PROGRAM / INISIATIF STRATEGIS','title'));
+ out.push(wp('KEMENTERIAN KEUANGAN · TAHUN '+y,'head'));
+ out.push(wp('Template kerja untuk reviu PMO. Bukan dokumen keputusan atau pengesahan resmi.'));
+ out.push(wp('A. IDENTITAS PROGRAM','head'));
+ out.push(wt([
+  ['Uraian','Informasi'],
+  ['Nama Program/Inisiatif Strategis',p&&!blank?p.nama:filler],
+  ['Kode Program',p&&!blank?p.kode:filler],
+  ['Tahun/Periode',''+y],
+  ['Jenis/Tema',p&&!blank?([p.jenis,p.psThemes].filter(Boolean).join(' · ')):filler],
+  ['UIC Utama',prop('uic')],
+  ['UIC Pendukung',prop('pend')],
+  ['Sponsor/Penanggung Jawab',prop('sponsor')],
+  ['Status Penyusunan',blank?'TEMPLATE BELUM DIISI':'DRAF berdasarkan proyek yang ditetapkan']
+ ]));
+ out.push(wp('B. CHARTER INISIATIF','head'));
+ out.push(wt([
+  ['Komponen Charter','Uraian'],
+  ['Tujuan Inisiatif',prop('psObjective')],
+  ['Latar Belakang',prop('psBackground')],
+  ['Terobosan / Strategi',prop('psStrategy')],
+  ['Output','Lihat daftar proyek/deliverable pada Bagian C.'],
+  ['Outcome',prop('psOutcome')],
+  ['Periode',''+y],
+  ['Risiko',prop('psRisks')],
+  ['Unit Pengelola',prop('uic')+'; pendukung: '+prop('pend')],
+  ['Key Milestones','Diuraikan berdasarkan proyek terpilih; detail WBS disusun setelah penetapan.']
+ ]));
+ out.push(wp('C. DAFTAR PROYEK / MODUL YANG DITETAPKAN','head'));
+ out.push(wp('Metode pemilihan: '+(p&&!blank?(p.psPrioritize?'SMART 12 kriteria; skor absolut > '+p.psThreshold+'%':'Pemilihan manual, tanpa SMART'):'[Diisi: SMART atau seleksi manual]')));
+ out.push(wt([['No','Proyek/Modul','UIC','Output / Deliverable','Skor SMART'],...(selected.length?selected.map((x,i)=>[''+(i+1),x.name,x.uic||p.uic,x.outputs||filler,p.psPrioritize?labelScore(calc(x,p)):'Tidak digunakan']):[['1',filler,filler,filler,filler]])]));
+ out.push(wp('D. KRITERIA PENYELESAIAN (ACCEPTANCE CRITERIA)','head'));
+ out.push(wt([['No','Milestone/Proyek','Kriteria Penyelesaian','Bukti Penyelesaian'],...(selected.length?selected.map((x,i)=>[''+(i+1),x.name,x.accepted||filler,'[Dokumen/hasil uji/BA/persetujuan]']):[['1',filler,filler,filler]])]));
+ out.push(wp('E. RENCANA KERJA INISIATIF','head'));
+ out.push(wt([['No','Tindakan / Proyek','Mulai','Target/Go-live','Penanggung Jawab'],...(selected.length?selected.map((x,i)=>[''+(i+1),x.name,x.start||filler,x.goLive||filler,x.pic||x.uic||filler]):[['1',filler,filler,filler,filler]])]));
+ out.push(wp('Catatan: tabel merupakan jadwal tingkat tinggi. WBS, milestone detail, bobot, dan realisasi ditetapkan pada menu Project Management setelah persetujuan rancangan.'));
+ out.push(wp('F. REVIU DAN PENETAPAN','head'));
+ out.push(wt([['Tahap','Pejabat/Unit','Tanggal & Catatan'],['Penyusunan',prop('uic'),filler],['Reviu PMO Kementerian','PMO Kementerian',filler],['Persetujuan/Penetapan','[Pejabat berwenang]',filler]]));
+ out.push(wp('Referensi struktur: Lampiran II KMK Nomor 132 Tahun 2025 tentang Implementasi Inisiatif Strategis Kementerian Keuangan Tahun 2025.'));
+ out.push(wp('Penyesuaian nomenklatur, kewenangan, dan format formal RKMK tahun '+y+' tetap memerlukan validasi terhadap ketentuan yang berlaku.'));
+ return out.join('');
+}
+async function word(p,blank){
+ if(!blank&&(!p||p.psStatus!=='Ditetapkan')){toast('Tetapkan proyek terlebih dahulu untuk generate RKMK.');return}
+ try{
+  if(!window.JSZip){
+   if(typeof chLib==='function')await chLib('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',()=>!!window.JSZip);
+   else throw new Error('Pustaka Word belum tersedia.');
+  }
+  const z=new JSZip();
+  const body=rkmkContent(p,blank);
+  const wordXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+  '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'+
+  '<w:body>'+body+'<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1080" w:right="1080" w:bottom="1080" w:left="1080"/></w:sectPr></w:body></w:document>';
+  z.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8"?>'+
+   '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
+   '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
+   '<Default Extension="xml" ContentType="application/xml"/>'+
+   '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
+  z.file('_rels/.rels','<?xml version="1.0" encoding="UTF-8"?>'+
+   '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+   '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
+  z.file('word/document.xml',wordXml);
+  const blob=await z.generateAsync({type:'blob',compression:'DEFLATE'});
+  const a=document.createElement('a'),url=URL.createObjectURL(blob),code=p&&p.kode?p.kode:'KOSONG';
+  a.href=url;a.download=(blank?'Template_':'Rancangan_')+'RKMK_IS_'+year()+'_'+code.replace(/[^A-Za-z0-9_-]/g,'_')+'.docx';
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
+  toast((blank?'Template':'Rancangan')+' RKMK Word berhasil dibuat.');
+ }catch(e){toast('Gagal membuat dokumen Word: '+(e.message||e))}
+}
+
 /* Export global API after all model/view/actions are initialized. */
 window.MT_PROJECT_SELECTION={page,mount,open,version:'20261108-upstream-program-first-RKMK-v1',criteria:PS_CRITERIA.map(c=>({code:c.code,name:c.name,w:c.w}))};
 if(typeof VIEW!=='undefined'&&VIEW==='project-selection'&&ME)render();
