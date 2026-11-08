@@ -92,7 +92,7 @@ function filter(p){
  const yFilter=onBank?(b.filterYear||'all'):String(yr());
  return '<div class="ps27-filter ps27-filter-compact" role="search" aria-label="Filter Project Selection">'+
  '<label>Tahun <select data-ps27-year><option value="all" '+(yFilter==='all'?'selected':'')+'>Semua tahun</option>'+[2025,2026,2027,2028,2029].map(y=>'<option value="'+y+'" '+(String(yFilter)===String(y)?'selected':'')+'>'+y+'</option>').join('')+'</select></label>'+
- '<label class="ps27-filter-program">Nama Program <select data-ps27-prog><option value="">Semua Program</option>'+filtered.map(x=>'<option value="'+E(x.id)+'" '+(p&&x.id===p.id?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label>'+
+ '<label class="ps27-filter-program">Nama Program <select data-ps27-prog><option value="">Semua Program</option>'+filtered.map(x=>'<option value="'+E(x.id)+'" '+((onBank?String(b.filterProgram)===String(x.id):p&&x.id===p.id)?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label>'+
  '<label>Status <select data-ps27-status>'+[['all','Semua Status'],['Baru','Baru'],['Legacy','Legacy'],['Arsip','Arsip']].map(x=>'<option value="'+x[0]+'" '+(st===x[0]?'selected':'')+'>'+x[1]+'</option>').join('')+'</select></label>'+
  '<label class="ps27-filter-search">Cari <input type="search" data-ps27-query value="'+E(b.search||'')+'" placeholder="Nama, kode, UIC..."></label>'+
  '</div>';
@@ -242,7 +242,12 @@ function mount(){
  });
  root.addEventListener('change',function(ev){
   const el=ev.target;
-  if(el.dataset.ps27Prog!==undefined){state().prog=el.value;S.ui.psGov={step:'identity'};if(window.MT_PS_SCOPE)window.MT_PS_SCOPE.bank().target=el.value;save();render();return}
+  if(el.dataset.ps27Prog!==undefined){
+    S.ui.psBank=S.ui.psBank||{};
+    if(state().tab==='usulan'&&S.ui.psBank.tab==='bank'){S.ui.psBank.filterProgram=el.value}
+    else{state().prog=el.value;S.ui.psGov={step:'identity'};if(window.MT_PS_SCOPE)window.MT_PS_SCOPE.bank().target=el.value}
+    save();render();return
+   }
    if(el.dataset.ps27Status!==undefined){S.ui.psBank=S.ui.psBank||{};S.ui.psBank.filterStatus=el.value;save();render();return}
   if(el.dataset.ps27Year!==undefined){
     S.ui.psBank=S.ui.psBank||{};
