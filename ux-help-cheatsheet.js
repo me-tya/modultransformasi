@@ -99,12 +99,42 @@ var PM=[
 ['Pengelolaan Referensi','Gunakan kode program, master tahapan, dan referensi item WBS untuk konsistensi data.','pmo-referensi','Referensi Kode']
 ];
 var menuPM=[
+['Project Selection','Pemilihan program, dokumen program, unggahan, pemetaan hingga penetapan','project-selection'],
 ['Overview','Capaian dan ringkasan kinerja','pmo-siklus'],['Portofolio','Program dan UIC utama/pendukung','pmo-portofolio'],['Program','Proyek dan penugasan','pmo-program'],
 ['Dokumen Proyek','As-Is, To-Be, Charter, persetujuan','pmo-perencanaan'],['WBS Perencanaan','Penyusunan aktivitas dan bobot','pmo-wbsplan'],
 ['WBS & Progres','Pelaksanaan, target, realisasi','pmo-wbs'],['Bukti Dukung','Unggah dan validasi bukti','pmo-bukti'],['Change Request','Pengendalian perubahan baseline','pmo-cr'],
 ['Milestone','Tonggak waktu proyek','pmo-milestone'],['Risiko & Isu','Risiko dan tindak lanjut','pmo-risiko'],['Capaian Triwulanan','Laporan kinerja periodik','pmo-laporan'],
 ['Narasi T-Program','Uraian pelaksanaan per program','pmo-narasi'],['Jadwal 1-on-1','Rencana pertemuan koordinasi','pmo-oneonone'],
 ['Penutupan','Kriteria dan dokumen penyelesaian','pmo-penutupan'],['Evaluasi Pascaproyek','Evaluasi manfaat proyek','pmo-pascaproyek'],['Referensi Kode','Kamus data dan standar kode','pmo-referensi']
+];
+var menuPMDeep=[
+ ['Project Selection › Riwayat Program','Salin program lintas tahun tanpa menimpa dokumen asal','project-selection|usulan:bank'],
+ ['Project Selection › Daftar Program','Klik baris untuk detail; aksi Pemetaan, Edit, Unggah, dan Unduh kondisional','project-selection|usulan:detail'],
+ ['Project Selection › Identitas Program','Tab Identitas di Detail Program','project-selection|usulan:detail:identity'],
+ ['Project Selection › Business Case','Tab Business Case di Detail Program','project-selection|usulan:detail:case'],
+ ['Project Selection › Manfaat','Tab Manfaat di Detail Program','project-selection|usulan:detail:benefits'],
+ ['Project Selection › Stakeholder','Tab Stakeholder di Detail Program','project-selection|usulan:detail:stakeholders'],
+ ['Project Selection › Risiko','Tab Risiko di Detail Program','project-selection|usulan:detail:risks'],
+ ['Project Selection › Tata Kelola','Tab Tata Kelola di Detail Program','project-selection|usulan:detail:governance'],
+ ['Project Selection › Buat Dokumen Program','Generator, pratinjau, ekspor dan identitas dokumen','project-selection|usulan:detail:docs'],
+ ['Project Selection › Dokumen Portofolio','Generator portofolio program tahun yang dipilih','project-selection|usulan:portfolio'],
+ ['Project Selection › Pemetaan Proyek','Tab Pemetaan','project-selection|mapping:mapping'],
+ ['Project Selection › Usulan Proyek','Tab pengelolaan usulan proyek','project-selection|mapping:proposal'],
+ ['Project Selection › Hasil Pemetaan','Tab hasil pemetaan dan relasi','project-selection|mapping:results'],
+ ['Project Selection › Dokumen Usulan Proyek','Tab dokumen usulan proyek','project-selection|mapping:docs'],
+ ['Project Selection › Prioritasi & Peringkat','Tab Prioritasi','project-selection|prioritasi:ranking'],
+ ['Project Selection › Kriteria & Bobot','Tab kriteria prioritas','project-selection|prioritasi:criteria'],
+ ['Project Selection › Manfaat & Monev','Tab manfaat dan monev','project-selection|prioritasi:monev'],
+ ['Project Selection › Charter Program','Tahap charter program dan dokumen kerja','project-selection|charter'],
+ ['Project Selection › Penetapan','Tahap penetapan program dan proyek','project-selection|penetapan'],
+ ['Project Selection › Draft RKMK','Tahap narasi dan reviu','project-selection|rkmk'],
+ ['Dokumen Proyek › As-is','Dokumen 1/7; pilih program terlebih dahulu','pmo-perencanaan|asis'],
+ ['Dokumen Proyek › To-be','Dokumen 2/7; pilih program terlebih dahulu','pmo-perencanaan|tobe'],
+ ['Dokumen Proyek › Perbandingan','Dokumen 3/7; pilih program terlebih dahulu','pmo-perencanaan|cs'],
+ ['Dokumen Proyek › Charter','Dokumen 4/7; pilih program terlebih dahulu','pmo-perencanaan|ch'],
+ ['Dokumen Proyek › Kriteria','Dokumen 5/7; pilih program terlebih dahulu','pmo-perencanaan|kp'],
+ ['Dokumen Proyek › Manfaat','Dokumen 6/7; pilih program terlebih dahulu','pmo-perencanaan|mf'],
+ ['Dokumen Proyek › Linimasa','Dokumen 7/7; pilih program terlebih dahulu','pmo-perencanaan|rk']
 ];
 var menuCM=[
 ['Analisis Dampak (ADP)','As-Is, To-Be, POSTeR, risiko','cmo-adp'],['Perencanaan','Stakeholder, komunikasi, pelatihan','cmo-rencana'],
@@ -167,8 +197,8 @@ function helpStages(kind){var items=kind==='pmo'?PM:CM;return intro('Tahapan & s
  '<div class="sk-helpflow">'+items.map(function(a,i){var buttons='';for(var k=2;k<a.length;k+=2)buttons+=jump(a[k+1],a[k]);return '<section class="sk-helpstage"><div class="sk-helpstage-side"><em>TAHAP '+String(i+1).padStart(2,'0')+'</em><b>'+a[0]+'</b></div><div class="sk-helpstage-main"><p>'+a[1]+'</p><div class="sk-buttons">'+buttons+'</div></div></section>'}).join('')+'</div>'+
  note(kind==='pmo'?'<b>Alur PMO:</b> penyusunan Dokumen Proyek → WBS → pelaksanaan & change request → pemantauan → penutupan → evaluasi manfaat paling cepat 3 bulan setelah penutupan.':'<b>Alur CMO:</b> perencanaan → pelaksanaan → pemantauan & evaluasi → evaluasi pascaimplementasi paling cepat 1 bulan → penutupan CM setelah masa transisi.');
 }
-function helpMenu(kind){var items=kind==='pmo'?menuPM:menuCM;return intro('Navigasi aplikasi','Peta Menu '+(kind==='pmo'?'Project Management':'Change Management'),'Temukan fungsi yang ingin dikerjakan dan langsung masuk ke menunya. Gunakan pencarian untuk menyaring daftar.')+
- '<input class="sk-search" type="search" data-skfilter placeholder="Cari nama menu atau fungsi, misalnya WBS, risiko, CRA..." aria-label="Cari menu"><div class="sk-directory" style="margin-top:13px">'+items.map(function(a){return '<div class="sk-directoryItem sk-filtered" data-skitem="'+esc((a[0]+' '+a[1]).toLowerCase())+'"><b>'+a[0]+'</b><p>'+a[1]+'</p>'+jump('Buka menu',a[2])+'</div>'}).join('')+'</div>'}
+function helpMenu(kind){var items=kind==='pmo'?menuPM.concat(menuPMDeep):menuCM;return intro('Navigasi aplikasi','Peta Menu '+(kind==='pmo'?'Project Management':'Change Management'),'Temukan fungsi yang ingin dikerjakan dan langsung masuk ke menunya. Gunakan pencarian untuk menyaring daftar.')+
+ '<input class="sk-search" type="search" data-skfilter placeholder="Cari nama menu atau fungsi, misalnya WBS, risiko, CRA..." aria-label="Cari menu"><div class="sk-directory" style="margin-top:13px">'+items.map(function(a){return '<div class="sk-directoryItem sk-filtered" data-skitem="'+esc((a[0]+' '+a[1]).toLowerCase())+'"><b>'+a[0]+'</b><p>'+a[1]+'</p>'+jump('Buka menu',a[2])+'</div>'}).join('')+'</div>'+(kind==='pmo'?note('Untuk membuka subtab Dokumen Proyek secara langsung, pilih program terlebih dahulu di tabel Dokumen Proyek. Aksi tabel: mata untuk melihat, pensil untuk mengubah atau membuat revisi.'):'' )}
 function helpGloss(kind){return intro('Istilah penting','Daftar Istilah '+(kind==='pmo'?'Project Management':'Change Management'),'Glosarium ringkas untuk memahami singkatan, label, dan istilah yang muncul dalam menu aplikasi.')+
  '<input class="sk-search" type="search" data-skfilter placeholder="Cari istilah..." aria-label="Cari istilah"><div class="sk-gloss" style="margin-top:13px">'+(kind==='pmo'?termsPM:termsCM).map(function(a){return '<div class="sk-term sk-filtered" data-skitem="'+esc(a.join(' ').toLowerCase())+'"><b>'+a[0]+'</b><p>'+a[1]+'</p></div>'}).join('')+'</div>'}
 function helpDocs(kind){var docs=kind==='pmo'?docPM:docCM;return intro('Katalog artefak','Dokumentasi & Output '+(kind==='pmo'?'Manajemen Proyek':'Manajemen Perubahan'),'Daftar dokumen dan keluaran yang disebutkan atau dijabarkan dalam draft RKMK. Klik shortcut untuk menuju menu pengisian/pencatatannya.','Draft RKMK (6) · Bagian J')+
@@ -361,7 +391,11 @@ function open(mode,kind,selected){
  ov.addEventListener('click',function(e){
   if(e.target===ov||e.target.closest('[data-skclose]')){close();return}
   var tab=e.target.closest('[data-sktab]');if(tab){var k=tab.getAttribute('data-sktab');ov.querySelectorAll('[data-sktab]').forEach(function(b){b.setAttribute('aria-selected',String(b.getAttribute('data-sktab')===k))});ov.querySelectorAll('[data-skview]').forEach(function(v){v.hidden=v.getAttribute('data-skview')!==k});ov.querySelector('.sk-content').scrollTop=0;return}
-  var goto=e.target.closest('[data-skgo]');if(goto){var dest=goto.getAttribute('data-skgo');close();if(typeof window.go==='function')window.go(dest);else location.hash='#'+dest;return}
+  var goto=e.target.closest('[data-skgo]');if(goto){var dest=goto.getAttribute('data-skgo'),parts=dest.split('|'),route=parts[0],sub=parts[1];close();
+   if(typeof window.go==='function')window.go(route);else location.hash='#'+route;
+   if(sub&&route==='project-selection')window.MT_PS_WORKFLOW?.navigate(sub);
+   else if(sub&&route==='pmo-perencanaan')window.MT_DOC_EXPERIENCE?.openProjectTab(sub);
+   return}
  });
  ov.addEventListener('input',function(e){var filter=e.target.closest('[data-skfilter]');if(!filter)return;var pane=filter.closest('.sk-view'),term=filter.value.trim().toLowerCase();pane.querySelectorAll('[data-skitem]').forEach(function(card){card.hidden=!!term&&!card.dataset.skitem.includes(term)})});
  ov.querySelector('.sk-close').focus();return ov
@@ -369,7 +403,10 @@ function open(mode,kind,selected){
 function currentKind(){try{return typeof VIEW==='string'&&VIEW.indexOf('pmo-')===0?'pmo':'cmo'}catch(e){return 'cmo'}}
 window.openTxCheatsheet=function(mode,selected){return open('sheet',mode||currentKind(),selected==='koordinasi'?'ko':selected)};
 window.showGuideHome=function(){return open('help',currentKind())};
-window.showHelp=function(v){return open('help',String(v||'').indexOf('pmo-')===0?'pmo':String(v||'').indexOf('cmo-')===0?'cmo':currentKind(),'menu')};
+window.showHelp=function(v){if(String(v||'')==='project-selection'||typeof VIEW==='string'&&VIEW==='project-selection'){
+  return window.MT_PROJECT_SELECTION?.open?.('help')||open('help','pmo','menu');
+ }
+ return open('help',String(v||'').indexOf('pmo-')===0?'pmo':String(v||'').indexOf('cmo-')===0?'cmo':currentKind(),'menu')};
 window.skHelpCheatsheetVersion='20261107-referensi-1';
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addStyle);else addStyle();
 })();
