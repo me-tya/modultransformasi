@@ -95,13 +95,13 @@ function cpModel(c,inc,sign,num=''){
  }
  if(!CPLAN_KEYS.some(([k])=>has(k)))B.push({t:'callout',tone:'warn',title:'Belum ada substansi dipilih',lines:['Pilih sekurang-kurangnya satu dokumen untuk menyusun dokumen perencanaan.']});
  const fname=cpName(c);
- const signer=Object.assign({city:'Jakarta',date:rptLongDate(TODAY),label:'Disetujui oleh,'},sign||{});
+ const signer=Object.assign({city:'',date:'',label:''},sign||{});
  return {lang:'id',formal:!!inc.toc,fileName:fname,header:'Dokumen Perencanaan Proyek · '+title,
   cover:{kicker:'DOKUMEN PERENCANAAN PROYEK',title,subject:'Tahun '+c.tahun,chips:['Tahun '+c.tahun,'Versi v'+c.ver,'Periode '+c.p1+'–'+c.p2],scope:[],meta:[...(num?[['Nomor Dokumen',num]]:[]),['Program Induk',String(p.nama||p.kode||c.prog||'—')],['Kode Program',String(p.kode||c.prog||'—')],['Periode',c.p1+' s.d. '+c.p2],['UIC',String(p.uic||'—')],['Versi','v'+c.ver]],noTte:!inc.tte,tte:signer},blocks:B};
 }
 function cpOptions(c){
  S.ui.cpReport=S.ui.cpReport||{};
- return S.ui.cpReport[c.prog]||(S.ui.cpReport[c.prog]={inc:cpDefault(),sign:{city:'Jakarta',date:rptLongDate(TODAY),label:'Disetujui oleh,',title:'',name:''},no:''});
+ return S.ui.cpReport[c.prog]||(S.ui.cpReport[c.prog]={inc:cpDefault(),sign:{city:'',date:'',label:'',title:'',name:''},no:''});
 }
 function cpFooter(c){
  const name='Dokumen Perencanaan Proyek';
