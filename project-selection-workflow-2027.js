@@ -130,16 +130,16 @@ function filter(p){
  if(q)active.push('Cari: '+q);
  if(role!=='all')active.push(role==='utama'?'UIC Utama':'UIC Pendukung');
  const on=!!w.filterOpen,
-   filterIcon='<span class="ps27-filter-ic" data-mt-filter-icon title="Buka atau tutup filter menu ini" role="button" tabindex="0" aria-label="Buka atau tutup filter menu ini" aria-pressed="'+!!w.filterOpen+'">'+
+   filterIcon='<span class="ps27-filter-ic" aria-hidden="true">'+
    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16l-6.5 7.8v5.2L10.5 20v-7.2z"/></svg></span>';
  return '<div class="ps27-filter ps27-filter-panel'+(w.filterOpen?' is-open':'')+'" aria-label="Filter Project Selection" role="search">'+
- '<div class="ps27-filter-header"><div class="ps27-filter-titlebar">'+filterIcon+
+ '<div class="ps27-filter-header" data-ps27="filter" role="button" tabindex="0" aria-expanded="'+!!w.filterOpen+'" aria-label="'+(w.filterOpen?'Sembunyikan':'Tampilkan')+' filter Project Selection" title="Klik area filter untuk '+(w.filterOpen?'menyembunyikan':'menampilkan')+' pilihan filter"><div class="ps27-filter-titlebar">'+filterIcon+
  '<button type="button" class="ps27-filter-label" data-ps27="filter" aria-expanded="'+!!w.filterOpen+'">Filter</button></div>'+
  '<div class="ps27-filter-active"><b>FILTER AKTIF</b><span>'+(active.length?active.map(t=>'<em>'+E(t)+'</em>').join(''):'Belum ada — semua data')+'</span>'+
  '<span class="ps27-filter-spacer"></span><small>'+listOptions.length+' dari '+opts.length+' program</small>'+
  '<button type="button" class="ps27-filter-reset" data-ps27-reset title="Atur ulang filter di menu ini">↺ Atur ulang</button>'+
  '<button type="button" class="ps27-filter-expand" data-ps27="filter" title="'+(w.filterOpen?'Tutup filter':'Buka filter')+'" aria-label="'+(w.filterOpen?'Tutup filter':'Buka filter')+'">'+(w.filterOpen?'▴':'▾')+'</button></div></div>'+
- (w.filterOpen?'<div class="ps27-filter-body"><div class="ps27-filter-fields">'+
+ (w.filterOpen?'<div class="ps27-filter-body" id="ps27-filter-options"><div class="ps27-filter-fields">'+
  '<label>Tahun <select data-ps27-year><option value="all" '+(yFilter==='all'?'selected':'')+'>Semua tahun</option>'+years.map(y=>'<option value="'+y+'" '+(String(yFilter)===String(y)?'selected':'')+'>'+y+'</option>').join('')+'</select></label>'+
  '<div class="ps27-filter-period"><b>Periode</b><div class="ps27-filter-periodset">'+[['all','Setahun'],['TW 1','TW 1'],['TW 2','TW 2'],['TW 3','TW 3'],['TW 4','TW 4'],['range','Rentang']].map(x=>
  '<button type="button" data-ps27-period="'+x[0]+'" class="'+(period===x[0]?'on':'')+'" aria-pressed="'+(period===x[0])+'">'+x[1]+'</button>').join('')+'</div></div>'+
@@ -318,6 +318,12 @@ function mount(){
    save();render();toast('Draft RKMK dan status reviu berhasil disimpan.');return}
   if(a==='go-wbs'){const p=current();if(!p)return;S.ui.prog=p.akr;S.ui.planYear='year';save();location.hash='#pmo-wbsplan';return}
   if(a==='help'){open('help');return}
+ });
+ root.addEventListener('keydown',function(ev){
+  if((ev.key==='Enter'||ev.key===' ')&&ev.target.classList?.contains('ps27-filter-header')){
+   ev.preventDefault();ev.stopImmediatePropagation();
+   ws().filterOpen=!ws().filterOpen;save();render();
+  }
  });
  root.addEventListener('change',function(ev){
   const el=ev.target;
