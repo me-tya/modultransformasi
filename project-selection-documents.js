@@ -4,10 +4,10 @@
 const B=window.MT_PROJECT_SELECTION,I=B?.internals;if(!B||!I)return;
 const E=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const X=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
-const STEPS=[['identity','Identitas'],['case','Business Case'],['benefits','Manfaat'],['stakeholders','Stakeholder'],['risks','Risiko'],['governance','Tata Kelola'],['review','Reviu']];
+const STEPS=[['identity','Identitas'],['case','Business Case'],['benefits','Manfaat'],['stakeholders','Stakeholder'],['risks','Risiko'],['governance','Tata Kelola']];
 const year=()=>+S.ui.tahun||2026;
 const cfg=()=>{S.ui.psBank=S.ui.psBank||{};const b=S.ui.psBank;b.doc=b.doc||{format:'word',sections:STEPS.map(x=>x[0]),cover:true,toc:true,sign:false,annex:true,slide:0};b.doc.sections=b.doc.sections||STEPS.map(x=>x[0]);return b.doc};
-const title=k=>STEPS.find(s=>s[0]===k)?.[1]||k;
+const title=k=>STEPS.find(s=>s[0]===k)?.[1]||(k==='review'?'Reviu':k);
 const join=x=>Array.isArray(x)?x.map(a=>typeof a==='string'?a:(a.t||a.m||a.nama||'')).filter(Boolean).join(' • '):String(x||'');
 const charter=(p,y)=>{const arr=(S.charters||[]).filter(c=>c.prog===p.akr&&c.st!=='Arsip');return arr.find(c=>+c.p1<=y&&+c.p2>=y)||arr.find(c=>+c.p1===y)||arr[0]||null};
 function fields(p,key,y){
@@ -70,7 +70,7 @@ function documentPreview(p){
 function builder(p){
  const d=cfg(),list=STEPS,fmt=d.format||'word';
  return '<div class="psbank-docbuilder"><div class="psbank-docsettings"><div class="psbank-docsetting-head"><h3>Dokumen Perencanaan Program · Pratinjau & Ekspor</h3><p>Pilih isi dan format dokumen di sini; pratinjau langsung tampil di sebelah kanan.</p></div>'+
- '<div class="psbank-doccheckhead"><b>Substansi dokumen</b><span>'+d.sections.length+' / 7 dipilih</span></div>'+
+ '<div class="psbank-doccheckhead"><b>Substansi dokumen</b><span>'+d.sections.length+' / '+STEPS.length+' dipilih</span></div>'+
  '<div class="psbank-docchecks">'+list.map((x,i)=>'<label><input type="checkbox" data-doc-section="'+x[0]+'" '+(d.sections.includes(x[0])?'checked':'')+'> '+(i+1)+'. '+E(x[1])+'</label>').join('')+'</div>'+
  '<div class="psbank-docextras"><label><input type="checkbox" data-doc-extra="cover" '+(d.cover?'checked':'')+'> Sampul & identitas</label>'+
  '<label><input type="checkbox" data-doc-extra="toc" '+(d.toc?'checked':'')+'> Daftar isi</label>'+
@@ -163,5 +163,5 @@ function change(ev){
  if(q.dataset.docFormat!==undefined){d.format=q.value;d.slide=0;save();render();return true}
  return false;
 }
-window.MT_PS_DOC={fields,sections,slidePages,paper,builder,exportFile,click,change,documentPreview,version:'20261108-program-document-builder-v2'};
+window.MT_PS_DOC={fields,sections,slidePages,paper,builder,exportFile,click,change,documentPreview,version:'20261108-program-document-builder-v3'};
 })();
