@@ -246,7 +246,20 @@ function aggregateView(){
  return '<div class="psbank-card psbank-scope-stage"><div class="psbank-sectionhead"><div><h3>Pemetaan Proyek / Modul</h3><p>Ringkasan semua program tahun '+y+'. Buka accordion untuk melihat proyek atau membuka program.</p></div></div>'+
  scopeTabs(on,rows)+content+'</div>';
 }
+function ensureProjectCodes(){
+ if(year()<2027)return;
+ let changed=false;
+ I.programs().forEach(p=>{
+  const projects=p.psProjects||[];
+  const before=projects.map(x=>[x.psAcronym,x.psCode].join('|')).join(';');
+  normalizeProjectCodes(p);
+  const after=projects.map(x=>[x.psAcronym,x.psCode].join('|')).join(';');
+  if(before!==after)changed=true;
+ });
+ if(changed)save();
+}
 function render(){
+ ensureProjectCodes();
  if(!!S.ui?.psBank?.filterScopes?.mapping?.allProgramsSelected)return aggregateView();
  const p=target();
  if(!p)return '<div class="psbank-card psbank-empty">Belum ada program tahun '+year()+'. Tambahkan dari Riwayat Program atau Daftar Program terlebih dahulu.</div>';
