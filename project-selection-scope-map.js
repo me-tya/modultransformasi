@@ -31,39 +31,84 @@ function target(){
  const id=bank().target;const p=get(id);
  return p&&+p.psYear===year()?p:I.pickedProgram();
 }
-function render(){
- const p=target();if(!p)return '<div class="psbank-card psbank-empty">Belum ada program tahun '+year()+'. Tambahkan dari Daftar Program terlebih dahulu.</div>';
- const m=bank().map,years=[2025,2026,2027,2028,2029].filter(x=>x<=year());
+function mapState(){
+ const b=bank();b.mappingTab=b.mappingTab||'mapping';b.targetSelected=b.targetSelected||[];return b;
+}
+function proposalRows(p){return p?.psProjects||[]}
+function mappingView(p){
+ const b=mapState(),m=b.map,years=[2025,2026,2027,2028,2029].filter(y=>y<=year());
  const sources=sourceList(+m.year,p);
  if(!sources.some(x=>String(x.id)===String(m.program)))m.program=sources[0]?.id||'';
  const s=get(m.program),q=String(m.q||'').toLowerCase(),catalog=modules(s,+m.year).filter(x=>[x.name,x.uic,...x.rows.flatMap(w=>w.p||[])].join(' ').toLowerCase().includes(q));
- const arr=p.psProjects||[],draft=p.psWbsDraft||[];
- return '<div class="psbank-card"><div class="psbank-sectionhead"><div><h3>Pemetaan Proyek / Modul</h3><p>Tentukan ruang lingkup program tujuan dan ambil modul dari program lain, termasuk Core APBN 2026.</p></div>'+
- (can(p)?'<button class="btn pri" data-pswf="add-project">+ Proyek Baru</button>':'')+'</div>'+
- '<div class="psbank-mapping-summary"><span>Program Tujuan: <b>'+E(p.nama)+'</b> · '+E(p.kode||p.akr)+'</span><span><b>'+arr.length+'</b> proyek/modul · <b>'+draft.length+'</b> WBS draft</span></div>'+
- '<div class="psbank-mapcols"><section class="psbank-mapbox"><h4>Proyek dalam '+E(p.nama)+'</h4><p>Susunan program '+year()+'. Perubahan belum mengubah data historis.</p>'+
- '<div class="psbank-mapitems">'+(arr.length?arr.map(x=>{
-  const n=draft.filter(w=>(w.p||[]).some(z=>String(z).toLowerCase()===String(x.name).toLowerCase())).length;
-  return '<article><div><b>'+E(x.name)+'</b><small>'+E(x.uic||p.uic||'—')+' · '+n+' item WBS</small></div><div class="psbank-rowactions"><button class="btn btn-outline btn-sm" data-pswf-project="'+E(x.id)+'">Ubah</button>'+
-  (can(p)?'<button class="btn btn-ghost btn-sm" data-scope-remove="'+E(x.id)+'">Hapus</button>':'')+'</div></article>'
- }).join(''):'<div class="psbank-empty">Belum ada proyek. Pilih modul dari program sumber di sebelah kanan.</div>')+'</div></section>'+
- '<section class="psbank-mapbox"><h4>Ambil Proyek dari Program Lain</h4><p>Contoh: Digitalisasi Core System APBN → pilih FRSW dan SIPK untuk Digitalisasi Core Non APBN.</p>'+
+ const arr=proposalRows(p),selected=arr.filter(x=>b.targetSelected.includes(String(x.id)));
+ return '<div class="psbank-mapping-summary"><span>Program Tujuan: <b>'+E(p.nama)+'</b> · '+E(p.kode||p.akr)+'</span><span><b>'+arr.length+'</b> proyek terpetakan</span></div>'+
+ '<div class="psbank-mapcols"><section class="psbank-mapbox"><div class="psbank-maphead"><h4>Proyek dalam '+E(p.nama)+'</h4><span>'+selected.length+' dipilih</span></div><p>Centang proyek untuk mengelola keanggotaan program. Rencana WBS dibuat kemudian pada tahap perencanaan proyek.</p>'+
+ '<div class="psbank-mapselectall"><label><input type="checkbox" data-scope-target-all '+(arr.length&&selected.length===arr.length?'checked':'')+'> Pilih semua</label>'+
+ '<button type="button" class="btn" data-scope-remove-multiple '+(!selected.length||!can(p)?'disabled':'')+'>Keluarkan yang Dipilih</button></div>'+
+ '<div class="psbank-mapitems">'+(arr.length?arr.map(x=>'<label class="psbank-catalogitem psbank-target-project"><input type="checkbox" data-scope-target-select="'+E(x.id)+'" '+(b.targetSelected.includes(String(x.id))?'checked':'')+'><span><b>'+E(x.name)+'</b><small>'+E(x.uic||p.uic||'—')+(x.psOriginYear?' · Sumber '+x.psOriginYear:' · Usulan baru')+'</small></span></label>').join(''):'<div class="psbank-empty">Belum ada proyek. Pilih dari program sumber di sebelah kanan.</div>')+'</div></section>'+
+ '<section class="psbank-mapbox"><h4>Ambil Proyek dari Program Lain</h4><p>Pilih modul sumber dan salin identitas proyek ke program tujuan tanpa menyalin WBS maupun realisasi.</p>'+
  '<div class="psbank-mapcontrols"><label>Tahun Sumber <select data-scope-year>'+years.map(y=>'<option value="'+y+'" '+(y===+m.year?'selected':'')+'>'+y+'</option>').join('')+'</select></label>'+
  '<label>Program Sumber <select data-scope-program>'+sources.map(x=>'<option value="'+E(x.id)+'" '+(x.id===m.program?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label></div>'+
  '<label class="psbank-searchlabel">Cari Modul <input type="search" data-scope-search value="'+E(m.q||'')+'" placeholder="FRSW, SIPK, nama proyek..."></label>'+
- '<div class="psbank-mapitems psbank-catalog">'+(catalog.length?catalog.map(x=>{
-  const id=m.program+'::'+x.name;return '<label class="psbank-catalogitem"><input type="checkbox" data-scope-select="'+E(id)+'" '+(m.selected.includes(id)?'checked':'')+'><span><b>'+E(x.name)+'</b><small>'+E(x.uic||'—')+' · '+x.rows.length+' item WBS sumber</small></span></label>';
- }).join(''):'<div class="psbank-empty">Modul tidak ditemukan. Ganti program/tahun sumber atau kata pencarian.</div>')+'</div>'+
+ '<div class="psbank-mapitems psbank-catalog">'+(catalog.length?catalog.map(x=>{const id=m.program+'::'+x.name;return '<label class="psbank-catalogitem"><input type="checkbox" data-scope-select="'+E(id)+'" '+(m.selected.includes(id)?'checked':'')+'><span><b>'+E(x.name)+'</b><small>'+E(x.uic||'—')+' · Program '+E(s?.nama||'—')+'</small></span></label>'}).join(''):'<div class="psbank-empty">Modul tidak ditemukan. Ubah tahun, program sumber, atau pencarian.</div>')+'</div>'+
  '<div class="psbank-mapfoot"><span>'+m.selected.length+' dipilih</span><button class="btn pri" data-scope-transfer '+(!can(p)||!m.selected.length?'disabled':'')+'>+ Masukkan ke Program Tujuan</button></div></section></div>'+
- '<div class="psbank-note">Pemindahan berlaku pada usulan tahun '+year()+'. Program dan realisasi 2026 tidak dihapus. Jika modul sudah ditetapkan pada program tahun tujuan lainnya, perubahan memerlukan Change Request.</div></div>';
+ '<div class="psbank-note">Proyek yang dipetakan akan tampil pada tab Usulan Proyek. Data sumber tetap utuh; WBS baru disusun pada proses perencanaan proyek.</div>';
 }
-function remove(id){
+function proposalView(p){
+ const rows=proposalRows(p),b=mapState();
+ return '<div class="psbank-proposal-head"><div><h3>Usulan Proyek · '+E(p.nama)+'</h3><p>'+E(p.kode||p.akr)+' · Tahun '+year()+' · '+rows.length+' proyek dipilih dari Pemetaan</p></div>'+
+ (can(p)?'<button class="btn pri" data-scope-project-new>+ Tambah Proyek</button>':'')+'</div>'+
+ '<div class="psbank-tablewrap"><table class="psbank-table psbank-proposal-table"><thead><tr><th>No.</th><th>Nama Proyek / Modul</th><th>UIC Utama</th><th>PIC</th><th>Status</th><th>Sumber Proyek</th><th>Aksi</th></tr></thead><tbody>'+
+ (rows.length?rows.map((x,i)=>'<tr><td>'+(i+1)+'</td><td><b>'+E(x.name)+'</b><small>'+E(x.description||'')+'</small></td><td>'+E(x.uic||p.uic||'—')+'</td><td>'+E(x.pic||'—')+'</td><td>'+E(x.status||'Usulan')+'</td><td>'+E(x.psOriginYear?x.psOriginProgram+' · '+x.psOriginYear:'Usulan baru')+'</td>'+
+ '<td class="psbank-rowactions"><button class="btn btn-outline btn-sm" data-scope-project-view="'+E(x.id)+'">Lihat</button>'+(can(p)?'<button class="btn btn-outline btn-sm" data-scope-project-edit="'+E(x.id)+'">Ubah</button><button class="btn btn-ghost btn-sm" data-scope-remove="'+E(x.id)+'">Hapus</button>':'')+'</td></tr>').join(''):'<tr><td colspan="7" class="psbank-empty">Belum ada proyek. Buka tab Pemetaan untuk memilih modul dari program sebelumnya atau tambahkan proyek baru.</td></tr>')+'</tbody></table></div>'+
+ '<div class="psbank-note">Tab ini hanya mengelola daftar dan identitas proyek (CRUD). Perencanaan WBS, target rinci, dan realisasi berada pada Project Management setelah penetapan.</div>';
+}
+function render(){
+ const p=target();if(!p)return '<div class="psbank-card psbank-empty">Belum ada program tahun '+year()+'. Tambahkan dari Daftar Program terlebih dahulu.</div>';
+ const b=mapState(),on=b.mappingTab;
+ return '<div class="psbank-card"><div class="psbank-sectionhead"><div><h3>Pemetaan Proyek / Modul</h3><p>Tentukan ruang lingkup program, lalu kelola daftar proyek untuk tahun '+year()+'.</p></div></div>'+
+ '<nav class="psbank-mapping-tabs" role="tablist" aria-label="Tahapan Pemetaan Proyek">'+
+ '<button type="button" role="tab" data-scope-tab="mapping" aria-selected="'+(on==='mapping')+'" class="'+(on==='mapping'?'on':'')+'">1 · Pemetaan</button>'+
+ '<button type="button" role="tab" data-scope-tab="proposal" aria-selected="'+(on==='proposal')+'" class="'+(on==='proposal'?'on':'')+'">2 · Usulan Proyek <b>'+proposalRows(p).length+'</b></button></nav>'+
+ (on==='proposal'?proposalView(p):mappingView(p))+'</div>';
+}
+function projectEditor(id,readonly=false){
+ const p=target();if(!p||!can(p)&&!readonly)return;
+ const existing=(p.psProjects||[]).find(x=>String(x.id)===String(id));
+ if(id&&!existing)return;
+ const d=document.createElement('div');d.className='psbank-overlay psbank-project-editor';
+ const rows=[['name','Nama Proyek / Modul'],['uic','UIC Utama'],['pic','PIC / Penanggung Jawab'],['description','Deskripsi / Ruang Lingkup Awal'],['start','Rencana Mulai'],['goLive','Target Go-Live']];
+ const input=([key,label])=>'<label>'+label+(key==='name'?' *':'')+'<input '+((key==='start'||key==='goLive')?'type="date"':'type="text"')+' data-scope-field="'+key+'" value="'+E(existing?.[key]||'')+'" '+(readonly?'disabled':'')+'></label>';
+ d.innerHTML='<section class="psbank-dialog psbank-project-dialog" role="dialog" aria-modal="true" aria-label="'+(readonly?'Detail':'Ubah')+' Usulan Proyek"><header><div><b>'+(readonly?'Detail':existing?'Ubah':'Tambah')+' Usulan Proyek</b><small>'+E(p.nama)+' · '+year()+'</small></div><button type="button" data-scope-editor-close>✕</button></header>'+
+ '<main class="psbank-dialogbody"><div class="psbank-proj-editor-grid">'+rows.map(input).join('')+
+ '<label>Status <select data-scope-field="status" '+(readonly?'disabled':'')+'>'+['Usulan','Berjalan','Ditunda','Selesai'].map(x=>'<option '+((existing?.status||'Usulan')===x?'selected':'')+'>'+x+'</option>').join('')+'</select></label>'+
+ '<div class="psbank-proj-origin"><b>Asal Proyek</b><p>'+E(existing?.psOriginYear?existing.psOriginProgram+' · '+existing.psOriginYear:'Usulan baru')+'</p><small>Data proyek sumber tidak akan berubah ketika isian ini diperbarui.</small></div></div></main>'+
+ '<footer><span>Data identitas proyek, bukan WBS.</span><div><button class="btn" data-scope-editor-close>Tutup</button>'+(!readonly?'<button class="btn pri" data-scope-editor-save>Simpan</button>':'')+'</div></footer></section>';
+ (document.querySelector('#app')||document.body).appendChild(d);
+ d.addEventListener('click',ev=>{
+  if(ev.target===d||ev.target.closest('[data-scope-editor-close]')){d.remove();return}
+  if(!ev.target.closest('[data-scope-editor-save]'))return;
+  const fields={};d.querySelectorAll('[data-scope-field]').forEach(x=>fields[x.dataset.scopeField]=x.value.trim());
+  if(!fields.name){toast('Nama proyek wajib diisi.');return}
+  if((p.psProjects||[]).some(x=>x!==existing&&x.name?.toLowerCase()===fields.name.toLowerCase())){toast('Proyek dengan nama tersebut sudah ada.');return}
+  if(existing)Object.assign(existing,fields);else {p.psProjects=p.psProjects||[];p.psProjects.push({id:uid('proj'),included:true,scores:{},psOriginYear:null,...fields})}
+  p.psUpdatedAt=new Date().toISOString();save();d.remove();window.render();toast('Identitas proyek berhasil disimpan.');
+ });
+}
+
+function remove(id,skipConfirm=false){
  const p=target(),x=p?.psProjects?.find(z=>String(z.id)===String(id));if(!p||!x||!can(p))return;
- const n=(p.psWbsDraft||[]).filter(w=>(w.p||[]).some(v=>String(v).toLowerCase()===String(x.name).toLowerCase())).length;
- if(!window.confirm('Hapus modul '+x.name+' dari usulan '+p.nama+' beserta '+n+' WBS draft? Data sumber tidak berubah.'))return;
+ if(!skipConfirm&&!window.confirm('Hapus usulan proyek '+x.name+' dari program ini? Data tahun sumber tetap utuh.'))return;
  p.psProjects=p.psProjects.filter(z=>z!==x);
- p.psWbsDraft=(p.psWbsDraft||[]).filter(w=>!(w.p||[]).some(v=>String(v).toLowerCase()===String(x.name).toLowerCase()));
- save();window.render();toast('Modul dikeluarkan dari program usulan.');
+ const b=mapState();b.targetSelected=b.targetSelected.filter(z=>z!==String(id));
+ save();window.render();toast('Proyek dikeluarkan dari usulan program.');
+}
+function removeSelected(){
+ const p=target(),b=mapState(),chosen=(p?.psProjects||[]).filter(x=>b.targetSelected.includes(String(x.id)));
+ if(!chosen.length||!can(p))return;
+ if(!window.confirm('Keluarkan '+chosen.length+' proyek terpilih dari program '+p.nama+'?'))return;
+ p.psProjects=p.psProjects.filter(x=>!b.targetSelected.includes(String(x.id)));
+ b.targetSelected=[];save();window.render();toast(chosen.length+' proyek berhasil dikeluarkan.');
 }
 function transfer(){
  const p=target(),m=bank().map,s=get(m.program);if(!p||!s||!can(p))return;
@@ -76,7 +121,7 @@ function transfer(){
  }));
  if(dupes.some(x=>x.other.psStatus==='Ditetapkan')){toast('Modul sudah berada pada program yang ditetapkan. Gunakan revisi/Change Request.');return}
  if(dupes.length&&!window.confirm('Sebagian modul sudah ada pada program tujuan lain tahun '+year()+'. Pindahkan dari usulan lama ke '+p.nama+'?'))return;
- let n=0,count=0;
+ let n=0;
  items.forEach(item=>{
   others.forEach(other=>{
    const rows=(other.psProjects||[]).filter(x=>String(x.name||'').toLowerCase()===item.name.toLowerCase()&&(x.psOriginAkr===s.akr||x.psOriginAkr===s.psCarry?.sourceAkr||other.psCarry?.sourceAkr===s.akr));
@@ -89,32 +134,30 @@ function transfer(){
   const z={...orig,id:uid('proj'),name:item.name,uic:item.uic||s.uic||p.uic,status:'Usulan',included:true,scores:{},poster:{},risks:{},indicators:[],benefits:[],psOriginAkr:s.akr,psOriginProgram:s.nama,psOriginYear:m.year};
   z.start=shift(z.start,+m.year,year());z.goLive=shift(z.goLive,+m.year,year());
   p.psProjects=p.psProjects||[];p.psProjects.push(z);n++;
-  const used=new Set([...(S.wbs||[]).map(w=>w.k),...(p.psWbsDraft||[]).map(w=>w.k)]);
-  item.rows.forEach(w=>{
-   let i=1,k;do{k=p.akr+'-'+i++}while(used.has(k));used.add(k);
-   const x=C(w);x.id=x.k=k;x.prog=p.akr;x.p=(x.p||[]).slice();
-   if(x.p[0]===s.akr||x.p[0]===s.nama)x.p[0]=p.akr;
-   x.s=shift(x.s,+m.year,year());x.f=shift(x.f,+m.year,year());x.tm=x.f?+x.f.slice(5,7):0;
-   x.rm=0;x.v=0;x.arsip=false;x.psCarryDraft=true;x.psSourceWbs=w.k;x.psSourceYear=m.year;x.psSourceProgram=s.akr;
-   delete x.bukti;delete x.actual;delete x.aktual;delete x.realisasi;
-   p.psWbsDraft=p.psWbsDraft||[];p.psWbsDraft.push(x);count++;
-  });
+  /* Proposal only: do not copy historical WBS or actuals. WBS will be drafted afresh in PM. */
  });
  m.selected=[];p.psUpdatedAt=new Date().toISOString();save();window.render();
- toast(n+' modul telah dimasukkan ke program tujuan, bersama '+count+' item WBS draft.');
+ toast(n+' proyek berhasil dipetakan. Lengkapi identitas pada tab Usulan Proyek; WBS disusun kemudian.');
 }
 function click(ev){
+ const tab=ev.target.closest('[data-scope-tab]');
+ if(tab){mapState().mappingTab=tab.dataset.scopeTab;save();window.render();return true}
+ if(ev.target.closest('[data-scope-remove-multiple]')){removeSelected();return true}
  const rm=ev.target.closest('[data-scope-remove]');if(rm){remove(rm.dataset.scopeRemove);return true}
  if(ev.target.closest('[data-scope-transfer]')){transfer();return true}
+ const nw=ev.target.closest('[data-scope-project-new]');if(nw){projectEditor();return true}
+ const view=ev.target.closest('[data-scope-project-view]');if(view){projectEditor(view.dataset.scopeProjectView,true);return true}
+ const edit=ev.target.closest('[data-scope-project-edit]');if(edit){projectEditor(edit.dataset.scopeProjectEdit,false);return true}
  return false;
 }
 function change(ev){
- const el=ev.target,m=bank().map;
- if(el.dataset.scopeTarget!==undefined){bank().target=el.value;I.state().prog=el.value;save();window.render();return true}
+ const el=ev.target,m=bank().map,b=mapState();
  if(el.dataset.scopeYear!==undefined){m.year=+el.value;m.program='';m.selected=[];save();window.render();return true}
  if(el.dataset.scopeProgram!==undefined){m.program=el.value;m.selected=[];save();window.render();return true}
  if(el.dataset.scopeSelect!==undefined){const id=el.dataset.scopeSelect;m.selected=el.checked?[...new Set([...m.selected,id])]:m.selected.filter(x=>x!==id);save();window.render();return true}
+ if(el.dataset.scopeTargetSelect!==undefined){const id=el.dataset.scopeTargetSelect;b.targetSelected=el.checked?[...new Set([...b.targetSelected,id])]:b.targetSelected.filter(x=>x!==id);save();window.render();return true}
+ if(el.dataset.scopeTargetAll!==undefined){b.targetSelected=el.checked?proposalRows(target()).map(x=>String(x.id)):[];save();window.render();return true}
  return false;
 }
-window.MT_PS_SCOPE={modules,sourceWbs,render,transfer,click,change,bank,target,version:'20261108-scope-map-v1'};
+window.MT_PS_SCOPE={modules,sourceWbs,render,transfer,click,change,bank,target,version:'20261108-scope-map-two-tab-v2'};
 })();
