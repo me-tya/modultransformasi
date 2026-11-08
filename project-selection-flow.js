@@ -86,7 +86,7 @@ const level=r=>r.score==null?'pending':r.score>=70?'high':r.score>=40?'mid':'low
 const levelName=r=>r.score==null?'Belum dinilai':r.score>=70?'Tinggi':r.score>=40?'Sedang':'Rendah';
 const included=(x,p)=>!p.psPrioritize?x.included!==false:calc(x,p).score!=null&&calc(x,p).score>+p.psThreshold;
 const chosen=p=>rowsFor(p).filter(x=>included(x,p));
-const readonly=p=>!ownerOk(p)||p.psStatus==='Ditetapkan';
+const readonly=p=>!ownerOk(p)||p.psStatus==='Ditetapkan'||p.arsip||p.psListStatus==='Arsip';
 const programsOpts=(selected)=>programs().map(p=>'<option value="'+esc2(p.id)+'"'+(selected===p.id?' selected':'')+'>'+esc2(p.nama)+' · '+esc2(p.psStatus||'Draft')+'</option>').join('');
 function top(p){
  const y=year(),u=state(),num=programs().length,ct=p?rowsFor(p).length:0,approved=p?chosen(p).length:0;
@@ -592,7 +592,13 @@ function saveWeights(p,root){
 }
 function resetWeights(p){if(readonly(p))return;p.psWeights={};save();render();toast('Bobot dikembalikan ke bawaan Priority.')}
 function finalize(p){
- if(!ownerOk(p)||p.psStatus==='Ditetapkan')return;
+ if(!ownerOk(p)||p.psStatus==='Ditetapkan'||p.arsip||p.psListStatus==='Arsip')return;
+ if((+p.psYear||year())>=2027){
+  const contract=S.psWideTargets?.[+p.psYear||year()]?.contract;
+  if(contract?.status!=='Ditetapkan'||!contract.programIds?.includes(String(p.id))){
+   toast('Program belum tercantum dalam kontrak kinerja K-Wide yang ditetapkan. Lengkapi dan catat pada tab Penetapan Program.');return;
+  }
+ }
  const gate=window.MT_PS_GOV?.readiness(p);if(gate&&gate.applies&&!gate.ok){state().tab='program';S.ui.psGov={step:'review'};save();render();toast('Lengkapi profil program sebelum penetapan.');return}
  const list=chosen(p);
  if(!list.length){toast('Belum ada proyek yang dipilih untuk ditetapkan.');return}
