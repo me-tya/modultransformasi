@@ -538,3 +538,18 @@ html.mt-ui-embedded :is(.tabs .count-badge,.cm-ap-cnt,.prio-tab-n){
  #app .ptabs.pmo-journey>a,
  #app .ps27 .ps27-tabs>button{transition:none!important}
 }
+
+
+/* Compact vertical rhythm and remove redundant top year selector.
+   Every operational module uses its own filter for year; header no longer occupies width. */
+#app .tsel:has(select#yr){display:none!important}
+#app .view{row-gap:6px!important}
+#app .view>.vh{margin-bottom:2px!important}
+#app .view>.cm-journey,
+#app .view>.pm-stage-shell,
+#app .view>.pswf .ps27-stage{margin-top:3px!important;margin-bottom:6px!important}
+#app .view>.flt,#app .view>.pswf .ps27-filter-panel{margin-top:0!important;margin-bottom:7px!important}
+#app .ps27 .ps27-stage{margin:3px 0 7px!important}
+#app .ps27 .ps27-filter.ps27-filter-panel{margin:0 0 7px!important}
+#app .psbank-subhead{margin-top:0!important}
+@media(max-width:900px){#app .view>.vh{min-height:50px!important}}
