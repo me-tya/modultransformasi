@@ -33,14 +33,14 @@ function target(){
 }
 function render(){
  const p=target();if(!p)return '<div class="psbank-card psbank-empty">Belum ada program tahun '+year()+'. Tambahkan dari Daftar Program terlebih dahulu.</div>';
- const m=bank().map,opts=I.programs(),years=[2025,2026,2027,2028,2029].filter(x=>x<=year());
+ const m=bank().map,years=[2025,2026,2027,2028,2029].filter(x=>x<=year());
  const sources=sourceList(+m.year,p);
  if(!sources.some(x=>String(x.id)===String(m.program)))m.program=sources[0]?.id||'';
  const s=get(m.program),q=String(m.q||'').toLowerCase(),catalog=modules(s,+m.year).filter(x=>[x.name,x.uic,...x.rows.flatMap(w=>w.p||[])].join(' ').toLowerCase().includes(q));
  const arr=p.psProjects||[],draft=p.psWbsDraft||[];
  return '<div class="psbank-card"><div class="psbank-sectionhead"><div><h3>Pemetaan Proyek / Modul</h3><p>Tentukan ruang lingkup program tujuan dan ambil modul dari program lain, termasuk Core APBN 2026.</p></div>'+
  (can(p)?'<button class="btn pri" data-pswf="add-project">+ Proyek Baru</button>':'')+'</div>'+
- '<div class="psbank-toolbar"><label>Program Tujuan <select data-scope-target>'+opts.map(x=>'<option value="'+E(x.id)+'" '+(x.id===p.id?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label><span class="psbank-sp"></span><b>'+arr.length+'</b> proyek / modul · <b>'+draft.length+'</b> WBS draft</div>'+
+ '<div class="psbank-mapping-summary"><span>Program Tujuan: <b>'+E(p.nama)+'</b> · '+E(p.kode||p.akr)+'</span><span><b>'+arr.length+'</b> proyek/modul · <b>'+draft.length+'</b> WBS draft</span></div>'+
  '<div class="psbank-mapcols"><section class="psbank-mapbox"><h4>Proyek dalam '+E(p.nama)+'</h4><p>Susunan program '+year()+'. Perubahan belum mengubah data historis.</p>'+
  '<div class="psbank-mapitems">'+(arr.length?arr.map(x=>{
   const n=draft.filter(w=>(w.p||[]).some(z=>String(z).toLowerCase()===String(x.name).toLowerCase())).length;
