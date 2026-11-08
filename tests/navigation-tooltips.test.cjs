@@ -99,11 +99,12 @@ test('compact Sync keeps real Firestore saving and error statuses accessible',()
  assert.match(source,/control\.setAttribute\('role','switch'\)/);
 });
 
-test('Bantuan and Cheatsheet keep their labeled styling and observer remains efficient',()=>{
+test('Bantuan and Cheatsheet are icon-only; Guide and efficient observer remain',()=>{
  assert.match(source,/headerObserver\.observe\(root,\{childList:true\}\)/);
  assert.doesNotMatch(source,/headerObserver\.observe\(root,\{childList:true,subtree:true\}\)/);
- assert.doesNotMatch(source,/sk-hdrActions \.sk-hdrHelp span,#app \.top \.sk-hdrActions \.sk-hdrSheet span\{display:none!important\}/);
- assert.doesNotMatch(source,/#app \.top \.sk-hdrSheet span\{display:none\}/);
+ assert.match(source,/\.sk-hdrHelp>span,#app \.top \.sk-hdrActions \.sk-hdrSheet>span\{display:none!important\}/);
+ assert.match(source,/width:36px!important;min-width:36px!important;max-width:36px!important/);
+ assert.match(source,/styling dasar Bantuan/);
  assert.match(source,/mt-help-caption">Guide/);
  assert.match(source,/Guide '\+\(enabled\?'ON':'OFF'\)/);
  assert.match(source,/Pusat Bantuan: panduan penggunaan aplikasi, alur menu/);
