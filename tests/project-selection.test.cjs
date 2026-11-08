@@ -1,74 +1,114 @@
-(function registerProjectSelectionTests(){
- 'use strict';
- const {test}=require('node:test');
- const assert=require('node:assert/strict');
- const {readFileSync}=require('node:fs');
- const vm=require('node:vm');
- const index=readFileSync('index.html','utf8');
- const script=readFileSync('project-selection-ui.js','utf8');
- const source=readFileSync('dashboard-cm-shared.html','utf8');
- test('Project Selection loads Priority Dashboard CM and mounts its UI',()=>{
-  assert.match(index,/project-selection-ui\.js\?v=20261107-2/);
-  assert.match(index,/view==="project-selection"&&window\.MT_PROJECT_SELECTION/);
-  assert.match(index,/window\.MT_PROJECT_SELECTION\.mount\(\)/);
-  assert.match(script,/dashboard-cm-shared\.html\?mt_module=priority/);
-  assert.match(source,/function renderPriority\(\)/);
-  assert.match(source,/const PRIO_STORAGE_KEY='cm_priority_v1'/);
-  assert.match(source,/function prioCompute\(opts=\{\}\)/);
- });
- test('Bantuan dan cheatsheet Project Selection dapat diakses dari header dan konten',()=>{
-  assert.match(index,/VIEW==='project-selection'\?'selection'/);
-  assert.match(index,/mode==='selection'&&window\.MT_PROJECT_SELECTION/);
-  assert.match(index,/activeHelpView\(\)==='project-selection'/);
-  // Bantuan/Cheatsheet live in the *module* header, not a second local hero.
-  assert.match(index,/data-act="helphome"/);
-  assert.match(index,/data-act="cheatsheet"/);
-  assert.match(script,/function open\(mode\)/);
-  assert.match(script,/function account\(\)/);
-  assert.match(script,/data-ps-panel-tab/);
-  assert.match(script,/data-ps-goto/);
-  assert.match(script,/data-ps-close/);
-  assert.match(script,/mtProjectSelectionTheme/);
- });
- test('Project Selection uses one native header, one tab navigation, no nested Dashboard CM header',()=>{
- const mount={head:{appendChild(){}},getElementById(){return null},createElement(){return {id:'',textContent:''}},addEventListener(){}};
- const sandbox={document:mount,window:{},vh:(ic,cls,title,desc,acts)=>'<div class="vh"><div class="pic '+cls+'">'+ic+'</div><div><h1>'+title+'</h1><p>'+desc+'</p></div><div class="acts">'+acts+'</div></div>'};
- vm.runInNewContext(script,sandbox,{filename:'project-selection-ui.js'});
- const html=sandbox.window.MT_PROJECT_SELECTION.page();
- assert.match(html,/class="vh"/);
- assert.match(html,/class="pic dash"/);
- assert.match(html,/>Project Selection<\/h1>/);
- assert.equal((html.match(/<header/g)||[]).length,0,'No duplicate custom hero header');
- assert.equal((html.match(/<iframe/g)||[]).length,1);
- assert.doesNotMatch(html,/ps-banner|ps-route|data-ps-goto/,'Priority has exactly one native tab bar');
- assert.match(script,/html\.mt-embedded #appHeader/);
- assert.match(script,/html\.mt-embedded \.prio-hero>div:first-child/);
- assert.match(script,/html\.mt-embedded \.prio-subtabs/);
- assert.match(script,/body:has\(#view \.ps-page\)/);
- assert.match(script,/function accountAction\(mode\)/);
+'use strict';
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const {readFileSync}=require('node:fs');
+const vm=require('node:vm');
+const html=readFileSync('index.html','utf8');
+const source=readFileSync('project-selection-flow.js','utf8');
+const css=readFileSync('project-selection-flow.css','utf8');
+const dashboard=readFileSync('dashboard-cm-shared.html','utf8');
+function boot(y=2027,programs=[]){
+ const S={ui:{tahun:y},programs,wbs:[]},messages=[];
+ const noop=()=>{};
+ const document={head:{appendChild:noop},body:{appendChild:noop},querySelector:()=>null,createElement:()=>({remove:noop,click:noop})};
+ const context={S,ME:{role:'SA',unit:'BaTii',email:'test@kemenkeu.go.id'},VIEW:'beranda',
+  document,window:{},location:{hash:''},UNITS:['BaTii','Setjen','DJA'],save:noop,render:noop,
+  progProjects:()=>[],toast:m=>messages.push(m),
+  esc:v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),
+  vh:(_icon,_type,title)=>'<div class="vh"><h1>'+title+'</h1></div>'};
+ vm.runInNewContext(source,context,{filename:'project-selection-flow.js'});
+ return {S,context,messages,app:context.window.MT_PROJECT_SELECTION};
+}
+const program=()=>({id:'program-2027',akr:'PS2027-DOA',kode:'B27-DOA',nama:'Digitalisasi Office Automation',psYear:2027,psDraft:true,psStatus:'Draft',
+ jenis:'Berkelanjutan',uic:'BaTii',psProjects:[],psThreshold:80,psWeights:{},psPrioritize:false});
+const project=(name='Modul Kinerja')=>({id:'p1',name,uic:'Setjen',status:'Usulan',included:true,
+ scores:{},poster:{},risks:{},indicators:[],benefits:[]});
+const maxScores=()=>Object.fromEntries(Array.from({length:12},(_,i)=>{
+ const code='C'+(i+1);return [code,code==='C7'||code==='C12'?1:5];
+}));
+test('Loads native program-first flow; Dashboard CM auth/iframe is NOT imported',()=>{
+ assert.match(html,/project-selection-flow\.js\?v=/);
+ assert.match(html,/project-selection-flow\.css\?v=/);
+ assert.doesNotMatch(html,/<script src="project-selection-ui\.js/);
+ assert.doesNotMatch(html,/<script src="project-selection-native\.js/);
+ assert.doesNotMatch(source,/cmGoogleSignIn|cmLoginGate|dashboard-cm-shared\.html|<iframe/);
+ assert.doesNotThrow(()=>new vm.Script(source));
 });
- test('SMART mempertahankan dua jenis utility, dua mode normalisasi dan klasifikasi',()=>{
-  assert.match(source,/c\.type==='cost'\?\(max-v\)\/\(max-min\):\(v-min\)\/\(max-min\)/);
-  assert.match(source,/normMode==='scale'/);
-  assert.match(source,/const score=det\.reduce\(\(a,d\)=>a\+d\.contrib,0\)\*100/);
-  assert.match(source,/score>=70/);
-  assert.match(source,/score>=40/);
-  const begin=source.indexOf('const PRIO_CRITERIA=['),end=source.indexOf('const PRIO_SCHEMA=',begin);
-  assert.ok(begin>=0&&end>begin,'Kriteria asli tidak ditemukan');
-  const weights=[...source.slice(begin,end).matchAll(/code:'C(\d+)'[\s\S]*?\bw:(\d+)/g)].map(m=>[Number(m[1]),Number(m[2])]);
-  assert.deepEqual(weights.map(x=>x[0]),Array.from({length:12},(_,i)=>i+1));
-  assert.equal(weights.reduce((n,x)=>n+x[1],0),55);
-  assert.deepEqual(weights.map(x=>x[1]),[7,5,5,6,5,3,3,6,4,4,3,4]);
- });
- test('Javascript Project Selection sintaks valid dan styling modal scoped',()=>{
-  assert.doesNotThrow(()=>new vm.Script(script,{filename:'project-selection-ui.js'}));
-  for(const tab of ['projects','criteria','monev','reference']){
-   assert.ok(source.includes("'"+tab+"'")||source.includes('data-prio-tab="'+tab+'"'),'Tab hilang dari Priority asli: '+tab);
-  }
-  assert.match(script,/html\.mt-embedded #prioModal \.modal-head/);
-  assert.match(script,/html\.mt-embedded \.prio-hero/);
-  assert.match(script,/\.ps-dialog-head/);
-  assert.match(script,/if\(e\.key==='Escape'\)/);
-  assert.match(script,/if\(e\.key==='Tab'\)/);
- });
-})();
+test('2027 starts empty, not inherited from OA 2025-2028; manually created program shows',()=>{
+ const legacy={id:'old',akr:'OA',kode:'B25-OA',nama:'Digitalisasi Office Automation lama',mulai:2025,periode:'2025-2028',uic:'BaTii'};
+ const m=boot(2027,[legacy]);
+ assert.match(m.app.page(),/Belum ada Program Transformasi untuk Tahun 2027/);
+ assert.match(m.app.page(),/Tambah Program Transformasi 2027/);
+ m.S.programs.push(program());
+ const page=m.app.page();
+ assert.match(page,/Digitalisasi Office Automation/);
+ assert.match(page,/Belum ada proyek sesuai filter/);
+});
+test('Four Priority tabs render the right content, with PMO visual tab selection',()=>{
+ const p=program();p.psProjects=[project()];
+ const m=boot(2027,[p]);
+ for(const [tab,pattern] of [['projects',/Peringkat prioritas/],['criteria',/Komposisi bobot/],['monev',/Monev Indikator & Manfaat|Indikator Keberhasilan CM/],['reference',/Tabel 1 · Kriteria dan Bobot/]]){
+  m.S.ui.psFlow={tab,prog:p.id,q:'',filter:'all',sort:'score',view:'list'};
+  assert.match(m.app.page(),pattern,'Failed tab '+tab);
+ }
+ assert.match(css,/\.pswf-tabs>button/);
+ assert.match(css,/font-size:13px!important/);
+ assert.match(css,/min-height:40px!important/);
+ assert.match(css,/button\.on:after/);
+ assert.match(css,/background:#FDB913/);
+});
+test('Manual selection without SMART; SMART selection requires complete score >80',()=>{
+ const p=program(),x=project();p.psProjects=[x];const m=boot(2027,[p]);
+ assert.match(m.app.page(),/1 dari 1 calon proyek dipilih secara manual/);
+ p.psPrioritize=true;
+ assert.match(m.app.page(),/0 dari 1 calon proyek memenuhi ambang/);
+ x.scores=maxScores();
+ assert.match(m.app.page(),/>100\.0<\/b>/);
+ assert.match(m.app.page(),/1 dari 1 calon proyek memenuhi ambang/);
+ p.psThreshold=99;
+ assert.match(m.app.page(),/1 dari 1 calon proyek memenuhi ambang/);
+ x.scores.C1=1;
+ assert.match(m.app.page(),/0 dari 1 calon proyek memenuhi ambang/);
+});
+test('Original SMART 12 criteria, weights sum 55 and full reference rubrics',()=>{
+ const names=[...source.matchAll(/code:'C(\d+)'[\s\S]*?w:(\d+)/g)];
+ assert.equal(names.length,12);
+ assert.deepEqual(names.map(m=>+m[1]),Array.from({length:12},(_,i)=>i+1));
+ assert.equal(names.reduce((n,m)=>n+(+m[2]),0),55);
+ assert.match(source,/Keselarasan Strategis/);
+ assert.match(source,/Tingkat Perubahan \(POSTER\)/);
+ assert.match(source,/Skala Dampak \(Jumlah Pengguna\)/);
+ assert.match(dashboard,/function renderPriority\(\)/);
+});
+test('Finalization handoff shows only selected IDs before WBS and preserves WBS existing',()=>{
+ assert.match(html,/p\.psStatus==='Ditetapkan'/);
+ assert.match(html,/new Set\(p\.psSelectedProjectIds\|\|\[\]\)/);
+ assert.match(html,/psPendingWbs:true/);
+ assert.match(html,/p\.psDraft/);
+ const p=program(),x=project();p.psProjects=[x];p.psStatus='Ditetapkan';p.psDraft=false;p.psSelectedProjectIds=[x.id];
+ const m=boot(2027,[p]);
+ assert.match(m.app.page(),/Generate RKMK Word/);
+ assert.match(m.app.page(),/Lanjut ke WBS/);
+});
+test('RKMK generates genuine OOXML DOCX with KMK 132 charter, acceptance and plan',async()=>{
+ const p=program(),x=project();x.scores=maxScores();x.accepted='BA penerimaan disetujui';
+ p.psProjects=[x];p.psStatus='Ditetapkan';p.psDraft=false;p.psSelectedProjectIds=[x.id];
+ const m=boot(2027,[p]);let z;
+ class FakeZip{constructor(){z=this;this.files={}}file(k,v){this.files[k]=v}async generateAsync(){return {file:'blob'}}}
+ m.context.window.JSZip=FakeZip;m.context.JSZip=FakeZip;
+ m.context.URL={createObjectURL:()=> 'blob:doc',revokeObjectURL:()=>{}};
+ m.context.setTimeout=()=>{};
+ m.context.document.createElement=()=>({click(){},remove(){},set href(v){},set download(v){}});
+ m.context.document.body.appendChild=()=>{};
+ vm.runInNewContext(source.replace(/\n\}\)\(\);\s*$/, '\nwindow.__testWord=word;\n})();'),m.context);
+ await m.context.window.__testWord(p,false);
+ assert.ok(z.files['[Content_Types].xml']);
+ assert.ok(z.files['_rels/.rels']);
+ const doc=z.files['word/document.xml'];
+ assert.match(doc,/RANCANGAN RKMK PROGRAM/);
+ assert.match(doc,/CHARTER INISIATIF/);
+ assert.match(doc,/KRITERIA PENYELESAIAN/);
+ assert.match(doc,/RENCANA KERJA/);
+ assert.match(doc,/Modul Kinerja/);
+ assert.match(doc,/BA penerimaan disetujui/);
+});
