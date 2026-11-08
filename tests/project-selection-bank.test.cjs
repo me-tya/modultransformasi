@@ -565,10 +565,13 @@ test('Detail Program action icons distinguish draft and established programs',()
  let html=m.bank.detail();
  assert.match(html,/psbank-baru/);
  assert.doesNotMatch(html,/Draf usulan|Referensi historis|psbank-phase/);
- assert.match(html,/data-bank-doc="tgt-non"/);
+ assert.doesNotMatch(html,/data-bank-doc="tgt-non"/); // Clickable row replaces redundant view icon.
+ assert.match(html,/title="Klik baris untuk melihat Dokumen Program"/);
  assert.match(html,/data-bank-edit-doc="tgt-non"/);
  assert.match(html,/data-bank-upload="tgt-non"/);
  assert.match(html,/data-bank-map="tgt-non"/);
+ assert.ok(html.indexOf('data-bank-map="tgt-non"')<html.indexOf('data-bank-edit-doc="tgt-non"'));
+ assert.ok(html.indexOf('data-bank-edit-doc="tgt-non"')<html.indexOf('data-bank-upload="tgt-non"'));
  assert.doesNotMatch(html,/>Pemetaan<\/button>/);
  m.target.psStatus='Ditetapkan';
  html=m.bank.detail();
