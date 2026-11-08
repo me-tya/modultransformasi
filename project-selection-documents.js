@@ -481,6 +481,18 @@ async function exportFormalPdf(model,file,{preview=false}={}){
    y+=h;
   }
  }
+ // Placeholder QR untuk sertifikasi TTE pada cover; tidak membentuk QR atau sertifikat palsu.
+ if(!model.cover?.noTte){
+  const bx=143,by=217,sz=25;
+  pdf.setDrawColor(144,161,185);pdf.setLineWidth(.35);
+  if(typeof pdf.setLineDashPattern==='function')pdf.setLineDashPattern([1.8,1.2],0);
+  pdf.rect(bx,by,sz,sz);
+  if(typeof pdf.setLineDashPattern==='function')pdf.setLineDashPattern([],0);
+  pdf.setFont('helvetica','bold');pdf.setFontSize(7.5);pdf.setTextColor(126,143,162);
+  pdf.text('QR TTE',bx+sz/2,by+sz/2,{align:'center'});
+  pdf.setFont('helvetica','normal');pdf.setFontSize(8);pdf.setTextColor(93,110,137);
+  pdf.text('Ditandatangani secara elektronik',bx+sz/2,by+sz+5,{align:'center'});
+ }
  const contents=(model.blocks||[]).filter(b=>b.t==='h1'||b.t==='h2').map(b=>({text:b.text,level:b.t==='h1'?1:2}));
  if(model.formal&&contents.length){pdf.addPage();y=27;title('DAFTAR ISI');contents.forEach((b,i)=>line((b.level===2?'   ':'')+(i+1)+'. '+b.text,10,b.level===1,2));}
  pdf.addPage();y=29;
@@ -492,7 +504,7 @@ async function exportFormalPdf(model,file,{preview=false}={}){
   else if(b.t==='table'){if(b.caption)line('Tabel: '+b.caption,9,true,3);drawTable(b.head||[],b.rows||[],b.widths)}
   else if(b.t==='bullets')for(const x of b.items||[])line('• '+x,10,false,3);
   else if(b.t==='tte'&&!model.cover?.noTte){
-   pdf.addPage();y=34;title('PENANDATANGANAN ELEKTRONIK');
+   pdf.addPage();y=34;title('INFORMASI PENANDATANGANAN ELEKTRONIK');
    const t=model.cover?.tte||{};line((t.city||'')+(t.date?', '+t.date:''),10,false,12);
    line(t.label||'Mengetahui,',10,false,16);line(t.title||'[Jabatan Pejabat]',11,true,24);
    line('Ditandatangani secara elektronik',9,false,8);line(t.name||'[Nama Pejabat]',11,true,5);
