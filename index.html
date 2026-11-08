@@ -2936,7 +2936,7 @@ const umDef=()=>ME&&ME.role==='CMOU'?'u':'up';
 const umOf=()=>lockU()?(S.ui.umodeL||umDef()):(S.ui.umode||'up');
 const lockM=()=>lockU()?umOf():'';
 const curUnit=()=>lockU()||S.ui.unit;
-function progVis(){const u=lockU();return S.programs.filter(p=>!u||unitsOf(lockM()==='u'?p.uic:lockM()==='p'?p.pend:p.uic+', '+p.pend).includes(u)||S.wbs.some(w=>w.prog===p.akr&&!w.arsip&&unitMatch(w,u,lockM()||'up')))}
+function progVis(){const u=lockU();return S.programs.filter(p=>!p.psDraft&&(!u||unitsOf(lockM()==='u'?p.uic:lockM()==='p'?p.pend:p.uic+', '+p.pend).includes(u)||S.wbs.some(w=>w.prog===p.akr&&!w.arsip&&unitMatch(w,u,lockM()||'up'))))}
 function riskVis(r){const u=lockU();if(!u)return true;const m=modOf(r.item),it=wbsBy(r.item);return r.pemilik===u||(m&&m.uicUnits.includes(u))||(it&&unitMatch(it,u,lockM()||'up'))}
 const visMods=f=>mods().filter(m=>can(f,'R',m.kode)&&(!lockU()||m.uicUnits.includes(lockU())||unitsOf(m.pend).includes(lockU())));
 const wMods=(f,a)=>mods().filter(m=>can(f,a||'U',m.kode));
@@ -6254,15 +6254,22 @@ function progProjects(p,keep){
    const ent=g[name]||(g[name]={a:[],subs:{}});
    ent.a.push(w);if(sub&&sub!==name)(ent.subs[sub]=ent.subs[sub]||[]).push(w);
  });
- if(!Object.keys(g).length&&+p.psYear===+S.ui.tahun&&Array.isArray(p.psProjects)){
-  return p.psProjects.filter(x=>x.selected&&p.psStatus==='Ditetapkan').map(x=>({n:x.name,uic:x.uic||p.uic||'—',pg:0,late:0,s:x.start||'',f:x.end||x.goLive||'',a:[],sub:[],subItems:[],psPendingWbs:true}));
- }
- return Object.entries(g).map(([n,v])=>{
+ const result=Object.entries(g).map(([n,v])=>{
   const stat=a=>{let t=0,d=0;const u={};a.forEach(w=>{const b=+w.w||0;t+=b;if(doneAt(w,12)&&w.v)d+=b;const k=String(w.u||'').split(/[,(]/)[0].trim();if(k)u[k]=(u[k]||0)+1});
    const uic=Object.entries(u).sort((a,b)=>b[1]-a[1])[0];return {uic:uic?uic[0]:'—',pg:t?Math.round(d/t*100):0,late:a.filter(w=>stOf(w,12)==='Terlambat').length,s:a.reduce((m,w)=>!m||w.s<m?w.s:m,''),f:a.reduce((m,w)=>w.f>m?w.f:m,'')}};
   const a=v.a;
   return Object.assign({n,a,sub:Object.keys(v.subs),subItems:Object.entries(v.subs).map(([name,rows])=>Object.assign({name,count:rows.length,rows},stat(rows)))},stat(a));
  });
+ /* Penetapan dari Project Selection: proyek muncul bahkan sebelum WBS dibuat.
+    Bila sebagian proyek sudah memiliki WBS, yang belum dibuat tetap muncul. */
+ if(+p.psYear===+S.ui.tahun&&p.psStatus==='Ditetapkan'&&Array.isArray(p.psProjects)){
+  const selected=new Set(p.psSelectedProjectIds||[]);
+  p.psProjects.filter(x=>selected.has(x.id)).forEach(x=>{
+   if(result.some(j=>j.n.toLowerCase()===String(x.name).toLowerCase()))return;
+   result.push({n:x.name,uic:x.uic||p.uic||'—',pg:0,late:0,s:x.start||'',f:x.goLive||'',a:[],sub:[],subItems:[],psPendingWbs:true});
+  });
+ }
+ return result;
 }
 
 /* Register tingkat proyek dan subproyek (salinan independen antar modul). */
