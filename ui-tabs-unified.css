@@ -614,8 +614,10 @@ html.mt-ui-embedded :is(.tabs .count-badge,.cm-ap-cnt,.prio-tab-n){
 }
 #app .ps27 .ps27-filter-active{padding:4px 10px!important}
 #app .ps27 .ps27-filter-ic{
- width:31px!important;height:31px!important;min-width:31px!important;
+ width:32px!important;height:32px!important;min-width:32px!important;
+ border:1px solid rgba(253,185,19,.45)!important;background:rgba(253,185,19,.16)!important;color:#FDB913!important;
 }
+#app .ps27 .ps27-filter-ic svg{width:17px!important;height:17px!important}
 #app .ps27 .ps27-filter-expand{
  width:32px!important;height:32px!important;min-width:32px!important;
 }
