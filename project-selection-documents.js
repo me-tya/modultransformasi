@@ -192,7 +192,7 @@ function programReportModel(p){
   blocks.push({t:'table',caption:'Rangkuman Charter',head:['Komponen','Uraian'],widths:[32,68],rows:annex(p)});
  }
  if(d.sign)blocks.push({t:'tte'});
- return {lang:'id',formal:true,toc:!!d.toc,header:'Dokumen Perencanaan Program · '+name,
+ return {lang:'id',formal:true,template:d.template||'activity',toc:!!d.toc,header:'Dokumen Perencanaan Program · '+name,
   fileName:'Perencanaan_Program_'+year()+'_'+code.replace(/[^A-Za-z0-9_-]/g,'_')+'_v'+v,
   cover:{kicker:'KEMENTERIAN KEUANGAN REPUBLIK INDONESIA · DRAFT',title:'DOKUMEN PERENCANAAN PROGRAM',
    subject:name+' · Tahun Anggaran '+year()+' · v'+v,
@@ -371,6 +371,7 @@ function builder(p){
  '<label><input type="checkbox" data-doc-extra="annex" '+(d.annex?'checked':'')+'> Lampiran charter</label>'+
  '<label><input type="checkbox" data-doc-extra="sign" '+(d.sign?'checked':'')+'> Halaman penandatanganan</label></div>'+
  tteControls(d,'doc')+
+ '<div class="psbank-template-picker"><label><b>Template dokumen Word/PDF</b><select data-doc-template aria-label="Pilih template dokumen">'+[['activity','Warna · Laporan Kegiatan'],['classic','Formal · Navy-Emas']].map(([k,v])=>'<option value="'+k+'" '+((d.template||'activity')===k?'selected':'')+'>'+v+'</option>').join('')+'</select></label><small>Pratinjau dan unduhan memakai template yang sama.</small></div>'+
  '<div class="psbank-docformat"><strong>Format Ekspor</strong><div class="psbank-formatbuttons" role="group" aria-label="Format Ekspor">'+
  [['pdf','PDF'],['word','DOCX'],['pptx','PPTX']].map(x=>'<button type="button" class="btn '+(fmt===x[0]?'on':'')+'" data-doc-format-btn="'+x[0]+'" aria-pressed="'+(fmt===x[0])+'">'+x[1]+'</button>').join('')+'</div></div>'+
  versionPanel('program',p.id||p.akr,year())+
@@ -431,15 +432,55 @@ async function exportFormalPdf(model,file,{preview=false}={}){
   for(const row of rows)cellRow(row);
   y+=7;
  };
- /* Formal cover */
- pdf.setFillColor(...navy);pdf.rect(0,0,W,110,'F');pdf.setFillColor(...gold);pdf.rect(left,27,32,2,'F');
- pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.setTextColor(245,191,64);
- pdf.text('KEMENTERIAN KEUANGAN REPUBLIK INDONESIA',left,20);
- pdf.setTextColor(255,255,255);pdf.setFontSize(24);
- const heading=pdf.splitTextToSize(String(model.cover?.title||'DOKUMEN PROGRAM'),170);
- pdf.text(heading,left,43);pdf.setFontSize(12);pdf.text(pdf.splitTextToSize(String(model.cover?.subject||''),170),left,68);
- y=129;line((model.cover?.chips||[]).join('   |   '),10,true,8);
- if(model.cover?.meta?.length)drawTable(['IDENTITAS DOKUMEN','KETERANGAN'],model.cover.meta,[35,65]);
+ /* Shared activity-report cover: same gradient and rainbow band as Word/HTML. */
+ if(model.template==='classic'){
+  pdf.setFillColor(...navy);pdf.rect(0,0,W,110,'F');pdf.setFillColor(...gold);pdf.rect(left,27,32,2,'F');
+  pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.setTextColor(245,191,64);
+  pdf.text('KEMENTERIAN KEUANGAN REPUBLIK INDONESIA',left,20);
+  pdf.setTextColor(255,255,255);pdf.setFontSize(24);
+  const heading=pdf.splitTextToSize(String(model.cover?.title||'DOKUMEN PROGRAM'),170);
+  pdf.text(heading,left,43);pdf.setFontSize(12);pdf.text(pdf.splitTextToSize(String(model.cover?.subject||''),170),left,68);
+  y=129;line((model.cover?.chips||[]).join('   |   '),10,true,8);
+  if(model.cover?.meta?.length)drawTable(['IDENTITAS DOKUMEN','KETERANGAN'],model.cover.meta,[35,65]);
+ }else{
+  const banner=typeof mtRptCoverBanner==='function'?mtRptCoverBanner():null;
+  if(banner)pdf.addImage(banner.src,'PNG',left,17,bw,bw*212/1400);
+  else {
+   pdf.setFillColor(18,39,90);pdf.rect(left,17,bw,26,'F');
+   const stripe=[[242,169,59],[226,85,99],[124,92,224],[27,167,201],[22,163,127]];
+   stripe.forEach((c,i)=>{pdf.setFillColor(...c);pdf.rect(left+bw*i/5,43,bw/5,1.5,'F')});
+  }
+  y=59;pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.setTextColor(47,91,211);
+  pdf.text(String(model.cover?.kicker||'LAPORAN').toUpperCase().slice(0,84),left,y);
+  y+=6;
+  pdf.setFont('helvetica','bold');pdf.setFontSize(22);pdf.setTextColor(18,39,90);
+  const headings=pdf.splitTextToSize(String(model.cover?.title||'DOKUMEN PROGRAM'),bw);
+  headings.forEach(t=>{pdf.text(t,left,y);y+=9});
+  pdf.setFont('helvetica','normal');pdf.setFontSize(12);pdf.setTextColor(52,64,84);
+  pdf.splitTextToSize(String(model.cover?.subject||''),bw).forEach(t=>{pdf.text(t,left,y);y+=6});
+  const chips=(model.cover?.chips||[]).filter(v=>String(v||'').trim()).slice(0,4);
+  let cx=left;y+=7;
+  chips.forEach(chip=>{
+   const value=String(chip),cw=Math.min(59,Math.max(19,value.length*1.35+7));
+   if(cx+cw>right){cx=left;y+=8}
+   pdf.setFillColor(238,243,255);pdf.roundedRect(cx,y-5.5,cw,7,3,3,'F');
+   pdf.setFontSize(8.4);pdf.setFont('helvetica','bold');pdf.setTextColor(31,63,134);
+   pdf.text(value.slice(0,39),cx+3,y-1);
+   cx+=cw+3;
+  });
+  y+=14;
+  for(const pair of model.cover?.meta||[]){
+   const key=String(pair[0]||''),val=String(pair[1]||'');
+   pdf.setFont('helvetica','normal');pdf.setFontSize(9.1);pdf.setTextColor(93,110,137);
+   const vals=pdf.splitTextToSize(val,bw*.62);
+   const h=Math.max(7,vals.length*4.3+2);
+   pdf.text(key,left,y);
+   pdf.setFont('helvetica','bold');pdf.setTextColor(21,45,78);
+   vals.forEach((text,j)=>pdf.text(text,left+bw*.34,y+j*4.3));
+   pdf.setDrawColor(224,233,244);pdf.line(left,y+h-2,right,y+h-2);
+   y+=h;
+  }
+ }
  const contents=(model.blocks||[]).filter(b=>b.t==='h1'||b.t==='h2').map(b=>({text:b.text,level:b.t==='h1'?1:2}));
  if(model.formal&&contents.length){pdf.addPage();y=27;title('DAFTAR ISI');contents.forEach((b,i)=>line((b.level===2?'   ':'')+(i+1)+'. '+b.text,10,b.level===1,2));}
  pdf.addPage();y=29;
@@ -589,7 +630,7 @@ function portfolioModel(){
  h1('Catatan Penggunaan dan Pembaruan Dokumen');
  B.push({t:'bullets',items:['Dokumen memuat data program yang dipilih pada saat ekspor; perubahan isian setelah ekspor tidak otomatis mengubah berkas yang telah diunduh.','Nomor versi dokumen baru diterbitkan setelah PDF hasil TTE diunggah kembali sebagai bukti dukung.','Status dan bukti tanda tangan elektronik memerlukan verifikasi melalui layanan resmi sebelum dianggap sah.']});
  if(d.sign)B.push({t:'tte'});
- return {lang:'id',formal:true,toc:true,fileName:(mode?'Dokumen_Usulan_Proyek_':'Dokumen_Portofolio_Transformasi_')+year()+'_v'+version,
+ return {lang:'id',formal:true,template:d.template||'activity',toc:true,fileName:(mode?'Dokumen_Usulan_Proyek_':'Dokumen_Portofolio_Transformasi_')+year()+'_v'+version,
   header:(mode?'Dokumen Usulan Proyek · ':'Dokumen Portofolio Program Transformasi · ')+year(),
   cover:{kicker:'KEMENTERIAN KEUANGAN REPUBLIK INDONESIA · DRAFT',title:mode?'DOKUMEN USULAN PROYEK':'DOKUMEN PORTOFOLIO PROGRAM TRANSFORMASI',subject:'Tahun Anggaran '+year()+' · Versi '+version,
    chips:['Tahun '+year(),data.length+(mode?' usulan proyek':' program'),'Draft — belum disahkan'],scope:d.sections.map(x=>docSections().find(z=>z[0]===x)?.[1]||x),
@@ -651,6 +692,7 @@ function portfolioBuilder(){
  '<div class="psbank-portfolio-checks">'+(all.length?all.map(p=>'<label><input type="checkbox" data-port-program="'+E(p.id)+'" '+(d.selected.includes(String(p.id))?'checked':'')+'><span><b>'+E(p.nama)+'</b><small>'+E(p.kode||p.akr)+'</small></span></label>').join('') :'<p>Belum ada '+(mode?'usulan proyek':'program')+' pada tahun ini.</p>')+'</div>'+
  '<div class="psbank-doccheckhead"><b>Substansi</b><span>'+d.sections.length+'/'+steps.length+' dipilih</span></div><div class="psbank-docchecks">'+steps.map((x,i)=>'<label><input type="checkbox" data-port-section="'+x[0]+'" '+(d.sections.includes(x[0])?'checked':'')+'>'+(i+1)+'. '+x[1]+'</label>').join('')+'</div>'+
  tteControls(d,'port')+
+ '<div class="psbank-template-picker"><label><b>Template dokumen Word/PDF</b><select data-port-template aria-label="Pilih template dokumen">'+[['activity','Warna · Laporan Kegiatan'],['classic','Formal · Navy-Emas']].map(([k,v])=>'<option value="'+k+'" '+((d.template||'activity')===k?'selected':'')+'>'+v+'</option>').join('')+'</select></label><small>Pratinjau dan unduhan memakai template yang sama.</small></div>'+
  '<div class="psbank-docformat"><strong>Format Ekspor</strong><div class="psbank-formatbuttons">'+[['pdf','PDF'],['word','DOCX'],['pptx','PPTX']].map(x=>'<button type="button" class="btn '+(d.format===x[0]?'on':'')+'" data-port-format="'+x[0]+'" aria-pressed="'+(d.format===x[0])+'">'+x[1]+'</button>').join('')+'</div></div>'+
  versionPanel(docKind(),docId(),year())+'</div>'+
  '<div class="psbank-docpreview"><div class="psbank-docpreview-head"><div><b>Pratinjau '+(d.format==='pptx'?'PowerPoint':d.format==='pdf'?'PDF':'Word')+'</b><small>Portofolio Transformasi '+year()+'</small></div><span>v'+ver+' · '+chosen.length+(mode?' proyek':' program')+'</span></div>'+
@@ -760,6 +802,7 @@ function portfolioClick(ev){
 }
 function portfolioChange(ev){
  const q=ev.target,d=portCfg();
+ if(q.dataset.portTemplate!==undefined){d.template=q.value==='classic'?'classic':'activity';save();render();return true}
  if(q.dataset.portTte!==undefined){tteState(d)[q.dataset.portTte]=q.value;d.tteOpen=true;save();render();return true}
  if(q.hasAttribute('data-port-include-tte')){d.sign=q.checked;d.tteOpen=true;save();render();return true}
  if(q.dataset.portProgram!==undefined){const id=q.dataset.portProgram;d.selected=q.checked?[...new Set([...d.selected,id])]:d.selected.filter(x=>x!==id);d.slide=0;save();render();return true}
@@ -792,6 +835,7 @@ function click(ev,p,inline=false){
 }
 function change(ev,inline=false){
  const q=ev.target,d=cfg();
+ if(q.dataset.docTemplate!==undefined){d.template=q.value==='classic'?'classic':'activity';save();if(!inline)render();return true}
  if(q.dataset.docTte!==undefined){tteState(d)[q.dataset.docTte]=q.value;d.tteOpen=true;save();if(!inline)render();return true}
  if(q.hasAttribute('data-doc-tte-enabled')){d.sign=q.checked;d.tteOpen=true;save();if(!inline)render();return true}
  if(q.dataset.docSection!==undefined){const k=q.dataset.docSection;d.sections=q.checked?[...new Set([...d.sections,k])]:d.sections.filter(x=>x!==k);d.slide=0;save();if(!inline)render();return true}
