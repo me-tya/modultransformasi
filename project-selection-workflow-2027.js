@@ -181,7 +181,20 @@ function syncWbs(p){
  });
  S.wbs=S.wbs||[];S.wbs.push(...transfer);p.psWbsSynced=transfer.map(x=>x.k);return transfer.length;
 }
-function navigate(tab){state().tab=tab||'usulan';save();render();}
+function navigate(target){
+ const a=String(target||'usulan').split(':'),stage=a[0],sub=a[1],item=a[2];
+ state().tab=TABS.some(t=>t[0]===stage)?stage:'usulan';
+ if(stage==='usulan'){
+  if(['daftar','ambil','detail'].includes(sub))ws().usulanSub=sub;
+  if(item&&['identity','case','benefits','stakeholders','risks','governance','review'].includes(item)){S.ui.psGov=S.ui.psGov||{};S.ui.psGov.step=item;}
+ }
+ if(stage==='prioritasi'&&['ranking','criteria','monev'].includes(sub))ws().prioritySub=sub;
+ if(stage==='charter'&&sub){
+  const p=current(),c=p?foundCharter(p,yr()):null;
+  if(p&&c){S.ui.chp=p.akr;S.ui.chv=c.id;S.ui.ched=c.id;const keys={asis:0,tobe:1,cs:2,ch:3,kp:6,mf:7,rk:8};S.ui.chws=keys[sub]??3;}
+ }
+ save();render();
+}
 function page(){
  const p=current(),u=state(),T=list(),countAll=T.reduce((n,x)=>n+count(x),0);
  let h=vh('PS','pmo','Project Selection','Usulkan program, petakan proyek, prioritaskan, susun charter dan tetapkan dasar WBS.');
@@ -250,7 +263,17 @@ function helpPage(tab){
  ['penetapan','Penetapan','Finalisasi program dan daftar proyek. Draft WBS dari tahun sumber baru disalin ke Project Management setelah penetapan, tanpa realisasi.'],
  ['rkmk','Draft RKMK','Gunakan narasi tahun 2025 apabila tersedia; narasi bawaan ditandai kuning sampai direviu untuk tahun tujuan.']
  ];
- if(tab==='map')return '<div class="ps27-helpgrid">'+items.map((x,i)=>'<button data-ps27-jump="'+x[0]+'"><b>'+(i+1)+' · '+x[1]+'</b><small>'+x[2]+'</small><span>Buka submenu ↗</span></button>').join('')+'</div>';
+ if(tab==='map'){
+  const deep=[
+   [['Daftar Program','usulan:daftar'],['Ambil Program','usulan:ambil'],['Identitas','usulan:detail:identity'],['Business Case','usulan:detail:case'],['Manfaat','usulan:detail:benefits'],['Stakeholder','usulan:detail:stakeholders'],['Risiko','usulan:detail:risks'],['Tata Kelola','usulan:detail:governance'],['Reviu','usulan:detail:review']],
+   [['Daftar Proyek / Modul','mapping']],
+   [['Penilaian & Peringkat','prioritasi:ranking'],['Kriteria & Bobot','prioritasi:criteria'],['Monev & Manfaat','prioritasi:monev']],
+   [['As-is','charter:asis'],['To-be','charter:tobe'],['Perbandingan','charter:cs'],['Charter','charter:ch'],['Kriteria','charter:kp'],['Manfaat','charter:mf'],['Linimasa','charter:rk']],
+   [['Daftar Penetapan','penetapan']],
+   [['Narasi & Reviu','rkmk']]
+  ];
+  return '<div class="ps27-helpmap">'+items.map((x,i)=>'<section><button class="ps27-helpmap-head" data-ps27-jump="'+x[0]+'"><b>'+(i+1)+' · '+x[1]+'</b><span>Buka submenu ↗</span></button><p>'+x[2]+'</p><div class="ps27-helpmap-links">'+deep[i].map(z=>'<button data-ps27-jump="'+z[1]+'">'+z[0]+'</button>').join('')+'</div></section>').join('')+'</div>';
+ }
  if(tab==='flow')return '<div class="ps27-helpflow">'+items.map((x,i)=>'<div><b>'+(i+1)+' · '+x[1]+'</b><p>'+x[2]+'</p></div>').join('')+'</div>';
  if(tab==='roles')return '<div class="ps27-helpprose"><h3>Pembagian Peran</h3><p><b>PMO Kementerian:</b> mengelola standar, melakukan reviu, konsolidasi serta koordinasi penetapan. <b>PMO Unit/UIC:</b> mengusulkan program, proyek, register, charter dan revisi WBS sesuai otorisasi. <b>Pemilik proses bisnis:</b> mengonfirmasi outcome, target dan kriteria keberhasilan. <b>Sponsor/pejabat berwenang:</b> mengambil keputusan penetapan sesuai tata kelola berlaku.</p><p>Program yang belum ditetapkan tetap Draft di Project Selection. WBS hanya muncul setelah penetapan.</p></div>';
  if(tab==='terms')return '<div class="ps27-helpprose"><h3>Istilah Utama</h3><p><b>Program</b> adalah pengelolaan sekumpulan proyek terkait untuk manfaat bersama. <b>Proyek/Modul</b> adalah komponen hasil/layanan yang dikelola. <b>WBS</b> merinci pekerjaan hingga item yang dapat direncanakan dan dimonitor. <b>Carry Over</b> menyalin rencana dan dokumen tahun sumber sebagai Draft tahun tujuan, bukan memindahkan realisasi.</p></div>';
