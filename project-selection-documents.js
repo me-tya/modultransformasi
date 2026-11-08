@@ -206,8 +206,8 @@ function programReportModel(p){
 
 /**
  * Prevent a regression to the unformatted Word layout.
- * Official template uses A4 (11906 x 16838 twips), 2 cm margins (1134 twips)
- * and a body area of 9638 twips—the same geometry as Final Project Report.
+ * Official template uses A4 (11906 x 16838 twips), compact 14 mm margins (794 twips)
+ * and a body area of 10318 twips—the same geometry as Final Project Report.
  */
 async function assertOfficialWordTemplate(blob){
  const zip=await window.JSZip.loadAsync(blob),xml=await zip.file('word/document.xml')?.async('string');
@@ -217,7 +217,7 @@ async function assertOfficialWordTemplate(blob){
  const page=dom.getElementsByTagNameNS('*','pgSz')[0],margin=dom.getElementsByTagNameNS('*','pgMar')[0];
  const attr=(e,k)=>e?.getAttribute('w:'+k)||e?.getAttribute(k);
  const right=Number(attr(margin,'right')),left=Number(attr(margin,'left'));
- if(Number(attr(page,'w'))!==11906||Number(attr(page,'h'))!==16838||left!==1134||right!==1134||
+ if(Number(attr(page,'w'))!==11906||Number(attr(page,'h'))!==16838||left!==794||right!==794||
     !zip.file('word/styles.xml'))
   throw new Error('Template Word tidak sesuai format laporan resmi A4; unduhan dibatalkan untuk mencegah layout rusak.');
  return blob;
