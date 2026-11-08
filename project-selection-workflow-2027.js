@@ -9,11 +9,11 @@ const clone=x=>JSON.parse(JSON.stringify(x));
 const uid=k=>(k||'ps')+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);
 const can=p=>!!ME&&['SA','PMOK','PMOU'].includes(ME.role)&&(!p||ME.role!=='PMOU'||!p.uic||p.uic===ME.unit);
 const yr=()=>+S.ui.psSelectedYear||+S.ui.tahun||2026;
-const state=()=>{const u=I.state();const map={portfolio:'usulan',program:'usulan',projects:'mapping',criteria:'prioritasi',monev:'prioritasi',reference:'prioritasi'};if(map[u.tab])u.tab=map[u.tab];if(!['usulan','mapping','prioritasi','charter','penetapan-program','penetapan','rkmk'].includes(u.tab))u.tab='usulan';return u};
+const state=()=>{const u=I.state();const map={portfolio:'usulan',program:'usulan',projects:'mapping',criteria:'prioritasi',monev:'prioritasi',reference:'prioritasi'};if(map[u.tab])u.tab=map[u.tab];if(u.tab==='penetapan')u.tab='penetapan-program';if(!['usulan','mapping','prioritasi','charter','penetapan-program','rkmk'].includes(u.tab))u.tab='usulan';return u};
 const list=()=>I.programs();
 const current=()=>I.pickedProgram();
 const ws=()=>{S.ui.ps27=S.ui.ps27||{sourceYear:2026,selected:[],search:'',sub:'identity',filterOpen:false};return S.ui.ps27};
-const TABS=[['usulan','Usulan Program'],['mapping','Pemetaan Proyek'],['prioritasi','Prioritasi'],['charter','Charter Program'],['penetapan-program','Penetapan Program'],['penetapan','Penetapan Proyek'],['rkmk','Draft RKMK']];
+const TABS=[['usulan','Usulan Program'],['mapping','Pemetaan Proyek'],['prioritasi','Prioritasi'],['charter','Charter Program'],['penetapan-program','Penetapan Program'],['rkmk','Draft RKMK']];
 function sourcePrograms(){const y=+ws().sourceYear;return (S.programs||[]).filter(p=>{if(p.psYear)return +p.psYear===y;const yrs=String(p.periode||'').match(/20\d{2}/g)||[];const start=+p.mulai||+(yrs[0]||0),end=+(yrs[yrs.length-1]||start);return start&&start<=y&&end>=y});}
 function sourceWbs(p,y){return (S.wbs||[]).filter(w=>w.prog===p.akr&&!w.arsip&&+(String(w.f||w.s||'').slice(0,4))===+y);}
 function shiftDate(v,from,to){return typeof v==='string'&&new RegExp('^'+from+'-\\d{2}-\\d{2}').test(v)?String(to)+v.slice(4):v;}
@@ -83,8 +83,7 @@ const TOP_HELP={
  mapping:'Gunakan Riwayat Proyek untuk mengambil referensi proyek lintas tahun ke program tujuan tanpa mengubah WBS atau realisasi historis. Lengkapi usulan di tab berikutnya.',
  prioritisasi:'Prioritaskan dan nilai proyek dengan kriteria yang tersedia. Hasilnya menjadi masukan pemilihan proyek untuk program.',
  charter:'Susun Charter Program dan rencana kerja sebagai dasar usulan program lintas unit.',
- 'penetapan-program':'Susun target output program per triwulan sesuai Capaian K-Wide dan catat kontrak kinerja sebagai dasar penetapan.',
- penetapan:'Tetapkan proyek yang memenuhi persyaratan setelah kontrak kinerja K-Wide tercatat. Daftar final menjadi dasar WBS Project Management.',
+ 'penetapan-program':'Kelola target output program TW I–IV dan kontrak kinerja K-Wide, lalu tetapkan program beserta seluruh proyek terpilih dalam satu submenu. WBS disusun setelah penetapan.',
  rkmk:'Susun dan reviu narasi Draft RKMK berdasarkan sumber program untuk tahun aktif.'
 };
 function navItem(tab,label,num){const on=state().tab===tab;return '<button type="button" role="tab" aria-selected="'+on+'" class="'+(on?'on':'')+'" data-ps27-tab="'+tab+'"><span>'+label+'</span>'+(num?'<b>'+num+'</b>':'')+'</button>';}
@@ -297,13 +296,14 @@ function collectWide(root){
 function penetapan(p){
  if(!p)return '<div class="ps27-card ps27-empty">Pilih program untuk menetapkan daftar proyek setelah kontrak K-Wide dicatat.</div>';
  const a=I.chosen(p)||[],r=window.MT_PS_GOV?.readiness(p),rows=p.psWbsDraft||[],already=p.psStatus==='Ditetapkan';
- return '<div class="ps27-card"><div class="ps27-cardtop"><div><h3>Penetapan Proyek</h3><p>Daftar final menjadi acuan Project Management → Perencanaan → WBS. Prioritisasi SMART bersifat opsional.</p></div><span class="ps27-status">'+E(p.psStatus||'Draft')+'</span></div>'+
+ return '<div class="ps27-card ps27-approval-panel" id="ps27-project-approval"><div class="ps27-cardtop"><div><h3>Cakupan Proyek dalam Penetapan Program</h3><p>Kontrak K-Wide menjadi prasyarat. Program ditetapkan beserta proyek terpilih; daftar final menjadi acuan Project Management → Perencanaan → WBS. Prioritisasi SMART bersifat opsional.</p></div><span class="ps27-status">'+E(p.psStatus||'Draft')+'</span></div>'+
+ '<div class="ps27-approval-select"><label>Program yang ditetapkan <select data-ps27-approval-program aria-label="Pilih program untuk menetapkan beserta proyeknya">'+list().filter(x=>!x.arsip&&x.psListStatus!=='Arsip').map(x=>'<option value="'+E(x.id)+'" '+(String(p.id)===String(x.id)?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label></div>'+ 
  '<div class="ps27-minimetrics"><span><b>'+a.length+'</b> proyek dipilih</span><span><b>'+rows.length+'</b> WBS draft</span><span><b>'+(r?r.done+'/7':'—')+'</b> kesiapan dokumen</span></div>'+
  (r&&r.applies&&!r.ok?'<div class="ps27-warning">Kelengkapan program belum memenuhi persyaratan: '+E(r.missing.join(', '))+'. <button class="btn btn-outline btn-sm" data-ps27-tab="usulan">Lengkapi Usulan</button></div>':'')+
  '<div class="ps27-tablewrap"><table class="ps27-table"><thead><tr><th>Proyek / Modul</th><th>UIC</th><th>Target</th><th>Skor</th><th>Status</th></tr></thead><tbody>'+
- (a.length?a.map(x=>'<tr><td><b>'+E(x.name)+'</b></td><td>'+E(x.uic||p.uic||'—')+'</td><td>'+E(x.goLive||'—')+'</td><td>'+(p.psPrioritize?(I.calc(x,p).score??'Belum lengkap'):'Manual')+'</td><td>'+E(already?'Ditetapkan':'Siap ditetapkan')+'</td></tr>').join(''):'<tr><td colspan="5" class="ps27-center">Belum ada proyek dipilih. Kembali ke Pemetaan/Prioritasi.</td></tr>')+
- '</tbody></table></div><div class="ps27-footer">'+(already?'<span>Program ditetapkan. Susun WBS baru melalui Project Management.</span><button class="btn" data-pswf="reopen">Buka Revisi</button><button class="btn pri" data-ps27="go-wbs">Buka WBS ›</button>':
- '<span>Penetapan proyek mengikuti kontrak kinerja K-Wide yang sudah dicatat. WBS baru disusun setelah penetapan.</span><button class="btn pri" data-pswf="finalize" '+(!can(p)||!a.length||((+p.psYear||yr())>=2027&&(wideState().contract.status!=='Ditetapkan'||!wideState().contract.programIds?.includes(String(p.id))))?'disabled':'')+'>Tetapkan Program & Proyek</button>')+'</div></div>';
+ (a.length?a.map(x=>'<tr><td><b>'+E(x.name)+'</b></td><td>'+E(x.uic||p.uic||'—')+'</td><td>'+E(x.goLive||'—')+'</td><td>'+(p.psPrioritize?(I.calc(x,p).score??'Belum lengkap'):'Manual')+'</td><td>'+E(already?'Ditetapkan':'Siap ditetapkan')+'</td></tr>').join(''):'<tr><td colspan="5" class="ps27-center">Belum ada proyek dipilih. Lengkapi di Pemetaan Proyek atau Prioritasi.</td></tr>')+
+ '</tbody></table></div><div class="ps27-footer">'+(already?'<span>Program beserta '+a.length+' proyek telah ditetapkan. Susun WBS baru melalui Project Management.</span><button class="btn" data-pswf="reopen">Buka Revisi</button><button class="btn pri" data-ps27="go-wbs">Buka WBS ›</button>':
+ '<span>Program dan proyek ditetapkan bersama setelah kontrak K-Wide tercatat dan dokumen lengkap. WBS disusun setelahnya.</span><button class="btn pri" data-pswf="finalize" '+(!can(p)||!a.length||(r?.applies&&!r?.ok)||((+p.psYear||yr())>=2027&&(wideState().contract.status!=='Ditetapkan'||!wideState().contract.programIds?.includes(String(p.id))))?'disabled':'')+' title="Tetapkan program berikut seluruh proyek yang dipilih setelah persyaratan K-Wide dan kesiapan terpenuhi">Tetapkan Program beserta '+a.length+' Proyek</button>')+'</div></div>';
 }
 const RKMK_FIELDS=[['latar','Latar Belakang'],['tujuan','Tujuan / Sasaran'],['kondisi','Kondisi As-is'],['target','Kondisi To-be / Target'],['strategi','Strategi / Terobosan'],['output','Output / Deliverable'],['manfaat','Manfaat / Outcome'],['milestone','Milestone & Jadwal'],['risiko','Risiko & Mitigasi']];
 function rkmk(p){
@@ -328,7 +328,7 @@ function syncWbs(p){
 }
 function navigate(target){
  const a=String(target||'usulan').split(':'),stage=a[0],sub=a[1],item=a[2];
- const actual=TABS.some(t=>t[0]===stage)?stage:'usulan';
+ const actual=stage==='penetapan'?'penetapan-program':TABS.some(t=>t[0]===stage)?stage:'usulan';
  state().tab=actual;
  if(actual==='usulan'){
   S.ui.psBank=S.ui.psBank||{};
@@ -372,8 +372,7 @@ function page(){
  else if(u.tab==='mapping')h+=mapping(p);
  else if(u.tab==='prioritasi')h+=prioritasi(p);
  else if(u.tab==='charter')h+=charter(p);
- else if(u.tab==='penetapan-program')h+=widePanel();
- else if(u.tab==='penetapan')h+=penetapan(p);
+ else if(u.tab==='penetapan-program')h+=widePanel()+penetapan(p);
  else h+=rkmk(p);
  h+='</section>';return h;
 }
@@ -426,7 +425,7 @@ function mount(){
     contract.status='Ditetapkan';contract.finalizedAt=new Date().toISOString();contract.finalizedBy=ME?.email||'';
     contract.programIds=active.map(x=>String(x.id));contract.snapshot=d.rows.map(x=>Object.assign({},x));
     active.forEach(x=>{x.psKwideContractNumber=contract.number;x.psKwideRecordedAt=contract.finalizedAt});
-    save();render();toast('Kontrak K-Wide tercatat. Penetapan masing-masing program/proyek dapat dilanjutkan melalui panel di bawah.');
+    save();render();toast('Kontrak K-Wide tercatat. Tetapkan program beserta proyek yang dipilih melalui panel di bawah.');
    };
    if(typeof window.MT_PS_CONFIRM==='function')window.MT_PS_CONFIRM('Catat Penetapan K-Wide?', 'Nomor '+contract.number+' · '+contract.date+'. Pencatatan ini menjadi prasyarat penetapan program dan proyek.',finish);
    else if(window.confirm('Catat kontrak K-Wide '+contract.number+'?'))finish();
@@ -449,6 +448,11 @@ function mount(){
  });
  root.addEventListener('change',function(ev){
   const el=ev.target;
+  if(el.dataset.ps27ApprovalProgram!==undefined){
+   try{collectWide(root)}catch(e){toast(e.message||String(e));return}
+   const chosen=list().find(p=>String(p.id)===String(el.value)&&!p.arsip&&p.psListStatus!=='Arsip');
+   if(chosen){state().prog=chosen.id;setFilterField('program',chosen.id);setFilterField('allProgramsSelected',false);save();render()}return;
+  }
   if(el.dataset.ps27Prog!==undefined){
     S.ui.psBank=S.ui.psBank||{};
     if(state().tab==='usulan'&&S.ui.psBank.tab==='bank'){S.ui.psBank.filterProgram=el.value;setFilterField('program',el.value)}
@@ -492,7 +496,7 @@ function helpPage(tab){
   ['mapping','Pemetaan Proyek','Riwayat Proyek menyediakan referensi lintas tahun untuk disalin ke usulan program tujuan tanpa mengubah WBS historis. Usulan Proyek untuk mengelola identitas; WBS baru dibuat di Project Management.'],
   ['prioritasi','Prioritasi','SMART opsional; 12 kriteria lengkap, bobot normalisasi, skor absolut, dan penetapan ambang. Snapshot menyimpan kondisi penilaian untuk pembandingan.'],
   ['charter','Charter Program','Perencanaan proyek menggunakan As-is, To-be, Perbandingan, Charter, Kriteria, Manfaat, dan Linimasa. Tombol bawah: Import PPTX, Pratinjau 3 Slide, Unduh PPTX, Ubah, Simpan, Simpan & Tutup.'],
-  ['penetapan','Penetapan','Memfinalkan program dan proyek terpilih tanpa otomatis mengaktifkan WBS tahun sebelumnya.'],
+  ['penetapan-program','Penetapan Program','Catat kontrak K-Wide dan tetapkan program sekaligus proyek yang dipilih. Daftar proyek berada pada bagian bawah layar; WBS historis tidak disalin.'],
   ['rkmk','Draft RKMK','Mereviu narasi rancangan RKMK; isian sumber ditandai sampai dikonfirmasi untuk tahun tujuan.']
  ];
  if(tab==='map'){
@@ -501,7 +505,7 @@ function helpPage(tab){
    [['Riwayat Proyek','mapping:history'],['Usulan Proyek','mapping:proposal'],['Hasil Pemetaan','mapping:results'],['Buat Dokumen Usulan Proyek','mapping:docs']],
    [['Penilaian & Peringkat','prioritasi:ranking'],['Kriteria & Bobot','prioritasi:criteria'],['Monev & Manfaat','prioritasi:monev'],['Referensi & Formula','prioritasi:reference']],
    [['As-is','charter:asis'],['To-be','charter:tobe'],['Perbandingan','charter:cs'],['Charter','charter:ch'],['Kriteria','charter:kp'],['Manfaat','charter:mf'],['Linimasa','charter:rk']],
-   [['Daftar Penetapan','penetapan']],
+   [['Kontrak K-Wide dan Cakupan Proyek','penetapan-program']],
    [['Narasi & Reviu','rkmk']]
   ];
   return '<div class="ps27-helpmap">'+items.map((x,i)=>'<section><button class="ps27-helpmap-head" data-ps27-jump="'+x[0]+'"><b>'+(i+1)+' · '+x[1]+'</b><span>Buka submenu ↗</span></button><p>'+x[2]+'</p><div class="ps27-helpmap-links">'+deep[i].map(z=>'<button type="button" data-ps27-jump="'+z[1]+'">'+z[0]+'</button>').join('')+'</div></section>').join('')+'</div>';
