@@ -61,7 +61,7 @@ test('Detail Program removes duplicate workspace and exposes inline versioned do
  assert.match(p,/Riwayat Dokumen/);
  assert.match(m.docs.paper(m.core,'identity',2026),/Integrasi APBN/);
 });
-test('Carry-over copies source registers, charter and WBS, then opens Detail Program',()=>{
+test('Carry-over copies registers and charter but requires fresh WBS',()=>{
  const m=boot();
  m.S.ui.psBank={tab:'bank',names:{'src-core:2026':'Digitalisasi Core APBN Baru'},check:[],wtab:'identity'};
  const added=m.bank.addOne('src-core:2026',false);
@@ -70,9 +70,7 @@ test('Carry-over copies source registers, charter and WBS, then opens Detail Pro
  assert.equal(added.psYear,2027);
  assert.equal(added.psStatus,'Draft');
  assert.equal(added.psProjects.length,2);
- assert.equal(added.psWbsDraft.length,2);
- assert.equal(added.psWbsDraft[0].rm,0);
- assert.equal(added.psWbsDraft[0].v,0);
+ assert.equal(added.psWbsDraft.length,0,'No historical WBS copied');
  assert.ok(m.S.charters.some(c=>c.prog===added.akr&&c.st==='Draft'));
  assert.equal(m.S.ui.psFlow.tab,'usulan');
   assert.equal(m.S.ui.psBank.tab,'detail');
