@@ -9,11 +9,11 @@ const clone=x=>JSON.parse(JSON.stringify(x));
 const uid=k=>(k||'ps')+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);
 const can=p=>!!ME&&['SA','PMOK','PMOU'].includes(ME.role)&&(!p||ME.role!=='PMOU'||!p.uic||p.uic===ME.unit);
 const yr=()=>+S.ui.psSelectedYear||+S.ui.tahun||2026;
-const state=()=>{const u=I.state();const map={portfolio:'usulan',program:'usulan',projects:'mapping',criteria:'prioritasi',monev:'prioritasi',reference:'prioritasi'};if(map[u.tab])u.tab=map[u.tab];if(!['usulan','mapping','prioritasi','charter','penetapan-program','penetapan','rkmk'].includes(u.tab))u.tab='usulan';return u};
+const state=()=>{const u=I.state();const map={portfolio:'usulan',program:'usulan',projects:'mapping',criteria:'prioritasi',monev:'prioritasi',reference:'prioritasi'};if(map[u.tab])u.tab=map[u.tab];if(u.tab==='penetapan-program'){u.tab='usulan';S.ui.psBank=S.ui.psBank||{};S.ui.psBank.tab='penetapan'}if(!['usulan','mapping','prioritasi','charter','penetapan','rkmk'].includes(u.tab))u.tab='usulan';return u};
 const list=()=>I.programs();
 const current=()=>I.pickedProgram();
 const ws=()=>{S.ui.ps27=S.ui.ps27||{sourceYear:2026,selected:[],search:'',sub:'identity',filterOpen:false};return S.ui.ps27};
-const TABS=[['usulan','Usulan Program'],['mapping','Pemetaan Proyek'],['prioritasi','Prioritasi'],['charter','Charter Program'],['penetapan-program','Penetapan Program'],['penetapan','Penetapan Proyek'],['rkmk','Draft RKMK']];
+const TABS=[['usulan','Usulan Program'],['mapping','Pemetaan Proyek'],['prioritasi','Prioritasi'],['charter','Charter Program'],['penetapan','Penetapan Proyek'],['rkmk','Draft RKMK']];
 function sourcePrograms(){const y=+ws().sourceYear;return (S.programs||[]).filter(p=>{if(p.psYear)return +p.psYear===y;const yrs=String(p.periode||'').match(/20\d{2}/g)||[];const start=+p.mulai||+(yrs[0]||0),end=+(yrs[yrs.length-1]||start);return start&&start<=y&&end>=y});}
 function sourceWbs(p,y){return (S.wbs||[]).filter(w=>w.prog===p.akr&&!w.arsip&&+(String(w.f||w.s||'').slice(0,4))===+y);}
 function shiftDate(v,from,to){return typeof v==='string'&&new RegExp('^'+from+'-\\d{2}-\\d{2}').test(v)?String(to)+v.slice(4):v;}
@@ -79,7 +79,7 @@ function carrySelected(){
 }
 function count(p){return p?(p.psProjects||[]).length:0;}
 const TOP_HELP={
- usulan:'Susun usulan program: Riwayat Program hanya referensi untuk menyalin data, sedangkan penambahan dan penyuntingan substansi dilakukan di Daftar Program.',
+ usulan:'Riwayat Program untuk referensi, Daftar Program untuk usulan, dokumen portofolio untuk konsolidasi, dan tab Penetapan untuk target TW I–IV serta pencatatan kontrak kinerja K-Wide.',
  mapping:'Gunakan Riwayat Proyek untuk mengambil referensi proyek lintas tahun ke program tujuan tanpa mengubah WBS atau realisasi historis. Lengkapi usulan di tab berikutnya.',
  prioritisasi:'Prioritaskan dan nilai proyek dengan kriteria yang tersedia. Hasilnya menjadi masukan pemilihan proyek untuk program.',
  charter:'Susun Charter Program dan rencana kerja sebagai dasar usulan program lintas unit.',
@@ -328,11 +328,11 @@ function syncWbs(p){
 }
 function navigate(target){
  const a=String(target||'usulan').split(':'),stage=a[0],sub=a[1],item=a[2];
- const actual=TABS.some(t=>t[0]===stage)?stage:'usulan';
+ const actual=stage==='penetapan-program'?'usulan':TABS.some(t=>t[0]===stage)?stage:'usulan';
  state().tab=actual;
  if(actual==='usulan'){
   S.ui.psBank=S.ui.psBank||{};
-  const tab=['bank','daftar','ambil'].includes(sub)?'bank':sub==='portfolio'?'portfolio':'detail';
+  const tab=stage==='penetapan-program'||['penetapan','kwide'].includes(sub)?'penetapan':['bank','daftar','ambil'].includes(sub)?'bank':sub==='portfolio'?'portfolio':'detail';
   S.ui.psBank.tab=tab;
   S.ui.psBank.workspace='';
   ws().usulanSub=tab==='bank'?'daftar':'detail';
@@ -372,7 +372,6 @@ function page(){
  else if(u.tab==='mapping')h+=mapping(p);
  else if(u.tab==='prioritasi')h+=prioritasi(p);
  else if(u.tab==='charter')h+=charter(p);
- else if(u.tab==='penetapan-program')h+=widePanel();
  else if(u.tab==='penetapan')h+=penetapan(p);
  else h+=rkmk(p);
  h+='</section>';return h;
@@ -488,7 +487,7 @@ function mount(){
 }
 function helpPage(tab){
  const items=[
-  ['usulan','Usulan Program','Klik seluruh header Filter untuk menampilkan/menyembunyikan pilihan Tahun, Periode, Program, Unit, Peran, dan Status. Daftar Program: klik baris untuk Detail; aksi dari kiri Pemetaan, Edit, Unggah, dan Unduh apabila ada berkas. Pilih berkas dengan checkbox untuk preview atau ZIP.'],
+  ['usulan','Usulan Program','Riwayat Program adalah referensi, Daftar Program untuk melengkapi usulan, Buat Dokumen Portofolio untuk konsolidasi, dan Penetapan untuk target output TW I–IV serta pencatatan kontrak kinerja K-Wide. Setelah kontrak dicatat, lanjutkan Penetapan Proyek.'],
   ['mapping','Pemetaan Proyek','Riwayat Proyek menyediakan referensi lintas tahun untuk disalin ke usulan program tujuan tanpa mengubah WBS historis. Usulan Proyek untuk mengelola identitas; WBS baru dibuat di Project Management.'],
   ['prioritasi','Prioritasi','SMART opsional; 12 kriteria lengkap, bobot normalisasi, skor absolut, dan penetapan ambang. Snapshot menyimpan kondisi penilaian untuk pembandingan.'],
   ['charter','Charter Program','Perencanaan proyek menggunakan As-is, To-be, Perbandingan, Charter, Kriteria, Manfaat, dan Linimasa. Tombol bawah: Import PPTX, Pratinjau 3 Slide, Unduh PPTX, Ubah, Simpan, Simpan & Tutup.'],
@@ -497,7 +496,7 @@ function helpPage(tab){
  ];
  if(tab==='map'){
   const deep=[
-   [['Riwayat Program','usulan:bank'],['Daftar Program · Kelola & Unggah / Unduh','usulan:detail'],['Dokumen Portofolio','usulan:portfolio'],['Identitas','usulan:detail:identity'],['Business Case','usulan:detail:case'],['Manfaat','usulan:detail:benefits'],['Stakeholder','usulan:detail:stakeholders'],['Risiko','usulan:detail:risks'],['Tata Kelola','usulan:detail:governance'],['Buat Dokumen Program','usulan:detail:docs']],
+   [['Riwayat Program','usulan:bank'],['Daftar Program · Kelola & Unggah / Unduh','usulan:detail'],['Dokumen Portofolio','usulan:portfolio'],['Penetapan Program (K-Wide)','usulan:penetapan'],['Identitas','usulan:detail:identity'],['Business Case','usulan:detail:case'],['Manfaat','usulan:detail:benefits'],['Stakeholder','usulan:detail:stakeholders'],['Risiko','usulan:detail:risks'],['Tata Kelola','usulan:detail:governance'],['Buat Dokumen Program','usulan:detail:docs']],
    [['Riwayat Proyek','mapping:history'],['Usulan Proyek','mapping:proposal'],['Hasil Pemetaan','mapping:results'],['Buat Dokumen Usulan Proyek','mapping:docs']],
    [['Penilaian & Peringkat','prioritasi:ranking'],['Kriteria & Bobot','prioritasi:criteria'],['Monev & Manfaat','prioritasi:monev'],['Referensi & Formula','prioritasi:reference']],
    [['As-is','charter:asis'],['To-be','charter:tobe'],['Perbandingan','charter:cs'],['Charter','charter:ch'],['Kriteria','charter:kp'],['Manfaat','charter:mf'],['Linimasa','charter:rk']],
@@ -538,6 +537,6 @@ function open(mode){
  root.addEventListener('keydown',function(ev){if(ev.key==='Escape')root.remove()});
 }
 B.page=page;B.mount=mount;B.open=open;B.version='20261108-help-shortcuts-smart-priority-v2';
-window.MT_PS_WORKFLOW={carrySelected,cloneProgram,syncWbs,navigate,version:B.version};
+window.MT_PS_WORKFLOW={carrySelected,cloneProgram,syncWbs,navigate,renderWidePanel:widePanel,version:B.version};
 if(typeof VIEW!=='undefined'&&VIEW==='project-selection'&&ME)render();
 })();
