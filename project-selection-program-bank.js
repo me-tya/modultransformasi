@@ -32,10 +32,42 @@ function historyYears(p){
 function records(){
  return all().flatMap(p=>historyYears(p).map(y=>({p,year:y,key:String(p.id)+':'+y}))).sort((a,b)=>b.year-a.year||String(a.p.nama||'').localeCompare(String(b.p.nama||''),'id'));
 }
-function labelStatus(p){
- if(p.psListStatus==='Arsip'||p.arsip||p.status==='Arsip'||p.psStatus==='Arsip')return 'Arsip';
- if(p.psListStatus==='Baru'||p.psListStatus==='Legacy')return p.psListStatus;
- return p.psCarry||!p.psYear?'Legacy':'Baru';
+function isHistoricTkd2026(p){
+ const code=String(p.kode||'').toUpperCase(),title=String(p.nama||'').toLowerCase();
+ const years=String(p.periode||'').match(/20\d{2}/g)||[];
+ return p.akr==='TKD'&&/^[BT]\d{2}-TKD$/.test(code)&&title.includes('pemotongan pajak di muka atas tkd')&&
+  (+p.psYear===2026||(!p.psYear&&+p.mulai<=2026&&(+years[years.length-1]||2026)>=2026));
+}
+function approvedClosure(p){
+ const result=archiveReadiness(p);
+ return result.hasClosure&&!result.blocked;
+}
+function labelStatus(p,y=year()){
+ const closed=!!(p.arsip||p.psListStatus==='Arsip'||p.psStatus==='Arsip'||p.status==='Arsip'||approvedClosure(p)||isHistoricTkd2026(p));
+ const since=+(p.psArchiveYear||p.psHistoricalClosedYear||p.psYear||(String(p.periode||'').match(/20\d{2}/g)||[]).at(-1)||year());
+ if(closed&&+y>=since)return 'Arsip';
+ return p.psCarry||p.psSourceYear||!p.psYear?'Legacy':'Baru';
+}
+function syncProgramStatuses(){
+ let changed=false;
+ (S.programs||[]).forEach(p=>{
+  const historic=isHistoricTkd2026(p),approved=approvedClosure(p);
+  if(historic&&!p.psHistoricalTkdBackfill){
+   p.psHistoricalTkdBackfill='TKD-TW1-2026';p.psHistoricalClosedYear=2026;p.psArchivePeriod='TW I 2026';
+   p.psArchiveReason='Penutupan TKD TW I 2026 (penyesuaian histori berdasarkan konfirmasi pengguna).';
+   p.psArchiveSource='Penyesuaian data awal—dokumen persetujuan tidak tersedia dalam prototipe';changed=true;
+  }
+  if((historic||approved)&&!(p.arsip&&p.psListStatus==='Arsip')){
+   p.arsip=true;p.psListStatus='Arsip';p.psArchiveYear=historic?2026:(+p.psYear||year());
+   if(approved&&!historic)p.psArchiveSource='Penutupan proyek disetujui PMO (status Ditutup)';
+   changed=true;
+  }
+  if(!historic&&!approved&&!p.arsip){
+   const origin=p.psCarry||p.psSourceYear||!p.psYear?'Legacy':'Baru';
+   if(p.psListStatus!==origin){p.psListStatus=origin;changed=true}
+  }
+ });
+ if(changed)save();return changed;
 }
 const canManage=p=>!!ME&&['SA','PMOK','PMOU'].includes(ME.role)&&(!p||ME.role!=='PMOU'||!p.uic||p.uic===ME.unit);
 const isConcept=p=>!!p&&p.psStatus!=='Ditetapkan'&&!p.psFinalizedAt&&(p.psDraft===true||['Konsep','Draft',''].includes(String(p.psStatus||'')));
@@ -149,7 +181,7 @@ function matchesPeriod(p,period='all',from='',to=''){
 }
 function bank(){
  const b=store(),q=String(b.search||'').toLowerCase(),list=records();
- const rows=list.filter(x=>(b.filterYear==='all'||+b.filterYear===x.year)&&(!b.filterProgram||x.p.id===b.filterProgram)&&(b.filterStatus==='all'||!b.filterStatus||labelStatus(x.p)===b.filterStatus)&&matchesUnit(x.p,b.filterUnit,b.filterRole)&&matchesPeriod(x.p,b.filterPeriod,b.filterRangeFrom,b.filterRangeTo)&&[x.p.nama,x.p.kode,x.p.uic,x.p.akr].join(' ').toLowerCase().includes(q));
+ const rows=list.filter(x=>(b.filterYear==='all'||+b.filterYear===x.year)&&(!b.filterProgram||x.p.id===b.filterProgram)&&(b.filterStatus==='all'||!b.filterStatus||labelStatus(x.p,x.year)===b.filterStatus)&&matchesUnit(x.p,b.filterUnit,b.filterRole)&&matchesPeriod(x.p,b.filterPeriod,b.filterRangeFrom,b.filterRangeTo)&&[x.p.nama,x.p.kode,x.p.uic,x.p.akr].join(' ').toLowerCase().includes(q));
  const pageSize=b.bankPageSize,pages=Math.max(1,Math.ceil(rows.length/pageSize));
  b.bankPage=Math.min(Math.max(1,+b.bankPage||1),pages);
  const from=(b.bankPage-1)*pageSize,pageRows=rows.slice(from,from+pageSize);
@@ -162,7 +194,7 @@ function bank(){
   const num=Scope.modules(p,y).length;
   return '<tr tabindex="0" class="psbank-clickrow" data-bank-row="'+E(key)+'" title="Lihat dokumen program"><td class="psbank-checkcol"><input type="checkbox" data-bank-check="'+E(key)+'" '+(b.check.includes(key)?'checked':'')+' aria-label="Pilih '+E(p.nama)+' tahun '+y+'"></td>'+
   '<td><b>'+y+'</b></td><td><b>'+E(p.kode||p.akr||'—')+'</b></td><td><b>'+E(p.nama)+'</b></td><td>'+E(p.uic||'—')+'</td>'+
-  '<td><span class="psbank-tag psbank-'+labelStatus(p).toLowerCase()+'">'+labelStatus(p)+'</span></td><td>'+num+' modul</td>'+
+  '<td><span class="psbank-tag psbank-'+labelStatus(p,y).toLowerCase()+'">'+labelStatus(p,y)+'</span></td><td>'+num+' modul</td>'+
   '<td class="psbank-rowactions">'+programAction('add',key,'Tambahkan Program ke Tahun')+'</td></tr>';
  }).join(''):'<tr><td colspan="8" class="psbank-empty">Tidak ada program sesuai filter.</td></tr>')+'</tbody></table></div>'+
  '<div class="psbank-pagination" aria-label="Navigasi halaman Riwayat Program">'+
@@ -183,7 +215,7 @@ function detail(){
  const allRows=active(),complete=p=>window.MT_PS_GOV?.readiness(p)||{done:0,total:7};
  return '<div class="psbank-card"><div class="psbank-sectionhead"><div><h3>Daftar Program · '+year()+'</h3><p>Kumpulan usulan program transformasi yang perlu dilengkapi substansi dan proyeknya sebelum ditetapkan melalui kontrak kinerja K-Wide. Klik program untuk mengedit.</p></div><div class="psbank-headright"><span class="psbank-count">'+rows.length+' program</span>'+infoIcon('detail')+'</div></div>'+
  '<div class="psbank-tablewrap"><table class="psbank-table psbank-detail-table"><colgroup><col><col><col><col><col><col><col><col><col></colgroup><thead><tr><th>Tahun</th><th>Kode Program</th><th>Nama Program</th><th>UIC</th><th>Asal</th><th>Status</th><th>Kelengkapan</th><th>Modul</th><th>Aksi</th></tr></thead><tbody>'+
- (visibleRows.length?visibleRows.map(p=>{const readiness=complete(p);return '<tr tabindex="0" data-bank-detailrow="'+E(p.id)+'" class="psbank-clickrow" title="Klik baris untuk melihat Dokumen Program"><td>'+year()+'</td><td><b>'+E(p.kode||p.akr)+'</b></td><td><b>'+E(p.nama)+'</b></td><td>'+E(p.uic||'—')+'</td><td>'+E(p.psCarry?'Dari '+p.psCarry.sourceYear:'Program baru')+'</td><td><select class="psbank-status-select psbank-'+labelStatus(p).toLowerCase()+'" data-bank-status="'+E(p.id)+'" aria-label="Status program '+E(p.nama)+'" title="Baru = usulan pertama tahun ini; Legacy = lanjutan program sebelumnya; Arsip = ditutup dengan bukti penutupan" '+(!canManage(p)||labelStatus(p)==='Arsip'?'disabled':'')+'>'+['Baru','Legacy','Arsip'].map(st=>'<option value="'+st+'" '+(labelStatus(p)===st?'selected':'')+'>'+st+'</option>').join('')+'</select><small class="psbank-stage">'+E(p.psStatus==='Ditetapkan'?'Ditetapkan'+(p.psKwideContractNumber?' · K-Wide':''):'Konsep / belum ditetapkan')+'</small></td><td><b>'+readiness.done+'/'+readiness.total+'</b><small>'+E(readiness.ok?'Siap direviu':'Perlu dilengkapi')+'</small></td><td>'+Scope.modules(p,year()).length+'</td>'+
+ (visibleRows.length?visibleRows.map(p=>{const readiness=complete(p);return '<tr tabindex="0" data-bank-detailrow="'+E(p.id)+'" class="psbank-clickrow" title="Klik baris untuk melihat Dokumen Program"><td>'+year()+'</td><td><b>'+E(p.kode||p.akr)+'</b></td><td><b>'+E(p.nama)+'</b></td><td>'+E(p.uic||'—')+'</td><td>'+E(p.psCarry?'Dari '+p.psCarry.sourceYear:'Program baru')+'</td><td><span class="psbank-tag psbank-'+labelStatus(p).toLowerCase()+'" title="Status otomatis berdasarkan asal program dan persetujuan penutupan proyek">'+labelStatus(p)+'</span><small class="psbank-stage">'+E(p.psStatus==='Ditetapkan'?'Ditetapkan'+(p.psKwideContractNumber?' · K-Wide':''):'Konsep / belum ditetapkan')+'</small></td><td><b>'+readiness.done+'/'+readiness.total+'</b><small>'+E(readiness.ok?'Siap direviu':'Perlu dilengkapi')+'</small></td><td>'+Scope.modules(p,year()).length+'</td>'+
  '<td class="psbank-rowactions psbank-program-actions">'+programAction('map',p.id,'Pemetaan Proyek')+programAction('edit',p.id,'Edit Dokumen Program')+programAction('upload',p.id,'Unggah Dokumen Program')+(canDelete(p)?programAction('delete',p.id,'Hapus konsep program yang belum ditetapkan'):'')+'</td></tr>'}).join(''):'<tr><td colspan="9" class="psbank-empty">Belum ada program sesuai filter. Tambahkan program dari Riwayat Program.</td></tr>')+'</tbody></table></div>'+
  '<div class="psbank-pagination" aria-label="Navigasi halaman Daftar Program">'+
  '<label>Baris per halaman <select data-bank-detail-page-size aria-label="Jumlah baris Daftar Program per halaman">'+[10,20,50,100].map(n=>'<option value="'+n+'" '+(size===n?'selected':'')+'>'+n+'</option>').join('')+'</select></label>'+
@@ -199,6 +231,7 @@ function detail(){
 const STEPS=[['identity','Identitas'],['case','Business Case'],['benefits','Manfaat'],['stakeholders','Stakeholder'],['risks','Risiko'],['governance','Tata Kelola'],['review','Reviu'],['docs','Buat Dokumen Program']];
 function workspace(p){return '';}
 function usulan(){
+ syncProgramStatuses();
  const b=store(),tab=b.tab;
  return '<div class="psbank-subhead"><nav class="psbank-subtabs" role="tablist" aria-label="Usulan Program">'+
  [['bank','Riwayat Program'],['detail','Daftar Program'],['portfolio','Buat Dokumen Portofolio']].map(t=>'<button type="button" class="'+(tab===t[0]?'on':'')+'" data-bank-tab="'+t[0]+'" title="'+E(helpInfo[t[0]])+'">'+t[1]+(t[0]==='detail'?' <b>'+active().length+'</b>':'')+'</button>').join('')+
@@ -341,7 +374,9 @@ function addOne(key,renderNow=true,to=year(),newName=null,newAkronim=null){
  while(all().some(x=>+x.psYear===to&&String(x.kode||'').toUpperCase()===candidate.toUpperCase()))candidate=baseCode+'-'+seq++;
  p.kode=candidate;
  Scope.normalizeProjectCodes?.(p);
- p.psCarry.sourceYear=rec.year;p.psSourceYear=rec.year;p.psListStatus='Legacy';p.arsip=false;all().push(p);
+ p.psCarry.sourceYear=rec.year;p.psSourceYear=rec.year;p.psListStatus='Legacy';p.arsip=false;
+ delete p.psHistoricalTkdBackfill;delete p.psHistoricalClosedYear;delete p.psArchivePeriod;delete p.psArchiveSource;delete p.psArchiveYear;
+ all().push(p);
  const b=store();state().prog=p.id;Scope.bank().target=p.id;b.workspace='';b.tab='detail';b.check=b.check.filter(x=>x!==key);state().tab='usulan';
  if(renderNow){saveUI();toast('Program '+p.nama+' berhasil ditambahkan ke Daftar Program tahun '+to+'.')}
  return p;
@@ -489,21 +524,11 @@ function onClick(ev){
 function onChange(ev){
  if(Scope.change(ev)||Docs.portfolioChange?.(ev)||Docs.change(ev))return;
  const q=ev.target,b=store();
- if(q.dataset.bankStatus!==undefined){
-  const p=get(q.dataset.bankStatus);if(!p||!canManage(p)){render();return}
-  const old=labelStatus(p),to=q.value;if(to===old)return;
-  if(to==='Arsip'){q.value=old;archiveProgram(p);return}
-  if(p.psStatus==='Ditetapkan'){toast('Asal program yang sudah ditetapkan tidak boleh diubah.');render();return}
-  if(to==='Baru'&&p.psCarry){toast('Program hasil salinan tahun sebelumnya harus berstatus Legacy. Buat usulan baru jika merupakan program baru.');render();return}
-  if(to==='Legacy'&&!p.psCarry&&!p.psSourceYear){toast('Status Legacy hanya untuk program yang memiliki sumber dari tahun sebelumnya.');render();return}
-  p.psListStatus=to;p.psUpdatedAt=new Date().toISOString();p.psUpdatedBy=ME?.email||'';
-  save();render();toast('Status daftar program menjadi '+to+'.');return;
- }
  if(q.dataset.bankPageSize!==undefined){b.bankPageSize=Number(q.value);b.bankPage=1;saveUI();return}
  if(q.dataset.bankDetailPageSize!==undefined){b.detailPageSize=Number(q.value);b.detailPage=1;saveUI();return}
  if(q.dataset.bankYear!==undefined){b.filterYear=q.value;b.bankPage=1;saveUI();return}
  if(q.dataset.bankCheckall!==undefined){
-  const filtered=records().filter(x=>(b.filterYear==='all'||+b.filterYear===x.year)&&(!b.filterProgram||x.p.id===b.filterProgram)&&(b.filterStatus==='all'||!b.filterStatus||labelStatus(x.p)===b.filterStatus)&&matchesUnit(x.p,b.filterUnit,b.filterRole)&&matchesPeriod(x.p,b.filterPeriod,b.filterRangeFrom,b.filterRangeTo)&&[x.p.nama,x.p.kode,x.p.uic,x.p.akr].join(' ').toLowerCase().includes(String(b.search||'').toLowerCase()));
+  const filtered=records().filter(x=>(b.filterYear==='all'||+b.filterYear===x.year)&&(!b.filterProgram||x.p.id===b.filterProgram)&&(b.filterStatus==='all'||!b.filterStatus||labelStatus(x.p,x.year)===b.filterStatus)&&matchesUnit(x.p,b.filterUnit,b.filterRole)&&matchesPeriod(x.p,b.filterPeriod,b.filterRangeFrom,b.filterRangeTo)&&[x.p.nama,x.p.kode,x.p.uic,x.p.akr].join(' ').toLowerCase().includes(String(b.search||'').toLowerCase()));
   const visible=filtered.slice((b.bankPage-1)*b.bankPageSize,b.bankPage*b.bankPageSize).map(x=>x.key);
   b.check=q.checked?[...new Set([...b.check,...visible])]:b.check.filter(x=>!visible.includes(x));
   saveUI();return;
@@ -705,6 +730,6 @@ function mount(){
 })();
 
 A.page=page;A.mount=mount;A.version='20261109-project-selection-ui-v7';
-window.MT_PS_BANK_CORE={records,bank,detail,usulan,addOne,bulk,openCarry,codeFor,showPreview,editablePaper:editForm,openDetailTab:tab=>{const p=current();if(p)showPreview(String(p.id)+':'+year(),tab)},current,openWorkspace,version:A.version};
+window.MT_PS_BANK_CORE={records,bank,detail,usulan,addOne,bulk,openCarry,codeFor,programStatus:labelStatus,syncProgramStatuses,showPreview,editablePaper:editForm,openDetailTab:tab=>{const p=current();if(p)showPreview(String(p.id)+':'+year(),tab)},current,openWorkspace,version:A.version};
 if(typeof VIEW!=='undefined'&&VIEW==='project-selection'&&ME)render();
 })();
