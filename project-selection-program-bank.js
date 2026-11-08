@@ -747,7 +747,7 @@ if(typeof VIEW!=='undefined'&&VIEW==='project-selection'&&ME)render();
  if(!document.createElement||!document.head||typeof document.head.appendChild!=='function')return;
  window.MT_MENU_TOOLTIP_LOADER=true;
  var script=document.createElement('script');
- script.src='ui-menu-tooltips.js?v=20261109-help-icon-performance-v4';
+ script.src='ui-menu-tooltips.js?v=20261109-guide-labels-restored-v5';
  script.async=true;
  document.head.appendChild(script);
 })();
