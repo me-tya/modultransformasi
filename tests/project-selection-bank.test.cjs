@@ -560,15 +560,15 @@ test('Detail Program action icons distinguish draft and established programs',()
  const m=boot();
  m.S.ui.psBank={tab:'detail'};
  let html=m.bank.detail();
- assert.match(html,/psbank-usulan/);
- assert.match(html,/Usulan/);
+ assert.match(html,/psbank-baru/);
+ assert.match(html,/Draf usulan/);
  assert.match(html,/data-bank-doc="tgt-non"/);
  assert.match(html,/data-bank-edit-doc="tgt-non"/);
  assert.match(html,/data-bank-map="tgt-non"/);
  assert.doesNotMatch(html,/>Pemetaan<\/button>/);
  m.target.psStatus='Ditetapkan';
  html=m.bank.detail();
- assert.match(html,/psbank-ditetapkan/);
+ assert.match(html,/psbank-phase established/);
  assert.match(html,/Ditetapkan/);
 });
 test('Auto-save on program detail tab changes persists edit state and no discard warning',()=>{
