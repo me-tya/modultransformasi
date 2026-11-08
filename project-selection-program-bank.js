@@ -103,7 +103,7 @@ function archiveReadiness(p){
   try{return decodeURIComponent(String(key).split('|')[0]||'')===String(p.akr)}catch(_){return false}
  });
  const matchProject=x=>{
-  if(x.psClosure?.approved||x.psClosedAt||x.psClosureStatus==='Ditutup')return true;
+  if(x.psClosure?.approved===true||x.psClosureStatus==='Ditutup')return true; // Timestamp alone is not approval.
   const name=String(x.name||x.n||'').trim().toLowerCase();if(!name)return false;
   const matched=recs.filter(([key])=>{
    try{return decodeURIComponent(String(key).split('|')[1]||'').trim().toLowerCase()===name}catch(_){return false}
