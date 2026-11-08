@@ -674,3 +674,12 @@ html.mt-ui-embedded :is(.tabs .count-badge,.cm-ap-cnt,.prio-tab-n){
 @media(max-width:1190px){
  #app .pm-stage-shell>nav.ptabs.pmo-journey>a{padding-inline:7px!important;font-size:11.1px!important}
 }
+
+/* Perencanaan proyek: aksi ikon konsisten dengan tabel modul, bukan tombol teks. */
+#app table.pdocs th:last-child{text-align:center!important;min-width:94px!important}
+#app table.pdocs td:last-child{text-align:center!important;min-width:94px!important}
+#app table.pdocs .pdocs-action-icon{width:34px;height:34px;min-width:34px;padding:0;border:1px solid #bed3ed;border-radius:9px;background:#f1f6ff;color:#265b93;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;vertical-align:middle}
+#app table.pdocs .pdocs-action-icon.edit{background:#fff9ed;border-color:#f1d7a3;color:#ba7712}
+#app table.pdocs .pdocs-action-icon:hover:not(:disabled){filter:brightness(.95)}
+#app table.pdocs .pdocs-action-icon:disabled{opacity:.4;cursor:not-allowed}
+#app table.pdocs .pdocs-action-icon:focus-visible{outline:2px solid #1765b4;outline-offset:2px}
