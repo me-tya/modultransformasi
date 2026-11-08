@@ -862,3 +862,21 @@
 #app .psbank-accordion-program .psbank-chevron{display:inline-block;transition:transform .14s ease;transform-origin:center center}
 #app .psbank-accordion-program[open] .psbank-chevron{transform:rotate(90deg)}
 @media(prefers-reduced-motion:reduce){#app .psbank-accordion-program .psbank-chevron{transition:none}}
+
+/* Clean program tab semantics: tooltip on hover, one info icon at header's right. */
+#app .psbank-subtabs [data-bank-tab] .psbank-helpicon{display:none!important}
+#app .psbank-sectionhead{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
+#app .psbank-sectionhead>div:first-child{min-width:0;flex:1}
+#app .psbank-headright{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex:0 0 auto}
+#app .psbank-headright .psbank-helpicon{flex:0 0 18px}
+#app .psbank-detail-table{table-layout:fixed;width:100%}
+#app .psbank-detail-table col:nth-child(3){width:23%!important}
+#app .psbank-detail-table col:nth-child(7){width:12%!important}
+#app .psbank-detail-table col:nth-child(9){width:16%!important}
+#app .psbank-detail-table .psbank-program-actions{white-space:nowrap!important;overflow:visible!important;padding:5px 4px!important;text-align:center!important;box-sizing:border-box!important}
+#app .psbank-detail-table .psbank-program-actions>.psbank-program-action{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:27px!important;min-width:27px!important;max-width:27px!important;height:27px!important;min-height:27px!important;max-height:27px!important;padding:0!important;margin:0 1px!important;vertical-align:middle;transform-origin:center center}
+#app .psbank-detail-table .psbank-program-actions>.psbank-program-action svg{display:block;flex:0 0 15px;width:15px;height:15px}
+#app .psbank-history-table .psbank-rowactions>.psbank-program-action.add{width:28px!important;height:28px!important;min-width:28px!important;min-height:28px!important;margin:auto!important;padding:0!important;display:inline-flex!important;align-items:center;justify-content:center;transform-origin:center center}
+#app .psbank-history-table .psbank-rowactions>.psbank-program-action.add svg{width:16px;height:16px}
+#app .psbank-history-table .psbank-rowactions>.psbank-program-action.add:hover{transform:translateY(-1px)!important;border-color:#7e9fc7!important;background:#e9f2ff!important}
+@media(max-width:1250px){#app .psbank-detail-table{min-width:990px}}
