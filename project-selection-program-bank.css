@@ -858,3 +858,7 @@
 #app .psbank-project-code-preview small{font-size:10.5px;color:#6b839c}
 @media(max-width:1180px){#app .psbank-tab-summary span{padding:6px;font-size:10px}}
 @media(max-width:750px){#app .psbank-scope-stage .psbank-scope-tabline{flex-wrap:wrap}#app .psbank-scope-stage .psbank-mapping-tabs{width:100%}#app .psbank-tab-summary{width:100%;justify-content:flex-end}#app .psbank-history-project-controls{grid-template-columns:1fr 1fr}#app .psbank-history-project-controls label:last-child{grid-column:1/-1}#app .psbank-accordion-projects{grid-template-columns:1fr}}
+
+#app .psbank-accordion-program .psbank-chevron{display:inline-block;transition:transform .14s ease;transform-origin:center center}
+#app .psbank-accordion-program[open] .psbank-chevron{transform:rotate(90deg)}
+@media(prefers-reduced-motion:reduce){#app .psbank-accordion-program .psbank-chevron{transition:none}}
