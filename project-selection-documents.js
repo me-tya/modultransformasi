@@ -124,6 +124,10 @@ function slidePages(p){
   const all=section.rows.flatMap(r=>splitSlideValue(r[1]).map((v,i)=>[String(r[0])+(i?' (lanjutan '+(i+1)+')':''),v]));
   for(let j=0;j<all.length;j+=5)out.push({title:section.title+(j?' (lanjutan)':''),key:section.key,rows:all.slice(j,j+5)});
  });
+ if(cfg().sign){const t=tteState(cfg());out.push({title:'Penandatanganan Elektronik (Rancangan)',key:'tte',rows:[
+ ['Nama Pejabat',t.name||'Belum ditetapkan'],['Jabatan',t.title||'Belum ditetapkan'],
+ ['Keterangan',t.label],['Tempat dan Tanggal',t.city+', '+t.date],['Nomor Dokumen',t.number||'Belum ditetapkan']
+ ]})}
  return out;
 }
 function paper(p,key,y){
@@ -448,6 +452,10 @@ function portSlides(){
    for(let j=0;j<cards.length;j+=4)slides.push({kind:'section',program:o.p,programIndex:i+1,title:block.title+(j?' (lanjutan)':''),rows:cards.slice(j,j+4)});
   });
  });
+ if(portCfg().sign){const t=tteState(portCfg());slides.push({kind:'tte',title:'Penandatanganan Elektronik (Rancangan)',rows:[
+ ['Nama Pejabat',t.name||'Belum ditetapkan'],['Jabatan',t.title||'Belum ditetapkan'],
+ ['Keterangan',t.label],['Tempat dan Tanggal',t.city+', '+t.date],['Nomor Dokumen',t.number||'Belum ditetapkan']
+ ]})}
  return slides;
 }
 function portfolioPreview(){
@@ -458,6 +466,7 @@ function portfolioPreview(){
   if(x.kind==='cover')body='<div class="psbank-port-slide-cover"><small>KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</small><div class="port-gold-rule"></div><h2>PORTOFOLIO<br>PROGRAM TRANSFORMASI</h2><p>Tahun '+year()+' · Versi '+v+'</p><strong>'+data.length+' PROGRAM TERPILIH</strong></div>';
   else if(x.kind==='overview')body='<div class="psbank-port-slide-overview"><small>RINGKASAN EKSEKUTIF · '+year()+'</small><h2>'+fmt(x.title)+'</h2><div class="port-preview-metrics"><span><b>'+data.length+'</b> '+(mode?'Usulan Proyek':'Program')+'</span><span><b>'+data.reduce((n,o)=>n+(o.p.psProjects||[]).length,0)+'</b> Usulan Proyek</span></div><div class="port-preview-list">'+(x.programs||[]).map((p,j)=>'<p><b>'+String((x.programOffset||0)+j+1).padStart(2,'0')+'</b> '+fmt(p.nama)+' <small>'+fmt(p.kode||p.akr)+'</small></p>').join('')+'</div></div>';
   else if(x.kind==='divider')body='<div class="psbank-port-slide-cover"><small>PROGRAM '+String(x.programIndex).padStart(2,'0')+' / '+x.totalPrograms+'</small><div class="port-gold-rule"></div><h2>'+fmt(x.program?.nama||'')+'</h2><p>'+fmt(x.program?.kode||x.program?.akr)+' · '+year()+'</p><strong>SUBSTANSI PROGRAM</strong></div>';
+  else if(x.kind==='tte')body='<div class="psbank-port-slide-section"><small>RANCANGAN · BUKAN TTE YANG TELAH DIVERIFIKASI</small><h2>'+fmt(x.title)+'</h2><p>Identitas penandatangan</p><div class="port-card-grid count-4">'+x.rows.map(row=>'<article><b>'+fmt(row[0])+'</b><p>'+fmt(row[1])+'</p></article>').join('')+'</div></div>';
   else body='<div class="psbank-port-slide-section"><small>PROGRAM '+String(x.programIndex).padStart(2,'0')+' · '+fmt(x.program?.kode||x.program?.akr)+'</small><h2>'+fmt(x.title)+'</h2><p>'+fmt(x.program?.nama)+'</p><div class="port-card-grid count-'+x.rows.length+'">'+x.rows.map(row=>'<article><b>'+fmt(row[0])+'</b><p>'+fmt(row[1])+'</p></article>').join('')+'</div></div>';
   return '<div class="psbank-port-slide">'+body+'<footer>MODUL TRANSFORMASI KEMENTERIAN KEUANGAN <span>v'+v+' · '+(i+1)+' / '+deck.length+'</span></footer></div>'+
    '<div class="psbank-slidecontrols"><button class="btn" data-port-slide="-1" '+(!i?'disabled':'')+'>‹ Sebelumnya</button><span>Slide '+(i+1)+' / '+deck.length+'</span><button class="btn" data-port-slide="1" '+(i>=deck.length-1?'disabled':'')+'>Berikutnya ›</button></div>';
@@ -517,6 +526,16 @@ async function portfolioExport(){
      tx(sl,'Tahun Anggaran '+year()+' · Versi '+version,1.05,4.35,10,.4,18,'CBDCF0');
      rect(sl,1.03,5.35,4.8,.52,MID);tx(sl,data.length+(mode?' USULAN PROYEK':' PROGRAM TERPILIH'),1.25,5.43,4.3,.35,16,W,true);
      footer(sl,num,true);return;
+    }
+    if(page.kind==='tte'){
+     rect(sl,0,0,13.333,.16,G);
+     tx(sl,'RANCANGAN PENANDATANGANAN ELEKTRONIK',.65,.52,12,.3,12,MID,true);
+     tx(sl,'Halaman TTE',.65,1.08,11,.75,31,N,true);
+     (page.rows||[]).forEach((row,i)=>{const xx=.66+(i%2)*6.22,yy=2.15+Math.floor(i/2)*1.15;
+      rect(sl,xx,yy,5.92,1.02,PALE);rect(sl,xx,yy,.07,1.02,G);
+      tx(sl,row[0],xx+.16,yy+.12,5.54,.26,11,MID,true);
+      tx(sl,row[1],xx+.16,yy+.45,5.54,.4,15,TEXT);
+     });footer(sl,num);return;
     }
     if(page.kind==='divider'){
      tx(sl,(mode?'PROYEK ':'PROGRAM ')+String(page.programIndex).padStart(2,'0')+' / '+page.totalPrograms,.87,1.0,10,.5,17,G,true);
