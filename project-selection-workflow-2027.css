@@ -103,3 +103,14 @@
 .ps27-helpprose .ps27-table{margin-top:15px}
 @media(max-width:1000px){#app .ps27 .ps27-stage-action{display:none}#app .ps27 .ps27-filter-title{flex-basis:130px}#app .ps27 .ps27-filter-summary{gap:6px}#app .ps27 .ps27-rkmkgrid{grid-template-columns:1fr}}
 @media(max-width:650px){#app .ps27 .ps27-filter-title{flex-basis:80px;font-size:0;justify-content:center;padding:4px}#app .ps27 .ps27-filter-title .ps27-filter-ic{font-size:20px}#app .ps27 .ps27-filter-summary{padding:6px;font-size:11px}#app .ps27 .ps27-filter-summary strong{display:none}#app .ps27 .ps27-filter-toggle{width:32px;height:32px}#app .ps27 .ps27-card{padding:11px}#app .ps27 .ps27-cardtop{align-items:flex-start;flex-wrap:wrap}.ps27-helpgrid,.ps27-helpflow{grid-template-columns:1fr}.ps27-help-overlay{padding:6px}.ps27-helpmodal{height:96vh}}
+
+/* Bantuan peta menu sampai level subtab, pola kartu ringkas ala PM. */
+.ps27-helpmap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.ps27-helpmap>section{border:1px solid #dbe5ef;border-radius:11px;padding:13px;background:#fff;min-width:0}
+.ps27-helpmap-head{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f0f5fc;color:#133b67;border:0;border-radius:8px;padding:10px 12px;cursor:pointer;width:100%;font:750 12.5px 'Inter',sans-serif;text-align:left}
+.ps27-helpmap-head span{font-size:10.5px;color:#265d92;white-space:nowrap}
+.ps27-helpmap p{margin:9px 0;color:#63788f;font-size:11.5px;line-height:1.5}
+.ps27-helpmap-links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.ps27-helpmap-links button{border:1px solid #dae4ee;border-radius:7px;background:white;color:#315776;font:700 11px 'Inter',sans-serif;cursor:pointer;min-height:30px;padding:6px 7px}
+.ps27-helpmap button:hover{border-color:#90b7d7;background:#f5f9ff}
+@media(max-width:740px){.ps27-helpmap{grid-template-columns:1fr}.ps27-helpmap-links{grid-template-columns:repeat(2,minmax(0,1fr))}}
