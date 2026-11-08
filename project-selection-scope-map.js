@@ -32,7 +32,7 @@ function target(){
  return p&&+p.psYear===year()?p:I.pickedProgram();
 }
 function mapState(){
- const b=bank();b.mappingTab=b.mappingTab||'mapping';b.targetSelected=b.targetSelected||[];b.historyYear=b.historyYear||'all';b.historySearch=b.historySearch||'';b.historySelected=b.historySelected||[];b.programOpen=b.programOpen||{};return b;
+ const b=bank();b.mappingTab=b.mappingTab==='mapping'?'history':(b.mappingTab||'history');b.targetSelected=b.targetSelected||[];b.historyYear=b.historyYear||'all';b.historySearch=b.historySearch||'';b.historySelected=b.historySelected||[];b.programOpen=b.programOpen||{};return b;
 }
 function proposalRows(p){return p?.psProjects||[]}
 const acronym=v=>String(v||'').toUpperCase().normalize('NFKD').replace(/[^A-Z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,18);
@@ -180,7 +180,7 @@ function historyRows(p){
 }
 function historyView(p){
  const b=mapState(),rows=historyRows(p),years=[...new Set(historyRecords().map(r=>r.y))],all=rows.length>0&&rows.every(r=>b.historySelected.includes(r.key));
- return '<div class="psbank-history-projects"><div class="psbank-proposal-head"><div><h3>Riwayat Proyek</h3><p>Daftar referensi proyek lintas tahun. Pilih untuk disalin ke usulan program tujuan; WBS dan realisasi tahun sumber tidak berubah.</p></div><span class="psbank-count">'+rows.length+' proyek</span></div>'+
+ return '<div class="psbank-history-projects"><div class="psbank-proposal-head"><div><h3>Riwayat Proyek</h3><p>Daftar referensi proyek lintas tahun. Pilih untuk disalin ke usulan program tujuan; WBS dan realisasi tahun sumber tidak berubah.</p></div><div class="psbank-headright"><span class="psbank-count">'+rows.length+' proyek</span><span class="psbank-helpicon" tabindex="0" role="img" aria-label="Riwayat Proyek hanya referensi. Salin ke program tahun tujuan tanpa mengubah WBS dan realisasi historis." title="Riwayat Proyek hanya referensi. Salin ke program tahun tujuan tanpa mengubah WBS dan realisasi historis.">ⓘ</span></div></div>'+
  '<div class="psbank-history-project-controls"><label>Program Tujuan <select data-scope-history-target>'+I.programs().map(x=>'<option value="'+E(x.id)+'" '+(p?.id===x.id?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label>'+
  '<label>Tahun Sumber <select data-scope-history-year><option value="all">Semua Tahun</option>'+years.sort((a,b)=>b-a).map(y=>'<option value="'+y+'" '+(String(b.historyYear)===String(y)?'selected':'')+'>'+y+'</option>').join('')+'</select></label>'+
  '<label>Cari <input type="search" data-scope-history-search value="'+E(b.historySearch||'')+'" placeholder="Nama, kode, akronim, UIC..."></label></div>'+
@@ -224,14 +224,14 @@ function programAccordion(programs,on){
  }).join('')+'</div>';
 }
 
-const MAPPING_TABS=[['mapping','Pemetaan'],['history','Riwayat Proyek'],['proposal','Usulan Proyek'],['results','Hasil Pemetaan'],['docs','Buat Dokumen Usulan Proyek']];
+const MAPPING_TABS=[['history','Riwayat Proyek','Referensi proyek lintas tahun; salin ke program tujuan tanpa menyalin WBS atau realisasi historis.'],['proposal','Usulan Proyek','Lengkapi identitas proyek yang diusulkan; WBS disusun di Project Management.'],['results','Hasil Pemetaan','Tinjau hasil proyek yang masuk program tujuan dan kelola usulan sesuai kewenangan.'],['docs','Buat Dokumen Usulan Proyek','Susun dokumen usulan; dokumen ini bukan bukti penetapan proyek.']];
 function scopeTabs(on,rows){
  return '<div class="psbank-scope-tabline"><nav class="psbank-mapping-tabs" role="tablist" aria-label="Tahapan Pemetaan Proyek">'+
- MAPPING_TABS.map(x=>'<button type="button" role="tab" data-scope-tab="'+x[0]+'" aria-selected="'+(on===x[0])+'" class="'+(on===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+
+ MAPPING_TABS.map(x=>'<button type="button" role="tab" data-scope-tab="'+x[0]+'" title="'+E(x[2])+'" aria-label="'+E(x[1]+'. '+x[2])+'" aria-selected="'+(on===x[0])+'" class="'+(on===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+
  '</nav>'+(on==='results'?tabsSummary(rows):'')+'</div>';
 }
 function aggregateView(){
- const b=mapState(),on=MAPPING_TABS.some(x=>x[0]===b.mappingTab)?b.mappingTab:'mapping',y=year();
+ const b=mapState(),on=MAPPING_TABS.some(x=>x[0]===b.mappingTab)?b.mappingTab:'history',y=year();
  const f=S.ui?.psBank?.filterScopes?.mapping||{},query=String(f.search||'').toLowerCase();
  const programs=I.programs().filter(p=>(!query||[p.nama,p.kode,p.uic,p.akr].join(' ').toLowerCase().includes(query))&&
  (!f.status||f.status==='all'||(window.MT_PS_BANK_CORE?.programStatus?.(p,year())||(p.arsip?'Arsip':p.psCarry?'Legacy':'Baru'))===f.status)&&
