@@ -223,6 +223,7 @@ document.addEventListener('click',ev=>{
   const dialog=pro.closest('.psbank-dialog'),key=S.ui.psBank?.preview?.key||'',id=key.split(':')[0]||lastProgramId;
   const p=S.programs.find(x=>String(x.id)===String(id));
   if(!p)return toast('Data program tidak ditemukan.');
+  if(S.ui.psBank?.preview?.dirty){toast('Simpan dahulu perubahan pada tab sebelumnya.');return}
   if(inline?.edit&&active===inline)collect();
   dialog.querySelectorAll('.psbank-dialogtabs button').forEach(x=>{x.classList.toggle('on',x===pro);x.setAttribute('aria-selected',String(x===pro))});
   start(p,'program',dialog,true);inline=active;return;
@@ -243,6 +244,19 @@ document.addEventListener('keydown',ev=>{
  if(ev.key==='Escape'&&active&&!active.native&&active.host?.isConnected){active.host.remove();active=null}
 },true);
 function decorate(){
+ document.querySelectorAll('.psbank-detail-table tbody tr[data-bank-detailrow]').forEach(row=>{
+  if(row.querySelector('[data-mt-download-list]'))return;
+  const id=row.dataset.bankDetailrow,p=S.programs.find(x=>String(x.id)===String(id));
+  if(!p)return;
+  const y=+S.ui.psSelectedYear||+S.ui.tahun||2026;
+  const items=(window.MT_PS_DOC?.history?.('program',p.id,y)||[]).filter(x=>x.status==='uploaded'||x.status==='signed');
+  if(!items.length)return;
+  const actions=row.querySelector('.psbank-program-actions');
+  if(!actions)return;
+  const b=document.createElement('button');b.type='button';b.dataset.bankUpload=p.id;
+  b.dataset.mtDownloadList='1';b.className='mt-row-download';b.textContent='↓ Unduh ('+items.length+')';
+  b.title='Buka daftar dokumen untuk memilih dan mengunduh';actions.appendChild(b);
+ });
  document.querySelectorAll('.psbank-dialogtabs').forEach(nav=>{
   if(nav.querySelector('[data-mt-program-charter]'))return;
   const b=document.createElement('button');b.type='button';b.dataset.mtProgramCharter='1';b.setAttribute('role','tab');
@@ -340,7 +354,7 @@ const css=document.createElement('style');css.textContent=`
 .psbank-dialogtabs [data-mt-program-charter]{white-space:nowrap}
 .psbank-dialogbody .mt-doc-content{padding:12px 3px}
 .psbank-dialog>footer .mt-doc-actions{justify-content:flex-end}
-.mt-file-select{display:flex;align-items:center;flex:0 0 auto;padding:6px}.mt-bulk-tools{display:flex;gap:9px;align-items:center;flex-wrap:wrap;font-size:12px}
+.mt-row-download{background:#eef5ff;color:#17436c;border:1px solid #cddff4;border-radius:7px;padding:6px 8px;font:700 11px inherit;white-space:nowrap;cursor:pointer}.mt-file-select{display:flex;align-items:center;flex:0 0 auto;padding:6px}.mt-bulk-tools{display:flex;gap:9px;align-items:center;flex-wrap:wrap;font-size:12px}
 .mt-bulk-tools button{border:1px solid #c4d5e9;background:#f4f8ff;border-radius:7px;color:#113b65;font-weight:800;padding:7px;cursor:pointer}
 @media(max-width:840px){.mt-doc-grid{grid-template-columns:minmax(0,1fr)}.mt-doc-dialog{width:100%;height:95vh}.mt-doc-actions{justify-content:center}.mt-doc-scroll{padding:10px}}
 `;document.head.appendChild(css);
