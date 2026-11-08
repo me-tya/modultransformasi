@@ -7,7 +7,7 @@ const html=readFileSync('index.html','utf8');
 const source=readFileSync('project-selection-flow.js','utf8');
 const css=readFileSync('project-selection-flow.css','utf8');
 const dashboard=readFileSync('dashboard-cm-shared.html','utf8');
-function boot(y=2027,programs=[]){
+function boot(y=2027,programs=[],exposeWord=false){
  const S={ui:{tahun:y},programs,wbs:[]},messages=[];
  const noop=()=>{};
  const document={head:{appendChild:noop},body:{appendChild:noop},querySelector:()=>null,createElement:()=>({remove:noop,click:noop})};
@@ -16,7 +16,7 @@ function boot(y=2027,programs=[]){
   progProjects:()=>[],toast:m=>messages.push(m),
   esc:v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),
   vh:(_icon,_type,title)=>'<div class="vh"><h1>'+title+'</h1></div>'};
- vm.runInNewContext(source,context,{filename:'project-selection-flow.js'});
+ vm.runInNewContext(exposeWord?source.replace(/\n\}\)\(\);\s*$/, '\nwindow.__testWord=word;\n})();'):source,context,{filename:'project-selection-flow.js'});
  return {S,context,messages,app:context.window.MT_PROJECT_SELECTION};
 }
 const program=()=>({id:'program-2027',akr:'PS2027-DOA',kode:'B27-DOA',nama:'Digitalisasi Office Automation',psYear:2027,psDraft:true,psStatus:'Draft',
@@ -93,14 +93,13 @@ test('Finalization handoff shows only selected IDs before WBS and preserves WBS 
 test('RKMK generates genuine OOXML DOCX with KMK 132 charter, acceptance and plan',async()=>{
  const p=program(),x=project();x.scores=maxScores();x.accepted='BA penerimaan disetujui';
  p.psProjects=[x];p.psStatus='Ditetapkan';p.psDraft=false;p.psSelectedProjectIds=[x.id];
- const m=boot(2027,[p]);let z;
+ const m=boot(2027,[p],true);let z;
  class FakeZip{constructor(){z=this;this.files={}}file(k,v){this.files[k]=v}async generateAsync(){return {file:'blob'}}}
  m.context.window.JSZip=FakeZip;m.context.JSZip=FakeZip;
  m.context.URL={createObjectURL:()=> 'blob:doc',revokeObjectURL:()=>{}};
  m.context.setTimeout=()=>{};
  m.context.document.createElement=()=>({click(){},remove(){},set href(v){},set download(v){}});
  m.context.document.body.appendChild=()=>{};
- vm.runInNewContext(source.replace(/\n\}\)\(\);\s*$/, '\nwindow.__testWord=word;\n})();'),m.context);
  await m.context.window.__testWord(p,false);
  assert.ok(z.files['[Content_Types].xml']);
  assert.ok(z.files['_rels/.rels']);
