@@ -258,15 +258,36 @@ function hydratePortfolio(root){
  return showActualDocumentPreview(root,portfolioModel(),d.format);
 }
 
+
+function programDeck(p){
+ const d=cfg();
+ return (d.cover?[{kind:'cover',title:'DOKUMEN PERENCANAAN PROGRAM',rows:[]}]:[])
+  .concat(slidePages(p).map(x=>({...x,kind:'section'})));
+}
+function programSlideHtml(p,slide,idx,count,version){
+ if(slide.kind==='cover')return '<div class="psbank-slidepreview psbank-export-cover">'+
+  '<div class="psbank-slide-export-kicker">KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</div>'+
+  '<h2>DOKUMEN PERENCANAAN PROGRAM</h2><h3>'+E(p.nama)+'</h3>'+
+  '<small>Tahun '+year()+' · '+E(p.kode||p.akr)+' · Versi '+version+'</small>'+
+  '<footer>PROGRAM TRANSFORMASI KEMENTERIAN KEUANGAN <span>'+(idx+1)+' / '+count+'</span></footer></div>';
+ return '<div class="psbank-slidepreview psbank-export-section">'+
+  '<div class="psbank-slide-export-kicker">KEMENTERIAN KEUANGAN · '+E(p.kode||p.akr)+' · '+year()+'</div>'+
+  '<h3>'+E(slide.title)+'</h3><small>'+E(p.nama)+' · Versi '+version+'</small>'+
+  '<div class="psbank-slidebody">'+(slide.rows||[]).map(row=>
+    '<article><b>'+E(row[0])+'</b><p>'+E(String(row[1]||'Belum diisi'))+'</p></article>'
+   ).join('')+'</div><footer>PROGRAM TRANSFORMASI KEMENTERIAN KEUANGAN <span>'+(idx+1)+' / '+count+'</span></footer></div>';
+}
+
 function documentPreview(p){
  const d=cfg(),list=sections(p),version=nextVersion('program',p.id||p.akr,year());
  if(d.format!=='pptx'&&typeof mtRptHtml==='function')return actualPreviewShell('program',d.format,'<iframe class="psbank-program-report-frame" title="Pratinjau awal dokumen perencanaan program" srcdoc="'+E(mtRptHtml(programReportModel(p)))+'"></iframe>');
  if(d.format==='pptx'){
-  const slides=slidePages(p),n=Math.max(0,Math.min(+d.slide||0,slides.length-1)),s=slides[n]||{title:'Pilih substansi dokumen',rows:[]};
-  return '<div class="psbank-slidepreview"><div class="psbank-slidetop"><span>KEMENTERIAN KEUANGAN</span><strong>'+E(p.kode||p.akr)+'</strong></div><h3>'+E(s.title)+'</h3><small>'+E(p.nama)+' · '+year()+'</small>'+
-  '<div class="psbank-slidebody">'+s.rows.map(r=>'<article><b>'+E(r[0])+'</b><p>'+E(String(r[1]||'Belum diisi'))+'</p></article>').join('')+'</div>'+
-  '<div class="psbank-slidefoot"><span>Program Transformasi · '+year()+' · v'+version+'</span><span>Slide '+(n+1)+' / '+(slides.length||1)+'</span></div></div>'+
-  '<div class="psbank-slidecontrols"><button class="btn" data-doc-slide="-1" '+(n===0?'disabled':'')+'>‹ Sebelumnya</button><span>'+E(s.title)+'</span><button class="btn" data-doc-slide="1" '+(n>=slides.length-1?'disabled':'')+'>Berikutnya ›</button></div>';
+  const slides=programDeck(p),n=Math.max(0,Math.min(+d.slide||0,slides.length-1)),slide=slides[n]||{kind:'section',title:'Belum ada substansi',rows:[]};
+  return programSlideHtml(p,slide,n,slides.length||1,version)+
+   '<div class="psbank-slidecontrols"><button class="btn" data-doc-slide="-1" '+(n===0?'disabled':'')+'>‹ Sebelumnya</button>'+
+   '<span>Slide '+(n+1)+' / '+slides.length+' · '+E(slide.title)+'</span>'+
+   '<button class="btn" data-doc-slide="1" '+(n>=slides.length-1?'disabled':'')+'>Berikutnya ›</button></div>';
+
  }
  return '<article class="psbank-docpaper">'+(d.cover?'<header class="psbank-doccover"><small>KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</small><h2>DOKUMEN PERENCANAAN PROGRAM</h2><h3>'+E(p.nama)+'</h3><p>'+E(p.kode||p.akr)+' · Tahun '+year()+'</p><span>Rancangan untuk reviu — belum disahkan</span></header>':'')+
  (d.toc?'<section class="psbank-doctoc"><b>DAFTAR ISI</b>'+list.map((x,i)=>'<div>'+(i+1)+'. '+E(x.title)+'</div>').join('')+'</section>':'')+
@@ -410,24 +431,34 @@ async function exportFile(p){
   }else{
    await load('https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js',()=>!!window.PptxGenJS);
    const ppt=new window.PptxGenJS();ppt.layout='LAYOUT_WIDE';ppt.author='PMO Kementerian Keuangan';
-   const cover=ppt.addSlide();cover.background={color:'0B2447'};
-   cover.addText('KEMENTERIAN KEUANGAN REPUBLIK INDONESIA',{x:.6,y:.6,w:12,h:.4,fontFace:'Aptos',fontSize:15,color:'FDB913',bold:true});
-   cover.addText('DOKUMEN PERENCANAAN PROGRAM',{x:.6,y:2,w:12,h:.75,fontFace:'Aptos',fontSize:26,color:'FFFFFF',bold:true});
-   cover.addText(p.nama,{x:.6,y:3,w:12,h:.85,fontFace:'Aptos',fontSize:20,color:'FFFFFF'});
-   cover.addText('Tahun '+year()+'  ·  '+(p.kode||p.akr)+' · Versi '+version,{x:.6,y:5.9,w:11,h:.3,fontFace:'Aptos',fontSize:13,color:'FDB913'});
-   const pptSlides=slidePages(p);
-   pptSlides.forEach((r,i)=>{
-    const s=ppt.addSlide();s.background={color:'FFFFFF'};
-    s.addShape(ppt.ShapeType.rect,{x:0,y:0,w:13.33,h:.14,line:{color:'FDB913'},fill:{color:'FDB913'}});
-    s.addText(r.title,{x:.55,y:.35,w:12,h:.5,fontFace:'Aptos',fontSize:23,bold:true,color:'0B2447'});
-    s.addText(p.nama+' · '+year()+' · Versi '+version,{x:.55,y:.95,w:12,h:.3,fontFace:'Aptos',fontSize:10,color:'627892'});
-    const rows=r.rows,h=5.4/Math.max(1,rows.length);
-    rows.forEach((a,j)=>{
-     const yy=1.38+j*h;s.addShape(ppt.ShapeType.rect,{x:.55,y:yy,w:12.2,h:h-.06,line:{color:'DCE6F0'},fill:{color:j%2?'FFFFFF':'F2F6FB'}});
-     s.addText(String(a[0]),{x:.75,y:yy+.08,w:3,h:h-.15,fontFace:'Aptos',fontSize:11,bold:true,color:'183C65',margin:0,valign:'mid'});
-     s.addText(String(a[1]||'Belum diisi'),{x:3.95,y:yy+.08,w:8.45,h:h-.15,fontFace:'Aptos',fontSize:Math.max(9,12-rows.length/4),color:'30445C',margin:0,valign:'mid'});
-    });
-    s.addText((i+1)+' / '+pptSlides.length,{x:11.8,y:7.1,w:.85,h:.2,fontFace:'Aptos',fontSize:9,color:'627892'});
+   const deck=programDeck(p),count=deck.length;
+   deck.forEach((page,i)=>{
+    const sl=ppt.addSlide();
+    if(page.kind==='cover'){
+     sl.background={color:'0B2447'};
+     sl.addShape(ppt.ShapeType.rect,{x:.61,y:.57,w:.14,h:5.4,line:{color:'FDB913',transparency:100},fill:{color:'FDB913'}});
+     sl.addText('KEMENTERIAN KEUANGAN REPUBLIK INDONESIA',{x:1,y:.68,w:11.7,h:.42,fontFace:'Aptos',fontSize:15,color:'FDB913',bold:true,margin:0});
+     sl.addText('DOKUMEN PERENCANAAN PROGRAM',{x:1,y:1.88,w:11.7,h:.8,fontFace:'Aptos',fontSize:32,color:'FFFFFF',bold:true,margin:0,fit:'shrink'});
+     sl.addText(String(p.nama||''),{x:1,y:2.94,w:11.6,h:1.3,fontFace:'Aptos',fontSize:26,color:'FFFFFF',bold:true,margin:0,fit:'shrink'});
+     sl.addText('Tahun '+year()+' · '+(p.kode||p.akr)+' · Versi '+version,{x:1,y:5.42,w:11.4,h:.4,fontFace:'Aptos',fontSize:16,color:'FDB913',margin:0});
+    }else{
+     sl.background={color:'FFFFFF'};
+     sl.addShape(ppt.ShapeType.rect,{x:0,y:0,w:13.333,h:.14,line:{color:'FDB913',transparency:100},fill:{color:'FDB913'}});
+     sl.addText('KEMENTERIAN KEUANGAN · '+(p.kode||p.akr)+' · '+year(),{x:.6,y:.46,w:12,h:.3,fontFace:'Aptos',fontSize:12,bold:true,color:'1E507E',margin:0});
+     sl.addText(String(page.title||''),{x:.6,y:.92,w:12.1,h:.62,fontFace:'Aptos',fontSize:25,bold:true,color:'0B2447',margin:0,fit:'shrink'});
+     sl.addText(p.nama+' · Versi '+version,{x:.6,y:1.59,w:12,h:.29,fontFace:'Aptos',fontSize:12,color:'627892',margin:0});
+     const cards=page.rows||[],cols=2,nRows=Math.ceil(cards.length/cols),gapX=.22,gapY=.16,w=5.95,h=Math.min(1.37,(4.45-(nRows-1)*gapY)/Math.max(1,nRows));
+     cards.forEach((a,j)=>{
+      const col=j%cols,row=Math.floor(j/cols),xx=.6+col*(w+gapX),yy=2.1+row*(h+gapY);
+      sl.addShape(ppt.ShapeType.rect,{x:xx,y:yy,w,h,line:{color:'DCE6F0'},fill:{color:'F2F6FB'}});
+      sl.addShape(ppt.ShapeType.rect,{x:xx,y:yy,w:.07,h,line:{color:'FDB913',transparency:100},fill:{color:'FDB913'}});
+      sl.addText(String(a[0]||''),{x:xx+.2,y:yy+.12,w:w-.42,h:.3,fontFace:'Aptos',fontSize:11.5,bold:true,color:'19456F',margin:0,fit:'shrink'});
+      sl.addText(String(a[1]||'Belum diisi'),{x:xx+.2,y:yy+.49,w:w-.43,h:h-.58,fontFace:'Aptos',fontSize:11.5,color:'415974',margin:0,valign:'top',fit:'shrink'});
+     });
+    }
+    sl.addShape(ppt.ShapeType.rect,{x:0,y:7.22,w:13.333,h:.28,line:{color:page.kind==='cover'?'0B2447':'EAF1F8',transparency:100},fill:{color:page.kind==='cover'?'0B2447':'EAF1F8'}});
+    sl.addText('PROGRAM TRANSFORMASI KEMENTERIAN KEUANGAN',{x:.6,y:7.26,w:9.8,h:.15,fontFace:'Aptos',fontSize:8,color:page.kind==='cover'?'C9D9EB':'66809D',margin:0});
+    sl.addText((i+1)+' / '+count,{x:11.85,y:7.26,w:.85,h:.15,fontFace:'Aptos',fontSize:8,color:page.kind==='cover'?'FDB913':'66809D',align:'right',margin:0});
    });
    await ppt.writeFile({fileName:file+'.pptx'});
   }
@@ -712,5 +743,5 @@ function change(ev,inline=false){
  if(q.dataset.docFormat!==undefined){d.format=q.value;d.slide=0;save();if(!inline)render();return true}
  return false;
 }
-window.MT_PS_DOC={fields,sections,slidePages,paper,builder,exportFile,click,change,documentPreview,programReportModel,tteControls,hydrateProgram,hydratePortfolio,showActualDocumentPreview,versionPanel,nextVersion,registerExport,confirmSigned,uploadProgramAttachment,history,processSigned,openSignedProof,portfolioModel,portSlides,splitPortText,portfolioBuilder,portfolioClick,portfolioChange,portfolioExport,version:'20261108-program-document-builder-v3'};
+window.MT_PS_DOC={fields,sections,slidePages,programDeck,programSlideHtml,paper,builder,exportFile,click,change,documentPreview,programReportModel,tteControls,hydrateProgram,hydratePortfolio,showActualDocumentPreview,versionPanel,nextVersion,registerExport,confirmSigned,uploadProgramAttachment,history,processSigned,openSignedProof,portfolioModel,portSlides,splitPortText,portfolioBuilder,portfolioClick,portfolioChange,portfolioExport,version:'20261108-program-document-builder-v3'};
 })();
