@@ -301,8 +301,8 @@ function updateControl(){
  var node=document.querySelector('#mt-help-toggle');
  if(!node)return;
  node.setAttribute('aria-checked',String(enabled));
- node.setAttribute('aria-label','Bantuan kontekstual '+(enabled?'aktif':'nonaktif')+'. Klik untuk '+(enabled?'menonaktifkan':'mengaktifkan')+' tooltip menu dan tab.');
- node.setAttribute('title','Tooltip menu & tab '+(enabled?'aktif (ON)':'nonaktif (OFF)')+'. Klik untuk mengubah.');
+ node.setAttribute('aria-label','Guide '+(enabled?'ON':'OFF')+'. Klik untuk '+(enabled?'menonaktifkan':'mengaktifkan')+' tooltip menu dan tab.');
+ node.setAttribute('title','Guide '+(enabled?'ON':'OFF')+': mengatur tooltip fungsi dan batasan pada menu dan tab. Klik untuk mengubah.');
  var state=node.querySelector('.mt-help-state');
  if(state)state.textContent=enabled?'ON':'OFF';
 }
@@ -325,7 +325,7 @@ function installHeaderControls(){
   control=document.createElement('button');
   control.id='mt-help-toggle';control.type='button';
   control.className='mt-help-switch';control.setAttribute('role','switch');
-  control.innerHTML='<span class="mt-help-caption">Bantuan</span><span class="mt-help-track" aria-hidden="true"><i></i></span><span class="mt-help-state"></span>';
+  control.innerHTML='<span class="mt-help-caption">Guide</span><span class="mt-help-track" aria-hidden="true"><i></i></span><span class="mt-help-state"></span>';
   control.addEventListener('click',function(){setEnabled(!enabled)});
   header.insertBefore(control,avatar);
  }
@@ -378,13 +378,8 @@ function initHeaderControls(){
  '#app .top #dbb[data-mt-sync="error"]::before{content:"⚠ Sync";color:#ffc2b9}',
  '#app .top #dbb[data-mt-sync="error"]{border-color:#e7786e;background:rgba(226,77,77,.14)}',
  '#app .top #dbb[data-mt-sync="pending"]{border-color:#d7aa41;background:rgba(253,185,19,.12)}',
- '#app .top .sk-hdrActions .sk-hdrHelp,#app .top .sk-hdrActions .sk-hdrSheet{box-sizing:border-box;width:36px!important;min-width:36px!important;max-width:36px!important;flex:0 0 36px!important;padding:0!important;gap:0!important;white-space:nowrap;overflow:hidden}',
- '#app .top .sk-hdrActions .sk-hdrHelp span,#app .top .sk-hdrActions .sk-hdrSheet span{display:none!important}',
- '#app .top .sk-hdrActions .sk-hdrHelp i{margin:0!important}',
- '#app .top .sk-hdrActions .sk-hdrSheet{font-size:17px!important}',
- '#app .top .sk-hdrActions .sk-hdrSheet:hover,#app .top .sk-hdrActions .sk-hdrHelp:hover{filter:brightness(1.045)}',
  '@media(min-width:901px){#app header.top{flex-wrap:nowrap!important}#app .top .role{max-width:29vw;overflow:hidden;text-overflow:ellipsis}}',
- '@media(max-width:1260px){#app .top .mt-help-switch{--mt-help-width:75px;gap:4px}#app .top .mt-help-switch .mt-help-caption{display:none}#app .top .sk-hdrSheet span{display:none}}',
+ '@media(max-width:1260px){#app .top .mt-help-switch{--mt-help-width:75px;gap:4px}#app .top .mt-help-switch .mt-help-caption{display:none}}',
  '@media(max-width:900px){#app .top .mt-help-switch{--mt-help-width:75px}#app .top .mt-help-switch .mt-help-caption{display:none}}'
  ].join('');
  if(!document.getElementById('mt-help-toolbar-styles'))document.head.appendChild(style);
@@ -401,5 +396,5 @@ if(typeof document.querySelector==='function'){
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initHeaderControls,{once:true});
  else initHeaderControls();
 }
-window.MT_MENU_TOOLTIP={hide:hide,resolve:lookup,enabled:function(){return enabled},setEnabled:setEnabled,version:'20261109-function-boundaries-help-toggle-performance-v4'};
+window.MT_MENU_TOOLTIP={hide:hide,resolve:lookup,enabled:function(){return enabled},setEnabled:setEnabled,version:'20261109-guide-restored-header-v5'};
 })();
