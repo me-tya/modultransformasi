@@ -702,3 +702,15 @@
 #app .psbank-card:has(.psbank-history-table) .psbank-history-table{
  min-width:0!important;width:100%!important;
 }
+
+
+/* WYSIWYG document preview: the blob being downloaded is the one rendered. */
+#app .psbank-actual-view{width:100%;min-height:450px;position:relative;overflow:auto;background:#e7edf5}
+#app .psbank-actual-progress{display:block;padding:6px 10px;font:650 10px/1.4 'Inter',sans-serif;color:#627e99;background:#f4f7fc}
+#app .psbank-actual-docx{width:100%;min-height:480px;padding:12px 8px;overflow:auto;background:#e7edf5}
+#app .psbank-actual-docx>.docx-wrapper{background:transparent!important;padding:8px 0!important}
+#app .psbank-actual-docx .docx{margin:0 auto 18px!important;box-shadow:0 3px 12px #16345a22!important}
+#app .psbank-actual-pdf{width:100%;height:min(72vh,860px);min-height:570px;display:block;border:0;background:#e7edf5}
+#app .psbank-docscroll:has(.psbank-actual-view){overflow:auto!important;padding:0!important}
+#app .psbank-docscroll .psbank-actual-view .psbank-port-report-frame,
+#app .psbank-docscroll .psbank-actual-view .psbank-program-report-frame{width:100%;min-height:800px}
