@@ -127,11 +127,11 @@ function transfer(){
    const rows=(other.psProjects||[]).filter(x=>String(x.name||'').toLowerCase()===item.name.toLowerCase()&&(x.psOriginAkr===s.akr||x.psOriginAkr===s.psCarry?.sourceAkr||other.psCarry?.sourceAkr===s.akr));
    if(!rows.length)return;
    other.psProjects=other.psProjects.filter(x=>!rows.includes(x));
-   other.psWbsDraft=(other.psWbsDraft||[]).filter(w=>!rows.some(x=>(w.p||[]).some(v=>String(v).toLowerCase()===String(x.name).toLowerCase())));
+   other.psNeedsWbsReview=true; // preserve pre-existing draft WBS for explicit PM review
   });
   if((p.psProjects||[]).some(x=>String(x.name).toLowerCase()===item.name.toLowerCase()))return;
   const orig=C(item.original||{});
-  const z={...orig,id:uid('proj'),name:item.name,uic:item.uic||s.uic||p.uic,status:'Usulan',included:true,scores:{},poster:{},risks:{},indicators:[],benefits:[],psOriginAkr:s.akr,psOriginProgram:s.nama,psOriginYear:m.year};
+  const z={...orig,psSourceProjectSnapshot:item.original?C(item.original):null,id:uid('proj'),name:item.name,uic:item.uic||s.uic||p.uic,status:'Usulan',included:true,scores:{},poster:{},risks:{},indicators:[],benefits:[],psOriginAkr:s.akr,psOriginProgram:s.nama,psOriginYear:m.year};
   z.start=shift(z.start,+m.year,year());z.goLive=shift(z.goLive,+m.year,year());
   p.psProjects=p.psProjects||[];p.psProjects.push(z);n++;
   /* Proposal only: do not copy historical WBS or actuals. WBS will be drafted afresh in PM. */
