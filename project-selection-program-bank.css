@@ -521,3 +521,21 @@
 #app .psbank-subtabs button{min-height:41px!important;padding:7px 12px!important}
 #app .psbank-card{padding:12px 14px!important}
 #app .psbank-sectionhead{margin-bottom:8px!important}
+
+
+/* Same TTE settings and report viewer for document, portfolio and proposal tabs. */
+#app .psbank-tte-settings{flex:0 0 auto;border:1px solid #c9d8ec;border-radius:10px;background:#fff;overflow:hidden;color:#173a61}
+#app .psbank-tte-settings>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:7px;min-height:36px;padding:9px 11px;background:#f2f6fc;font:850 12px 'Inter',sans-serif}
+#app .psbank-tte-settings>summary::-webkit-details-marker{display:none}
+#app .psbank-tte-settings>summary:before{content:'▸';font-size:12px;color:#d59b15}
+#app .psbank-tte-settings[open]>summary:before{content:'▾'}
+#app .psbank-tte-settings>summary small{margin-left:auto;font:500 10px 'Inter',sans-serif;color:#607b96}
+#app .psbank-tte-fields{padding:10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;background:#fff}
+#app .psbank-tte-fields>label{display:flex;flex-direction:column;gap:4px;min-width:0;color:#2c4d72;font:750 10.5px 'Inter',sans-serif}
+#app .psbank-tte-fields>label.psbank-tte-check{grid-column:1/-1;flex-direction:row;align-items:center;gap:7px;background:#f3f7fc;padding:8px;border-radius:8px}
+#app .psbank-tte-fields input:not([type=checkbox]){box-sizing:border-box;width:100%;min-width:0;height:33px;padding:6px 8px;border:1px solid #cbd9e9;border-radius:7px;background:#fff;color:#17365e;font:500 11px 'Inter',sans-serif}
+#app .psbank-tte-fields input[type=checkbox]{accent-color:#174978;width:15px;height:15px}
+#app .psbank-tte-fields>small{grid-column:1/-1;font:500 10px/1.5 'Inter',sans-serif;color:#73859d}
+#app .psbank-program-report-frame{display:block;width:100%;min-height:960px;height:1200px;border:0;background:#f1f5fa}
+#app .psbank-docscroll:has(.psbank-program-report-frame){padding:0!important}
+@media(max-width:780px){#app .psbank-tte-fields{grid-template-columns:1fr}#app .psbank-program-report-frame{height:1100px}}
