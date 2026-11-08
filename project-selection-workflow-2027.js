@@ -86,15 +86,14 @@ function localFilter(){
 }
 function setFilterField(key,val){
  const b=S.ui.psBank||(S.ui.psBank={}),f=localFilter();
- f[key]=val;
- if(S.ui.mtSharedFilter?.enabled)S.ui.mtSharedFilter[key]=val;
+ f[key]=val; // Never alter filter state in another menu or in the application header.
  if(key==='search')b.search=val;
  if(key==='status')b.filterStatus=val;
  if(key==='year')b.filterYear=val;
 }
 function filter(p){
  const b=S.ui.psBank||(S.ui.psBank={}),u=state(),arr=list(),tab=b.tab||'bank',w=ws(),
-  f=S.ui.mtSharedFilter?.enabled?S.ui.mtSharedFilter:localFilter(),
+  f=localFilter(),
   q=String(f.search||'').toLowerCase(),st=f.status||'all';
  b.search=f.search||'';b.filterStatus=st;b.filterYear=f.year||'all';b.filterUnit=f.unit||'all';b.filterRole=f.unitRole||'all';b.filterPeriod=f.period||'all';b.filterRangeFrom=f.rangeFrom||'';b.filterRangeTo=f.rangeTo||'';
  if(u.tab==='usulan'&&tab==='bank')b.filterProgram=f.program||'';
@@ -285,9 +284,8 @@ function mount(){
   if(b.dataset.ps27Usul){ws().usulanSub=b.dataset.ps27Usul;save();render();return}
   if(b.dataset.ps27Remove){toast('Hapus proyek hanya tersedia di Pemetaan Proyek → Usulan Proyek.');return}
   if(b.hasAttribute('data-ps27-reset')){
-   const f=localFilter();Object.assign(f,{search:'',status:'all',program:'',programName:'',unit:'all',unitRole:'all',period:'all',rangeFrom:'',rangeTo:'',year:String(yr())});
-   if(S.ui.mtSharedFilter?.enabled)Object.assign(S.ui.mtSharedFilter,{search:'',status:'all',program:'',programName:'',unit:'all',unitRole:'all',period:'all',year:String(yr())});
-   const st=S.ui.psBank||(S.ui.psBank={});st.filterProgram='';st.detailProgram='';st.search='';st.filterStatus='all';st.filterYear=String(yr());
+   const f=localFilter();Object.assign(f,{search:'',status:'all',program:'',programName:'',unit:'all',unitRole:'all',period:'all',rangeFrom:'',rangeTo:'',year:state().tab==='usulan'&&(S.ui.psBank?.tab||'bank')==='bank'?'all':String(yr())});
+   const st=S.ui.psBank||(S.ui.psBank={});st.filterProgram='';st.detailProgram='';st.filterAllPrograms=false;st.search='';st.filterStatus='all';st.filterYear=f.year;
    save();render();return;
   }
   if(b.hasAttribute('data-ps27-period')){setFilterField('period',b.dataset.ps27Period);save();render();return}
@@ -307,7 +305,7 @@ function mount(){
     S.ui.psBank=S.ui.psBank||{};
     if(state().tab==='usulan'&&S.ui.psBank.tab==='bank'){S.ui.psBank.filterProgram=el.value;setFilterField('program',el.value)}
     else if(state().tab==='usulan'&&S.ui.psBank.tab==='detail'){S.ui.psBank.detailProgram=el.value;setFilterField('program',el.value)}
-    else{state().prog=el.value;S.ui.psGov={step:'identity'};if(window.MT_PS_SCOPE)window.MT_PS_SCOPE.bank().target=el.value}
+    else{const b=S.ui.psBank;b.filterAllPrograms=!el.value;setFilterField('program',el.value);state().prog=el.value||'';S.ui.psGov={step:'identity'};if(window.MT_PS_SCOPE)window.MT_PS_SCOPE.bank().target=el.value||''}
     save();render();return
    }
    if(el.dataset.ps27Status!==undefined){S.ui.psBank=S.ui.psBank||{};setFilterField('status',el.value);save();render();return}
@@ -315,12 +313,7 @@ function mount(){
    if(el.dataset.ps27Role!==undefined){setFilterField('unitRole',el.value);save();render();return}
    if(el.dataset.ps27RangeFrom!==undefined){setFilterField('rangeFrom',el.value);save();render();return}
    if(el.dataset.ps27RangeTo!==undefined){setFilterField('rangeTo',el.value);save();render();return}
-  if(el.dataset.ps27Year!==undefined){
-    S.ui.psBank=S.ui.psBank||{};
-    if(state().tab==='usulan'&&S.ui.psBank.tab==='bank'){setFilterField('year',el.value)}
-    else if(el.value!=='all'){S.ui.tahun=+el.value;state().prog='';if(window.MT_PS_SCOPE)window.MT_PS_SCOPE.bank().target=''}
-    save();render();return
-   }
+  if(el.dataset.ps27Year!==undefined){setFilterField('year',el.value);save();render();return}
   if(el.dataset.ps27Source!==undefined){ws().sourceYear=+el.value;ws().selected=[];save();render();return}
   if(el.dataset.ps27Select!==undefined){const a=new Set(ws().selected||[]);if(el.checked)a.add(String(el.dataset.ps27Select));else a.delete(String(el.dataset.ps27Select));ws().selected=[...a];save();render();return}
   if(el.dataset.ps27Checkall!==undefined){ws().selected=el.checked?sourcePrograms().filter(p=>(p.nama+' '+p.kode+' '+p.uic).toLowerCase().includes(String(ws().search||'').toLowerCase())).map(p=>String(p.id)):[];save();render();return}
