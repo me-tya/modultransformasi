@@ -269,10 +269,19 @@ function projectEditor(id,readonly=false){
  d.innerHTML='<section class="psbank-dialog psbank-project-dialog" role="dialog" aria-modal="true" aria-label="Detail Usulan Proyek">'+
  '<header><div><b>'+(readonly?'Detail':existing?'Ubah':'Tambah')+' Usulan Proyek</b><small>'+E(p.nama)+' · '+year()+'</small></div><button type="button" data-scope-editor-close title="Tutup" aria-label="Tutup">✕</button></header>'+
  '<main class="psbank-dialogbody"><div class="psbank-form-provenance"><b>Sumber Usulan</b><span>'+E(existing?.psOriginYear?existing.psOriginProgram+' · '+existing.psOriginYear:'Usulan baru')+'</span><small>Perubahan isian tahun tujuan tidak mengubah informasi tahun sumber.</small></div>'+
+ '<div class="psbank-project-code-preview"><span>Kode Proyek</span><strong data-scope-code-preview>'+E(existing?currentCode(p,existing):String(p.kode||p.akr)+'-…')+'</strong><small>Awalan mengikuti kode program; akronim diisi pada bagian Identitas Aplikasi/Proyek.</small></div>'+
  groups.map(g=>'<section class="psbank-form-section"><h3>'+E(g)+'</h3><div class="psbank-proj-editor-grid">'+PROJECT_FIELDS.filter(x=>x[3]===g).map(control).join('')+'</div></section>').join('')+
  '</main><footer><span>Form usulan aplikasi/modul · WBS disusun kemudian.</span><div><button type="button" class="btn" data-scope-editor-close>Tutup</button>'+
  (!readonly?'<button type="button" class="btn pri" data-scope-editor-save>Simpan</button>':can(p)?'<button type="button" class="btn pri" data-scope-editor-edit>✎ Ubah</button>':'')+'</div></footer></section>';
  (document.querySelector('#app')||document.body).appendChild(d);
+ const projectName=d.querySelector('[data-scope-field="name"]'),acrInput=d.querySelector('[data-scope-field="psAcronym"]'),codePreview=d.querySelector('[data-scope-code-preview]');
+ let acrCustomized=!!existing?.psAcronym;
+ d.addEventListener('input',ev=>{
+  if(ev.target===acrInput)acrCustomized=true;
+  if(ev.target===projectName&&!acrCustomized&&acrInput)acrInput.value=suggestedAcronym(projectName.value);
+  if((ev.target===acrInput||ev.target===projectName)&&codePreview)
+   codePreview.textContent=String(p.kode||p.akr)+'-'+(acronym(acrInput?.value)||suggestedAcronym(projectName?.value)||'…');
+ });
  d.addEventListener('click',ev=>{
   if(ev.target===d||ev.target.closest('[data-scope-editor-close]')){d.remove();return}
   if(ev.target.closest('[data-scope-editor-edit]')){d.remove();projectEditor(id,false);return}
@@ -343,6 +352,10 @@ function transfer(){
  }
 }
 function click(ev){
+ const accordion=ev.target.closest('[data-scope-program-toggle]');
+ if(accordion){const details=accordion.closest('details');mapState().programOpen[accordion.dataset.scopeProgramToggle]=!details?.open;save();return true}
+ const hist=ev.target.closest('[data-scope-history-add],[data-scope-history-bulk]');
+ if(hist){addHistory(hist.dataset.scopeHistoryAdd?[hist.dataset.scopeHistoryAdd]:mapState().historySelected.slice());return true}
  const chosen=ev.target.closest('[data-scope-choose],[data-scope-aggregate-view]');
  if(chosen){
   const value=chosen.dataset.scopeChoose||chosen.dataset.scopeAggregateView?.split('::')[0],p=get(value);
@@ -361,6 +374,18 @@ function click(ev){
 }
 function change(ev){
  const el=ev.target,m=bank().map,b=mapState();
+ if(el.dataset.scopeHistoryTarget!==undefined){const p=get(el.value);if(p){bank().target=p.id;I.state().prog=p.id;b.historySelected=[];save();window.render()}return true}
+ if(el.dataset.scopeHistoryYear!==undefined){b.historyYear=el.value;b.historySelected=[];save();window.render();return true}
+ if(el.dataset.scopeHistorySearch!==undefined){b.historySearch=el.value;save();window.render();return true}
+ if(el.dataset.scopeHistoryAll!==undefined){
+  const rows=historyRows(target()),ids=new Set(rows.map(x=>x.key));
+  b.historySelected=el.checked?[...new Set([...b.historySelected,...ids])]:b.historySelected.filter(x=>!ids.has(x));
+  save();window.render();return true;
+ }
+ if(el.dataset.scopeHistoryCheck!==undefined){
+  const id=el.dataset.scopeHistoryCheck;b.historySelected=el.checked?[...new Set([...b.historySelected,id])]:b.historySelected.filter(x=>x!==id);
+  save();window.render();return true;
+ }
  if(el.dataset.scopeYear!==undefined){m.year=+el.value;m.program='';m.selected=[];save();window.render();return true}
  if(el.dataset.scopeProgram!==undefined){m.program=el.value;m.selected=[];save();window.render();return true}
  if(el.dataset.scopeSelect!==undefined){const id=el.dataset.scopeSelect;m.selected=el.checked?[...new Set([...m.selected,id])]:m.selected.filter(x=>x!==id);save();window.render();return true}
