@@ -13,7 +13,7 @@ const state=()=>{const u=I.state();const map={portfolio:'usulan',program:'usulan
 const list=()=>I.programs();
 const current=()=>I.pickedProgram();
 const ws=()=>{S.ui.ps27=S.ui.ps27||{sourceYear:2026,selected:[],search:'',sub:'identity',filterOpen:false};return S.ui.ps27};
-const TABS=[['usulan','Usulan Program'],['mapping','Pemetaan Proyek'],['prioritasi','Prioritasi'],['charter','Charter Program'],['penetapan','Penetapan'],['rkmk','Draft RKMK']];
+const TABS=[['usulan','Usulan Program'],['mapping','Pemetaan Proyek'],['prioritasi','Prioritasi'],['charter','Charter Program'],['penetapan','Penetapan Program'],['rkmk','Draft RKMK']];
 function sourcePrograms(){const y=+ws().sourceYear;return (S.programs||[]).filter(p=>{if(p.psYear)return +p.psYear===y;const yrs=String(p.periode||'').match(/20\d{2}/g)||[];const start=+p.mulai||+(yrs[0]||0),end=+(yrs[yrs.length-1]||start);return start&&start<=y&&end>=y});}
 function sourceWbs(p,y){return (S.wbs||[]).filter(w=>w.prog===p.akr&&!w.arsip&&+(String(w.f||w.s||'').slice(0,4))===+y);}
 function shiftDate(v,from,to){return typeof v==='string'&&new RegExp('^'+from+'-\\d{2}-\\d{2}').test(v)?String(to)+v.slice(4):v;}
@@ -77,6 +77,14 @@ function carrySelected(){
  toast(n+' program disalin sebagai Draft '+to+' beserta '+docs+' charter. WBS baru disusun di Project Management.');
 }
 function count(p){return p?(p.psProjects||[]).length:0;}
+const TOP_HELP={
+ usulan:'Susun usulan program: Riwayat Program hanya referensi untuk menyalin data, sedangkan penambahan dan penyuntingan substansi dilakukan di Daftar Program.',
+ mapping:'Petakan usulan proyek/aplikasi ke program tahun aktif. Program dan proyek yang masih konsep dapat diperbaiki sebelum penetapan.',
+ prioritisasi:'Prioritaskan dan nilai proyek dengan kriteria yang tersedia. Hasilnya menjadi masukan pemilihan proyek untuk program.',
+ charter:'Susun Charter Program dan rencana kerja sebagai dasar usulan program lintas unit.',
+ penetapan:'Susun target output K-Wide per triwulan dan catat kontrak kinerja K-Wide, lalu tetapkan program dan proyek yang memenuhi persyaratan.',
+ rkmk:'Susun dan reviu narasi Draft RKMK berdasarkan sumber program untuk tahun aktif.'
+};
 function navItem(tab,label,num){const on=state().tab===tab;return '<button type="button" role="tab" aria-selected="'+on+'" class="'+(on?'on':'')+'" data-ps27-tab="'+tab+'"><span>'+label+'</span>'+(num?'<b>'+num+'</b>':'')+'</button>';}
 function localFilter(){
  const b=S.ui.psBank||(S.ui.psBank={}),u=state(),key=u.tab==='usulan'?'usulan:'+(b.tab||'bank'):u.tab;
@@ -209,10 +217,79 @@ function charter(p){
  }else body+='<div class="ps27-empty">Editor Charter belum tersedia di lingkungan ini.</div>';
  return '<div class="ps27-card ps27-charter">'+body+'</div>';
 }
+/* K-Wide output trajectory: same columns and quarterly grouping as workbook
+   WBS Transformation Program 2026 — Capaian K-Wide (A4:F56).
+   This is a new-year form; historic 2026 realization is NEVER copied into 2027. */
+const quarterEnd=(y,q)=>[y+'-03-31',y+'-06-30',y+'-09-30',y+'-12-31'][q-1];
+function wideState(){
+ S.psWideTargets=S.psWideTargets||{};
+ const y=yr(),d=S.psWideTargets[y]||(S.psWideTargets[y]={rows:[],contract:{number:'',date:'',link:'',signer:'',status:'Konsep'}});
+ d.contract=d.contract||{number:'',date:'',link:'',signer:'',status:'Konsep'};
+ d.rows=Array.isArray(d.rows)?d.rows:[];
+ d.quarter=Math.max(1,Math.min(4,+(S.ui.ps27WideQuarter||1)));
+ return d;
+}
+function wideRow(d,p,q){
+ const row=d.rows.find(x=>String(x.programId)===String(p.id)&&+x.quarter===q);
+ return row||{programId:String(p.id),quarter:q,targets:'',cutoff:quarterEnd(yr(),q),targetCount:'',actualCount:'',evidence:''};
+}
+function wideSummary(d,rows){
+ return [1,2,3,4].map(q=>{
+  const data=rows.map(p=>wideRow(d,p,q));
+  const target=data.reduce((sum,x)=>sum+(Number(x.targetCount)||0),0),
+   actual=data.reduce((sum,x)=>sum+(Number(x.actualCount)||0),0);
+  return {q,target,actual,pct:target?Math.round(actual/target*10000)/100:null};
+ });
+}
+function widePanel(){
+ const d=wideState(),y=yr(),q=d.quarter;
+ const all=list().filter(p=>p.psListStatus!=='Arsip'&&!p.arsip&&p.psStatus!=='Arsip');
+ const sum=wideSummary(d,all),status=d.contract.status||'Konsep',fixed=status==='Ditetapkan';
+ const filled=all.filter(p=>[1,2,3,4].some(qq=>{const r=wideRow(d,p,qq);return String(r.targets||'').trim()&&Number(r.targetCount)>0}));
+ return '<section class="ps27-card ps27-kwide" aria-label="Penetapan Program melalui Kontrak Kinerja K-Wide">'+
+  '<div class="ps27-cardtop"><div><h3>Penetapan Program · Kontrak Kinerja K-Wide '+y+'</h3><p>Rancang target output dan tanggal cut-off per triwulan. Jumlah target/realisasi dan capaian dihitung untuk seluruh program aktif, mengikuti sheet Capaian K-Wide.</p></div><span class="ps27-status">'+E(status)+'</span></div>'+
+  '<div class="ps27-wide-summary">'+sum.map(x=>'<div><b>TW '+x.q+'</b><strong>'+x.actual+' / '+x.target+'</strong><small>Capaian '+(x.pct==null?'—':x.pct.toLocaleString('id-ID')+'%')+'</small></div>').join('')+'</div>'+
+  '<div class="ps27-kwide-contract">'+
+  [['number','Nomor Kontrak Kinerja K-Wide','text'],['date','Tanggal Penetapan','date'],['link','Tautan / Referensi Dokumen Kontrak','url'],['signer','Pejabat Penetap','text']].map(([k,label,type])=>
+   '<label>'+label+'<input type="'+type+'" data-ps27-wide-contract="'+k+'" value="'+E(d.contract[k]||'')+'" '+(fixed?'readonly':'')+' placeholder="'+E(label)+'"></label>').join('')+'</div>'+
+  '<div class="ps27-kwide-tabs" role="tablist" aria-label="Target output per triwulan">'+[1,2,3,4].map(n=>'<button type="button" role="tab" aria-selected="'+(q===n)+'" class="'+(q===n?'on':'')+'" data-ps27="wide-quarter" data-wide-quarter="'+n+'">TW '+n+'</button>').join('')+'</div>'+
+  '<div class="ps27-tablewrap ps27-kwide-tablewrap"><table class="ps27-table ps27-kwide-table"><colgroup><col style="width:4%"><col style="width:20%"><col style="width:34%"><col style="width:13%"><col style="width:9%"><col style="width:10%"><col style="width:10%"></colgroup>'+
+  '<thead><tr><th>No</th><th>Program Transformasi</th><th>Target Output TW '+q+'</th><th>Tanggal Cut-off</th><th>Jumlah Target Output</th><th>Jumlah Realisasi Output</th><th>Bukti Dukung</th></tr></thead><tbody>'+
+  (all.length?all.map((p,i)=>{const row=wideRow(d,p,q);return '<tr data-wide-row="'+E(p.id)+'"><td>'+(i+1)+'</td><td><b>'+E(p.nama)+'</b><small>'+E(p.kode||p.akr||'')+'</small></td>'+
+   '<td><textarea rows="3" data-wide-field="targets" '+(fixed?'readonly':'')+' aria-label="Target output '+E(p.nama)+'">'+E(row.targets||'')+'</textarea></td>'+
+   '<td><input type="date" data-wide-field="cutoff" value="'+E(row.cutoff||quarterEnd(y,q))+'" '+(fixed?'readonly':'')+'></td>'+
+   '<td><input type="number" min="0" step="1" data-wide-field="targetCount" value="'+E(row.targetCount??'')+'" '+(fixed?'readonly':'')+'></td>'+
+   '<td><input type="number" min="0" step="1" data-wide-field="actualCount" value="'+E(row.actualCount??'')+'" aria-label="Jumlah realisasi '+E(p.nama)+'"></td>'+
+   '<td><input type="url" data-wide-field="evidence" value="'+E(row.evidence||'')+'" placeholder="Tautan bukti"></td></tr>'}).join(''):'<tr><td colspan="7">Belum ada usulan program aktif.</td></tr>')+
+  '</tbody><tfoot><tr><th colspan="4">TOTAL TW '+q+'</th><th>'+sum[q-1].target+'</th><th>'+sum[q-1].actual+'</th><th>'+(sum[q-1].pct===null?'—':sum[q-1].pct+'%')+'</th></tr></tfoot></table></div>'+
+  '<div class="ps27-kwide-foot"><div><strong>'+filled.length+' / '+all.length+' program mempunyai target output.</strong><small>Program berstatus Arsip tidak dimasukkan. Data tahun sebelumnya tetap tersimpan.</small></div>'+
+  '<div><button type="button" class="btn" data-ps27="wide-save">Simpan '+(fixed?'Realisasi':'Konsep')+'</button>'+
+   (!fixed?'<button type="button" class="btn pri" data-ps27="wide-finalize" '+(!can()?'disabled':'')+'>Catat Penetapan K-Wide</button>':'<span class="ps27-status">Kontrak telah dicatat</span>')+
+  '</div></div></section>';
+}
+function collectWide(root){
+ const d=wideState(),q=d.quarter;
+ root.querySelectorAll('[data-ps27-wide-contract]').forEach(el=>{if(d.contract.status!=='Ditetapkan')d.contract[el.dataset.ps27WideContract]=el.value.trim()});
+ for(const row of root.querySelectorAll('[data-wide-row]')){
+  const id=row.dataset.wideRow;let entry=d.rows.find(x=>String(x.programId)===id&&+x.quarter===q);
+  if(!entry){entry={programId:id,quarter:q};d.rows.push(entry)}
+  row.querySelectorAll('[data-wide-field]').forEach(input=>{
+   if(d.contract.status==='Ditetapkan'&&!['actualCount','evidence'].includes(input.dataset.wideField))return;
+   entry[input.dataset.wideField]=input.value.trim();
+  });
+  if(!entry.cutoff)entry.cutoff=quarterEnd(yr(),q);
+  for(const k of ['targetCount','actualCount']){
+   if(entry[k]!==''&&(!Number.isInteger(+entry[k])||+entry[k]<0))throw new Error('Jumlah target dan realisasi harus berupa bilangan bulat tidak negatif.');
+  }
+ }
+ d.updatedAt=new Date().toISOString();d.updatedBy=ME?.email||'';
+ return d;
+}
 function penetapan(p){
- if(!p)return '<div class="ps27-card ps27-empty">Pilih program untuk penetapan.</div>';
+ const wide=widePanel();
+ if(!p)return wide+'<div class="ps27-card ps27-empty">Pilih program untuk menetapkan daftar proyek setelah kontrak K-Wide dicatat.</div>';
  const a=I.chosen(p)||[],r=window.MT_PS_GOV?.readiness(p),rows=p.psWbsDraft||[],already=p.psStatus==='Ditetapkan';
- return '<div class="ps27-card"><div class="ps27-cardtop"><div><h3>Penetapan Program dan Proyek</h3><p>Daftar final menjadi acuan Project Management → Perencanaan → WBS. Prioritisasi SMART bersifat opsional.</p></div><span class="ps27-status">'+E(p.psStatus||'Draft')+'</span></div>'+
+ return wide+'<div class="ps27-card"><div class="ps27-cardtop"><div><h3>Penetapan Program dan Proyek</h3><p>Daftar final menjadi acuan Project Management → Perencanaan → WBS. Prioritisasi SMART bersifat opsional.</p></div><span class="ps27-status">'+E(p.psStatus||'Draft')+'</span></div>'+
  '<div class="ps27-minimetrics"><span><b>'+a.length+'</b> proyek dipilih</span><span><b>'+rows.length+'</b> WBS draft</span><span><b>'+(r?r.done+'/7':'—')+'</b> kesiapan dokumen</span></div>'+
  (r&&r.applies&&!r.ok?'<div class="ps27-warning">Kelengkapan program belum memenuhi persyaratan: '+E(r.missing.join(', '))+'. <button class="btn btn-outline btn-sm" data-ps27-tab="usulan">Lengkapi Usulan</button></div>':'')+
  '<div class="ps27-tablewrap"><table class="ps27-table"><thead><tr><th>Proyek / Modul</th><th>UIC</th><th>Target</th><th>Skor</th><th>Status</th></tr></thead><tbody>'+
@@ -280,7 +357,7 @@ function page(){
  let h=vh('PS','pmo','Project Selection','Usulkan program, petakan proyek, prioritaskan, susun charter dan tetapkan dasar WBS.');
  h+='<section class="pswf ps27" aria-label="Project Selection">';
  h+='<div class="pm-stage-shell ps27-stage"><nav class="ptabs pmo-journey ps27-tabs" role="tablist" aria-label="Submenu Project Selection">'+
- TABS.map((t,i)=>'<button type="button" role="tab" aria-selected="'+(u.tab===t[0])+'" class="'+(u.tab===t[0]?'on':'')+'" data-ps27-tab="'+t[0]+'"><span><em>'+(''+(i+1))+'</em> '+t[1]+'</span>'+(t[0]==='usulan'&&T.length?'<b>'+T.length+'</b>':t[0]==='mapping'&&countAll?'<b>'+countAll+'</b>':'')+'</button>').join('')+
+ TABS.map((t,i)=>'<button type="button" role="tab" title="'+E(TOP_HELP[t[0]]||'')+'" aria-selected="'+(u.tab===t[0])+'" class="'+(u.tab===t[0]?'on':'')+'" data-ps27-tab="'+t[0]+'"><span><em>'+(''+(i+1))+'</em> '+t[1]+' <span class="ps27-helpicon" tabindex="-1" role="img" aria-label="Informasi: '+E(TOP_HELP[t[0]]||'')+'">ⓘ</span></span>'+(t[0]==='usulan'&&T.length?'<b>'+T.length+'</b>':t[0]==='mapping'&&countAll?'<b>'+countAll+'</b>':'')+'</button>').join('')+
  '</nav></div>';
  h+=filter(p)+actionBar(p);
  if(u.tab==='usulan')h+=usulan(p);
@@ -310,6 +387,28 @@ function mount(){
   }
   if(b.hasAttribute('data-ps27-period')){setFilterField('period',b.dataset.ps27Period);save();render();return}
   const a=b.dataset.ps27;
+  if(a==='wide-quarter'){
+   try{collectWide(root);save()}catch(e){toast(e.message||String(e));return}
+   S.ui.ps27WideQuarter=+b.dataset.wideQuarter||1;render();return;
+  }
+  if(a==='wide-save'){try{collectWide(root);save();render();toast('Target output K-Wide TW '+wideState().quarter+' tersimpan.')}catch(e){toast(e.message||String(e))}return}
+  if(a==='wide-finalize'){
+   let d;try{d=collectWide(root)}catch(e){toast(e.message||String(e));return}
+   const contract=d.contract,active=list().filter(x=>x.psListStatus!=='Arsip'&&!x.arsip);
+   if(!can()){toast('Tidak memiliki akses pencatatan kontrak.');return}
+   if(!contract.number||!contract.date||!contract.link||!contract.signer){toast('Lengkapi nomor, tanggal, referensi dokumen, dan pejabat penetap kontrak K-Wide.');return}
+   const missing=active.filter(x=>![1,2,3,4].some(q=>{const row=wideRow(d,x,q);return String(row.targets||'').trim()&&Number(row.targetCount)>0}));
+   if(missing.length){toast('Target output belum dilengkapi untuk '+missing.length+' program.');return}
+   const finish=()=>{
+    contract.status='Ditetapkan';contract.finalizedAt=new Date().toISOString();contract.finalizedBy=ME?.email||'';
+    contract.programIds=active.map(x=>String(x.id));contract.snapshot=d.rows.map(x=>Object.assign({},x));
+    active.forEach(x=>{x.psKwideContractNumber=contract.number;x.psKwideRecordedAt=contract.finalizedAt});
+    save();render();toast('Kontrak K-Wide tercatat. Penetapan masing-masing program/proyek dapat dilanjutkan melalui panel di bawah.');
+   };
+   if(typeof window.MT_PS_CONFIRM==='function')window.MT_PS_CONFIRM('Catat Penetapan K-Wide?', 'Nomor '+contract.number+' · '+contract.date+'. Pencatatan ini menjadi prasyarat penetapan program dan proyek.',finish);
+   else if(window.confirm('Catat kontrak K-Wide '+contract.number+'?'))finish();
+   return;
+  }
   if(a==='filter'){ws().filterOpen=!ws().filterOpen;save();render();return}
   if(a==='carry'){carrySelected();return}
   if(a==='save-rkmk'){const p=current();if(!p||!can(p))return;
