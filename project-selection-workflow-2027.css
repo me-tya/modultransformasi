@@ -277,3 +277,10 @@
 #app .psbank-archive-form textarea{resize:vertical;min-height:70px}
 #app .psbank-archive-form>small{font:500 11px/1.5 'Inter',sans-serif;color:#69809b}
 #app .psbank-archive-error{font:650 11px 'Inter',sans-serif;color:#ba202c;margin:0}
+
+/* Only a single contextual information icon lives at the far right of the tab header. */
+#app .ps27 .ps27-stage{display:flex;align-items:stretch;gap:7px;min-width:0}
+#app .ps27 .ps27-tabs{flex:1;min-width:0}
+#app .ps27 .ps27-tabs .ps27-helpicon{display:none!important}
+#app .ps27 .ps27-contextinfo{flex:0 0 32px;align-self:center;display:inline-grid;place-items:center;height:32px;width:32px;border-radius:9px;border:1px solid #cddced;background:#f0f6fe;color:#285e99;font:800 15px 'Inter',sans-serif;cursor:help}
+#app .ps27 .ps27-contextinfo:focus-visible{outline:2px solid #f2b926;outline-offset:2px}
