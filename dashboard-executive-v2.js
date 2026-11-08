@@ -93,7 +93,7 @@ function dbTabPanel(groups,n){
 }
 function dbRender(){
  const items=dxItems(),groups=dxModules(items),rows=groups.flatMap(g=>g.mods.map(m=>({g,m})));
- const n=dxTw();
+ const n=dbIsAnnual()?4:dxTw();
  return vh('ED','dash','Executive Dashboard','Monitoring Program Transformasi Kementerian Keuangan', '<button class="btn" data-act="lapexp">⇩ Ekspor Laporan</button>')+
  '<div class="db-shell">'+fltBar({res:[items.length,items.length,'item WBS']})+dbKpis(rows,n)+dbOverview(rows,groups,n)+dbTabPanel(groups,n)+'</div>';
 }
