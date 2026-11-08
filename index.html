@@ -7781,7 +7781,7 @@ const RPT_STAGE_SECTIONS={
  pascaproyek:['profil','tutup','eval'],
  referensi:['profil','dokumen','tahapan']};
 function rptPreset(stage){const keys=RPT_STAGE_SECTIONS[stage]||null;if(!keys)return Object.assign({},RPT_DEF);
- const inc={};RPT_SECT.forEach(([k])=>inc[k]=keys.includes(k)?1:0);inc.toc=1;inc.tte=0;return inc}
+ const inc={};RPT_SECT.forEach(([k])=>inc[k]=keys.includes(k)?1:0);inc.toc=1;inc.tte=1;return inc}
 function rptIsDraftFinal(c){if(!c.G.length)return true;let count=0;
  for(const g of c.G){for(const r of g.P){const list=tpUnits(g.p,g.P).filter(x=>x.n===r.n);if(!list.length)return true;
   for(const u of list){count++;if(tpSt(g.p,u.n,u.sub)!=='Ditutup')return true}
@@ -7869,7 +7869,7 @@ function rptModel(c,inc,o){o=o||{};const B=[],e=x=>String(x??''),R=rptRegs(c),T=
  const docType=o.preset==='tutup'?'DOKUMEN PENUTUPAN PROYEK':o.stage==='pelaksanaan'?'DOKUMEN PELAKSANAAN PROYEK':o.stage==='pemantauan'?'DOKUMEN MONITORING DAN EVALUASI PROYEK':o.stage==='perencanaan'?'DOKUMEN PERENCANAAN PROYEK':isProject?'DOKUMEN PROYEK':c.spec.k==='prog'?'DOKUMEN PROGRAM':'DOKUMEN PORTOFOLIO';
  const coverName=isProject?moduleName:c.name;
  const fn=rptFile(c,'x').replace(/\.x$/,'');
- const identity=[...(o.no?[['Nomor Dokumen',o.no]]:[]),...(isProject?[['Nama Modul / Proyek',moduleName]]:[]),
+ const identity=[...(o.no?[['Nomor Dokumen',o.no]]:[]),
   ['Program Induk',one?String(one.p.nama||'—'):c.G.length+' program'],
   ...(one?[['Kode Program',String(one.p.kode||'—')]]:[]),
   ['UIC Utama',String(P1?.uic||one?.p?.uic||'—')],['Periode',(per().pr||'all')==='all'?'Tahun '+S.ui.tahun:per().lab+' '+S.ui.tahun],
