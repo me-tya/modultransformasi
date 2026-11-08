@@ -80,7 +80,7 @@ function carrySelected(){
 function count(p){return p?(p.psProjects||[]).length:0;}
 const TOP_HELP={
  usulan:'Susun usulan program: Riwayat Program hanya referensi untuk menyalin data, sedangkan penambahan dan penyuntingan substansi dilakukan di Daftar Program.',
- mapping:'Petakan usulan proyek/aplikasi ke program tahun aktif. Program dan proyek yang masih konsep dapat diperbaiki sebelum penetapan.',
+ mapping:'Gunakan Riwayat Proyek untuk mengambil referensi proyek lintas tahun ke program tujuan tanpa mengubah WBS atau realisasi historis. Lengkapi usulan di tab berikutnya.',
  prioritisasi:'Prioritaskan dan nilai proyek dengan kriteria yang tersedia. Hasilnya menjadi masukan pemilihan proyek untuk program.',
  charter:'Susun Charter Program dan rencana kerja sebagai dasar usulan program lintas unit.',
  'penetapan-program':'Susun target output program per triwulan sesuai Capaian K-Wide dan catat kontrak kinerja sebagai dasar penetapan.',
@@ -203,8 +203,8 @@ function prioritasi(p){
  const threshold=p.psPrioritize?'<label class="ps27-smart-threshold">Ambang skor &gt; <input type="number" id="pswf-threshold" min="0" max="99" value="'+E(p.psThreshold??80)+'" '+(readOnly?'disabled':'')+' aria-label="Ambang skor SMART"> %</label>':'';
  const tip='<button class="ps27-smart-info" type="button" data-pswf="smart-info" title="Aturan pemilihan: 12 kriteria lengkap dan skor absolut lebih besar dari ambang" aria-label="Informasi aturan seleksi otomatis SMART">i</button>';
  return '<div class="ps27-priority-head"><nav class="ps27-minitabs" role="tablist" aria-label="Tab Prioritasi">'+
- [['ranking','Penilaian & Peringkat'],['criteria','Kriteria & Bobot'],['monev','Monev & Manfaat'],['reference','Referensi & Formula']].map(x=>
- '<button role="tab" type="button" data-ps27-sub="'+x[0]+'" aria-selected="'+(sub===x[0])+'" class="'+(sub===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+'</nav>'+
+ [['ranking','Penilaian & Peringkat','Menilai dan mengurutkan proyek; skor adalah bahan pertimbangan, bukan penetapan.'],['criteria','Kriteria & Bobot','Atur kriteria dan bobot prioritas; perubahan bobot memengaruhi hasil penilaian.'],['monev','Monev & Manfaat','Pantau indikator dan manfaat yang tercatat, bukan realisasi WBS.'],['reference','Referensi & Formula','Pelajari referensi, perhitungan, dan batas penggunaan skor.']].map(x=>
+ '<button role="tab" type="button" data-ps27-sub="'+x[0]+'" title="'+E(x[2])+'" aria-label="'+E(x[1]+'. '+x[2])+'" aria-selected="'+(sub===x[0])+'" class="'+(sub===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+'</nav>'+
  '<div class="ps27-smart-actions">'+mode+threshold+tip+'</div></div>'+
  (sub==='reference'?I.referencePage(p):sub==='criteria'?I.criteriaPage(p):sub==='monev'?I.monevPage(p):I.projectsPage(p));
 }
@@ -339,7 +339,7 @@ function navigate(target){
   if(item&&['identity','case','benefits','stakeholders','risks','governance','docs'].includes(item))S.ui.psBank.wtab=item;
  }
  if(actual==='mapping'&&window.MT_PS_SCOPE){
-  window.MT_PS_SCOPE.bank().mappingTab=['proposal','usulan-proyek'].includes(sub)?'proposal':['results','hasil'].includes(sub)?'results':['docs','dokumen'].includes(sub)?'docs':'mapping';
+  window.MT_PS_SCOPE.bank().mappingTab=['proposal','usulan-proyek'].includes(sub)?'proposal':['results','hasil'].includes(sub)?'results':['docs','dokumen'].includes(sub)?'docs':'history';
  }
  if(actual==='prioritasi'&&['ranking','criteria','monev','reference'].includes(sub)){
   ws().prioritySub=sub;
@@ -481,7 +481,7 @@ function mount(){
 function helpPage(tab){
  const items=[
   ['usulan','Usulan Program','Klik seluruh header Filter untuk menampilkan/menyembunyikan pilihan Tahun, Periode, Program, Unit, Peran, dan Status. Daftar Program: klik baris untuk Detail; aksi dari kiri Pemetaan, Edit, Unggah, dan Unduh apabila ada berkas. Pilih berkas dengan checkbox untuk preview atau ZIP.'],
-  ['mapping','Pemetaan Proyek','Tab Pemetaan memilih proyek sumber dan tujuan; tab Usulan Proyek mengelola identitas proyek (lihat, tambah, ubah, hapus). WBS baru dibuat di Project Management.'],
+  ['mapping','Pemetaan Proyek','Riwayat Proyek menyediakan referensi lintas tahun untuk disalin ke usulan program tujuan tanpa mengubah WBS historis. Usulan Proyek untuk mengelola identitas; WBS baru dibuat di Project Management.'],
   ['prioritasi','Prioritasi','SMART opsional; 12 kriteria lengkap, bobot normalisasi, skor absolut, dan penetapan ambang. Snapshot menyimpan kondisi penilaian untuk pembandingan.'],
   ['charter','Charter Program','Perencanaan proyek menggunakan As-is, To-be, Perbandingan, Charter, Kriteria, Manfaat, dan Linimasa. Tombol bawah: Import PPTX, Pratinjau 3 Slide, Unduh PPTX, Ubah, Simpan, Simpan & Tutup.'],
   ['penetapan','Penetapan','Memfinalkan program dan proyek terpilih tanpa otomatis mengaktifkan WBS tahun sebelumnya.'],
@@ -490,7 +490,7 @@ function helpPage(tab){
  if(tab==='map'){
   const deep=[
    [['Riwayat Program','usulan:bank'],['Daftar Program · Kelola & Unggah / Unduh','usulan:detail'],['Dokumen Portofolio','usulan:portfolio'],['Identitas','usulan:detail:identity'],['Business Case','usulan:detail:case'],['Manfaat','usulan:detail:benefits'],['Stakeholder','usulan:detail:stakeholders'],['Risiko','usulan:detail:risks'],['Tata Kelola','usulan:detail:governance'],['Buat Dokumen Program','usulan:detail:docs']],
-   [['Pemetaan','mapping:mapping'],['Usulan Proyek','mapping:proposal'],['Hasil Pemetaan','mapping:results'],['Buat Dokumen Usulan Proyek','mapping:docs']],
+   [['Riwayat Proyek','mapping:history'],['Usulan Proyek','mapping:proposal'],['Hasil Pemetaan','mapping:results'],['Buat Dokumen Usulan Proyek','mapping:docs']],
    [['Penilaian & Peringkat','prioritasi:ranking'],['Kriteria & Bobot','prioritasi:criteria'],['Monev & Manfaat','prioritasi:monev'],['Referensi & Formula','prioritasi:reference']],
    [['As-is','charter:asis'],['To-be','charter:tobe'],['Perbandingan','charter:cs'],['Charter','charter:ch'],['Kriteria','charter:kp'],['Manfaat','charter:mf'],['Linimasa','charter:rk']],
    [['Daftar Penetapan','penetapan']],
