@@ -203,19 +203,34 @@ function syncWbs(p){
 }
 function navigate(target){
  const a=String(target||'usulan').split(':'),stage=a[0],sub=a[1],item=a[2];
- state().tab=TABS.some(t=>t[0]===stage)?stage:'usulan';
- if(stage==='usulan'){
-  if(['daftar','ambil','detail'].includes(sub))ws().usulanSub=sub;
-  S.ui.psBank=S.ui.psBank||{};if(sub==='daftar'||sub==='ambil')S.ui.psBank.tab='bank';if(sub==='detail'){S.ui.psBank.tab='detail';const p=current();if(p)S.ui.psBank.workspace=p.id;}
-  if(item&&['identity','case','benefits','stakeholders','risks','governance','review','docs'].includes(item)){S.ui.psBank.wtab=item;S.ui.psGov=S.ui.psGov||{};S.ui.psGov.step=item;}
+ const actual=TABS.some(t=>t[0]===stage)?stage:'usulan';
+ state().tab=actual;
+ if(actual==='usulan'){
+  S.ui.psBank=S.ui.psBank||{};
+  const tab=['bank','daftar','ambil'].includes(sub)?'bank':sub==='portfolio'?'portfolio':'detail';
+  S.ui.psBank.tab=tab;
+  S.ui.psBank.workspace='';
+  ws().usulanSub=tab==='bank'?'daftar':'detail';
+  if(item&&['identity','case','benefits','stakeholders','risks','governance','docs'].includes(item))S.ui.psBank.wtab=item;
  }
- if(stage==='prioritasi'&&['ranking','criteria','monev'].includes(sub))ws().prioritySub=sub;
- if(stage==='charter'&&sub){
+ if(actual==='mapping'&&window.MT_PS_SCOPE){
+  window.MT_PS_SCOPE.bank().mappingTab=['proposal','usulan-proyek'].includes(sub)?'proposal':'mapping';
+ }
+ if(actual==='prioritasi'&&['ranking','criteria','monev','reference'].includes(sub)){
+  ws().prioritySub=sub;
+  if(sub==='reference'&&!ws().referenceVisited){I.state().formula=true;I.state().params=true;ws().referenceVisited=true}
+ }
+ if(actual==='charter'&&sub){
   const p=current(),c=p?foundCharter(p,yr()):null;
-  if(p&&c){S.ui.chp=p.akr;S.ui.chv=c.id;S.ui.ched=c.id;const keys={asis:0,tobe:1,cs:2,ch:3,kp:6,mf:7,rk:8};S.ui.chws=keys[sub]??3;}
+  if(p&&c){S.ui.chp=p.akr;S.ui.chv=c.id;S.ui.ched=c.id;
+   const keys={asis:0,tobe:1,cs:2,ch:3,kp:6,mf:7,rk:8};S.ui.chws=keys[sub]??3}
  }
  save();render();
+ if(actual==='usulan'&&S.ui.psBank.tab==='detail'&&item&&['identity','case','benefits','stakeholders','risks','governance','docs'].includes(item)){
+  window.MT_PS_BANK_CORE?.openDetailTab(item);
+ }
 }
+
 function page(){
  const p=current(),u=state(),T=list(),countAll=T.reduce((n,x)=>n+count(x),0);
  let h=vh('PS','pmo','Project Selection','Usulkan program, petakan proyek, prioritaskan, susun charter dan tetapkan dasar WBS.');
@@ -294,29 +309,30 @@ function mount(){
 }
 function helpPage(tab){
  const items=[
- ['usulan','Usulan Program','Daftar Program menjadi bank lintas tahun. Detail Program mencatat program terpilih; Detail Program menyediakan formulir ubah, simpan, dan Buat Dokumen Program. Dokumen Portofolio dapat dikompilasi dari program terpilih.'],
- ['mapping','Pemetaan Proyek','Pilih modul dari program dan tahun sumber lainnya (mis. FRSW/SIPK pada Core APBN 2026), lalu masukkan ke program tujuan. Draft WBS ikut terbawa.'],
- ['prioritasi','Prioritasi','Pilih program, aktifkan SMART bila diperlukan; skor 12 kriteria menggunakan bobot dan ambang yang dapat disesuaikan.'],
- ['charter','Charter Program','Tujuh dokumen charter: as-is, to-be, perbandingan, charter, kriteria, manfaat dan linimasa. Menggunakan editor charter native.'],
- ['penetapan','Penetapan','Finalisasi program dan daftar proyek. Draft WBS dari tahun sumber baru disalin ke Project Management setelah penetapan, tanpa realisasi.'],
- ['rkmk','Draft RKMK','Gunakan narasi tahun 2025 apabila tersedia; narasi bawaan ditandai kuning sampai direviu untuk tahun tujuan.']
+  ['usulan','Usulan Program','Bank program lintas tahun, Detail Program yang dapat diedit, dan ekspor dokumen program maupun portofolio.'],
+  ['mapping','Pemetaan Proyek','Tab Pemetaan memilih proyek sumber dan tujuan; tab Usulan Proyek mengelola identitas proyek (lihat, tambah, ubah, hapus). WBS baru dibuat di Project Management.'],
+  ['prioritasi','Prioritasi','SMART opsional; 12 kriteria lengkap, bobot normalisasi, skor absolut, dan penetapan ambang. Snapshot menyimpan kondisi penilaian untuk pembandingan.'],
+  ['charter','Charter Program','Perencanaan proyek menggunakan As-is, To-be, Perbandingan, Charter, Kriteria, Manfaat, dan Linimasa.'],
+  ['penetapan','Penetapan','Memfinalkan program dan proyek terpilih tanpa otomatis mengaktifkan WBS tahun sebelumnya.'],
+  ['rkmk','Draft RKMK','Mereviu narasi rancangan RKMK; isian sumber ditandai sampai dikonfirmasi untuk tahun tujuan.']
  ];
  if(tab==='map'){
   const deep=[
-   [['Bank Program','usulan:daftar'],['Detail Program','usulan:detail'],['Buat Dokumen Word/PDF/PPTX','usulan:detail:docs'],['Identitas','usulan:detail:identity'],['Business Case','usulan:detail:case'],['Manfaat','usulan:detail:benefits'],['Stakeholder','usulan:detail:stakeholders'],['Risiko','usulan:detail:risks'],['Tata Kelola','usulan:detail:governance'],['Reviu','usulan:detail:review']],
-   [['Daftar Proyek / Modul','mapping']],
-   [['Penilaian & Peringkat','prioritasi:ranking'],['Kriteria & Bobot','prioritasi:criteria'],['Monev & Manfaat','prioritasi:monev']],
+   [['Daftar Program','usulan:bank'],['Detail Program','usulan:detail'],['Dokumen Portofolio','usulan:portfolio'],['Identitas','usulan:detail:identity'],['Business Case','usulan:detail:case'],['Manfaat','usulan:detail:benefits'],['Stakeholder','usulan:detail:stakeholders'],['Risiko','usulan:detail:risks'],['Tata Kelola','usulan:detail:governance'],['Buat Dokumen Program','usulan:detail:docs']],
+   [['Pemetaan','mapping:mapping'],['Usulan Proyek','mapping:proposal']],
+   [['Penilaian & Peringkat','prioritasi:ranking'],['Kriteria & Bobot','prioritasi:criteria'],['Monev & Manfaat','prioritasi:monev'],['Referensi & Formula','prioritasi:reference']],
    [['As-is','charter:asis'],['To-be','charter:tobe'],['Perbandingan','charter:cs'],['Charter','charter:ch'],['Kriteria','charter:kp'],['Manfaat','charter:mf'],['Linimasa','charter:rk']],
    [['Daftar Penetapan','penetapan']],
    [['Narasi & Reviu','rkmk']]
   ];
-  return '<div class="ps27-helpmap">'+items.map((x,i)=>'<section><button class="ps27-helpmap-head" data-ps27-jump="'+x[0]+'"><b>'+(i+1)+' · '+x[1]+'</b><span>Buka submenu ↗</span></button><p>'+x[2]+'</p><div class="ps27-helpmap-links">'+deep[i].map(z=>'<button data-ps27-jump="'+z[1]+'">'+z[0]+'</button>').join('')+'</div></section>').join('')+'</div>';
+  return '<div class="ps27-helpmap">'+items.map((x,i)=>'<section><button class="ps27-helpmap-head" data-ps27-jump="'+x[0]+'"><b>'+(i+1)+' · '+x[1]+'</b><span>Buka submenu ↗</span></button><p>'+x[2]+'</p><div class="ps27-helpmap-links">'+deep[i].map(z=>'<button type="button" data-ps27-jump="'+z[1]+'">'+z[0]+'</button>').join('')+'</div></section>').join('')+'</div>';
  }
  if(tab==='flow')return '<div class="ps27-helpflow">'+items.map((x,i)=>'<div><b>'+(i+1)+' · '+x[1]+'</b><p>'+x[2]+'</p></div>').join('')+'</div>';
- if(tab==='roles')return '<div class="ps27-helpprose"><h3>Pembagian Peran</h3><p><b>PMO Kementerian:</b> mengelola standar, melakukan reviu, konsolidasi serta koordinasi penetapan. <b>PMO Unit/UIC:</b> mengusulkan program, proyek, register, charter dan revisi WBS sesuai otorisasi. <b>Pemilik proses bisnis:</b> mengonfirmasi outcome, target dan kriteria keberhasilan. <b>Sponsor/pejabat berwenang:</b> mengambil keputusan penetapan sesuai tata kelola berlaku.</p><p>Program yang belum ditetapkan tetap Draft di Project Selection. WBS hanya muncul setelah penetapan.</p></div>';
- if(tab==='terms')return '<div class="ps27-helpprose"><h3>Istilah Utama</h3><p><b>Program</b> adalah pengelolaan sekumpulan proyek terkait untuk manfaat bersama. <b>Proyek/Modul</b> adalah komponen hasil/layanan yang dikelola. <b>WBS</b> merinci pekerjaan hingga item yang dapat direncanakan dan dimonitor. <b>Carry Over</b> menyalin rencana dan dokumen tahun sumber sebagai Draft tahun tujuan, bukan memindahkan realisasi.</p></div>';
- return '<div class="ps27-helpprose"><h3>Checklist Pekerjaan</h3><p>Usulan dan registrasi lengkap → peta proyek ditinjau → skor prioritas (jika dibutuhkan) → charter dan dokumen diperbarui → daftar final ditetapkan → draft RKMK direviu → detail WBS dan baseline disesuaikan di Project Management.</p><p>Jalur cepat ke WBS: Project Management → Perencanaan → WBS.</p></div>';
+ if(tab==='roles')return '<div class="ps27-helpprose"><h3>Pembagian Peran</h3><p><b>PMO Kementerian:</b> standar, reviu, konsolidasi dan koordinasi penetapan. <b>PMO Unit/UIC:</b> usulan program dan proyek, pengkinian dokumen, serta perencanaan WBS sesuai kewenangan. <b>Pemilik proses bisnis:</b> outcome, target, dan kriteria penyelesaian. <b>Sponsor/pejabat berwenang:</b> keputusan penetapan.</p><p>Detail rencana dan WBS baru dikelola di Project Management setelah program ditetapkan.</p></div>';
+ if(tab==='terms')return '<div class="ps27-helpprose"><h3>Istilah Utama</h3><p><b>Program:</b> sekumpulan proyek terkait yang dikelola bersama untuk manfaat yang tidak diperoleh bila terpisah. <b>Proyek/Modul:</b> komponen hasil/layanan. <b>WBS:</b> pemecahan pekerjaan menjadi deliverable dan paket kerja. <b>Carry-over:</b> menyalin identitas, referensi, serta proyek sebagai rancangan tahun tujuan; tidak memindahkan realisasi ataupun mengaktifkan WBS lama. <b>Snapshot:</b> rekaman skor dan pilihan proyek pada satu waktu untuk dibandingkan dengan hasil penilaian terbaru.</p></div>';
+ return '<div class="ps27-helpprose"><h3>Checklist Pekerjaan</h3><p>Daftar Program → Detail Program → Pemetaan → Usulan Proyek → Prioritasi (SMART opsional) → Charter → Penetapan → Draft RKMK → Project Management (WBS baru).</p><p>Untuk membandingkan skor sebelum/sesudah perubahan gunakan <b>Prioritasi → Penilaian & Peringkat → Riwayat Snapshot</b>.</p></div>';
 }
+
 function sheetPage(tab){
  const p=current(),criteria=B.criteria||[];
  if(tab==='formula'){
@@ -324,7 +340,7 @@ function sheetPage(tab){
   return '<div class="ps27-helpprose"><h3>Formula Prioritasi SMART</h3><p><b>Bobot normalisasi</b> = bobot kriteria ÷ total bobot ('+w+').</p><p><b>Utility manfaat</b> = (nilai − 1) ÷ 4. <b>Utility biaya</b> = (5 − nilai) ÷ 4.</p><p><b>Skor total</b> = 100 × Σ(bobot normalisasi × utility). Skor tersedia setelah seluruh 12 kriteria terisi. Proyek lolos otomatis apabila skor <b>lebih besar</b> dari ambang yang ditetapkan ketika SMART aktif.</p><table class="ps27-table"><thead><tr><th>Kriteria</th><th>Bobot</th><th>Normalisasi</th></tr></thead><tbody>'+criteria.map(c=>{const x=+(p?.psWeights?.[c.code])||c.w||1;return '<tr><td>'+E(c.code)+' · '+E(c.name)+'</td><td>'+x+'</td><td>'+((100*x/w).toFixed(2))+'%</td></tr>'}).join('')+'</tbody></table></div>';
  }
  if(tab==='governance')return '<div class="ps27-helpprose"><h3>Kerangka PMI tingkat Program</h3><p>Elemen: strategic alignment & business case, manfaat terukur dan benefit owner, stakeholder engagement, risk & dependencies, governance/otoritas keputusan, roadmap, kapasitas dan sumber daya. Kelengkapan minimum merupakan keputusan desain aplikasi, bukan klaim kolom wajib PMI.</p><p><b>Level program</b> menyimpan risiko/manfaat lintas proyek; <b>level proyek</b> menyimpan risiko operasional dan WBS di Project Management.</p></div>';
- if(tab==='carry')return '<div class="ps27-helpprose"><h3>Carry Over dan Kontrol Data</h3><p>Identitas, narasi, business case, register, proyek, charter 7 dokumen, serta struktur WBS tahun sumber disalin utuh secara <i>deep copy</i>. Perubahan tahun tujuan tidak mengubah sumber. Tanggal rencana bergeser ke tahun tujuan, tetapi narasi dan target wajib direviu.</p><p>Status program dan charter menjadi Draft. Realisasi WBS, bukti dukung dan riwayat persetujuan tidak disalin. WBS baru disinkronkan setelah Penetapan dan tetap perlu disunting.</p></div>';
+ if(tab==='carry')return '<div class="ps27-helpprose"><h3>Carry Over dan Kontrol Data</h3><p>Identitas, narasi, business case, register, proyek, dan dokumen charter disalin sebagai rancangan yang dapat direviu. WBS tahun sumber tidak dijadikan WBS aktif tahun tujuan. Perubahan tahun tujuan tidak mengubah sumber. Tanggal rencana bergeser ke tahun tujuan, tetapi narasi dan target wajib direviu.</p><p>Status program dan charter menjadi Draft. Realisasi WBS, bukti dukung dan riwayat persetujuan tidak disalin. WBS baru disusun di Project Management setelah Penetapan. WBS salinan lama dari versi aplikasi terdahulu tidak diaktifkan otomatis.</p></div>';
  if(tab==='rkmk')return '<div class="ps27-helpprose"><h3>Reviu Draft RKMK</h3><p>Narasi 2025 digunakan jika ada di data charter sumber. Jika tidak tersedia, aplikasi menyatakan sumber aktualnya dan menampilkan draft berbasis charter/program yang ada. Semua area berwarna kuning wajib dikonfirmasi untuk tahun tujuan.</p><p>Unduh Draft Word dari submenu Draft RKMK; dokumen ini belum menjadi RKMK definitif.</p></div>';
  return '<div class="ps27-helpprose"><h3>Framework Program dan Proyek</h3><p>Project Selection berfokus pada <b>why & what</b>: mengusulkan, memetakan, memprioritaskan, merencanakan dan menetapkan. Project Management mengelola <b>how</b>: WBS, pelaksanaan, pengendalian, monitoring dan penutupan proyek.</p></div>';
 }
@@ -342,7 +358,7 @@ function open(mode){
  });
  root.addEventListener('keydown',function(ev){if(ev.key==='Escape')root.remove()});
 }
-B.page=page;B.mount=mount;B.open=open;B.version='20261108-six-step-carryover-full-wbs-rkmk';
+B.page=page;B.mount=mount;B.open=open;B.version='20261108-help-shortcuts-smart-priority-v2';
 window.MT_PS_WORKFLOW={carrySelected,cloneProgram,syncWbs,navigate,version:B.version};
 if(typeof VIEW!=='undefined'&&VIEW==='project-selection'&&ME)render();
 })();
