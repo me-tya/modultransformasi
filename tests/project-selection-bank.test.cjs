@@ -671,3 +671,26 @@ test('TTE settings exist in all three selection document generators and program 
  assert.match(source['project-selection-documents.js'],/exportFormalPdf\(programReportModel\(p\)/);
  assert.match(readFileSync('charter-planning-report.js','utf8'),/Atur TTE/);
 });
+
+test('TTE configuration is present in PPTX previews for program and portfolio',()=>{
+ const m=boot(),docs=m.docs;
+ m.S.ui.psBank={doc:{format:'pptx',sections:['identity','case'],cover:true,toc:true,sign:true,annex:true,slide:0,
+  tte:{name:'Penandatangan',title:'Kepala Unit',city:'Jakarta',date:'8 November 2026',label:'Mengetahui,',number:'ND-1'}}};
+ const slides=docs.slidePages(m.target);
+ assert.equal(slides.at(-1).key,'tte');
+ assert.ok(slides.at(-1).rows.some(x=>x[1]==='Penandatangan'));
+ const d=docs.portfolioBuilder();
+ assert.match(d,/data-port-include-tte/);
+ m.S.ui.psBank.portfolioDoc.sign=true;
+ const pages=docs.portSlides();
+ assert.equal(pages.at(-1).kind,'tte');
+ assert.ok(pages.at(-1).rows.some(x=>x[0]==='Nomor Dokumen'));
+});
+test('No header year selector, compact spacing and no nested vertical bank scroll',()=>{
+ const unified=readFileSync('ui-tabs-unified.css','utf8');
+ const bank=readFileSync('project-selection-program-bank.css','utf8');
+ assert.match(unified,/\.tsel:has\(select#yr\)\{display:none!important\}/);
+ assert.match(unified,/\.ps27 \.ps27-filter\.ps27-filter-panel\{margin:0 0 7px!important/);
+ assert.match(bank,/psbank-pagination/);
+ assert.match(bank,/overflow-y:visible!important/);
+});
