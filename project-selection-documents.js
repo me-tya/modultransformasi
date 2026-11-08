@@ -213,6 +213,112 @@ async function exportFile(p){
   toast('Dokumen v'+version+' berhasil diunduh. Nomor versi belum berubah sampai bukti TTE dicatat.');
  }catch(err){toast('Ekspor gagal: '+(err.message||err))}
 }
+
+/* Portofolio: kompilasi per program dengan konfigurasi dan nomor versi tersendiri. */
+function portCfg(){
+ S.ui.psBank=S.ui.psBank||{};
+ const d=S.ui.psBank.portfolioDoc||(S.ui.psBank.portfolioDoc={format:'word',selected:[],sections:STEPS.map(x=>x[0]),toc:true,slide:0,initialized:false});
+ if(!d.initialized){d.selected=portPrograms().map(p=>String(p.id));d.initialized=true}
+ return d;
+}
+function portPrograms(){
+ return (S.programs||[]).filter(p=>+p.psYear===year()||(!p.psYear&&+p.mulai<=year()&&+(String(p.periode||'').match(/20\d{2}/g)||[]).slice(-1)[0]>=year()));
+}
+function portSelected(){const d=portCfg();return portPrograms().filter(p=>d.selected.includes(String(p.id)))}
+function portData(){
+ const d=portCfg();
+ return portSelected().map(p=>({p,blocks:STEPS.filter(x=>d.sections.includes(x[0])).map(x=>({title:x[1],rows:fields(p,x[0],year())}))}));
+}
+function portSlides(){
+ const result=[];
+ portData().forEach(o=>o.blocks.forEach(b=>{
+  const fields=b.rows.length?b.rows:[['Data','Belum diisi']];
+  for(let i=0;i<fields.length;i+=6)result.push({program:o.p,title:b.title+(i?' (lanjutan)':''),rows:fields.slice(i,i+6)});
+ }));
+ return result;
+}
+function portfolioPreview(){
+ const d=portCfg(),data=portData(),v=nextVersion('portfolio','all',year());
+ if(d.format==='pptx'){
+  const slides=portSlides(),i=Math.max(0,Math.min(+d.slide||0,Math.max(0,slides.length-1))),x=slides[i];
+  return '<div class="psbank-slidepreview"><div class="psbank-slidetop"><span>KEMENTERIAN KEUANGAN · PORTOFOLIO</span><strong>v'+v+'</strong></div>'+
+  (x?'<h3>'+E(x.title)+'</h3><small>'+E(x.program.nama)+' · '+year()+'</small><div class="psbank-slidebody">'+x.rows.map(row=>'<article><b>'+E(row[0])+'</b><p>'+E(row[1]||'Belum diisi')+'</p></article>').join('')+'</div>':'<p>Pilih program dan substansi di sebelah kiri.</p>')+
+  '</div><div class="psbank-slidecontrols"><button class="btn" data-port-slide="-1" '+(!i?'disabled':'')+'>‹ Sebelumnya</button><span>Slide '+(slides.length?i+1:0)+' / '+slides.length+'</span><button class="btn" data-port-slide="1" '+(i>=slides.length-1?'disabled':'')+'>Berikutnya ›</button></div>';
+ }
+ return '<div class="psbank-docpaper"><header class="psbank-doccover"><small>KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</small><h2>DOKUMEN PORTOFOLIO PROGRAM TRANSFORMASI</h2><h3>Tahun '+year()+' · Versi '+v+'</h3><p>'+data.length+' program terpilih · Rancangan, belum ditandatangani</p></header>'+
+ (d.toc?'<section class="psbank-doctoc"><b>DAFTAR PROGRAM</b>'+data.map((o,i)=>'<div>'+(i+1)+'. '+E(o.p.nama)+' ('+E(o.p.kode||o.p.akr)+')</div>').join('')+'</section>':'')+
+ data.map((o,i)=>'<section class="psbank-docsection"><h3>'+(i+1)+'. '+E(o.p.nama)+'</h3><p>Kode: '+E(o.p.kode||o.p.akr)+' · UIC: '+E(o.p.uic||'—')+'</p>'+o.blocks.map((b,j)=>'<h4>'+(i+1)+'.'+(j+1)+' '+E(b.title)+'</h4><table>'+b.rows.map(row=>'<tr><th>'+E(row[0])+'</th><td>'+E(row[1]||'Belum diisi')+'</td></tr>').join('')+'</table>').join('')+'</section>').join('')+'</div>';
+}
+function portfolioBuilder(){
+ const d=portCfg(),all=portPrograms(),chosen=portSelected(),ver=nextVersion('portfolio','all',year());
+ return '<div class="psbank-card psbank-portfolio-doc"><div class="psbank-sectionhead"><div><h3>Buat Dokumen Portofolio · '+year()+'</h3><p>Kompilasi substansi beberapa program, dikelompokkan menurut program sumbernya.</p></div><span class="psbank-count">'+chosen.length+' dari '+all.length+' program</span></div>'+
+ '<div class="psbank-docbuilder"><div class="psbank-docsettings"><div class="psbank-doccheckhead"><b>Pilih Program</b><button class="btn" type="button" data-port-all>'+(chosen.length===all.length?'Kosongkan':'Pilih Semua')+'</button></div>'+
+ '<div class="psbank-portfolio-checks">'+(all.length?all.map(p=>'<label><input type="checkbox" data-port-program="'+E(p.id)+'" '+(d.selected.includes(String(p.id))?'checked':'')+'><span><b>'+E(p.nama)+'</b><small>'+E(p.kode||p.akr)+'</small></span></label>').join(''):'<p>Belum ada program pada tahun ini.</p>')+'</div>'+
+ '<div class="psbank-doccheckhead"><b>Substansi</b><span>'+d.sections.length+'/'+STEPS.length+' dipilih</span></div><div class="psbank-docchecks">'+STEPS.map((x,i)=>'<label><input type="checkbox" data-port-section="'+x[0]+'" '+(d.sections.includes(x[0])?'checked':'')+'>'+(i+1)+'. '+x[1]+'</label>').join('')+'</div>'+
+ '<div class="psbank-docformat"><strong>Format Ekspor</strong><div class="psbank-formatbuttons">'+[['pdf','PDF'],['word','DOCX'],['pptx','PPTX']].map(x=>'<button type="button" class="btn '+(d.format===x[0]?'on':'')+'" data-port-format="'+x[0]+'" aria-pressed="'+(d.format===x[0])+'">'+x[1]+'</button>').join('')+'</div></div>'+
+ versionPanel('portfolio','all',year())+'</div>'+
+ '<div class="psbank-docpreview"><div class="psbank-docpreview-head"><div><b>Pratinjau '+(d.format==='pptx'?'PowerPoint':d.format==='pdf'?'PDF':'Word')+'</b><small>Portofolio Transformasi '+year()+'</small></div><span>v'+ver+' · '+chosen.length+' program</span></div>'+
+ '<div class="psbank-docscroll">'+portfolioPreview()+'</div><div class="psbank-portfolio-download"><button type="button" class="btn pri" data-port-export '+(!chosen.length||!d.sections.length?'disabled':'')+'>↓ Unduh</button></div></div></div></div>';
+}
+async function portfolioExport(){
+ const d=portCfg(),data=portData();
+ if(!data.length||!d.sections.length){toast('Pilih program dan substansi dahulu.');return}
+ const version=nextVersion('portfolio','all',year()),file='Dokumen_Portofolio_Transformasi_'+year()+'_v'+version;
+ try{
+  if(d.format==='word'){
+   await load('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',()=>!!window.JSZip);
+   const zip=new window.JSZip();let body=para('DOKUMEN PORTOFOLIO PROGRAM TRANSFORMASI',true)+para('Tahun '+year()+' · Versi '+version+' · Draft belum ditandatangani');
+   if(d.toc)body+=para('DAFTAR PROGRAM',true)+data.map((o,i)=>para((i+1)+'. '+o.p.nama+' · '+(o.p.kode||o.p.akr))).join('');
+   data.forEach((o,i)=>{body+=para((i+1)+'. '+o.p.nama+' ('+(o.p.kode||o.p.akr)+')',true);o.blocks.forEach(b=>{body+=para(b.title,true)+table(b.rows)})});
+   const xml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+body+'<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1080" w:right="1080" w:bottom="1080" w:left="1080"/></w:sectPr></w:body></w:document>';
+   zip.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
+   zip.file('_rels/.rels','<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
+   zip.file('word/document.xml',xml);
+   const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+   a.href=url;a.download=file+'.docx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);
+  }else if(d.format==='pdf'){
+   await load('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',()=>!!window.jspdf?.jsPDF);
+   const pdf=new window.jspdf.jsPDF({unit:'mm',format:'a4'});let y=22;
+   const line=(t,bold=false)=>{pdf.setFont('helvetica',bold?'bold':'normal');pdf.setFontSize(bold?12:10);const lines=pdf.splitTextToSize(String(t||'—'),170);if(y+lines.length*5>280){pdf.addPage();y=20}pdf.text(lines,20,y);y+=lines.length*5+3};
+   line('DOKUMEN PORTOFOLIO TRANSFORMASI · '+year(),true);line('Versi '+version+' · Draft, belum TTE');
+   data.forEach((o,i)=>{if(y>210){pdf.addPage();y=20}line((i+1)+'. '+o.p.nama+' ('+(o.p.kode||o.p.akr)+')',true);o.blocks.forEach(b=>{line(b.title,true);b.rows.forEach(x=>{line(x[0],true);line(x[1])})})});
+   pdf.save(file+'.pdf');
+  }else{
+   await load('https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js',()=>!!window.PptxGenJS);
+   const ppt=new window.PptxGenJS();ppt.layout='LAYOUT_WIDE';ppt.author='PMO Kementerian Keuangan';
+   const cover=ppt.addSlide();cover.background={color:'0B2447'};
+   cover.addText('DOKUMEN PORTOFOLIO PROGRAM TRANSFORMASI',{x:.7,y:1.7,w:12,h:.8,fontFace:'Aptos',fontSize:29,bold:true,color:'FFFFFF'});
+   cover.addText('Tahun '+year()+' · Versi '+version,{x:.7,y:2.8,w:12,h:.5,fontFace:'Aptos',fontSize:18,color:'FDB913'});
+   cover.addText(data.length+' Program Terpilih',{x:.7,y:3.6,w:12,h:.4,fontSize:14,color:'FFFFFF'});
+   portSlides().forEach(({program,title,rows},i)=>{const sl=ppt.addSlide();sl.background={color:'FFFFFF'};
+    sl.addText(program.nama+' · '+title,{x:.5,y:.35,w:12,h:.6,fontSize:20,bold:true,color:'153A65'});
+    sl.addText((program.kode||program.akr)+' · '+year()+' · v'+version,{x:.5,y:1,w:12,h:.35,fontSize:11,color:'667E99'});
+    const h=5.7/Math.max(1,rows.length);rows.forEach((row,j)=>{const yy=1.45+j*h;sl.addText(row[0],{x:.6,y:yy,w:3,h:h-.1,fontSize:12,bold:true,color:'164B77'});
+     sl.addText(String(row[1]||'Belum diisi'),{x:3.8,y:yy,w:8.8,h:h-.1,fontSize:10,color:'30435E',breakLine:false})});
+   });
+   await ppt.writeFile({fileName:file+'.pptx'});
+  }
+  registerExport('portfolio','all',year(),d.format,file+'.'+(d.format==='word'?'docx':d.format),{sections:d.sections.slice(),programs:data.map(o=>o.p.id)});
+  toast('Dokumen portofolio v'+version+' berhasil diunduh. Versi berikutnya ditetapkan setelah unggah bukti TTE.');
+ }catch(e){toast('Ekspor portofolio gagal: '+(e.message||e))}
+}
+function portfolioClick(ev){
+ const d=portCfg();
+ const fmt=ev.target.closest('[data-port-format]');
+ if(fmt){d.format=fmt.dataset.portFormat;d.slide=0;save();render();return true}
+ const slide=ev.target.closest('[data-port-slide]');
+ if(slide){d.slide=Math.max(0,Math.min(portSlides().length-1,(+d.slide||0)+ +slide.dataset.portSlide));save();render();return true}
+ if(ev.target.closest('[data-port-all]')){d.selected=d.selected.length===portPrograms().length?[]:portPrograms().map(p=>String(p.id));save();render();return true}
+ if(ev.target.closest('[data-port-export]')){portfolioExport();return true}
+ return false;
+}
+function portfolioChange(ev){
+ const q=ev.target,d=portCfg();
+ if(q.dataset.portProgram!==undefined){const id=q.dataset.portProgram;d.selected=q.checked?[...new Set([...d.selected,id])]:d.selected.filter(x=>x!==id);d.slide=0;save();render();return true}
+ if(q.dataset.portSection!==undefined){const k=q.dataset.portSection;d.sections=q.checked?[...new Set([...d.sections,k])]:d.sections.filter(x=>x!==k);d.slide=0;save();render();return true}
+ return false;
+}
+
 async function processSigned(ev){
  const btn=ev.target.closest('[data-doc-signed-kind]');if(!btn)return false;
  const wrap=btn.closest('.psbank-version-panel'),file=wrap?.querySelector('[data-doc-signed-file]')?.files?.[0],
@@ -242,5 +348,5 @@ function change(ev,inline=false){
  if(q.dataset.docFormat!==undefined){d.format=q.value;d.slide=0;save();if(!inline)render();return true}
  return false;
 }
-window.MT_PS_DOC={fields,sections,slidePages,paper,builder,exportFile,click,change,documentPreview,versionPanel,nextVersion,registerExport,confirmSigned,history,processSigned,version:'20261108-program-document-builder-v3'};
+window.MT_PS_DOC={fields,sections,slidePages,paper,builder,exportFile,click,change,documentPreview,versionPanel,nextVersion,registerExport,confirmSigned,history,processSigned,portfolioBuilder,portfolioClick,portfolioChange,portfolioExport,version:'20261108-program-document-builder-v3'};
 })();
