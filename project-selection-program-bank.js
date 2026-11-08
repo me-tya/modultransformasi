@@ -487,6 +487,6 @@ function mount(){
 })();
 
 A.page=page;A.mount=mount;A.version='20261108-project-selection-ui-v6';
-window.MT_PS_BANK_CORE={records,bank,detail,usulan,addOne,bulk,openCarry,codeFor,showPreview,openDetailTab:tab=>{const p=current();if(p)showPreview(String(p.id)+':'+year(),tab)},current,openWorkspace,version:A.version};
+window.MT_PS_BANK_CORE={records,bank,detail,usulan,addOne,bulk,openCarry,codeFor,showPreview,editablePaper:editForm,openDetailTab:tab=>{const p=current();if(p)showPreview(String(p.id)+':'+year(),tab)},current,openWorkspace,version:A.version};
 if(typeof VIEW!=='undefined'&&VIEW==='project-selection'&&ME)render();
 })();
