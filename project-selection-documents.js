@@ -78,6 +78,27 @@ async function confirmSigned(kind,id,y,file,attested){
   fileStorage:'IndexedDB lokal perangkat ini'});
  save();return version;
 }
+
+/* External program documents (DOCX/PDF/PPTX) are attachments in the same
+   version ledger; unlike an electronically signed PDF they never advance vN. */
+async function uploadProgramAttachment(p,y,file,description=''){
+ if(!p||!p.id)throw new Error('Program tujuan tidak ditemukan.');
+ if(!file)throw new Error('Pilih dokumen yang akan diunggah.');
+ const ext=(String(file.name||'').match(/\.([^.]+)$/)||[])[1]?.toLowerCase()||'';
+ if(!['pdf','docx','pptx'].includes(ext))throw new Error('Format dokumen hanya PDF, DOCX, atau PPTX.');
+ if(file.size>25*1024*1024)throw new Error('Maksimum ukuran dokumen 25 MB.');
+ const version=nextVersion('program',p.id,y);
+ const fileId='attachment-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,9);
+ await localProof(fileId,file);
+ const key=docKey('program',p.id,y);
+ reg()[key]=reg()[key]||[];
+ reg()[key].push({id:fileId,kind:'program',version,status:'uploaded',format:ext,
+  fileName:file.name,fileSize:file.size,description:String(description||'').trim(),
+  createdAt:new Date().toISOString(),by:ME?.email||'',
+  fileStorage:'IndexedDB lokal perangkat ini'});
+ save();return {id:fileId,version};
+}
+
 function versionPanel(kind,id,y){
  const rows=history(kind,id,y).slice().reverse(),ver=nextVersion(kind,id,y);
  return '<details class="psbank-version-panel"><summary>Riwayat Dokumen & Versi <b>Draft v'+ver+'</b></summary>'+
@@ -86,7 +107,7 @@ function versionPanel(kind,id,y){
  '<label class="psbank-version-attest"><input type="checkbox" data-doc-signed-attest> Saya menyatakan PDF sudah ditandatangani secara elektronik.</label>'+
  '<button class="btn pri" type="button" data-doc-signed-kind="'+E(kind)+'" data-doc-signed-id="'+E(id)+'" data-doc-signed-year="'+y+'">Simpan Bukti & Tetapkan v'+ver+'</button></div>'+
  '<p class="psbank-version-disclaimer">Prototype: berkas bukti disimpan di browser/perangkat ini; metadata versinya tercatat oleh aplikasi. Validasi TTE BSrE dan penyimpanan aman lintas pengguna memerlukan integrasi backend.</p>'+
- '<div class="psbank-version-rows">'+(rows.length?rows.map(x=>'<div><b>v'+x.version+' · '+E(x.status==='signed'?'Bukti TTE diunggah (belum diverifikasi)':'Dokumen digenerasi')+'</b><span>'+E(x.format||'PDF')+' · '+E(x.fileName||'')+' · '+E(x.createdAt?.slice(0,16).replace('T',' ')||'')+'</span>'+(x.status==='signed'?'<button class="btn" type="button" data-doc-proof-open="'+E(x.id)+'" data-doc-proof-name="'+E(x.fileName)+'">↓ Bukti TTE</button>':'')+'</div>').join(''):'<small>Belum ada riwayat unduhan.</small>')+'</div></details>';
+ '<div class="psbank-version-rows">'+(rows.length?rows.map(x=>'<div><b>v'+x.version+' · '+E(x.status==='signed'?'Bukti TTE diunggah (belum diverifikasi)':x.status==='uploaded'?'Dokumen Program diunggah':'Dokumen digenerasi')+'</b><span>'+E(x.format||'PDF')+' · '+E(x.fileName||'')+' · '+E(x.createdAt?.slice(0,16).replace('T',' ')||'')+'</span>'+(['signed','uploaded'].includes(x.status)?'<button class="btn" type="button" data-doc-proof-open="'+E(x.id)+'" data-doc-proof-name="'+E(x.fileName)+'">↓ '+(x.status==='signed'?'Bukti TTE':'Dokumen')+'</button>':'')+'</div>').join(''):'<small>Belum ada riwayat unduhan.</small>')+'</div></details>';
 }
 
 const join=x=>Array.isArray(x)?x.map(a=>typeof a==='string'?a:(a.t||a.m||a.nama||'')).filter(Boolean).join(' • '):String(x||'');
@@ -634,5 +655,5 @@ function change(ev,inline=false){
  if(q.dataset.docFormat!==undefined){d.format=q.value;d.slide=0;save();if(!inline)render();return true}
  return false;
 }
-window.MT_PS_DOC={fields,sections,slidePages,paper,builder,exportFile,click,change,documentPreview,programReportModel,tteControls,versionPanel,nextVersion,registerExport,confirmSigned,history,processSigned,openSignedProof,portfolioModel,portSlides,splitPortText,portfolioBuilder,portfolioClick,portfolioChange,portfolioExport,version:'20261108-program-document-builder-v3'};
+window.MT_PS_DOC={fields,sections,slidePages,paper,builder,exportFile,click,change,documentPreview,programReportModel,tteControls,versionPanel,nextVersion,registerExport,confirmSigned,uploadProgramAttachment,history,processSigned,openSignedProof,portfolioModel,portSlides,splitPortText,portfolioBuilder,portfolioClick,portfolioChange,portfolioExport,version:'20261108-program-document-builder-v3'};
 })();
