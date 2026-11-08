@@ -670,7 +670,7 @@ test('TTE settings exist in all three selection document generators and program 
  assert.match(html,/Atur TTE/);
  assert.match(html,/data-port-tte="name"/);
  assert.match(html,/data-port-include-tte/);
- assert.match(source['project-selection-documents.js'],/mtRptDocx\(programReportModel\(p\)\)/);
+ assert.match(source['project-selection-documents.js'],/mtRptDocx\(model\)/);
  assert.match(source['project-selection-documents.js'],/mtRptHtml\(programReportModel\(p\)\)/);
  assert.match(source['project-selection-documents.js'],/exportFormalPdf\(programReportModel\(p\)/);
  assert.match(readFileSync('charter-planning-report.js','utf8'),/Atur TTE/);
@@ -705,11 +705,11 @@ test('Riwayat Program and Daftar Program have a separate UIC column without inli
  m.S.ui.psBank={tab:'bank'};
  const history=m.bank.bank(),detail=m.bank.detail();
  assert.match(history,/<h3>Riwayat Program<\/h3>/);
- assert.match(history,/<th>Nama Program<\/th><th>UIC<\/th><th>Kode Program<\/th>/);
- assert.match(history,/<td><b>Integrated Core System APBN<\/b><\/td><td>BaTii<\/td>/);
+ assert.match(history,/<th>Kode Program<\/th><th>Nama Program<\/th><th>UIC<\/th>/);
+ assert.match(history,/<td><b>[^<]+<\/b><\/td><td><b>Integrated Core System APBN<\/b><\/td><td>BaTii<\/td>/);
  assert.match(detail,/<h3>Daftar Program · 2027<\/h3>/);
- assert.match(detail,/<th>Nama Program<\/th><th>UIC<\/th><th>Kode Program<\/th>/);
- assert.match(detail,/<td><b>Digitalisasi Core Non APBN<\/b><\/td><td>BaTii<\/td>/);
+ assert.match(detail,/<th>Kode Program<\/th><th>Nama Program<\/th><th>UIC<\/th>/);
+ assert.match(detail,/<td><b>[^<]+<\/b><\/td><td><b>Digitalisasi Core Non APBN<\/b><\/td><td>BaTii<\/td>/);
  assert.doesNotMatch(detail,/psbank-phase|Draf usulan|Referensi historis/);
  assert.match(detail,/psbank-baru/);
 });
@@ -753,7 +753,7 @@ test('Riwayat Program has exactly eight proportional columns and readable indepe
  const histCols=html.match(/psbank-history-table"><colgroup>(.*?)<\/colgroup>/);
  assert.ok(histCols,'Riwayat Program must own an explicit colgroup');
  assert.equal((histCols[1].match(/<col>/g)||[]).length,8);
- assert.match(html,/<th>Nama Program<\/th><th>UIC<\/th><th>Kode Program<\/th><th>Status<\/th><th>Jumlah Modul<\/th><th>Aksi<\/th>/);
+ assert.match(html,/<th>Kode Program<\/th><th>Nama Program<\/th><th>UIC<\/th><th>Status<\/th><th>Jumlah Modul<\/th><th>Aksi<\/th>/);
  const histWidths=[...css.matchAll(/#app \.psbank-history-table col:nth-child\((\d+)\)\{width:(\d+)%\}/g)];
  assert.equal(histWidths.length,8);
  assert.equal(histWidths.reduce((n,x)=>n+Number(x[2]),0),100);
@@ -765,7 +765,7 @@ test('Daftar Program has nine proportional columns including independent UIC and
  const cols=html.match(/psbank-detail-table"><colgroup>(.*?)<\/colgroup>/);
  assert.ok(cols);
  assert.equal((cols[1].match(/<col>/g)||[]).length,9);
- assert.match(html,/<th>Nama Program<\/th><th>UIC<\/th><th>Kode Program<\/th>/);
+ assert.match(html,/<th>Kode Program<\/th><th>Nama Program<\/th><th>UIC<\/th>/);
  const widths=[...css.matchAll(/#app \.psbank-detail-table col:nth-child\((\d+)\)\{width:(\d+)%\}/g)];
  assert.equal(widths.length,9);
  assert.equal(widths.reduce((n,x)=>n+Number(x[2]),0),100);
@@ -863,7 +863,7 @@ test('Program Word/PDF previews are hydrated from exactly the downloadable docum
  assert.match(word,/data-doc-actual="program"/);
  assert.match(word,/Pratinjau awal dokumen/);
  const src=source['project-selection-documents.js'];
- assert.match(src,/await mtRptDocx\(model\);if\(!alive\(\)\)return false/);
+ assert.match(src,/await assertOfficialWordTemplate\(await mtRptDocx\(model\)\);if\(!alive\(\)\)return false/);
  assert.match(src,/await exportFormalPdf\(model,'', \{preview:true\}\)/);
  assert.match(src,/await window\.docx\.renderAsync\(blob,target,null/);
  assert.match(src,/async function exportFormalPdf\(model,file,\{preview=false\}=\{\}\)/);
