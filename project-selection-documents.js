@@ -4,9 +4,9 @@
 const B=window.MT_PROJECT_SELECTION,I=B?.internals;if(!B||!I)return;
 const E=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const X=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
-const STEPS=[['identity','Identitas'],['case','Business Case'],['benefits','Manfaat'],['stakeholders','Stakeholder'],['risks','Risiko'],['governance','Tata Kelola']];
+const STEPS=[['identity','Identitas'],['case','Business Case'],['benefits','Manfaat'],['stakeholders','Stakeholder'],['risks','Risiko'],['governance','Tata Kelola'],['charter','Charter Program']];
 const year=()=>+S.ui.psSelectedYear||+S.ui.tahun||2026;
-const cfg=()=>{S.ui.psBank=S.ui.psBank||{};const b=S.ui.psBank;b.doc=b.doc||{format:'word',sections:STEPS.map(x=>x[0]),cover:true,toc:true,sign:true,annex:true,slide:0};b.doc.sections=b.doc.sections||STEPS.map(x=>x[0]);return b.doc};
+const cfg=()=>{S.ui.psBank=S.ui.psBank||{};const b=S.ui.psBank;b.doc=b.doc||{format:'word',sections:STEPS.map(x=>x[0]),cover:true,toc:true,sign:true,annex:true,slide:0};b.doc.sections=[...new Set((Array.isArray(b.doc.sections)?b.doc.sections:STEPS.map(x=>x[0])).filter(k=>STEPS.some(s=>s[0]===k)))];return b.doc};
 const title=k=>STEPS.find(s=>s[0]===k)?.[1]||(k==='review'?'Reviu':k);
 
 /* Versi resmi terkunci hanya sesudah PDF hasil TTE diunggah sebagai bukti.
@@ -113,7 +113,8 @@ function versionPanel(kind,id,y){
 const join=x=>Array.isArray(x)?x.map(a=>typeof a==='string'?a:(a.t||a.m||a.nama||'')).filter(Boolean).join(' • '):String(x||'');
 const charter=(p,y)=>{const arr=(S.charters||[]).filter(c=>c.prog===p.akr&&c.st!=='Arsip');return arr.find(c=>+c.p1<=y&&+c.p2>=y)||arr.find(c=>+c.p1===y)||arr[0]||null};
 function fields(p,key,y){
- const c=charter(p,y),empty='Belum diisi';
+ const c=charter(p,y),pc=p.psProgramCharter||c,empty='Belum diisi';
+ if(key==='charter')return [['Judul Charter',pc?.judul||p.nama],['Tujuan Program',pc?.tujuan||p.psObjective||empty],['Latar Belakang',join(pc?.lb)||p.psBackground||empty],['Kondisi yang Diharapkan',join(pc?.tb)||empty],['Outcome',join(pc?.oc)||p.psOutcome||empty],['Keluaran',join(pc?.out)||empty],['Milestone',join(pc?.ms)||empty],['Manfaat',join(pc?.mf)||empty],['Risiko Utama',join(pc?.ris)||empty],['Faktor Keberhasilan',join(pc?.pk)||empty],['Penanggung Jawab',join(pc?.ow)||empty]];
  if(key==='identity')return [['Nama Program',p.nama],['Kode Program',p.kode||p.akr],['Tahun',y],['Jenis Program',p.jenis],['UIC Utama',p.uic],['UIC Pendukung',p.pend],['Sponsor',p.sponsor],['Tujuan Strategis',p.psObjective||c?.tujuan],['Latar Belakang',p.psBackground||join(c?.lb)],['Outcome',p.psOutcome||join(c?.oc)]];
  if(key==='case')return [['Keselarasan Strategis',p.psAlignment],['Business Case',p.psBusinessCase||join(c?.lb)],['Alternatif Solusi',p.psAlternatives],['Estimasi Biaya',p.psFinancialEstimate],['Kriteria Keberhasilan',p.psSuccessCriteria],['Strategi',p.psStrategy||c?.tb]];
  if(key==='governance')return [['Manajer Program',p.psManager],['Forum/Otoritas Keputusan',p.psDecisionAuthority],['Mekanisme Reviu',p.psGovernanceCadence],['Roadmap',p.psRoadmap||join(c?.ms)],['Kebutuhan Sumber Daya',p.psResourcePlan],['Dependensi',p.psDependencies],['Asumsi',p.psAssumptions],['Batasan',p.psConstraints]];
@@ -156,7 +157,7 @@ function paper(p,key,y){
  '<div class="psbank-paper-body">'+fields(p,key,y).map(([a,b])=>'<div class="psbank-paper-row"><b>'+E(a)+'</b><p>'+E(b||'Belum diisi').replace(/\n/g,'<span class="psbank-line"></span>')+'</p></div>').join('')+'</div>'+
  '<div class="psbank-paper-foot"><span>Pratinjau dokumen program</span><span>Tahun '+y+'</span></div></article>';
 }
-function annex(p){const c=charter(p,year());if(!c)return[];return [['Analisis As-is',join(c.asis?.pb)||join(c.lb)],['Analisis To-be',join(c.tobe?.pb)||join(c.tb)],['Perbandingan',join(c.cs)],['Charter Program',c.tujuan],['Kriteria Penyelesaian',join(c.kp)],['Manfaat',join(c.mf)||join(c.oc)],['Linimasa',join(c.rk)||join(c.ms)]]}
+function annex(p){const c=p.psProgramCharter||charter(p,year());if(!c)return[];return [['Analisis As-is',join(c.asis?.pb)||join(c.lb)],['Analisis To-be',join(c.tobe?.pb)||join(c.tb)],['Perbandingan',join(c.cs)],['Charter Program',c.tujuan],['Kriteria Penyelesaian',join(c.kp)],['Manfaat',join(c.mf)||join(c.oc)],['Linimasa',join(c.rk)||join(c.ms)]]}
 
 /* The same formal report engine as Project Management's Final Report drives
    program DOCX and print previews. A single TTE form is reused in every builder. */
@@ -364,7 +365,7 @@ function documentPreview(p){
 function builder(p){
  const d=cfg(),list=STEPS,fmt=d.format||'word',ver=nextVersion('program',p.id||p.akr,year());
  return '<div class="psbank-docbuilder"><div class="psbank-docsettings"><div class="psbank-docsetting-head"><h3>Dokumen Perencanaan Program · Pratinjau & Ekspor</h3><p>Substansi dokumen dan riwayat pengesahan versi '+ver+'.</p></div>'+
- '<div class="psbank-doccheckhead"><b>Substansi dokumen</b><span>'+d.sections.length+' / '+STEPS.length+' dipilih</span></div>'+
+ '<div class="psbank-doccheckhead"><b>Substansi dokumen</b><span>'+STEPS.filter(x=>d.sections.includes(x[0])).length+' / '+STEPS.length+' dipilih</span></div>'+
  '<div class="psbank-docchecks">'+list.map((x,i)=>'<label><input type="checkbox" data-doc-section="'+x[0]+'" '+(d.sections.includes(x[0])?'checked':'')+'> '+(i+1)+'. '+E(x[1])+'</label>').join('')+'</div>'+
  '<div class="psbank-docextras"><label><input type="checkbox" data-doc-extra="cover" '+(d.cover?'checked':'')+'> Sampul & identitas</label>'+
  '<label><input type="checkbox" data-doc-extra="toc" '+(d.toc?'checked':'')+'> Daftar isi</label>'+
@@ -375,7 +376,7 @@ function builder(p){
  '<div class="psbank-docformat"><strong>Format Ekspor</strong><div class="psbank-formatbuttons" role="group" aria-label="Format Ekspor">'+
  [['pdf','PDF'],['word','DOCX'],['pptx','PPTX']].map(x=>'<button type="button" class="btn '+(fmt===x[0]?'on':'')+'" data-doc-format-btn="'+x[0]+'" aria-pressed="'+(fmt===x[0])+'">'+x[1]+'</button>').join('')+'</div></div>'+
  versionPanel('program',p.id||p.akr,year())+
- '</div><div class="psbank-docpreview"><div class="psbank-docpreview-head"><div><b>Pratinjau '+(fmt==='word'?'Word':fmt==='pdf'?'PDF':'PowerPoint')+'</b><small>'+E(p.nama)+'</small></div><span>v'+ver+' · '+d.sections.length+' substansi</span></div>'+
+ '</div><div class="psbank-docpreview"><div class="psbank-docpreview-head"><div><b>Pratinjau '+(fmt==='word'?'Word':fmt==='pdf'?'PDF':'PowerPoint')+'</b><small>'+E(p.nama)+'</small></div><span>v'+ver+' · '+sections(p).length+' substansi</span></div>'+
  '<div class="psbank-docscroll">'+documentPreview(p)+'</div></div></div>';
 }
 const basename=p=>('Perencanaan_Program_'+year()+'_'+String(p.kode||p.akr||'program')).replace(/[^a-zA-Z0-9_-]/g,'_');
@@ -857,5 +858,5 @@ function change(ev,inline=false){
 }
 // Laporan Akhir Proyek: pertahankan iframe HTML asli agar scroll per halaman bekerja.
 // installFinalReportPreview();
-window.MT_PS_DOC={readLocalProof,fields,sections,slidePages,programDeck,programSlideHtml,paper,builder,exportFile,click,change,documentPreview,programReportModel,tteControls,hydrateProgram,hydratePortfolio,showActualDocumentPreview,versionPanel,nextVersion,registerExport,confirmSigned,uploadProgramAttachment,history,processSigned,openSignedProof,portfolioModel,portSlides,splitPortText,portfolioBuilder,portfolioClick,portfolioChange,portfolioExport,version:'20261108-program-document-builder-v3'};
+window.MT_PS_DOC={readLocalProof,fields,sections,slidePages,programDeck,programSlideHtml,paper,builder,exportFile,click,change,documentPreview,programReportModel,tteControls,hydrateProgram,hydratePortfolio,showActualDocumentPreview,versionPanel,nextVersion,registerExport,confirmSigned,uploadProgramAttachment,history,processSigned,openSignedProof,portfolioModel,portSlides,splitPortText,portfolioBuilder,portfolioClick,portfolioChange,portfolioExport,version:'20261109-program-document-builder-v4'};
 })();
