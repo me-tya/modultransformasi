@@ -386,7 +386,11 @@ function mount(){
   });
   if(!trigger)return null;
   const icon=trigger.querySelector('.filter-ic,.filter-icon,.flt-ic,.ficon,.flt-icon,.fl-ico,.ico,svg,i');
-  if(icon){icon.setAttribute('data-mt-filter-icon','');return icon}
+  if(icon){
+   const target=icon.tagName?.toLowerCase()==='svg'&&icon.parentElement&&icon.parentElement!==trigger?icon.parentElement:icon;
+   target.setAttribute('data-mt-filter-icon','');
+   return target;
+  }
   const el=document.createElement('span');el.className='mt-filter-icon-fallback';el.setAttribute('data-mt-filter-icon','');
   el.innerHTML='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16l-6.5 7.8v5.2L10.5 20v-7.2z"/></svg>';
   trigger.insertBefore(el,trigger.firstChild);return el;
