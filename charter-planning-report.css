@@ -35,3 +35,22 @@
 .cp-report-modal .md{max-width:1180px}
 @media(max-width:1150px){.cp-report-panel{align-items:flex-start;flex-direction:column}.cp-report-actions{justify-content:flex-start;width:100%}.cp-sign-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.cp-report-panel{padding:15px}.cp-check-grid,.cp-sign-grid{grid-template-columns:1fr}.cp-opt-grid{gap:9px}.cp-report-actions .btn{flex:1;min-width:110px}}
+
+/* Same two-column authoring surface as Project Selection; no dialog jump. */
+#app .cp-report-inline{padding:12px;background:#fff}
+#app .cp-inline-top{display:flex;align-items:center;gap:12px;min-height:49px;justify-content:flex-end;padding:0 2px 10px}
+#app .cp-inline-top>span{min-width:0;flex:1;font-size:13px;color:#15395c}
+#app .cp-inline-top>span small{display:block;color:#7a8ca0;font-size:11px;margin-top:3px}
+#app .cp-inline-top label{display:flex;align-items:center;gap:9px;color:#345879;font:750 11.5px 'Inter',sans-serif}
+#app .cp-inline-top select{min-width:175px;height:36px;padding:7px 10px;border-radius:7px;border:1px solid #cbd8e8;color:#20486d;background:#fff;font:650 11.5px 'Inter',sans-serif}
+#app .cp-report-inline .cp-modal{display:grid;grid-template-columns:minmax(310px,.86fr) minmax(0,1.14fr);gap:12px;height:min(69vh,700px);min-height:510px;align-items:stretch}
+#app .cp-report-inline .cp-control-panel{overflow-y:auto;min-width:0;min-height:0;scrollbar-width:thin}
+#app .cp-report-inline .cp-frame-wrap{min-width:0;min-height:0;background:#e7edf5}
+#app .cp-report-inline #cp-report-frame{width:100%;height:100%;min-height:360px;flex:1}
+#app .cp-report-inline .cp-inline-slides{flex:1;overflow-y:auto;background:#e7edf5;padding:12px}
+#app .cp-report-inline .cp-inline-slides[hidden],#app .cp-report-inline #cp-report-frame[hidden]{display:none!important}
+#app .cp-inline-slidebox{width:100%;position:relative;overflow:hidden;background:#fff;box-shadow:0 2px 10px #0f2d4e23}
+#app .cp-inline-slidebox .dk-scale{width:1280px;height:720px;position:absolute;top:0;left:0;transform-origin:0 0}
+#app .cp-inline-slidecontrols{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:12px;font-size:11.5px;color:#385774}
+#app .cp-inline-slidecontrols button{font-size:11.5px}
+@media(max-width:900px){#app .cp-report-inline .cp-modal{grid-template-columns:1fr;height:auto}#app .cp-report-inline .cp-control-panel{max-height:450px}#app .cp-report-inline .cp-frame-wrap{height:610px}#app .cp-inline-top{flex-wrap:wrap}}
