@@ -38,40 +38,80 @@ function page(){
  const valid=allRows.filter(x=>rank(x.entry).score!=null);
  const rows=allRows.filter(x=>{
   if(f.prog&&x.p.akr!==f.prog)return false;
+  if(f.ue&&x.j.uic!==f.ue)return false;
+  if(f.km&&(rank(x.entry).score??-1)<80)return false;
   const r=rank(x.entry);
-  if(f.rank!=='all'&&(f.rank==='pending'?r.score!==null:r.priority!==f.rank))return false;
+  if(f.rank!=='all'&&(f.rank==='pending'?r.score!==null:(f.rank==='Usulan'||f.rank==='Berjalan'?((x.j.status||'Berjalan')!==f.rank):r.priority!==f.rank)))return false;
   return !f.q||(x.j.n+' '+x.p.nama+' '+x.j.uic+' '+(x.j.pic||'')).toLowerCase().includes(f.q.toLowerCase());
  }).sort((a,b)=>f.sort==='name'?a.j.n.localeCompare(b.j.n,'id'):f.sort==='golive'?String(a.entry.goLive||'9999').localeCompare(String(b.entry.goLive||'9999')):(rank(b.entry).score??-1)-(rank(a.entry).score??-1));
  const cnt={P1:0,P2:0,P3:0};valid.forEach(x=>cnt[rank(x.entry).priority]++);
  const first=rows.find(x=>rank(x.entry).score!=null),totalW=criteria.reduce((n,c)=>n+Number(weights()[c[0]]??c[2]),0);
  const ta=(label,value,cls)=>'<div class="prio-kpi '+(cls||'')+'"><b>'+value+'</b><small>'+label+'</small></div>';
- const tabs=[['projects','▤ Proyek',allRows.length],['criteria','⚖ Kriteria & Bobot',12],['monev','📈 Monev Indikator & Manfaat',null],['reference','📘 Referensi & Formula',null]];
- let h=vh('PS','dash','Project Selection','Penilaian dan pemeringkatan prioritas proyek transformasi menggunakan metode SMART.');
+ const tabs=[['projects','▤ Proyek',allRows.length],['criteria','⚖ Kriteria & Bobot',12],['monev','📈 Monev Indikator & Manfaat',allRows.filter(x=>x.entry.benefit).length],['reference','📘 Referensi & Formula',null]];
+ let h=''; // Priority owns its heading; the Modul Transformasi shell remains the only application shell.
  h+='<section class="psnv prio-page" aria-label="Project Selection: menu Priority">';
- h+='<div class="prio-hero"><div><h2>Prioritas Proyek Transformasi</h2><p>Pemeringkatan proyek dan inisiatif transformasi dengan metode SMART (Simple Multi-Attribute Rating Technique).</p></div><div class="prio-hero-actions">'+(edit?'<button type="button" class="prio-btn gold" id="psnv-add">+ Tambah Proyek</button>':'')+'<button type="button" class="prio-btn white" id="psnv-export">⇩ Excel (CSV)</button><button type="button" class="prio-btn white" id="psnv-report">▤ Laporan</button></div></div>';
- h+='<div class="prio-subtabs" role="tablist">'+tabs.map(([k,l,n])=>'<button type="button" role="tab" aria-selected="'+(f.tab===k)+'" data-psnv-tab="'+k+'" class="'+(f.tab===k?'active':'')+'">'+l+(n==null?'':' <em class="prio-tab-n">'+n+'</em>')+'</button>').join('')+'</div>';
+ h+='<div class="prio-hero"><div><h2>Prioritas Proyek CM</h2><p>Pemeringkatan proyek/inisiatif pendampingan Change Management dengan metode SMART (Simple Multi-Attribute Rating Technique).</p></div><div class="prio-hero-actions">'+(edit?'<button type="button" class="btn btn-gold btn-sm" id="psnv-add">+ Tambah Proyek</button>':'')+'<button type="button" class="btn btn-outline btn-sm prio-btn-light" id="psnv-export">⇩ Excel</button><button type="button" class="btn btn-outline btn-sm prio-btn-light" id="psnv-report">📄 Laporan</button></div></div>';
+ h+='<div class="cm-survey-subtabs prio-subtabs" role="tablist">'+tabs.map(([k,l,n])=>'<button type="button" role="tab" aria-selected="'+(f.tab===k)+'" data-psnv-tab="'+k+'" class="cm-survey-subtab '+(f.tab===k?'active':'')+'">'+l+(n==null?'':' <em class="prio-tab-n">'+n+'</em>')+'</button>').join('')+'</div>';
  if(f.tab==='projects'){
-   h+='<div class="prio-scopebar"><label>Lingkup Program <select id="psnv-prog"><option value="">Semua Program Transformasi</option>'+progVis().map(p=>'<option value="'+esc2(p.akr)+'"'+(f.prog===p.akr?' selected':'')+'>'+esc2(p.nama)+'</option>').join('')+'</select></label><span class="prio-sp"></span><span style="font-size:11px;color:#708398">Sumber: proyek WBS Modul Transformasi + usulan Project Selection</span></div>';
+   const units=[...new Set(allRows.map(x=>x.j.uic).filter(Boolean))].sort();
+   h+='<div class="prio-scope"><span class="prio-scope-l">Lingkup peringkat</span><button type="button" class="prio-scope-b '+(!f.prog&&!f.ue&&!f.km?'on':'')+'" data-psnv-scope="all">Semua</button>'+
+      '<label class="prio-scope-sel '+(f.ue?'on':'')+'"><span>UE I / UIC</span><select id="psnv-ue"><option value="">— pilih —</option>'+units.map(u=>'<option value="'+esc2(u)+'" '+(f.ue===u?'selected':'')+'>'+esc2(u)+' ('+allRows.filter(x=>x.j.uic===u).length+')</option>').join('')+'</select></label>'+
+      '<label class="prio-scope-sel '+(f.prog?'on':'')+'"><span>Berkelanjutan / Program</span><select id="psnv-prog"><option value="">— pilih —</option>'+progVis().map(p=>'<option value="'+esc2(p.akr)+'" '+(f.prog===p.akr?'selected':'')+'>'+esc2(p.nama)+'</option>').join('')+'</select></label>'+
+      '<button type="button" class="prio-scope-b km '+(f.km?'on':'')+'" data-psnv-scope="km">🏛 Tingkat Kementerian <em>'+valid.filter(x=>rank(x.entry).score>=80).length+'</em></button></div>';
    h+='<div class="prio-kpis">'+ta('Proyek diranking',allRows.length,'')+ta('Prioritas Tinggi · ≥70',cnt.P1,'k-high')+ta('Prioritas Sedang · 40–69',cnt.P2,'k-mid')+ta('Prioritas Rendah · <40',cnt.P3,'k-low')+ta('Prioritas teratas',first?esc2(first.j.n):'—','k-top')+'</div>';
    h+='<div class="prio-toolbar"><input id="psnv-search" type="search" class="prio-search" placeholder="Cari proyek, unit, PIC…" value="'+esc2(f.q)+'" aria-label="Cari proyek">'+
-       '<div class="prio-chips">'+[['all','Semua'],['P1','P1 Tinggi'],['P2','P2 Sedang'],['P3','P3 Rendah'],['pending','Belum dinilai']].map(([k,l])=>'<button type="button" class="prio-chip '+(f.rank===k?'on':'')+'" data-psnv-filter="'+k+'">'+l+'</button>').join('')+'</div>'+
+       '<div class="prio-chips">'+[['all','Semua'],['Usulan','Usulan'],['Berjalan','Berjalan'],['P1','P1 Tinggi'],['P2','P2 Sedang'],['P3','P3 Rendah'],['pending','Belum dinilai']].map(([k,l])=>'<button type="button" class="prio-chip '+(f.rank===k?'on':'')+'" data-psnv-filter="'+k+'">'+l+'</button>').join('')+'</div>'+
        '<span class="prio-sp"></span><div class="prio-seg">'+[['score','Skor ↓'],['golive','Go-live'],['name','Nama']].map(([k,l])=>'<button type="button" data-psnv-sort="'+k+'" class="'+(f.sort===k?'on':'')+'">'+l+'</button>').join('')+'</div>'+
        '<div class="prio-seg"><button data-psnv-view="list" class="'+(f.view==='list'?'on':'')+'">☰ Daftar</button><button data-psnv-view="quad" class="'+(f.view==='quad'?'on':'')+'">◫ Kuadran</button></div><button type="button" class="prio-btn" id="psnv-reset">Reset</button></div>';
    if(f.view==='quad'){
-     const cells=[['Tinggi / Mendesak',true,true],['Tinggi / Tidak Mendesak',true,false],['Rendah / Mendesak',false,true],['Rendah / Tidak Mendesak',false,false]];
-     h+='<div class="prio-note">Kuadran indikatif berdasarkan kriteria C8 (nilai manfaat) dan C4 (urgensi waktu), bukan pengganti skor SMART.</div><div class="prio-quad">'+cells.map(([l,impact,urgent])=>{
-       const group=rows.filter(x=>(Number((x.entry.scores||{}).C8)>=3)===impact&&(Number((x.entry.scores||{}).C4)>=3)===urgent);
-       return '<div class="prio-quad-cell"><h4>'+l+' · '+group.length+'</h4>'+group.map(x=>'<p><button class="prio-btn" type="button" data-psnv-open="'+esc2(x.id)+'">'+esc2(x.j.n)+'</button> '+(rank(x.entry).score??'—')+'</p>').join('')+'</div>';
-     }).join('')+'</div>';
+     const W=920,H=440,pl=56,pr=24,pt=24,pb=48,xmax=50,x=v=>pl+Math.min(xmax,Math.max(0,v))/xmax*(W-pl-pr),y=v=>pt+(1-Math.max(0,Math.min(100,v))/100)*(H-pt-pb);
+     const xm=15,ym=70;
+     const box=(x0,y0,x1,y1,fill,t,sub)=>'<rect x="'+x(x0)+'" y="'+y(y1)+'" width="'+(x(x1)-x(x0))+'" height="'+(y(y0)-y(y1))+'" fill="'+fill+'"/><text x="'+(x(x0)+10)+'" y="'+(y(y1)+18)+'" class="qt">'+t+'</text><text x="'+(x(x0)+10)+'" y="'+(y(y1)+35)+'" class="qs">'+sub+'</text>';
+     h+='<div class="prio-quad"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Kuadran prioritas berdasarkan skor dan beban pendampingan">'+
+       box(0,ym,xm,100,'#E9F6EF','Prioritas cepat','Skor tinggi · beban ringan')+
+       box(xm,ym,xmax,100,'#FFF6E3','Fokus utama','Skor tinggi · alokasikan kapasitas')+
+       box(0,0,xm,ym,'#F4F6FB','Dukungan ringan','Skor rendah · beban ringan')+
+       box(xm,0,xmax,ym,'#FDEEEC','Tinjau ulang','Skor rendah · beban berat')+
+       [0,25,50,75,100].map(v=>'<line x1="'+pl+'" x2="'+(W-pr)+'" y1="'+y(v)+'" y2="'+y(v)+'" class="gl"/><text x="'+(pl-8)+'" y="'+(y(v)+4)+'" text-anchor="end" class="ax">'+v+'</text>').join('')+
+       [0,10,20,30,40,50].map(v=>'<text x="'+x(v)+'" y="'+(H-pb+18)+'" text-anchor="middle" class="ax">'+v+'</text>').join('')+
+       '<text x="'+(W/2)+'" y="'+(H-8)+'" text-anchor="middle" class="ax">Estimasi beban pendampingan · orang-hari/bulan (C7)</text>'+
+       '<text transform="translate(16 '+(H/2)+') rotate(-90)" class="ax" text-anchor="middle">Skor SMART</text>'+
+       rows.filter(o=>rank(o.entry).score!=null).map(o=>{
+         const sc=rank(o.entry).score,effort=Number((o.entry.scores||{}).C7)||3,loads=[2,7,15,30,45],lx=loads[effort-1]||15;
+         const fill=sc>=70?'#C0392B':sc>=40?'#C8A84B':'#5B8DD6';
+         return '<g data-psnv-open="'+esc2(o.id)+'" style="cursor:pointer" tabindex="0" role="button" aria-label="Rincian '+esc2(o.j.n)+'"><title>'+esc2(o.j.n)+' · skor '+sc+'</title><circle cx="'+x(lx)+'" cy="'+y(sc)+'" r="8" fill="'+fill+'" stroke="white" stroke-width="2"/></g>';
+       }).join('')+'</svg></div>';
    } else {
      h+='<section class="prio-list"><div class="prio-list-head"><h3>Peringkat prioritas</h3><span>Batang C1–C12 = utility per kriteria · '+rows.length+' proyek ditampilkan</span></div>';
      h+=rows.map((x,i)=>{
-      const r=rank(x.entry),ss=x.entry.scores||{},cat=r.priority==='P1'?'cat-high':r.priority==='P2'?'cat-mid':r.priority==='P3'?'cat-low':'';
-      const bars=criteria.map(c=>{const n=Number(ss[c[0]])||0,u=n?(c[3]==='Biaya'?5-n:n-1)/4*100:0;return '<span class="prio-utility" title="'+esc2(c[1])+'"><i style="--pct:'+u+'%"></i><b>'+c[0]+'</b></span>'}).join('');
-      return '<article class="prio-row '+cat+'"><div class="prio-rank"><b>'+(i+1)+'</b><small>RANK</small></div>'+
-      '<div class="prio-title"><h4>'+esc2(x.j.n)+'</h4><div class="prio-meta"><span><b>Program</b> '+esc2(x.p.nama)+'</span><span><b>UIC</b> '+esc2(x.j.uic)+'</span><span><b>Progres</b> '+x.j.pg+'%</span>'+ (x.entry.goLive?'<span><b>Go-live</b> '+esc2(x.entry.goLive)+'</span>':'')+'</div><div class="prio-utils">'+bars+'</div></div>'+
-      '<div class="prio-score"><b>'+(r.score==null?'—':r.score)+'</b><small>'+(r.score==null?r.completed+'/12 terisi':'Skor / 100')+'</small><span class="prio-tag '+r.priority.toLowerCase()+'">'+(r.score==null?'Belum dinilai':r.priority)+'</span></div>'+
-      '<div class="prio-actions"><button type="button" class="prio-btn" data-psnv-open="'+esc2(x.id)+'">'+(edit?'✎ Nilai / Rincian':'Rincian')+'</button></div></article>';
+       const r=rank(x.entry),ss=x.entry.scores||{},cat=r.priority==='P1'?'high':r.priority==='P2'?'mid':'low',open=(f.open||[]).includes(x.id);
+       const bars=criteria.map(c=>{
+         const v=Number(ss[c[0]])||0,u=v?(c[3]==='Biaya'?5-v:v-1)/4:0;
+         return '<span class="prio-u" title="'+esc2(c[0]+' '+c[1]+': '+(v||'belum dinilai')+'; utility '+u.toFixed(2))+'"><span class="prio-ub"><i style="height:'+Math.max(4,Math.round(u*100))+'%"></i></span><em>'+c[0]+'</em></span>';
+       }).join('');
+       const catText=r.priority==='P1'?'Tinggi':r.priority==='P2'?'Sedang':r.priority==='P3'?'Rendah':'Belum dinilai';
+       const details=criteria.map(([k,l,w0,kind])=>{
+         const v=Number(ss[k])||0,u=v?(kind==='Biaya'?5-v:v-1)/4:0,w=Number(weights()[k]??w0);
+         const wn=totalW?w/totalW*100:0;
+         return '<tr><td><b>'+k+'</b> '+l+'</td><td>'+kind+'</td><td>'+(v||'—')+'</td><td>'+u.toFixed(3)+'</td><td>'+wn.toFixed(1)+'%</td><td>'+(u*wn).toFixed(2)+'</td></tr>';
+       }).join('');
+       const status=x.j.status||'Berjalan',pname=x.p.nama||'—';
+       return '<article class="prio-row cat-'+cat+(open?' open':'')+'" data-psnv-id="'+esc2(x.id)+'">'+
+       '<div class="prio-rank"><b>'+(i+1)+'</b><small>'+r.priority+'</small></div>'+
+       '<div class="prio-main"><div class="prio-title"><h4>'+esc2(x.j.n)+'</h4></div>'+
+       '<div class="prio-meta"><span class="prio-status st-'+esc2(status.toLowerCase())+'">'+esc2(status)+'</span><span class="prio-ue">'+esc2(x.j.uic||'—')+'</span><span class="prio-prog">'+esc2(pname)+'</span>'+
+       '<span>Progres WBS: <b>'+esc2(x.j.pg)+'%</b></span>'+
+       (x.entry.goLive?'<span>Go-live: <b>'+esc2(x.entry.goLive)+'</b></span>':'')+
+       (x.j.pic?'<span>PIC: '+esc2(x.j.pic)+'</span>':'')+
+       (r.completed<12?'<span class="prio-warn" title="Kriteria belum lengkap">⚠ Data belum lengkap ('+r.completed+'/12)</span>':'')+'</div>'+
+       '<div class="prio-utils" aria-label="Utility setiap kriteria">'+bars+'</div></div>'+
+       '<div class="prio-score"><b>'+(r.score==null?'—':r.score.toFixed(1))+'</b><div class="prio-bar"><i style="width:'+(r.score??0)+'%"></i></div><span class="prio-cat">Prioritas '+catText+'</span></div>'+
+       '<div class="prio-actions"><button type="button" class="btn btn-outline btn-sm" data-psnv-detail="'+esc2(x.id)+'">'+(open?'Tutup':'Rincian')+'</button>'+
+       (edit?'<button type="button" class="btn btn-ghost btn-sm" data-psnv-open="'+esc2(x.id)+'" title="Edit / Nilai Proyek">✎</button>':'')+
+       (edit&&x.extra?'<button type="button" class="btn btn-ghost btn-sm prio-del" data-psnv-delete="'+esc2(x.id)+'" title="Hapus usulan">🗑</button>':'')+'</div>'+
+       (open?'<div class="prio-detail"><div class="prio-prog-detail"><span><b>Program:</b> '+esc2(pname)+'</span><span><b>UIC:</b> '+esc2(x.j.uic||'—')+'</span><span><b>Status:</b> '+esc2(status)+'</span><span><b>Skor:</b> '+(r.score??'—')+'</span></div>'+
+       '<table><thead><tr><th>Kriteria</th><th>Jenis</th><th>Nilai (1–5)</th><th>Utility</th><th>Bobot</th><th>Kontribusi</th></tr></thead><tbody>'+details+'</tbody><tfoot><tr><td colspan="5"><b>Skor SMART = Σ bobot × utility</b></td><td><b>'+(r.score??'—')+'</b></td></tr></tfoot></table>'+
+       (x.entry.notes?'<p class="prio-note">'+esc2(x.entry.notes)+'</p>':'')+'</div>':'')+'</article>';
      }).join('');
      if(!rows.length)h+='<div class="prio-empty">Tidak ada proyek sesuai filter. Ubah periode/tahun atau reset filter.</div>';
      h+='</section>';
@@ -95,12 +135,15 @@ function mount(){
  const root=document.querySelector('#view .psnv');if(!root)return;
  root.addEventListener('click',evt=>{
   const b=evt.target.closest('button');if(!b)return;
-  if(b.dataset.psnvTab){UI().tab=b.dataset.psnvTab;save();render()}
+  if(b.dataset.psnvDetail){const id=b.dataset.psnvDetail;UI().open=UI().open||[];UI().open=UI().open.includes(id)?UI().open.filter(v=>v!==id):UI().open.concat(id);save();render()}
+  else if(b.dataset.psnvDelete){deleteProject(b.dataset.psnvDelete)}
+  else if(b.dataset.psnvScope){if(b.dataset.psnvScope==='all'){UI().prog='';UI().ue='';UI().km=false}else{UI().km=true;UI().prog='';UI().ue=''}save();render()}
+  else if(b.dataset.psnvTab){UI().tab=b.dataset.psnvTab;save();render()}
   else if(b.dataset.psnvFilter){UI().rank=b.dataset.psnvFilter;save();render()}
   else if(b.dataset.psnvSort){UI().sort=b.dataset.psnvSort;save();render()}
   else if(b.dataset.psnvView){UI().view=b.dataset.psnvView;save();render()}
   else if(b.dataset.psnvOpen)edit(b.dataset.psnvOpen);
-  else if(b.id==='psnv-reset'){const t=UI().tab;S.ui.psNative={q:'',prog:'',rank:'all',tab:t,sort:'score',view:'list'};save();render()}
+  else if(b.id==='psnv-reset'){const t=UI().tab;S.ui.psNative={q:'',prog:'',ue:'',km:false,rank:'all',tab:t,sort:'score',view:'list'};save();render()}
   else if(b.id==='psnv-export')exportCsv();
   else if(b.id==='psnv-report')printReport();
   else if(b.id==='psnv-add')addProject();
@@ -112,9 +155,18 @@ function mount(){
   }
   else if(b.id==='psnv-weight-reset'){S.projectSelectionWeights={};save();render();toast('Bobot awal dipulihkan.')}
  });
- root.addEventListener('change',evt=>{if(evt.target.id==='psnv-prog'){UI().prog=evt.target.value;save();render()}});
+ root.addEventListener('change',evt=>{if(evt.target.id==='psnv-prog'){UI().prog=evt.target.value;UI().ue='';UI().km=false;save();render()}else if(evt.target.id==='psnv-ue'){UI().ue=evt.target.value;UI().prog='';UI().km=false;save();render()}});
  const input=root.querySelector('#psnv-search');
  if(input)input.addEventListener('input',()=>{UI().q=input.value;const n=input.selectionStart;save();render();const next=document.querySelector('#psnv-search');if(next){next.focus();next.setSelectionRange(n,n)}});
+}
+function deleteProject(id){
+ if(!ME||!['SA','PMOK','PMOU'].includes(ME.role))return;
+ const x=(S.projectSelectionExtra||[]).find(z=>z.id===id);
+ if(!x)return;
+ if(!window.confirm('Hapus usulan "'+x.name+'"?'))return;
+ S.projectSelectionExtra=S.projectSelectionExtra.filter(z=>z.id!==id);
+ if(S.projectSelectionAssess)delete S.projectSelectionAssess[id];
+ save();render();toast('Usulan proyek dihapus.');
 }
 function addProject(){
  if(!ME||!['SA','PMOK','PMOU'].includes(ME.role))return;
