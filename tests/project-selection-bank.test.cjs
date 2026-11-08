@@ -52,7 +52,9 @@ test('Detail Program removes duplicate workspace and exposes inline versioned do
  assert.match(html,/data-bank-detailrow/);
  assert.match(html,/Buat Dokumen Portofolio/);
  assert.doesNotMatch(html,/Workspace Program/);
- assert.doesNotMatch(html,/data-bank-new.*Daftar Program/);
+ m.S.ui.psBank.tab='bank';
+ const historyTab=m.app.page();
+ assert.doesNotMatch(historyTab,/data-bank-new/,'Tambah Program Baru should only appear in the active Daftar Program tab');
  const p=m.docs.builder(m.target);
  assert.match(p,/Pratinjau Word/);
  assert.match(p,/Substansi dokumen/);
