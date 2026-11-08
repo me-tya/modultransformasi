@@ -799,3 +799,62 @@
 #app .psbank-template-picker select{background:#fff;border:1px solid #cddbea;border-radius:7px;padding:7px 9px;max-width:240px;min-width:0;flex:1;font:700 11px 'Inter',sans-serif;color:#19395b}
 #app .psbank-template-picker small{font:400 10px 'Inter',sans-serif;color:#6c7e94}
 @media(max-width:640px){#app .psbank-template-picker label{flex-direction:column;align-items:stretch}#app .psbank-template-picker select{max-width:none}}
+
+/* Project Selection mapping refinement: compact accordion, one vertical page scroll. */
+#app .psbank-scope-stage .psbank-scope-tabline{display:flex;align-items:stretch;gap:9px;min-width:0;width:100%;border-bottom:1px solid #dce5ef;margin-bottom:11px}
+#app .psbank-scope-stage .psbank-mapping-tabs{flex:1 1 auto;min-width:0;overflow-x:auto;margin:0!important;border-bottom:0!important;flex-wrap:nowrap;scrollbar-width:thin}
+#app .psbank-scope-stage .psbank-mapping-tabs button{font:750 12px 'Inter',sans-serif;flex:none;white-space:nowrap}
+#app .psbank-tab-summary{flex:0 0 auto;display:flex;gap:5px;align-items:center;justify-content:flex-end;margin-left:auto;white-space:nowrap;min-height:40px}
+#app .psbank-tab-summary span{border:1px solid #d7e3f1;background:#eff5fb;border-radius:8px;color:#375b7f;padding:7px 9px;font:650 11px 'Inter',sans-serif}
+#app .psbank-tab-summary b{font:800 12px 'Inter',sans-serif;color:#153d6d;margin-right:3px}
+#app .psbank-scope-stage .psbank-results-open{border:0;box-shadow:none;overflow:visible;background:transparent}
+#app .psbank-scope-stage .psbank-results-programline{display:flex;align-items:center;min-height:52px;padding:9px 13px;background:#f1f6fc;border:1px solid #dce7f3;border-radius:9px 9px 0 0}
+#app .psbank-results-programline b{display:block;color:#173f6a;font:800 13px 'Inter',sans-serif}
+#app .psbank-results-programline small{display:block;color:#607b98;font:550 11px 'Inter',sans-serif;margin-top:3px}
+#app .psbank-scope-stage .psbank-results-open .psbank-workspace-subhead{border:1px solid #dce7f3;border-top:0;padding:9px 12px}
+#app .psbank-scope-stage .psbank-results-tablewrap,#app .psbank-scope-stage .psbank-accordion-tablewrap,#app .psbank-scope-stage .psbank-project-history-wrap{
+ max-height:none!important;height:auto!important;min-height:0!important;overflow-y:visible!important;overscroll-behavior-y:auto!important;scrollbar-gutter:auto!important;
+}
+#app .psbank-scope-stage :is(.psbank-results-table,.psbank-project-history-table,.psbank-accordion-tablewrap table) th{position:static!important}
+#app .psbank-scope-stage .psbank-results-table{table-layout:fixed}
+#app .psbank-scope-stage .psbank-results-table th:nth-child(1){width:17%}
+#app .psbank-scope-stage .psbank-results-table th:nth-child(2){width:26%}
+#app .psbank-scope-stage .psbank-results-table th:nth-child(3){width:10%}
+#app .psbank-scope-stage .psbank-results-table th:nth-child(4){width:15%}
+#app .psbank-scope-stage .psbank-results-table th:nth-child(5){width:16%}
+#app .psbank-scope-stage .psbank-results-table th:nth-child(6){width:7%}
+#app .psbank-scope-stage .psbank-results-table th:nth-child(7){width:9%}
+#app .psbank-scope-stage .psbank-results-table td{overflow-wrap:anywhere}
+#app .psbank-scope-stage .psbank-results-table th:last-child{min-width:0}
+#app .psbank-scope-stage .psbank-results-actions{gap:4px}
+#app .psbank-scope-stage .psbank-results-actions .psbank-action-icon{width:29px;height:29px;min-width:29px}
+#app .psbank-program-accordion{display:flex;flex-direction:column;gap:7px;margin-top:9px}
+#app .psbank-accordion-program{display:block;border:1px solid #d9e5f2;border-radius:10px;background:#fff;overflow:clip}
+#app .psbank-accordion-program>summary{display:flex;align-items:center;gap:12px;cursor:pointer;list-style:none;padding:10px 13px;min-height:56px;background:#fff;color:#163b65}
+#app .psbank-accordion-program>summary::-webkit-details-marker{display:none}
+#app .psbank-accordion-program[open]>summary{background:#f0f5fb;border-bottom:1px solid #dce7f2}
+#app .psbank-accordion-program .psbank-chevron{flex:0 0 19px;color:#1c558f;font:800 17px 'Inter',sans-serif}
+#app .psbank-accordion-name{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+#app .psbank-accordion-name b{font:800 12px 'Inter',sans-serif;color:#123c69}
+#app .psbank-accordion-name small{font:500 10.5px 'Inter',sans-serif;color:#69819e}
+#app .psbank-accordion-count{flex:0 0 auto;background:#e8f0fa;border-radius:7px;padding:6px 10px;font:700 11px 'Inter',sans-serif;color:#255480}
+#app .psbank-accordion-body{padding:10px 13px 12px}
+#app .psbank-accordion-projects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+#app .psbank-accordion-projects>div{background:#f8fafc;border:1px solid #e3ebf3;border-radius:7px;padding:8px 10px;min-width:0}
+#app .psbank-accordion-projects b{display:block;font:650 11px 'Inter',sans-serif;color:#254b75}
+#app .psbank-accordion-projects small{display:block;font:500 10px 'Inter',sans-serif;color:#75889b;margin-top:2px;overflow-wrap:anywhere}
+#app .psbank-accordion-actions{display:flex;justify-content:flex-end;margin-top:10px}
+#app .psbank-history-project-controls{display:grid;grid-template-columns:minmax(160px,1.4fr) minmax(115px,.6fr) minmax(180px,1.8fr);gap:9px;align-items:end;margin:9px 0}
+#app .psbank-history-project-controls label{display:flex;flex-direction:column;gap:5px;min-width:0;color:#2a567c;font:750 10.5px 'Inter',sans-serif}
+#app .psbank-history-project-controls :is(select,input){width:100%;min-width:0;height:35px;border:1px solid #cdddeb;border-radius:8px;background:#fff;color:#214d76;padding:7px 10px;font:600 11px 'Inter',sans-serif}
+#app .psbank-project-history-table th:first-child{width:38px}
+#app .psbank-project-history-table td{font-size:11px}
+#app .psbank-project-history-table td:nth-child(3){overflow-wrap:anywhere;color:#23507a}
+#app .psbank-history-project-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:9px}
+#app .psbank-history-project-foot small{font:500 11px 'Inter',sans-serif;color:#617991}
+#app .psbank-project-code-preview{display:flex;align-items:center;gap:9px;flex-wrap:wrap;background:#eef4fc;border:1px solid #d9e5f4;border-radius:8px;padding:9px 12px;margin:0 0 11px;font-family:'Inter',sans-serif}
+#app .psbank-project-code-preview>span{font-size:11px;font-weight:800;color:#355a80}
+#app .psbank-project-code-preview strong{font-size:12px;color:#113d6a;letter-spacing:.015em}
+#app .psbank-project-code-preview small{font-size:10.5px;color:#6b839c}
+@media(max-width:1180px){#app .psbank-tab-summary span{padding:6px;font-size:10px}}
+@media(max-width:750px){#app .psbank-scope-stage .psbank-scope-tabline{flex-wrap:wrap}#app .psbank-scope-stage .psbank-mapping-tabs{width:100%}#app .psbank-tab-summary{width:100%;justify-content:flex-end}#app .psbank-history-project-controls{grid-template-columns:1fr 1fr}#app .psbank-history-project-controls label:last-child{grid-column:1/-1}#app .psbank-accordion-projects{grid-template-columns:1fr}}
