@@ -81,7 +81,7 @@ function navItem(tab,label,num){const on=state().tab===tab;return '<button type=
 function localFilter(){
  const b=S.ui.psBank||(S.ui.psBank={}),u=state(),key=u.tab==='usulan'?'usulan:'+(b.tab||'bank'):u.tab;
  b.filterScopes=b.filterScopes||{};
- const f=b.filterScopes[key]||(b.filterScopes[key]={search:'',status:'all',program:'',year:u.tab==='usulan'&&b.tab==='bank'?'all':String(yr())});
+ const f=b.filterScopes[key]||(b.filterScopes[key]={search:'',status:'all',program:'',year:u.tab==='usulan'&&(b.tab||'bank')==='bank'?'all':String(yr())});
  return f;
 }
 function setFilterField(key,val){
@@ -239,7 +239,7 @@ function navigate(target){
   if(item&&['identity','case','benefits','stakeholders','risks','governance','docs'].includes(item))S.ui.psBank.wtab=item;
  }
  if(actual==='mapping'&&window.MT_PS_SCOPE){
-  window.MT_PS_SCOPE.bank().mappingTab=['proposal','usulan-proyek'].includes(sub)?'proposal':'mapping';
+  window.MT_PS_SCOPE.bank().mappingTab=['proposal','usulan-proyek'].includes(sub)?'proposal':['results','hasil'].includes(sub)?'results':['docs','dokumen'].includes(sub)?'docs':'mapping';
  }
  if(actual==='prioritasi'&&['ranking','criteria','monev','reference'].includes(sub)){
   ws().prioritySub=sub;
@@ -346,7 +346,7 @@ function helpPage(tab){
  if(tab==='map'){
   const deep=[
    [['Daftar Program','usulan:bank'],['Detail Program','usulan:detail'],['Dokumen Portofolio','usulan:portfolio'],['Identitas','usulan:detail:identity'],['Business Case','usulan:detail:case'],['Manfaat','usulan:detail:benefits'],['Stakeholder','usulan:detail:stakeholders'],['Risiko','usulan:detail:risks'],['Tata Kelola','usulan:detail:governance'],['Buat Dokumen Program','usulan:detail:docs']],
-   [['Pemetaan','mapping:mapping'],['Usulan Proyek','mapping:proposal']],
+   [['Pemetaan','mapping:mapping'],['Usulan Proyek','mapping:proposal'],['Hasil Pemetaan','mapping:results'],['Buat Dokumen Usulan Proyek','mapping:docs']],
    [['Penilaian & Peringkat','prioritasi:ranking'],['Kriteria & Bobot','prioritasi:criteria'],['Monev & Manfaat','prioritasi:monev'],['Referensi & Formula','prioritasi:reference']],
    [['As-is','charter:asis'],['To-be','charter:tobe'],['Perbandingan','charter:cs'],['Charter','charter:ch'],['Kriteria','charter:kp'],['Manfaat','charter:mf'],['Linimasa','charter:rk']],
    [['Daftar Penetapan','penetapan']],
