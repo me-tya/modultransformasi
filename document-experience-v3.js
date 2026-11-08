@@ -305,7 +305,9 @@ document.addEventListener('click',ev=>{
    const stepMap={id:'ch',isi:'ch',ms:'ch',rv:'ch'};
    const tab=KEYS.some(x=>x[0]===requested)?requested:stepMap[requested]||'asis';
    const edit=!!ev.target.closest('[data-act="ched"],[data-act="chver"],[data-act="chnew"]');
-   ev.preventDefault();ev.stopImmediatePropagation();openProject(p,tab,edit);return;
+   ev.preventDefault();ev.stopImmediatePropagation();openProject(p,tab,edit);
+   if(ev.target.closest('[data-act="chver"]'))onAction({dataset:{mtDoc:'revision'}});
+   return;
   }
  }
  const pro=ev.target.closest('[data-mt-program-charter]');
