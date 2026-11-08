@@ -215,9 +215,10 @@ function position(el){
 }
 function show(el){
  if(!el||!el.isConnected)return;
- var label=labelOf(el),spec=lookup(el,label),title=el.getAttribute('title');
+ var label=labelOf(el),spec=lookup(el,label),title=el.getAttribute('title'),aria=el.getAttribute('aria-label');
  if(!spec){
-  spec=[title&&norm(title)!==norm(label)?title:'Menampilkan bagian '+label+' pada modul aktif.',COMMON];
+  var useful=title&&norm(title)!==norm(label)?title:aria&&norm(aria)!==norm(label)?aria:'';
+  spec=[useful||'Menampilkan bagian '+label+' pada modul aktif.',COMMON];
  }
  var t=ensure();
  if(!active||active!==el)hide();
