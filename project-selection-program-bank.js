@@ -321,7 +321,7 @@ function mount(){
   const x=new Set([...root.querySelectorAll('.ps27-filter')]);
   [...root.querySelectorAll('button,[role="button"]')].forEach(btn=>{
    const word=compact(btn.textContent).replace(/[▽▼⌄⌃]/g,'');
-   if(word!=='filter'&&!/^filter\b/.test(word))return;
+   if(!/\bfilter\b/.test(word)||word.length>35)return;
    let panel=btn.parentElement,walk=0;
    while(panel&&walk<4&&!/(filter|flt|fbar)/i.test(panel.className||'')){panel=panel.parentElement;walk++}
    if(panel&&panel!==root)x.add(panel);
