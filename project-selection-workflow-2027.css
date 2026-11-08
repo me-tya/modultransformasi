@@ -114,3 +114,17 @@
 .ps27-helpmap-links button{border:1px solid #dae4ee;border-radius:7px;background:white;color:#315776;font:700 11px 'Inter',sans-serif;cursor:pointer;min-height:30px;padding:6px 7px}
 .ps27-helpmap button:hover{border-color:#90b7d7;background:#f5f9ff}
 @media(max-width:740px){.ps27-helpmap{grid-template-columns:1fr}.ps27-helpmap-links{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Project Selection: one stable, narrow filter row and consistent journey-tabs. */
+#app .ps27 .ps27-filter.ps27-filter-compact{display:grid;grid-template-columns:120px minmax(190px,1.35fr) 148px minmax(175px,1.2fr);align-items:center;gap:9px;min-height:54px;height:auto;max-width:100%;padding:8px 11px;border:1px solid #dce5ef;background:#fff;border-radius:11px}
+#app .ps27 .ps27-filter-compact label{min-width:0;display:flex;align-items:center;gap:7px;white-space:nowrap;font:750 11.5px 'Inter',sans-serif;color:#315579}
+#app .ps27 .ps27-filter-compact label select,#app .ps27 .ps27-filter-compact input{flex:1;min-width:0;width:100%;height:34px;padding:6px 9px;font:600 11.5px 'Inter',sans-serif;border-radius:7px}
+#app .ps27 .ps27-filter-compact .ps27-filter-search{flex:1}
+#app .ps27 .ps27-actionbar[hidden]{display:none!important}
+#app .ps27 .ps27-stage{min-height:59px;align-items:stretch}
+#app .ps27 .ps27-tabs{border-radius:12px;padding:5px;gap:4px;min-height:54px}
+#app .ps27 .ps27-tabs button{min-height:43px;padding:7px 10px;border-radius:9px;font-size:12px}
+#app .ps27 .ps27-tabs button em{width:22px;height:22px;font-size:10.5px}
+#app .ps27 .ps27-stage-action{border-radius:12px}
+@media(max-width:900px){#app .ps27 .ps27-filter.ps27-filter-compact{grid-template-columns:minmax(100px,.7fr) minmax(160px,1.3fr);gap:7px}}
+@media(max-width:570px){#app .ps27 .ps27-filter.ps27-filter-compact{grid-template-columns:1fr}#app .ps27 .ps27-filter-compact label{justify-content:space-between}}
