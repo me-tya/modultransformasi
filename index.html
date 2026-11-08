@@ -2,7 +2,8 @@
 <title>Modul Transformasi Kemenkeu</title>
 <link rel="stylesheet" href="charter-planning-report.css?v=20261108-1">
 <link rel="stylesheet" href="dashboard-executive-v2.css?v=20261108-2">
-<link rel="stylesheet" href="project-selection-flow.css?v=20261108-5">
+<link rel="stylesheet" href="project-selection-flow.css?v=20261108-6">
+<link rel="stylesheet" href="project-selection-governance.css?v=20261108-1">
 
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2584,9 +2585,9 @@ const SCOPES=['Semua','Unit','Modul'];
 const SCOPE_DESK={Semua:'seluruh data',Unit:'data yang unitnya UIC Utama',Modul:'modul yang ditugaskan'};
 const UNREAD_SCOPED=['dash','porto','wbs','mil','risk','cr','crok','bukti','valid','lap','ref','adopsi','adp','reviu','usul','user','akses','sinkron','log'];
 const CMT=[['adp','ADP'],['rencana','Perencanaan'],['jaringan','Jaringan Perubahan'],['cra','CRA'],['pelaksanaan','Pelaksanaan'],['monev','Monev'],['pasca','Evaluasi Pasca'],['closing','Penutupan CM']];
-const PMT=[['siklus','Overview','porto'],['portofolio','Portofolio','porto'],['program','Program','porto'],['perencanaan','Dokumen Proyek','charter'],['wbsplan','WBS','wbs'],['wbs','WBS & progres','wbs'],['bukti','Bukti Dukung','bukti'],['cr','Change Request','cr'],['milestone','Milestone','mil'],['risiko','Risiko & Isu','risk'],['laporan','Capaian TW','lap'],['narasi','Narasi T-Program','lap'],['oneonone','Jadwal 1-on-1','wbs'],['penutupan','Penutupan','porto'],['pascaproyek','Pascaproyek','porto'],['referensi','Referensi Kode','ref']];
+const PMT=[['siklus','Overview','porto'],['program','Workspace Proyek','porto'],['perencanaan','Dokumen Proyek','charter'],['wbsplan','WBS','wbs'],['wbs','WBS & progres','wbs'],['bukti','Bukti Dukung','bukti'],['cr','Change Request','cr'],['milestone','Milestone','mil'],['risiko','Risiko & Isu','risk'],['laporan','Capaian TW','lap'],['narasi','Narasi T-Program','lap'],['oneonone','Jadwal 1-on-1','wbs'],['penutupan','Penutupan','porto'],['pascaproyek','Pascaproyek','porto'],['referensi','Referensi Kode','ref']];
 /* kelompok tab PMO mengikuti alur Draft KEP Kepala BaTii: perencanaan → pelaksanaan → pemantauan → penutupan */
-const PMG=[['siklus','Overview',0,['siklus']],['portofolio','Portofolio',0,['portofolio']],['program','Program',0,['program']],['plan','Perencanaan',1,['perencanaan','wbsplan']],['exec','Pelaksanaan',2,['wbs','narasi','bukti','cr']],['mon','Pemantauan',3,['milestone','risiko','laporan','oneonone']],['close','Penutupan',4,['penutupan']],['eval','Pascaproyek',5,['pascaproyek']],['ref','Referensi',0,['referensi']]];
+const PMG=[['siklus','Overview',0,['siklus']],['program','Workspace Proyek',0,['program']],['plan','Perencanaan',1,['perencanaan','wbsplan']],['exec','Pelaksanaan',2,['wbs','narasi','bukti','cr']],['mon','Pemantauan',3,['milestone','risiko','laporan','oneonone']],['close','Penutupan',4,['penutupan']],['eval','Pascaproyek',5,['pascaproyek']],['ref','Referensi',0,['referensi']]];
 const STN=[['set-pengguna','Pengguna','user'],['set-akses','Hak Akses Peran','akses'],['set-sinkron','Aturan Sinkron CM','sinkron'],['set-log','Log Aktivitas','log'],['set-db','Database','user']];
 const LV_UB=['—','Minor','Moderate','Significant'], LV_RS=['—','Rendah','Sedang','Tinggi'];
 const DIMS=[['P','Proses Bisnis'],['O','Organisasi'],['S','SDM'],['T','Teknologi'],['R','Regulasi']];
@@ -3040,7 +3041,7 @@ const go=h=>{location.hash=h};
 const TASK_PRE={'pmo-bukti':{bseg:'Menunggu validasi'},'pmo-cr':{crseg:'open'},'pmo-milestone':{mseg:'late'}};
 const goTask=h=>{const z=String(h||'').match(/^pmo-penutupan@([^@]+)@(.+)$/);if(z){const prog=decodeURIComponent(z[1]),key=decodeURIComponent(z[2]);S.ui.p0CloseFocus={prog,key};S.ui.tpSt='';S.ui.prog='';S.ui.unit='';save();if(location.hash==='#pmo-penutupan'){VIEW='pmo-penutupan';render()}else go('pmo-penutupan');return}const m=String(h||'').match(/^pmo-cr@(.+)$/);if(m){const c=(S.crs||[]).find(x=>x.id===m[1]);if(!c)return;S.ui.p0CrFocus=m[1];S.ui.crseg='';S.ui.prog='';S.ui.unit='';const y=+(String(c.tgl||c.efektif||'').slice(0,4));if(y>2000)S.ui.tahun=y;save();if(location.hash==='#pmo-cr'){VIEW='pmo-cr';render()}else go('pmo-cr');return}const p=TASK_PRE[h];if(p){Object.assign(S.ui,p,{prog:''});save()}go(h)};
 window.addEventListener('hashchange',()=>{readHash();render();window.scrollTo(0,0)});
-function readHash(){VIEW=(location.hash||'').slice(1)||'beranda';if(VIEW==='tim-cm'||VIEW==='squad-team')VIEW='pengelola';if(VIEW==='cra')VIEW='cmo-cra';if(VIEW==='cmo-siklus'||VIEW==='cmo-adopsi')VIEW='cmo-adp';if(VIEW==='cmo-impl')VIEW='cmo-pelaksanaan';VIEW=VIEW.replace(/^(modul-.+-t-)impl$/,'$1pelaksanaan').replace(/^(modul-.+-t-)siklus$/,'$1adp')}
+function readHash(){VIEW=(location.hash||'').slice(1)||'beranda';if(VIEW==='pmo-portofolio'){VIEW='project-selection';S.ui.psFlow=S.ui.psFlow||{};S.ui.psFlow.tab='portfolio';S.ui.psFlow.psGovNavV=1}if(VIEW==='tim-cm'||VIEW==='squad-team')VIEW='pengelola';if(VIEW==='cra')VIEW='cmo-cra';if(VIEW==='cmo-siklus'||VIEW==='cmo-adopsi')VIEW='cmo-adp';if(VIEW==='cmo-impl')VIEW='cmo-pelaksanaan';VIEW=VIEW.replace(/^(modul-.+-t-)impl$/,'$1pelaksanaan').replace(/^(modul-.+-t-)siklus$/,'$1adp')}
 
 /* ======================== login ======================== */
 const sess=()=>{try{return sessionStorage.getItem('mt_me')}catch(e){return null}};
@@ -3644,6 +3645,12 @@ window.mtP0Navigate=function(target,section){
  }
  if(!allowedViews().includes(target)){toast('Menu tidak tersedia untuk hak akses Anda.');return}
  const split=String(section||'').split(':'),scope=split[0],tab=split[1];
+ if(target==='project-selection'&&scope==='ps'){
+  const allowed=['portfolio','program','projects','criteria','monev','reference'];
+  S.ui.psFlow=S.ui.psFlow||{};S.ui.psFlow.tab=allowed.includes(tab)?tab:'portfolio';S.ui.psFlow.psGovNavV=1;save();
+  if(location.hash==='#project-selection'){VIEW='project-selection';render()}else go('project-selection');
+  return;
+ }
  if(scope==='report'&&PMO_REPORT_LABEL[tab]&&target.startsWith('pmo-')){
   if(location.hash==='#'+target){VIEW=target;render()}else go(target);
   setTimeout(()=>{if(VIEW===target||location.hash==='#'+target)ACT.pgRep({dataset:{k:'filter',stage:tab,preset:tab==='penutupan'?'tutup':''}})},80);
@@ -8112,8 +8119,8 @@ ACT.chex=el=>showEx(el.dataset.k);
 /* --- panduan per menu --- */
 const HELP={
  'pmo-siklus':{d:'Ringkasan posisi setiap program dalam alur proyek dan tenggat yang paling dekat.',c:['Lihat kotak Tenggat terdekat: merah berarti sudah lewat, kuning ≤ 5 hari lagi.','Klik nama program untuk langsung ke Perencanaan (bila charter belum disahkan) atau ke WBS.','Tahap terisi otomatis dari status charter dan progres WBS; tidak perlu diisi manual.'],e:[['Contoh membaca kartu','B25-OA · Digitalisasi Office Automation · 49% · Charter disahkan · 1 terlambat → program ada di Pelaksanaan & pemantauan, ada satu item WBS yang melewati tanggal Finish.']]},
- 'pmo-portofolio':{d:'Daftar seluruh program transformasi beserta UIC, periode, sponsor, dan status.',c:['Tambah program dengan tombol + di tabel; kode mengikuti pola B25-XXX (berkelanjutan) atau T26-XXX (tematik).','UIC Utama diisi satu unit; UIC Pendukung boleh lebih dari satu, dipisah koma.','Status diperbarui PMO: On track, Perlu perhatian, Selesai.'],e:[['Kode','B25-OA'],['Nama','Digitalisasi Office Automation'],['UIC Utama · Pendukung','BaTii · Setjen, DJPb, BPPK, Itjen'],['Periode · Sponsor','2025–2028 · Sekretaris Jenderal']]},
- 'pmo-program':{d:'Isi setiap program: proyek-proyek yang dikelola (kelompok WBS level 4) dan progresnya.',c:['Proyek terbentuk otomatis dari impor WBS; tidak ada isian manual.','Gunakan kolom cari untuk menemukan program atau proyek.','Klik WBS › untuk membuka item program tersebut.'],e:[['Contoh proyek OA','Aplikasi PENA JFKN · Modul PPO · Modul Mekanisme Kerja · SIPT Modul Risk Platform']]},
+ 'pmo-portofolio':{d:'Portofolio dan pendaftaran program sekarang berada di Project Selection, tidak lagi di Project Management.',c:['Buka Project Selection → Portofolio untuk daftar program.','Buka tab Program untuk mengisi business case, register manfaat, stakeholder, risiko dan tata kelola.','Seleksi dan tetapkan proyek sebelum berpindah ke Project Management.'],e:[['Kode','B25-OA'],['Nama','Digitalisasi Office Automation'],['UIC Utama · Pendukung','BaTii · Setjen, DJPb, BPPK, Itjen'],['Periode · Sponsor','2025–2028 · Sekretaris Jenderal']]},
+ 'pmo-program':{d:'Workspace Proyek untuk proyek yang telah ditetapkan; berisi progres, risiko proyek, stakeholder proyek, issue log, dan decision log.',c:['Program dan calon proyek didaftarkan lebih dulu di Project Selection.','Gunakan kolom pencarian untuk memilih proyek yang dikelola.','Buka Workspace Proyek untuk Risk Register, Stakeholder Register, Issue Log dan Decision Log.'],e:[['Contoh proyek OA','Aplikasi PENA JFKN · Modul PPO · Modul Mekanisme Kerja · SIPT Modul Risk Platform']]},
  'pmo-perencanaan':{d:'Tujuh dokumen proyek per program sesuai Draft KEP Kepala BaTii. Diisi lewat wizard charter.',c:['Klik + Buat untuk program yang belum punya charter, atau Lengkapi untuk melanjutkan draf.','Wizard terdiri dari 6 langkah: Kondisi & perbandingan → Charter → Kriteria → Manfaat → Rencana kerja → Tinjau.','Setiap langkah punya tombol 💡 Lihat contoh pengisian dari program OA.','Setelah lengkap, ajukan ke PMO Pusat untuk direviu dan disahkan.'],e:[['Tujuan program (OA)',OAX.tujuan],['Output (OA)',OAX.out.join(' ')]],x:['asis','tobe','cs','id','isi','ms','kp','mf','rk']},
  'pmo-charter':{ref:'pmo-perencanaan'},
  'pmo-wbsplan':{d:'Susun WBS dari rencana kerja charter dengan impor Excel atau tambah item satu per satu.',c:['Unduh Template WBS, isi satu sheet per program, lalu Import WBS.','Kolom wajib: Code, Start, Finish. Bobot = Finish − Start + 1 hari, dihitung sistem.','Target bulan dihitung dari bulan Finish; tidak perlu sheet Kompilasi.','Selama impor berjalan, tunggu sampai kotak status hilang.'],e:[['Contoh baris (ilustrasi)','OA-… · Penyusunan Enterprise Architecture Level 3 · Start 01/2026 · Finish 03/2026 · UIC BaTii, Setjen · Pendukung Itjen, BPPK, DJPb']]},
@@ -8763,7 +8770,7 @@ Object.entries(GUIDE_Q).forEach(([k,q])=>{if(GUIDE[k])GUIDE[k].q=q});
 /* Alur PMO & CMO per tahapan (mengikuti urutan menu) */
 const FLOW_ST=[
  {n:0,nm:'Persiapan',sub:'Sebelum tahun anggaran',
-  pmo:[['Siapkan program','Daftarkan program, UIC, sponsor, dan periode.','pmo-portofolio','Portofolio']],
+  pmo:[['Siapkan program','Daftarkan program dan lengkapi business case, register manfaat, stakeholder, risiko serta tata kelola di Project Selection.','project-selection','Project Selection']],
   cmo:[['Analisis Dampak Perubahan','As-is → to-be, dampak POSTeR, risiko, dan indikator keberhasilan per sub modul.','cmo-adp','ADP']]},
  {n:1,nm:'Perencanaan',sub:'T-1 s.d. awal TA',
   pmo:[['Susun charter','Isi Dokumen Proyek lewat wizard enam langkah, lalu ajukan ke PMO Pusat.','pmo-perencanaan','Dokumen Proyek'],['Susun WBS','Impor atau tambah item WBS dari rencana kerja charter.','pmo-wbsplan','WBS']],
@@ -8780,7 +8787,7 @@ const FLOW_ST=[
 function flowStagesHtml(){const it=(a,cls)=>'<li class="fs-it '+cls+'"><div title="'+esc(a[1])+'"><b>'+esc(a[0])+'</b><span>'+esc(a[1])+'</span></div>'+hpGo(a[2],a[3],a[4])+'</li>';
  return '<p class="hp-lead">Tahapan kerja PMO dan CMO dari persiapan sampai penutupan. Klik tombol menu untuk langsung pindah ke halaman terkait.</p><div class="fs-wrap">'+FLOW_ST.map(st=>'<section class="fs-st"><header class="fs-h"><i>'+(st.n||'0')+'</i><b>'+esc(st.nm)+'</b><small>'+esc(st.sub)+'</small><span class="fs-cnt">'+st.pmo.length+' PMO · '+st.cmo.length+' CMO</span></header><div class="fs-cols"><div class="fs-col pmo"><em>PMO</em><ol>'+st.pmo.map(a=>it(a,'pmo')).join('')+'</ol></div><div class="fs-col cmo"><em>CMO</em><ol>'+st.cmo.map(a=>it(a,'cmo')).join('')+'</ol></div></div></section>').join('')+'</div><p class="ko-src">Lihat juga tab <b>Alur Koordinasi</b> untuk siapa berkoordinasi dengan siapa di setiap fase.</p>'}
 const FLOW_PMO=[
- ['Siapkan program','Tambah program dan UIC-nya.','pmo-portofolio','Portofolio'],
+ ['Siapkan program','Buka Project Selection: daftarkan program lalu isi manfaat, stakeholder, risiko, governance, dan seleksi proyek.','project-selection','Project Selection'],
  ['Susun charter','Isi Dokumen Proyek lewat wizard enam langkah, ajukan ke PMO Pusat.','pmo-perencanaan','Dokumen Proyek'],
  ['Susun WBS','Impor atau tambah item WBS dari rencana kerja.','pmo-wbsplan','WBS'],
  ['Laksanakan dan unggah bukti','UIC mengerjakan item lalu mengunggah bukti dukung.','pmo-wbs','WBS & progres'],
@@ -9636,7 +9643,7 @@ var CM=[
 ['Penutupan Manajemen Perubahan','Setelah evaluasi dan masa transisi; alihkan pendampingan ke pemilik probis/unit operasional.','cmo-closing','Penutupan CM']
 ];
 var PM=[
-['Persiapan dan Perencanaan','Petakan program dan UIC, susun Dokumen Proyek (As-Is, To-Be, Charter, kriteria selesai, rencana kerja), lalu tetapkan melalui ND bersama.','pmo-portofolio','Portofolio','pmo-program','Program','pmo-perencanaan','Dokumen Proyek','pmo-wbsplan','Susun WBS'],
+['Persiapan dan Perencanaan','Awali di Project Selection: susun portofolio, business case, benefits, stakeholder, risiko program, seleksi proyek dan penetapan. Setelahnya susun Dokumen Proyek dan WBS.','project-selection','Project Selection','pmo-program','Workspace Proyek','pmo-perencanaan','Dokumen Proyek','pmo-wbsplan','Susun WBS'],
 ['Pelaksanaan','Jalankan WBS, lampirkan bukti, ajukan perubahan resmi apabila lingkup, jadwal, atau biaya berubah.','pmo-wbs','WBS & Progres','pmo-bukti','Bukti Dukung','pmo-cr','Change Request','pmo-narasi','Narasi T-Program'],
 ['Pemantauan dan Pengendalian','Lihat capaian, risiko, milestone, jadwal, serta progres yang dilaporkan PMO Unit kepada PMO Kemenkeu.','pmo-siklus','Overview','pmo-milestone','Milestone','pmo-risiko','Risiko & Isu','pmo-laporan','Capaian TW','pmo-oneonone','Jadwal 1-on-1'],
 ['Penutupan Proyek','Penutupan berdasarkan acceptance criteria, pengalihan menjadi proyek unit, atau keluar dari program transformasi.','pmo-penutupan','Penutupan Proyek'],
@@ -9644,7 +9651,7 @@ var PM=[
 ['Pengelolaan Referensi','Gunakan kode program, master tahapan, dan referensi item WBS untuk konsistensi data.','pmo-referensi','Referensi Kode']
 ];
 var menuPM=[
-['Overview','Capaian dan ringkasan kinerja','pmo-siklus'],['Portofolio','Program dan UIC utama/pendukung','pmo-portofolio'],['Program','Proyek dan penugasan','pmo-program'],
+['Project Selection','Portofolio, program, risiko, manfaat, stakeholder, dan seleksi proyek','project-selection'],['Overview','Capaian dan ringkasan kinerja','pmo-siklus'],['Workspace Proyek','Proyek, progres, risiko, stakeholder, isu, dan keputusan','pmo-program'],
 ['Dokumen Proyek','As-Is, To-Be, Charter, persetujuan','pmo-perencanaan'],['WBS Perencanaan','Penyusunan aktivitas dan bobot','pmo-wbsplan'],
 ['WBS & Progres','Pelaksanaan, target, realisasi','pmo-wbs'],['Bukti Dukung','Unggah dan validasi bukti','pmo-bukti'],['Change Request','Pengendalian perubahan baseline','pmo-cr'],
 ['Milestone','Tonggak waktu proyek','pmo-milestone'],['Risiko & Isu','Risiko dan tindak lanjut','pmo-risiko'],['Capaian Triwulanan','Laporan kinerja periodik','pmo-laporan'],
@@ -9679,6 +9686,7 @@ var termsCM=[
 ['BAST','Berita Acara Serah Terima untuk pengalihan tanggung jawab.'],['Closing CM','Akhir pendampingan transisi, bukan sekadar penutupan proyek.']
 ];
 var docPM=[
+['Program & Portofolio','Business case, benefits register, stakeholder register, risk register dan tata kelola','PMO Unit / PMO Kemenkeu','Sebelum seleksi dan penetapan proyek','project-selection'],
 ['Kondisi As-Is','Kondisi probis, sistem eksisting, dan teknologi','PMO Unit + pemilik probis','T−1 · Perencanaan','pmo-perencanaan'],
 ['Kondisi To-Be','Rancangan probis, digitalisasi, dan arsitektur baru','PMO Unit + unit teknis','T−1 · Perencanaan','pmo-perencanaan'],
 ['Perbandingan As-Is dan To-Be','Selisih proses/teknologi yang perlu diubah','PMO Unit','T−1 · Perencanaan','pmo-perencanaan'],
@@ -9723,7 +9731,7 @@ function skStageLinks(kind,dest,label){
 
 function helpReports(){
  var rows=[
- ['Gambaran & Portofolio','pmo-portofolio','gambaran','Ringkasan program, profil, dan capaian awal.'],
+ ['Gambaran & Pemantauan','pmo-siklus','gambaran','Ringkasan program, profil, dan capaian awal.'],
  ['Perencanaan Proyek','pmo-perencanaan','perencanaan','Dokumen Proyek, charter, rencana dan status kelengkapan.'],
  ['Pelaksanaan Proyek','pmo-wbs','pelaksanaan','Kemajuan WBS, bukti pelaksanaan, risiko, isu, dan CR.'],
  ['Pemantauan & Pengendalian','pmo-laporan','pemantauan','Capaian, risiko, isu, keputusan, dan pekerjaan terlambat.'],
@@ -9766,10 +9774,13 @@ var skDeepTabsPM={
   ['K-Wide','pmo-siklus','overview:kwide'],
   ['T-Program','pmo-siklus','overview:tprog'],
   ['Per UE I','pmo-siklus','overview:ue']],
- 'pmo-portofolio':[
-  ['Daftar Program','pmo-portofolio','porto:daftar'],
-  ['Capaian Program','pmo-portofolio','porto:capaian'],
-  ['Milestone Mendatang','pmo-portofolio','porto:milestone']],
+ 'project-selection':[
+  ['Portofolio','project-selection','ps:portfolio'],
+  ['Program · Profil & Register','project-selection','ps:program'],
+  ['Seleksi Proyek','project-selection','ps:projects'],
+  ['Kriteria & Bobot SMART','project-selection','ps:criteria'],
+  ['Monev & Manfaat','project-selection','ps:monev'],
+  ['Referensi & Formula','project-selection','ps:reference']],
  'pmo-program':[
   ['Ringkasan Proyek','pmo-program','workspace:ringkasan'],
   ['Jadwal & Bukti','pmo-program','workspace:jadwal'],
@@ -9820,7 +9831,8 @@ function helpMenu(kind){
  var items=kind==='pmo'?menuPM:menuCM;
  var deep=kind==='pmo'?skDeepTabsPM:skDeepTabsCM;
  var groups=kind==='pmo'?[
-  ['Gambaran & Portofolio','Cakupan program, capaian dan prioritas transformasi','◈',['pmo-siklus','pmo-portofolio','pmo-program']],
+  ['Project Selection · Hulu','Portofolio, profil program, register dan penetapan proyek','◈',['project-selection']],
+   ['Workspace & Gambaran','Capaian proyek yang telah ditetapkan dan dikelola dalam WBS','▤',['pmo-siklus','pmo-program']],
   ['Perencanaan Proyek','Dokumen proyek dan penyusunan paket kerja','▦',['pmo-perencanaan','pmo-wbsplan']],
   ['Pelaksanaan Proyek','Progres pekerjaan, bukti dan pengendalian perubahan','⚙',['pmo-wbs','pmo-bukti','pmo-cr','pmo-narasi']],
   ['Pemantauan & Pengendalian','Milestone, risiko, pelaporan dan koordinasi','◷',['pmo-milestone','pmo-risiko','pmo-laporan','pmo-oneonone']],
@@ -9855,7 +9867,7 @@ function helpMenu(kind){
   '<div class="sk-menuSections">'+sections+'</div>';
 }
 var skGlossRoutesPM={
- 'PMO':['pmo-siklus','overview:tw'],'UIC':['pmo-portofolio','porto:daftar'],
+ 'PMO':['pmo-siklus','overview:tw'],'UIC':['project-selection','ps:portfolio'],
  'Charter':['pmo-charter','ch'],'WBS':['pmo-wbsplan',''],
  'Baseline':['pmo-cr','cr:open'],'Acceptance Criteria':['pmo-charter','kp'],
  'Change Request':['pmo-cr','cr:open'],'Milestone':['pmo-milestone',''],
@@ -10147,7 +10159,7 @@ window.showHelp=function(v,title){
  if(kind==='pmo'||kind==='cmo')return open('help',kind,'menu');
  return originalContextGuide(page,title);
 };
-window.skHelpCheatsheetVersion='20261107-stage-shortcuts-v4';
+window.skHelpCheatsheetVersion='20261108-project-selection-pmi-v5';
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addStyle);else addStyle();
 })();
 </script>
@@ -10158,7 +10170,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 <script src="charter-planning-report.js?v=20261108-5"></script>
 
-<script src="project-selection-flow.js?v=20261108-5"></script>
+<script src="project-selection-flow.js?v=20261108-6"></script>
+<script src="project-selection-governance.js?v=20261108-1"></script>
 
 
 <script src="planning-tabs-v2.js?v=20261108-2"></script>

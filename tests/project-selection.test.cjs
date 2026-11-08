@@ -6,8 +6,10 @@ const vm=require('node:vm');
 const html=readFileSync('index.html','utf8');
 const source=readFileSync('project-selection-flow.js','utf8');
 const css=readFileSync('project-selection-flow.css','utf8');
+const governance=readFileSync('project-selection-governance.js','utf8');
+const governanceCss=readFileSync('project-selection-governance.css','utf8');
 const dashboard=readFileSync('dashboard-cm-shared.html','utf8');
-function boot(y=2027,programs=[],exposeWord=false){
+function boot(y=2026,programs=[],exposeWord=false){
  const S={ui:{tahun:y},programs,wbs:[]},messages=[];
  const noop=()=>{};
  const document={head:{appendChild:noop},body:{appendChild:noop},querySelector:()=>null,createElement:()=>({remove:noop,click:noop})};
@@ -17,8 +19,10 @@ function boot(y=2027,programs=[],exposeWord=false){
   esc:v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),
   vh:(_icon,_type,title)=>'<div class="vh"><h1>'+title+'</h1></div>'};
  vm.runInNewContext(exposeWord?source.replace(/\n\}\)\(\);\s*$/, '\nwindow.__testWord=word;window.__testCalc=calc;window.__testFinalize=finalize;window.__testChosen=chosen;\n})();'):source,context,{filename:'project-selection-flow.js'});
+ vm.runInNewContext(governance,context,{filename:'project-selection-governance.js'});
  return {S,context,messages,app:context.window.MT_PROJECT_SELECTION};
 }
+const selectTab=(m,tab,p)=>{m.S.ui.psFlow={tab,prog:p?.id||'',q:'',filter:'all',sort:'score',view:'list',psGovNavV:1}};
 const program=()=>({id:'program-2027',akr:'PS2027-DOA',kode:'B27-DOA',nama:'Digitalisasi Office Automation',psYear:2027,psDraft:true,psStatus:'Draft',
  jenis:'Berkelanjutan',uic:'BaTii',psProjects:[],psThreshold:80,psWeights:{},psPrioritize:false});
 const project=(name='Modul Kinerja')=>({id:'p1',name,uic:'Setjen',status:'Usulan',included:true,
@@ -29,26 +33,33 @@ const maxScores=()=>Object.fromEntries(Array.from({length:12},(_,i)=>{
 test('Loads native program-first flow; Dashboard CM auth/iframe is NOT imported',()=>{
  assert.match(html,/project-selection-flow\.js\?v=/);
  assert.match(html,/project-selection-flow\.css\?v=/);
+ assert.match(html,/project-selection-governance\.js\?v=/);
+ assert.match(html,/project-selection-governance\.css\?v=/);
+ assert.doesNotThrow(()=>new vm.Script(governance));
  assert.doesNotMatch(html,/<script src="project-selection-ui\.js/);
  assert.doesNotMatch(html,/<script src="project-selection-native\.js/);
  assert.doesNotMatch(source,/cmGoogleSignIn|cmLoginGate|dashboard-cm-shared\.html|<iframe/);
  assert.doesNotThrow(()=>new vm.Script(source));
 });
+test('Default is 2026 and each year has separate program list',()=>{
+ const m=boot();assert.equal(m.S.ui.tahun,2026);assert.match(m.app.page(),/Portofolio Transformasi · 2026/);
+});
 test('2027 starts empty, not inherited from OA 2025-2028; manually created program shows',()=>{
  const legacy={id:'old',akr:'OA',kode:'B25-OA',nama:'Digitalisasi Office Automation lama',mulai:2025,periode:'2025-2028',uic:'BaTii'};
  const m=boot(2027,[legacy]);
- assert.match(m.app.page(),/Belum ada Program Transformasi untuk Tahun 2027/);
- assert.match(m.app.page(),/Tambah Program Transformasi 2027/);
+ assert.match(m.app.page(),/Belum ada program tahun 2027/);
+ assert.match(m.app.page(),/Portofolio Transformasi · 2027/);
  m.S.programs.push(program());
  const page=m.app.page();
  assert.match(page,/Digitalisasi Office Automation/);
- assert.match(page,/Belum ada proyek sesuai filter/);
+ selectTab(m,'projects',m.S.programs[1]);
+ assert.match(m.app.page(),/Belum ada proyek sesuai filter/);
 });
-test('Four Priority tabs render the right content, with PMO visual tab selection',()=>{
+test('Six Selection tabs render Portfolio, Program, Project, SMART and Monev in one shell',()=>{
  const p=program();p.psProjects=[project()];
  const m=boot(2027,[p]);
- for(const [tab,pattern] of [['projects',/Peringkat prioritas/],['criteria',/Komposisi bobot/],['monev',/Monev Indikator & Manfaat|Indikator Keberhasilan CM/],['reference',/Tabel 1 · Kriteria dan Bobot/]]){
-  m.S.ui.psFlow={tab,prog:p.id,q:'',filter:'all',sort:'score',view:'list'};
+ for(const [tab,pattern] of [['portfolio',/Portofolio Transformasi/],['program',/Identitas & Strategic Fit/],['projects',/Peringkat prioritas/],['criteria',/Komposisi bobot/],['monev',/Indikator Keberhasilan CM/],['reference',/Tabel 1 · Kriteria dan Bobot/]]){
+  selectTab(m,tab,p);
   assert.match(m.app.page(),pattern,'Failed tab '+tab);
  }
  assert.match(css,/\.pswf-tabs>button/);
@@ -56,9 +67,10 @@ test('Four Priority tabs render the right content, with PMO visual tab selection
  assert.match(css,/min-height:40px!important/);
  assert.match(css,/button\.on:after/);
  assert.match(css,/background:#FDB913/);
+ assert.match(governanceCss,/\.psgov-steps/);
 });
 test('Manual selection without SMART; SMART selection requires complete score >80',()=>{
- const p=program(),x=project();p.psProjects=[x];const m=boot(2027,[p]);
+ const p=program(),x=project();p.psProjects=[x];const m=boot(2027,[p]);selectTab(m,'projects',p);
  assert.match(m.app.page(),/1 dari 1 calon proyek dipilih secara manual/);
  p.psPrioritize=true;
  assert.match(m.app.page(),/0 dari 1 calon proyek memenuhi ambang/);
@@ -86,7 +98,7 @@ test('Finalization handoff shows only selected IDs before WBS and preserves WBS 
  assert.match(html,/psPendingWbs:true/);
  assert.match(html,/p\.psDraft/);
  const p=program(),x=project();p.psProjects=[x];p.psStatus='Ditetapkan';p.psDraft=false;p.psSelectedProjectIds=[x.id];
- const m=boot(2027,[p]);
+ const m=boot(2027,[p]);selectTab(m,'projects',p);
  assert.match(m.app.page(),/Generate RKMK Word/);
  assert.match(m.app.page(),/Lanjut ke WBS/);
 });
@@ -110,12 +122,16 @@ test('RKMK generates genuine OOXML DOCX with KMK 132 charter, acceptance and pla
  assert.match(doc,/RENCANA KERJA/);
  assert.match(doc,/Modul Kinerja/);
  assert.match(doc,/BA penerimaan disetujui/);
+ assert.match(doc,/BENEFITS REGISTER/);
+ assert.match(doc,/STAKEHOLDER REGISTER/);
+ assert.match(doc,/RISK REGISTER/);
+ assert.match(doc,/BUSINESS CASE DAN TATA KELOLA PROGRAM/);
 });
 
 test('Ten DOA project modules: three above 80 pass, only those are finalized pre-WBS',()=>{
  const p=program();p.psPrioritize=true;p.psThreshold=80;
  p.psProjects=Array.from({length:10},(_,i)=>({...project(['Modul Kinerja','Modul Kompetensi','Modul Kesehatan','Modul Pelayanan','Modul Rekrutmen','Modul Pendidikan','Modul Keuangan','Modul Umum','Modul Arsip','Modul Pelaporan'][i]),id:'p'+i,scores:i<3?maxScores():{C1:3}}));
- const m=boot(2027,[p],true);m.context.window.confirm=()=>true;
+ const m=boot(2027,[p],true);selectTab(m,'projects',p);m.context.window.confirm=()=>true;
  assert.equal(m.context.window.__testChosen(p).length,3);
  m.context.window.__testFinalize(p);
  assert.equal(p.psStatus,'Ditetapkan');
@@ -138,4 +154,25 @@ test('WBS project-list handoff has prefill and native PMO access checks',()=>{
  assert.match(html,/formModal\('wbs',null\)/);
  assert.match(html,/p\.psSelectedProjectIds/);
  assert.match(html,/canW\('wbs','C',x\.uic\|\|p\.uic\)/);
+});
+
+test('New program requires case, benefits, stakeholder and risk gate before finalization',()=>{
+ const p=program();Object.assign(p,{psGovernanceV:1,sponsor:'Sponsor',psProjects:[project()]});
+ const m=boot(2027,[p],true);selectTab(m,'projects',p);m.context.window.confirm=()=>true;
+ assert.equal(m.context.window.MT_PS_GOV.readiness(p).ok,false);
+ m.context.window.__testFinalize(p);
+ assert.equal(p.psStatus,'Draft');
+ Object.assign(p,{psObjective:'Target strategis',psAlignment:'Renstra dan IKU',psBusinessCase:'Interoperabilitas lintas unit',
+  psBenefits:[{name:'Efisiensi waktu',indicator:'Menit dipangkas',baseline:'30',target:'10',owner:'BaTii'}],
+  psStakeholders:[{name:'DJA',role:'Proses bisnis',strategy:'Pelibatan per triwulan'}],
+  psRiskRegister:[{title:'Ketergantungan data',response:'Koordinasi integrasi',owner:'BaTii'}]});
+ assert.equal(m.context.window.MT_PS_GOV.readiness(p).ok,true);
+ m.context.window.__testFinalize(p);
+ assert.equal(p.psStatus,'Ditetapkan');
+ assert.equal(p.psDraft,false);
+});
+
+test('Legacy established programs are not blocked by new governance gate',()=>{
+ const p=program();p.psStatus='Berjalan (legacy)';p.psDraft=false;
+ assert.equal(boot(2027,[p]).context.window.MT_PS_GOV.readiness(p).applies,false);
 });
