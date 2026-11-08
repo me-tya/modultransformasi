@@ -60,6 +60,7 @@ const norm=p=>{
 };
 const pickedProgram=()=>{const s=state(),arr=programs();if(!arr.length)return null;const p=arr.find(x=>x.id===s.prog||x.akr===s.prog)||arr[0];if(s.prog!==p.id)s.prog=p.id;return norm(p)};
 const rowsFor=p=>p?(p.psProjects||[]):[];
+const activeCriteria=p=>PS_CRITERIA.map(c=>Object.assign({},c,(p.psRubrics||{})[c.code]||{}));
 const weight=(p,k)=>Math.min(7,Math.max(1,+((p.psWeights||{})[k]||PS_CRITERIA.find(c=>c.code===k).w)));
 const util=(c,v)=>c.type==='cost'?(5-v)/4:(v-1)/4;
 function scoreField(x,c){
@@ -73,7 +74,7 @@ function scoreField(x,c){
 }
 function calc(x,p){
  let sum=0,done=0,den=0;const details=[];
- PS_CRITERIA.forEach(c=>{const v=scoreField(x,c),w=weight(p,c.code);den+=w;
+ activeCriteria(p).forEach(c=>{const v=scoreField(x,c),w=weight(p,c.code);den+=w;
  if(v!=null){done++;sum+=util(c,v)*w}
  details.push({c,v,w,u:v!=null?util(c,v):0});
  });
@@ -197,7 +198,7 @@ function decisionPanel(p){
  return h;
 }
 function criteriaPage(p){
- const grps=PS_GROUPS,cs=PS_CRITERIA,wgt=c=>weight(p,c.code),tot=cs.reduce((n,c)=>n+wgt(c),0),colors=['#1B3A73','#C8A84B','#8FA3C6','#C76B5A'];
+ const grps=PS_GROUPS,cs=activeCriteria(p),wgt=c=>weight(p,c.code),tot=cs.reduce((n,c)=>n+wgt(c),0),colors=['#1B3A73','#C8A84B','#8FA3C6','#C76B5A'];
  const groupPct=g=>cs.filter(c=>c.g===g[0]).reduce((n,c)=>n+wgt(c),0)/tot*100;
  let pos=0,seg=grps.map((g,i)=>{const q=groupPct(g);const t=colors[i]+' '+pos.toFixed(1)+'% '+(pos+q).toFixed(1)+'%';pos+=q;return t}).join(',');
  let h='<div class="prio-clayout"><aside class="prio-cside"><div class="prio-card"><h3>Komposisi bobot</h3><p class="prio-sub">Porsi 4 kelompok setelah normalisasi (Σ W = '+tot+')</p><div class="prio-donut" style="background:conic-gradient('+seg+')"><div><b>12</b><small>kriteria<br>4 kelompok</small></div></div><div class="prio-legend">'+grps.map((g,i)=>'<div><i style="background:'+colors[i]+'"></i><span>'+g[1]+'</span><b>'+groupPct(g).toFixed(1)+'%</b></div>').join('')+'</div>'+
@@ -319,10 +320,11 @@ function referencePage(p){
  let h='<div class="prio-card prio-t1"><div class="pswf-ref-head"><h3>Tabel 1 · Kriteria dan Bobot</h3><span class="pswf-sp"></span>'+
  '<label><input type="checkbox" id="pswf-formula" '+(u.formula?'checked':'')+'> Tampilkan formula</label>'+
  '<label><input type="checkbox" id="pswf-params" '+(u.params?'checked':'')+'> Tampilkan semua parameter</label>'+
+ (ownerOk(p)&&p.psStatus!=='Ditetapkan'?'<button type="button" class="btn btn-outline btn-sm" data-pswf="edit-text">✎ Ubah teks</button><button type="button" class="btn btn-outline btn-sm" data-pswf="reset-text">↺ Teks default</button>':'')+
  '<button type="button" class="btn btn-outline btn-sm" data-pswf="excel-reference">⇩ Excel</button></div>';
  if(u.formula)h+='<p class="pswf-note">Skor akhir = 100 × Σ (bobot normalisasi × utility). Utility manfaat = (nilai−1)/4; utility biaya = (5−nilai)/4. Bobot normalisasi = bobot / '+w+'.</p>';
  h+='<div class="prio-likert-wrap"><table class="prio-kb-table"><thead><tr><th>No</th><th>Variabel</th><th>Nama Kriteria</th><th>Parameter</th><th>Nilai Kriteria</th><th>Bobot Kriteria<br><small>Skala 1–7</small></th><th>Normalisasi Bobot</th></tr></thead><tbody>';
- PS_CRITERIA.forEach((c,i)=>{
+ activeCriteria(p).forEach((c,i)=>{
   const n=u.params?5:1,v=weight(p,c.code),pct=(v/w*100).toFixed(1).replace('.',',')+'%',name=(PS_GROUPS.find(x=>x[0]===c.g)||[])[1]||c.g;
   for(let j=0;j<n;j++){const ri=u.params?4-j:0;
    h+='<tr class="'+(j===0?'kb-first':'')+'">'+(j===0?'<td rowspan="'+n+'" class="kb-no">'+(i+1)+'</td><td rowspan="'+n+'">'+esc2(name)+'</td><td rowspan="'+n+'" class="kb-name"><b>'+c.code+' · '+esc2(c.name)+'</b><small>'+esc2(c.note||'')+'</small><em class="'+c.type+'">'+c.type+'</em></td>':'')+
@@ -360,6 +362,8 @@ function mount(){
    case 'clear-all':if(p&&!p.psPrioritize&&!readonly(p)){rowsFor(p).forEach(x=>x.included=false);save();render()}return;
    case 'save-weights':if(p)saveWeights(p,root);return;
    case 'reset-weights':if(p)resetWeights(p);return;
+   case 'edit-text':if(p)editRubrics(p);return;
+   case 'reset-text':if(p&&!readonly(p)&&window.confirm('Pulihkan teks semua kriteria ke versi Dashboard CM?')){p.psRubrics={};save();render()}return;
    case 'finalize':if(p)finalize(p);return;
    case 'reopen':if(p)reopen(p);return;
    case 'go-wbs':if(p){S.ui.prog=p.akr;save();location.hash='#pmo-wbsplan'}return;
@@ -460,7 +464,7 @@ function projectModal(p,id){
  area('accepted','Kriteria penyelesaian (acceptance criteria)',g('accepted'))+
  area('notes','Catatan penilaian dan keputusan',g('notes'))+'</div>'+
  '<details class="pswf-detail-form" '+(p.psPrioritize?'open':'')+'><summary>Penilaian SMART · 12 kriteria (opsional jika prioritisasi tidak digunakan)</summary>'+
- '<div class="pswf-score-grid">'+PS_CRITERIA.map(c=>{
+ '<div class="pswf-score-grid">'+activeCriteria(p).map(c=>{
   const chosen=+(x?.scores||{})[c.code]||0;
   return '<label><b>'+c.code+' · '+esc2(c.name)+'</b><small>'+esc2(c.note||'')+'</small><select data-score="'+c.code+'"><option value="">'+(c.auto?'Gunakan nilai otomatis / belum tersedia':'Belum dinilai')+'</option>'+
   [1,2,3,4,5].map((v,i)=>'<option value="'+v+'"'+(chosen===v?' selected':'')+'>'+v+' · '+esc2(c.rubric[i])+'</option>').join('')+'</select></label>';
@@ -494,6 +498,30 @@ function importLegacyProjects(p){
   rowsFor(p).push({id:uid2('proj'),name:x.n,uic:x.uic||p.uic,pic:'',users:'',goLive:x.f||'',start:x.s||'',status:'Berjalan',included:true,scores:{},poster:{},risks:{},indicators:[],benefits:[]});n++;
  });p.psYear=year();save();render();toast(n+' proyek diambil dari WBS lama.');
 }
+
+function editRubrics(p){
+ if(readonly(p))return;
+ let body='<p class="pswf-note">Perubahan hanya pada nama, uraian, dan parameter rubrik di program ini. Formula, jumlah kriteria, dan tipe benefit/biaya tetap menggunakan metode SMART asli.</p><div class="pswf-rubric-edit">';
+ activeCriteria(p).forEach(c=>{
+  body+='<details><summary>'+c.code+' · '+esc2(c.name)+'</summary><div class="pswf-form-grid">'+
+   field('name-'+c.code,'Nama kriteria',c.name)+area('note-'+c.code,'Catatan kriteria',c.note||'')+
+   area('desc-'+c.code,'Definisi / uraian',c.desc||'')+
+   c.rubric.map((r,i)=>area('rubric-'+c.code+'-'+i,'Nilai '+(i+1),r)).join('')+
+   '</div></details>';
+ });body+='</div>';
+ modal('Ubah Teks Kriteria & Rubrik SMART · '+p.nama,body,(box,close)=>{
+  const custom={};
+  PS_CRITERIA.forEach(c=>{
+    const change={name:val(box,'name-'+c.code)||c.name,
+      note:val(box,'note-'+c.code),
+      desc:val(box,'desc-'+c.code),
+      rubric:[0,1,2,3,4].map(i=>val(box,'rubric-'+c.code+'-'+i)||c.rubric[i])};
+    if(change.name!==c.name||change.note!==c.note||change.desc!==c.desc||change.rubric.some((x,i)=>x!==c.rubric[i]))custom[c.code]=change;
+  });
+  p.psRubrics=custom;save();close();render();toast('Teks kriteria diperbarui untuk program ini.');
+ },'Simpan Teks');
+}
+
 function saveWeights(p,root){
  if(readonly(p))return;const w={};let valid=true;
  root.querySelectorAll('[data-pswf-weight]').forEach(q=>{const n=+q.value;if(!Number.isInteger(n)||n<1||n>7)valid=false;else w[q.dataset.pswfWeight]=n});
@@ -537,7 +565,7 @@ function monevModal(p,pid,type,index){
 function exportCsv(p,type){
  if(!p){toast('Pilih program dahulu.');return}
  let data=[];
- if(type==='criteria')data=[['Kode','Kriteria','Kelompok','Jenis','Bobot','Normalisasi (%)'],...PS_CRITERIA.map(c=>[c.code,c.name,(PS_GROUPS.find(g=>g[0]===c.g)||[])[1],c.type,weight(p,c.code),(weight(p,c.code)/PS_CRITERIA.reduce((n,x)=>n+weight(p,x.code),0)*100).toFixed(1)])];
+ if(type==='criteria')data=[['Kode','Kriteria','Kelompok','Jenis','Bobot','Normalisasi (%)'],...activeCriteria(p).map(c=>[c.code,c.name,(PS_GROUPS.find(g=>g[0]===c.g)||[])[1],c.type,weight(p,c.code),(weight(p,c.code)/PS_CRITERIA.reduce((n,x)=>n+weight(p,x.code),0)*100).toFixed(1)])];
  else if(type==='monev')data=[['Tahun','Program','Proyek','Jenis','Indikator/Manfaat','Baseline','Target','Realisasi','Satuan','Arah','TW I','TW II','TW III','TW IV','Tenggat','Capaian (%)'],...rowsFor(p).flatMap(x=>['indicators','benefits'].flatMap(k=>x[k].map(o=>[year(),p.nama,x.name,k==='indicators'?'Indikator':'Manfaat',o.name,o.base,o.target,latest(o),o.unit,o.direction||'Naik',(o.quarters||{}).Q1,(o.quarters||{}).Q2,(o.quarters||{}).Q3,(o.quarters||{}).Q4,o.due,metricPct(o)??''])))];
  else data=[['Tahun','Program','Proyek','UIC','PIC','Status','Skor SMART','Terpilih','Go-live','Output','Acceptance Criteria'],...rowsFor(p).map(x=>[year(),p.nama,x.name,x.uic,x.pic,x.status,calc(x,p).score??'',included(x,p)?'Ya':'Tidak',x.goLive,x.outputs,x.accepted])];
  const csv='\ufeff'+data.map(r=>r.map(c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"').join(',')).join('\r\n');
