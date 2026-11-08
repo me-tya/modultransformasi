@@ -39,7 +39,7 @@ test('Production includes workflow assets, six tabs and no visual journey strip'
  ['Usulan Program','Pemetaan Proyek','Prioritasi','Charter Program','Penetapan','Draft RKMK'].forEach(x=>assert.match(page,new RegExp(x)));
  assert.doesNotMatch(page,/pswf-journey/);
 });
-test('Carry-over clones program, charter and full WBS drafts but not actuals or evidence',()=>{
+test('Carry-over clones program and charter but leaves prior-year WBS for fresh planning',()=>{
  const m=boot();
  const copy=m.api.cloneProgram(m.p,2026,2027);
  assert.equal(copy.psYear,2027);
@@ -51,26 +51,20 @@ test('Carry-over clones program, charter and full WBS drafts but not actuals or 
  assert.equal(copy.psBenefits[0].target,m.p.psBenefits[0].target);
  assert.equal(copy.psProjects.length,1);
  assert.equal(copy.psProjects[0].name,'e-Perjadin');
- assert.equal(copy.psWbsDraft.length,2);
- assert.equal(copy.psWbsDraft[0].f,'2027-11-15');
- assert.equal(copy.psWbsDraft[0].rm,0);
- assert.equal(copy.psWbsDraft[0].v,0);
- assert.equal(copy.psWbsDraft[0].prog,copy.akr);
+ assert.equal(copy.psWbsDraft.length,0,'WBS should be planned anew for the destination year');
  assert.ok(m.S.charters.some(c=>c.prog===copy.akr&&c.st==='Draft'&&c.kpY===2027));
  assert.equal(m.S.wbs.length,2,'WBS must not enter PM until finalization');
  assert.equal(m.S.bukti['OA-11'].link,'bukti','Source evidence must be preserved only on source');
  assert.equal(m.S.wbs[0].v,1,'Source actuals must remain unchanged');
 });
-test('WBS sync after Penetapan is idempotent and no 2026 realization is brought',()=>{
+test('Penetapan does not sync a historical WBS without a newly planned WBS',()=>{
  const m=boot(),copy=m.api.cloneProgram(m.p,2026,2027);m.S.programs.push(copy);
  copy.psStatus='Ditetapkan';copy.psDraft=false;
  copy.psSelectedProjectIds=copy.psProjects.map(x=>x.id);
- assert.equal(m.api.syncWbs(copy),2);
  assert.equal(m.api.syncWbs(copy),0);
- assert.equal(m.S.wbs.length,4);
- const mapped=m.S.wbs.filter(w=>w.prog===copy.akr);
- assert.ok(mapped.every(w=>w.v===0&&w.rm===0&&w.psNeedsReview));
- assert.ok(mapped.every(w=>String(w.f).startsWith('2027-')));
+ assert.equal(m.api.syncWbs(copy),0);
+ assert.equal(m.S.wbs.length,2);
+ assert.equal(m.S.wbs.filter(w=>w.prog===copy.akr).length,0);
  assert.equal(m.S.wbs.filter(w=>w.prog==='OA').length,2);
 });
 test('RKMK source is truthfully attributed when 2025 charter does not exist',()=>{
