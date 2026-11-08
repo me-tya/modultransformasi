@@ -242,9 +242,13 @@ function arm(el,delay){
  showTimer=setTimeout(function(){showTimer=0;show(el);},delay);
 }
 document.addEventListener('pointerover',function(ev){
- if(!enabled||ev.pointerType==='touch')return;
+ if(ev.pointerType==='touch')return;
  var el=targetFor(ev.target);
- if(el&&el!==active)arm(el,260);
+ if(!el)return;
+ // Menus rendered dynamically after Bantuan is disabled must not expose
+ // the browser's native title tooltip either. No DOM subtree scan needed.
+ if(!enabled){muteNativeTitle(el);return}
+ if(el!==active)arm(el,260);
 });
 document.addEventListener('pointerout',function(ev){
  var el=targetFor(ev.target);
@@ -253,9 +257,10 @@ document.addEventListener('pointerout',function(ev){
  if(el===active||showTimer)hide();
 });
 document.addEventListener('focusin',function(ev){
- if(!enabled)return;
  var el=targetFor(ev.target);
- if(el)arm(el,70);
+ if(!el)return;
+ if(!enabled){muteNativeTitle(el);return}
+ arm(el,70);
 });
 document.addEventListener('focusout',function(ev){
  if(active&&ev.target===active)hide();
@@ -267,14 +272,15 @@ document.addEventListener('pointerdown',hide,true);
 /* Bantuan kontekstual dapat dinyalakan/matikan tanpa mengubah alur aplikasi.
  * OFF juga menonaktifkan title bawaan browser pada navigasi agar benar-benar senyap.
  */
+function muteNativeTitle(node){
+ if(!node||!node.hasAttribute||!node.hasAttribute('title'))return;
+ if(!mutedTitles.has(node))mutedTitles.set(node,node.getAttribute('title'));
+ node.removeAttribute('title');
+}
 function muteNativeTitles(){
  if(enabled||typeof document.querySelectorAll!=='function')return;
  mutedTitles.forEach(function(_,node){if(!node.isConnected)mutedTitles.delete(node)});
- document.querySelectorAll(selector).forEach(function(node){
-  if(!node.hasAttribute('title'))return;
-  if(!mutedTitles.has(node))mutedTitles.set(node,node.getAttribute('title'));
-  node.removeAttribute('title');
- });
+ document.querySelectorAll(selector).forEach(muteNativeTitle);
 }
 function restoreNativeTitles(){
  mutedTitles.forEach(function(value,node){
@@ -324,6 +330,18 @@ function installHeaderControls(){
   header.insertBefore(control,avatar);
  }
  updateControl();
+ // Icon-only actions: preserve original click workflows and show precise
+ // descriptive native hover help irrespective of navigation tooltip mode.
+ var help=header.querySelector('.sk-hdrActions .sk-hdrHelp');
+ if(help){
+  help.setAttribute('title','Pusat Bantuan: panduan penggunaan aplikasi, alur menu, fitur, dan cara pengisian. Klik untuk membuka.');
+  help.setAttribute('aria-label','Buka Pusat Bantuan penggunaan Modul Transformasi');
+ }
+ var sheet=header.querySelector('.sk-hdrActions .sk-hdrSheet');
+ if(sheet){
+  sheet.setAttribute('title','Cheatsheet: referensi ringkas tata kelola, peran PMO/CMO, tahapan, dan ketentuan transformasi. Klik untuk membuka.');
+  sheet.setAttribute('aria-label','Buka Cheatsheet referensi tata kelola transformasi');
+ }
  var badge=header.querySelector('#dbb');
  if(badge){
   compactSync(badge);
@@ -336,7 +354,8 @@ function installHeaderControls(){
    }
   }
  }else if(syncObserver){syncObserver.disconnect();syncObserver=null;observedBadge=null}
- if(!enabled)muteNativeTitles();
+ // Do not scan every menu/tab after each app mutation. OFF-mode native
+ // title is removed lazily when a newly rendered tab receives hover/focus.
 }
 function initHeaderControls(){
  if(typeof document.querySelector!=='function'||typeof MutationObserver==='undefined')return;
@@ -359,8 +378,11 @@ function initHeaderControls(){
  '#app .top #dbb[data-mt-sync="error"]::before{content:"⚠ Sync";color:#ffc2b9}',
  '#app .top #dbb[data-mt-sync="error"]{border-color:#e7786e;background:rgba(226,77,77,.14)}',
  '#app .top #dbb[data-mt-sync="pending"]{border-color:#d7aa41;background:rgba(253,185,19,.12)}',
- '#app .top .sk-hdrActions .sk-hdrHelp{box-sizing:border-box;width:36px;min-width:36px!important;padding:0!important}',
- '#app .top .sk-hdrActions .sk-hdrHelp span{display:none!important}',
+ '#app .top .sk-hdrActions .sk-hdrHelp,#app .top .sk-hdrActions .sk-hdrSheet{box-sizing:border-box;width:36px!important;min-width:36px!important;max-width:36px!important;flex:0 0 36px!important;padding:0!important;gap:0!important;white-space:nowrap;overflow:hidden}',
+ '#app .top .sk-hdrActions .sk-hdrHelp span,#app .top .sk-hdrActions .sk-hdrSheet span{display:none!important}',
+ '#app .top .sk-hdrActions .sk-hdrHelp i{margin:0!important}',
+ '#app .top .sk-hdrActions .sk-hdrSheet{font-size:17px!important}',
+ '#app .top .sk-hdrActions .sk-hdrSheet:hover,#app .top .sk-hdrActions .sk-hdrHelp:hover{filter:brightness(1.045)}',
  '@media(min-width:901px){#app header.top{flex-wrap:nowrap!important}#app .top .role{max-width:29vw;overflow:hidden;text-overflow:ellipsis}}',
  '@media(max-width:1260px){#app .top .mt-help-switch{--mt-help-width:75px;gap:4px}#app .top .mt-help-switch .mt-help-caption{display:none}#app .top .sk-hdrSheet span{display:none}}',
  '@media(max-width:900px){#app .top .mt-help-switch{--mt-help-width:75px}#app .top .mt-help-switch .mt-help-caption{display:none}}'
@@ -368,13 +390,16 @@ function initHeaderControls(){
  if(!document.getElementById('mt-help-toolbar-styles'))document.head.appendChild(style);
  var root=document.getElementById('root')||document.body;
  if(!root)return;
+ // App replaces #root's direct child on full navigations. Observing the
+ // entire descendant tree caused repeated global selector scans and lag
+ // while typing, opening menus, editing WBS, and rendering large tables.
  headerObserver=new MutationObserver(function(){installHeaderControls()});
- headerObserver.observe(root,{childList:true,subtree:true});
+ headerObserver.observe(root,{childList:true});
  installHeaderControls();
 }
 if(typeof document.querySelector==='function'){
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initHeaderControls,{once:true});
  else initHeaderControls();
 }
-window.MT_MENU_TOOLTIP={hide:hide,resolve:lookup,enabled:function(){return enabled},setEnabled:setEnabled,version:'20261109-function-boundaries-help-toggle-v2'};
+window.MT_MENU_TOOLTIP={hide:hide,resolve:lookup,enabled:function(){return enabled},setEnabled:setEnabled,version:'20261109-function-boundaries-help-toggle-performance-v4'};
 })();
