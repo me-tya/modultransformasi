@@ -37,7 +37,7 @@ const PS_CRITERIA=[
 const esc2=v=>esc(String(v==null?'':v));
 const editOk=()=>!!(ME&&['SA','PMOK','PMOU'].includes(ME.role));
 const ownerOk=p=>editOk()&&(ME.role!=='PMOU'||!p.uic||p.uic===ME.unit);
-const state=()=>S.ui.psFlow||(S.ui.psFlow={tab:'portfolio',prog:'',q:'',filter:'all',sort:'score',view:'list',open:[],params:true,formula:false,showChosen:false,monevView:'proj',monevPid:'',snapshot:0});
+const state=()=>{const u=S.ui.psFlow||(S.ui.psFlow={tab:'portfolio',prog:'',q:'',filter:'all',sort:'score',view:'list',open:[],params:true,formula:false,showChosen:false,monevView:'proj',monevPid:'',snapshot:0});if(!u.psGovNavV){u.tab='portfolio';u.psGovNavV=1}return u};
 const allPrograms=()=>S.programs||[];
 const year=()=>+S.ui.tahun||2026;
 const uid2=t=>(t||'ps')+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);
@@ -91,8 +91,9 @@ const programsOpts=(selected)=>programs().map(p=>'<option value="'+esc2(p.id)+'"
 function top(p){
  const y=year(),u=state(),num=programs().length,ct=p?rowsFor(p).length:0,approved=p?chosen(p).length:0;
  let h=vh('PS','pmo','Project Selection','Susun program dan calon proyek sebelum Work Breakdown Structure (WBS). Prioritisasi bersifat opsional.');
+ const phase=u.tab==='portfolio'?0:u.tab==='program'?1:(u.tab==='projects'||u.tab==='criteria')?2:u.tab==='reference'?3:4;
  h+='<section class="pswf" aria-label="Project Selection workflow"><div class="pswf-journey" role="list">'+
- [['1','Program & Calon Proyek'],['2','Prioritisasi Opsional'],['3','Penetapan'],['4','RKMK → WBS']].map((q,i)=>'<span role="listitem" class="'+(i===0?'on':'')+'"><b>'+q[0]+'</b>'+q[1]+'</span>').join('')+'</div>';
+ [['1','Portofolio'],['2','Program'],['3','Seleksi Proyek'],['4','Penetapan'],['5','RKMK → WBS']].map((q,i)=>'<span role="listitem" class="'+(i===phase?'on':'')+'"><b>'+q[0]+'</b>'+q[1]+'</span>').join('')+'</div>';
  h+='<div class="pswf-topbar"><label>Tahun Anggaran <select id="pswf-year">'+[2025,2026,2027,2028,2029].map(v=>'<option value="'+v+'"'+(y===v?' selected':'')+'>'+v+'</option>').join('')+'</select></label><label>Program Transformasi <select id="pswf-program">'+(num?programsOpts(p&&p.id):'<option value="">Belum ada program '+y+'</option>')+'</select></label>'+
  (editOk()?'<button type="button" class="btn pri" data-pswf="add-program">+ Tambah Program</button>':'')+
  (p&&ownerOk(p)&&p.psStatus!=='Ditetapkan'?'<button type="button" class="btn" data-pswf="edit-program">Ubah Program</button>':'')+
@@ -442,7 +443,7 @@ function programModal(p){
    psOutcome:val(box,'outcome'),psRisks:p?.psRisks||'',psThemes:val(box,'themes'),psYear:y,
    psUpdatedAt:new Date().toISOString(),psUpdatedBy:ME.email||''});
   if(isNew)allPrograms().push(target);
-  state().prog=target.id;state().tab='program';S.ui.psGov={step:'identity'};save();close();render();toast('Program disimpan sebagai Draft. Lengkapi profil, manfaat, stakeholder, risiko, dan tata kelola.');
+  state().prog=target.id;state().tab='program';if(isNew)S.ui.psGov={step:'identity'};save();close();render();toast('Program tersimpan. '+(isNew?'Lengkapi profil, manfaat, stakeholder, risiko, dan tata kelola.':'Kembali ke tahapan kelengkapan program.'));
  },isNew?'Tambah Program':'Simpan Program');
 }
 function deleteProgram(p){
@@ -591,7 +592,8 @@ function open(mode){
  const p=pickedProgram(),body='<p><b>Alur Project Selection</b>: pilih tahun (default 2026) → Portofolio → Program (identitas, business case, manfaat, stakeholder, risiko, tata kelola, reviu) → Seleksi Proyek (SMART opsional) → Penetapan → RKMK Word → WBS di Project Management.</p>'+
  '<p><b>Dokumen minimum</b>: identitas & sponsor, keselarasan Renstra/IKU, business case, manfaat terukur, stakeholder, dan risiko/mitigasi. Roadmap, rencana sumber daya, dependensi, serta forum keputusan direkomendasikan. Draft dapat disimpan tanpa semua data.</p>'+ 
  '<p><b>Ambang</b>: SMART mensyaratkan 12 kriteria lengkap dan skor di atas ambang (bawaan 80); tanpa SMART, pilih manual.</p>'+
- '<p><b>Rujukan</b>: kriteria SMART dari menu Priority Dashboard CM; struktur dokumen rancangan RKMK mengacu pada Lampiran II KMK Nomor 132 Tahun 2025 (Charter, Acceptance Criteria, Rencana Kerja).</p>';
+ '<p><b>Rujukan</b>: PMI <i>The Standard for Program Management</i> (business case, benefits realization, stakeholder, governance, risk, roadmap); SMART untuk pemilihan calon proyek; format RKMK tetap mengikuti ketentuan Kemenkeu yang berlaku.</p>'+
+ (mode==='sheet'?'<hr><p><b>Cheatsheet PMI · 4 pertanyaan kunci</b>: (1) Mengapa program ini dibutuhkan dan mendukung strategi apa? (2) Manfaat terukurnya apa, kapan, serta siapa benefit owner? (3) Pemangku kepentingan, risiko dan dependensi lintas UE I mana yang menentukan keberhasilan? (4) Siapa mengambil keputusan serta bagaimana roadmap dan kapasitasnya?</p><p><b>Perbedaan tingkat register</b>: Project Selection mencatat risiko dan stakeholder lintas proyek pada tingkat <i>program</i>; Workspace Proyek mencatat detail risiko dan stakeholder proyek setelah ditetapkan. Jangan menggandakan entri tanpa relasi.</p>':'<hr><p><b>Cara menggunakan</b>: klik + Tambah Program, isi identitas lalu Simpan. Ikuti 7 langkah tab Program dan gunakan tanda kelengkapan pada tab Reviu. Klik Seleksi Proyek untuk menambah, menilai, lalu tetapkan proyek. Sesudah penetapan, generate RKMK dan susun WBS.</p>');
  const box=document.createElement('div');box.className='pswf-overlay';box.innerHTML='<section class="pswf-modal" role="dialog" aria-modal="true"><header><h2>'+(mode==='help'?'Bantuan Project Selection':'Cheatsheet Project Selection')+'</h2><button data-close>✕</button></header><main>'+body+'</main><footer><button class="btn pri" data-close>Tutup</button></footer></section>';
  document.body.appendChild(box);box.addEventListener('click',e=>{if(e.target===box||e.target.closest('[data-close]'))box.remove()});
 }
