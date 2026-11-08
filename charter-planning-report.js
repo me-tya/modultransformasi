@@ -1,7 +1,7 @@
 (function charterPlanningPlugin(){
 'use strict';
 const CPLAN_KEYS=[['asis','Analisis Kondisi Saat Ini (As-is)'],['tobe','Analisis Kondisi yang Diharapkan (To-be)'],['cs','Perbandingan Kondisi'],['ch','Charter Proyek'],['kp','Kriteria Penyelesaian'],['mf','Manfaat Proyek'],['rk','Linimasa dan Rencana Kerja']];
-const cpDefault=()=>({asis:1,tobe:1,cs:1,ch:1,kp:1,mf:1,rk:1,toc:1,charts:1,tte:0});
+const cpDefault=()=>({asis:1,tobe:1,cs:1,ch:1,kp:1,mf:1,rk:1,toc:1,charts:1,tte:1});
 const cpTxt=(x,none='—')=>{const v=Array.isArray(x)?x.filter(y=>String(y??'').trim()).join('\n'):String(x??'').trim();return v||none};
 const cpName=(c)=>'Dokumen_Perencanaan_Proyek_'+String(chProg(c).kode||c.prog).replace(/[^A-Za-z0-9_-]/g,'_')+'_v'+c.ver;
 const cpNameTable=(head,rows,caption,ws)=>({t:'table',caption,head,rows:rows.length?rows:[head.map((_,i)=>i?'—':'Belum diisi')],small:true,widths:ws});
@@ -20,7 +20,12 @@ function cpGanttImg(c){
  return {src:cv.toDataURL('image/png'),w:W,h:H};
 }
 function cpModel(c,inc,sign,num=''){
- const p=chProg(c),title=chJudul(c),B=[],has=k=>!!inc[k],none='Belum diisi pada dokumen sumber.';
+ const p=chProg(c),knownModules=Array.isArray(p.psProjects)?p.psProjects:[],
+ linked=knownModules.find(x=>String(x.id||x.name)===String(c.projectId||c.moduleId||'')),
+ storedTitle=String(chJudul(c)||'').trim(),
+ title=String(c.moduleName||c.projectName||linked?.name||
+  (storedTitle&&storedTitle!==String(p.nama||'').trim()?storedTitle:
+   knownModules.length===1?knownModules[0].name:'Nama modul belum ditentukan')),B=[],has=k=>!!inc[k],none='Belum diisi pada dokumen sumber.';
  const h1=t=>B.push({t:'h1',text:t}), h2=t=>B.push({t:'h2',text:t});
  const para=(s)=>B.push({t:'p',text:cpTxt(s,none)});
  const bullets=(a)=>{a=(a||[]).filter(x=>String(x??'').trim());if(a.length)B.push({t:'bullets',items:a.map(String)});else para(none)};
