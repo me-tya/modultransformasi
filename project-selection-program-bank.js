@@ -78,8 +78,7 @@ const canDelete=p=>canManage(p)&&+p.psYear===year()&&year()>=2027&&isConcept(p)&
 const helpInfo={
  bank:'Riwayat Program merupakan arsip referensi lintas tahun. Pilih program untuk disalin menjadi usulan pada tahun aktif. Data historis tidak diedit di sini.',
  detail:'Daftar Program memuat calon program transformasi. Lengkapi substansi dan proyek pendukung, kemudian ajukan penetapan melalui kontrak kinerja K-Wide. Pengubahan dilakukan pada daftar ini.',
- portfolio:'Gabungkan substansi usulan program tahun aktif menjadi dokumen portofolio. Dokumen ini tidak menggantikan penetapan melalui kontrak kinerja K-Wide.',
- penetapan:'Isi target output dan tanggal cut-off per TW I–IV, catat nomor, tanggal, pejabat penetap serta bukti kontrak kinerja K-Wide. Penetapan proyek dilakukan pada tahap berikutnya; WBS tidak otomatis aktif.'
+ portfolio:'Gabungkan substansi usulan program tahun aktif menjadi dokumen portofolio. Dokumen ini tidak menggantikan penetapan melalui kontrak kinerja K-Wide.'
 };
 const infoIcon=(key)=>'<span class="psbank-helpicon" tabindex="0" role="img" aria-label="'+E(helpInfo[key])+'" title="'+E(helpInfo[key])+'">ⓘ</span>';
 function deleteConcept(p){
@@ -235,9 +234,9 @@ function usulan(){
  syncProgramStatuses();
  const b=store(),tab=b.tab;
  return '<div class="psbank-subhead"><nav class="psbank-subtabs" role="tablist" aria-label="Usulan Program">'+
- [['bank','Riwayat Program'],['detail','Daftar Program'],['portfolio','Buat Dokumen Portofolio'],['penetapan','Penetapan']].map(t=>'<button type="button" class="'+(tab===t[0]?'on':'')+'" data-bank-tab="'+t[0]+'" title="'+E(helpInfo[t[0]])+'">'+t[1]+(t[0]==='detail'?' <b>'+active().length+'</b>':'')+'</button>').join('')+
+ [['bank','Riwayat Program'],['detail','Daftar Program'],['portfolio','Buat Dokumen Portofolio']].map(t=>'<button type="button" class="'+(tab===t[0]?'on':'')+'" data-bank-tab="'+t[0]+'" title="'+E(helpInfo[t[0]])+'">'+t[1]+(t[0]==='detail'?' <b>'+active().length+'</b>':'')+'</button>').join('')+
  '</nav>'+(tab==='detail'?'<button class="btn pri" data-bank-new>+ Tambah Program Baru</button>':'')+'</div>'+
- (tab==='bank'?bank():tab==='portfolio'?(Docs.portfolioBuilder?.(active())||'<div class="psbank-card">Fitur dokumen portofolio belum tersedia.</div>'):tab==='penetapan'?(window.MT_PS_WORKFLOW?.renderWidePanel?.()||'<div class="psbank-card" role="status">Form Penetapan K-Wide belum dapat dimuat. Muat ulang aplikasi.</div>'):detail());
+ (tab==='bank'?bank():tab==='portfolio'?(Docs.portfolioBuilder?.(active())||'<div class="psbank-card">Fitur dokumen portofolio belum tersedia.</div>'):detail());
 }
 const EDIT_FIELDS={
  identity:[['nama','Nama Program'],['kode','Kode Program'],['jenis','Jenis Program'],['uic','UIC Utama'],['pend','UIC Pendukung'],['sponsor','Sponsor'],['psObjective','Tujuan Strategis'],['psBackground','Latar Belakang'],['psOutcome','Outcome'],['psStrategy','Strategi']],
