@@ -51,6 +51,7 @@ function deleteConcept(p){
  const perform=()=>{
   if(!canDelete(p))return;
   S.programs=S.programs.filter(x=>x!==p);
+  if(Array.isArray(S.charters))S.charters=S.charters.filter(c=>c.prog!==p.akr||c.st==='Disahkan');
   if(S.psWideTargets?.[year()]?.rows)S.psWideTargets[year()].rows=S.psWideTargets[year()].rows.filter(x=>String(x.programId)!==String(p.id));
   if(state().prog===p.id)state().prog='';
   if(store().workspace===p.id)store().workspace='';
@@ -142,7 +143,7 @@ function detail(){
  const allRows=active(),complete=p=>window.MT_PS_GOV?.readiness(p)||{done:0,total:7};
  return '<div class="psbank-card"><div class="psbank-sectionhead"><div><h3>Daftar Program · '+year()+' '+infoIcon('detail')+'</h3><p>Kumpulan usulan program transformasi yang perlu dilengkapi substansi dan proyeknya sebelum ditetapkan melalui kontrak kinerja K-Wide. Klik program untuk mengedit.</p></div><span class="psbank-count">'+rows.length+' program</span></div>'+
  '<div class="psbank-tablewrap"><table class="psbank-table psbank-detail-table"><colgroup><col><col><col><col><col><col><col><col><col></colgroup><thead><tr><th>Tahun</th><th>Kode Program</th><th>Nama Program</th><th>UIC</th><th>Asal</th><th>Status</th><th>Kelengkapan</th><th>Modul</th><th>Aksi</th></tr></thead><tbody>'+
- (visibleRows.length?visibleRows.map(p=>{const readiness=complete(p);return '<tr tabindex="0" data-bank-detailrow="'+E(p.id)+'" class="psbank-clickrow" title="Klik baris untuk melihat Dokumen Program"><td>'+year()+'</td><td><b>'+E(p.kode||p.akr)+'</b></td><td><b>'+E(p.nama)+'</b></td><td>'+E(p.uic||'—')+'</td><td>'+E(p.psCarry?'Dari '+p.psCarry.sourceYear:'Program baru')+'</td><td><select class="psbank-status-select psbank-'+labelStatus(p).toLowerCase()+'" data-bank-status="'+E(p.id)+'" aria-label="Status program '+E(p.nama)+'" title="Baru = usulan pertama tahun ini; Legacy = lanjutan program sebelumnya; Arsip = ditutup dengan bukti penutupan" '+(!canManage(p)||labelStatus(p)==='Arsip'?'disabled':'')+'>'+['Baru','Legacy','Arsip'].map(st=>'<option value="'+st+'" '+(labelStatus(p)===st?'selected':'')+'>'+st+'</option>').join('')+'</select><small class="psbank-stage">'+E(p.psStatus==='Ditetapkan'?'Ditetapkan K-Wide':'Konsep / belum ditetapkan')+'</small></td><td><b>'+readiness.done+'/'+readiness.total+'</b><small>'+E(readiness.ok?'Siap direviu':'Perlu dilengkapi')+'</small></td><td>'+Scope.modules(p,year()).length+'</td>'+
+ (visibleRows.length?visibleRows.map(p=>{const readiness=complete(p);return '<tr tabindex="0" data-bank-detailrow="'+E(p.id)+'" class="psbank-clickrow" title="Klik baris untuk melihat Dokumen Program"><td>'+year()+'</td><td><b>'+E(p.kode||p.akr)+'</b></td><td><b>'+E(p.nama)+'</b></td><td>'+E(p.uic||'—')+'</td><td>'+E(p.psCarry?'Dari '+p.psCarry.sourceYear:'Program baru')+'</td><td><select class="psbank-status-select psbank-'+labelStatus(p).toLowerCase()+'" data-bank-status="'+E(p.id)+'" aria-label="Status program '+E(p.nama)+'" title="Baru = usulan pertama tahun ini; Legacy = lanjutan program sebelumnya; Arsip = ditutup dengan bukti penutupan" '+(!canManage(p)||labelStatus(p)==='Arsip'?'disabled':'')+'>'+['Baru','Legacy','Arsip'].map(st=>'<option value="'+st+'" '+(labelStatus(p)===st?'selected':'')+'>'+st+'</option>').join('')+'</select><small class="psbank-stage">'+E(p.psStatus==='Ditetapkan'?'Ditetapkan'+(p.psKwideContractNumber?' · K-Wide':''):'Konsep / belum ditetapkan')+'</small></td><td><b>'+readiness.done+'/'+readiness.total+'</b><small>'+E(readiness.ok?'Siap direviu':'Perlu dilengkapi')+'</small></td><td>'+Scope.modules(p,year()).length+'</td>'+
  '<td class="psbank-rowactions psbank-program-actions">'+programAction('map',p.id,'Pemetaan Proyek')+programAction('edit',p.id,'Edit Dokumen Program')+programAction('upload',p.id,'Unggah Dokumen Program')+(canDelete(p)?programAction('delete',p.id,'Hapus konsep program yang belum ditetapkan'):'')+'</td></tr>'}).join(''):'<tr><td colspan="9" class="psbank-empty">Belum ada program sesuai filter. Tambahkan program dari Riwayat Program.</td></tr>')+'</tbody></table></div>'+
  '<div class="psbank-pagination" aria-label="Navigasi halaman Daftar Program">'+
  '<label>Baris per halaman <select data-bank-detail-page-size aria-label="Jumlah baris Daftar Program per halaman">'+[10,20,50,100].map(n=>'<option value="'+n+'" '+(size===n?'selected':'')+'>'+n+'</option>').join('')+'</select></label>'+
@@ -452,6 +453,8 @@ function onChange(ev){
   const old=labelStatus(p),to=q.value;if(to===old)return;
   if(to==='Arsip'){q.value=old;archiveProgram(p);return}
   if(p.psStatus==='Ditetapkan'){toast('Asal program yang sudah ditetapkan tidak boleh diubah.');render();return}
+  if(to==='Baru'&&p.psCarry){toast('Program hasil salinan tahun sebelumnya harus berstatus Legacy. Buat usulan baru jika merupakan program baru.');render();return}
+  if(to==='Legacy'&&!p.psCarry&&!p.psSourceYear){toast('Status Legacy hanya untuk program yang memiliki sumber dari tahun sebelumnya.');render();return}
   p.psListStatus=to;p.psUpdatedAt=new Date().toISOString();p.psUpdatedBy=ME?.email||'';
   save();render();toast('Status daftar program menjadi '+to+'.');return;
  }
