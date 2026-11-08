@@ -66,7 +66,7 @@ function form(){
  if(t==='cs')return rows('Pasangan keadaan saat ini dan keadaan setelah implementasi','cs',c.cs,'cs');
  if(t==='ch'){
   const deck=makeDeck(c,active.kind);
-  return (!active.edit&&String(c.tujuan||'').trim()?'<section class="mt-doc-slide-area"><div class="mt-doc-slide" data-mt-slide><div class="dk-scale">'+dkHtml(deck.slides[0])+'</div></div><p>Pratinjau menggunakan model slide yang sama persis dengan ekspor PPTX. Slide 2 Kriteria dan slide 3 Rencana Kerja turut diekspor.</p></section>':'')+
+  return (!active.edit?'<section class="mt-doc-slide-area"><div class="mt-doc-slide" data-mt-slide><div class="dk-scale">'+dkHtml(deck.slides[0])+'</div></div><p>Pratinjau menggunakan model slide yang sama persis dengan ekspor PPTX. Slide 2 Kriteria dan slide 3 Rencana Kerja turut diekspor.</p></section>':'')+
    '<div class="mt-doc-grid">'+field('Judul '+(project?'Proyek':'Program'),'judul',c.judul)+field('Tujuan '+(project?'Proyek':'Program'),'tujuan',c.tujuan,3)+field('Periode Mulai (tahun)','p1',c.p1,1)+field('Periode Selesai (tahun)','p2',c.p2,1)+listField('Latar Belakang','lb',c.lb)+field('Terobosan','tb',c.tb,3)+listField('Output','out',c.out)+listField('Outcome','oc',c.oc)+listField('Risiko','ris',c.ris)+listField('Pendukung Kesuksesan','pk',c.pk)+field('Initiative Champion','ch',c.ch)+listField('Initiative Owner','ow',c.ow)+'</div>'+rows('Key Milestones','ms',c.ms,'ms')+
    (project?'<section class="mt-doc-copy"><label>Salin Charter Program <select data-mt-copy-source><option value="">Pilih program sumber…</option>'+
     S.programs.filter(p=>p.psProgramCharter||chCur(p.akr)).map(p=>'<option value="'+E(p.id)+'">'+E(p.kode+' · '+p.nama)+'</option>').join('')+'</select></label><button type="button" data-mt-doc="copy">Salin ke Charter Proyek</button></section>':'');
@@ -273,6 +273,7 @@ async function onAction(btn){
   const D=makeDeck(active.draft,active.kind);
   if(a==='preview'){const h='<div class="dk-wrap">'+D.slides.map((sl,i)=>'<figure class="dk-f"><div class="dk-box"><div class="dk-scale">'+dkHtml(sl)+'</div></div><figcaption>'+E((i+1)+'. '+sl.n)+'</figcaption></figure>').join('')+'</div>';
    const ov=modal('Pratinjau · '+E(D.title),h,null,null,{size:'wide dk-md',cancel:'Tutup'});
+   ov.style.zIndex='27000';
    const fit=()=>ov.querySelectorAll('.dk-scale').forEach(x=>{let w=x.parentElement.clientWidth;x.style.transform='scale('+(w/1280)+')';x.parentElement.style.height=(w*720/1280)+'px'});
    requestAnimationFrame(fit);setTimeout(fit,100);
   }else try{await dkPptx(D);toast('PPTX '+D.file+'.pptx berhasil dibuat.')}catch(err){toast('Ekspor gagal: '+(err.message||err))}
@@ -290,7 +291,7 @@ document.addEventListener('click',ev=>{
    const requested=String(selected?.dataset.s||'');
    const stepMap={id:'ch',isi:'ch',ms:'ch',rv:'ch'};
    const tab=KEYS.some(x=>x[0]===requested)?requested:stepMap[requested]||'asis';
-   const edit=!!ev.target.closest('[data-act="ched"],[data-act="chver"]');
+   const edit=!!ev.target.closest('[data-act="ched"],[data-act="chver"],[data-act="chnew"]');
    ev.preventDefault();ev.stopImmediatePropagation();openProject(p,tab,edit);return;
   }
  }
@@ -318,9 +319,18 @@ document.addEventListener('change',ev=>{
  if(file&&active?.host?.contains(file)){ev.stopImmediatePropagation();const f=file.files?.[0];file.value='';if(f)importFile(f)}
 },true);
 document.addEventListener('keydown',ev=>{
+ if(['Enter',' '].includes(ev.key)&&VIEW==='pmo-perencanaan'&&ev.target.matches('table.pdocs tbody tr')){
+  const id=ev.target.querySelector('[data-p]')?.dataset.p,p=S.programs.find(x=>x.akr===id);
+  if(p){ev.preventDefault();openProject(p);return}
+ }
  if(ev.key==='Escape'&&active&&!active.native&&active.host?.isConnected){active.host.remove();active=null}
 },true);
 function decorate(){
+ document.querySelectorAll('table.pdocs tbody tr').forEach(row=>{
+  if(row.tabIndex!==0)row.tabIndex=0;
+  row.setAttribute('role','button');
+  row.setAttribute('aria-label','Buka detail dokumen proyek '+(row.querySelector('td b')?.textContent||''));
+ });
  document.querySelectorAll('.psbank-detail-table tbody tr[data-bank-detailrow]').forEach(row=>{
   if(row.querySelector('[data-mt-download-list]'))return;
   const id=row.dataset.bankDetailrow,p=S.programs.find(x=>String(x.id)===String(id));
@@ -394,7 +404,7 @@ document.addEventListener('click',async ev=>{
  }catch(err){toast('Unduh ZIP gagal: '+(err.message||err))}
 },true);
 const css=document.createElement('style');css.textContent=`
-.mt-doc-overlay{position:fixed;inset:0;background:#06162bd1;z-index:22000;display:grid;place-items:center;padding:16px;font-family:inherit}
+ #toast{z-index:29000!important}\n.mt-doc-overlay{position:fixed;inset:0;background:#06162bd1;z-index:22000;display:grid;place-items:center;padding:16px;font-family:inherit}
 .mt-doc-dialog{height:min(90vh,940px);width:min(1490px,96vw);background:#fff;border-radius:14px;display:flex;flex-direction:column;overflow:hidden;color:#102d50;box-shadow:0 22px 70px #03152a66}
 .mt-doc-dialog>header{display:flex;align-items:center;justify-content:space-between;gap:16px;background:#0d2d52;color:#fff;padding:15px 21px;min-height:68px}
 .mt-doc-dialog>header b{font-size:19px}.mt-doc-dialog>header small{display:block;font-size:12px;opacity:.8;margin-top:3px}
@@ -427,11 +437,11 @@ const css=document.createElement('style');css.textContent=`
 .mt-doc-locked{font-size:11px;color:#7a869a}
 .mt-doc-slide-area{padding:10px;border:1px solid #d9e4ef;border-radius:9px;margin-bottom:12px}
 .mt-doc-slide{position:relative;width:100%;min-height:160px;overflow:hidden;background:#fff}.mt-doc-slide .dk-scale{width:1280px;height:720px;position:absolute;inset:0;transform-origin:0 0}
-.mt-doc-slide-area p{font-size:11px;color:#687b90;margin:8px 0 0}
+.mt-doc-slide .dk-s,.ov .dk-s{font-family:Calibri,Arial,sans-serif!important}\n.mt-doc-slide-area p{font-size:11px;color:#687b90;margin:8px 0 0}
 .psbank-dialogtabs [data-mt-program-charter]{white-space:nowrap}
 .psbank-dialogbody .mt-doc-content{padding:12px 3px}
 .psbank-dialog>footer .mt-doc-actions{justify-content:flex-end}
-.mt-row-download{background:#eef5ff;color:#17436c;border:1px solid #cddff4;border-radius:7px;padding:6px 8px;font:700 11px inherit;white-space:nowrap;cursor:pointer}.mt-file-select{display:flex;align-items:center;flex:0 0 auto;padding:6px}.mt-bulk-tools{display:flex;gap:9px;align-items:center;flex-wrap:wrap;font-size:12px}
+table.pdocs tbody tr{cursor:pointer}table.pdocs tbody tr:hover{background:#eef5ff}table.pdocs tbody tr:focus-visible{outline:2px solid #16538a;outline-offset:-2px}\n.mt-row-download{background:#eef5ff;color:#17436c;border:1px solid #cddff4;border-radius:7px;padding:6px 8px;font:700 11px inherit;white-space:nowrap;cursor:pointer}.mt-file-select{display:flex;align-items:center;flex:0 0 auto;padding:6px}.mt-bulk-tools{display:flex;gap:9px;align-items:center;flex-wrap:wrap;font-size:12px}
 .mt-bulk-tools button{border:1px solid #c4d5e9;background:#f4f8ff;border-radius:7px;color:#113b65;font-weight:800;padding:7px;cursor:pointer}
 @media(max-width:840px){.mt-doc-grid{grid-template-columns:minmax(0,1fr)}.mt-doc-dialog{width:100%;height:95vh}.mt-doc-actions{justify-content:center}.mt-doc-scroll{padding:10px}}
 `;document.head.appendChild(css);
