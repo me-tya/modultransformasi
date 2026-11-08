@@ -128,7 +128,7 @@ ACT.cpReport=el=>{
  <div class="cp-note"><strong>${esc(p.kode||c.prog)} · ${esc(chJudul(c))}</strong><small>${c.st==='Disahkan'?'Sumber disahkan':'DRAFT — charter belum disahkan'} · Versi ${c.tahun} v${c.ver}</small></div>
  <details open class="cp-config"><summary>Substansi dokumen <b id="cp-count"></b></summary><div class="cp-check-grid">${CPLAN_KEYS.map(([k,l],i)=>'<label><input type="checkbox" data-cp-inc="'+k+'" '+(inc[k]?'checked':'')+'><span><b>'+(i+1)+'.</b> '+esc(l)+'</span></label>').join('')}</div><div class="cp-tools"><button type="button" data-cp-all="1">Pilih semua</button><button type="button" data-cp-all="0">Kosongkan</button></div></details>
  <div class="cp-opt-grid"><label><input type="checkbox" data-cp-inc="toc" ${inc.toc?'checked':''}> Daftar isi, daftar tabel dan gambar</label><label><input type="checkbox" data-cp-inc="charts" ${inc.charts?'checked':''}> Grafik dan diagram linimasa</label><label><input type="checkbox" data-cp-inc="tte" ${inc.tte?'checked':''}> Halaman penandatangan</label></div>
- <details class="cp-config" ${inc.tte?'open':''} id="cp-ttebox"><summary>Penandatangan & identitas dokumen</summary><div class="cp-sign-grid">
+ <details class="cp-config" ${inc.tte?'open':''} id="cp-ttebox"><summary>✎ Atur TTE · Penandatangan & Identitas Dokumen</summary><div class="cp-sign-grid">
  <label>Penandatangan dari daftar pengguna<select id="cp-sign-pick"><option value="">Isi manual / belum ditentukan</option>${opts}</select></label>
  <label>Nama penandatangan<input data-cp-sign="name" value="${esc(sg.name)}" placeholder="Nama lengkap pejabat"></label>
  <label>Jabatan penandatangan<input data-cp-sign="title" value="${esc(sg.title)}" placeholder="Contoh: Kepala Badan ..."></label>
