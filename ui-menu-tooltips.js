@@ -182,6 +182,10 @@ function lookup(el,label){
 }
 var selector=['#app .nav .nv','#app .ps27-tabs button','#app .psbank-subtabs button','#app .psbank-mapping-tabs button','#app .ps27-minitabs button','#app .ps27-kwide-tabs button','#app .pswf-tabs button','#app .ptabs a','#app .subt a','#app .subt button','#app .cm-step','#app .chtabs button','#app .chebar [role="tab"]','#app .act-tabs a','#app .cra-tabs button','#app .cra2-tabs button','#app .pg-tabs button','#app [role="tab"]','[role="tab"]','nav[role="tablist"] button','nav[role="tablist"] a','nav[class*="tabs"] button','nav[class*="tabs"] a','[data-sktab]','[data-ps27-htab]','.sk-tab'].join(',');
 var tooltip=null,active=null,showTimer=0,previousTitle=null,previousDesc=null;
+var HELP_KEY='mt_menu_help_enabled_v1';
+var enabled=true;
+try{enabled=window.localStorage.getItem(HELP_KEY)!=='off'}catch(e){enabled=true}
+var mutedTitles=new Map(),headerObserver=null,syncObserver=null,observedBadge=null;
 function targetFor(node){return node&&node.closest?node.closest(selector):null;}
 function hide(){
  clearTimeout(showTimer);showTimer=0;
@@ -214,7 +218,7 @@ function position(el){
  tooltip.style.left=left+'px';tooltip.style.top=top+'px';
 }
 function show(el){
- if(!el||!el.isConnected)return;
+ if(!enabled||!el||!el.isConnected)return;
  var label=labelOf(el),spec=lookup(el,label),title=el.getAttribute('title'),aria=el.getAttribute('aria-label');
  if(!spec){
   var useful=title&&norm(title)!==norm(label)?title:aria&&norm(aria)!==norm(label)?aria:'';
@@ -233,12 +237,12 @@ function show(el){
  t.hidden=false;position(el);
 }
 function arm(el,delay){
- if(!el||el===active)return;
+ if(!enabled||!el||el===active)return;
  hide();
  showTimer=setTimeout(function(){showTimer=0;show(el);},delay);
 }
 document.addEventListener('pointerover',function(ev){
- if(ev.pointerType==='touch')return;
+ if(!enabled||ev.pointerType==='touch')return;
  var el=targetFor(ev.target);
  if(el&&el!==active)arm(el,260);
 });
@@ -249,6 +253,7 @@ document.addEventListener('pointerout',function(ev){
  if(el===active||showTimer)hide();
 });
 document.addEventListener('focusin',function(ev){
+ if(!enabled)return;
  var el=targetFor(ev.target);
  if(el)arm(el,70);
 });
@@ -259,5 +264,117 @@ document.addEventListener('keydown',function(ev){if(ev.key==='Escape')hide();});
 document.addEventListener('scroll',hide,true);
 window.addEventListener('resize',hide);
 document.addEventListener('pointerdown',hide,true);
-window.MT_MENU_TOOLTIP={hide:hide,resolve:lookup,version:'20261109-function-boundaries-v1'};
+/* Bantuan kontekstual dapat dinyalakan/matikan tanpa mengubah alur aplikasi.
+ * OFF juga menonaktifkan title bawaan browser pada navigasi agar benar-benar senyap.
+ */
+function muteNativeTitles(){
+ if(enabled||typeof document.querySelectorAll!=='function')return;
+ mutedTitles.forEach(function(_,node){if(!node.isConnected)mutedTitles.delete(node)});
+ document.querySelectorAll(selector).forEach(function(node){
+  if(!node.hasAttribute('title'))return;
+  if(!mutedTitles.has(node))mutedTitles.set(node,node.getAttribute('title'));
+  node.removeAttribute('title');
+ });
+}
+function restoreNativeTitles(){
+ mutedTitles.forEach(function(value,node){
+  if(node.isConnected&&!node.hasAttribute('title'))node.setAttribute('title',value);
+ });
+ mutedTitles.clear();
+}
+function setEnabled(next){
+ enabled=!!next;
+ hide();
+ try{window.localStorage.setItem(HELP_KEY,enabled?'on':'off')}catch(e){}
+ if(enabled)restoreNativeTitles();else muteNativeTitles();
+ updateControl();
+ return enabled;
+}
+function updateControl(){
+ if(typeof document.querySelector!=='function')return;
+ var node=document.querySelector('#mt-help-toggle');
+ if(!node)return;
+ node.setAttribute('aria-checked',String(enabled));
+ node.setAttribute('aria-label','Bantuan kontekstual '+(enabled?'aktif':'nonaktif')+'. Klik untuk '+(enabled?'menonaktifkan':'mengaktifkan')+' tooltip menu dan tab.');
+ node.setAttribute('title','Tooltip menu & tab '+(enabled?'aktif (ON)':'nonaktif (OFF)')+'. Klik untuk mengubah.');
+ var state=node.querySelector('.mt-help-state');
+ if(state)state.textContent=enabled?'ON':'OFF';
+}
+function compactSync(node){
+ if(!node)return;
+ var full=(node.textContent||'').trim(),stage=/gagal|error|failed/i.test(full)?'error':/menyimpan|mengunggah|proses|saving/i.test(full)?'pending':/tersimpan|tersambung/i.test(full)?'ok':'unknown';
+ node.dataset.mtSync=stage;
+ var text='Status sinkronisasi Firestore: '+(full||'belum diketahui');
+ if(node.getAttribute('title')!==text)node.setAttribute('title',text);
+ if(node.getAttribute('aria-label')!==text)node.setAttribute('aria-label',text);
+}
+function installHeaderControls(){
+ if(typeof document.querySelector!=='function')return;
+ var avatar=document.querySelector('#app header.top #av');
+ if(!avatar)return;
+ var header=avatar.closest('header.top');
+ if(!header)return;
+ var control=header.querySelector('#mt-help-toggle');
+ if(!control){
+  control=document.createElement('button');
+  control.id='mt-help-toggle';control.type='button';
+  control.className='mt-help-switch';control.setAttribute('role','switch');
+  control.innerHTML='<span class="mt-help-caption">Bantuan</span><span class="mt-help-track" aria-hidden="true"><i></i></span><span class="mt-help-state"></span>';
+  control.addEventListener('click',function(){setEnabled(!enabled)});
+  header.insertBefore(control,avatar);
+ }
+ updateControl();
+ var badge=header.querySelector('#dbb');
+ if(badge){
+  compactSync(badge);
+  if(badge!==observedBadge){
+   if(syncObserver)syncObserver.disconnect();
+   observedBadge=badge;
+   if(typeof MutationObserver!=='undefined'){
+    syncObserver=new MutationObserver(function(){compactSync(badge)});
+    syncObserver.observe(badge,{childList:true,characterData:true,subtree:true});
+   }
+  }
+ }else if(syncObserver){syncObserver.disconnect();syncObserver=null;observedBadge=null}
+ if(!enabled)muteNativeTitles();
+}
+function initHeaderControls(){
+ if(typeof document.querySelector!=='function'||typeof MutationObserver==='undefined')return;
+ var style=document.createElement('style');style.id='mt-help-toolbar-styles';
+ style.textContent=[
+ '#app header.top{--mt-help-width:112px}',
+ '#app .top .mt-help-switch{box-sizing:border-box;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:var(--mt-help-width);height:36px;padding:0 8px;color:#e9f3ff;background:#112f52;border:1px solid #54718d;border-radius:10px;font:800 11.5px Inter,Arial,sans-serif;white-space:nowrap;cursor:pointer}',
+ '#app .top .mt-help-switch:focus-visible{outline:2px solid #fdb913;outline-offset:2px}',
+ '#app .top .mt-help-switch:hover{border-color:#fdb913}',
+ '#app .top .mt-help-switch .mt-help-track{position:relative;display:inline-block;width:26px;height:15px;border-radius:12px;background:#657a90;transition:background .15s}',
+ '#app .top .mt-help-switch .mt-help-track i{position:absolute;left:2px;top:2px;width:11px;height:11px;border-radius:50%;background:#fff;transition:transform .15s}',
+ '#app .top .mt-help-switch[aria-checked="true"] .mt-help-track{background:#e5aa21}',
+ '#app .top .mt-help-switch[aria-checked="true"] .mt-help-track i{transform:translateX(11px)}',
+ '#app .top .mt-help-switch .mt-help-state{min-width:22px;text-align:center;font-size:10px;color:#afbed0}',
+ '#app .top .mt-help-switch[aria-checked="true"] .mt-help-state{color:#ffd976}',
+ '#app .top .dbb#dbb{box-sizing:border-box;min-width:64px;max-width:70px;justify-content:center;font-size:0!important;padding:0 7px!important;white-space:nowrap;overflow:hidden}',
+ '#app .top #dbb::before{content:"● Sync";font:800 11px Inter,Arial,sans-serif;color:#b8f0d6}',
+ '#app .top #dbb[data-mt-sync="ok"]::before{content:"✓ Sync";color:#b8f0d6}',
+ '#app .top #dbb[data-mt-sync="pending"]::before{content:"⟳ Sync";color:#ffdc89}',
+ '#app .top #dbb[data-mt-sync="error"]::before{content:"⚠ Sync";color:#ffc2b9}',
+ '#app .top #dbb[data-mt-sync="error"]{border-color:#e7786e;background:rgba(226,77,77,.14)}',
+ '#app .top #dbb[data-mt-sync="pending"]{border-color:#d7aa41;background:rgba(253,185,19,.12)}',
+ '#app .top .sk-hdrActions .sk-hdrHelp{box-sizing:border-box;width:36px;min-width:36px!important;padding:0!important}',
+ '#app .top .sk-hdrActions .sk-hdrHelp span{display:none!important}',
+ '@media(min-width:901px){#app header.top{flex-wrap:nowrap!important}#app .top .role{max-width:29vw;overflow:hidden;text-overflow:ellipsis}}',
+ '@media(max-width:1260px){#app .top .mt-help-switch{--mt-help-width:75px;gap:4px}#app .top .mt-help-switch .mt-help-caption{display:none}#app .top .sk-hdrSheet span{display:none}}',
+ '@media(max-width:900px){#app .top .mt-help-switch{--mt-help-width:75px}#app .top .mt-help-switch .mt-help-caption{display:none}}'
+ ].join('');
+ if(!document.getElementById('mt-help-toolbar-styles'))document.head.appendChild(style);
+ var root=document.getElementById('root')||document.body;
+ if(!root)return;
+ headerObserver=new MutationObserver(function(){installHeaderControls()});
+ headerObserver.observe(root,{childList:true,subtree:true});
+ installHeaderControls();
+}
+if(typeof document.querySelector==='function'){
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initHeaderControls,{once:true});
+ else initHeaderControls();
+}
+window.MT_MENU_TOOLTIP={hide:hide,resolve:lookup,enabled:function(){return enabled},setEnabled:setEnabled,version:'20261109-function-boundaries-help-toggle-v2'};
 })();
