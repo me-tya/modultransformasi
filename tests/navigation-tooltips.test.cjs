@@ -53,3 +53,48 @@ test('function and boundary are explicit for each important workflow',()=>{
   assert.match(entry[1],bound,label+' boundary');
  }
 });
+
+test('Bantuan OFF mutes all native navigation titles and ON restores them',()=>{
+ const stored={mt_menu_help_enabled_v1:'off'},writes=[];
+ const title={value:'Membaca informasi fungsi dan batasan menu.'};
+ const nav={
+  isConnected:true,
+  hasAttribute:k=>k==='title'&&title.value!==null,
+  getAttribute:k=>k==='title'?title.value:null,
+  setAttribute:(k,v)=>{if(k==='title')title.value=v},
+  removeAttribute:k=>{if(k==='title')title.value=null}
+ };
+ const events={};
+ const document={
+  addEventListener:(name,cb)=>{events[name]=cb},
+  querySelector:()=>null,
+  querySelectorAll:()=>[nav],
+  readyState:'loading'
+ };
+ const window={
+  addEventListener:()=>{},
+  localStorage:{
+   getItem:k=>stored[k]??null,
+   setItem:(k,v)=>{stored[k]=v;writes.push([k,v])}
+  }
+ };
+ runInNewContext(source,{document,window,setTimeout,clearTimeout});
+ const api=window.MT_MENU_TOOLTIP;
+ assert.equal(api.enabled(),false);
+ assert.equal(api.setEnabled(false),false);
+ assert.equal(title.value,null,'Native title must be suppressed in OFF mode');
+ assert.equal(api.setEnabled(true),true);
+ assert.equal(title.value,'Membaca informasi fungsi dan batasan menu.','Original title must be restored without loss');
+ assert.deepEqual(writes.map(x=>x[1]),['off','on']);
+ assert.equal(stored.mt_menu_help_enabled_v1,'on');
+});
+test('compact Sync keeps real Firestore saving and error statuses accessible',()=>{
+ assert.match(source,/data-mt-sync="pending"/);
+ assert.match(source,/data-mt-sync="error"/);
+ assert.match(source,/function compactSync\(node\)/);
+ assert.match(source,/Status sinkronisasi Firestore:/);
+ assert.match(source,/node\.setAttribute\('aria-label',text\)/);
+ assert.match(source,/node\.setAttribute\('title',text\)/);
+ assert.match(source,/header\.insertBefore\(control,avatar\)/);
+ assert.match(source,/control\.setAttribute\('role','switch'\)/);
+});
