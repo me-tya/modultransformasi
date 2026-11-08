@@ -1,0 +1,105 @@
+/* Project Selection — seragam dengan PM/CM, tidak menggeser header global. */
+#app .pswf.ps27{gap:12px;font-family:'Inter',sans-serif;font-size:13px;min-width:0;padding:0 0 18px}
+#app .ps27 *{box-sizing:border-box}
+#app .ps27 .ps27-stage{display:flex;align-items:stretch;gap:8px;min-width:0;margin:0}
+#app .ps27 .ps27-tabs{display:flex;align-items:stretch;flex:1;gap:3px;overflow-x:auto;padding:6px;background:#f7f9fd;border:1px solid #d9e2ef;border-radius:14px;min-width:0;scrollbar-width:thin}
+#app .ps27 .ps27-tabs button{display:flex;align-items:center;justify-content:center;gap:8px;min-width:max-content;flex:1;background:transparent;border:0;border-radius:10px;padding:10px 13px;color:#62728f;font:750 12.5px 'Inter',sans-serif;cursor:pointer;white-space:nowrap;min-height:43px}
+#app .ps27 .ps27-tabs button.on{background:#153768;color:#fff;box-shadow:0 2px 8px #0b24471a}
+#app .ps27 .ps27-tabs button:focus-visible,#app .ps27 button:focus-visible{outline:2px solid #f1ad0b;outline-offset:2px}
+#app .ps27 .ps27-tabs button em{display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-style:normal;width:24px;height:24px;border-radius:50%;background:#e8eef6;color:#47688d}
+#app .ps27 .ps27-tabs button.on em{background:#ffbb20;color:#0c2a51}
+#app .ps27 .ps27-tabs button b{display:inline-flex;align-items:center;justify-content:center;font-size:10px;background:#e5edf8;color:#2b5078;min-width:20px;border-radius:13px;padding:4px 6px}
+#app .ps27 .ps27-tabs button.on b{background:#ffc22d;color:#092b53}
+#app .ps27 .ps27-stage-action{display:flex;align-items:center;padding:5px 8px;background:#fff;border:1px solid #d8e3f0;border-radius:13px;white-space:nowrap}
+#app .ps27 .ps27-stage-action .btn{background:#fff;color:#173b67}
+#app .ps27 .ps27-filter{border-radius:13px;display:flex;align-items:stretch;min-height:56px;overflow:hidden;border:1px solid #dce5ef;background:#eff4fa}
+#app .ps27 .ps27-filter-title{display:flex;align-items:center;gap:12px;flex:0 0 196px;border:0;border-radius:0;background:#153661;color:white;font:800 14px 'Inter',sans-serif;text-align:left;padding:0 18px;cursor:pointer}
+#app .ps27 .ps27-filter-ic{display:grid;place-items:center;width:36px;height:36px;flex:0 0 36px;border:1px solid #d99a00;border-radius:50%;color:#ffc12d;font-size:23px;font-weight:400}
+#app .ps27 .ps27-filter-summary{display:flex;align-items:center;gap:12px;min-width:0;flex:1;padding:9px 16px;color:#62738c;font-size:12px}
+#app .ps27 .ps27-filter-summary strong{color:#153661;font-size:12px;white-space:nowrap}
+#app .ps27 .ps27-filter-summary>span:not(.ps27-sp){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app .ps27 .ps27-filter-summary b{color:#122e56}
+#app .ps27 .ps27-sp{flex:1}
+#app .ps27 .ps27-filter-toggle{align-self:center;border:0;background:#ffc01d;color:#0b2b53;border-radius:50%;width:38px;height:38px;font-size:19px;font-weight:900;margin:0 9px;cursor:pointer}
+#app .ps27 .ps27-filter-fields{display:flex;flex-wrap:wrap;align-items:end;gap:12px;background:white;border:1px solid #dce5ef;border-radius:12px;padding:13px 16px}
+#app .ps27 .ps27-filter-fields label,#app .ps27 .ps27-controls label,#app .ps27 .ps27-actionbar label{display:flex;flex-direction:column;gap:6px;min-width:0;font-weight:750;color:#28476a;font-size:11.5px}
+#app .ps27 select,#app .ps27 input[type=search],#app .ps27 input[type=text],#app .ps27 textarea{font:600 12.5px 'Inter',sans-serif;color:#143359;background:#fff;border:1px solid #cdd9e7;border-radius:9px;padding:9px 12px;min-width:0;max-width:100%}
+#app .ps27 select{cursor:pointer}
+#app .ps27 .ps27-filter-fields select{min-width:190px}
+#app .ps27 .ps27-filter-note{font-size:11.5px;color:#7a8796;align-self:center}
+#app .ps27 .ps27-actionbar{display:flex;align-items:end;flex-wrap:wrap;gap:12px;min-height:61px;padding:10px 14px;background:#fff;border:1px solid #dce5ef;border-radius:13px}
+#app .ps27 .ps27-actionbar label{flex:1;min-width:220px;max-width:570px}
+#app .ps27 .ps27-actionbar label select{width:100%;height:37px}
+#app .ps27 .ps27-lab{color:#657790;white-space:nowrap;font-size:12px}
+#app .ps27 .ps27-card{border:1px solid #dce5ef;border-radius:14px;background:#fff;padding:15px 16px;min-width:0}
+#app .ps27 .ps27-cardtop{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:13px}
+#app .ps27 .ps27-cardtop>div{min-width:0;flex:1}
+#app .ps27 .ps27-cardtop h3{font:800 15px 'Inter',sans-serif;color:#0f2c52;margin:0 0 3px}
+#app .ps27 .ps27-cardtop p{font-size:12px;color:#66788f;margin:0;line-height:1.5}
+#app .ps27 .ps27-cardtop strong{font-size:12px;color:#1a456e;white-space:nowrap}
+#app .ps27 .ps27-controls{display:flex;align-items:end;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+#app .ps27 .ps27-controls select{min-width:145px;height:37px}
+#app .ps27 .ps27-controls .ps27-grow{flex:1;min-width:210px}
+#app .ps27 .ps27-controls input{width:100%;height:37px}
+#app .ps27 .ps27-controls button{height:37px}
+#app .ps27 .ps27-tablewrap{width:100%;overflow-x:auto;border:1px solid #e3eaf3;border-radius:10px}
+#app .ps27 .ps27-table{width:100%;border-collapse:collapse;font-size:12px;table-layout:auto}
+#app .ps27 .ps27-table thead{background:#f1f5fb}
+#app .ps27 .ps27-table th{font-weight:800;font-size:11.5px;color:#2d527c;padding:10px 12px;text-align:left;white-space:nowrap}
+#app .ps27 .ps27-table td{padding:9px 12px;border-top:1px solid #e7edf4;line-height:1.4;vertical-align:middle;color:#334e6e}
+#app .ps27 .ps27-table td:first-child:not(.ps27-checkcol){min-width:140px}
+#app .ps27 .ps27-table td small{font-size:10.8px;color:#73859d;display:block;margin-top:3px}
+#app .ps27 .ps27-table tr:hover td{background:#f9fbff}
+#app .ps27 .ps27-checkcol{width:36px;text-align:center!important}
+#app .ps27 .ps27-center{text-align:center;color:#75849a!important;padding:22px!important}
+#app .ps27 .ps27-status,#app .ps27 .ps27-info{display:inline-block;border-radius:7px;background:#eaf2fb;color:#235179;padding:5px 9px;font-size:11px;font-weight:750;white-space:nowrap}
+#app .ps27 .ps27-warning{background:#fff7e4;border:1px solid #eed397;border-radius:9px;color:#78591c;font-size:12px;line-height:1.5;padding:9px 12px;margin-bottom:10px}
+#app .ps27 .ps27-footnote{font-size:11.5px;color:#58718c;margin:13px 0 0}
+#app .ps27 .ps27-minimetrics{display:flex;gap:16px;flex-wrap:wrap;background:#f2f6fb;border-radius:10px;padding:10px 13px;margin-bottom:12px;color:#556e87;font-size:12px}
+#app .ps27 .ps27-minimetrics b{font-size:16px;color:#113a67;margin-right:4px}
+#app .ps27 .ps27-footer{display:flex;align-items:center;justify-content:space-between;gap:9px;padding-top:13px;flex-wrap:wrap}
+#app .ps27 .ps27-footer>span{font-size:11.5px;color:#5d748b;flex:1;min-width:180px}
+#app .ps27 .ps27-empty{text-align:center;padding:22px 12px;color:#697b90}
+#app .ps27 .ps27-governance .psgov{margin:0}
+#app .ps27 .ps27-governance .psgov-summ{margin-bottom:9px}
+#app .ps27 .ps27-governance .psgov-steps{margin-bottom:8px}
+#app .ps27 .ps27-governance .psgov-main{padding-top:10px}
+#app .ps27 .ps27-minitabs{display:flex;gap:0;overflow-x:auto;border-bottom:1px solid #d5dfee;margin:0 0 12px}
+#app .ps27 .ps27-minitabs button{border:1px solid transparent;border-radius:10px 10px 0 0;background:transparent;padding:12px 15px;font:750 12px 'Inter',sans-serif;color:#61738e;white-space:nowrap;cursor:pointer}
+#app .ps27 .ps27-minitabs button.on{color:#102e55;background:white;border-color:#dae3ef;border-bottom:3px solid #ffb31b}
+#app .ps27 .ps27-charter-native{min-width:0}
+#app .ps27 .ps27-charter-native .chbc{margin:8px 0}
+#app .ps27 .ps27-rkmkgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+#app .ps27 .ps27-rkmkfield{display:flex;flex-direction:column;gap:8px;padding:10px;border:1px solid #d9e4ef;border-radius:10px;min-width:0}
+#app .ps27 .ps27-rkmkfield.needs-review{background:#fff9e4;border-color:#eedb9b}
+#app .ps27 .ps27-rkmkfield.reviewed{background:#f8fcfa;border-color:#cfe1d8}
+#app .ps27 .ps27-rkmkfield>span:first-child{display:flex;justify-content:space-between;gap:5px;align-items:center}
+#app .ps27 .ps27-rkmkfield b{font-size:12.5px;color:#183c63}
+#app .ps27 .ps27-rkmkfield em{font-size:10.5px;color:#916919;font-style:normal}
+#app .ps27 .ps27-rkmkfield.reviewed em{color:#287350}
+#app .ps27 .ps27-rkmkfield textarea{width:100%;background:transparent;resize:vertical;min-height:90px;font-weight:400;line-height:1.5}
+#app .ps27 .ps27-reviewline{font-size:11px;color:#6c7d90;display:flex;gap:8px;align-items:center}
+#app .ps27 .ps27-reviewcount{font-size:12px;color:#9b701d;background:#ffefc4;border-radius:6px;padding:7px 10px;white-space:nowrap}
+.ps27-help-overlay{position:fixed;inset:0;z-index:3000;background:#0a1e3b9a;display:flex;justify-content:center;align-items:center;padding:20px;font:13px 'Inter',sans-serif}
+.ps27-helpmodal{width:min(1000px,98vw);height:min(84vh,780px);display:flex;flex-direction:column;background:#fff;border-radius:17px;overflow:hidden;box-shadow:0 25px 80px #10254055}
+.ps27-helpmodal>header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;background:#0d2a50;color:#fff;gap:10px}
+.ps27-helpmodal>header b{display:block;font-size:17px}
+.ps27-helpmodal>header small{display:block;margin-top:3px;color:#bfcee0}
+.ps27-helpmodal>header button{background:transparent;border:1px solid #8a9fbb;border-radius:8px;color:#fff;padding:6px 11px;cursor:pointer}
+.ps27-helpmodal>nav{display:flex;gap:5px;overflow:auto;border-bottom:1px solid #dce4ef;background:#f2f6fc;padding:6px 10px}
+.ps27-helpmodal>nav button{font:750 12px 'Inter',sans-serif;white-space:nowrap;border:0;background:transparent;border-radius:8px;padding:9px 14px;color:#456080;cursor:pointer}
+.ps27-helpmodal>nav button.on{color:#113965;background:white;box-shadow:0 1px 4px #1025411c;border-bottom:3px solid #ffbe2b}
+.ps27-helpbody{padding:18px 20px;overflow:auto;flex:1}
+.ps27-helpgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ps27-helpgrid button{border:1px solid #dce5ef;border-radius:10px;background:#fff;padding:14px 15px;text-align:left;cursor:pointer}
+.ps27-helpgrid button:hover{background:#f3f7fc}
+.ps27-helpgrid button b{display:block;color:#123c6a;font-size:13px}
+.ps27-helpgrid button small{display:block;color:#677b90;line-height:1.55;margin:7px 0;font-size:11.5px}
+.ps27-helpgrid button span{font-size:11px;color:#235e9c;font-weight:800}
+.ps27-helpflow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ps27-helpflow>div{border-left:4px solid #ffb82b;background:#f3f6fb;border-radius:7px;padding:12px 14px}
+.ps27-helpflow b,.ps27-helpprose h3{color:#103c67}
+.ps27-helpflow p,.ps27-helpprose p{line-height:1.7;color:#48627b}
+.ps27-helpprose .ps27-table{margin-top:15px}
+@media(max-width:1000px){#app .ps27 .ps27-stage-action{display:none}#app .ps27 .ps27-filter-title{flex-basis:130px}#app .ps27 .ps27-filter-summary{gap:6px}#app .ps27 .ps27-rkmkgrid{grid-template-columns:1fr}}
+@media(max-width:650px){#app .ps27 .ps27-filter-title{flex-basis:80px;font-size:0;justify-content:center;padding:4px}#app .ps27 .ps27-filter-title .ps27-filter-ic{font-size:20px}#app .ps27 .ps27-filter-summary{padding:6px;font-size:11px}#app .ps27 .ps27-filter-summary strong{display:none}#app .ps27 .ps27-filter-toggle{width:32px;height:32px}#app .ps27 .ps27-card{padding:11px}#app .ps27 .ps27-cardtop{align-items:flex-start;flex-wrap:wrap}.ps27-helpgrid,.ps27-helpflow{grid-template-columns:1fr}.ps27-help-overlay{padding:6px}.ps27-helpmodal{height:96vh}}
