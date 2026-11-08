@@ -553,3 +553,95 @@ html.mt-ui-embedded :is(.tabs .count-badge,.cm-ap-cnt,.prio-tab-n){
 #app .ps27 .ps27-filter.ps27-filter-panel{margin:0 0 7px!important}
 #app .psbank-subhead{margin-top:0!important}
 @media(max-width:900px){#app .view>.vh{min-height:50px!important}}
+
+
+/* v5 — shared cross-route geometry. CM is the reference. Both PM and Project
+   Selection use the identical title/journey/filter height, padding and rhythm. */
+#app .vh{
+ height:49px!important;min-height:49px!important;max-height:49px!important;
+ padding:0!important;margin:0 0 4px!important;gap:9px!important;
+ align-items:center!important;box-sizing:border-box!important;
+}
+#app .vh .pic{
+ width:39px!important;height:39px!important;min-width:39px!important;
+ min-height:39px!important;max-height:39px!important;border-radius:10px!important;
+}
+#app .vh h1{font-size:18px!important;line-height:1.2!important;margin:0!important}
+#app .vh p{font-size:11.5px!important;line-height:1.25!important;margin:2px 0 0!important}
+#app .pswf.ps27{
+ display:flex!important;flex-direction:column!important;gap:6px!important;
+ padding-top:0!important;margin-top:0!important;
+}
+#app .cm-journey,#app .pm-stage-shell,#app .ps27 .ps27-stage{
+ height:50px!important;min-height:50px!important;max-height:50px!important;
+ margin:0 0 6px!important;padding:4px!important;gap:4px!important;
+ box-sizing:border-box!important;border-radius:11px!important;
+ border:1px solid #d9e2ef!important;background:#f7f9fd!important;
+ box-shadow:none!important;align-items:stretch!important;
+}
+#app .ps27 .ps27-stage{margin:0!important}
+#app .ptabs.pmo-journey,#app .ps27 .ps27-tabs{
+ min-height:40px!important;height:40px!important;max-height:40px!important;
+ padding:0!important;margin:0!important;gap:4px!important;align-items:stretch!important;
+}
+#app .cm-journey>.cm-step,#app .ptabs.pmo-journey>a,#app .ps27 .ps27-tabs>button{
+ height:40px!important;min-height:40px!important;max-height:40px!important;
+ padding:5px 9px!important;margin:0!important;border-radius:8px!important;
+ font-size:11.7px!important;line-height:1.15!important;
+ transition:background-color .14s ease,color .14s ease!important;
+ transform:none!important;box-shadow:none!important;
+}
+#app .cm-journey>.cm-step.on,#app .ptabs.pmo-journey>a.on,#app .ps27 .ps27-tabs>button.on{
+ background:#143966!important;box-shadow:none!important;
+}
+#app .flt.pmo-unified,#app .flt.cm-unified,#app .ps27 .ps27-filter.ps27-filter-panel{
+ margin:0 0 6px!important;border-radius:11px!important;
+ border-color:#d7e3f0!important;box-shadow:none!important;
+}
+#app .ps27 .ps27-filter.ps27-filter-panel{margin:0!important}
+#app .flt.pmo-unified,#app .flt.cm-unified{grid-template-rows:44px auto!important}
+#app .flt.pmo-unified>.lp,#app .flt.cm-unified>.lp,
+#app .flt.pmo-unified .ftop,#app .flt.cm-unified .ftop{
+ height:44px!important;min-height:44px!important;max-height:44px!important;
+ padding-top:0!important;padding-bottom:0!important;
+}
+#app .ps27 .ps27-filter-header{
+ min-height:44px!important;height:44px!important;max-height:44px!important;
+ align-items:stretch!important;
+}
+#app .ps27 .ps27-filter-titlebar{
+ flex:0 0 165px!important;padding:3px 10px!important;
+}
+#app .ps27 .ps27-filter-active{padding:4px 10px!important}
+#app .ps27 .ps27-filter-ic{
+ width:31px!important;height:31px!important;min-width:31px!important;
+}
+#app .ps27 .ps27-filter-expand{
+ width:32px!important;height:32px!important;min-width:32px!important;
+}
+#app .flt.pmo-unified>.lp,#app .flt.cm-unified>.lp{
+ width:165px!important;min-width:165px!important;
+ padding-left:10px!important;padding-right:10px!important;
+}
+#app .flt.pmo-unified .ftop,#app .flt.cm-unified .ftop{
+ padding-left:10px!important;padding-right:10px!important;
+}
+#app .view>.vh{margin-bottom:4px!important}
+#app .view>.cm-journey,#app .view>.pm-stage-shell,
+#app .view>.pswf .ps27-stage{margin-top:0!important;margin-bottom:6px!important}
+#app .view>.flt{margin-top:0!important;margin-bottom:6px!important}
+#app .view>.pswf .ps27-filter-panel{margin-top:0!important;margin-bottom:0!important}
+#app .psbank-subhead{
+ min-height:40px!important;margin:0 0 3px!important;gap:5px!important;
+}
+#app .psbank-subtabs button{
+ min-height:38px!important;padding:6px 11px!important;
+ font-size:11.8px!important;
+}
+@media(max-width:900px){
+ #app .vh{min-height:49px!important;height:49px!important}
+ #app .cm-journey,#app .pm-stage-shell,#app .ps27 .ps27-stage{overflow-x:auto!important;overflow-y:hidden!important}
+}
+@media(prefers-reduced-motion:reduce){
+ #app .cm-journey>.cm-step,#app .ptabs.pmo-journey>a,#app .ps27 .ps27-tabs>button{transition:none!important}
+}
