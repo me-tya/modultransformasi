@@ -671,3 +671,20 @@
  #app .psbank-history-table th,#app .psbank-detail-table th{font-size:10.5px!important}
  #app .psbank-history-table td,#app .psbank-detail-table td{font-size:11.4px!important}
 }
+
+
+/* No nested vertical scrolling on either program list: paging is the vertical navigator. */
+#app .psbank-card:has(.psbank-detail-table)>.psbank-tablewrap,
+#app .psbank-card:has(.psbank-history-table)>.psbank-tablewrap{
+ height:auto!important;min-height:0!important;max-height:none!important;
+ overflow-y:visible!important;overflow-x:auto!important;
+ overscroll-behavior-y:auto!important;scrollbar-gutter:auto!important;
+}
+#app .psbank-card:has(.psbank-detail-table) .psbank-detail-table th,
+#app .psbank-card:has(.psbank-history-table) .psbank-history-table th{
+ position:static!important;top:auto!important;
+}
+#app .psbank-card:has(.psbank-detail-table) .psbank-pagination,
+#app .psbank-card:has(.psbank-history-table) .psbank-pagination{
+ margin-top:8px!important;
+}
