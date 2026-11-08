@@ -84,17 +84,36 @@ function carrySelected(){
 }
 function count(p){return p?(p.psProjects||[]).length:0;}
 function navItem(tab,label,num){const on=state().tab===tab;return '<button type="button" role="tab" aria-selected="'+on+'" class="'+(on?'on':'')+'" data-ps27-tab="'+tab+'"><span>'+label+'</span>'+(num?'<b>'+num+'</b>':'')+'</button>';}
+function localFilter(){
+ const b=S.ui.psBank||(S.ui.psBank={}),u=state(),key=u.tab==='usulan'?'usulan:'+(b.tab||'bank'):u.tab;
+ b.filterScopes=b.filterScopes||{};
+ const f=b.filterScopes[key]||(b.filterScopes[key]={search:'',status:'all',program:'',year:u.tab==='usulan'&&b.tab==='bank'?'all':String(yr())});
+ return f;
+}
+function setFilterField(key,val){
+ const b=S.ui.psBank||(S.ui.psBank={}),f=localFilter();
+ f[key]=val;
+ if(S.ui.mtSharedFilter?.enabled)S.ui.mtSharedFilter[key]=val;
+ if(key==='search')b.search=val;
+ if(key==='status')b.filterStatus=val;
+ if(key==='year')b.filterYear=val;
+}
 function filter(p){
- const b=S.ui.psBank||(S.ui.psBank={}),u=state(),arr=list(),q=String(b.search||'').toLowerCase(),st=b.filterStatus||'all',tab=b.tab||'bank';
+ const b=S.ui.psBank||(S.ui.psBank={}),u=state(),arr=list(),tab=b.tab||'bank',
+  f=S.ui.mtSharedFilter?.enabled?S.ui.mtSharedFilter:localFilter(),
+  q=String(f.search||'').toLowerCase(),st=f.status||'all';
+ b.search=f.search||'';b.filterStatus=st;b.filterYear=f.year||'all';
+ if(u.tab==='usulan'&&tab==='bank')b.filterProgram=f.program||'';
+ if(u.tab==='usulan'&&tab==='detail')b.detailProgram=f.program||'';
  const onBank=u.tab==='usulan'&&tab==='bank';
  const opts=onBank?(S.programs||[]):arr;
  const filtered=opts.filter(x=>(!q||[x.nama,x.kode,x.akr,x.uic].join(' ').toLowerCase().includes(q))&&(st==='all'||(x.arsip||x.psStatus==='Arsip'?'Arsip':x.psCarry?'Legacy':x.psDraft?'Baru':'Legacy')===st));
- const yFilter=onBank?(b.filterYear||'all'):String(yr());
+ const yFilter=onBank?(f.year||'all'):String(yr());
  return '<div class="ps27-filter ps27-filter-compact" role="search" aria-label="Filter Project Selection">'+
  '<label>Tahun <select data-ps27-year><option value="all" '+(yFilter==='all'?'selected':'')+'>Semua tahun</option>'+[2025,2026,2027,2028,2029].map(y=>'<option value="'+y+'" '+(String(yFilter)===String(y)?'selected':'')+'>'+y+'</option>').join('')+'</select></label>'+
  '<label class="ps27-filter-program">Nama Program <select data-ps27-prog><option value="">Semua Program</option>'+filtered.map(x=>'<option value="'+E(x.id)+'" '+((onBank?String(b.filterProgram)===String(x.id):u.tab==='usulan'&&tab==='detail'?String(b.detailProgram)===String(x.id):p&&x.id===p.id)?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label>'+
  '<label>Status <select data-ps27-status>'+[['all','Semua Status'],['Baru','Baru'],['Legacy','Legacy'],['Arsip','Arsip']].map(x=>'<option value="'+x[0]+'" '+(st===x[0]?'selected':'')+'>'+x[1]+'</option>').join('')+'</select></label>'+
- '<label class="ps27-filter-search">Cari <input type="search" data-ps27-query value="'+E(b.search||'')+'" placeholder="Nama, kode, UIC..."></label>'+
+ '<label class="ps27-filter-search">Cari <input type="search" data-ps27-query value="'+E(f.search||'')+'" placeholder="Nama, kode, UIC..."></label>'+
  '</div>';
 }
 function actionBar(){return '<div class="ps27-actionbar" hidden></div>';}
@@ -244,15 +263,15 @@ function mount(){
   const el=ev.target;
   if(el.dataset.ps27Prog!==undefined){
     S.ui.psBank=S.ui.psBank||{};
-    if(state().tab==='usulan'&&S.ui.psBank.tab==='bank'){S.ui.psBank.filterProgram=el.value}
-    else if(state().tab==='usulan'&&S.ui.psBank.tab==='detail'){S.ui.psBank.detailProgram=el.value}
+    if(state().tab==='usulan'&&S.ui.psBank.tab==='bank'){S.ui.psBank.filterProgram=el.value;setFilterField('program',el.value)}
+    else if(state().tab==='usulan'&&S.ui.psBank.tab==='detail'){S.ui.psBank.detailProgram=el.value;setFilterField('program',el.value)}
     else{state().prog=el.value;S.ui.psGov={step:'identity'};if(window.MT_PS_SCOPE)window.MT_PS_SCOPE.bank().target=el.value}
     save();render();return
    }
-   if(el.dataset.ps27Status!==undefined){S.ui.psBank=S.ui.psBank||{};S.ui.psBank.filterStatus=el.value;save();render();return}
+   if(el.dataset.ps27Status!==undefined){S.ui.psBank=S.ui.psBank||{};setFilterField('status',el.value);save();render();return}
   if(el.dataset.ps27Year!==undefined){
     S.ui.psBank=S.ui.psBank||{};
-    if(state().tab==='usulan'&&S.ui.psBank.tab==='bank'){S.ui.psBank.filterYear=el.value}
+    if(state().tab==='usulan'&&S.ui.psBank.tab==='bank'){setFilterField('year',el.value)}
     else if(el.value!=='all'){S.ui.tahun=+el.value;state().prog='';if(window.MT_PS_SCOPE)window.MT_PS_SCOPE.bank().target=''}
     save();render();return
    }
@@ -266,7 +285,7 @@ function mount(){
  });
  root.querySelector('[data-ps27-query]')?.addEventListener('input',ev=>{
     S.ui.psBank=S.ui.psBank||{};const t=ev.target,v=t.value,pos=t.selectionStart;
-    S.ui.psBank.search=v;save();render();
+    setFilterField('search',v);save();render();
     const q=document.querySelector('[data-ps27-query]');if(q){q.focus();q.setSelectionRange(pos,pos)}
    });
    root.querySelector('[data-ps27-search]')?.addEventListener('input',function(ev){ws().search=ev.target.value;const pos=ev.target.selectionStart;save();render();const t=document.querySelector('[data-ps27-search]');if(t){t.focus();t.setSelectionRange(pos,pos)}});
