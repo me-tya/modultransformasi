@@ -43,7 +43,7 @@ function newRkmk(p,source){
  };
 }
 function cloneProgram(src,from,to){
- const p=clone(src);p.id=uid('program');p.akr=nextAkr();const m=String(src.kode||'').toUpperCase().match(/^[BT]\d{2}-([A-Z0-9-]+)$/);const akronim=m?m[1]:String(src.akr||src.nama||'PROG').toUpperCase().replace(/[^A-Z0-9-]/g,'')||'PROG';p.kode=(/^tematik$/i.test(String(src.jenis||''))?'T':'B')+String(to).slice(-2)+'-'+akronim;p.nama=src.nama;p.psYear=to;p.mulai=to;p.periode=to+'–'+to;p.psStatus='Draft';p.psDraft=true;p.status='Perencanaan';p.psListStatus='Legacy';p.arsip=false;delete p.psArchivedAt;delete p.psArchivedBy;delete p.psArchiveReason;delete p.psArchiveEvidence;p.psGovernanceV=1;
+ const p=clone(src);p.id=uid('program');p.akr=nextAkr();const m=String(src.kode||'').toUpperCase().match(/^[BT]\d{2}-([A-Z0-9-]+)$/);const akronim=m?m[1]:String(src.akr||src.nama||'PROG').toUpperCase().replace(/[^A-Z0-9-]/g,'')||'PROG';p.kode=(/^tematik$/i.test(String(src.jenis||''))?'T':'B')+String(to).slice(-2)+'-'+akronim;p.nama=src.nama;p.psYear=to;p.mulai=to;p.periode=to+'–'+to;p.psStatus='Draft';p.psDraft=true;p.status='Perencanaan';p.psListStatus='Legacy';p.arsip=false;delete p.psArchivedAt;delete p.psArchivedBy;delete p.psArchiveReason;delete p.psArchiveEvidence;delete p.psArchiveYear;delete p.psArchivePeriod;delete p.psArchiveSource;delete p.psHistoricalTkdBackfill;delete p.psHistoricalClosedYear;delete p.closing;p.psGovernanceV=1;
  p.psCarry={sourceId:src.id,sourceAkr:src.akr,sourceYear:from,createdAt:new Date().toISOString(),reviewed:false};
  p.psSnapshots=[];p.psSelectedProjectIds=[];delete p.psFinalizedAt;delete p.psFinalizedBy;delete p.psWbsSynced;
  p.psProjects=sourceProjects(src,from).map(x=>{x.sourceProjectId=x.id;x.id=uid('proj');x.included=x.included!==false;x.status='Usulan';if(x.start)x.start=shiftDate(x.start,from,to);if(x.goLive)x.goLive=shiftDate(x.goLive,from,to);return x});
@@ -126,7 +126,7 @@ function filter(p){
  const onBank=u.tab==='usulan'&&tab==='bank',opts=onBank?(S.programs||[]):arr,
   years=[2025,2026,2027,2028,2029],yFilter=f.year||String(yr()),
   period=f.period||'all',unit=f.unit||'all',role=f.unitRole||'all';
- const statusOf=x=>x.arsip||x.psStatus==='Arsip'?'Arsip':x.psCarry||!x.psYear?'Legacy':'Baru';
+ const statusOf=x=>window.MT_PS_BANK_CORE?.programStatus?.(x,yr())||(x.arsip?'Arsip':x.psCarry||!x.psYear?'Legacy':'Baru');
  const matchesUnit=x=>{if(!unit||unit==='all')return true;const a=String(x.uic||'').toLowerCase().includes(unit.toLowerCase()),b=String(x.pend||x.psSupportingUic||'').toLowerCase().includes(unit.toLowerCase());return role==='utama'?a:role==='pendukung'?b:a||b};
  const matchesQuarter=x=>{const m=/^TW\s*(\d)$/i.exec(period),ds=(x.psProjects||[]).map(z=>String(z.goLive||z.start||'')).filter(t=>/^\d{4}-\d\d-\d\d/.test(t));if(!ds.length)return true;if(m)return ds.some(t=>Math.ceil(+t.slice(5,7)/3)===+m[1]);if(period==='range'){const from=f.rangeFrom||'',to=f.rangeTo||'';return !from&&!to||ds.some(t=>(!from||t>=from)&&(!to||t<=to))}return true};
  const listOptions=opts.filter(x=>(!q||[x.nama,x.kode,x.akr,x.uic].join(' ').toLowerCase().includes(q))&&(st==='all'||statusOf(x)===st)&&matchesUnit(x)&&matchesQuarter(x));
