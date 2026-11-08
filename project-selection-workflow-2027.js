@@ -79,7 +79,7 @@ function carrySelected(){
   const p=cloneProgram(src,from,to);S.programs.push(p);n++;w+=p.psWbsDraft.length;docs+=(S.charters||[]).some(c=>c.prog===p.akr)?1:0;state().prog=p.id;
  });
  if(!n){toast('Program terpilih sudah pernah dibawa ke tahun '+to+'.');return}
- ws().selected=[];state().tab='usulan';save();render();
+ ws().selected=[];ws().usulanSub='daftar';state().tab='usulan';save();render();
  toast(n+' program disalin lengkap sebagai Draft '+to+'; '+docs+' charter dan '+w+' item WBS tersedia untuk direviu.');
 }
 function count(p){return p?(p.psProjects||[]).length:0;}
@@ -122,7 +122,7 @@ function formProgram(p){
  (can(p)&&p.psStatus!=='Ditetapkan'?'<button class="btn" data-pswf="edit-program">Ubah Identitas</button>':'')+'</div>'+
  (window.MT_PS_GOV?window.MT_PS_GOV.programPage(p):'')+'</div>';
 }
-function usulan(p){return sourcePicker()+portfolio()+formProgram(p);}
+function usulan(p){const u=ws(),tab=u.usulanSub||'daftar';const nav='<div class="ps27-minitabs" role="tablist" aria-label="Tahapan usulan program">'+[['daftar','Daftar Program'],['ambil','Ambil Program Tahun Sebelumnya'],['detail','Detail Program & Register']].map(x=>'<button type="button" role="tab" aria-selected="'+(tab===x[0])+'" class="'+(tab===x[0]?'on':'')+'" data-ps27-usul="'+x[0]+'">'+x[1]+'</button>').join('')+'</div>';return nav+(tab==='ambil'?sourcePicker():tab==='detail'?formProgram(p):portfolio());}
 function mapping(p){
  if(!p)return '<div class="ps27-card"><div class="ps27-empty">Pilih program untuk memetakan proyek/modul.</div></div>';
  const a=p.psProjects||[],rows=p.psWbsDraft||[];
@@ -208,12 +208,13 @@ function markWbsForRemoval(p,id){
 function mount(){
  const root=document.querySelector('#view .pswf');if(!root)return;
  root.addEventListener('click',function(ev){
-  const b=ev.target.closest('[data-ps27],[data-ps27-tab],[data-ps27-pick],[data-ps27-remove],[data-ps27-sub]');
+  const b=ev.target.closest('[data-ps27],[data-ps27-tab],[data-ps27-pick],[data-ps27-remove],[data-ps27-sub],[data-ps27-usul]');
   if(!b)return;
   ev.stopImmediatePropagation();
   if(b.dataset.ps27Tab){navigate(b.dataset.ps27Tab);return}
-  if(b.dataset.ps27Pick){state().prog=b.dataset.ps27Pick;ws().filterOpen=true;save();render();return}
+  if(b.dataset.ps27Pick){state().prog=b.dataset.ps27Pick;ws().usulanSub='detail';save();render();return}
   if(b.dataset.ps27Sub){ws().prioritySub=b.dataset.ps27Sub;save();render();return}
+  if(b.dataset.ps27Usul){ws().usulanSub=b.dataset.ps27Usul;save();render();return}
   if(b.dataset.ps27Remove){markWbsForRemoval(current(),b.dataset.ps27Remove);return}
   const a=b.dataset.ps27;
   if(a==='filter'){ws().filterOpen=!ws().filterOpen;save();render();return}
