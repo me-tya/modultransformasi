@@ -3183,7 +3183,7 @@ function render(){if(ME&&ME.role==='SA'&&S.akses&&!S.akses.KETUA){S.akses.KETUA=
  if(VIEW.startsWith('set-'))h=h.replace('<!--vh-->',setTabs());
  v.innerHTML=h;if(VIEW==='project-selection'&&window.MT_PROJECT_SELECTION)window.MT_PROJECT_SELECTION.mount();window.CM_CRA_NAV=()=>cmoTabs('cra',null);if(VIEW==='cra'&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}if(VIEW==='pengelola'&&window.PENGELOLA_NATIVE){window.PENGELOLA_NATIVE.attach({S,ME,save,toast});return;}if((VIEW==='cmo-cra'||/^modul-.+-t-cra$/.test(VIEW))&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}try{foldNotes(v);bindCompactGuides(v);mtCompactWorkbars(v)}catch(e){console.warn('Panduan ringkas:',e)}try{scrollActiveCompactNav(v)}catch(e){}
 }
-const yearsOpt=()=>{const ys=new Set([S.ui.tahun]);S.wbs.forEach(w=>{const y=yrOf(w);if(y>=2020)ys.add(y)});return [...ys].sort()};
+const yearsOpt=()=>{const ys=new Set([2025,2026,2027,2028,2029,S.ui.tahun]);S.wbs.forEach(w=>{const y=yrOf(w);if(y>=2020)ys.add(y)});(S.programs||[]).forEach(p=>{if(p.psYear)ys.add(+p.psYear)});return [...ys].sort((a,b)=>a-b)};
 function foldNotes(v){
  /* Ubah panduan pasif (bukan peringatan/validasi) menjadi ikon informasional,
     tidak menyingkirkan tombol aksi, kolom input, maupun alert kesalahan. */
@@ -4035,6 +4035,7 @@ ACT.lapexp=()=>exportLaporan();
 function pmoAllWbs(){return S.wbs.filter(w=>!w.arsip&&(VIEW==='pmo-wbsplan'&&S.ui.planYear!=='year'||yrOf(w)===S.ui.tahun))}
 function pmoScopedWbs(period=true){const P=per();return pmoAllWbs().filter(w=>(!S.ui.prog||w.prog===S.ui.prog)&&unitMatch(w,curUnit(),umOf())&&(!period||VIEW==='pmo-wbsplan'&&S.ui.planYear!=='year'||inP(w,P)))}
 function pmoProgramList(ignoreProgram=false){const y=+S.ui.tahun,u=curUnit(),mode=umOf();return progVis().filter(p=>{
+ if(p.psDraft)return false; /* Project Selection draft remains upstream of WBS */
  if(!ignoreProgram&&S.ui.prog&&p.akr!==S.ui.prog)return false;
  const ys=String(p.periode||'').match(/20\d{2}/g)||[];
  const y0=+p.mulai||+(ys[0]||0),y1=+(ys[ys.length-1]||0)||y0;
@@ -6253,6 +6254,9 @@ function progProjects(p,keep){
    const ent=g[name]||(g[name]={a:[],subs:{}});
    ent.a.push(w);if(sub&&sub!==name)(ent.subs[sub]=ent.subs[sub]||[]).push(w);
  });
+ if(!Object.keys(g).length&&+p.psYear===+S.ui.tahun&&Array.isArray(p.psProjects)){
+  return p.psProjects.filter(x=>x.selected&&p.psStatus==='Ditetapkan').map(x=>({n:x.name,uic:x.uic||p.uic||'—',pg:0,late:0,s:x.start||'',f:x.end||x.goLive||'',a:[],sub:[],subItems:[],psPendingWbs:true}));
+ }
  return Object.entries(g).map(([n,v])=>{
   const stat=a=>{let t=0,d=0;const u={};a.forEach(w=>{const b=+w.w||0;t+=b;if(doneAt(w,12)&&w.v)d+=b;const k=String(w.u||'').split(/[,(]/)[0].trim();if(k)u[k]=(u[k]||0)+1});
    const uic=Object.entries(u).sort((a,b)=>b[1]-a[1])[0];return {uic:uic?uic[0]:'—',pg:t?Math.round(d/t*100):0,late:a.filter(w=>stOf(w,12)==='Terlambat').length,s:a.reduce((m,w)=>!m||w.s<m?w.s:m,''),f:a.reduce((m,w)=>w.f>m?w.f:m,'')}};
@@ -7015,7 +7019,7 @@ function pProgram(){
    </div>
   </section>`;
  }).join('');
- return vh('G','pmo','Program','Daftar program dan rincian proyek berdasarkan WBS Level 4.')+pmoTabs('program')+
+ return vh('G','pmo','Program','Program yang ditetapkan dari Project Selection serta rincian proyek dan progres WBS.')+pmoTabs('program')+
  `<div class="pm-program-toolbar"><div class="pm-tb1">
   <label class="pm-tb-search"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><input id="pm-program-query" data-on="pgq" value="${esc(S.ui.pgq||'')}" placeholder="Cari program, proyek, atau subproyek…" aria-label="Cari program, proyek, atau subproyek"></label>
   <span class="pm-tb-count"><b>${groups.length}</b> program · <b>${totalProjects}</b> proyek</span><span class="pm-tb-sep"></span>
