@@ -12,7 +12,7 @@ function cpGanttImg(c){
  const colW=(W-lh-right)/N;x.font='bold 12px Arial';x.textBaseline='middle';x.fillStyle='#17365e';x.fillText('Tindakan / Milestone',12,22);
  T.cols.forEach((d,i)=>{const X=lh+i*colW;x.fillStyle=i%2?'#f5f8fc':'#eaf1f9';x.fillRect(X,0,colW,H);x.fillStyle='#244469';x.font=N>16?'9px Arial':'11px Arial';x.fillText(d.yr?String(d.y):String(d.m),X+2,20);x.strokeStyle='#dce6f3';x.beginPath();x.moveTo(X,0);x.lineTo(X,H);x.stroke()});
  x.fillStyle='#16345c';x.font='bold 12px Arial';x.fillText('Jadwal berdasarkan data Linimasa',12,42);
- rows.forEach((r,i)=>{const y=top+i*rh;x.fillStyle=i%2?'#f8fafc':'#fff';x.fillRect(0,y,W-lh,right?rh-1:rh-1);x.fillStyle='#203a5a';x.font='11px Arial';const title=String(r.t||'—');let t=title;while(x.measureText(t).width>lh-20&&t.length>8)t=t.slice(0,-2);if(t!==title)t=t.slice(0,-1)+'…';x.fillText(t,12,y+14);
+ rows.forEach((r,i)=>{const y=top+i*rh;x.fillStyle=i%2?'#f8fafc':'#fff';x.fillRect(0,y,lh,rh-1);x.fillStyle='#203a5a';x.font='11px Arial';const title=String(r.t||'—');let t=title;while(x.measureText(t).width>lh-20&&t.length>8)t=t.slice(0,-2);if(t!==title)t=t.slice(0,-1)+'…';x.fillText(t,12,y+14);
   x.fillStyle='#7386a1';x.font='10px Arial';x.fillText([r.s,r.e].filter(Boolean).join(' s.d. '),12,y+29);
   const span=rkSpan(T,r);if(span){const bx=lh+span[0]*colW+3,bw=(span[1]-span[0]+1)*colW-6;x.fillStyle='#205ab0';x.fillRect(bx,y+11,Math.max(2,bw),15);}
   x.strokeStyle='#e5edf4';x.beginPath();x.moveTo(0,y+rh);x.lineTo(W,y+rh);x.stroke();
