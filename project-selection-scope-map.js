@@ -234,7 +234,7 @@ function aggregateView(){
  const b=mapState(),on=MAPPING_TABS.some(x=>x[0]===b.mappingTab)?b.mappingTab:'mapping',y=year();
  const f=S.ui?.psBank?.filterScopes?.mapping||{},query=String(f.search||'').toLowerCase();
  const programs=I.programs().filter(p=>(!query||[p.nama,p.kode,p.uic,p.akr].join(' ').toLowerCase().includes(query))&&
- (!f.status||f.status==='all'||(p.arsip||p.psStatus==='Arsip'||p.psListStatus==='Arsip'?'Arsip':p.psListStatus|| (p.psCarry?'Legacy':'Baru'))===f.status)&&
+ (!f.status||f.status==='all'||(window.MT_PS_BANK_CORE?.programStatus?.(p,year())||(p.arsip?'Arsip':p.psCarry?'Legacy':'Baru'))===f.status)&&
  (!f.unit||f.unit==='all'||[p.uic,p.pend].join(' ').toLowerCase().includes(String(f.unit).toLowerCase())));
  const rows=programs.flatMap(p=>proposalRows(p));
  let content='';
