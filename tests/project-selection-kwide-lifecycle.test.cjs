@@ -20,10 +20,16 @@ const setup=()=>{
  const life=new Function('S','ME','year','E',lifeSrc+';return {labelStatus,canDelete,isConcept};')(S,ME,()=>2027,esc);
  return {S,p,wide,life};
 };
-test('a new seventh Penetapan Program tab precedes the existing Penetapan Proyek tab',()=>{
+test('Penetapan Program is one submenu that includes project approval',()=>{
  const match=wf.match(/const TABS=\[([^\n]+)/);
- assert.ok(match);assert.match(match[1],/penetapan-program','Penetapan Program/);
- assert.match(match[1],/penetapan','Penetapan Proyek/);
+ assert.ok(match);
+ assert.match(match[1],/penetapan-program','Penetapan Program/);
+ assert.doesNotMatch(match[1],/\['penetapan','Penetapan Proyek'\]/);
+ assert.match(wf,/else if\(u\.tab==='penetapan-program'\)h\+=widePanel\(\)\+penetapan\(p\)/);
+ assert.match(wf,/data-ps27-approval-program/);
+ assert.match(wf,/data-pswf="finalize"/);
+ assert.match(wf,/Tetapkan Program beserta /);
+ assert.match(wf,/stage==='penetapan'\?'penetapan-program'/);
 });
 test('K-Wide form uses the source sheet quarterly output columns without importing 2026 actuals',()=>{
  const {wide}=setup(),html=wide.widePanel();
