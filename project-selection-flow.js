@@ -468,7 +468,7 @@ const units=()=>typeof UNITS!=='undefined'&&Array.isArray(UNITS)?UNITS:['Setjen'
 function programModal(p){
  if(!editOk())return;
  if(p&&!ownerOk(p))return;
- if(p&&p.psStatus==='Ditetapkan'){toast('Buka revisi program terlebih dahulu.');return}
+ if(p&&(p.psStatus==='Ditetapkan'||p.arsip||p.psListStatus==='Arsip')){toast('Program ditetapkan/diarsipkan tidak dapat diedit langsung. Gunakan mekanisme revisi atau penutupan.');return}
  const isNew=!p,y=year();
  const body='<div class="pswf-form-grid">'+
  field('nama','Nama Program Transformasi',p?.nama||'','text',true,'maxlength="180"')+
