@@ -7901,6 +7901,7 @@ ACT.pgRep=el=>{const d=el.dataset;let spec={k:d.k||'filter',p:d.p||'',j:d.j||'',
   <div class="rpt2-bar">
    <label class="rpt2-f w3"><span>Cakupan laporan</span><select class="sel" id="rpt-sc">${opts(optsC(),rptEnc(spec))}</select></label>
    <label class="rpt2-f w2"><span>Tahapan</span><select class="sel" id="rpt-th">${tahapOpts('')}</select></label>
+   <label class="rpt2-f w2"><span>Template dokumen</span><select class="sel" id="rpt-template"><option value="activity" ${S.ui.rptTemplate!=='classic'?'selected':''}>Warna · Laporan Kegiatan</option><option value="classic" ${S.ui.rptTemplate==='classic'?'selected':''}>Formal · Navy-Emas</option></select></label>
    <label class="rpt2-f"><span>No. dokumen</span><input class="inp" id="rpt-no" placeholder="LAP-[NO]/KODE UNIT/TAHUN" title="Opsional. Format: LAP-[nomor urut]/[kode unit]/[tahun], contoh LAP-12/BTI.3/2026"></label>
    <button type="button" class="btn sm" id="rpt-tteb">✍ Atur TTE</button>
   </div>
@@ -7919,10 +7920,11 @@ ACT.pgRep=el=>{const d=el.dataset;let spec={k:d.k||'filter',p:d.p||'',j:d.j||'',
    if(k==='xls'){rptXlsx(ctx,model.fileName+'.xlsx');log('Unduh laporan Excel',ctx.title+' · '+ctx.name);save();return false}
    return false}});
  const fr=ov.querySelector('#rpt-if'),ld=ov.querySelector('.rpt2-load');
- const upd=()=>{ld.style.display='flex';setTimeout(()=>{try{ctx=rptCtx(spec);model=rptModel(ctx,inc,{no:ov.querySelector('#rpt-no').value.trim(),preset:pre?'tutup':'',stage});fr.srcdoc=mtRptHtml(model)}catch(err){console.error(err);toast('Gagal menyusun laporan: '+err.message)}ld.style.display='none'},20)};
+ const upd=()=>{ld.style.display='flex';setTimeout(()=>{try{ctx=rptCtx(spec);model=rptModel(ctx,inc,{no:ov.querySelector('#rpt-no').value.trim(),preset:pre?'tutup':'',stage});model.template=ov.querySelector('#rpt-template')?.value||'activity';fr.srcdoc=mtRptHtml(model)}catch(err){console.error(err);toast('Gagal menyusun laporan: '+err.message)}ld.style.display='none'},20)};
  ov.querySelector('#rpt-sc').addEventListener('change',ev=>{const th=spec.th;spec=Object.assign(rptDec(ev.target.value),{th,allowEmpty:1});ev.target.innerHTML=opts(optsC(),rptEnc(spec));upd()});
  ov.querySelector('#rpt-th').addEventListener('change',ev=>{spec.th=ev.target.value;upd()});
  ov.querySelector('#rpt-no').addEventListener('change',upd);
+ ov.querySelector('#rpt-template').addEventListener('change',ev=>{S.ui.rptTemplate=ev.target.value==='classic'?'classic':'activity';save();upd()});
  ov.querySelector('#rpt-tteb').addEventListener('click',()=>{const p=ov.querySelector('.rpt2-tte');p.hidden=!p.hidden});
  ov.querySelector('#rpt-tteok').addEventListener('click',()=>{const o={};ov.querySelectorAll('[data-tte]').forEach(x=>{if(x.value.trim())o[x.dataset.tte]=x.value.trim()});S.ui.rptSigner=o;save();ov.querySelector('.rpt2-tte').hidden=true;upd()});
  const syncN=()=>{ov.querySelector('#rpt-n').textContent=nInc()+' bagian dipilih'};
