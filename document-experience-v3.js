@@ -161,12 +161,62 @@ function persist(){
  }else active.p.psProgramCharter=d;
  active.source=clone(d);active.edit=false;save();paint();toast('Dokumen tersimpan. Pratinjau dan ekspor memakai versi yang sama.');return true;
 }
+async function parseImportedCharters(file){
+ let parsed=[],failure=null;
+ try{parsed=await pptxcharters(file)}catch(e){failure=e}
+ if(parsed.length)return parsed;
+ // The legacy parser expects "Program Transformasi"; include newly generated
+ // "Proyek Transformasi" decks from the same renderer as importable sources.
+ if(!window.JSZip){
+  await chLib('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',()=>!!window.JSZip);
+ }
+ const zip=await JSZip.loadAsync(file),names=Object.keys(zip.files)
+  .filter(n=>/^ppt\/slides\/slide\d+\.xml$/.test(n))
+  .sort((a,b)=>+(a.match(/slide(\d+)/)||[])[1]-+(b.match(/slide(\d+)/)||[])[1]);
+ const entries=[];
+ for(const name of names){
+  const data=await zip.file(name).async('string');
+  const doc=new DOMParser().parseFromString(data,'application/xml');
+  if(doc.querySelector('parsererror'))continue;
+  const texts=[...doc.getElementsByTagNameNS('*','sp')].map(shape=>
+   [...shape.getElementsByTagNameNS('*','t')].filter(t=>t.namespaceURI?.includes('drawingml'))
+    .map(t=>t.textContent||'').join('\n').trim()).filter(Boolean);
+  const titleRaw=texts.find(t=>/^(?:Program|Proyek) Transformasi\s*:/i.test(t));
+  if(!titleRaw)continue;
+  const judul=titleRaw.replace(/^(?:Program|Proyek) Transformasi\s*:\s*/i,'').trim();
+  const headings=['Latar Belakang','Terobosan','Output','Outcome','Key Milestones','Risiko','Pendukung Kesuksesan','UNIT PENGELOLA','Initiative Champion','Initiative Owner'];
+  const start=t=>headings.findIndex(h=>h.toLowerCase()===String(t).toLowerCase());
+  const between=h=>{
+   const i=texts.findIndex(t=>t.trim().toLowerCase()===h.toLowerCase());
+   if(i<0)return [];
+   const out=[];
+   for(let j=i+1;j<texts.length;j++){
+    if(start(texts[j])>=0||/^\d{1,2}\s*\/\s*3$/.test(texts[j]))break;
+    if(!/^\s*(?:—|-|belum diisi)\s*$/i.test(texts[j]))out.push(...texts[j].split(/\n/).map(v=>v.trim()).filter(Boolean));
+   }
+   return out;
+  };
+  const goalAt=texts.findIndex(t=>/^TUJUAN (PROGRAM|PROYEK)$/i.test(t));
+  const tujuan=goalAt>=0?(texts[goalAt+1]||''):'';
+  const rawPeriod=texts.find(t=>/^20\d{2}\s*[–-]\s*20\d{2}$/.test(t));
+  const periods=rawPeriod?.match(/20\d{2}/g)||[];
+  const y=+S.ui.psSelectedYear||+S.ui.tahun||2026;
+  const d={judul,prog:'',tujuan,lb:between('Latar Belakang'),tb:between('Terobosan').join('\n'),
+   out:between('Output'),oc:between('Outcome'),ris:between('Risiko'),
+   pk:between('Pendukung Kesuksesan'),ms:[],ow:between('Initiative Owner'),
+   champion:between('Initiative Champion')[0]||'',p1:+periods[0]||y,p2:+periods[1]||+periods[0]||y,
+   kp:[],cs:[],rk:[],sourceSlide:+(name.match(/slide(\d+)/)||[])[1]};
+  entries.push(d);
+ }
+ if(!entries.length)throw (failure||new Error('Teks Charter tidak dikenali. Gunakan PPTX berisi teks yang dapat diedit, bukan gambar slide.'));
+ return entries;
+}
 async function importFile(file){
  if(!file||!/\.pptx$/i.test(file.name))return toast('Pilih file PPTX.');
  if(!canEdit(active.p,active.kind,active.source))return toast('Tidak memiliki akses untuk import.');
  if(active.edit)collect();
  try{
-  const all=await pptxcharters(file);
+  const all=await parseImportedCharters(file);
   const x=all.find(z=>z.prog===active.p.akr)||all.find(z=>String(z.judul||'').toLowerCase()===String(active.p.nama).toLowerCase())||(all.length===1?all[0]:null);
   if(!x)return toast('Tidak ditemukan charter yang cocok. Gunakan PPTX template Charter dengan teks yang dapat diedit.');
   const d=active.draft;
