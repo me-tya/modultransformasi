@@ -89,13 +89,14 @@ function editForm(p,tab){
  const row=(x,i)=>'<div class="psbank-edit-entry" data-bank-edit-entry><div class="psbank-entryhead"><b>Entri '+(i+1)+'</b><button type="button" class="btn" data-bank-entry-remove>Hapus</button></div><div class="psbank-editgrid">'+spec.fields.map(field=>'<label>'+E(field[1])+'<textarea rows="2" data-bank-regfield="'+field[0]+'">'+E(x?.[field[0]]||'')+'</textarea></label>').join('')+'</div></div>';
  return '<div class="psbank-editform"><div class="psbank-sectionhead"><h3>Ubah '+E(STEPS.find(x=>x[0]===tab)?.[1]||tab)+'</h3><button type="button" class="btn" data-bank-entry-add>+ Tambah Entri</button></div><div data-bank-entry-list>'+arr.map(row).join('')+'</div><template data-bank-entry-template>'+row({},arr.length)+'</template></div>';
 }
-function showPreview(key){
+function showPreview(key,initialTab='identity'){
  const rec=records().find(x=>x.key===key);if(!rec)return;
  const p=rec.p,d=document.createElement('div');d.className='psbank-overlay';
- const b=store();b.preview={key,tab:'identity',edit:false,dirty:false};
+ const b=store();b.preview={key,tab:initialTab,edit:false,dirty:false};
  const isTarget=rec.year===year()&&active().some(x=>x.id===p.id);
  const editable=isTarget&&can(p);
  const tabs=isTarget?STEPS.filter(x=>x[0]!=='review'):STEPS.filter(x=>x[0]!=='docs');
+ if(!tabs.some(x=>x[0]===initialTab))b.preview.tab='identity';
  const v=()=>b.preview;
  const view=()=>v().tab==='docs'?Docs.builder(p):editable&&v().edit?editForm(p,v().tab):Docs.paper(p,v().tab,rec.year);
  const foot=()=>{
@@ -128,7 +129,7 @@ function showPreview(key){
   p.psUpdatedAt=new Date().toISOString();p.psUpdatedBy=ME?.email||'';v().edit=false;v().dirty=false;save();return true;
  };
  d.innerHTML='<section class="psbank-dialog" role="dialog" aria-modal="true" aria-label="Detail Program"><header><div><b>Detail Program</b><small>'+E(p.nama)+' · '+rec.year+' · '+E(p.kode||p.akr)+'</small></div><button type="button" data-bank-dismiss aria-label="Tutup">✕</button></header>'+
- '<nav class="psbank-dialogtabs" role="tablist">'+tabs.map(x=>'<button role="tab" aria-selected="'+(x[0]==='identity')+'" class="'+(x[0]==='identity'?'on':'')+'" data-bank-pstep="'+x[0]+'">'+x[1]+'</button>').join('')+'</nav>'+
+ '<nav class="psbank-dialogtabs" role="tablist">'+tabs.map(x=>'<button role="tab" aria-selected="'+(x[0]===v().tab)+'" class="'+(x[0]===v().tab?'on':'')+'" data-bank-pstep="'+x[0]+'">'+x[1]+'</button>').join('')+'</nav>'+
  '<main class="psbank-dialogbody">'+view()+'</main><footer><span>'+(isTarget?'Dokumen program tahun '+year():'Histori program '+rec.year)+'</span><div></div></footer></section>';
  (document.querySelector('#app')||document.body).appendChild(d);foot();
  d.addEventListener('click',ev=>{
@@ -395,6 +396,6 @@ function mount(){
 })();
 
 A.page=page;A.mount=mount;A.version='20261108-project-selection-ui-v6';
-window.MT_PS_BANK_CORE={records,bank,detail,usulan,addOne,bulk,openCarry,codeFor,showPreview,current,openWorkspace,version:A.version};
+window.MT_PS_BANK_CORE={records,bank,detail,usulan,addOne,bulk,openCarry,codeFor,showPreview,openDetailTab:tab=>{const p=current();if(p)showPreview(String(p.id)+':'+year(),tab)},current,openWorkspace,version:A.version};
 if(typeof VIEW!=='undefined'&&VIEW==='project-selection'&&ME)render();
 })();
