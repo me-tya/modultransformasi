@@ -373,8 +373,11 @@ function decorate(){
   const actions=row.querySelector('.psbank-program-actions');
   if(!actions)return;
   const b=document.createElement('button');b.type='button';b.dataset.bankUpload=p.id;
-  b.dataset.mtDownloadList='1';b.className='mt-row-download';b.textContent='↓ Unduh ('+items.length+')';
-  b.title='Buka daftar dokumen untuk memilih dan mengunduh';actions.appendChild(b);
+  b.dataset.mtDownloadList='1';b.className='psbank-action-icon psbank-program-action download';
+  b.title='Unduh Dokumen Program ('+items.length+' berkas)';
+  b.setAttribute('aria-label','Unduh Dokumen Program — '+items.length+' berkas unggahan');
+  b.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 17v4h14v-4"/></svg>';
+  actions.appendChild(b);
  });
  document.querySelectorAll('.psbank-dialogtabs').forEach(nav=>{
   if(nav.querySelector('[data-mt-program-charter]'))return;
