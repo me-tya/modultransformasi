@@ -89,7 +89,7 @@ test('Cross-program mapping allows FRSW and SIPK from Core APBN 2026 into Core N
  m.scope.transfer();
  assert.deepEqual(m.target.psProjects.map(x=>x.name).sort(),['FRSW','SIPK']);
  assert.equal(m.target.psWbsDraft.length,0,'Pemetaan only copies project identity, not old WBS');
- assert.equal(m.scope.bank().mappingTab,'proposal','After transfer, show Usulan Proyek');
+ assert.equal(m.scope.bank().mappingTab,'results','After transfer, show Hasil Pemetaan');
  assert.equal(m.S.wbs.length,2,'must not copy WBS as active before Penetapan');
  assert.equal(m.S.wbs[0].v,1,'must not mutate actual source progress');
  assert.equal(m.S.bukti['CORE-11'].link,'BA sumber');
@@ -163,7 +163,7 @@ test('Buat Dokumen Perencanaan Proyek uses inline settings and live format previ
 test('Compact one-row global filter and single mapping destination source of truth',()=>{
  const workflow=source['project-selection-workflow-2027.js'];
  const scope=source['project-selection-scope-map.js'];
- assert.match(workflow,/ps27-filter-compact/);
+ assert.match(workflow,/ps27-filter-panel/);
  assert.match(workflow,/data-ps27-status/);
  assert.match(workflow,/data-ps27-query/);
  assert.match(workflow,/data-ps27-year/);
@@ -178,7 +178,7 @@ test('Portfolio builder supports selection, format preview and real exports',()=
  assert.match(html,/data-port-format/);
  assert.match(html,/data-port-export/);
  assert.match(source['project-selection-documents.js'],/async function portfolioExport/);
- assert.match(source['project-selection-documents.js'],/registerExport\('portfolio'/);
+ assert.match(source['project-selection-documents.js'],/registerExport\(docKind\(\),docId\(\)/);
 });
 test('Version counter does not advance after generation, advances only after uploaded signed proof',()=>{
  const m=boot(),d=m.docs;
@@ -227,7 +227,7 @@ test('TTE upload closes v1 and next document is v2, while plain downloads keep v
  assert.equal(d.nextVersion('program',programId,2027),2);
 });
 
-test('Pemetaan has two tabs and both sides checkbox; Usulan Proyek has CRUD without WBS counts',()=>{
+test('Pemetaan has four tabs, source and target checkboxes and PM-like CRUD results without WBS',()=>{
  const m=boot(),scopeText=source['project-selection-scope-map.js'];
  m.scope.bank().target=m.target.id;
  const mapping=m.scope.render();
@@ -239,10 +239,17 @@ test('Pemetaan has two tabs and both sides checkbox; Usulan Proyek has CRUD with
  m.scope.bank().mappingTab='proposal';
  const proposal=m.scope.render();
  assert.match(proposal,/Usulan Proyek/);
- assert.match(proposal,/data-scope-project-new/);
+ assert.match(proposal,/Fungsi Utama \/ Modul/);
+ assert.doesNotMatch(proposal,/<th>PIC<\/th>/);
+ m.scope.bank().mappingTab='results';
+ const result=m.scope.render();
+ assert.match(result,/Hasil Pemetaan/);
+ assert.match(result,/data-scope-project-new/);
  assert.match(scopeText,/data-scope-project-view/);
  assert.match(scopeText,/data-scope-project-edit/);
- assert.match(scopeText,/data-scope-remove/);
+ assert.match(scopeText,/data-scope-project-remove/);
+ assert.match(result,/psbank-workspace-banner/);
+ assert.doesNotMatch(result,/item WBS/);
  assert.match(scopeText,/function projectEditor/);
 });
 test('Portfolio now uses formal Project Management report model for Word and visual non-clipping PPTX',()=>{
@@ -261,11 +268,13 @@ test('Portfolio now uses formal Project Management report model for Word and vis
  assert.match(docs,/rect\(sl/);
  assert.match(docs,/fontFace:'Aptos'/);
 });
-test('Shared filter checkbox is opt-in and local tab filter states are scoped independently',()=>{
+test('Global filter icon is opt-in and local tab filter scopes remain independent',()=>{
  const bank=source['project-selection-program-bank.js'];
  const workflow=source['project-selection-workflow-2027.js'];
- assert.match(bank,/mt-shared-filter-check/);
- assert.match(bank,/Terapkan di semua menu/);
+ assert.match(bank,/data-mt-filter-icon/);
+ assert.match(bank,/mt-filter-global-on/);
+ assert.match(bank,/resetActiveFilter/);
+ assert.doesNotMatch(bank,/data-mt-filter-icon.*checked=/);
  assert.match(bank,/MutationObserver/);
  assert.match(workflow,/function localFilter/);
  assert.match(workflow,/filterScopes/);
@@ -379,4 +388,49 @@ test('SMART selection is score-threshold gated, not top-N rank based',()=>{
  assert.equal(I.chosen(p).length,0,'Incomplete 12 criteria cannot pass');
  assert.match(source['project-selection-flow.js'],/score>\+p\.psThreshold/);
  assert.match(source['project-selection-flow.js'],/12 kriteria lengkap/);
+});
+
+test('Proposal detail contains all 17 requested field groups with no PIC field',()=>{
+ const fields=source['project-selection-scope-map.js'];
+ const m=boot(),definition=m.scope.projectFields;
+ const keys=definition.map(f=>f[0]);
+ for(const k of ['applicationName','mainFunction','subModule','url','category','batiiIdentification','probisConfirmation','description','urgency','legalBasis','strategyAlignment','businessProcess','businessNarrative','features']){
+  assert.ok(keys.includes(k),'Missing requested project field: '+k);
+ }
+ assert.ok(!keys.includes('pic'),'Project proposal must not include PIC');
+ assert.match(fields,/function projectEditor/);
+ assert.match(fields,/data-scope-field/);
+ assert.match(fields,/function resultsView/);
+ assert.match(fields,/psbank-action-icon/);
+ assert.doesNotMatch(fields,/window\.confirm/);
+});
+test('Dokumen Usulan Proyek reuses portfolio export flow but has independent project selection and version ledger',()=>{
+ const m=boot();
+ m.scope.bank().target=m.target.id;
+ m.target.psProjects=[{id:'proj1',name:'SIPK',applicationName:'SIPK',mainFunction:'Perizinan profesi',category:'Non APBN',legalBasis:'KMK uji',uic:'BaTii',status:'Usulan'}];
+ m.S.ui.psFlow={tab:'mapping',psGovNavV:1};
+ m.scope.bank().mappingTab='docs';
+ const html=m.scope.render();
+ assert.match(html,/Buat Dokumen Usulan Proyek/);
+ assert.match(html,/data-port-program/);
+ assert.match(html,/data-port-section/);
+ assert.match(html,/data-port-format/);
+ assert.match(html,/data-port-export/);
+ const model=m.docs.portfolioModel();
+ assert.match(model.cover.title,/USULAN PROYEK/);
+ assert.ok(model.blocks.some(x=>x.t==='table'&&x.rows.some(row=>row.some(c=>String(c).includes('Perizinan profesi')))));
+ assert.equal(m.docs.nextVersion('proposals',m.target.id,2027),1);
+});
+test('Project Selection PM filter includes reset, year, period, program, unit and unit role; no checkbox',()=>{
+ const m=boot();
+ const workflow=source['project-selection-workflow-2027.js'],css=readFileSync('project-selection-workflow-2027.css','utf8');
+ const html=m.app.page();
+ assert.match(html,/data-mt-filter-icon/);
+ assert.match(html,/data-ps27-reset/);
+ assert.match(workflow,/data-ps27-period/);
+ assert.match(workflow,/data-ps27-unit/);
+ assert.match(workflow,/data-ps27-role/);
+ assert.match(workflow,/Atur ulang/);
+ assert.match(css,/ps27-filter-panel/);
+ assert.doesNotMatch(html,/mt-shared-filter-check/);
 });
