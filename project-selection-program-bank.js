@@ -195,7 +195,7 @@ function showPreview(key,initialTab='identity',startEdit=false){
  };
  const redraw=(body=true)=>{
   d.querySelectorAll('[data-bank-pstep]').forEach(x=>{const on=x.dataset.bankPstep===v().tab;x.classList.toggle('on',on);x.setAttribute('aria-selected',String(on))});
-  if(body){const area=d.querySelector('.psbank-dialogbody'),top=area?.scrollTop||0;if(area){area.innerHTML=view();area.scrollTop=top}}
+  if(body){const area=d.querySelector('.psbank-dialogbody'),top=area?.scrollTop||0;if(area){area.innerHTML=view();area.scrollTop=top;if(v().tab==='docs')Docs.hydrateProgram?.(area,p)}}
   foot();
  };
  const autoSaveAnd=next=>{if(v().edit&&v().dirty&&!saveForm(true))return;next()};
@@ -220,6 +220,7 @@ function showPreview(key,initialTab='identity',startEdit=false){
  '<nav class="psbank-dialogtabs" role="tablist">'+tabs.map(x=>'<button role="tab" aria-selected="'+(x[0]===v().tab)+'" class="'+(x[0]===v().tab?'on':'')+'" data-bank-pstep="'+x[0]+'">'+x[1]+'</button>').join('')+'</nav>'+
  '<main class="psbank-dialogbody">'+view()+'</main><footer><span>'+(isTarget?'Dokumen program tahun '+year():'Histori program '+rec.year)+'</span><div></div></footer></section>';
  (document.querySelector('#app')||document.body).appendChild(d);foot();
+ if(v().tab==='docs')Docs.hydrateProgram?.(d.querySelector('.psbank-dialogbody'),p);
  d.addEventListener('click',ev=>{
   if(ev.target===d||ev.target.closest('[data-bank-dismiss]')){autoSaveAnd(()=>d.remove());return}
   const step=ev.target.closest('[data-bank-pstep]');
@@ -414,6 +415,7 @@ function onChange(ev){
 function mount(){
  oldMount();
  const root=document.querySelector('#view .pswf');if(!root)return;
+ Docs.hydratePortfolio?.(root);
  root.addEventListener('click',onClick);
  root.addEventListener('change',onChange);
  root.querySelector('[data-bank-search]')?.addEventListener('input',e=>{
