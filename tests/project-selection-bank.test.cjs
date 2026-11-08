@@ -377,6 +377,6 @@ test('SMART selection is score-threshold gated, not top-N rank based',()=>{
  const low={id:'l',name:'A',scores:{}},hi={id:'h',name:'B',scores:{}};
  m.target.psProjects=[low,hi];
  assert.equal(I.chosen(p).length,0,'Incomplete 12 criteria cannot pass');
- assert.match(source['project-selection-flow.js'],/score>\\+p.psThreshold|score>\\+p.psThreshold/);
+ assert.match(source['project-selection-flow.js'],/score>\+p\.psThreshold/);
  assert.match(source['project-selection-flow.js'],/12 kriteria lengkap/);
 });
