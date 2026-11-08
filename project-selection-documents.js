@@ -250,25 +250,79 @@ function portData(){
  const d=portCfg();
  return portSelected().map(p=>({p,blocks:STEPS.filter(x=>d.sections.includes(x[0])).map(x=>({title:x[1],rows:fields(p,x[0],year())}))}));
 }
+function portfolioModel(){
+ const d=portCfg(),data=portData(),version=nextVersion('portfolio','all',year()),B=[];
+ const h1=x=>B.push({t:'h1',text:x}),h2=x=>B.push({t:'h2',text:x});
+ const meaningful=rows=>rows.filter(x=>String(x[1]??'').trim()&&!/^belum diisi$/i.test(String(x[1]).trim()));
+ h1('Ringkasan Eksekutif');
+ B.push({t:'p',text:'Dokumen ini menghimpun informasi perencanaan '+data.length+' program transformasi Kementerian Keuangan tahun '+year()+'. Seluruh informasi bersumber dari isian program yang dipilih pada Modul Transformasi. Dokumen ini merupakan rancangan dan belum disahkan.'});
+ B.push({t:'kv',rows:[['Tahun anggaran',String(year())],['Jumlah program',String(data.length)],['Jumlah usulan proyek',String(data.reduce((n,o)=>n+(o.p.psProjects||[]).length,0))],['Versi dokumen','v'+version],['Status','Rancangan (belum TTE)']]});
+ h1('Ikhtisar Portofolio Program');
+ B.push({t:'table',caption:'Daftar program terpilih',head:['No.','Kode Program','Program Transformasi','UIC Utama','Status'],widths:[7,17,40,20,16],
+  rows:data.length?data.map((o,i)=>[String(i+1),o.p.kode||o.p.akr,o.p.nama,o.p.uic||'—',o.p.psStatus||'Draft']):[['—','—','Belum ada program dipilih','—','—']]});
+ data.forEach((o,i)=>{
+  h1('Program '+String(i+1).padStart(2,'0')+' — '+o.p.nama);
+  B.push({t:'kv',rows:[['Kode Program',o.p.kode||o.p.akr],['UIC Utama',o.p.uic||'—'],['Jenis',o.p.jenis||'Berkelanjutan'],['Tahun',String(year())],['Status',o.p.psStatus||'Draft'],['Jumlah Proyek',String((o.p.psProjects||[]).length)],['Asal Program',o.p.psOriginProgram||(o.p.psCarry?.sourceYear?'Carry-over '+o.p.psCarry.sourceYear:'Program baru')]]});
+  o.blocks.forEach(block=>{
+   h2(block.title);
+   const rows=meaningful(block.rows);
+   if(rows.length){
+    B.push({t:'table',caption:'Substansi '+block.title+' — '+o.p.nama,head:['Komponen','Uraian'],widths:[31,69],
+     rows:rows.map(r=>[String(r[0]),String(r[1]??'—')])});
+   }else B.push({t:'p',text:'Bagian '+block.title.toLowerCase()+' belum memiliki data yang diisi.'});
+  });
+ });
+ h1('Catatan Penggunaan dan Pembaruan Dokumen');
+ B.push({t:'bullets',items:['Dokumen memuat data program yang dipilih pada saat ekspor; perubahan isian setelah ekspor tidak otomatis mengubah berkas yang telah diunduh.','Nomor versi dokumen baru diterbitkan setelah PDF hasil TTE diunggah kembali sebagai bukti dukung.','Status dan bukti tanda tangan elektronik memerlukan verifikasi melalui layanan resmi sebelum dianggap sah.']});
+ return {lang:'id',formal:true,fileName:'Dokumen_Portofolio_Transformasi_'+year()+'_v'+version,
+  header:'Dokumen Portofolio Program Transformasi · '+year(),
+  cover:{kicker:'KEMENTERIAN KEUANGAN REPUBLIK INDONESIA · DRAFT',title:'DOKUMEN PORTOFOLIO PROGRAM TRANSFORMASI',subject:'Tahun Anggaran '+year()+' · Versi '+version,
+   chips:['Tahun '+year(),data.length+' program','Draft — belum disahkan'],scope:d.sections.map(x=>STEPS.find(z=>z[0]===x)?.[1]||x),
+   meta:[['Tahun Anggaran',String(year())],['Versi','v'+version],['Jumlah Program',String(data.length)],['Status','Draft'],['Sumber','Modul Transformasi Kementerian Keuangan']],noTte:true},blocks:B};
+}
+function splitPortText(text,limit=176){
+ const value=String(text||'Belum diisi').trim().replace(/\s+/g,' '),words=value.split(' '),out=[];let line='';
+ words.forEach(word=>{
+  if(word.length>limit){if(line){out.push(line);line=''}for(let i=0;i<word.length;i+=limit)out.push(word.slice(i,i+limit));return}
+  if((line+' '+word).trim().length>limit){if(line)out.push(line);line=word}
+  else line=(line+' '+word).trim();
+ });
+ if(line)out.push(line);return out.length?out:['Belum diisi'];
+}
 function portSlides(){
- const result=[];
- portData().forEach(o=>o.blocks.forEach(b=>{
-  const fields=b.rows.length?b.rows:[['Data','Belum diisi']];
-  for(let i=0;i<fields.length;i+=6)result.push({program:o.p,title:b.title+(i?' (lanjutan)':''),rows:fields.slice(i,i+6)});
- }));
- return result;
+ const data=portData(),slides=[{kind:'cover',title:'PORTOFOLIO PROGRAM TRANSFORMASI',programs:data.map(x=>x.p)}];
+ slides.push({kind:'overview',title:'Peta Portofolio Transformasi',programs:data.map(x=>x.p)});
+ data.forEach((o,i)=>{
+  slides.push({kind:'divider',program:o.p,programIndex:i+1,totalPrograms:data.length});
+  o.blocks.forEach(block=>{
+   const cards=[];
+   (block.rows.length?block.rows:[['Substansi','Belum diisi']]).forEach(row=>{
+    const parts=splitPortText(row[1]);parts.forEach((part,j)=>cards.push([String(row[0])+(j?' · lanjutan '+(j+1):''),part]));
+   });
+   for(let j=0;j<cards.length;j+=4)slides.push({kind:'section',program:o.p,programIndex:i+1,title:block.title+(j?' (lanjutan)':''),rows:cards.slice(j,j+4)});
+  });
+ });
+ return slides;
 }
 function portfolioPreview(){
  const d=portCfg(),data=portData(),v=nextVersion('portfolio','all',year());
  if(d.format==='pptx'){
-  const slides=portSlides(),i=Math.max(0,Math.min(+d.slide||0,Math.max(0,slides.length-1))),x=slides[i];
-  return '<div class="psbank-slidepreview"><div class="psbank-slidetop"><span>KEMENTERIAN KEUANGAN · PORTOFOLIO</span><strong>v'+v+'</strong></div>'+
-  (x?'<h3>'+E(x.title)+'</h3><small>'+E(x.program.nama)+' · '+year()+'</small><div class="psbank-slidebody">'+x.rows.map(row=>'<article><b>'+E(row[0])+'</b><p>'+E(row[1]||'Belum diisi')+'</p></article>').join('')+'</div>':'<p>Pilih program dan substansi di sebelah kiri.</p>')+
-  '</div><div class="psbank-slidecontrols"><button class="btn" data-port-slide="-1" '+(!i?'disabled':'')+'>‹ Sebelumnya</button><span>Slide '+(slides.length?i+1:0)+' / '+slides.length+'</span><button class="btn" data-port-slide="1" '+(i>=slides.length-1?'disabled':'')+'>Berikutnya ›</button></div>';
+  const deck=portSlides(),i=Math.max(0,Math.min(+d.slide||0,Math.max(0,deck.length-1))),x=deck[i]||{},fmt=E;
+  let body='';
+  if(x.kind==='cover')body='<div class="psbank-port-slide-cover"><small>KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</small><div class="port-gold-rule"></div><h2>PORTOFOLIO<br>PROGRAM TRANSFORMASI</h2><p>Tahun '+year()+' · Versi '+v+'</p><strong>'+data.length+' PROGRAM TERPILIH</strong></div>';
+  else if(x.kind==='overview')body='<div class="psbank-port-slide-overview"><small>RINGKASAN EKSEKUTIF · '+year()+'</small><h2>Peta Portofolio Transformasi</h2><div class="port-preview-metrics"><span><b>'+data.length+'</b> Program</span><span><b>'+data.reduce((n,o)=>n+(o.p.psProjects||[]).length,0)+'</b> Usulan Proyek</span></div><div class="port-preview-list">'+data.map((o,j)=>'<p><b>'+String(j+1).padStart(2,'0')+'</b> '+fmt(o.p.nama)+' <small>'+fmt(o.p.kode||o.p.akr)+'</small></p>').join('')+'</div></div>';
+  else if(x.kind==='divider')body='<div class="psbank-port-slide-cover"><small>PROGRAM '+String(x.programIndex).padStart(2,'0')+' / '+x.totalPrograms+'</small><div class="port-gold-rule"></div><h2>'+fmt(x.program?.nama||'')+'</h2><p>'+fmt(x.program?.kode||x.program?.akr)+' · '+year()+'</p><strong>SUBSTANSI PROGRAM</strong></div>';
+  else body='<div class="psbank-port-slide-section"><small>PROGRAM '+String(x.programIndex).padStart(2,'0')+' · '+fmt(x.program?.kode||x.program?.akr)+'</small><h2>'+fmt(x.title)+'</h2><p>'+fmt(x.program?.nama)+'</p><div class="port-card-grid count-'+x.rows.length+'">'+x.rows.map(row=>'<article><b>'+fmt(row[0])+'</b><p>'+fmt(row[1])+'</p></article>').join('')+'</div></div>';
+  return '<div class="psbank-port-slide">'+body+'<footer>MODUL TRANSFORMASI KEMENTERIAN KEUANGAN <span>v'+v+' · '+(i+1)+' / '+deck.length+'</span></footer></div>'+
+   '<div class="psbank-slidecontrols"><button class="btn" data-port-slide="-1" '+(!i?'disabled':'')+'>‹ Sebelumnya</button><span>Slide '+(i+1)+' / '+deck.length+'</span><button class="btn" data-port-slide="1" '+(i>=deck.length-1?'disabled':'')+'>Berikutnya ›</button></div>';
  }
- return '<div class="psbank-docpaper"><header class="psbank-doccover"><small>KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</small><h2>DOKUMEN PORTOFOLIO PROGRAM TRANSFORMASI</h2><h3>Tahun '+year()+' · Versi '+v+'</h3><p>'+data.length+' program terpilih · Rancangan, belum ditandatangani</p></header>'+
- (d.toc?'<section class="psbank-doctoc"><b>DAFTAR PROGRAM</b>'+data.map((o,i)=>'<div>'+(i+1)+'. '+E(o.p.nama)+' ('+E(o.p.kode||o.p.akr)+')</div>').join('')+'</section>':'')+
- data.map((o,i)=>'<section class="psbank-docsection"><h3>'+(i+1)+'. '+E(o.p.nama)+'</h3><p>Kode: '+E(o.p.kode||o.p.akr)+' · UIC: '+E(o.p.uic||'—')+'</p>'+o.blocks.map((b,j)=>'<h4>'+(i+1)+'.'+(j+1)+' '+E(b.title)+'</h4><table>'+b.rows.map(row=>'<tr><th>'+E(row[0])+'</th><td>'+E(row[1]||'Belum diisi')+'</td></tr>').join('')+'</table>').join('')+'</section>').join('')+'</div>';
+ const model=portfolioModel();
+ if(typeof mtRptHtml==='function'){
+  const html=mtRptHtml(model);
+  return '<iframe class="psbank-port-report-frame" title="Pratinjau dokumen portofolio '+(d.format==='pdf'?'PDF':'Word')+'" srcdoc="'+E(html)+'"></iframe>';
+ }
+ return '<article class="psbank-docpaper"><header class="psbank-doccover"><small>KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</small><h2>'+E(model.cover.title)+'</h2><h3>'+year()+' · Versi '+v+'</h3></header>'+
+  model.blocks.map(b=>b.t==='h1'?'<section class="psbank-docsection"><h3>'+E(b.text)+'</h3></section>':b.t==='h2'?'<h4>'+E(b.text)+'</h4>':b.t==='p'?'<p>'+E(b.text)+'</p>':b.t==='table'?'<section class="psbank-docsection"><table><thead><tr>'+b.head.map(x=>'<th>'+E(x)+'</th>').join('')+'</tr></thead><tbody>'+b.rows.map(row=>'<tr>'+row.map(v=>'<td>'+E(v)+'</td>').join('')+'</tr>').join('')+'</tbody></table></section>':'').join('')+'</article>';
 }
 function portfolioBuilder(){
  const d=portCfg(),all=portPrograms(),chosen=portSelected(),ver=nextVersion('portfolio','all',year());
