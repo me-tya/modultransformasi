@@ -2936,7 +2936,7 @@ const umDef=()=>ME&&ME.role==='CMOU'?'u':'up';
 const umOf=()=>lockU()?(S.ui.umodeL||umDef()):(S.ui.umode||'up');
 const lockM=()=>lockU()?umOf():'';
 const curUnit=()=>lockU()||S.ui.unit;
-function progVis(){const u=lockU();return S.programs.filter(p=>!p.psDraft&&(!u||unitsOf(lockM()==='u'?p.uic:lockM()==='p'?p.pend:p.uic+', '+p.pend).includes(u)||S.wbs.some(w=>w.prog===p.akr&&!w.arsip&&unitMatch(w,u,lockM()||'up'))))}
+function progVis(){const u=lockU();return S.programs.filter(p=>!p.psDraft&&(!u||unitsOf(lockM()==='u'?p.uic:lockM()==='p'?p.pend:p.uic+', '+p.pend).includes(u)||(p.psStatus==='Ditetapkan'&&(p.psProjects||[]).some(x=>(p.psSelectedProjectIds||[]).includes(x.id)&&unitsOf(x.uic).includes(u)))||S.wbs.some(w=>w.prog===p.akr&&!w.arsip&&unitMatch(w,u,lockM()||'up'))))}
 function riskVis(r){const u=lockU();if(!u)return true;const m=modOf(r.item),it=wbsBy(r.item);return r.pemilik===u||(m&&m.uicUnits.includes(u))||(it&&unitMatch(it,u,lockM()||'up'))}
 const visMods=f=>mods().filter(m=>can(f,'R',m.kode)&&(!lockU()||m.uicUnits.includes(lockU())||unitsOf(m.pend).includes(lockU())));
 const wMods=(f,a)=>mods().filter(m=>can(f,a||'U',m.kode));
@@ -4043,10 +4043,11 @@ function pmoProgramList(ignoreProgram=false){const y=+S.ui.tahun,u=curUnit(),mod
  if(!inYear)return false;
  if(!u)return true;
  const a=unitsOf(p.uic).includes(u),b=unitsOf(p.pend).includes(u);
- if(mode==='u')return a;
+ const c=p.psStatus==='Ditetapkan'&&(p.psProjects||[]).some(x=>(p.psSelectedProjectIds||[]).includes(x.id)&&unitsOf(x.uic).includes(u));
+ if(mode==='u')return a||c;
  if(mode==='p')return b;
- if(mode==='ue')return pmoAllWbs().some(w=>w.prog===p.akr&&unitMatch(w,u,'ue'));
- return a||b||pmoAllWbs().some(w=>w.prog===p.akr&&unitMatch(w,u,'up'));
+ if(mode==='ue')return c||pmoAllWbs().some(w=>w.prog===p.akr&&unitMatch(w,u,'ue'));
+ return a||b||c||pmoAllWbs().some(w=>w.prog===p.akr&&unitMatch(w,u,'up'));
  })}
 function pmoRiskList(){const P=per();return S.risks.filter(r=>{
  if(!riskVis(r))return false;
