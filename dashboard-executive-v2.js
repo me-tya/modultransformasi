@@ -32,7 +32,7 @@ function dbChart(rows,groups){
   graph='<div class="db-barplot db-barplot-grouped" aria-label="Grafik batang vertikal: target, realisasi, dan terlambat per triwulan">'+quarter.map(({q,a,t})=>{
    const tgt=a.Tercapai+a.Berjalan+a.Terlambat;
    return '<button type="button" class="db-barcol db-group-col '+(selected===String(q)?'is-selected':'')+'" data-act="dbQuarter" data-q="'+q+'" title="Buka rincian triwulan '+q+'"><b>'+dbN(tgt)+' target</b><span class="db-group-bars">'+
-   measures.map(([label,cl,calc])=>{const n=calc(a),pct=dbPct(n,t),tip=label+': '+dbN(n)+' modul ('+pct+'% dari '+dbN(t)+' modul)';return '<i class="db-group-bar db-series-'+cl+'" style="height:'+(t?pct:0)+'%" data-tip="'+dbEsc(tip)+'" title="'+dbEsc(tip)+'" aria-label="'+dbEsc(tip)+'"></i>'}).join('')+
+   measures.map(([label,cl,calc])=>{const n=calc(a),pct=dbPct(n,t),tip=label+': '+dbN(n)+' modul ('+pct+'% dari '+dbN(t)+' modul)';return '<i class="db-group-bar db-series-'+cl+'" style="height:'+(t?pct:0)+'%" title="'+dbEsc(tip)+'" aria-label="'+dbEsc(tip)+'"></i>'}).join('')+
    '</span><small>TW '+q+'</small></button>';
   }).join('')+'</div>';
  }else if(mode==='heat'){
@@ -40,7 +40,7 @@ function dbChart(rows,groups){
  }else{
   graph='<div class="db-donutrow">'+quarter.map(({q,a,t})=>{const p=dbPct(a.Tercapai,t);return '<button class="db-donutcol '+(selected===String(q)?'is-selected':'')+'" data-act="dbQuarter" data-q="'+q+'"><span class="db-donut" style="--p:'+p+'%"><b>'+p+'%</b></span><small>TW '+q+'</small></button>'}).join('')+'</div>';
  }
- return '<section class="db-panel db-plot"><div class="db-ph"><div><h3>Peta Modul per Triwulan</h3><small>Distribusi status modul berdasarkan target sampai akhir tiap triwulan</small></div><label>Model Grafik <select class="db-select" data-on="dbChart" aria-label="Model grafik"><option value="bar" '+(mode==='bar'?'selected':'')+'>Bar Bertumpuk</option><option value="vertical" '+(mode==='vertical'?'selected':'')+'>Bar Vertikal</option><option value="heat" '+(mode==='heat'?'selected':'')+'>Heatmap</option><option value="donut" '+(mode==='donut'?'selected':'')+'>Donut</option></select></label></div>'+graph+legend+'</section>';
+ return '<section class="db-panel db-plot"><div class="db-ph"><div><h3>Capaian Modul per Triwulan</h3><small>Distribusi status modul berdasarkan target sampai akhir tiap triwulan</small></div><label>Model Grafik <select class="db-select" data-on="dbChart" aria-label="Model grafik"><option value="bar" '+(mode==='bar'?'selected':'')+'>Bar Bertumpuk</option><option value="vertical" '+(mode==='vertical'?'selected':'')+'>Bar Vertikal</option><option value="heat" '+(mode==='heat'?'selected':'')+'>Heatmap</option><option value="donut" '+(mode==='donut'?'selected':'')+'>Donut</option></select></label></div>'+graph+legend+'</section>';
 }
 function dbOverview(rows,groups,n){
  const a=dbSummary(rows,n),p=dbPct(a.Tercapai,rows.length),late=rows.filter(({m})=>dxAt(m,n).st==='Terlambat');
