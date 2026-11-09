@@ -38,7 +38,7 @@ test('new chart model option renders side-by-side vertical bars without losing o
  assert.match(html,/value="bar"/);
  assert.match(html,/value="heat"/);
  assert.match(html,/value="donut"/);
- assert.match(css,/\.db-group-bars\{height:132px/);
+ assert.match(css,/\.db-group-bars\{[^}]*height:132px/);
 });
 
 test('stacked bars display percentage labels for readable segments and tooltip for every status',()=>{
