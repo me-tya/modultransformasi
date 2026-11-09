@@ -1,11 +1,11 @@
 <!-- PMO / CMO · RKMK (6) · Bantuan & Cheatsheet Visual · 2026-11-06 -->
 <title>Modul Transformasi Kemenkeu</title>
 <link rel="stylesheet" href="charter-planning-report.css?v=20261108-1">
-<link rel="stylesheet" href="dashboard-executive-v2.css?v=20261108-2">
+<link rel="stylesheet" href="dashboard-executive-v2.css?v=20261109-chart-v3">
 <link rel="stylesheet" href="project-selection-flow.css?v=20261108-6">
 <link rel="stylesheet" href="project-selection-governance.css?v=20261108-1">
 <link rel="stylesheet" href="project-selection-workflow-2027.css?v=20261109-guide-rich-v1">
-<link rel="stylesheet" href="project-selection-program-bank.css?v=20261109-5">
+<link rel="stylesheet" href="project-selection-program-bank.css?v=20261109-history-click-v6">
 
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -3488,7 +3488,7 @@ function pCharter(){const akr=S.ui.chp;const p=S.programs.find(x=>x.akr===akr);
  const back=vh('C','pmo','Dokumen Proyek','Tujuh dokumen proyek sesuai Draft KEP Kepala BaTii, dengan charter sebagai dokumen inti.')+pmoTabs('perencanaan')+`<div class="chbc"><a href="#pmo-perencanaan">‹ Semua program</a> / Charter Program Transformasi</div>`;
  if(!p)return back+`<div class="card empty">Pilih program dari Portofolio untuk membuka charter.</div>`;
  const L=chList(akr);let c=L.find(x=>x.id===S.ui.chv)||chCur(akr);
- if(!c)return back+`<div class="card empty" style="padding:30px;text-align:center"><b>${esc(p.kode)} · ${esc(p.nama)}</b><p class="s">Program ini belum memiliki Charter Program Transformasi.</p>${chCan('C',p)?`<button class="btn pri" data-act="chnew" data-p="${akr}">+ Buat charter</button>`:''}</div>`;
+ if(!c)return back+`<div class="card empty" style="padding:30px;text-align:center"><b>${esc(p.kode)} · ${esc(p.nama)}</b><p class="s">Program ini belum memiliki Charter Program Transformasi.</p>${chCan('C',p)?`<button class="btn pri" data-act="chnew" data-p="${akr}">+ Buat charter</button> <button class="btn" type="button" data-act="cpNewImportPptx" data-p="${akr}" title="Buat draft charter lalu isi dari PowerPoint .pptx">⇪ Import Charter (.pptx)</button>`:''}</div>`;
  if(S.ui.ched===c.id&&chCan('U',p)&&(c.st==='Draft'||chApprover()))return back+chWizard(c,p);
  const ed=chCan('U',p)&&(c.st==='Draft'||(c.st==='Reviu'&&chApprover()));
  const step=(k,lab)=>{const l=(c.log||[]).filter(x=>x.st===k).slice(-1)[0];const ord=['Draft','Reviu','Disahkan'];const done=ord.indexOf(c.st==='Arsip'?'Disahkan':c.st)>=ord.indexOf(k);return `<div class="cst${done?' on':''}"><i>${done?'✓':ord.indexOf(k)+1}</i><span><b>${lab}</b><small>${l?esc(l.by)+(l.at?' · '+fmtD(l.at):''):'—'}</small></span></div>`};
@@ -6577,7 +6577,7 @@ async function fileDel(m){if(!m||!m.id)return;if(FB.on&&FB.ready){for(let i=0;i<
 
 /* ===== Impor isian dari dokumen (PPTX, Word, PDF, Excel, TXT): label pada dokumen dicocokkan dengan label isian ===== */
 const DOC_ACCEPT='.docx,.pptx,.pdf,.xlsx,.xls,.csv,.txt';
-function docPick(cb){const i=document.createElement('input');i.type='file';i.accept=DOC_ACCEPT;i.hidden=true;i.addEventListener('change',()=>{const f=i.files[0];i.remove();if(f)cb(f)});document.body.appendChild(i);i.click()}
+function docPick(cb,accept=DOC_ACCEPT){const i=document.createElement('input');i.type='file';i.accept=accept;i.hidden=true;i.addEventListener('change',()=>{const f=i.files[0];i.remove();if(f)cb(f)});document.body.appendChild(i);i.click()}
 async function docZip(){if(!window.JSZip){try{await chLib('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',()=>!!window.JSZip)}catch(e){await chLib('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js',()=>!!window.JSZip)}}}
 const xT=(n,tag)=>[...n.getElementsByTagName(tag)];
 /* Hasil: daftar baris teks; sel tabel digabung dengan TAB agar "Label<TAB>Isi" terbaca sebagai pasangan */
@@ -6656,7 +6656,7 @@ function chFromLines(f,base){const d={},L=k=>(f[k]||[]).map(docBul).filter(Boole
  if(f.asis_pb||f.asis_m||f.asis_t)d.asis=Object.assign({},base.asis||{},f.asis_pb?{pb:T('asis_pb')}:{},f.asis_m?{masalah:T('asis_m')}:{},f.asis_t?{tek:T('asis_t')}:{});
  if(f.tobe_pb||f.tobe_pot||f.tobe_ar)d.tobe=Object.assign({},base.tobe||{},f.tobe_pb?{pb:L('tobe_pb')}:{},f.tobe_pot?{pot:L('tobe_pot')}:{},f.tobe_ar?{ar:T('tobe_ar')}:{});
  return d}
-ACT.chimpdoc=()=>{if(!CHD)return;const p=progOf(CHD.prog)||{};docPick(async file=>{busy('Membaca dokumen charter…',file.name);
+ACT.chimpdoc=el=>{if(!CHD)return;const p=progOf(CHD.prog)||{};docPick(async file=>{busy('Membaca dokumen charter…',file.name);
  try{let d=null;
   if(/\.pptx$/i.test(file.name)){try{const items=await pptxcharters(file);const it=items.find(x=>x.prog===CHD.prog)||items[0];if(it)d={judul:it.judul,tujuan:it.tujuan,lb:it.lb,tb:it.tb,out:it.out,oc:it.oc,p1:it.p1,p2:it.p2,ms:it.ms,ris:it.ris,pk:it.pk,ch:it.champion,ow:it.ow,kp:it.kp,cs:it.cs}}catch(e){}}
   if(!d){const lines=await docText(file);const f=docMatch(lines,CH_IF);d=chFromLines(f,CHD)}
@@ -6667,7 +6667,7 @@ ACT.chimpdoc=()=>{if(!CHD)return;const p=progOf(CHD.prog)||{};docPick(async file
   if(!keys.length){toast('Tidak ada isian charter yang dikenali. Pastikan label dokumen sama dengan judul isian (mis. “Tujuan Program:”, “Latar Belakang”, “Output”).');return}
   const F=keys.map(k=>({k,l:LB[k]})),found={};keys.forEach(k=>found[k]=k==='p1'?[d.p1+' s.d. '+d.p2]:show(d[k]));
   docPreview(file,F,found,sel=>{Object.keys(sel).forEach(k=>{if(k==='p1'){CHD.p1=d.p1;CHD.p2=d.p2}else CHD[k]=JSON.parse(JSON.stringify(d[k]))});CHD.sumberImpor=file.name;S.ui.chsv='';render()})}
- catch(err){busyOff();toast('Gagal membaca dokumen: '+(err.message||err))}})};
+ catch(err){busyOff();toast('Gagal membaca dokumen: '+(err.message||err))}},el?.dataset?.pptx?'.pptx':DOC_ACCEPT)};
 
 
 /* ===== Paparan charter untuk pimpinan: cover + 3 slide, satu model elemen untuk pratinjau HTML dan PPTX native ===== */
@@ -10253,14 +10253,14 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 
 
-<script src="dashboard-executive-v2.js?v=20261108-1"></script>
+<script src="dashboard-executive-v2.js?v=20261109-chart-v3"></script>
 
-<script src="charter-planning-report.js?v=20261108-5"></script>
+<script src="charter-planning-report.js?v=20261109-charter-import-v2"></script>
 
 <script src="project-selection-flow.js?v=20261109-5"></script>
 <script src="project-selection-governance.js?v=20261108-1"></script>
 <script src="project-selection-workflow-2027.js?v=20261109-guide-rich-v1"></script>
-<script src="project-selection-scope-map.js?v=20261109-5"></script>
+<script src="project-selection-scope-map.js?v=20261109-history-click-v6"></script>
 <script src="project-selection-documents.js?v=20261108-4"></script>
 <script src="project-selection-program-bank.js?v=20261109-header-v5"></script>
 
