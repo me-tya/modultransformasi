@@ -798,6 +798,26 @@ function splitPortText(text,limit=155){
  });
  if(line)out.push(line);return out.length?out:['Belum diisi'];
 }
+/* Content-specific PPTX layouts: native Charter remains untouched. */
+function mtPptLayout(title){
+ const t=String(title||'').toLowerCase();
+ if(/manfaat|benefit/.test(t))return 'benefits';
+ if(/risiko|risk/.test(t))return 'risks';
+ if(/linimasa|rencana pengembangan|tata kelola|governance/.test(t))return 'timeline';
+ if(/perbandingan|proses bisnis|business case|identifikasi & validasi/.test(t))return 'comparison';
+ if(/stakeholder|pemangku kepentingan/.test(t))return 'stakeholders';
+ return 'editorial';
+}
+function mtPptRowsHtml(rows,title){
+ const kind=mtPptLayout(title),data=rows||[],esc=E;
+ const card=r=>'<div style="padding:12px 14px;background:#f1f5fa;border-left:4px solid #f9b919;min-width:0"><b style="display:block;color:#1f4f81;font-size:12px">'+esc(r[0])+'</b><p style="margin:5px 0 0;color:#254568;font-size:13px;overflow-wrap:anywhere">'+esc(r[1])+'</p></div>';
+ if(kind==='timeline')return '<div style="display:grid;grid-template-columns:repeat('+Math.min(4,Math.max(1,data.length))+',1fr);gap:9px;align-items:stretch">'+data.map((r,i)=>'<div style="border-top:5px solid #1f4f81;padding:12px;background:#f1f5fa;min-width:0"><strong style="color:#d19b00;font-size:18px">'+String(i+1).padStart(2,'0')+'</strong><b style="display:block;color:#102f56;font-size:12px;margin:5px 0">'+esc(r[0])+'</b><p style="font-size:12px;margin:0;overflow-wrap:anywhere">'+esc(r[1])+'</p></div>').join('')+'</div>';
+ if(kind==='risks')return '<div style="display:flex;flex-direction:column;gap:9px">'+data.map((r,i)=>'<div style="display:grid;grid-template-columns:34px 1fr 2fr;gap:12px;align-items:center;padding:10px;background:#f1f5fa;border-left:4px solid #d59b23"><b style="color:#1f4f81">'+(i+1)+'</b><b style="font-size:12px;color:#102f56">'+esc(r[0])+'</b><span style="font-size:12px">'+esc(r[1])+'</span></div>').join('')+'</div>';
+ if(kind==='benefits')return '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">'+data.map((r,i)=>'<div style="padding:15px;background:'+(i%2?'#e6eef7':'#f1f5fa')+';border-bottom:4px solid '+(i%2?'#1f4f81':'#f9b919')+'"><b style="font-size:13px;color:#102f56">'+esc(r[0])+'</b><p style="font-size:13px;color:#254568;overflow-wrap:anywhere">'+esc(r[1])+'</p></div>').join('')+'</div>';
+ if(kind==='comparison')return '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">'+data.map((r,i)=>'<div style="padding:14px;background:'+(i%2?'#e7f0f8':'#f1f5fa')+';border-top:5px solid '+(i%2?'#1f4f81':'#f9b919')+'"><b style="font-size:12px;color:#102f56">'+esc(r[0])+'</b><p style="font-size:13px;overflow-wrap:anywhere">'+esc(r[1])+'</p></div>').join('')+'</div>';
+ if(kind==='stakeholders')return '<div style="display:flex;flex-direction:column;gap:9px">'+data.map((r,i)=>'<div style="display:grid;grid-template-columns:40% 60%;background:#f1f5fa;min-width:0"><b style="padding:12px;background:#173e69;color:#fff;font-size:12px">'+esc(r[0])+'</b><span style="padding:12px;font-size:12px;overflow-wrap:anywhere">'+esc(r[1])+'</span></div>').join('')+'</div>';
+ return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+data.map(card).join('')+'</div>';
+}
 function portSlides(){
  const data=portData(),mode=projectMode(),slides=[{kind:'cover',title:mode?'DOKUMEN USULAN PROYEK':'PORTOFOLIO PROGRAM TRANSFORMASI',programs:data.map(x=>x.p)}];
  for(let o=0;o<Math.max(1,data.length);o+=12)slides.push({kind:'overview',title:(mode?'Ikhtisar Usulan Proyek':'Peta Portofolio Transformasi')+(o?' (lanjutan)':''),programs:data.slice(o,o+12).map(x=>x.p),programOffset:o});
@@ -832,7 +852,7 @@ function portfolioPreview(){
   else if(x.kind==='overview')body='<div class="psbank-port-slide-overview"><small>RINGKASAN EKSEKUTIF · '+year()+'</small><h2>'+fmt(x.title)+'</h2><div class="port-preview-metrics"><span><b>'+data.length+'</b> '+(mode?'Usulan Proyek':'Program')+'</span><span><b>'+data.reduce((n,o)=>n+(o.p.psProjects||[]).length,0)+'</b> Usulan Proyek</span></div><div class="port-preview-list">'+(x.programs||[]).map((p,j)=>'<p><b>'+String((x.programOffset||0)+j+1).padStart(2,'0')+'</b> '+fmt(p.nama)+' <small>'+fmt(officialCode(p))+'</small></p>').join('')+'</div></div>';
   else if(x.kind==='divider')body='<div class="psbank-port-slide-cover"><small>'+(mode?'PROYEK ':'PROGRAM ')+String(x.programIndex).padStart(2,'0')+' / '+x.totalPrograms+'</small><div class="port-gold-rule"></div><h2>'+fmt(x.program?.nama||'')+'</h2><p>'+fmt(x.program?.kode||x.program?.akr)+' · '+year()+'</p><strong>'+(mode?'SUBSTANSI PROYEK':'SUBSTANSI PROGRAM')+'</strong></div>';
   else if(x.kind==='tte')body='<div class="psbank-port-slide-section"><small>RANCANGAN · BUKAN TTE YANG TELAH DIVERIFIKASI</small><h2>'+fmt(x.title)+'</h2><p>Identitas penandatangan</p><div class="port-card-grid count-4">'+x.rows.map(row=>'<article><b>'+fmt(row[0])+'</b><p>'+fmt(row[1])+'</p></article>').join('')+'</div></div>';
-  else body='<div class="psbank-port-slide-section"><small>'+(mode?'PROYEK ':'PROGRAM ')+String(x.programIndex).padStart(2,'0')+' · '+fmt(x.program?.kode||x.program?.akr)+'</small><h2>'+fmt(x.title)+'</h2><p>'+fmt(x.program?.nama)+'</p><div class="port-card-grid count-'+x.rows.length+'">'+x.rows.map(row=>'<article><b>'+fmt(row[0])+'</b><p>'+fmt(row[1])+'</p></article>').join('')+'</div></div>';
+  else body='<div class="psbank-port-slide-section"><small>'+(mode?'PROYEK ':'PROGRAM ')+String(x.programIndex).padStart(2,'0')+' · '+fmt(x.program?.kode||x.program?.akr)+'</small><h2>'+fmt(x.title)+'</h2><p>'+fmt(x.program?.nama)+'</p>'+mtPptRowsHtml(x.rows,x.title)+'</div>';
   return '<div class="psbank-port-slide">'+body+'<footer>MODUL TRANSFORMASI KEMENTERIAN KEUANGAN <span>v'+v+' · '+(i+1)+' / '+deck.length+'</span></footer></div>'+
    '<div class="psbank-slidecontrols"><button class="btn" data-port-slide="-1" '+(!i?'disabled':'')+'>‹ Sebelumnya</button><span>Slide '+(i+1)+' / '+deck.length+'</span><button class="btn" data-port-slide="1" '+(i>=deck.length-1?'disabled':'')+'>Berikutnya ›</button></div>';
  }
@@ -954,14 +974,49 @@ async function portfolioExport(){
     tx(sl,(mode?'USULAN PROYEK ':'PROGRAM ')+String(page.programIndex).padStart(2,'0')+'  ·  '+(page.program?.kode||page.program?.akr),.59,.80,11,.32,11,MID,true);
     tx(sl,page.title,.59,1.2,11.9,.55,26,N,true);
     tx(sl,page.program?.nama,.6,1.78,11.6,.38,12,MUTED);
-    const cards=page.rows||[],n=cards.length,oneCol=n===1,cols=oneCol?1:2,rows=Math.ceil(n/cols);
-    const gapX=.22,gapY=.17,w=oneCol?12.12:5.95,h=Math.min(4.35,(4.4-(rows-1)*gapY)/rows);
-    cards.forEach((card,j)=>{
-     const col=j%cols,row=Math.floor(j/cols),xx=.6+col*(w+gapX),yy=2.45+row*(h+gapY);
-     rect(sl,xx,yy,w,h,'F2F6FB');rect(sl,xx,yy,.07,h,G);
-     tx(sl,card[0],xx+.2,yy+.19,w-.46,.34,12,MID,true,{valign:'mid'});
-     tx(sl,card[1],xx+.2,yy+.65,w-.42,h-.81,n===1?17:12.5,TEXT,false,{valign:'top'});
-    });
+    const cards=page.rows||[],n=cards.length,layout=mtPptLayout(page.title);
+    if(layout==='timeline'){
+     const w=(12.05-(Math.max(n-1,0)*.15))/Math.max(n,1);
+     rect(sl,.62,3.15,12,.055,'B8CBE0');
+     cards.forEach((card,j)=>{const xx=.62+j*(w+.15);
+      rect(sl,xx,2.55,w,.10,j%2?MID:G);rect(sl,xx,2.73,w,3.15,PALE);
+      tx(sl,String(j+1).padStart(2,'0'),xx+.18,2.98,w-.36,.44,25,MID,true);
+      tx(sl,card[0],xx+.18,3.53,w-.36,.65,14,N,true,{valign:'top'});
+      tx(sl,card[1],xx+.18,4.28,w-.36,1.36,12,TEXT,false,{valign:'top'});
+     });
+    }else if(layout==='risks'||layout==='stakeholders'){
+     const h=Math.min(.98,4.0/Math.max(n,1));
+     cards.forEach((card,j)=>{const yy=2.43+j*(h+.14);
+      rect(sl,.62,yy,12.05,h,PALE);
+      rect(sl,.62,yy,layout==='risks'?.76:3.7,h,layout==='risks'?G:MID);
+      if(layout==='risks')tx(sl,String(j+1).padStart(2,'0'),.77,yy+.12,.45,h-.2,20,N,true);
+      tx(sl,card[0],layout==='risks'?1.58: .83,yy+.10,layout==='risks'?3.5:3.15,h-.18,layout==='risks'?13:12,layout==='risks'?N:W,true);
+      tx(sl,card[1],4.55,yy+.10,7.83,h-.17,12,TEXT,false,{valign:'mid'});
+     });
+    }else if(layout==='benefits'){
+     const cols=n===1?1:2,w=cols===1?12.05:5.95,h=n<=2?3.65:2.03;
+     cards.forEach((card,j)=>{const xx=.62+(j%cols)*6.13,yy=2.43+Math.floor(j/cols)*(h+.16);
+      rect(sl,xx,yy,w,h,j%2?'E6EEF7':PALE);
+      rect(sl,xx,yy,w,.11,j%2?MID:G);
+      tx(sl,card[0],xx+.23,yy+.28,w-.46,.52,16,N,true);
+      tx(sl,card[1],xx+.23,yy+.97,w-.46,h-1.15,n<=2?16:12.5,TEXT,false,{valign:'top'});
+     });
+    }else if(layout==='comparison'){
+     const cols=n===1?1:2,w=cols===1?12.05:5.95,h=n<=2?3.7:2.04;
+     cards.forEach((card,j)=>{const xx=.62+(j%cols)*6.13,yy=2.43+Math.floor(j/cols)*(h+.15);
+      rect(sl,xx,yy,w,h,j%2?'E8F0F8':PALE);rect(sl,xx,yy,w,.11,j%2?MID:G);
+      tx(sl,card[0],xx+.2,yy+.27,w-.4,.48,14,N,true);
+      tx(sl,card[1],xx+.2,yy+.91,w-.4,h-1.08,13,TEXT,false,{valign:'top'});
+     });
+    }else{
+     const oneCol=n===1,cols=oneCol?1:2,rows=Math.ceil(n/cols),gapX=.22,gapY=.17;
+     const w=oneCol?12.05:5.95,h=Math.min(4.25,(4.3-(rows-1)*gapY)/Math.max(1,rows));
+     cards.forEach((card,j)=>{const col=j%cols,row=Math.floor(j/cols),xx=.62+col*(w+gapX),yy=2.45+row*(h+gapY);
+      rect(sl,xx,yy,w,h,PALE);rect(sl,xx,yy,.07,h,G);
+      tx(sl,card[0],xx+.2,yy+.17,w-.44,.36,12,MID,true);
+      tx(sl,card[1],xx+.2,yy+.64,w-.44,h-.82,oneCol?17:12.5,TEXT,false,{valign:'top'});
+     });
+    }
     footer(sl,num);
    });
    await ppt.writeFile({fileName:file+'.pptx'});
