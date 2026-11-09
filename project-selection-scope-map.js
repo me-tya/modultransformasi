@@ -433,6 +433,6 @@ function change(ev){
  if(el.dataset.scopeTargetAll!==undefined){b.targetSelected=el.checked?proposalRows(target()).map(x=>String(x.id)):[];save();window.render();return true}
  return false;
 }
-document.addEventListener('keydown',ev=>{if(ev.key!=='Enter'&&ev.key!==' ')return;const row=ev.target.closest?.('tr[data-scope-history-detail]');if(row&&ev.target===row){ev.preventDefault();historyDetail(row.dataset.scopeHistoryDetail)}});
+if(typeof document!=='undefined'&&typeof document.addEventListener==='function')document.addEventListener('keydown',ev=>{if(ev.key!=='Enter'&&ev.key!==' ')return;const row=ev.target.closest?.('tr[data-scope-history-detail]');if(row&&ev.target===row){ev.preventDefault();historyDetail(row.dataset.scopeHistoryDetail)}});
 window.MT_PS_SCOPE={modules,sourceWbs,render,transfer,click,change,bank,target,codeFor,currentCode,suggestedAcronym,normalizeProjectCodes,projectFields:PROJECT_FIELDS,projectValue,version:'20261109-project-history-v5'};
 })();
