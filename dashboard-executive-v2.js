@@ -138,6 +138,7 @@ function dbHelpShow(){
  if(document.getElementById('dbHelpModal'))return;
  document.body.insertAdjacentHTML('beforeend','<div id="dbHelpModal" class="db-help-overlay"><button type="button" class="db-help-backdrop" data-act="dbHelpClose" aria-label="Tutup panel bantuan"></button>'+dbHelpMarkup+'</div>');
  document.body.classList.add('db-help-body-open');
+ dbHelpSwitch('start');
  document.querySelector('#dbHelpModal .btnclose')?.focus({preventScroll:true});
 }
 function dbHelpSwitch(tab){
@@ -150,6 +151,19 @@ function dbHelpSwitch(tab){
  const scroller=m.querySelector('#scroller');if(scroller)scroller.scrollTop=0;
 }
 ACT.dbHelp=el=>{dbHelpReturnFocus=el;dbHelpShow()};
+/* Khusus saat berada pada Executive Dashboard: kedua pintu Bantuan membuka MT-06.
+   Halaman lain tetap menggunakan aksi Bantuan semula. */
+const dbExecutivePriorGlobalHelp=ACT.helphome;
+ACT.helphome=(el,event,row)=>{
+ if(typeof VIEW!=='undefined'&&VIEW==='dashboard')return ACT.dbHelp(el);
+ if(typeof dbExecutivePriorGlobalHelp==='function')return dbExecutivePriorGlobalHelp(el,event,row);
+};
+const dbExecutivePriorContextHelp=ACT.help;
+ACT.help=(el,event,row)=>{
+ const requested=el?.dataset?.v||(typeof VIEW!=='undefined'?VIEW:'');
+ if(requested==='dashboard')return ACT.dbHelp(el);
+ if(typeof dbExecutivePriorContextHelp==='function')return dbExecutivePriorContextHelp(el,event,row);
+};
 ACT.dbHelpClose=()=>{
  document.getElementById('dbHelpModal')?.remove();
  document.body.classList.remove('db-help-body-open');
