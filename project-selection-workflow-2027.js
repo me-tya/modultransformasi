@@ -759,20 +759,41 @@ function sheetPage(tab){
 }
 
 function open(mode){
- let tab=mode==='sheet'?'framework':'map',root=document.createElement('div');root.className='ps27-help-overlay';
- const isSheet=mode==='sheet',tabs=isSheet?[['framework','Framework'],['governance','Tata Kelola'],['carry','Carry Over'],['formula','Formula Prioritasi'],['rkmk','RKMK']]:[['map','Peta Menu'],['flow','Alur Kerja'],['roles','Peran'],['terms','Istilah'],['check','Checklist']];
- const inner=()=>'<div class="ps27-helpbody">'+(isSheet?sheetPage(tab):helpPage(tab))+'</div>';
- root.innerHTML='<section class="ps27-helpmodal" role="dialog" aria-modal="true" aria-label="'+(isSheet?'Cheatsheet':'Bantuan')+' Project Selection"><header><div><b>'+(isSheet?'Cheatsheet':'Bantuan')+' · Project Selection</b><small>'+(isSheet?'Referensi tata kelola dan formula':'Peta menu, alur, dan shortcut langsung')+'</small></div><button type="button" data-ps27-close>✕</button></header><nav role="tablist">'+tabs.map(x=>'<button type="button" data-ps27-htab="'+x[0]+'" class="'+(tab===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+'</nav>'+inner()+'</section>';
+ const isSheet=mode==='sheet';
+ let tab=isSheet?'framework':'map';
+ const tabs=isSheet?
+  [['framework','Framework'],['governance','Tata Kelola'],['carry','Carry Over'],['formula','SMART & Formula'],['kwide','Penetapan K-Wide'],['rkmk','RKMK'],['terms','Istilah'],['reference','Referensi']]:
+  [['map','Peta Menu'],['flow','Tahapan'],['fill','Cara Pengisian'],['roles','Peran & Akses'],['check','Checklist']];
+ const old=document.querySelector('.ps27-rich-overlay');if(old)old.remove();
+ const previous=document.activeElement;
+ const root=document.createElement('div');root.className='sk-overlay ps27-rich-overlay';root.setAttribute('data-ps27-rich','1');
+ const label=isSheet?'Cheatsheet':'Bantuan';
+ const subtitle=isSheet?'Framework, metodologi, istilah, tata kelola, serta penetapan program dan proyek.':'Peta menu, tahapan, cara pengisian, peran dan checklist kerja.';
+ root.innerHTML='<section class="sk-dialog ps27-rich-dialog" role="dialog" aria-modal="true" aria-label="'+label+' Project Selection">'+
+ '<header class="sk-head"><div class="sk-hwrap"><div class="sk-hicon" aria-hidden="true">'+(isSheet?'▤':'?')+'</div><div class="sk-hwords"><div class="sk-overline">'+(isSheet?'REFERENSI TATA KELOLA & KONSEP':'PANDUAN PENGGUNA APLIKASI')+'</div><h2>'+label+' Project Selection</h2><p>'+subtitle+'</p></div><button class="sk-close" type="button" data-ps27-close aria-label="Tutup '+label+'">×</button></div></header>'+
+ '<nav class="sk-tabbar" role="tablist" aria-label="Tab '+label+' Project Selection">'+tabs.map(x=>'<button type="button" role="tab" data-ps27-htab="'+x[0]+'" class="sk-tab" aria-selected="'+(tab===x[0]?'true':'false')+'">'+x[1]+'</button>').join('')+'</nav>'+
+ '<main class="sk-content ps27-rich-content"><section class="sk-view ps27-rich-body" role="tabpanel">'+(isSheet?sheetPage(tab):helpPage(tab))+'</section></main>'+
+ '<footer class="sk-footer"><span><b>'+(isSheet?'Cheatsheet = teori & referensi.':'Bantuan = cara menggunakan aplikasi.')+'</b> '+(isSheet?'Untuk langkah pengisian buka Bantuan.':'Untuk teori, istilah dan formula buka Cheatsheet.')+'</span><span>Project Selection · 2027–2029</span></footer></section>';
  document.body.appendChild(root);
+ function close(){root.remove();if(previous&&previous.isConnected&&previous.focus)previous.focus({preventScroll:true})}
  root.addEventListener('click',function(ev){
-  if(ev.target===root||ev.target.closest('[data-ps27-close]')){root.remove();return}
+  if(ev.target===root||ev.target.closest('[data-ps27-close]')){close();return}
   const b=ev.target.closest('[data-ps27-htab],[data-ps27-jump]');if(!b)return;
-  if(b.dataset.ps27Jump){root.remove();navigate(b.dataset.ps27Jump);return}
-  tab=b.dataset.ps27Htab;root.querySelectorAll('[data-ps27-htab]').forEach(x=>x.classList.toggle('on',x.dataset.ps27Htab===tab));root.querySelector('.ps27-helpbody').innerHTML=isSheet?sheetPage(tab):helpPage(tab);
+  if(b.dataset.ps27Jump){const target=b.dataset.ps27Jump;close();navigate(target);return}
+  tab=b.dataset.ps27Htab;
+  root.querySelectorAll('[data-ps27-htab]').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.ps27Htab===tab)));
+  root.querySelector('.ps27-rich-body').innerHTML=isSheet?sheetPage(tab):helpPage(tab);
+  root.querySelector('.sk-content').scrollTop=0;
  });
- root.addEventListener('keydown',function(ev){if(ev.key==='Escape')root.remove()});
+ root.addEventListener('input',function(ev){
+  if(!ev.target.matches('[data-ps27-help-search]'))return;
+  const search=ev.target.value.toLowerCase().trim();
+  root.querySelectorAll('[data-ps27-menuitem]').forEach(item=>{item.hidden=!!search&&!String(item.dataset.ps27Menuitem||'').includes(search)});
+ });
+ root.addEventListener('keydown',function(ev){if(ev.key==='Escape'){ev.preventDefault();close()}});
 }
-B.page=page;B.mount=mount;B.open=open;B.version='20261108-help-shortcuts-smart-priority-v2';
+
+B.page=page;B.mount=mount;B.open=open;B.version='20261109-help-cheatsheet-rich-v1';
 window.MT_PS_WORKFLOW={carrySelected,cloneProgram,syncWbs,navigate,version:B.version};
 if(typeof VIEW!=='undefined'&&VIEW==='project-selection'&&ME)render();
 })();
