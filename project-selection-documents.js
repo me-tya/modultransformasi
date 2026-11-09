@@ -428,9 +428,7 @@ function programSlideHtml(p,slide,idx,count,version){
  return '<div class="psbank-slidepreview psbank-export-section">'+
   '<div class="psbank-slide-export-kicker">KEMENTERIAN KEUANGAN · '+E(officialCode(p))+' · '+year()+'</div>'+
   '<h3>'+E(slide.title)+'</h3><small>'+E(p.nama)+' · Versi '+version+'</small>'+
-  '<div class="psbank-slidebody">'+(slide.rows||[]).map(row=>
-    '<article><b>'+E(row[0])+'</b><p>'+E(String(row[1]||'Belum diisi'))+'</p></article>'
-   ).join('')+'</div><footer>PROGRAM TRANSFORMASI KEMENTERIAN KEUANGAN <span>'+(idx+1)+' / '+count+'</span></footer></div>';
+  '<div class="psbank-slidebody" style="display:block">'+mtPptRowsHtml(slide.rows,slide.title)+'</div><footer>PROGRAM TRANSFORMASI KEMENTERIAN KEUANGAN <span>'+(idx+1)+' / '+count+'</span></footer></div>';
 }
 
 function documentPreview(p){
@@ -697,14 +695,38 @@ async function exportFile(p){
      sl.addText('KEMENTERIAN KEUANGAN · '+(officialCode(p))+' · '+year(),{x:.6,y:.46,w:12,h:.3,fontFace:PPTX_STYLE.font,fontSize:12,bold:true,color:PPTX_STYLE.mid,margin:0});
      sl.addText(String(page.title||''),{x:.6,y:.92,w:12.1,h:.62,fontFace:PPTX_STYLE.font,fontSize:25,bold:true,color:PPTX_STYLE.navy,margin:0,fit:'shrink'});
      sl.addText(p.nama+' · Versi '+version,{x:.6,y:1.59,w:12,h:.29,fontFace:PPTX_STYLE.font,fontSize:12,color:'627892',margin:0});
-     const cards=page.rows||[],cols=2,nRows=Math.ceil(cards.length/cols),gapX=.22,gapY=.16,w=5.95,h=Math.min(1.37,(4.45-(nRows-1)*gapY)/Math.max(1,nRows));
-     cards.forEach((a,j)=>{
-      const col=j%cols,row=Math.floor(j/cols),xx=.6+col*(w+gapX),yy=2.1+row*(h+gapY);
-      sl.addShape(ppt.ShapeType.rect,{x:xx,y:yy,w,h,line:{color:'DCE6F0'},fill:{color:PPTX_STYLE.pale}});
-      sl.addShape(ppt.ShapeType.rect,{x:xx,y:yy,w:.07,h,line:{color:PPTX_STYLE.gold,transparency:100},fill:{color:PPTX_STYLE.gold}});
-      sl.addText(String(a[0]||''),{x:xx+.2,y:yy+.12,w:w-.42,h:.3,fontFace:PPTX_STYLE.font,fontSize:11.5,bold:true,color:'19456F',margin:0,fit:'shrink'});
-      sl.addText(String(a[1]||'Belum diisi'),{x:xx+.2,y:yy+.49,w:w-.43,h:h-.58,fontFace:PPTX_STYLE.font,fontSize:11.5,color:'415974',margin:0,valign:'top',fit:'shrink'});
-     });
+     const cards=page.rows||[],layout=mtPptLayout(page.title),n=cards.length;
+     const t=(value,x,y,w,h,size=12,color='254568',bold=false)=>sl.addText(String(value||'Belum diisi'),{x,y,w,h,fontFace:PPTX_STYLE.font,fontSize:size,color,bold,margin:0,fit:'shrink',valign:'top'});
+     const r=(x,y,w,h,color)=>sl.addShape(ppt.ShapeType.rect,{x,y,w,h,line:{color,transparency:100},fill:{color}});
+     if(layout==='timeline'){
+      const w=(12.05-(Math.max(n-1,0)*.16))/Math.max(n,1);
+      r(.6,3.06,12,.06,'BACBE0');
+      cards.forEach((a,j)=>{const x=.6+j*(w+.16);r(x,2.32,w,.13,j%2?'1F4F81':'F9B919');r(x,2.58,w,3.53,'F0F5FA');
+       t(String(j+1).padStart(2,'0'),x+.16,2.79,w-.32,.44,24,'1F4F81',true);
+       t(a[0],x+.16,3.45,w-.32,.57,14,'102F56',true);t(a[1],x+.16,4.15,w-.32,1.65,12);
+      });
+     }else if(layout==='risks'||layout==='stakeholders'){
+      const h=Math.min(.98,3.9/Math.max(n,1));
+      cards.forEach((a,j)=>{const y=2.18+j*(h+.15),left=layout==='risks'?.76:3.7;
+       r(.6,y,12.05,h,'F0F5FA');r(.6,y,left,h,layout==='risks'?'F9B919':'1F4F81');
+       if(layout==='risks')t(String(j+1),.82,y+.16,.39,.4,20,'102F56',true);
+       t(a[0],layout==='risks'?1.56:.84,y+.13,layout==='risks'?2.75:3.1,h-.22,12,layout==='risks'?'102F56':'FFFFFF',true);
+       t(a[1],4.55,y+.12,7.72,h-.22,12);
+      });
+     }else if(layout==='benefits'||layout==='comparison'){
+      const cols=n===1?1:2,w=cols===1?12.05:5.94,h=n<=2?3.65:2.0;
+      cards.forEach((a,j)=>{const x=.6+(j%cols)*6.14,y=2.18+Math.floor(j/cols)*(h+.17);
+       r(x,y,w,h,j%2?'E7EFF8':'F0F5FA');r(x,y,w,.12,j%2?'1F4F81':'F9B919');
+       t(a[0],x+.2,y+.25,w-.4,.47,14,'102F56',true);t(a[1],x+.2,y+.94,w-.4,h-1.12,13);
+      });
+     }else{
+      const cols=n===1?1:2,nRows=Math.ceil(n/cols),gapX=.22,gapY=.16,w=cols===1?12.05:5.95,h=Math.min(3.72,(4.25-(nRows-1)*gapY)/Math.max(1,nRows));
+      cards.forEach((a,j)=>{const x=.6+(j%cols)*(w+gapX),y=2.18+Math.floor(j/cols)*(h+gapY);
+       r(x,y,w,h,'F0F5FA');r(x,y,.07,h,'F9B919');
+       t(a[0],x+.2,y+.15,w-.42,.35,12,'1F4F81',true);
+       t(a[1],x+.2,y+.6,w-.42,h-.75,12);
+      });
+     }
     }
     sl.addShape(ppt.ShapeType.rect,{x:0,y:7.22,w:13.333,h:.28,line:{color:page.kind==='cover'?PPTX_STYLE.navy:'EAF1F8',transparency:100},fill:{color:page.kind==='cover'?PPTX_STYLE.navy:'EAF1F8'}});
     sl.addText('PROGRAM TRANSFORMASI KEMENTERIAN KEUANGAN',{x:.6,y:7.26,w:9.8,h:.15,fontFace:PPTX_STYLE.font,fontSize:8,color:page.kind==='cover'?'C9D9EB':'66809D',margin:0});
