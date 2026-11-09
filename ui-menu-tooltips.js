@@ -198,14 +198,31 @@ var PS_GUIDE_TAB={
 };
 var selector=['#app .nav .nv','#app .ps27-tabs button','#app .psbank-subtabs button','#app .psbank-mapping-tabs button','#app .ps27-minitabs button','#app .ps27-kwide-tabs button','#app .pswf-tabs button','#app .ptabs a','#app .subt a','#app .subt button','#app .cm-step','#app .chtabs button','#app .chebar [role="tab"]','#app .act-tabs a','#app .cra-tabs button','#app .cra2-tabs button','#app .pg-tabs button','#app [role="tab"]','[role="tab"]','nav[role="tablist"] button','nav[role="tablist"] a','nav[class*="tabs"] button','nav[class*="tabs"] a','[data-sktab]','[data-ps27-htab]','.sk-tab'].join(',');
 var tooltip=null,active=null,showTimer=0,previousTitle=null,previousDesc=null;
-var GUIDE_KEY='mt_guide_tooltips_v1',guideEnabled=true,headerObserver=null;
+var GUIDE_KEY='mt_guide_tooltips_v1',guideEnabled=true,headerObserver=null,mutedTitles=new Map();
 try{guideEnabled=window.localStorage.getItem(GUIDE_KEY)!=='off'}catch(e){guideEnabled=true}
-function shortFunction(value){
- var s=String(value||'').trim(),dot=s.indexOf('. ');
- if(dot>30&&dot<118)s=s.slice(0,dot+1);
- return s.length>115?s.slice(0,112).trimEnd()+'…':s;
-}
 function targetFor(node){return node&&node.closest?node.closest(selector):null;}
+// OFF must also suppress native HTML title tooltips on menus and tabs.
+// Remove once when OFF is selected, then lazily for dynamically rendered tabs.
+function muteTitle(node){
+ if(!node||!node.hasAttribute||!node.hasAttribute('title'))return;
+ if(!mutedTitles.has(node))mutedTitles.set(node,node.getAttribute('title'));
+ node.removeAttribute('title');
+}
+function mutePath(node,tab){
+ var item=node;
+ while(item){muteTitle(item);if(item===tab)break;item=item.parentElement}
+}
+function muteNativeMenuTitles(){
+ if(guideEnabled||typeof document.querySelectorAll!=='function')return;
+ mutedTitles.forEach(function(_,node){if(!node.isConnected)mutedTitles.delete(node)});
+ document.querySelectorAll(selector).forEach(muteTitle);
+}
+function restoreNativeMenuTitles(){
+ mutedTitles.forEach(function(value,node){
+  if(node.isConnected&&!node.hasAttribute('title'))node.setAttribute('title',value);
+ });
+ mutedTitles.clear();
+}
 function hide(){
  clearTimeout(showTimer);showTimer=0;
  if(active){
@@ -237,7 +254,7 @@ function position(el){
  tooltip.style.left=left+'px';tooltip.style.top=top+'px';
 }
 function show(el){
- if(!el||!el.isConnected)return;
+ if(!guideEnabled||!el||!el.isConnected)return;
  var label=labelOf(el),spec=lookup(el,label),title=el.getAttribute('title'),aria=el.getAttribute('aria-label');
  if(!spec){
   var useful=title&&norm(title)!==norm(label)?title:aria&&norm(aria)!==norm(label)?aria:'';
@@ -250,21 +267,23 @@ function show(el){
  previousDesc=el.getAttribute('aria-describedby');
  if(previousTitle!==null)el.removeAttribute('title');
  el.setAttribute('aria-describedby',(previousDesc?previousDesc+' ':'')+t.id);
- t.setAttribute('data-guide-mode',guideEnabled?'full':'brief');
+ t.setAttribute('data-guide-mode','full');
  t.querySelector('.mt-tip-label').textContent=label;
- t.querySelector('[data-mt-tip-function]').textContent=guideEnabled?spec[0]:shortFunction(spec[0]);
+ t.querySelector('[data-mt-tip-function]').textContent=spec[0];
  t.querySelector('[data-mt-tip-bound]').textContent=spec[1];
  t.hidden=false;position(el);
 }
 function arm(el,delay){
- if(!el||el===active)return;
+ if(!guideEnabled||!el||el===active)return;
  hide();
  showTimer=setTimeout(function(){showTimer=0;show(el);},delay);
 }
 document.addEventListener('pointerover',function(ev){
  if(ev.pointerType==='touch')return;
  var el=targetFor(ev.target);
- if(el&&el!==active)arm(el,260);
+ if(!el)return;
+ if(!guideEnabled){mutePath(ev.target,el);return}
+ if(el!==active)arm(el,260);
 });
 document.addEventListener('pointerout',function(ev){
  var el=targetFor(ev.target);
@@ -274,7 +293,9 @@ document.addEventListener('pointerout',function(ev){
 });
 document.addEventListener('focusin',function(ev){
  var el=targetFor(ev.target);
- if(el)arm(el,70);
+ if(!el)return;
+ if(!guideEnabled){mutePath(ev.target,el);return}
+ arm(el,70);
 });
 document.addEventListener('focusout',function(ev){
  if(active&&ev.target===active)hide();
@@ -287,14 +308,15 @@ function setGuide(next){
  guideEnabled=!!next;
  hide();
  try{window.localStorage.setItem(GUIDE_KEY,guideEnabled?'on':'off')}catch(e){}
+ if(guideEnabled)restoreNativeMenuTitles();else muteNativeMenuTitles();
  updateGuide();
  return guideEnabled;
 }
 function updateGuide(){
  var control=document.getElementById('mt-guide-toggle');if(!control)return;
  control.setAttribute('aria-checked',String(guideEnabled));
- control.setAttribute('aria-label','Guide '+(guideEnabled?'ON: tooltip lengkap fungsi dan batasan':'OFF: tooltip fungsi ringkas')+'. Klik untuk mengubah.');
- control.setAttribute('title','Guide '+(guideEnabled?'ON: fungsi dan batasan lengkap':'OFF: fungsi ringkas')+'. Klik untuk mengubah.');
+ control.setAttribute('aria-label','Guide '+(guideEnabled?'ON: tooltip fungsi dan batasan aktif':'OFF: tidak ada tooltip menu dan tab')+'. Klik untuk mengubah.');
+ control.setAttribute('title','Guide '+(guideEnabled?'ON: fungsi dan batasan lengkap':'OFF: tooltip menu dan tab disembunyikan')+'. Klik untuk mengubah.');
  var label=control.querySelector('.mt-guide-status');if(label)label.textContent=guideEnabled?'ON':'OFF';
 }
 function installHeader(){
@@ -323,6 +345,7 @@ function installHeader(){
   sheet.setAttribute('title','Cheatsheet: framework, teori, metode SMART, istilah, K-Wide dan referensi tata kelola. Klik untuk membuka.');
   sheet.setAttribute('aria-label','Buka Cheatsheet referensi dan teori transformasi');
  }
+ if(!guideEnabled)muteNativeMenuTitles();
 }
 function initHeader(){
  if(typeof document.querySelector!=='function')return;
@@ -356,5 +379,5 @@ function initHeader(){
 if(typeof document.querySelector==='function'){
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initHeader,{once:true});else initHeader();
 }
-window.MT_MENU_TOOLTIP={hide:hide,resolve:lookup,enabled:function(){return guideEnabled},setEnabled:setGuide,version:'MT-Guide-v1'};
+window.MT_MENU_TOOLTIP={hide:hide,resolve:lookup,enabled:function(){return guideEnabled},setEnabled:setGuide,version:'MT-Guide-v2-off-silent'};
 })();
