@@ -83,8 +83,8 @@ test('project history has compact year and proportional columns plus matching ad
 
 test('new assets are cache-busted for Pages without disturbing top header sizing',()=>{
  for(const str of [
-  'dashboard-executive-v2.js?v=20261109-mt04-chart',
-  'dashboard-executive-v2.css?v=20261109-mt04-chart',
+  'dashboard-executive-v2.js?v=20261109-mt06-tooltip',
+  'dashboard-executive-v2.css?v=20261109-mt06-tooltip',
   'charter-planning-report.js?v=20261109-charter-import-v3',
   'project-selection-scope-map.js?v=20261109-mt04-recap-r2',
   'project-selection-program-bank.css?v=20261109-mt04-recap-r2'
@@ -133,4 +133,35 @@ test('preview uses left pane height and Daftar Program renamed Usulan Program',(
  assert.match(bankCss,/\.psbank-portfolio-doc \.psbank-docscroll\{flex:1 1 0;height:0!important/);
  assert.match(bankCss,/\.psbank-portfolio-doc \.psbank-docpreview\{display:flex;flex-direction:column/);
  assert.ok(index.includes('project-selection-program-bank.js?v=20261109-mt04-usulan'));
+});
+
+test('MT-06 dashboard chart title and native tooltip alone remain usable',()=>{
+ assert.match(db,/Capaian Modul per Triwulan/);
+ assert.doesNotMatch(db,/Peta Modul per Triwulan/);
+ const html=chartWith('vertical');
+ assert.match(html,/title="Target: 18 modul \\(90% dari 20 modul\\)"/);
+ assert.match(html,/title="Realisasi: 10 modul \\(50% dari 20 modul\\)"/);
+ assert.match(html,/title="Terlambat: 3 modul \\(15% dari 20 modul\\)"/);
+ assert.doesNotMatch(html,/data-tip=/);
+ assert.doesNotMatch(css,/db-group-bar::after/);
+});
+
+test('MT-06 WBS row click opens detail instead of requiring separate WBS navigation',()=>{
+ assert.match(index,/function dxItemRows\\(list,M\\)/);
+ assert.match(index,/tr class="dx-wbs-row" data-act="dxWbsItem" data-k=/);
+ assert.match(index,/tabindex="0" role="button" aria-label="Buka detail item WBS/);
+ assert.match(index,/ACT\\.dxWbsItem=el=>/);
+ assert.match(index,/const w=wbsBy\\(el\\.dataset\\.k\\)/);
+ assert.match(index,/if\\(pop\\)pop\\.remove\\(\\);\\s*wbsDetail\\(w\\)/);
+ assert.match(index,/\\.ov \\.lap\\.dx-it tr\\.dx-wbs-row:hover/);
+});
+
+test('MT-06 compact seven-domain cards keep original domain list and existing help unchanged',()=>{
+ assert.match(index,/var domains=\\['Governance','Scope','Schedule','Finance','Stakeholders','Resources','Risk'\\]/);
+ assert.match(index,/sk-domain-grid/);
+ assert.match(index,/sk-domain-card/);
+ assert.match(index,/min-height:62px/);
+ assert.match(index,/Tujuh performance domains/);
+ assert.match(index,/class="hbtn sk-hdrBtn sk-hdrHelp" data-act="helphome"/);
+ assert.match(index,/Bantuan Penggunaan/);
 });
