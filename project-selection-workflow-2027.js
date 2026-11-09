@@ -690,6 +690,71 @@ function sheetPage(tab){
    ps27SheetNote('Status dokumen','Unduhan Word dari submenu Draft RKMK merupakan rancangan kerja, bukan RKMK definitif atau dokumen yang otomatis telah disahkan. Area yang memerlukan konfirmasi tidak boleh diabaikan.','gold')+
    '</div>';
  }
+
+ if(tab==='kwide'){
+  return '<div class="ps27-sheet">'+
+   ps27SheetHead('PENETAPAN · K-WIDE','Kontrak Kinerja & Cakupan Proyek','Penetapan Program mencakup proyek yang terpilih. Kontrak K-Wide menjadi dasar pencatatan target output per triwulan dan keputusan tahun program yang relevan.')+
+   '<div class="ps27-sheet-band"><div><span>01 · TARGET</span><b>Capaian K-Wide</b><p>Definisikan output TW I–IV dan tanggal cut-off sesuai kesepakatan.</p></div><div><span>02 · KONTRAK</span><b>Dokumen penetapan</b><p>Catat nomor, tanggal, pejabat penetap, cakupan dan berkas pendukung.</p></div><div><span>03 · CAKUPAN</span><b>Program + proyek</b><p>Periksa proyek pilihan sebelum melakukan penetapan bersama.</p></div></div>'+
+   '<div class="ps27-sheet-subhead"><h4>Alur dan pembeda penetapan</h4></div>'+
+   '<div class="ps27-sheet-grid ps27-sheet-grid3">'+
+    ps27SheetCard('A','Persiapan target','PMO Unit/UIC menyiapkan keluaran, penanggung jawab dan usulan target; hasilnya direviu PMO Kementerian.')+
+    ps27SheetCard('B','Pencatatan kontrak','Nomor kontrak, tanggal penetapan, pejabat dan dokumen menjadi metadata keputusan yang dapat ditelusuri.')+
+    ps27SheetCard('C','Penetapan program & proyek','Setelah persyaratan dipenuhi, penetapan program menyertakan daftar proyek terpilih, bukan submenu Penetapan Proyek terpisah.',ps27SheetJump('Buka Penetapan Program','penetapan-program'))+
+   '</div>'+
+   '<div class="ps27-sheet-tablewrap"><table class="ps27-sheet-table"><thead><tr><th>Aspek</th><th>Ditetapkan pada Project Selection</th><th>Dilanjutkan pada Project Management</th></tr></thead><tbody>'+
+   '<tr><td><b>Program</b></td><td>Tujuan, output dan kontrak K-Wide sesuai keputusan.</td><td>Koordinasi proyek, rencana pelaksanaan dan pelaporan.</td></tr>'+
+   '<tr><td><b>Proyek</b></td><td>Cakupan proyek yang masuk program untuk tahun tujuan.</td><td>Dokumen proyek, WBS, baseline, bukti dan change request.</td></tr>'+
+   '<tr><td><b>Manfaat</b></td><td>Indikator target dan benefit owner.</td><td>Monitoring pelaksanaan dan evaluasi manfaat setelah implementasi.</td></tr>'+
+   '</tbody></table></div>'+
+   ps27SheetNote('Batasan','Tersimpannya kontrak bukan bukti WBS sudah aktif. Cakupan proyek yang ditetapkan tidak memindahkan realisasi atau dokumen persetujuan tahun sebelumnya. Keputusan harus mengikuti kewenangan formal.','gold')+'</div>';
+ }
+ if(tab==='terms'){
+  const dictionary=[
+   ['Project Selection','Proses memilih program/proyek yang akan ditetapkan menjadi dasar rencana pelaksanaan.'],
+   ['Program','Kelompok proyek yang dikoordinasikan untuk memperoleh manfaat bersama.'],
+   ['Proyek','Upaya sementara untuk menghasilkan keluaran atau layanan yang spesifik.'],
+   ['Portofolio','Kumpulan program/proyek yang dikelola untuk mendukung sasaran strategis; tidak harus saling terkait secara langsung.'],
+   ['Business Case','Analisis dasar kebutuhan, alternatif, biaya, manfaat dan alasan usulan dipilih.'],
+   ['SMART','Metode pembobotan multikriteria untuk membandingkan prioritas proyek.'],
+   ['Kriteria & Bobot','Aspek penilaian dan tingkat kepentingan relatif yang dipakai dalam skor prioritas.'],
+   ['Utility','Transformasi nilai kriteria ke skala pembanding sebelum penggabungan berbobot.'],
+   ['Ambang','Batas skor yang ditetapkan untuk penyaringan calon proyek pada mode SMART.'],
+   ['Snapshot','Rekaman kondisi skor, bobot dan pilihan proyek pada waktu tertentu untuk dibandingkan.'],
+   ['Carry Over','Penggunaan kembali identitas/referensi historis sebagai draf tahun tujuan, tanpa mengaktifkan realisasi lama.'],
+   ['K-Wide','Kontrak kinerja tingkat kementerian yang dicatat sebagai acuan penetapan dan target keluaran.'],
+   ['UIC','Unit in Charge: unit yang ditugaskan bertanggung jawab pada suatu usulan atau kegiatan.'],
+   ['PMO','Project Management Office: fungsi koordinasi dan pengendalian pengelolaan proyek.'],
+   ['CMO','Change Management Office: fungsi pengelolaan kesiapan, komunikasi, pelatihan, adopsi dan perubahan.'],
+   ['Stakeholder','Pihak yang memengaruhi, terdampak, atau mempunyai kepentingan pada hasil program/proyek.'],
+   ['Risk & Dependency','Potensi peristiwa penghambat dan ketergantungan kepada aktivitas/pihak lain.'],
+   ['Benefit Owner','Pihak yang memiliki akuntabilitas pengukuran dan realisasi manfaat.'],
+   ['Charter','Dokumen dasar yang memuat tujuan, ruang lingkup, tata kelola dan keluaran program/proyek.'],
+   ['Acceptance Criteria','Kriteria terukur untuk menyatakan hasil atau deliverable telah memenuhi persyaratan.'],
+   ['Baseline','Rencana lingkup/jadwal/biaya yang telah disetujui sebagai dasar pengendalian proyek.'],
+   ['WBS','Work Breakdown Structure: uraian hasil dan paket kerja untuk pelaksanaan proyek.'],
+   ['RKMK','Rencana Kerja Manajerial Kementerian Keuangan; dalam aplikasi ini ditampilkan rancangan untuk direviu.'],
+   ['Output / Outcome','Output merupakan keluaran langsung; outcome merupakan dampak atau hasil yang ingin dicapai.'],
+   ['Benefit Realization','Penilaian sejauh mana manfaat yang direncanakan telah benar-benar diwujudkan.']
+  ];
+  return '<div class="ps27-sheet">'+ps27SheetHead('GLOSARIUM · ISTILAH & BATASAN','Kamus Istilah Project Selection','Seluruh istilah dan penjelasan konsep disajikan di Cheatsheet, bukan di Bantuan operasional.')+
+   '<input class="sk-search" type="search" data-ps27-help-search placeholder="Cari istilah, misalnya SMART, K-Wide, carry over, WBS..." aria-label="Cari istilah pada Cheatsheet">'+
+   '<div class="ps27-sheet-gloss">'+dictionary.map(x=>'<article data-ps27-menuitem="'+E((x[0]+' '+x[1]).toLowerCase())+'"><h4>'+E(x[0])+'</h4><p>'+E(x[1])+'</p></article>').join('')+'</div>'+
+   ps27SheetNote('Interpretasi istilah','Penggunaan konsep pada menu mengikuti proses yang diimplementasikan. Ketentuan persetujuan formal tetap ditetapkan oleh kebijakan dan keputusan yang berlaku.','gold')+'</div>';
+ }
+ if(tab==='reference'){
+  return '<div class="ps27-sheet">'+ps27SheetHead('REFERENSI · BATASAN KERANGKA','Landasan Konseptual dan Sumber Data','Cheatsheet menjelaskan konsep dan aturan aplikasi yang bisa dipelajari pengguna. Jangan menyamakan referensi metodologi, keputusan desain, dan dasar penetapan formal.')+
+  '<div class="ps27-sheet-grid ps27-sheet-grid3">'+
+   ps27SheetCard('PMI','Praktik manajemen program/proyek','Area strategic alignment, benefits management, stakeholder, risk, governance, charter dan WBS dipakai sebagai inspirasi kerangka kerja.','Pemeriksaan kelengkapan dalam aplikasi adalah desain implementasi, bukan klaim daftar kolom wajib PMI.')+
+   ps27SheetCard('APP','Aturan dan formula aplikasi','SMART opsional, utility, normalisasi, bobot, ambang, snapshot, status dan penguncian alur mengikuti logika yang diimplementasikan.',ps27SheetJump('Kriteria & Bobot','prioritasi:criteria'))+
+   ps27SheetCard('DOC','Dokumen resmi dan penetapan','Target dan kontrak K-Wide serta keputusan program/proyek harus sesuai dokumen, kewenangan dan proses formal pada tahun tujuan.',ps27SheetJump('Penetapan Program','penetapan-program'))+
+  '</div>'+
+  '<div class="ps27-sheet-grid ps27-sheet-grid2">'+
+   ps27SheetCard('RKMK','Rancangan dan reviu narasi','Draft RKMK merupakan keluaran kerja yang disusun dari data program/charter untuk dikonfirmasi, bukan dokumen yang otomatis definitif.',ps27SheetJump('Buka Draft RKMK','rkmk'))+
+   ps27SheetCard('PM/CM','Pemisahan evaluasi dan monitoring','Monev progres WBS, evaluasi manfaat pascaproyek, dan monev adopsi pengguna berada pada proses yang berbeda.',ps27SheetJump('Buka Prioritasi','prioritasi'))+
+  '</div>'+
+  ps27SheetNote('Ketelitian sumber','Materi di halaman ini merangkum konsep dan perilaku aplikasi. Pengaturan yang memerlukan landasan hukum/keputusan resmi harus diperiksa pada dokumen sumber yang berlaku; Cheatsheet tidak menggantikannya.','gold')+'</div>';
+ }
+
  return '<div class="ps27-sheet">'+ps27SheetHead('REFERENSI','Cheatsheet Project Selection','Pilih salah satu tab untuk membaca kerangka kerja, tata kelola, carry over, formula prioritas, atau rancangan RKMK.')+'</div>';
 }
 
