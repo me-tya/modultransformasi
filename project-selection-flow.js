@@ -479,7 +479,7 @@ function programModal(p){
  const isNew=!p,y=year();
  const body='<div class="pswf-form-grid">'+
  field('nama','Nama Program Transformasi',p?.nama||'','text',true,'maxlength="180"')+
- field('kode','Akronim / Kode Program (B/T + Tahun + Akronim)',p?.kode||'','text',false,'maxlength="40"')+
+ field('kodeResmi','Kode Program Resmi (opsional; sesuai dokumen penetapan)',p?.kodeResmi||'','text',false,'maxlength="80"')+
  sel('jenis','Jenis Program',['Berkelanjutan','Tematik','Lainnya'],p?.jenis||'Berkelanjutan')+
  sel('uic','UIC Utama',units(),p?.uic||'BaTii')+
  field('pend','UIC Pendukung (pisahkan koma)',p?.pend||'')+
@@ -492,19 +492,21 @@ function programModal(p){
  area('themes','Tema / keterkaitan kebijakan (opsional)',p?.psThemes||'')+
  '</div><p class="pswf-note">Program disimpan untuk Tahun '+y+'. Selama berstatus Draft, program tidak masuk daftar kerja Project Management/WBS.</p>';
  modal((isNew?'Tambah':'Ubah')+' Program Transformasi · '+y,body,(box,close)=>{
-  const name=val(box,'nama'),uic=val(box,'uic'),jenis=val(box,'jenis'),typed=String(val(box,'kode')||'').toUpperCase().trim();
+  const name=val(box,'nama'),uic=val(box,'uic'),typed=String(val(box,'kodeResmi')||'').trim().toUpperCase();
   if(!name||!uic){toast('Nama dan UIC Utama wajib diisi.');return}
-  const prefix=jenis==='Tematik'?'T':'B';
-  const oldPattern=typed.match(/^[BT]\d{2}-([A-Z0-9-]+)$/);
-  const short=typed?(oldPattern?oldPattern[1]:typed.replace(/[^A-Z0-9-]/g,'')):name.trim().split(/\s+/).map(x=>x[0]||'').join('').toUpperCase().replace(/[^A-Z0-9]/g,'');
-  const code=prefix+String(y).slice(-2)+'-'+(short||'PROG');
-  const dup=allPrograms().some(o=>o!==p&&String(o.kode||'').toLowerCase()===code.toLowerCase()&&+o.psYear===y);
-  if(dup){toast('Kode program sudah digunakan pada tahun '+y+'.');return}
+  // Kode resmi adalah masukan eksplisit. ID p.id dan akronim p.akr adalah referensi internal.
+  // Kode B/T historis tidak diasumsikan resmi jika belum dikonfirmasi.
+  if(typed&&allPrograms().some(o=>o!==p&&String(o.kodeResmi||'').trim().toUpperCase()===typed)){
+   toast('Kode program resmi telah digunakan oleh program lain.');return
+  }
   const target=p||{id:uid2('program'),akr:'PS'+y+'-'+uid2('p'),psYear:y,psDraft:true,psStatus:'Draft',psListStatus:'Baru',psThreshold:80,psPrioritize:false,psProjects:[],psWeights:{},psGovernanceV:1,psBenefits:[],psStakeholders:[],psRiskRegister:[],mulai:y,periode:y+'–'+y,status:'Perencanaan'};
-  Object.assign(target,{nama:name,kode:code,jenis:val(box,'jenis'),uic,pend:val(box,'pend'),sponsor:val(box,'sponsor'),
+  Object.assign(target,{nama:name,kodeResmi:typed,jenis:val(box,'jenis'),uic,pend:val(box,'pend'),sponsor:val(box,'sponsor'),
    psObjective:val(box,'objective'),psBackground:val(box,'background'),psStrategy:val(box,'strategy'),
    psOutcome:val(box,'outcome'),psRisks:p?.psRisks||'',psThemes:val(box,'themes'),psYear:y,
    psUpdatedAt:new Date().toISOString(),psUpdatedBy:ME.email||''});
+  // Hanya program baru yang boleh memakai kode resmi sebagai referensi tampilan awal.
+  // Kode legacy program lama tidak diubah demi riwayat dan keterkaitan WBS.
+  if(isNew||!target.kode)target.kode=typed;
   if(isNew)allPrograms().push(target);
   state().prog=target.id;state().tab='usulan';S.ui.ps27=S.ui.ps27||{};S.ui.ps27.usulanSub='detail';S.ui.psBank=S.ui.psBank||{};S.ui.psBank.tab='detail';S.ui.psBank.workspace=target.id;S.ui.psBank.wtab='identity';S.ui.psBank.target=target.id;if(isNew)S.ui.psGov={step:'identity'};save();close();render();toast('Program tersimpan. '+(isNew?'Program baru tersedia di Daftar Program; lengkapi detailnya sebelum melakukan pemetaan proyek.':'Profil program telah diperbarui.'));
  },isNew?'Tambah Program':'Simpan Program');
