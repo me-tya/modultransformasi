@@ -119,8 +119,10 @@ pCharter=function(){
  html=html.replace(' / Charter Program Transformasi</div>',' / Dokumen Perencanaan Proyek</div>');
  html=html.replace(/<button class="hb gold" data-act="chexp" data-id="[^"]+">⇩ Ekspor ▾<\/button>/,
   '<button class="hb gold" type="button" data-act="cpJump">▤ Dokumen Lengkap ↓</button>');
- if(c.st==='Draft'&&chCan('U',chProg(c))){
-  html=html.replace('<div class="rt">','<div class="rt"><button type="button" class="hb cp-import-pptx" data-act="cpImportPptx" data-id="'+esc(c.id)+'" title="Import substansi Charter dari PowerPoint (.pptx); tinjau isian sebelum menyimpan draft">⇪ Import Charter (.pptx)</button>');
+ const editableDraft=c.st==='Draft'&&chCan('U',chProg(c));
+ const signedVersion=c.st==='Disahkan'&&(chCan('C',chProg(c))||chList(c.prog).some(x=>x.st==='Draft')&&chCan('U',chProg(c)));
+ if(editableDraft||signedVersion){
+  html=html.replace('<div class="rt">','<div class="rt"><button type="button" class="hb cp-import-pptx" data-act="cpImportPptx" data-id="'+esc(c.id)+'" title="'+(signedVersion?'Impor ke draft versi baru; versi disahkan tetap utuh':'Impor substansi dari PowerPoint .pptx; tinjau sebelum menyimpan draft')+'">⇪ Import Charter (.pptx)</button>');
  }
  return html+cpFooter(c);
 };
@@ -133,10 +135,22 @@ ACT.cpNewImportPptx=el=>{
  ACT.chimpdoc({dataset:{pptx:'1'}});
 };
 ACT.cpImportPptx=el=>{
- const c=S.charters.find(x=>String(x.id)===String(el.dataset.id));
- if(!c||c.st!=='Draft'||!chCan('U',chProg(c))){toast('Impor hanya tersedia untuk charter Draft yang berhak diubah. Charter disahkan membutuhkan versi baru.');return}
- // Existing wizard owns validation, preview selection, draft saving and role checks.
- ACT.ched({dataset:{p:c.prog,id:c.id,s:'id'}});
+ const c=S.charters.find(x=>String(x.id)===String(el.dataset.id));if(!c)return;
+ const p=chProg(c);let draft=c;
+ if(c.st==='Disahkan'){
+  draft=chList(c.prog).find(x=>x.st==='Draft');
+  if(draft){
+   if(!chCan('U',p)){toast('Draft charter hanya bisa diubah oleh petugas berwenang.');return}
+  }else{
+   if(!chCan('C',p)){toast('Buat versi baru memerlukan hak membuat Charter.');return}
+   if(chList(c.prog).some(x=>x.st==='Reviu')){toast('Versi charter sedang direviu. Selesaikan reviu sebelum impor versi baru.');return}
+   ACT.chver({dataset:{id:c.id,s:'id'}});
+   draft=chList(c.prog).find(x=>x.st==='Draft');
+  }
+ }else if(c.st!=='Draft'){toast('Impor tersedia pada draft; selesaikan tahapan reviu terlebih dahulu.');return}
+ if(!draft||!chCan('U',p)){toast('Akun tidak berhak mengubah draft charter.');return}
+ // Signed versions are not overwritten; the existing preview/draft workflow remains authoritative.
+ ACT.ched({dataset:{p:c.prog,id:draft.id,s:'id'}});
  if(!CHD){toast('Penyuntingan Charter belum tersedia. Buka Ubah terlebih dahulu.');return}
  ACT.chimpdoc({dataset:{pptx:'1'}});
 };
