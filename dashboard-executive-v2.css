@@ -140,3 +140,155 @@
 .db-help-overlay .foot{gap:6px;flex-wrap:wrap}
 .db-help-overlay .foot>span{max-width:100%;font-size:9px}
 }
+
+/* MT-06 HELP LAYOUT FIX 20261109 — scoped to Executive Dashboard's own overlay only.
+   Actual hierarchy: .main > .side + .workspace > .tabbar + .content. */
+#dbHelpModal.db-help-overlay{
+  position:fixed;inset:0;z-index:2147483000;
+  display:flex;align-items:center;justify-content:center;
+  max-width:none;overflow:hidden;padding:12px 16px;
+  background:rgba(7,22,43,.68);
+  font-family:'Inter','Segoe UI',Arial,sans-serif;
+}
+#dbHelpModal,#dbHelpModal *{box-sizing:border-box}
+#dbHelpModal .shell{
+  position:relative;z-index:1;
+  display:flex;flex-direction:column;
+  width:min(1400px,calc(100vw - 32px));
+  max-width:1400px;height:min(94dvh,920px);min-height:0;
+  margin:0;padding:0;overflow:hidden;
+  border:1px solid #c9d8e9;border-radius:14px;
+  background:#fff;
+}
+#dbHelpModal .top{
+  display:flex;flex:0 0 auto;align-items:center;
+  justify-content:space-between;min-height:61px;
+  padding:13px 18px;gap:14px;overflow:hidden;
+}
+#dbHelpModal .brand{min-width:0;line-height:1.35}
+#dbHelpModal .brand>div{min-width:0}
+#dbHelpModal .brand small{display:block;white-space:normal}
+#dbHelpModal .top .btnclose{flex:none;white-space:nowrap}
+#dbHelpModal .main{
+  display:grid;grid-template-columns:238px minmax(0,1fr);
+  grid-template-rows:minmax(0,1fr);
+  flex:1 1 auto;min-width:0;min-height:0;max-width:100%;
+  padding:0;margin:0;overflow:hidden;
+}
+#dbHelpModal .side{
+  grid-column:1;grid-row:1;
+  display:block;min-width:0;width:100%;max-width:none;min-height:0;
+  padding:16px 10px 12px;
+  overflow-x:hidden;overflow-y:auto;
+  border-right:1px solid #dbe5ef;border-bottom:0;
+  background:#f5f8fc;
+}
+#dbHelpModal .side h2{
+  display:block;margin:0 12px 10px;
+  font-size:11px;line-height:1.5;white-space:normal;
+}
+#dbHelpModal .side .navrow{
+  display:flex;flex:none;align-items:center;
+  gap:10px;width:100%;max-width:100%;min-width:0;min-height:42px;
+  padding:9px 10px;margin:2px 0;overflow:visible;
+  text-align:left;white-space:normal;
+  overflow-wrap:normal;word-break:normal;
+  font-size:12px;line-height:1.4;
+}
+#dbHelpModal .side .navrow b{
+  display:grid;flex:0 0 23px;place-items:center;
+  width:23px;height:23px;min-width:23px;
+  text-align:center;
+}
+#dbHelpModal .side .help{
+  display:block;margin:14px 6px 0;
+  overflow-wrap:break-word;white-space:normal;
+}
+#dbHelpModal .workspace{
+  grid-column:2;grid-row:1;
+  display:flex;flex-direction:column;
+  width:100%;min-width:0;min-height:0;max-width:100%;
+  padding:0;margin:0;overflow:hidden;
+}
+#dbHelpModal .tabbar{
+  display:flex;flex:0 0 auto;flex-wrap:nowrap;
+  gap:3px;width:100%;min-width:0;max-width:100%;
+  padding:10px 12px 0;margin:0;
+  overflow-x:auto;overflow-y:hidden;
+  background:#fff;scrollbar-width:thin;
+}
+#dbHelpModal .tabbar button{
+  flex:0 0 auto;min-width:max-content;white-space:nowrap;
+  padding:10px 11px;margin:0;
+  font-size:12px;line-height:1.35;
+}
+#dbHelpModal .content{
+  display:block;flex:1 1 auto;
+  width:100%;min-width:0;min-height:0;max-width:100%;
+  margin:0;padding:16px 20px 24px;
+  overflow-x:hidden;overflow-y:auto;
+  overscroll-behavior:contain;
+}
+#dbHelpModal .content [data-panel]{min-width:0;max-width:100%}
+#dbHelpModal .content .panel,
+#dbHelpModal .content .chart,
+#dbHelpModal .content .callout,
+#dbHelpModal .content .tip,
+#dbHelpModal .content .alert{min-width:0;max-width:100%}
+#dbHelpModal .content .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+#dbHelpModal .content .cards.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+#dbHelpModal .content .metric{min-width:0;overflow-wrap:break-word}
+#dbHelpModal .content .tablewrap{max-width:100%;min-width:0;overflow-x:auto}
+#dbHelpModal .content .tbl{width:100%;max-width:100%;table-layout:auto}
+#dbHelpModal .content .tbl td,
+#dbHelpModal .content .tbl th{white-space:normal;overflow-wrap:break-word}
+#dbHelpModal .foot{
+  display:flex;flex:0 0 auto;justify-content:space-between;align-items:center;
+  min-height:56px;width:100%;min-width:0;
+  padding:10px 16px;gap:12px;overflow:hidden;
+  border-top:1px solid #dbe5ef;
+}
+#dbHelpModal .foot>span{min-width:0;white-space:normal}
+#dbHelpModal .foot .btn{flex:none;white-space:nowrap}
+@media(max-width:980px){
+  #dbHelpModal .main{grid-template-columns:200px minmax(0,1fr)}
+  #dbHelpModal .side{padding:12px 8px}
+  #dbHelpModal .content .cards.four{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #dbHelpModal .content{padding:14px 16px 20px}
+}
+@media(max-width:690px){
+  #dbHelpModal.db-help-overlay{padding:0}
+  #dbHelpModal .shell{
+    width:100vw;max-width:none;height:100dvh;
+    border:0;border-radius:0;
+  }
+  #dbHelpModal .top{min-height:55px;padding:10px 12px}
+  #dbHelpModal .main{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:auto minmax(0,1fr);
+  }
+  #dbHelpModal .side{
+    display:flex;grid-column:1;grid-row:1;flex-wrap:nowrap;align-items:center;
+    gap:6px;width:100%;min-width:0;max-height:62px;
+    padding:7px 9px;overflow-x:auto;overflow-y:hidden;
+    border-right:0;border-bottom:1px solid #dbe5ef;
+  }
+  #dbHelpModal .side h2,#dbHelpModal .side .help{display:none}
+  #dbHelpModal .side .navrow{
+    width:auto;max-width:none;min-height:36px;
+    padding:7px 10px;margin:0;white-space:nowrap;flex:none;
+  }
+  #dbHelpModal .side .navrow b{display:none}
+  #dbHelpModal .workspace{grid-column:1;grid-row:2;min-width:0;min-height:0}
+  #dbHelpModal .tabbar{padding:7px 8px 0}
+  #dbHelpModal .content{padding:12px 13px 20px}
+  #dbHelpModal .content .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #dbHelpModal .foot{padding:8px 12px;gap:6px}
+  #dbHelpModal .foot>span{font-size:10px}
+}
+@media(max-width:450px){
+  #dbHelpModal .content .cards,#dbHelpModal .content .cards.four{grid-template-columns:1fr}
+  #dbHelpModal .foot{flex-wrap:wrap}
+  #dbHelpModal .foot>span{width:100%}
+  #dbHelpModal .brand{font-size:12px}
+}
