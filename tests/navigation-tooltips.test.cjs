@@ -102,7 +102,8 @@ test('Bantuan and book Cheatsheet are icon-only and keep original click actions'
  assert.match(source,/\.sk-hdrHelp>span,#app \.top \.sk-hdrActions \.sk-hdrSheet>span\{display:none!important\}/);
  assert.match(source,/mtBookIcon/);
  assert.match(source,/<svg width="19" height="19"/);
- assert.match(source,/\.sk-hdrHelp:hover,#app \.top \.sk-hdrActions \.sk-hdrSheet:hover/);
+ assert.match(source,/#app \.top \.sk-hdrActions \.sk-hdrHelp:hover,#app \.top \.sk-hdrActions \.sk-hdrHelp:focus-visible/);
+ assert.match(source,/#app \.top \.sk-hdrActions \.sk-hdrSheet:hover,#app \.top \.sk-hdrActions \.sk-hdrSheet:focus-visible/);
  assert.match(source,/header\.insertBefore\(guide,avatar\)/);
  assert.match(source,/role','switch'/);
  assert.match(source,/Cheatsheet: framework, teori, metode SMART/);
