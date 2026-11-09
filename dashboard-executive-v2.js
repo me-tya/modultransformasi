@@ -21,14 +21,20 @@ function dbKpis(rows,n){
 function dbChart(rows,groups){
  const mode=S.ui.dbChart||'bar',selected=(S.ui.pr||'all'),quarter=[1,2,3,4].map(q=>{const a=dbSummary(rows,q);return {q,a,t:rows.length}});
  const segments=[['Terjadwal','wait'],['Terlambat','late'],['Berjalan','run'],['Tercapai','ok']];
- const legend='<div class="db-legend">'+[['Tercapai','ok'],['Berjalan','run'],['Terlambat','late'],['Terjadwal','wait']].map(([s,c])=>'<span><i class="db-swatch db-sw-'+c+'"></i>'+s+'</span>').join('')+'</div>';
+ const legend='<div class="db-legend">'+(mode==='vertical'?[['Target','target'],['Realisasi','actual'],['Terlambat','delay']]:[['Tercapai','ok'],['Berjalan','run'],['Terlambat','late'],['Terjadwal','wait']]).map(([s,c])=>'<span><i class="db-swatch db-sw-'+c+'"></i>'+s+'</span>').join('')+'</div>';
  const share=(a,k,t)=>dbPct(a[k],t);
  const seg=(a,k,cl,t)=>{const pct=share(a,k,t),title=k+': '+dbN(a[k])+' modul ('+pct+'%)';return '<i class="db-part db-sw-'+cl+'" style="height:'+pct+'%" title="'+dbEsc(title)+'" aria-label="'+dbEsc(title)+'">'+(pct>=9.5?'<span class="db-part-pct">'+pct+'%</span>':'')+'</i>'};
  let graph='';
  if(mode==='bar'){
   graph='<div class="db-barplot" aria-label="Grafik batang bertumpuk per triwulan dengan persentase status">'+quarter.map(({q,a,t})=>'<button class="db-barcol '+(selected===String(q)?'is-selected':'')+'" data-act="dbQuarter" data-q="'+q+'" title="Lihat detail TW '+q+'"><b>'+dbN(t)+'</b><span class="db-stack">'+segments.map(([k,cl])=>seg(a,k,cl,t)).join('')+'</span><small>TW '+q+'</small></button>').join('')+'</div>';
  }else if(mode==='vertical'){
-  graph='<div class="db-barplot db-barplot-grouped" aria-label="Grafik batang vertikal berdampingan menurut status per triwulan">'+quarter.map(({q,a,t})=>'<button class="db-barcol db-group-col '+(selected===String(q)?'is-selected':'')+'" data-act="dbQuarter" data-q="'+q+'" title="Lihat detail TW '+q+'"><b>'+dbN(t)+'</b><span class="db-group-bars">'+[['Tercapai','ok'],['Berjalan','run'],['Terlambat','late'],['Terjadwal','wait']].map(([k,cl])=>{const pct=share(a,k,t);return '<i class="db-group-bar db-sw-'+cl+'" style="height:'+pct+'%" title="'+dbEsc(k+': '+dbN(a[k])+' modul ('+pct+'%)')+'"><span>'+(pct>=16?pct+'%':'')+'</span></i>'}).join('')+'</span><small>TW '+q+'</small></button>').join('')+'</div>';
+  const measures=[['Target','target',a=>a.Tercapai+a.Berjalan+a.Terlambat],['Realisasi','actual',a=>a.Tercapai],['Terlambat','delay',a=>a.Terlambat]];
+  graph='<div class="db-barplot db-barplot-grouped" aria-label="Grafik batang vertikal: target, realisasi, dan terlambat per triwulan">'+quarter.map(({q,a,t})=>{
+   const tgt=a.Tercapai+a.Berjalan+a.Terlambat;
+   return '<button type="button" class="db-barcol db-group-col '+(selected===String(q)?'is-selected':'')+'" data-act="dbQuarter" data-q="'+q+'" title="Buka rincian triwulan '+q+'"><b>'+dbN(tgt)+' target</b><span class="db-group-bars">'+
+   measures.map(([label,cl,calc])=>{const n=calc(a),pct=dbPct(n,t),tip=label+': '+dbN(n)+' modul ('+pct+'% dari '+dbN(t)+' modul)';return '<i class="db-group-bar db-series-'+cl+'" style="height:'+(t?pct:0)+'%" data-tip="'+dbEsc(tip)+'" title="'+dbEsc(tip)+'" aria-label="'+dbEsc(tip)+'"></i>'}).join('')+
+   '</span><small>TW '+q+'</small></button>';
+  }).join('')+'</div>';
  }else if(mode==='heat'){
   graph='<div class="db-heatwrap"><table class="db-heat"><thead><tr><th>Program</th>'+quarter.map(x=>'<th>TW '+x.q+'</th>').join('')+'</tr></thead><tbody>'+groups.map(g=>'<tr><th title="'+dbEsc(g.p.nama)+'">'+dbEsc(g.p.nama)+'</th>'+quarter.map(({q})=>{const total=g.mods.length,done=g.mods.filter(m=>dxAt(m,q).st==='Tercapai').length,p=dbPct(done,total);return '<td><button data-act="dbQuarter" data-q="'+q+'" style="--heat:'+p+'%" title="'+done+' dari '+total+' modul tercapai">'+p+'%</button></td>'}).join('')+'</tr>').join('')+'</tbody></table></div>';
  }else{
