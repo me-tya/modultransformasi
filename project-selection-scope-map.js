@@ -159,24 +159,31 @@ function mappingView(p){
 /* Usulan Proyek: satu tampilan lintas program, dengan accordion seperti Workspace Proyek.
    Riwayat Proyek tetap memakai historyView() lama, tanpa perubahan. */
 function proposalView(){
- const filter=S.ui?.psBank?.filterScopes?.mapping||{},q=String(filter.search||'').toLowerCase();
+ const filter=S.ui?.psBank?.filterScopes?.mapping||{},q=String(filter.search||'').trim().toLowerCase();
  const programs=I.programs().filter(p=>{
-  const content=[p.nama,p.kode,p.uic,p.akr,...proposalRows(p).map(x=>[x.name,x.applicationName,x.psCode,x.uic].join(' '))].join(' ').toLowerCase();
-  return (!q||content.includes(q))&&
-   (!filter.status||filter.status==='all'||(window.MT_PS_BANK_CORE?.programStatus?.(p,year())||(p.arsip?'Arsip':p.psCarry?'Legacy':'Baru'))===filter.status)&&
-   (!filter.unit||filter.unit==='all'||[p.uic,p.pend].join(' ').toLowerCase().includes(String(filter.unit).toLowerCase()));
+  return !filter.program||String(filter.program)===String(p.id);
  });
- const total=programs.reduce((n,p)=>n+proposalRows(p).length,0),state=mapState();
- return '<section class="psbank-proposals-detail psbank-proposal-groups"><div class="psbank-proposal-head"><div><h3>Usulan Proyek · '+year()+'</h3><p>Proyek dikelompokkan menurut program induk. Buka atau tutup program untuk melihat daftar proyek, lalu gunakan ikon aksi untuk melihat dan melengkapi substansi.</p></div><div class="psbank-headright"><span class="psbank-count">'+programs.length+' program · '+total+' proyek</span></div></div>'+
- (programs.length?programs.map(p=>{
-  const rows=proposalRows(p),expanded=state.programOpen[p.id]!==false,editable=can(p),code=p.kode||p.akr;
-  const tr=rows.length?rows.map((x,i)=>'<tr tabindex="0" class="psbank-clickrow psbank-proposal-projectrow" data-scope-program-id="'+E(p.id)+'" data-scope-proposal-focus="'+E(x.id)+'" title="Buka detail proyek '+E(x.name)+'"><td><b>'+E(currentCode(p,x))+'</b></td><td><span class="psbank-tree-branch" aria-hidden="true">'+(i===rows.length-1?'└':'├')+'</span><b>'+E(x.applicationName||x.name)+'</b><small>'+E(projectValue(x,'mainFunction')||'—')+'</small></td><td>'+E(projectCategory(p,x)||'—')+'</td><td>'+E(x.uic||p.uic||'—')+'</td><td>'+E(x.goLive||'—')+'</td><td><span class="psbank-tag">'+E(x.status||'Usulan')+'</span></td><td class="psbank-results-actions">'+
+ const matched=p=>proposalRows(p).filter(x=>{
+ const searchable=[p.nama,p.kode,x.name,x.applicationName,currentCode(p,x),projectValue(x,'description'),projectValue(x,'mainFunction'),x.uic].join(' ').toLowerCase();
+ return (!q||searchable.includes(q))&&(!filter.status||filter.status==='all'||(x.status||'Usulan')===filter.status)&&(!filter.unit||filter.unit==='all'||(x.uic||p.uic)===filter.unit)&&(!filter.category||filter.category==='all'||projectCategory(p,x)===filter.category);
+ });
+ const shown=programs.filter(p=>matched(p).length||(!q&&(!filter.status||filter.status==='all')&&(!filter.unit||filter.unit==='all')&&(!filter.category||filter.category==='all')));
+ const total=shown.reduce((n,p)=>n+matched(p).length,0),state=mapState();state.proposalPaging=state.proposalPaging||{};
+ return '<section class="psbank-proposals-detail psbank-proposal-groups"><div class="psbank-proposal-head"><div><h3>Usulan Proyek · '+year()+'</h3></div><div class="psbank-headright"><span class="psbank-count">'+shown.length+' program · '+total+' proyek</span></div></div>'+
+ '<div class="psbank-proposal-controlbar"><label>Pilih Program<select data-scope-proposal-program><option value="">Semua Program</option>'+I.programs().map(p=>'<option value="'+E(p.id)+'" '+(String(filter.program||'')===String(p.id)?'selected':'')+'>'+E(p.nama)+'</option>').join('')+'</select></label><label>Cari Usulan Proyek<input type="search" data-scope-proposal-search value="'+E(filter.search||'')+'" placeholder="Nama, kode, deskripsi, aplikasi atau UIC..."></label></div>'+
+ (shown.length?shown.map(p=>{
+  const rows=matched(p),expanded=state.programOpen[p.id]!==false,editable=can(p),code=p.kode||p.akr;
+  const paging=state.proposalPaging[p.id]||(state.proposalPaging[p.id]={page:1,size:5});
+  paging.size=[5,10,20].includes(+paging.size)?+paging.size:5;const pages=Math.max(1,Math.ceil(rows.length/paging.size));
+  paging.page=Math.min(Math.max(1,+paging.page||1),pages);const from=(paging.page-1)*paging.size,subset=rows.slice(from,from+paging.size);
+  const tr=subset.length?subset.map((x,i)=>'<tr tabindex="0" class="psbank-clickrow psbank-proposal-projectrow" data-scope-program-id="'+E(p.id)+'" data-scope-proposal-focus="'+E(x.id)+'" title="Buka detail proyek '+E(x.name)+'"><td><b>'+E(currentCode(p,x))+'</b></td><td><b>'+E(x.applicationName||x.name)+'</b></td><td class="psbank-proposal-description" title="'+E(projectValue(x,'description')||'Belum diisi')+'">'+E(projectValue(x,'description')||'—')+'</td><td>'+E(projectCategory(p,x)||'—')+'</td><td>'+E(x.uic||p.uic||'—')+'</td><td>'+E(x.goLive||'—')+'</td><td><span class="psbank-tag">'+E(x.status||'Usulan')+'</span></td><td class="psbank-results-actions">'+
    iconButton('view','view',x.id,'Lihat Substansi Proyek')+
    (editable?iconButton('edit','edit',x.id,'Ubah Substansi Proyek')+iconButton('delete','remove',x.id,'Hapus Usulan Proyek'):'')+
-   '</td></tr>').join(''):'<tr><td colspan="7" class="psbank-empty">Belum ada usulan proyek pada program ini. Gunakan Tambah Usulan Proyek atau salin dari Riwayat Proyek.</td></tr>';
-  return '<details class="psbank-accordion-program psbank-proposal-program" '+(expanded?'open':'')+'><summary data-scope-program-toggle="'+E(p.id)+'"><span class="psbank-chevron" aria-hidden="true">▸</span><span class="psbank-accordion-name"><b>'+E(p.nama)+'</b><small>'+E(code)+' · UIC Utama: '+E(p.uic||'—')+'</small></span><span class="psbank-accordion-count">'+rows.length+' proyek</span></summary>'+
-   '<div class="psbank-accordion-body"><div class="psbank-proposal-programtools"><span>'+E(code)+' · '+rows.length+' proyek dalam program ini</span>'+(editable?'<button type="button" class="btn pri" data-scope-project-new data-scope-program-id="'+E(p.id)+'">+ Tambah Usulan Proyek</button>':'')+'</div>'+
-   '<div class="psbank-tablewrap"><table class="psbank-table psbank-proposal-table"><thead><tr><th>Kode Proyek</th><th>Nama Proyek / Modul</th><th>Kategori</th><th>UIC Utama</th><th>Target Go-Live</th><th>Status</th><th>Aksi</th></tr></thead><tbody>'+tr+'</tbody></table></div></div></details>';
+   '</td></tr>').join(''):'<tr><td colspan="8" class="psbank-empty">Belum ada usulan proyek pada program ini. Gunakan Tambah Usulan Proyek atau salin dari Riwayat Proyek.</td></tr>';
+  return '<details class="psbank-accordion-program psbank-proposal-program" '+(expanded?'open':'')+'><summary data-scope-program-toggle="'+E(p.id)+'"><span class="psbank-chevron" aria-hidden="true">▸</span><span class="psbank-accordion-name"><small>PROGRAM · '+E(code)+'</small><b>'+E(p.nama)+'</b><small>'+E(p.periode||year())+' · UIC Utama: '+E(p.uic||'—')+'</small></span><span class="psbank-accordion-count">'+rows.length+' proyek</span></summary>'+
+   '<div class="psbank-accordion-body"><div class="psbank-proposal-programtools"><span>RINCIAN USULAN PROYEK · '+E(code)+'</span>'+(editable?'<button type="button" class="btn pri" data-scope-project-new data-scope-program-id="'+E(p.id)+'">+ Tambah Usulan Proyek</button>':'')+'</div>'+
+   '<div class="psbank-tablewrap"><table class="psbank-table psbank-proposal-table"><colgroup><col style="width:13%"><col style="width:17%"><col style="width:23%"><col style="width:11%"><col style="width:9%"><col style="width:10%"><col style="width:7%"><col style="width:10%"></colgroup><thead><tr><th>Kode Proyek</th><th>Nama Proyek / Modul</th><th>Deskripsi</th><th>Kategori</th><th>UIC Utama</th><th>Target Go-Live</th><th>Status</th><th>Aksi</th></tr></thead><tbody>'+tr+'</tbody></table></div>'+
+ '<div class="psbank-proposal-pagination"><span>Menampilkan '+(rows.length?from+1:0)+'–'+Math.min(from+paging.size,rows.length)+' dari '+rows.length+' proyek</span><label>Baris per halaman <select data-scope-proposal-size="'+E(p.id)+'">'+[5,10,20].map(n=>'<option value="'+n+'" '+(paging.size===n?'selected':'')+'>'+n+'</option>').join('')+'</select></label><div class="psbank-proposal-pageactions"><button type="button" data-scope-proposal-page="'+E(p.id)+'" data-move="-1" '+(paging.page===1?'disabled':'')+' aria-label="Halaman sebelumnya">‹</button><span>Halaman '+paging.page+' / '+pages+'</span><button type="button" data-scope-proposal-page="'+E(p.id)+'" data-move="1" '+(paging.page>=pages?'disabled':'')+' aria-label="Halaman berikutnya">›</button></div></div></div></details>';
  }).join(''):'<div class="psbank-empty">Tidak ada program sesuai filter. Periksa tahun, status atau Unit Eselon I pada filter.</div>')+
  '</section>';
 }
