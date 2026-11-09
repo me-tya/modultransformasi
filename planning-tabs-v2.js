@@ -6,15 +6,15 @@ const limited=(arr,max=4)=>{let x=list(arr);return x.length>max?[...x.slice(0,ma
 const clean=x=>String(x??'').trim()||'Belum diisi';
 const clip=(s,n=185)=>{let t=clean(s);return t.length>n?t.slice(0,n-1).replace(/\s+\S*$/,'')+'…':t};
 function makeSlide(c,title,blocks){
- const E=[],p=chProg(c),nv=DK.navy;
- E.push(dkR(0,0,13.33,7.5,'FFFFFF'));E.push(dkR(0,0,13.33,.1,'FDB913'));
+ const E=[],p=chProg(c),nv='102F56',gold='F9B919';
+ E.push(dkR(0,0,13.33,7.5,'FFFFFF'));E.push(dkR(0,0,13.33,.1,gold));
  E.push(dkR(0,.10,3.3,.05,nv));
  E.push(dkT(.45,.28,7,.26,'KEMENTERIAN KEUANGAN REPUBLIK INDONESIA',{s:11,b:1,c:DK.mute,sp:1}));
  E.push(dkT(.45,.61,9.9,.48,title,{s:22,b:1,c:nv}));
  E.push(dkT(.45,1.10,10.4,.28,'Program Transformasi: '+chJudul(c),{s:12,c:DK.ink}));
- E.push(dkR(11.1,.38,1.7,.42,nv,{rad:.3}));E.push(dkT(11.12,.40,1.66,.37,p.kode||c.prog,{s:11,b:1,c:DK.gold,a:'center',v:'middle'}));
+ E.push(dkR(11.1,.38,1.7,.42,nv,{rad:.3}));E.push(dkT(11.12,.40,1.66,.37,p.kode||c.prog,{s:11,b:1,c:gold,a:'center',v:'middle'}));
  for(const b of blocks)dkBox(E,b.x,b.y,b.w,b.h,b.title,limited(b.items,b.max||4),{max:b.size||14});
- E.push(dkR(0,7.11,13.33,.39,nv));E.push(dkR(0,7.11,.16,.39,'FDB913'));
+ E.push(dkR(0,7.11,13.33,.39,nv));E.push(dkR(0,7.11,.16,.39,gold));
  E.push(dkT(.44,7.12,11,.35,'Dokumen Perencanaan Proyek · '+(p.kode||c.prog)+' · '+title,{s:10,c:'D7E3F5',v:'middle'}));
  return {bg:'FFFFFF',E,n:title};
 }
