@@ -1140,8 +1140,12 @@
  width:28px!important;height:30px!important;min-width:28px!important;
  border-radius:8px;box-shadow:none
 }
-#app .psbank-proposal-program .psbank-proposal-table .psbank-results-actions{
- display:flex;align-items:center;justify-content:flex-end;gap:3px!important;padding-right:6px
+#app .psbank-proposal-program .psbank-proposal-table td.psbank-results-actions{
+ display:table-cell!important;text-align:center;white-space:nowrap;
+ vertical-align:middle;padding-right:6px!important
+}
+#app .psbank-proposal-program .psbank-proposal-table td.psbank-results-actions .psbank-action-icon{
+ display:inline-grid;vertical-align:middle;margin:0 1px
 }
 #app .psbank-proposal-program .psbank-proposal-table th,
 #app .psbank-proposal-program .psbank-proposal-table td{box-sizing:border-box}
@@ -1181,6 +1185,7 @@
  #app .psbank-proposal-program .psbank-proposal-table tbody>tr.psbank-proposal-projectrow>td:nth-child(7){grid-column:span 1}
  #app .psbank-proposal-program .psbank-proposal-table tbody>tr.psbank-proposal-projectrow>td:nth-child(8){grid-column:span 1}
  #app .psbank-proposal-program .psbank-proposal-table .psbank-proposal-desc-text{display:block;max-height:none;-webkit-line-clamp:unset;line-clamp:unset}
+ #app .psbank-proposal-program .psbank-proposal-table tbody>tr.psbank-proposal-projectrow>td.psbank-results-actions{display:block!important;text-align:left}
  #app .psbank-proposal-program .psbank-results-actions{justify-content:flex-start!important}
 }
 @container proposal-list (max-width:620px){
