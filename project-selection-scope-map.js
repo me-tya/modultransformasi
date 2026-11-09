@@ -143,7 +143,7 @@ function mappingView(p){
  return '<div class="psbank-mapping-summary"><span>Program Tujuan: <b>'+E(p.nama)+'</b> · '+E(p.kode||p.akr)+'</span><span><b>'+arr.length+'</b> proyek terpetakan</span></div>'+
  '<div class="psbank-mapcols"><section class="psbank-mapbox"><div class="psbank-maphead"><h4>Proyek dalam '+E(p.nama)+'</h4><span>'+selected.length+' dipilih</span></div><p>Centang proyek untuk mengelola keanggotaan program. Rencana WBS dibuat kemudian pada tahap perencanaan proyek.</p>'+
  '<div class="psbank-mapselectall"><label><input type="checkbox" data-scope-target-all '+(arr.length&&selected.length===arr.length?'checked':'')+'> Pilih semua</label>'+
- '<span class="psbank-selected-hint">Pengelolaan proyek ada di tab Hasil Pemetaan</span></div>'+
+ '<span class="psbank-selected-hint">Substansi dan pengelolaan proyek ada di tab Usulan Proyek</span></div>'+
  '<div class="psbank-mapitems">'+(arr.length?arr.map(x=>'<label class="psbank-catalogitem psbank-target-project"><input type="checkbox" data-scope-target-select="'+E(x.id)+'" '+(b.targetSelected.includes(String(x.id))?'checked':'')+'><span><b>'+E(x.name)+'</b><small>'+E(x.uic||p.uic||'—')+(x.psOriginYear?' · Sumber '+x.psOriginYear:' · Usulan baru')+'</small></span></label>').join(''):'<div class="psbank-empty">Belum ada proyek. Pilih dari program sumber di sebelah kanan.</div>')+'</div></section>'+
  '<section class="psbank-mapbox"><h4>Ambil Proyek dari Program Lain</h4><p>Pilih modul sumber dan salin identitas proyek ke program tujuan tanpa menyalin WBS maupun realisasi.</p>'+
  '<div class="psbank-mapcontrols"><label>Tahun Sumber <select data-scope-year>'+years.map(y=>'<option value="'+y+'" '+(y===+m.year?'selected':'')+'>'+y+'</option>').join('')+'</select></label>'+
@@ -241,7 +241,7 @@ function addHistory(keys){
  toast(added+' proyek ditambahkan'+(skipped?' ('+skipped+' duplikat dilewati)':'')+'. Kode telah mengikuti program tujuan.');
 }
 function tabsSummary(rows){
- return '<div class="psbank-tab-summary" aria-label="Ringkasan Hasil Pemetaan"><span><b>'+rows.length+'</b> Proyek</span><span><b>'+rows.filter(x=>x.psOriginYear).length+'</b> Carry-over</span><span><b>'+rows.filter(x=>x.category).length+'</b> Berkategori</span></div>';
+ return '<div class="psbank-tab-summary" aria-label="Ringkasan Rekap Program & Proyek"><span><b>'+rows.length+'</b> Proyek</span><span><b>'+rows.filter(x=>x.psOriginYear).length+'</b> Carry-over</span><span><b>'+rows.filter(x=>x.category).length+'</b> Berkategori</span></div>';
 }
 function programAccordion(programs,on){
  const state=mapState();
