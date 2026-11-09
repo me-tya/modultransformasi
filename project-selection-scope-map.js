@@ -308,7 +308,7 @@ function projectEditor(id,readonly=false){
  const d=document.createElement('div');d.className='psbank-overlay psbank-project-editor';
  const groups=[...new Set(PROJECT_FIELDS.map(x=>x[3]))];
  const control=([key,label,type])=>type==='select'||type==='status'?
-   '<label>'+E(label)+'<select data-scope-field="'+key+'" '+(readonly?'disabled':'')+'>'+((type==='status')?['Usulan','Berjalan','Ditunda','Selesai']:['',...CAT]).map(x=>'<option value="'+E(x)+'" '+(x===(key==='category'?projectCategory(p,existing):projectValue(existing||{},key))?'selected':'')+'>'+E(x||'Pilih kategori')+'</option>').join('')+'</select></label>':
+   '<label>'+E(label)+'<select data-scope-field="'+key+'" '+(readonly?'disabled':'')+'>'+((type==='status')?['Usulan','Berjalan','Ditunda','Selesai']:['',...CAT]).map(x=>'<option value="'+E(x)+'" '+(x===(key==='category'?projectCategory(p,existing):projectValue(existing||{},key))?'selected':'')+'>'+E(x||'Pilih kategori')+'</option>').join('')+'</select>'+(key==='category'?'<small class="psbank-category-hint">Kategori awal mengikuti program. Core Non APBN digunakan untuk sektor keuangan; kategori dapat diubah.</small>':'')+'</label>':
    '<label class="'+(type==='textarea'?'psbank-editor-long':'')+'">'+E(label)+(key==='name'?' *':'')+
    (type==='textarea'?'<textarea rows="3" data-scope-field="'+key+'" '+(readonly?'disabled':'')+'>'+E(projectValue(existing||{},key))+'</textarea>':
     '<input type="'+type+'" data-scope-field="'+key+'" value="'+E(projectValue(existing||{},key))+'" '+(readonly?'disabled':'')+'>')+'</label>';
