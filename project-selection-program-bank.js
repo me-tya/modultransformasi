@@ -14,7 +14,7 @@ const get=id=>all().find(p=>String(p.id)===String(id));
 // Kode resmi ditetapkan oleh pengguna. Kode historis tidak ditimpa.
 const officialCode=p=>String(p?.kodeResmi||'').trim();
 const visibleCode=p=>officialCode(p)||'Kode resmi belum ditetapkan';
-const duplicateOfficial=(value,current)=>!!value&&all().some(p=>p!==current&&officialCode(p).toUpperCase()===value.toUpperCase());
+const duplicateOfficial=(value,current,to=year())=>!!value&&all().some(p=>p!==current&&+p.psYear===+to&&officialCode(p).toUpperCase()===value.toUpperCase());
 const oldCodeNote=p=>!officialCode(p)&&p?.kode?'<small title="Kode lama dari prototipe; belum diverifikasi sebagai kode resmi">Ref. internal: '+E(p.kode)+'</small>':'';
 const active=()=>I.programs();
 const store=()=>{S.ui.psBank=S.ui.psBank||{};const b=S.ui.psBank;b.tab=b.tab||'bank';b.names=b.names||{};b.check=b.check||[];b.filterYear=b.filterYear||'all';b.search=b.search||'';b.wtab=b.wtab||'identity';b.bankPage=Math.max(1,+b.bankPage||1);b.bankPageSize=[10,20,50,100].includes(+b.bankPageSize)?+b.bankPageSize:10;
@@ -331,7 +331,7 @@ function showPreview(key,initialTab='identity',startEdit=false){
    if(tab==='identity'){
     if(!obj.nama){toast('Nama program wajib diisi.');return false}
     obj.kodeResmi=String(obj.kodeResmi||'').trim().toUpperCase();
-    if(duplicateOfficial(obj.kodeResmi,p)){toast('Kode program resmi sudah digunakan oleh program lain.');return false}
+    if(duplicateOfficial(obj.kodeResmi,p,+p.psYear||year())){toast('Kode program resmi sudah digunakan oleh program lain.');return false}
    }
    Object.assign(p,obj);
    if(tab==='identity'&&!p.kode&&obj.kodeResmi)p.kode=obj.kodeResmi;
@@ -373,7 +373,7 @@ function addOne(key,renderNow=true,to=year(),newName=null,newOfficialCode=null){
  const p=F.cloneProgram(rec.p,rec.year,to);
  p.nama=String(newName??store().names[key]??rec.p.nama).trim()||rec.p.nama;
  const official=codeFor(rec.p,to,newOfficialCode);
- if(duplicateOfficial(official,null)){toast('Kode program resmi sudah digunakan oleh program lain.');return null}
+ if(duplicateOfficial(official,null,to)){toast('Kode program resmi sudah digunakan oleh program lain.');return null}
  p.kode=official;p.kodeResmi=official;
  Scope.normalizeProjectCodes?.(p);
  p.psCarry.sourceYear=rec.year;p.psSourceYear=rec.year;p.psListStatus='Legacy';p.arsip=false;
