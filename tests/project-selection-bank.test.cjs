@@ -723,10 +723,10 @@ test('Riwayat Program and Usulan Program have a separate UIC column without inli
  const history=m.bank.bank(),detail=m.bank.detail();
  assert.match(history,/<h3>Riwayat Program<\/h3>/);
  assert.match(history,/<th>Kode Program<\/th><th>Nama Program<\/th><th>UIC<\/th>/);
- assert.match(history,/<td><b>[^<]+<\/b><\/td><td><b>Integrated Core System APBN<\/b><\/td><td>BaTii<\/td>/);
+ assert.match(history,/<td><b>[^<]+<\/b>(?:<small[^>]*>[^<]*<\/small>)?<\/td><td><b>Integrated Core System APBN<\/b><\/td><td>BaTii<\/td>/);
  assert.match(detail,/<h3>Usulan Program · 2027<\/h3>/);
  assert.match(detail,/<th>Kode Program<\/th><th>Nama Program<\/th><th>UIC<\/th>/);
- assert.match(detail,/<td><b>[^<]+<\/b><\/td><td><b>Digitalisasi Core Non APBN<\/b><\/td><td>BaTii<\/td>/);
+ assert.match(detail,/<td><b>[^<]+<\/b>(?:<small[^>]*>[^<]*<\/small>)?<\/td><td><b>Digitalisasi Core Non APBN<\/b><\/td><td>BaTii<\/td>/);
  assert.doesNotMatch(detail,/psbank-phase|Draf usulan|Referensi historis/);
  assert.match(detail,/psbank-baru/);
 });
