@@ -130,7 +130,7 @@ function filter(p){
  const unitValues=[...new Set(allPrograms.flatMap(p=>[p.uic,p.pend||p.psSupportingUic].flatMap(v=>String(v||'').split(/[,;]/).map(x=>x.trim()))).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id'));
  const projectRows=list().flatMap(p=>(p.psProjects||[]).map(x=>({p,x})));
  const projectUnits=[...new Set(projectRows.map(o=>o.x.uic||o.p.uic).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id'));
- const projectCategories=[...new Set(projectRows.map(o=>o.x.category).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id'));
+ const projectCategories=[...new Set(projectRows.map(o=>window.MT_PS_SCOPE?.projectCategory?.(o.p,o.x)||o.x.category).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id'));
  const projectStatuses=[...new Set(projectRows.map(o=>o.x.status||'Usulan'))].sort((a,b)=>a.localeCompare(b,'id'));
  const programOptions=list().filter(x=>!x.arsip&&x.psListStatus!=='Arsip');
  const options=stage==='usulan'&&sub==='bank'?(S.programs||[]):programOptions;
