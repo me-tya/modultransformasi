@@ -119,9 +119,20 @@ pCharter=function(){
  html=html.replace(' / Charter Program Transformasi</div>',' / Dokumen Perencanaan Proyek</div>');
  html=html.replace(/<button class="hb gold" data-act="chexp" data-id="[^"]+">⇩ Ekspor ▾<\/button>/,
   '<button class="hb gold" type="button" data-act="cpJump">▤ Dokumen Lengkap ↓</button>');
+ if(c.st==='Draft'&&chCan('U',chProg(c))){
+  html=html.replace('<div class="rt">','<div class="rt"><button type="button" class="hb cp-import-pptx" data-act="cpImportPptx" data-id="'+esc(c.id)+'" title="Import substansi Charter dari PowerPoint (.pptx); tinjau isian sebelum menyimpan draft">⇪ Import Charter (.pptx)</button>');
+ }
  return html+cpFooter(c);
 };
 ACT.cpJump=()=>document.getElementById('cp-report-panel')?.scrollIntoView({behavior:'smooth',block:'center'});
+ACT.cpImportPptx=el=>{
+ const c=S.charters.find(x=>String(x.id)===String(el.dataset.id));
+ if(!c||c.st!=='Draft'||!chCan('U',chProg(c))){toast('Impor hanya tersedia untuk charter Draft yang berhak diubah. Charter disahkan membutuhkan versi baru.');return}
+ // Existing wizard owns validation, preview selection, draft saving and role checks.
+ ACT.ched({dataset:{p:c.prog,id:c.id,s:'id'}});
+ if(!CHD){toast('Penyuntingan Charter belum tersedia. Buka Ubah terlebih dahulu.');return}
+ ACT.chimpdoc({dataset:{pptx:'1'}});
+};
 ACT.cpReport=el=>{
  const c=S.charters.find(x=>x.id===el.dataset.id);if(!c){toast('Data charter tidak ditemukan.');return}
  const config=cpOptions(c),inc=Object.assign(cpDefault(),config.inc||{}),sg=Object.assign({city:'Jakarta',date:rptLongDate(TODAY),label:'Disetujui oleh,',title:'',name:''},config.sign||{});
