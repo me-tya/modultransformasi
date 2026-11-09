@@ -159,7 +159,8 @@ function lookup(el,label){
  if(data.pg==='tab')return data.val==='program'
   ?['Melihat pengelola dan penanggung jawab program transformasi.','Kewenangan program tetap mengikuti penugasan resmi dan hak akses.']
   :['Melihat daftar personel dan ketersediaan tim pengelola.','Data personel bukan persetujuan penugasan atau perubahan struktur organisasi.'];
- if(data.ps27Htab!==undefined||data.sktab!==undefined)return PLAIN[n]||['Membuka bagian '+label+' pada panduan/cheatsheet.','Informasi merupakan referensi penggunaan dan tidak mengubah data.'];
+ if(data.ps27Htab!==undefined)return PS_GUIDE_TAB[data.ps27Htab]||PLAIN[n]||['Membuka bagian '+label+' pada panduan/cheatsheet.','Informasi referensi tidak mengubah data.'];
+ if(data.sktab!==undefined)return PLAIN[n]||['Membuka bagian '+label+' pada panduan atau cheatsheet.','Informasi ini tidak mengubah data.'];
  if(el.closest('.pmo-journey')){
   var groups={'overview':ROUTES['pmo-siklus'],'workspace proyek':ROUTES['pmo-program'],'perencanaan':['Membuka dokumen dan penyusunan WBS tahap perencanaan proyek.','Dokumen masih memerlukan pengesahan; WBS pelaksanaan tidak berubah otomatis.'],'pelaksanaan':['Memantau WBS, bukti, narasi, dan Change Request selama pelaksanaan.','Perubahan baseline harus melalui proses persetujuan.'],'pemantauan':['Memantau milestone, risiko, capaian, serta koordinasi pelaporan.','Pemantauan tidak mengganti validasi WBS atau bukti.'],'penutupan':ROUTES['pmo-penutupan'],'pascaproyek':ROUTES['pmo-pascaproyek'],'referensi':ROUTES['pmo-referensi']};
   if(groups[n])return groups[n];
@@ -180,8 +181,30 @@ function lookup(el,label){
  if(el.closest('[role="tablist"]')||el.getAttribute('role')==='tab')return PLAIN[n]||null;
  return null;
 }
+var PS_GUIDE_TAB={
+ map:['Menampilkan peta Project Selection sampai subtab dan menyediakan pintasan ke halaman terkait.','Peta menu tidak mengubah data atau hak akses.'],
+ flow:['Menjelaskan urutan usulan, pemetaan, prioritas, charter, penetapan, dan RKMK.','Urutan panduan bukan otomatis keputusan formal.'],
+ fill:['Memberi instruksi praktis pengisian formulir dan dokumen setiap tahap.','Pengisian form tidak otomatis menjadi persetujuan.'],
+ roles:['Menguraikan pelaksana, pemeriksa, sponsor dan batas kewenangan masing-masing.','Hak akses tetap diatur oleh aplikasi dan penugasan resmi.'],
+ check:['Memeriksa kelengkapan pra-penetapan serta tindak lanjut ke PM dan CM.','Checklist panduan tidak mengubah status program.'],
+ framework:['Menggambarkan hubungan why–what–how dan enam tahapan seleksi program/proyek.','Kerangka konseptual bukan keputusan penetapan.'],
+ governance:['Menjelaskan strategic alignment, business case, manfaat, risiko, stakeholder dan tata kelola.','Kriteria aplikasi bukan klaim daftar kewajiban formal PMI.'],
+ carry:['Menjelaskan informasi yang disalin saat carry over dan data historis yang tetap terpisah.','WBS, realisasi dan bukti lama tidak otomatis diaktifkan.'],
+ formula:['Mengulas perhitungan SMART, bobot, utility, kriteria dan ambang prioritas.','Skor bukan persetujuan otomatis proyek.'],
+ kwide:['Menjelaskan kontrak K-Wide dan penetapan program beserta proyek terpilih.','WBS baru dibuat setelah penetapan.'],
+ rkmk:['Mengulas sumber, struktur dan pemeriksaan rancangan RKMK.','Draft RKMK bukan dokumen definitif.'],
+ terms:['Menyajikan glosarium istilah proyek, program, SMART, K-Wide dan WBS.','Istilah tidak menggantikan aturan dan dokumen resmi.'],
+ reference:['Menjelaskan sumber referensi, praktik dan batasan penggunaan kerangka.','Referensi konseptual bukan dasar otorisasi baru.']
+};
 var selector=['#app .nav .nv','#app .ps27-tabs button','#app .psbank-subtabs button','#app .psbank-mapping-tabs button','#app .ps27-minitabs button','#app .ps27-kwide-tabs button','#app .pswf-tabs button','#app .ptabs a','#app .subt a','#app .subt button','#app .cm-step','#app .chtabs button','#app .chebar [role="tab"]','#app .act-tabs a','#app .cra-tabs button','#app .cra2-tabs button','#app .pg-tabs button','#app [role="tab"]','[role="tab"]','nav[role="tablist"] button','nav[role="tablist"] a','nav[class*="tabs"] button','nav[class*="tabs"] a','[data-sktab]','[data-ps27-htab]','.sk-tab'].join(',');
 var tooltip=null,active=null,showTimer=0,previousTitle=null,previousDesc=null;
+var GUIDE_KEY='mt_guide_tooltips_v1',guideEnabled=true,headerObserver=null;
+try{guideEnabled=window.localStorage.getItem(GUIDE_KEY)!=='off'}catch(e){guideEnabled=true}
+function shortFunction(value){
+ var s=String(value||'').trim(),dot=s.indexOf('. ');
+ if(dot>30&&dot<118)s=s.slice(0,dot+1);
+ return s.length>115?s.slice(0,112).trimEnd()+'…':s;
+}
 function targetFor(node){return node&&node.closest?node.closest(selector):null;}
 function hide(){
  clearTimeout(showTimer);showTimer=0;
@@ -196,7 +219,7 @@ function hide(){
 function ensure(){
  if(tooltip)return tooltip;
  var style=document.createElement('style');style.id='mt-navigation-tooltips-css';
- style.textContent='#mt-navigation-tooltip{position:fixed;z-index:290000;box-sizing:border-box;width:max-content;max-width:min(340px,calc(100vw - 20px));padding:10px 12px;color:#e9f3ff;background:#102c4e;border:1px solid #476783;border-top:3px solid #fdb913;border-radius:10px;box-shadow:0 8px 24px rgba(4,16,36,.24);pointer-events:none;font:500 12px/1.5 Inter,"Nunito Sans",Arial,sans-serif;white-space:normal}#mt-navigation-tooltip[hidden]{display:none!important}#mt-navigation-tooltip .mt-tip-label{font-size:12.5px;font-weight:800;color:#fff;margin:0 0 6px}#mt-navigation-tooltip .mt-tip-heading{display:block;font-size:10px;letter-spacing:.03em;text-transform:uppercase;font-weight:800;color:#ffd373;margin-top:6px}#mt-navigation-tooltip .mt-tip-body{font-size:11.5px;color:#e8f0fa}';
+ style.textContent='#mt-navigation-tooltip{position:fixed;z-index:290000;box-sizing:border-box;width:max-content;max-width:min(340px,calc(100vw - 20px));padding:10px 12px;color:#e9f3ff;background:#102c4e;border:1px solid #476783;border-top:3px solid #fdb913;border-radius:10px;box-shadow:0 8px 24px rgba(4,16,36,.24);pointer-events:none;font:500 12px/1.5 Inter,"Nunito Sans",Arial,sans-serif;white-space:normal}#mt-navigation-tooltip[hidden]{display:none!important}#mt-navigation-tooltip .mt-tip-label{font-size:12.5px;font-weight:800;color:#fff;margin:0 0 6px}#mt-navigation-tooltip .mt-tip-heading{display:block;font-size:10px;letter-spacing:.03em;text-transform:uppercase;font-weight:800;color:#ffd373;margin-top:6px}#mt-navigation-tooltip .mt-tip-body{font-size:11.5px;color:#e8f0fa}#mt-navigation-tooltip[data-guide-mode="brief"]{max-width:min(260px,calc(100vw - 20px));border-top-width:2px;padding:7px 9px}#mt-navigation-tooltip[data-guide-mode="brief"] .mt-tip-heading,#mt-navigation-tooltip[data-guide-mode="brief"] [data-mt-tip-bound]{display:none!important}#mt-navigation-tooltip[data-guide-mode="brief"] .mt-tip-label{font-size:11px;margin-bottom:3px}#mt-navigation-tooltip[data-guide-mode="brief"] .mt-tip-body{font-size:11px;line-height:1.4}';
  document.head.appendChild(style);
  tooltip=document.createElement('div');tooltip.id='mt-navigation-tooltip';tooltip.setAttribute('role','tooltip');tooltip.hidden=true;
  tooltip.innerHTML='<div class="mt-tip-label"></div><span class="mt-tip-heading">Fungsi</span><div class="mt-tip-body" data-mt-tip-function></div><span class="mt-tip-heading">Batasan</span><div class="mt-tip-body" data-mt-tip-bound></div>';
@@ -227,8 +250,9 @@ function show(el){
  previousDesc=el.getAttribute('aria-describedby');
  if(previousTitle!==null)el.removeAttribute('title');
  el.setAttribute('aria-describedby',(previousDesc?previousDesc+' ':'')+t.id);
+ t.setAttribute('data-guide-mode',guideEnabled?'full':'brief');
  t.querySelector('.mt-tip-label').textContent=label;
- t.querySelector('[data-mt-tip-function]').textContent=spec[0];
+ t.querySelector('[data-mt-tip-function]').textContent=guideEnabled?spec[0]:shortFunction(spec[0]);
  t.querySelector('[data-mt-tip-bound]').textContent=spec[1];
  t.hidden=false;position(el);
 }
@@ -259,5 +283,78 @@ document.addEventListener('keydown',function(ev){if(ev.key==='Escape')hide();});
 document.addEventListener('scroll',hide,true);
 window.addEventListener('resize',hide);
 document.addEventListener('pointerdown',hide,true);
-window.MT_MENU_TOOLTIP={hide:hide,resolve:lookup,version:'20261109-function-boundaries-v1'};
+function setGuide(next){
+ guideEnabled=!!next;
+ hide();
+ try{window.localStorage.setItem(GUIDE_KEY,guideEnabled?'on':'off')}catch(e){}
+ updateGuide();
+ return guideEnabled;
+}
+function updateGuide(){
+ var control=document.getElementById('mt-guide-toggle');if(!control)return;
+ control.setAttribute('aria-checked',String(guideEnabled));
+ control.setAttribute('aria-label','Guide '+(guideEnabled?'ON: tooltip lengkap fungsi dan batasan':'OFF: tooltip fungsi ringkas')+'. Klik untuk mengubah.');
+ control.setAttribute('title','Guide '+(guideEnabled?'ON: fungsi dan batasan lengkap':'OFF: fungsi ringkas')+'. Klik untuk mengubah.');
+ var label=control.querySelector('.mt-guide-status');if(label)label.textContent=guideEnabled?'ON':'OFF';
+}
+function installHeader(){
+ var header=document.querySelector('#app header.top'),avatar=header&&header.querySelector('#av');
+ if(!header||!avatar)return;
+ var guide=header.querySelector('#mt-guide-toggle');
+ if(!guide){
+  guide=document.createElement('button');
+  guide.type='button';guide.id='mt-guide-toggle';guide.className='mt-guide-toggle';guide.setAttribute('role','switch');
+  guide.innerHTML='<span class="mt-guide-label">Guide</span><span class="mt-guide-track" aria-hidden="true"><i></i></span><span class="mt-guide-status"></span>';
+  guide.addEventListener('click',function(){setGuide(!guideEnabled)});
+  header.insertBefore(guide,avatar);
+ }
+ updateGuide();
+ var help=header.querySelector('.sk-hdrActions .sk-hdrHelp');
+ if(help){
+  help.setAttribute('title','Bantuan: panduan tahapan, peta menu, pengisian, peran dan checklist. Klik untuk membuka.');
+  help.setAttribute('aria-label','Buka Bantuan penggunaan aplikasi');
+ }
+ var sheet=header.querySelector('.sk-hdrActions .sk-hdrSheet');
+ if(sheet){
+  if(sheet.dataset.mtBookIcon!=='1'){
+   sheet.dataset.mtBookIcon='1';
+   sheet.innerHTML='<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M12 7c-2.2-2-5.4-2.6-9-2.6v14c4-.2 7.1.3 9 2.6"/><path d="M12 7c2.2-2 5.4-2.6 9-2.6v14c-4-.2-7.1.3-9 2.6"/></svg>';
+  }
+  sheet.setAttribute('title','Cheatsheet: framework, teori, metode SMART, istilah, K-Wide dan referensi tata kelola. Klik untuk membuka.');
+  sheet.setAttribute('aria-label','Buka Cheatsheet referensi dan teori transformasi');
+ }
+}
+function initHeader(){
+ if(typeof document.querySelector!=='function')return;
+ var css=document.createElement('style');
+ css.id='mt-guide-header-v1';
+ css.textContent=[
+ '#app .top .mt-guide-toggle{box-sizing:border-box;flex:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 9px;border-radius:10px;border:1px solid #64819c;background:#122f52;color:#e6f2ff;cursor:pointer;font:800 11.5px Inter,Arial,sans-serif;white-space:nowrap}',
+ '#app .top .mt-guide-toggle:focus-visible{outline:2px solid #fdb913;outline-offset:2px}',
+ '#app .top .mt-guide-toggle:hover{border-color:#f5c559;background:#173e6a}',
+ '#app .top .mt-guide-track{position:relative;display:block;width:27px;height:16px;border-radius:12px;background:#677e94;flex:none;transition:background .16s}',
+ '#app .top .mt-guide-track i{position:absolute;left:2px;top:2px;width:12px;height:12px;background:white;border-radius:50%;transition:transform .16s}',
+ '#app .top .mt-guide-toggle[aria-checked="true"] .mt-guide-track{background:#f2bd43}',
+ '#app .top .mt-guide-toggle[aria-checked="true"] .mt-guide-track i{transform:translateX(11px)}',
+ '#app .top .mt-guide-status{font-size:10px;color:#bed0e4}',
+ '#app .top .mt-guide-toggle[aria-checked="true"] .mt-guide-status{color:#ffdd89}',
+ '#app .top .sk-hdrActions .sk-hdrHelp,#app .top .sk-hdrActions .sk-hdrSheet{box-sizing:border-box!important;flex:0 0 36px!important;width:36px!important;min-width:36px!important;max-width:36px!important;height:36px!important;min-height:36px!important;padding:0!important;gap:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;overflow:hidden}',
+ '#app .top .sk-hdrActions .sk-hdrHelp>span,#app .top .sk-hdrActions .sk-hdrSheet>span{display:none!important}',
+ '#app .top .sk-hdrActions .sk-hdrHelp i{font-size:12px!important;margin:0!important}',
+ '#app .top .sk-hdrActions .sk-hdrHelp:hover,#app .top .sk-hdrActions .sk-hdrSheet:hover{transform:translateY(-1px);box-shadow:0 3px 10px #0003!important}',
+ '@media(min-width:1050px){#app header.top{flex-wrap:nowrap!important}#app header.top .role{max-width:30vw;overflow:hidden;text-overflow:ellipsis}}',
+ '@media(max-width:1180px){#app .top .mt-guide-label{display:none}}'
+ ].join('');
+ if(!document.getElementById(css.id))document.head.appendChild(css);
+ var parent=document.getElementById('root');if(!parent)return;
+ if(typeof MutationObserver==='function'){
+  headerObserver=new MutationObserver(installHeader);
+  headerObserver.observe(parent,{childList:true}); // no deep subtree scan on every keystroke
+ }
+ installHeader();
+}
+if(typeof document.querySelector==='function'){
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initHeader,{once:true});else initHeader();
+}
+window.MT_MENU_TOOLTIP={hide:hide,resolve:lookup,enabled:function(){return guideEnabled},setEnabled:setGuide,version:'MT-Guide-v1'};
 })();
