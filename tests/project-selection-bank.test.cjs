@@ -77,7 +77,9 @@ test('Carry-over copies registers and charter but requires fresh WBS',()=>{
  assert.ok(m.S.charters.some(c=>c.prog===added.akr&&c.st==='Draft'));
  assert.equal(m.S.ui.psFlow.tab,'usulan');
   assert.equal(m.S.ui.psBank.tab,'detail');
-  assert.equal(added.kode,'B27-CORE');
+  assert.equal(added.kode,'','carry-over must not fabricate B27 code');
+ assert.equal(added.kodeResmi,'','official code remains empty until manually entered');
+ assert.notEqual(added.id,m.core.id,'internal program ID must be independent');
  assert.equal(m.S.wbs.length,2,'source WBS should remain the only active WBS before Penetapan');
 });
 test('Cross-program mapping allows FRSW and SIPK from Core APBN 2026 into Core Non APBN 2027',()=>{
@@ -116,7 +118,18 @@ test('Bank includes archived and current-year programs without status limitation
  assert.ok(all.some(x=>x.year===2027));
  assert.match(m.app.page(),/Program Arsip Tematik/);
  assert.match(m.app.page(),/Tambahkan Program ke tahun/);
- assert.equal(m.bank.codeFor({kode:'T25-OLD',jenis:'Tematik',akr:'OLD'},2027),'T27-OLD');
+ assert.equal(m.bank.codeFor({kode:'T25-OLD',jenis:'Tematik',akr:'OLD'},2027),'');
+});
+test('Explicit official code does not change legacy source and keeps stable program identity',()=>{
+ const m=boot(),oldCode=m.core.kode,sourceWbs=m.S.wbs.map(x=>({...x}));
+ const p=m.bank.addOne('src-core:2026',false,2027,'Integrated Core System Lanjutan','KMK-2027-CORE');
+ assert.ok(p);
+ assert.equal(p.kodeResmi,'KMK-2027-CORE');
+ assert.equal(p.kode,'KMK-2027-CORE');
+ assert.notEqual(p.id,m.core.id);
+ assert.notEqual(p.akr,m.core.akr);
+ assert.equal(m.core.kode,oldCode);
+ assert.deepEqual(m.S.wbs,sourceWbs);
 });
 test('Program detail uses clickable rows and seven tabs with Buat Dokumen instead of Reviu',()=>{
  const m=boot();
@@ -160,7 +173,7 @@ test('Buat Dokumen Perencanaan Proyek uses inline settings and live format previ
  assert.match(planning,/id="cp-doc-inline"/);
  assert.doesNotMatch(planning,/Pratinjau & Pilih Isi/);
  const m=boot();
- assert.equal(m.bank.codeFor({jenis:'Berkelanjutan',kode:'B25-CORE',akr:'CORE'},2027),'B27-CORE');
+ assert.equal(m.bank.codeFor({jenis:'Berkelanjutan',kode:'B25-CORE',akr:'CORE'},2027),'');
 });
 
 
@@ -203,11 +216,11 @@ test('Global table sorting is delegated without changing WBS model order',()=>{
  assert.match(code,/table\.dataset\.sortDir/);
  assert.match(code,/wbs-hierarchy/);
 });
-test('Program Carry Over allows editing acronym and updates year code',()=>{
+test('Program Carry Over permits only a manually entered official code',()=>{
  const m=boot();
- assert.equal(m.bank.codeFor({kode:'B25-CORE',jenis:'Berkelanjutan',akr:'CORE'},2027,'NONAPBN'),'B27-NONAPBN');
- assert.match(source['project-selection-program-bank.js'],/data-carry-akronim/);
- assert.match(source['project-selection-program-bank.js'],/data-carry-code/);
+ assert.equal(m.bank.codeFor({kode:'B25-CORE',jenis:'Berkelanjutan',akr:'CORE'},2027,'NONAPBN'),'NONAPBN');
+ assert.match(source['project-selection-program-bank.js'],/data-carry-official/);
+ assert.doesNotMatch(source['project-selection-program-bank.js'],/data-carry-code=/);
 });
 
 test('TTE upload closes v1 and next document is v2, while plain downloads keep v1',async()=>{
