@@ -970,3 +970,6 @@
 #app .psbank-proposal-detail-table .psbank-results-actions .psbank-action-icon{width:29px;height:29px;min-width:29px;margin-inline:2px}
 #app .psbank-proposal-detail-table td:nth-child(2) small{display:block;font-size:10px;color:#72869e;margin-top:4px}
 #app .psbank-proposal-detail-table tr.psbank-clickrow:hover,#app .psbank-proposal-detail-table tr.psbank-clickrow:focus-visible{background:#f3f8ff;outline:1px solid #bbd6ef;outline-offset:-1px}
+
+
+#app .psbank-project-editor .psbank-category-hint{display:block;margin-top:4px;font:500 10px/1.45 Inter,Arial,sans-serif;color:#6a7f96;white-space:normal}
