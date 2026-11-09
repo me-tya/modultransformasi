@@ -109,7 +109,7 @@ var menuPM=[
 ];
 var menuPMDeep=[
  ['Project Selection › Riwayat Program','Salin program lintas tahun tanpa menimpa dokumen asal','project-selection|usulan:bank'],
- ['Project Selection › Daftar Program','Klik baris untuk detail; aksi Pemetaan, Edit, Unggah, dan Unduh kondisional','project-selection|usulan:detail'],
+ ['Project Selection › Usulan Program','Klik baris untuk detail; aksi Pemetaan, Edit, Unggah, dan Unduh kondisional','project-selection|usulan:detail'],
  ['Project Selection › Identitas Program','Tab Identitas di Detail Program','project-selection|usulan:detail:identity'],
  ['Project Selection › Business Case','Tab Business Case di Detail Program','project-selection|usulan:detail:case'],
  ['Project Selection › Manfaat','Tab Manfaat di Detail Program','project-selection|usulan:detail:benefits'],
@@ -120,7 +120,7 @@ var menuPMDeep=[
  ['Project Selection › Dokumen Portofolio','Generator portofolio program tahun yang dipilih','project-selection|usulan:portfolio'],
  ['Project Selection › Pemetaan Proyek','Tab Pemetaan','project-selection|mapping:mapping'],
  ['Project Selection › Usulan Proyek','Tab pengelolaan usulan proyek','project-selection|mapping:proposal'],
- ['Project Selection › Hasil Pemetaan','Tab hasil pemetaan dan relasi','project-selection|mapping:results'],
+ ['Project Selection › Rekap Program & Proyek','Ringkasan hierarki program dan proyek; substansi dikelola pada Usulan Proyek','project-selection|mapping:results'],
  ['Project Selection › Dokumen Usulan Proyek','Tab dokumen usulan proyek','project-selection|mapping:docs'],
  ['Project Selection › Prioritasi & Peringkat','Tab Prioritasi','project-selection|prioritasi:ranking'],
  ['Project Selection › Kriteria & Bobot','Tab kriteria prioritas','project-selection|prioritasi:criteria'],
