@@ -55,22 +55,45 @@ test('function and boundary are explicit for each important workflow',()=>{
 });
 
 
-test('Guide ON shows full function/boundary, OFF retains concise functional tooltip',()=>{
- const stored={mt_guide_tooltips_v1:'off'};
+test('Guide OFF hides all menu/tab tooltips including native title; ON restores full help',()=>{
+ const stored={mt_guide_tooltips_v1:'off'},handlers={};
+ function makeTab(title){
+  const attrs=new Map([['title',title]]);
+  const tab={
+   dataset:{ps27Tab:'prioritasi'},isConnected:true,parentElement:null,
+   hasAttribute:k=>attrs.has(k),getAttribute:k=>attrs.get(k)||null,
+   setAttribute:(k,v)=>attrs.set(k,v),removeAttribute:k=>attrs.delete(k),
+   closest:()=>tab
+  };
+  return {tab,attrs};
+ }
+ const first=makeTab('Penjelasan Prioritasi');
+ const document={
+  addEventListener:(name,fn)=>{handlers[name]=fn},
+  querySelectorAll:()=>[first.tab],getElementById:()=>null
+ };
  const window={addEventListener(){},localStorage:{getItem:k=>stored[k]??null,setItem:(k,v)=>{stored[k]=v}}};
- const document={addEventListener(){},getElementById:()=>null};
  runInNewContext(source,{window,document,setTimeout,clearTimeout});
  const guide=window.MT_MENU_TOOLTIP;
  assert.equal(guide.enabled(),false);
+ guide.setEnabled(false);
+ assert.equal(first.attrs.has('title'),false,'Native tooltip must be removed in OFF mode');
+ handlers.pointerover({target:first.tab,pointerType:'mouse'});
+ handlers.focusin({target:first.tab});
+ const dynamic=makeTab('New dynamic tab title');
+ handlers.pointerover({target:dynamic.tab,pointerType:'mouse'});
+ assert.equal(dynamic.attrs.has('title'),false,'Dynamic tab must not expose native title tooltip');
  assert.equal(guide.setEnabled(true),true);
+ assert.equal(first.attrs.get('title'),'Penjelasan Prioritasi');
+ assert.equal(dynamic.attrs.get('title'),'New dynamic tab title');
  assert.equal(stored.mt_guide_tooltips_v1,'on');
  assert.equal(guide.setEnabled(false),false);
  assert.equal(stored.mt_guide_tooltips_v1,'off');
- assert.match(source,/data-guide-mode/);
- assert.match(source,/data-guide-mode="brief"/);
- assert.match(source,/shortFunction\(spec\[0\]\)/);
- assert.match(source,/data-mt-tip-bound/);
- assert.match(source,/function updateGuide\(\)/);
+ assert.match(source,/if\(!guideEnabled\|\|!el\|\|!el\.isConnected\)return/);
+ assert.match(source,/if\(!guideEnabled\)\{mutePath\(ev\.target,el\);return\}/);
+ assert.match(source,/function muteNativeMenuTitles\(\)/);
+ assert.match(source,/function restoreNativeMenuTitles\(\)/);
+ assert.doesNotMatch(source,/shortFunction\(spec\[0\]\)/);
  assert.match(source,/headerObserver\.observe\(parent,\{childList:true\}\)/);
  assert.doesNotMatch(source,/headerObserver\.observe\(parent,\{childList:true,subtree:true\}\)/);
 });
