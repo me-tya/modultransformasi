@@ -339,7 +339,7 @@ function navigate(target){
   if(item&&['identity','case','benefits','stakeholders','risks','governance','docs'].includes(item))S.ui.psBank.wtab=item;
  }
  if(actual==='mapping'&&window.MT_PS_SCOPE){
-  window.MT_PS_SCOPE.bank().mappingTab=['proposal','usulan-proyek'].includes(sub)?'proposal':['results','hasil'].includes(sub)?'results':['docs','dokumen'].includes(sub)?'docs':'history';
+  window.MT_PS_SCOPE.bank().mappingTab=['proposal','usulan-proyek','results','hasil'].includes(sub)?'proposal':['docs','dokumen'].includes(sub)?'docs':'history';
  }
  if(actual==='prioritasi'&&['ranking','criteria','monev','reference'].includes(sub)){
   ws().prioritySub=sub;
@@ -502,7 +502,7 @@ function helpPage(tab){
  if(tab==='map'){
   const deep=[
    [['Riwayat Program','usulan:bank'],['Usulan Program · Kelola & Unggah / Unduh','usulan:detail'],['Dokumen Portofolio','usulan:portfolio'],['Identitas','usulan:detail:identity'],['Business Case','usulan:detail:case'],['Manfaat','usulan:detail:benefits'],['Stakeholder','usulan:detail:stakeholders'],['Risiko','usulan:detail:risks'],['Tata Kelola','usulan:detail:governance'],['Buat Dokumen Program','usulan:detail:docs']],
-   [['Riwayat Proyek','mapping:history'],['Usulan Proyek','mapping:proposal'],['Rekap Program & Proyek','mapping:results'],['Buat Dokumen Usulan Proyek','mapping:docs']],
+   [['Riwayat Proyek','mapping:history'],['Usulan Proyek (accordion per program)','mapping:proposal'],['Buat Dokumen Proyek','mapping:docs']],
    [['Penilaian & Peringkat','prioritasi:ranking'],['Kriteria & Bobot','prioritasi:criteria'],['Monev & Manfaat','prioritasi:monev'],['Referensi & Formula','prioritasi:reference']],
    [['As-is','charter:asis'],['To-be','charter:tobe'],['Perbandingan','charter:cs'],['Charter','charter:ch'],['Kriteria','charter:kp'],['Manfaat','charter:mf'],['Linimasa','charter:rk']],
    [['Kontrak K-Wide dan Cakupan Proyek','penetapan-program']],
