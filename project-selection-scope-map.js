@@ -84,7 +84,20 @@ const PROJECT_FIELDS=[
  ['start','Rencana Mulai','date','Pelaksanaan Awal'],
  ['goLive','Target Go-Live','date','Pelaksanaan Awal']
 ];
-const CAT=['APBN','Non APBN','Manajemen Birokrasi'];
+const CAT=['Core APBN','Core Non APBN','Office Automation','APBN','Non APBN','Manajemen Birokrasi'];
+function defaultProjectCategory(p){
+ const tag=[p?.akr,p?.kode,p?.nama].join(' ').toUpperCase();
+ if(/\bICS\b|\bCORE\b|INTEGRATED CORE SYSTEM/.test(tag))return 'Core APBN';
+ if(/\bDOA\b|\bOA\b|OFFICE AUTOMATION/.test(tag))return 'Office Automation';
+ return '';
+}
+function projectCategory(p,x){
+ const v=String(x?.category||'').trim(),def=defaultProjectCategory(p);
+ if(!v)return def;
+ if(def==='Core APBN'&&v==='APBN')return def;
+ if(def==='Office Automation'&&(v==='Manajemen Birokrasi'||v==='Non APBN'))return def;
+ return v;
+}
 function projectValue(x,key){
  if(key==='psAcronym')return x.psAcronym||x.name&&assignedAcronym(x)||'';
  if(key==='applicationName')return x.applicationName||x.name||'';
@@ -224,6 +237,7 @@ function addHistory(keys){
    psSourceProjectSnapshot:r.x.original?C(r.x.original):null,psOriginAkr:r.p.akr,psOriginProgram:r.p.nama,
    psOriginYear:r.y,psOriginCode:codeFor(r.p,r.x.original||{name:r.x.name}),
    status:'Usulan',included:true,scores:{},poster:{},risks:{},indicators:[],benefits:[]};
+  z.category=projectCategory(p,z);
   z.psAcronym=uniqueCode(p,assignedAcronym(r.x.original||{name:r.x.name}));z.psCode=codeFor(p,z,z.psAcronym);
   z.start=shift(z.start,r.y,year());z.goLive=shift(z.goLive,r.y,year());
   p.psProjects=p.psProjects||[];p.psProjects.push(z);added++;
@@ -276,9 +290,10 @@ function ensureProjectCodes(){
  let changed=false;
  I.programs().forEach(p=>{
   const projects=p.psProjects||[];
-  const before=projects.map(x=>[x.psAcronym,x.psCode].join('|')).join(';');
+  const before=projects.map(x=>[x.psAcronym,x.psCode,x.category].join('|')).join(';');
   normalizeProjectCodes(p);
-  const after=projects.map(x=>[x.psAcronym,x.psCode].join('|')).join(';');
+  projects.forEach(x=>{const cat=projectCategory(p,x);if(cat&&cat!==x.category)x.category=cat;});
+  const after=projects.map(x=>[x.psAcronym,x.psCode,x.category].join('|')).join(';');
   if(before!==after)changed=true;
  });
  if(changed)save();
@@ -300,7 +315,7 @@ function projectEditor(id,readonly=false){
  const d=document.createElement('div');d.className='psbank-overlay psbank-project-editor';
  const groups=[...new Set(PROJECT_FIELDS.map(x=>x[3]))];
  const control=([key,label,type])=>type==='select'||type==='status'?
-   '<label>'+E(label)+'<select data-scope-field="'+key+'" '+(readonly?'disabled':'')+'>'+((type==='status')?['Usulan','Berjalan','Ditunda','Selesai']:['',...CAT]).map(x=>'<option value="'+E(x)+'" '+(x===projectValue(existing||{},key)?'selected':'')+'>'+E(x||'Pilih kategori')+'</option>').join('')+'</select></label>':
+   '<label>'+E(label)+'<select data-scope-field="'+key+'" '+(readonly?'disabled':'')+'>'+((type==='status')?['Usulan','Berjalan','Ditunda','Selesai']:['',...CAT]).map(x=>'<option value="'+E(x)+'" '+(x===(key==='category'?projectCategory(p,existing):projectValue(existing||{},key))?'selected':'')+'>'+E(x||'Pilih kategori')+'</option>').join('')+'</select></label>':
    '<label class="'+(type==='textarea'?'psbank-editor-long':'')+'">'+E(label)+(key==='name'?' *':'')+
    (type==='textarea'?'<textarea rows="3" data-scope-field="'+key+'" '+(readonly?'disabled':'')+'>'+E(projectValue(existing||{},key))+'</textarea>':
     '<input type="'+type+'" data-scope-field="'+key+'" value="'+E(projectValue(existing||{},key))+'" '+(readonly?'disabled':'')+'>')+'</label>';
@@ -380,6 +395,7 @@ function transfer(){
   if((p.psProjects||[]).some(x=>String(x.name).toLowerCase()===item.name.toLowerCase()))return;
   const orig=C(item.original||{});
   const z={...orig,psSourceProjectSnapshot:item.original?C(item.original):null,id:uid('proj'),name:item.name,uic:item.uic||s.uic||p.uic,status:'Usulan',included:true,scores:{},poster:{},risks:{},indicators:[],benefits:[],psOriginAkr:s.akr,psOriginProgram:s.nama,psOriginYear:m.year};
+  z.category=projectCategory(p,z);
   z.psAcronym=uniqueCode(p,assignedAcronym(item.original||{})||suggestedAcronym(item.name));z.psCode=codeFor(p,z,z.psAcronym);
   z.start=shift(z.start,+m.year,year());z.goLive=shift(z.goLive,+m.year,year());
   p.psProjects=p.psProjects||[];p.psProjects.push(z);n++;
