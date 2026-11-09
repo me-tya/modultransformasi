@@ -423,6 +423,8 @@ function transfer(){
  }
 }
 function click(ev){
+ const pager=ev.target.closest('[data-scope-proposal-page]');
+ if(pager){const b=mapState();b.proposalPaging=b.proposalPaging||{};const entry=b.proposalPaging[pager.dataset.scopeProposalPage];if(entry){entry.page=Math.max(1,(+entry.page||1)+Number(pager.dataset.move||0));save();window.render()}return true}
  /* Resolve program first for every per-project action within an accordion. */
  const scoped=ev.target.closest('[data-scope-program-id]');
  if(scoped){const program=get(scoped.dataset.scopeProgramId);if(program){bank().target=program.id;I.state().prog=program.id}}
@@ -450,6 +452,16 @@ function click(ev){
 }
 function change(ev){
  const el=ev.target,m=bank().map,b=mapState();
+ if(el.dataset.scopeProposalProgram!==undefined){
+  S.ui.psBank.filterScopes=S.ui.psBank.filterScopes||{};
+  const f=S.ui.psBank.filterScopes.mapping||(S.ui.psBank.filterScopes.mapping={});
+  f.program=el.value;save();window.render();return true
+ }
+ if(el.dataset.scopeProposalSize!==undefined){
+  b.proposalPaging=b.proposalPaging||{};
+  const entry=b.proposalPaging[el.dataset.scopeProposalSize]||(b.proposalPaging[el.dataset.scopeProposalSize]={page:1,size:5});
+  entry.size=Number(el.value)||5;entry.page=1;save();window.render();return true
+ }
  if(el.dataset.scopeHistoryTarget!==undefined){const p=get(el.value);if(p){bank().target=p.id;I.state().prog=p.id;b.historySelected=[];save();window.render()}return true}
  if(el.dataset.scopeHistoryYear!==undefined){b.historyYear=el.value;b.historySelected=[];save();window.render();return true}
  if(el.dataset.scopeHistorySearch!==undefined){b.historySearch=el.value;save();window.render();return true}
