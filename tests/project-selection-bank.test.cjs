@@ -33,7 +33,7 @@ test('Assets are loaded in correct order and compile as valid JavaScript',()=>{
 test('Bank across all years shows requested columns and no Program yang dikerjakan selector',()=>{
  const m=boot(),html=m.app.page();
  assert.match(html,/Riwayat Program/);
- assert.match(html,/Daftar Program/);
+ assert.match(html,/Usulan Program/);
  assert.match(html,/data-bank-checkall/);
   assert.match(html,/data-bank-check=/);
   assert.match(html,/data-bank-add=/);
@@ -48,13 +48,13 @@ test('Bank across all years shows requested columns and no Program yang dikerjak
 test('Detail Program removes duplicate workspace and exposes inline versioned document builder',()=>{
  const m=boot();m.S.ui.psBank={tab:'detail',wtab:'docs'};
  const html=m.app.page();
- assert.match(html,/<h3>Daftar Program · 2027<\/h3>/);
+ assert.match(html,/<h3>Usulan Program · 2027<\/h3>/);
  assert.match(html,/data-bank-detailrow/);
  assert.match(html,/Buat Dokumen Portofolio/);
  assert.doesNotMatch(html,/Workspace Program/);
  m.S.ui.psBank.tab='bank';
  const historyTab=m.app.page();
- assert.doesNotMatch(historyTab,/data-bank-new/,'Tambah Program Baru should only appear in the active Daftar Program tab');
+ assert.doesNotMatch(historyTab,/data-bank-new/,'Tambah Program Baru should only appear in the active Usulan Program tab');
  const p=m.docs.builder(m.target);
  assert.match(p,/Pratinjau Word/);
  assert.match(p,/Substansi dokumen/);
@@ -85,14 +85,15 @@ test('Cross-program mapping allows FRSW and SIPK from Core APBN 2026 into Core N
  const found=m.scope.modules(m.core,2026).map(x=>x.name);
  assert.ok(found.includes('FRSW'));
  assert.ok(found.includes('SIPK'));
- m.scope.bank().target=m.target.id;
+ m.scope.bank().mappingTab='history';
+  m.scope.bank().target=m.target.id;
  m.scope.bank().map={year:2026,program:m.core.id,q:'',selected:[m.core.id+'::FRSW',m.core.id+'::SIPK']};
  assert.match(m.scope.render(),/FRSW/);
  assert.match(m.scope.render(),/SIPK/);
  m.scope.transfer();
  assert.deepEqual(m.target.psProjects.map(x=>x.name).sort(),['FRSW','SIPK']);
  assert.equal(m.target.psWbsDraft.length,0,'Pemetaan only copies project identity, not old WBS');
- assert.equal(m.scope.bank().mappingTab,'results','After transfer, show Hasil Pemetaan');
+ assert.equal(m.scope.bank().mappingTab,'proposal','After transfer, show Usulan Proyek for editing');
  assert.equal(m.S.wbs.length,2,'must not copy WBS as active before Penetapan');
  assert.equal(m.S.wbs[0].v,1,'must not mutate actual source progress');
  assert.equal(m.S.bukti['CORE-11'].link,'BA sumber');
@@ -467,7 +468,7 @@ test('Usulan Proyek rows open modal detail, never inline appendix',()=>{
  m.scope.bank().mappingTab='proposal';
  const html=m.scope.render(),js=source['project-selection-scope-map.js'];
  assert.match(html,/data-scope-proposal-focus="usul-A"/);
- assert.doesNotMatch(html,/psbank-proposal-detail/);
+ assert.doesNotMatch(html,/data-scope-field=/);
  assert.match(js,/projectEditor\(focus\.dataset\.scopeProposalFocus,true\)/);
  assert.match(js,/data-scope-editor-edit/);
 });
@@ -703,20 +704,20 @@ test('No header year selector, compact spacing and no nested vertical bank scrol
 });
 
 
-test('Riwayat Program and Daftar Program have a separate UIC column without inline phase badges',()=>{
+test('Riwayat Program and Usulan Program have a separate UIC column without inline phase badges',()=>{
  const m=boot();
  m.S.ui.psBank={tab:'bank'};
  const history=m.bank.bank(),detail=m.bank.detail();
  assert.match(history,/<h3>Riwayat Program<\/h3>/);
  assert.match(history,/<th>Kode Program<\/th><th>Nama Program<\/th><th>UIC<\/th>/);
  assert.match(history,/<td><b>[^<]+<\/b><\/td><td><b>Integrated Core System APBN<\/b><\/td><td>BaTii<\/td>/);
- assert.match(detail,/<h3>Daftar Program · 2027<\/h3>/);
+ assert.match(detail,/<h3>Usulan Program · 2027<\/h3>/);
  assert.match(detail,/<th>Kode Program<\/th><th>Nama Program<\/th><th>UIC<\/th>/);
  assert.match(detail,/<td><b>[^<]+<\/b><\/td><td><b>Digitalisasi Core Non APBN<\/b><\/td><td>BaTii<\/td>/);
  assert.doesNotMatch(detail,/psbank-phase|Draf usulan|Referensi historis/);
  assert.match(detail,/psbank-baru/);
 });
-test('Daftar Program action icons include a working upload before mapping with tooltip',()=>{
+test('Usulan Program action icons include a working upload before mapping with tooltip',()=>{
  const m=boot(),detail=m.bank.detail();
  assert.match(detail,/title="Unggah Dokumen Program"/);
  assert.match(detail,/aria-label="Unggah Dokumen Program"/);
@@ -763,7 +764,7 @@ test('Riwayat Program has exactly eight proportional columns and readable indepe
  assert.match(css,/\.psbank-history-table th,([\s\S]*?)white-space:normal!important/);
  assert.match(css,/\.psbank-history-table\{min-width:985px!important\}/);
 });
-test('Daftar Program has nine proportional columns including independent UIC and four action icons',()=>{
+test('Usulan Program has nine proportional columns including independent UIC and four action icons',()=>{
  const m=boot(),html=m.bank.detail(),css=readFileSync('project-selection-program-bank.css','utf8');
  const cols=html.match(/psbank-detail-table"><colgroup>(.*?)<\/colgroup>/);
  assert.ok(cols);
@@ -785,7 +786,7 @@ test('Shared CM/PM/Project Selection geometry fixes route navigation and filter 
 });
 
 
-test('Daftar Program paginates independently with 10, 20, 50, and 100 records',()=>{
+test('Usulan Program paginates independently with 10, 20, 50, and 100 records',()=>{
  const m=boot();
  for(let i=0;i<25;i++)m.S.programs.push({
   id:'detail-extra-'+i,akr:'D'+i,kode:'B27-D'+i,nama:'Program Baru '+i,
