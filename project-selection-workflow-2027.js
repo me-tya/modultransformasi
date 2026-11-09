@@ -424,7 +424,7 @@ function mount(){
   if(b.dataset.ps27Usul){ws().usulanSub=b.dataset.ps27Usul;save();render();return}
   if(b.dataset.ps27Remove){toast('Hapus proyek hanya tersedia di Pemetaan Proyek → Usulan Proyek.');return}
   if(b.hasAttribute('data-ps27-reset')){
-   const f=localFilter();Object.assign(f,{search:'',status:'all',program:'',programName:'',unit:'all',unitRole:'all',period:'all',rangeFrom:'',rangeTo:'',year:state().tab==='usulan'&&(S.ui.psBank?.tab||'bank')==='bank'?'all':String(yr())});
+   const f=localFilter();Object.assign(f,{search:'',status:'all',program:'',category:'all',contractStatus:'all',programName:'',unit:'all',unitRole:'all',period:'all',rangeFrom:'',rangeTo:'',year:state().tab==='usulan'&&(S.ui.psBank?.tab||'bank')==='bank'?'all':String(yr())});
    const st=S.ui.psBank||(S.ui.psBank={});st.filterProgram='';st.detailProgram='';f.allProgramsSelected=false;st.search='';st.filterStatus='all';st.filterYear=f.year;
    save();render();return;
   }
@@ -497,6 +497,8 @@ function mount(){
    }
    if(el.dataset.ps27Status!==undefined){S.ui.psBank=S.ui.psBank||{};setFilterField('status',el.value);save();render();return}
    if(el.dataset.ps27Unit!==undefined){setFilterField('unit',el.value);save();render();return}
+   if(el.dataset.ps27Category!==undefined){setFilterField('category',el.value);save();render();return}
+   if(el.dataset.ps27ContractStatus!==undefined){setFilterField('contractStatus',el.value);save();render();return}
    if(el.dataset.ps27Role!==undefined){setFilterField('unitRole',el.value);save();render();return}
    if(el.dataset.ps27RangeFrom!==undefined){setFilterField('rangeFrom',el.value);save();render();return}
    if(el.dataset.ps27RangeTo!==undefined){setFilterField('rangeTo',el.value);save();render();return}
