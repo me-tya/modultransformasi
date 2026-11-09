@@ -100,6 +100,7 @@ test('project categorization defaults align ICS and OA, and Core Non APBN can be
  const f=new Function(scope.slice(a,b)+';return {defaultProjectCategory,projectCategory} ')();
  assert.equal(f.defaultProjectCategory({akr:'CORE',kode:'B27-CORE'}),'Core APBN');
  assert.equal(f.defaultProjectCategory({akr:'DOA',kode:'B27-DOA'}),'Office Automation');
+ assert.equal(f.defaultProjectCategory({akr:'NON',kode:'B27-NON',nama:'Digitalisasi Core Non APBN'}),'Core Non APBN');
  assert.equal(f.projectCategory({akr:'CORE'},{category:''}),'Core APBN');
  assert.equal(f.projectCategory({akr:'DOA'},{category:''}),'Office Automation');
  assert.equal(f.projectCategory({akr:'CORE'},{category:'Core Non APBN'}),'Core Non APBN');
