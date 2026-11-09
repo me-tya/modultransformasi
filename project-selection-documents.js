@@ -715,25 +715,26 @@ async function exportFile(p){
 
 /* Portofolio: kompilasi per program dengan konfigurasi dan nomor versi tersendiri. */
 const PROJECT_SECTIONS=[
- ['identity','Identitas Aplikasi'],
- ['validation','Identifikasi & Validasi'],
- ['strategic','Regulasi & Strategi'],
- ['business','Proses Bisnis'],
- ['development','Rencana Pengembangan']
+ ['identity','Identitas'],['case','Business Case'],['benefits','Manfaat'],
+ ['stakeholders','Stakeholder'],['risks','Risiko'],['governance','Tata Kelola'],
+ ['charter','Charter Proyek']
 ];
 function projectMode(){return S.ui?.psFlow?.tab==='mapping'&&window.MT_PS_SCOPE?.bank?.()?.mappingTab==='docs'}
 function projectTarget(){return window.MT_PS_SCOPE?.target?.()||null}
 function docSections(){return projectMode()?PROJECT_SECTIONS:STEPS}
 function docKind(){return projectMode()?'proposals':'portfolio'}
-function docId(){return projectMode()?String(projectTarget()?.id||'unselected'):'all'}
+function docId(){return projectMode()?(S.ui?.psBank?.filterScopes?.mapping?.allProgramsSelected?'all':String(projectTarget()?.id||'unselected')):'all'}
 function projectFields(x,section){
  const get=k=>window.MT_PS_SCOPE?.projectValue?.(x,k)||x[k]||'Belum diisi';
+
  const sets={
- identity:[['Nama Aplikasi',get('applicationName')],['Nama Proyek / Modul',get('name')],['Fungsi Utama / Modul',get('mainFunction')],['Sub Modul',get('subModule')],['URL Aplikasi',get('url')],['Kategori',get('category')],['UIC Utama',get('uic')],['Status Usulan',get('status')],['Program Tujuan',projectTarget()?.nama||'—'],['Asal Program',x.psOriginProgram||'Usulan baru'],['Tahun Sumber',x.psOriginYear||'—']],
- validation:[['Identifikasi Tim BaTii',get('batiiIdentification')],['Konfirmasi Pemilik Proses Bisnis',get('probisConfirmation')],['Deskripsi Aplikasi / Modul',get('description')],['Urgensi',get('urgency')]],
- strategic:[['Landasan Hukum / Regulasi',get('legalBasis')],['Strategi Organisasi yang Didukung (Renstra Kementerian / UE I)',get('strategyAlignment')]],
- business:[['Proses Bisnis Terkait (Level 3, 4, atau 5)',get('businessProcess')],['Penjelasan / Narasi Proses Bisnis Aplikasi',get('businessNarrative')]],
- development:[['Fitur Utama yang Akan Dikembangkan',get('features')],['Rencana Mulai',get('start')],['Target Go-Live',get('goLive')]]
+  identity:[['Nama Aplikasi',get('applicationName')],['Nama Proyek / Modul',get('name')],['Kode Proyek',x.psCode||x.kode||'—'],['Fungsi Utama / Modul',get('mainFunction')],['Sub Modul',get('subModule')],['URL Aplikasi',get('url')],['Kategori',get('category')],['UIC Utama',get('uic')],['Status Usulan',get('status')],['Program Tujuan',x.psProgramName||projectTarget()?.nama||'—'],['Asal Program',x.psOriginProgram||'Usulan baru'],['Tahun Sumber',x.psOriginYear||'—']],
+  case:[['Identifikasi Tim BaTii',get('batiiIdentification')],['Konfirmasi Pemilik Proses Bisnis',get('probisConfirmation')],['Deskripsi Aplikasi / Modul',get('description')],['Urgensi',get('urgency')],['Landasan Hukum / Regulasi',get('legalBasis')],['Keselarasan Renstra Kementerian / UE I',get('strategyAlignment')],['Proses Bisnis Terkait',get('businessProcess')],['Narasi Proses Bisnis',get('businessNarrative')],['Fitur Utama yang Dikembangkan',get('features')]],
+  benefits:[['Manfaat yang Diharapkan',get('projectBenefit')],['Outcome',get('projectOutcome')],['Indikator Manfaat',get('projectBenefitIndicator')],['Baseline',get('projectBaseline')],['Target dan Satuan',get('projectTarget')],['Benefit Owner',get('projectBenefitOwner')]],
+  stakeholders:[['Stakeholder / Unit Terdampak',get('projectStakeholders')],['Peran dan Pengaruh',get('projectStakeholderRole')],['Strategi Pelibatan',get('projectEngagementStrategy')],['PIC',get('projectStakeholderPIC')]],
+  risks:[['Risiko',get('projectRisks')],['Probabilitas dan Dampak',get('projectRiskImpact')],['Mitigasi',get('projectRiskMitigation')],['Risk Owner',get('projectRiskOwner')]],
+  governance:[['Manajer Proyek',get('projectManager')],['Otoritas Keputusan',get('projectDecisionAuthority')],['Sumber Daya',get('projectResources')],['Dependensi dan Asumsi',get('projectDependencies')],['Rencana Mulai',get('start')],['Target Go-Live',get('goLive')]],
+  charter:[['Tujuan Proyek',get('projectCharterObjective')],['Latar Belakang',get('projectCharterBackground')],['Terobosan / Strategi',get('projectCharterBreakthrough')],['Output',get('projectCharterOutput')],['Outcome',get('projectCharterOutcome')],['Kriteria Penyelesaian',get('projectCharterCriteria')],['Milestone dan Linimasa',get('projectCharterMilestones')]]
  };
  return sets[section]||[];
 }
@@ -742,17 +743,32 @@ function portCfg(){
  const mode=projectMode(),key=mode?'proposalDocument':'portfolioDoc';
  const d=S.ui.psBank[key]||(S.ui.psBank[key]={format:'word',selected:[],sections:(mode?PROJECT_SECTIONS:STEPS).map(x=>x[0]),toc:true,sign:true,slide:0,initialized:false});
  if(!d.initialized){d.selected=portPrograms().map(p=>String(p.id));d.initialized=true}
+ if(mode&&d.projectSchemaVersion!==2){
+  const legacy={validation:'case',strategic:'case',business:'case',development:'governance'};
+  d.sections=[...new Set((d.sections||[]).map(k=>legacy[k]||k).filter(k=>PROJECT_SECTIONS.some(x=>x[0]===k)))];
+  if(d.sections.length<PROJECT_SECTIONS.length)d.sections=PROJECT_SECTIONS.map(x=>x[0]);
+  d.projectSchemaVersion=2;
+ }
  return d;
 }
 function portPrograms(){
- if(projectMode())return (projectTarget()?.psProjects||[]).map((x,i)=>({ ...x,nama:x.applicationName||x.name,kode:(projectTarget()?.kode||'')+' / '+(i+1),akr:'U-'+(i+1),jenis:x.category||'—',psProjects:[],psStatus:x.status||'Usulan',psOriginProgram:x.psOriginProgram||(x.psOriginYear?'Sumber historis':'Usulan baru'),psOriginYear:x.psOriginYear,uic:x.uic||projectTarget()?.uic }));
- return (S.programs||[]).filter(p=>+p.psYear===year()||(!p.psYear&&+p.mulai<=year()&&+(String(p.periode||'').match(/20\d{2}/g)||[]).slice(-1)[0]>=year()));
+ if(projectMode()){
+  const scopeAll=!!S.ui?.psBank?.filterScopes?.mapping?.allProgramsSelected;
+  const sources=scopeAll?(I.programs?.()||[]):[projectTarget()].filter(Boolean);
+  return sources.flatMap(program=>(program.psProjects||[]).map(x=>({
+   ...x,nama:x.applicationName||x.name,kode:x.psCode||(program.kode||program.akr)+'-'+(x.psAcronym||'PROYEK'),
+   akr:x.psAcronym||x.name||'PROYEK',jenis:x.category||'—',psProjects:[],psStatus:x.status||'Usulan',
+   psProgramName:program.nama,psProgramId:program.id,psProgramCode:program.kode||program.akr,
+   psOriginProgram:x.psOriginProgram||(x.psOriginYear?'Sumber historis':'Usulan baru')
+  })));
+ }
+ return (I.programs?.()||[]).filter(p=>!p.psYear||+p.psYear===year()||(String(p.periode||'').match(/20\\d{2}/g)||[]).slice(-1)[0]>=year());
 }
 function portSelected(){const d=portCfg();return portPrograms().filter(p=>d.selected.includes(String(p.id)))}
 function portData(){
  const d=portCfg();
  const steps=docSections(),mode=projectMode();
- return portSelected().map(p=>({p,blocks:steps.filter(x=>d.sections.includes(x[0])).map(x=>({title:x[1],rows:mode?projectFields(p,x[0]):fields(p,x[0],year())}))}));
+ return portSelected().map(p=>({p,blocks:steps.filter(x=>d.sections.includes(x[0])).map(x=>({key:x[0],title:x[1],rows:mode?projectFields(p,x[0]):fields(p,x[0],year())}))}));
 }
 function portfolioModel(){
  const d=portCfg(),data=portData(),mode=projectMode(),version=nextVersion(docKind(),docId(),year()),B=[],signer=tteState(d);
