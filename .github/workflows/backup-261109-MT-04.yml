@@ -21,7 +21,22 @@ jobs:
           set -euo pipefail
           git archive --format=zip --prefix=modultransformasi/ 46a476bb12328f6bedb7a2e3369e0657d615e295 > 261109-MT-04.zip
           unzip -t 261109-MT-04.zip | tail -1
-          count=$(unzip -Z1 261109-MT-04.zip | grep -c '^[^/]*/.*')
+          count=$(unzip -Z1 261109-MT-04.zip | grep -cv '/
+          test "$count" -eq 51
+          sha256sum 261109-MT-04.zip > 261109-MT-04.sha256
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add 261109-MT-04.zip 261109-MT-04.sha256
+          git commit -m "backup: complete snapshot 261109-MT-04"
+          git push origin HEAD:backup-261109-MT-04
+      - name: Publish ZIP artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 261109-MT-04
+          path: |
+            261109-MT-04.zip
+            261109-MT-04.sha256
+)
           test "$count" -eq 51
           sha256sum 261109-MT-04.zip > 261109-MT-04.sha256
           git config user.name "github-actions[bot]"
