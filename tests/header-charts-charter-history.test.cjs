@@ -32,9 +32,9 @@ test('new chart model option renders side-by-side vertical bars without losing o
  assert.match(html,/db-group-bar db-series-actual/);
  assert.match(html,/db-group-bar db-series-delay/);
  assert.doesNotMatch(html,/db-group-bar db-sw-wait/);
- assert.match(html,/Target: 18 modul \\(90% dari 20 modul\\)/);
- assert.match(html,/Realisasi: 10 modul \\(50% dari 20 modul\\)/);
- assert.match(html,/Terlambat: 3 modul \\(15% dari 20 modul\\)/);
+ assert.match(html,/Target: 18 modul \(90% dari 20 modul\)/);
+ assert.match(html,/Realisasi: 10 modul \(50% dari 20 modul\)/);
+ assert.match(html,/Terlambat: 3 modul \(15% dari 20 modul\)/);
  assert.match(html,/value="bar"/);
  assert.match(html,/value="heat"/);
  assert.match(html,/value="donut"/);
