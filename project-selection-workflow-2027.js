@@ -516,17 +516,132 @@ function helpPage(tab){
  return '<div class="ps27-helpprose"><h3>Checklist Pekerjaan</h3><p>Riwayat Program → Daftar Program (klik baris untuk melihat, ikon Pemetaan/Edit/Unggah; ikon Unduh hanya bila berkas sudah ada) → Pemetaan Proyek → Prioritasi → Charter → Penetapan → RKMK → Project Management (Dokumen Proyek dan WBS baru).</p><p>Filter dapat dibuka/ditutup dengan mengklik seluruh header. Dokumen program hasil unggahan dapat dipilih dengan checkbox, dipratinjau dan diunduh dalam ZIP.</p><p>Untuk membandingkan skor sebelum/sesudah perubahan gunakan <b>Prioritasi → Penilaian & Peringkat → Riwayat Snapshot</b>.</p></div>';
 }
 
+
+function ps27SheetHead(kicker,title,desc){
+ return '<div class="ps27-sheet-head"><span class="ps27-sheet-kicker">'+kicker+'</span><h3>'+title+'</h3><p>'+desc+'</p></div>';
+}
+function ps27SheetCard(no,title,body,footer){
+ return '<article class="ps27-sheet-card"><div class="ps27-sheet-cardtop"><span class="ps27-sheet-number">'+no+'</span><h4>'+title+'</h4></div><p>'+body+'</p>'+(footer?'<div class="ps27-sheet-foot">'+footer+'</div>':'')+'</article>';
+}
+function ps27SheetJump(text,destination){
+ return '<button type="button" class="ps27-sheet-link" data-ps27-jump="'+destination+'" aria-label="Buka '+text+'">'+text+' <span aria-hidden="true">↗</span></button>';
+}
+function ps27SheetNote(title,body,kind){
+ return '<div class="ps27-sheet-note '+(kind||'')+'"><strong>'+title+'</strong><span>'+body+'</span></div>';
+}
 function sheetPage(tab){
  const p=current(),criteria=B.criteria||[];
- if(tab==='formula'){
-  const w=criteria.reduce((n,c)=>n+(+(p?.psWeights?.[c.code])||c.w||1),0);
-  return '<div class="ps27-helpprose"><h3>Formula Prioritasi SMART</h3><p><b>Bobot normalisasi</b> = bobot kriteria ÷ total bobot ('+w+').</p><p><b>Utility manfaat</b> = (nilai − 1) ÷ 4. <b>Utility biaya</b> = (5 − nilai) ÷ 4.</p><p><b>Skor total</b> = 100 × Σ(bobot normalisasi × utility). Skor tersedia setelah seluruh 12 kriteria terisi. Proyek lolos otomatis apabila skor <b>lebih besar</b> dari ambang yang ditetapkan ketika SMART aktif.</p><table class="ps27-table"><thead><tr><th>Kriteria</th><th>Bobot</th><th>Normalisasi</th></tr></thead><tbody>'+criteria.map(c=>{const x=+(p?.psWeights?.[c.code])||c.w||1;return '<tr><td>'+E(c.code)+' · '+E(c.name)+'</td><td>'+x+'</td><td>'+((100*x/w).toFixed(2))+'%</td></tr>'}).join('')+'</tbody></table></div>';
+ if(tab==='framework'){
+  const steps=[
+   ['01','Usulan Program','Tetapkan alasan, sasaran, sponsor, indikator manfaat, pemilik proses bisnis dan unit pengelola.','usulan:detail'],
+   ['02','Pemetaan Proyek','Gunakan Riwayat Proyek sebagai referensi; pilih proyek yang relevan untuk program tahun tujuan.','mapping:history'],
+   ['03','Prioritasi','Bandingkan calon proyek. SMART bersifat opsional; nilai/skor membantu pemilihan, bukan keputusan otomatis.','prioritasi:ranking'],
+   ['04','Charter Program','Lengkapi tujuan, kondisi As-is/To-be, kriteria penyelesaian, manfaat dan linimasa.','charter'],
+   ['05','Penetapan Program','Catat kontrak K-Wide dan tetapkan program beserta proyek terpilih pada satu tahapan.','penetapan-program'],
+   ['06','Draft RKMK','Konsolidasikan narasi untuk tahun tujuan, reviu perubahan, lalu unduh rancangan dokumen.','rkmk']
+  ];
+  return '<div class="ps27-sheet">'+
+   ps27SheetHead('KERANGKA KERJA · WHY → WHAT → HOW','Framework Program dan Proyek','Membaca keterkaitan seleksi program, penetapan proyek, pelaksanaan WBS, dan evaluasi manfaat tanpa mencampur kewenangan antarproses.')+
+   '<div class="ps27-sheet-band"><div><span>WHY</span><b>Alasan perubahan</b><p>Mandat, urgensi, strategic fit, business case dan outcome.</p></div><div><span>WHAT</span><b>Program & proyek dipilih</b><p>Ruang lingkup, target output, manfaat, charter dan keputusan penetapan.</p></div><div><span>HOW</span><b>Project Management</b><p>WBS baru, pelaksanaan, pengendalian, bukti dukung, penutupan dan evaluasi.</p></div></div>'+
+   '<div class="ps27-sheet-subhead"><h4>Enam tahap Project Selection</h4><span>Menu yang dapat dibuka langsung</span></div>'+
+   '<div class="ps27-sheet-grid ps27-sheet-grid3">'+steps.map(x=>ps27SheetCard(x[0],x[1],x[2],ps27SheetJump('Buka '+x[1],x[3]))).join('')+'</div>'+
+   '<div class="ps27-sheet-subhead"><h4>Hubungan antarlevel</h4></div>'+
+   '<div class="ps27-sheet-grid ps27-sheet-grid3">'+
+    ps27SheetCard('P','Program','Sekumpulan proyek terkait yang dikelola bersama untuk mencapai manfaat yang tidak optimal jika dikelola sendiri-sendiri.','Berisi tujuan, outcome, benefit owner, tata kelola dan target program.')+
+    ps27SheetCard('PR','Proyek','Hasil/layanan yang diusulkan dan dipilih untuk mendukung target program.','Menjadi cakupan keputusan penetapan dan acuan dokumen proyek.')+
+    ps27SheetCard('W','WBS','Pemecahan pekerjaan ke deliverable, paket kerja, PIC, jadwal, bobot dan bukti pelaksanaan.','Disusun pada Project Management setelah penetapan; bukan salinan WBS historis.')+
+   '</div>'+
+   ps27SheetNote('Batasan utama','Project Selection memilih dan menetapkan program beserta proyeknya. Project Management mengelola baseline WBS, progres, change request, penutupan, dan evaluasi pascaproyek. Evaluasi adopsi pengguna tetap berada di Change Management.','gold')+
+   '</div>';
  }
- if(tab==='governance')return '<div class="ps27-helpprose"><h3>Kerangka PMI tingkat Program</h3><p>Elemen: strategic alignment & business case, manfaat terukur dan benefit owner, stakeholder engagement, risk & dependencies, governance/otoritas keputusan, roadmap, kapasitas dan sumber daya. Kelengkapan minimum merupakan keputusan desain aplikasi, bukan klaim kolom wajib PMI.</p><p><b>Level program</b> menyimpan risiko/manfaat lintas proyek; <b>level proyek</b> menyimpan risiko operasional dan WBS di Project Management.</p></div>';
- if(tab==='carry')return '<div class="ps27-helpprose"><h3>Carry Over dan Kontrol Data</h3><p>Identitas, narasi, business case, register, proyek, dan dokumen charter disalin sebagai rancangan yang dapat direviu. WBS tahun sumber tidak dijadikan WBS aktif tahun tujuan. Perubahan tahun tujuan tidak mengubah sumber. Tanggal rencana bergeser ke tahun tujuan, tetapi narasi dan target wajib direviu.</p><p>Status program dan charter menjadi Draft. Realisasi WBS, bukti dukung dan riwayat persetujuan tidak disalin. WBS baru disusun di Project Management setelah Penetapan. WBS salinan lama dari versi aplikasi terdahulu tidak diaktifkan otomatis.</p></div>';
- if(tab==='rkmk')return '<div class="ps27-helpprose"><h3>Reviu Draft RKMK</h3><p>Narasi 2025 digunakan jika ada di data charter sumber. Jika tidak tersedia, aplikasi menyatakan sumber aktualnya dan menampilkan draft berbasis charter/program yang ada. Semua area berwarna kuning wajib dikonfirmasi untuk tahun tujuan.</p><p>Unduh Draft Word dari submenu Draft RKMK; dokumen ini belum menjadi RKMK definitif.</p></div>';
- return '<div class="ps27-helpprose"><h3>Framework Program dan Proyek</h3><p>Project Selection berfokus pada <b>why & what</b>: mengusulkan, memetakan, memprioritaskan, merencanakan dan menetapkan. Project Management mengelola <b>how</b>: WBS, pelaksanaan, pengendalian, monitoring dan penutupan proyek.</p></div>';
+ if(tab==='governance'){
+  const governance=[
+   ['01','Strategic Alignment','Tujuan program terhubung dengan mandat/kebijakan serta indikator outcome.'],
+   ['02','Business Case','Urgensi, opsi solusi, nilai tambah, biaya/manfaat dan asumsi utama terdokumentasi.'],
+   ['03','Benefits Management','Indikator, baseline, target, penerima manfaat dan benefit owner teridentifikasi.'],
+   ['04','Stakeholder Engagement','Pemangku kepentingan, ekspektasi, pengaruh serta pendekatan pelibatannya dipetakan.'],
+   ['05','Risk & Dependencies','Risiko lintas proyek, ketergantungan, mitigasi dan penanggung jawab dicatat.'],
+   ['06','Governance & Roadmap','Sponsor, hak keputusan, penanggung jawab, milestone dan kapasitas tersedia.']
+  ];
+  return '<div class="ps27-sheet">'+
+   ps27SheetHead('TATA KELOLA · PROGRAM LEVEL','Kerangka Tata Kelola dan Pengambilan Keputusan','Enam area kelengkapan yang membantu PMO melakukan reviu program secara konsisten. Ini adalah rancangan kriteria aplikasi yang selaras praktik PMI, bukan daftar kolom wajib yang diklaim berasal dari PMI.')+
+   '<div class="ps27-sheet-grid ps27-sheet-grid3">'+governance.map(x=>ps27SheetCard(x[0],x[1],x[2])).join('')+'</div>'+
+   '<div class="ps27-sheet-subhead"><h4>Pembagian peran kerja</h4><span>Pelaksana vs pengambil keputusan</span></div>'+
+   '<div class="ps27-sheet-tablewrap"><table class="ps27-sheet-table"><thead><tr><th>Peran</th><th>Tanggung jawab utama</th><th>Batas kewenangan</th></tr></thead><tbody>'+
+   '<tr><td><b>PMO Kementerian</b></td><td>Standar, konsolidasi, reviu lintas unit, fasilitasi keputusan dan pemantauan portofolio.</td><td>Telaah PMO bukan pengganti persetujuan pejabat penetap.</td></tr>'+
+   '<tr><td><b>PMO Unit / UIC</b></td><td>Menyiapkan usulan, melengkapi dokumen, proyek, target, dan data yang menjadi tanggung jawabnya.</td><td>Tidak dapat mengesahkan di luar hak akses/penugasan.</td></tr>'+
+   '<tr><td><b>Pemilik proses bisnis</b></td><td>Memastikan kebutuhan, outcome, indikator manfaat dan acceptance criteria relevan.</td><td>Pemilik probis bukan otomatis penetap kontrak kinerja.</td></tr>'+
+   '<tr><td><b>Sponsor/pejabat berwenang</b></td><td>Memutuskan penetapan sesuai mekanisme dan kewenangan resmi.</td><td>Catatan aplikasi harus mencerminkan keputusan/dokumen resmi.</td></tr>'+
+   '</tbody></table></div>'+
+   '<div class="ps27-sheet-grid ps27-sheet-grid2">'+
+    ps27SheetCard('PROG','Risiko dan manfaat program','Mencatat outcome, dependensi serta risiko lintas proyek dengan horizon manfaat bersama.',ps27SheetJump('Usulan Program','usulan:detail'))+
+    ps27SheetCard('PRJ','Rincian pelaksanaan proyek','Memelihara risiko operasional, jadwal, target kerja, WBS, bukti dukung dan change request pada Project Management.',ps27SheetJump('Penetapan Program','penetapan-program'))+
+   '</div>'+
+   ps27SheetNote('Ketentuan penetapan','Kontrak K-Wide dan target output per triwulan menjadi dasar penetapan dalam alur aplikasi untuk tahun yang relevan. Data dan bukti kontrak tidak boleh disamakan dengan persetujuan otomatis.','gold')+
+   '</div>';
+ }
+ if(tab==='carry'){
+  return '<div class="ps27-sheet">'+
+   ps27SheetHead('CARRY OVER · TAHUN SUMBER → TAHUN TUJUAN','Menggunakan Riwayat Tanpa Menggandakan Realisasi','Carry over membantu penyusunan rancangan tahun baru. Sumber historis tetap dapat ditelusuri dan tidak diubah oleh usulan yang baru.')+
+   '<div class="ps27-sheet-grid ps27-sheet-grid2">'+
+    '<section class="ps27-sheet-panel positive"><h4>✓ Informasi yang dapat menjadi referensi/salinan</h4><ul><li>Identitas, kode referensi, nama dan ringkasan program.</li><li>Business case, narasi, manfaat, stakeholder, risiko dan tata kelola sebagai draf.</li><li>Identitas proyek dan relasi ke program tujuan yang dipilih.</li><li>Referensi charter/dokumen yang tersedia untuk direviu kembali.</li></ul></section>'+
+    '<section class="ps27-sheet-panel negative"><h4>✕ Informasi yang tidak otomatis diaktifkan</h4><ul><li>Realisasi WBS dan capaian pekerjaan tahun sumber.</li><li>Bukti dukung, validasi, serta riwayat persetujuan lama.</li><li>Status penetapan program dan proyek tahun sebelumnya.</li><li>Baseline WBS lama atau jadwal tanpa verifikasi untuk tahun baru.</li></ul></section>'+
+   '</div>'+
+   '<div class="ps27-sheet-subhead"><h4>Langkah aman carry over</h4></div>'+
+   '<div class="ps27-sheet-grid ps27-sheet-grid3">'+
+    ps27SheetCard('01','Pilih sumber','Cari program/proyek di riwayat dan pastikan tahun serta identitasnya benar.',ps27SheetJump('Riwayat Program','usulan:bank'))+
+    ps27SheetCard('02','Salin sebagai draf','Buat usulan tahun tujuan dan periksa pemetaan proyek; jangan mengubah arsip sumber.',ps27SheetJump('Riwayat Proyek','mapping:history'))+
+    ps27SheetCard('03','Reviu & tetapkan','Periksa narasi, output, tanggal, benefit owner, sponsor, UIC dan kontrak yang relevan.',ps27SheetJump('Daftar Program','usulan:detail'))+
+   '</div>'+
+   '<div class="ps27-sheet-subhead"><h4>Kontrol kualitas data sebelum penetapan</h4></div>'+
+   '<div class="ps27-sheet-checks"><span>□ Tahun tujuan & jadwal relevan</span><span>□ Output TW I–IV diperiksa</span><span>□ Sponsor dan UIC benar</span><span>□ Risiko dan stakeholder terkini</span><span>□ Manfaat & KPI masih tepat</span><span>□ Dokumen sumber dapat ditelusuri</span></div>'+
+   ps27SheetNote('Catatan penting','Status salinan tetap draf dan perlu diputuskan kembali untuk tahun tujuan. Perubahan pada data tujuan tidak mengubah data sumber, sedangkan WBS baru disusun setelah penetapan.','gold')+
+   '</div>';
+ }
+ if(tab==='formula'){
+  const weighted=criteria.map(k=>({code:k.code,name:k.name,w:Math.max(0,Number(p?.psWeights?.[k.code]??k.w??1)||0)}));
+  const total=weighted.reduce((n,k)=>n+k.w,0);
+  const fmt=n=>Number(n||0).toFixed(2);
+  return '<div class="ps27-sheet">'+
+   ps27SheetHead('SMART · PRIORITISASI OPSIONAL','Formula, Kriteria, Bobot dan Ambang','SMART membantu membandingkan calon proyek secara transparan. Aktifkan pada menu Prioritasi bila memang diperlukan; hasilnya tetap menjadi bahan keputusan, bukan keputusan otomatis.')+
+   '<div class="ps27-sheet-formulas">'+
+    '<article><span>01 · NORMALISASI</span><strong>Bobot kriteria ÷ Σ bobot</strong><small>Σ bobot aktif'+(total?' = '+fmt(total):' belum tersedia')+'</small></article>'+
+    '<article><span>02 · UTILITY MANFAAT</span><strong>(Nilai − 1) ÷ 4</strong><small>Untuk kriteria manfaat pada skala 1–5.</small></article>'+
+    '<article><span>03 · UTILITY BIAYA</span><strong>(5 − Nilai) ÷ 4</strong><small>Untuk kriteria yang memiliki orientasi biaya.</small></article>'+
+    '<article><span>04 · SKOR AKHIR</span><strong>100 × Σ(bobot normalisasi × utility)</strong><small>Skor tidak lengkap jika masih ada penilaian yang belum diisi.</small></article>'+
+   '</div>'+
+   '<div class="ps27-sheet-subhead"><h4>Daftar kriteria & bobot program aktif</h4><span>'+weighted.length+' kriteria terdaftar</span></div>'+
+   (weighted.length?'<div class="ps27-sheet-tablewrap"><table class="ps27-sheet-table"><thead><tr><th>Kode</th><th>Kriteria</th><th>Bobot</th><th>Normalisasi</th></tr></thead><tbody>'+
+    weighted.map(x=>'<tr><td><span class="ps27-sheet-chip">'+E(x.code)+'</span></td><td>'+E(x.name)+'</td><td>'+fmt(x.w)+'</td><td>'+(total?fmt(100*x.w/total)+'%':'—')+'</td></tr>').join('')+
+    '</tbody><tfoot><tr><th colspan="2">TOTAL</th><th>'+fmt(total)+'</th><th>'+(total?'100,00%':'—')+'</th></tr></tfoot></table></div>':
+    ps27SheetNote('Belum ada referensi kriteria','Buka tab Kriteria & Bobot pada Prioritasi untuk melihat daftar kriteria yang berlaku pada program aktif.'))+
+   '<div class="ps27-sheet-grid ps27-sheet-grid2">'+
+    ps27SheetCard('AMB','Ambang kelulusan','Pada mode SMART, proyek yang memenuhi syarat nilai dan memiliki skor <b>lebih besar</b> dari ambang yang ditentukan dapat ditampilkan sebagai calon lolos.','Jangan menyamakan angka skor dengan keputusan penetapan.')+
+    ps27SheetCard('SNAP','Snapshot Penilaian','Simpan rekaman skor dan pilihan proyek pada waktu tertentu agar hasil sebelum/sesudah perubahan dapat dibandingkan.',ps27SheetJump('Penilaian & Peringkat','prioritasi:ranking'))+
+   '</div>'+
+   ps27SheetNote('Batasan penggunaan','SMART merupakan alat bantu seleksi, bukan persetujuan otomatis. Rekomendasi prioritas tetap perlu mempertimbangkan mandat, risiko, kesiapan, dependensi, serta kapasitas.','gold')+
+   '</div>';
+ }
+ if(tab==='rkmk'){
+  return '<div class="ps27-sheet">'+
+   ps27SheetHead('RKMK · DOKUMEN RANCANGAN','Dari Data Seleksi ke Narasi Draft RKMK','Draft RKMK mengonsolidasikan usulan dan hasil seleksi menjadi bahan reviu. Isi yang berasal dari tahun sumber harus diperiksa ulang agar tidak keliru dianggap sebagai keputusan tahun tujuan.')+
+   '<div class="ps27-sheet-grid ps27-sheet-grid3">'+
+    ps27SheetCard('01','Sumber informasi','Profil program, business case, stakeholder, risiko, manfaat, charter dan pemetaan proyek yang tersedia.','Sumber narasi dicantumkan atau dapat ditelusuri.')+
+    ps27SheetCard('02','Konsolidasi draf','Susun narasi sasaran, ruang lingkup, output, timeline, peran unit, serta hubungan program/proyek.','Bagian yang belum dikonfirmasi tetap ditandai sebagai draf.')+
+    ps27SheetCard('03','Reviu & keluaran','Periksa konsistensi dengan usulan, dokumen penetapan, target tahunan dan kontrak relevan.',ps27SheetJump('Buka Draft RKMK','rkmk'))+
+   '</div>'+
+   '<div class="ps27-sheet-subhead"><h4>Checklist reviu substansi</h4></div>'+
+   '<div class="ps27-sheet-checks"><span>□ Tujuan dan dasar program</span><span>□ Hasil pemetaan proyek</span><span>□ Output/outcome dan manfaat</span><span>□ Target tahun dan TW</span><span>□ Sponsor, pemilik probis, UIC</span><span>□ Milestone dan risiko</span><span>□ Kesesuaian dokumen sumber</span><span>□ Keputusan penetapan terkini</span></div>'+
+   '<div class="ps27-sheet-grid ps27-sheet-grid2">'+
+    '<section class="ps27-sheet-panel"><h4>Jika narasi sumber tersedia</h4><p>Gunakan narasi yang tersedia sebagai referensi awal, lalu periksa apakah kebijakan, target, UIC, dan jadwal masih sesuai tahun tujuan.</p></section>'+
+    '<section class="ps27-sheet-panel"><h4>Jika narasi sumber belum tersedia</h4><p>Nyatakan kondisi sumber secara transparan. Rancangan dapat dibangun dari data program/charter yang tersedia, bukan diklaim sebagai salinan dokumen resmi.</p></section>'+
+   '</div>'+
+   ps27SheetNote('Status dokumen','Unduhan Word dari submenu Draft RKMK merupakan rancangan kerja, bukan RKMK definitif atau dokumen yang otomatis telah disahkan. Area yang memerlukan konfirmasi tidak boleh diabaikan.','gold')+
+   '</div>';
+ }
+ return '<div class="ps27-sheet">'+ps27SheetHead('REFERENSI','Cheatsheet Project Selection','Pilih salah satu tab untuk membaca kerangka kerja, tata kelola, carry over, formula prioritas, atau rancangan RKMK.')+'</div>';
 }
+
 function open(mode){
  let tab=mode==='sheet'?'framework':'map',root=document.createElement('div');root.className='ps27-help-overlay';
  const isSheet=mode==='sheet',tabs=isSheet?[['framework','Framework'],['governance','Tata Kelola'],['carry','Carry Over'],['formula','Formula Prioritasi'],['rkmk','RKMK']]:[['map','Peta Menu'],['flow','Alur Kerja'],['roles','Peran'],['terms','Istilah'],['check','Checklist']];
