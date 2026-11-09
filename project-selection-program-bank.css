@@ -913,3 +913,14 @@
 #app .pshist-wbs li span{color:#72859a}.pshist-wbs li b{color:#19476e;font-weight:700}.pshist-wbs li small{text-align:right;color:#6b7f93}
 #app .pshist-none{color:#637c94;font-size:11px;margin:0}
 @media(max-width:650px){#app .pshist-summary{grid-template-columns:repeat(2,minmax(0,1fr))}#app .pshist-fields{grid-template-columns:1fr}#app .pshist-wbs li{grid-template-columns:24px minmax(0,1fr)}#app .pshist-wbs li small{grid-column:2;text-align:left}}
+
+
+/* 261109 MT-04: preview viewport ends flush with left customization panel. */
+#app .psbank-portfolio-doc .psbank-docbuilder{align-items:stretch;grid-auto-rows:auto}
+#app .psbank-portfolio-doc .psbank-docsettings{height:100%;box-sizing:border-box;min-height:0}
+#app .psbank-portfolio-doc .psbank-docpreview{display:flex;flex-direction:column;align-self:stretch;height:100%;min-height:0;box-sizing:border-box}
+#app .psbank-portfolio-doc .psbank-docpreview-head{flex:none}
+#app .psbank-portfolio-doc .psbank-docscroll{flex:1 1 0;height:0!important;min-height:0!important;max-height:none!important;overflow:auto;padding:9px 10px!important;box-sizing:border-box}
+#app .psbank-portfolio-doc .psbank-portfolio-download{flex:none}
+#app .psbank-portfolio-doc .psbank-docscroll .psbank-actual-view{min-height:100%;height:100%;box-sizing:border-box}
+@media(max-width:1050px){#app .psbank-portfolio-doc .psbank-docpreview{height:auto;min-height:400px}#app .psbank-portfolio-doc .psbank-docscroll{flex:1 1 auto;height:520px!important;max-height:65vh!important}}
