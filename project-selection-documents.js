@@ -4,6 +4,8 @@
 const B=window.MT_PROJECT_SELECTION,I=B?.internals;if(!B||!I)return;
 const E=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const X=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+// Hanya kode yang diisi/ditetapkan yang dinyatakan sebagai kode resmi dalam dokumen.
+const officialCode=p=>String(p?.kodeResmi||'').trim()||'Belum ditetapkan';
 const STEPS=[['identity','Identitas'],['case','Business Case'],['benefits','Manfaat'],['stakeholders','Stakeholder'],['risks','Risiko'],['governance','Tata Kelola'],['charter','Charter Program']];
 const year=()=>+S.ui.psSelectedYear||+S.ui.tahun||2026;
 const cfg=()=>{S.ui.psBank=S.ui.psBank||{};const b=S.ui.psBank;b.doc=b.doc||{format:'word',sections:STEPS.map(x=>x[0]),cover:true,toc:true,sign:true,annex:true,slide:0};b.doc.sections=[...new Set((Array.isArray(b.doc.sections)?b.doc.sections:STEPS.map(x=>x[0])).filter(k=>STEPS.some(s=>s[0]===k)))];return b.doc};
@@ -115,7 +117,7 @@ const charter=(p,y)=>{const arr=(S.charters||[]).filter(c=>c.prog===p.akr&&c.st!
 function fields(p,key,y){
  const c=charter(p,y),pc=p.psProgramCharter||c,empty='Belum diisi';
  if(key==='charter')return [['Judul Charter',pc?.judul||p.nama],['Tujuan Program',pc?.tujuan||p.psObjective||empty],['Latar Belakang',join(pc?.lb)||p.psBackground||empty],['Kondisi yang Diharapkan',join(pc?.tb)||empty],['Outcome',join(pc?.oc)||p.psOutcome||empty],['Keluaran',join(pc?.out)||empty],['Milestone',join(pc?.ms)||empty],['Manfaat',join(pc?.mf)||empty],['Risiko Utama',join(pc?.ris)||empty],['Faktor Keberhasilan',join(pc?.pk)||empty],['Penanggung Jawab',join(pc?.ow)||empty]];
- if(key==='identity')return [['Nama Program',p.nama],['Kode Program',p.kode||p.akr],['Tahun',y],['Jenis Program',p.jenis],['UIC Utama',p.uic],['UIC Pendukung',p.pend],['Sponsor',p.sponsor],['Tujuan Strategis',p.psObjective||c?.tujuan],['Latar Belakang',p.psBackground||join(c?.lb)],['Outcome',p.psOutcome||join(c?.oc)]];
+ if(key==='identity')return [['Nama Program',p.nama],['Kode Program',officialCode(p)],['Tahun',y],['Jenis Program',p.jenis],['UIC Utama',p.uic],['UIC Pendukung',p.pend],['Sponsor',p.sponsor],['Tujuan Strategis',p.psObjective||c?.tujuan],['Latar Belakang',p.psBackground||join(c?.lb)],['Outcome',p.psOutcome||join(c?.oc)]];
  if(key==='case')return [['Keselarasan Strategis',p.psAlignment],['Business Case',p.psBusinessCase||join(c?.lb)],['Alternatif Solusi',p.psAlternatives],['Estimasi Biaya',p.psFinancialEstimate],['Kriteria Keberhasilan',p.psSuccessCriteria],['Strategi',p.psStrategy||c?.tb]];
  if(key==='governance')return [['Manajer Program',p.psManager],['Forum/Otoritas Keputusan',p.psDecisionAuthority],['Mekanisme Reviu',p.psGovernanceCadence],['Roadmap',p.psRoadmap||join(c?.ms)],['Kebutuhan Sumber Daya',p.psResourcePlan],['Dependensi',p.psDependencies],['Asumsi',p.psAssumptions],['Batasan',p.psConstraints]];
  if(key==='benefits'){
@@ -190,7 +192,7 @@ function slidePages(p){
  return out;
 }
 function paper(p,key,y){
- return '<article class="psbank-paper"><div class="psbank-paper-head"><small>KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</small><h3>'+E(title(key))+'</h3><span>'+E(p.nama)+' · '+y+' · '+E(p.kode||p.akr)+'</span></div>'+
+ return '<article class="psbank-paper"><div class="psbank-paper-head"><small>KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</small><h3>'+E(title(key))+'</h3><span>'+E(p.nama)+' · '+y+' · '+E(officialCode(p))+'</span></div>'+
  '<div class="psbank-paper-body">'+fields(p,key,y).map(([a,b])=>'<div class="psbank-paper-row"><b>'+E(a)+'</b><p>'+E(b||'Belum diisi').replace(/\n/g,'<span class="psbank-line"></span>')+'</p></div>').join('')+'</div>'+
  '<div class="psbank-paper-foot"><span>Pratinjau dokumen program</span><span>Tahun '+y+'</span></div></article>';
 }
@@ -215,7 +217,7 @@ function tteControls(d,where){
 }
 function programReportModel(p){
  const d=cfg(),t=tteState(d),parts=sections(p),v=nextVersion('program',p.id||p.akr,year()),blocks=[];
- const name=String(p.nama||'Program Transformasi'),code=String(p.kode||p.akr||'—');
+ const name=String(p.nama||'Program Transformasi'),code=String(officialCode(p));
  blocks.push({t:'h1',text:'Ringkasan Eksekutif'});
  blocks.push({t:'p',text:'Dokumen Perencanaan Program '+name+' ('+code+') Tahun Anggaran '+year()+
   ' merangkum identitas, landasan pelaksanaan, manfaat, pemangku kepentingan, risiko, dan tata kelola program sesuai substansi yang dipilih. Dokumen merupakan rancangan sampai disahkan.'});
@@ -420,10 +422,10 @@ function programSlideHtml(p,slide,idx,count,version){
  if(slide.kind==='cover')return '<div class="psbank-slidepreview psbank-export-cover">'+
   '<div class="psbank-slide-export-kicker">KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</div>'+
   '<h2>DOKUMEN PERENCANAAN PROGRAM</h2><h3>'+E(p.nama)+'</h3>'+
-  '<small>Tahun '+year()+' · '+E(p.kode||p.akr)+' · Versi '+version+'</small>'+
+  '<small>Tahun '+year()+' · '+E(officialCode(p))+' · Versi '+version+'</small>'+
   '<footer>PROGRAM TRANSFORMASI KEMENTERIAN KEUANGAN <span>'+(idx+1)+' / '+count+'</span></footer></div>';
  return '<div class="psbank-slidepreview psbank-export-section">'+
-  '<div class="psbank-slide-export-kicker">KEMENTERIAN KEUANGAN · '+E(p.kode||p.akr)+' · '+year()+'</div>'+
+  '<div class="psbank-slide-export-kicker">KEMENTERIAN KEUANGAN · '+E(officialCode(p))+' · '+year()+'</div>'+
   '<h3>'+E(slide.title)+'</h3><small>'+E(p.nama)+' · Versi '+version+'</small>'+
   '<div class="psbank-slidebody">'+(slide.rows||[]).map(row=>
     '<article><b>'+E(row[0])+'</b><p>'+E(String(row[1]||'Belum diisi'))+'</p></article>'
@@ -441,7 +443,7 @@ function documentPreview(p){
    '<button class="btn" data-doc-slide="1" '+(n>=slides.length-1?'disabled':'')+'>Berikutnya ›</button></div>';
 
  }
- return '<article class="psbank-docpaper">'+(d.cover?'<header class="psbank-doccover"><small>KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</small><h2>DOKUMEN PERENCANAAN PROGRAM</h2><h3>'+E(p.nama)+'</h3><p>'+E(p.kode||p.akr)+' · Tahun '+year()+'</p><span>Rancangan untuk reviu — belum disahkan</span></header>':'')+
+ return '<article class="psbank-docpaper">'+(d.cover?'<header class="psbank-doccover"><small>KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</small><h2>DOKUMEN PERENCANAAN PROGRAM</h2><h3>'+E(p.nama)+'</h3><p>'+E(officialCode(p))+' · Tahun '+year()+'</p><span>Rancangan untuk reviu — belum disahkan</span></header>':'')+
  (d.toc?'<section class="psbank-doctoc"><b>DAFTAR ISI</b>'+list.map((x,i)=>'<div>'+(i+1)+'. '+E(x.title)+'</div>').join('')+'</section>':'')+
  list.map((x,i)=>'<section class="psbank-docsection"><h4>'+(i+1)+'. '+E(x.title)+'</h4><table>'+x.rows.map(r=>'<tr><th>'+E(r[0])+'</th><td>'+E(r[1]||'Belum diisi')+'</td></tr>').join('')+'</table></section>').join('')+
  (d.annex&&annex(p).length?'<section class="psbank-docsection"><h4>LAMPIRAN CHARTER</h4><table>'+annex(p).map(r=>'<tr><th>'+E(r[0])+'</th><td>'+E(r[1]||'Belum diisi')+'</td></tr>').join('')+'</table></section>':'')+
@@ -465,7 +467,7 @@ function builder(p){
  '</div><div class="psbank-docpreview"><div class="psbank-docpreview-head"><div><b>Pratinjau '+(fmt==='word'?'Word':fmt==='pdf'?'PDF':'PowerPoint')+'</b><small>'+E(p.nama)+'</small></div><span>v'+ver+' · '+sections(p).length+' substansi</span></div>'+
  '<div class="psbank-docscroll">'+documentPreview(p)+'</div></div></div>';
 }
-const basename=p=>('Perencanaan_Program_'+year()+'_'+String(p.kode||p.akr||'program')).replace(/[^a-zA-Z0-9_-]/g,'_');
+const basename=p=>('Perencanaan_Program_'+year()+'_'+String(p.kodeResmi||p.id||p.akr||'program')).replace(/[^a-zA-Z0-9_-]/g,'_');
 async function load(src,check){
  if(check())return;
  if(typeof chLib==='function'){await chLib(src,check);return}
@@ -687,11 +689,11 @@ async function exportFile(p){
      sl.addText('KEMENTERIAN KEUANGAN REPUBLIK INDONESIA',{x:1,y:.68,w:11.7,h:.42,fontFace:'Aptos',fontSize:15,color:'FDB913',bold:true,margin:0});
      sl.addText('DOKUMEN PERENCANAAN PROGRAM',{x:1,y:1.88,w:11.7,h:.8,fontFace:'Aptos',fontSize:32,color:'FFFFFF',bold:true,margin:0,fit:'shrink'});
      sl.addText(String(p.nama||''),{x:1,y:2.94,w:11.6,h:1.3,fontFace:'Aptos',fontSize:26,color:'FFFFFF',bold:true,margin:0,fit:'shrink'});
-     sl.addText('Tahun '+year()+' · '+(p.kode||p.akr)+' · Versi '+version,{x:1,y:5.42,w:11.4,h:.4,fontFace:'Aptos',fontSize:16,color:'FDB913',margin:0});
+     sl.addText('Tahun '+year()+' · '+(officialCode(p))+' · Versi '+version,{x:1,y:5.42,w:11.4,h:.4,fontFace:'Aptos',fontSize:16,color:'FDB913',margin:0});
     }else{
      sl.background={color:'FFFFFF'};
      sl.addShape(ppt.ShapeType.rect,{x:0,y:0,w:13.333,h:.14,line:{color:'FDB913',transparency:100},fill:{color:'FDB913'}});
-     sl.addText('KEMENTERIAN KEUANGAN · '+(p.kode||p.akr)+' · '+year(),{x:.6,y:.46,w:12,h:.3,fontFace:'Aptos',fontSize:12,bold:true,color:'1E507E',margin:0});
+     sl.addText('KEMENTERIAN KEUANGAN · '+(officialCode(p))+' · '+year(),{x:.6,y:.46,w:12,h:.3,fontFace:'Aptos',fontSize:12,bold:true,color:'1E507E',margin:0});
      sl.addText(String(page.title||''),{x:.6,y:.92,w:12.1,h:.62,fontFace:'Aptos',fontSize:25,bold:true,color:'0B2447',margin:0,fit:'shrink'});
      sl.addText(p.nama+' · Versi '+version,{x:.6,y:1.59,w:12,h:.29,fontFace:'Aptos',fontSize:12,color:'627892',margin:0});
      const cards=page.rows||[],cols=2,nRows=Math.ceil(cards.length/cols),gapX=.22,gapY=.16,w=5.95,h=Math.min(1.37,(4.45-(nRows-1)*gapY)/Math.max(1,nRows));
@@ -764,10 +766,10 @@ function portfolioModel(){
  B.push({t:'kv',rows:[['Tahun anggaran',String(year())],[mode?'Jumlah usulan proyek':'Jumlah program',String(data.length)],['Jumlah proyek terpetakan',String(mode?data.length:data.reduce((n,o)=>n+(o.p.psProjects||[]).length,0))],['Versi dokumen','v'+version],['Status','Rancangan (belum TTE)']]});
  h1(mode?'Ikhtisar Usulan Proyek':'Ikhtisar Portofolio Program');
  B.push({t:'table',caption:'Daftar program terpilih',head:mode?['No.','Kode','Nama Aplikasi / Proyek','UIC Utama','Status']:['No.','Kode Program','Program Transformasi','UIC Utama','Status'],widths:[7,17,40,20,16],
-  rows:data.length?data.map((o,i)=>[String(i+1),o.p.kode||o.p.akr,o.p.nama,o.p.uic||'—',o.p.psStatus||'Draft']):[['—','—','Belum ada program dipilih','—','—']]});
+  rows:data.length?data.map((o,i)=>[String(i+1),officialCode(o.p),o.p.nama,o.p.uic||'—',o.p.psStatus||'Draft']):[['—','—','Belum ada program dipilih','—','—']]});
  data.forEach((o,i)=>{
   h1((mode?'Usulan Proyek ':'Program ')+String(i+1).padStart(2,'0')+' — '+o.p.nama);
-  B.push({t:'kv',rows:[[mode?'Kode Usulan':'Kode Program',o.p.kode||o.p.akr],['UIC Utama',o.p.uic||'—'],['Jenis',o.p.jenis||'Berkelanjutan'],['Tahun',String(year())],['Status',o.p.psStatus||'Draft'],['Jumlah Proyek',String((o.p.psProjects||[]).length)],['Asal Program',o.p.psOriginProgram||(o.p.psCarry?.sourceYear?'Carry-over '+o.p.psCarry.sourceYear:'Program baru')]]});
+  B.push({t:'kv',rows:[[mode?'Kode Usulan':'Kode Program',officialCode(o.p)],['UIC Utama',o.p.uic||'—'],['Jenis',o.p.jenis||'Berkelanjutan'],['Tahun',String(year())],['Status',o.p.psStatus||'Draft'],['Jumlah Proyek',String((o.p.psProjects||[]).length)],['Asal Program',o.p.psOriginProgram||(o.p.psCarry?.sourceYear?'Carry-over '+o.p.psCarry.sourceYear:'Program baru')]]});
   o.blocks.forEach(block=>{
    h2(block.title);
    const rows=meaningful(block.rows);
@@ -826,7 +828,7 @@ function portfolioPreview(){
   let body='';
   if(x.kind==='native-charter')body=programSlideHtml(x.program,x,i,deck.length,v);
   else if(x.kind==='cover')body='<div class="psbank-port-slide-cover"><small>KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</small><div class="port-gold-rule"></div><h2>'+(mode?'DOKUMEN<br>USULAN PROYEK':'PORTOFOLIO<br>PROGRAM TRANSFORMASI')+'</h2><p>Tahun '+year()+' · Versi '+v+'</p><strong>'+data.length+(mode?' PROYEK TERPILIH':' PROGRAM TERPILIH')+'</strong></div>';
-  else if(x.kind==='overview')body='<div class="psbank-port-slide-overview"><small>RINGKASAN EKSEKUTIF · '+year()+'</small><h2>'+fmt(x.title)+'</h2><div class="port-preview-metrics"><span><b>'+data.length+'</b> '+(mode?'Usulan Proyek':'Program')+'</span><span><b>'+data.reduce((n,o)=>n+(o.p.psProjects||[]).length,0)+'</b> Usulan Proyek</span></div><div class="port-preview-list">'+(x.programs||[]).map((p,j)=>'<p><b>'+String((x.programOffset||0)+j+1).padStart(2,'0')+'</b> '+fmt(p.nama)+' <small>'+fmt(p.kode||p.akr)+'</small></p>').join('')+'</div></div>';
+  else if(x.kind==='overview')body='<div class="psbank-port-slide-overview"><small>RINGKASAN EKSEKUTIF · '+year()+'</small><h2>'+fmt(x.title)+'</h2><div class="port-preview-metrics"><span><b>'+data.length+'</b> '+(mode?'Usulan Proyek':'Program')+'</span><span><b>'+data.reduce((n,o)=>n+(o.p.psProjects||[]).length,0)+'</b> Usulan Proyek</span></div><div class="port-preview-list">'+(x.programs||[]).map((p,j)=>'<p><b>'+String((x.programOffset||0)+j+1).padStart(2,'0')+'</b> '+fmt(p.nama)+' <small>'+fmt(officialCode(p))+'</small></p>').join('')+'</div></div>';
   else if(x.kind==='divider')body='<div class="psbank-port-slide-cover"><small>'+(mode?'PROYEK ':'PROGRAM ')+String(x.programIndex).padStart(2,'0')+' / '+x.totalPrograms+'</small><div class="port-gold-rule"></div><h2>'+fmt(x.program?.nama||'')+'</h2><p>'+fmt(x.program?.kode||x.program?.akr)+' · '+year()+'</p><strong>'+(mode?'SUBSTANSI PROYEK':'SUBSTANSI PROGRAM')+'</strong></div>';
   else if(x.kind==='tte')body='<div class="psbank-port-slide-section"><small>RANCANGAN · BUKAN TTE YANG TELAH DIVERIFIKASI</small><h2>'+fmt(x.title)+'</h2><p>Identitas penandatangan</p><div class="port-card-grid count-4">'+x.rows.map(row=>'<article><b>'+fmt(row[0])+'</b><p>'+fmt(row[1])+'</p></article>').join('')+'</div></div>';
   else body='<div class="psbank-port-slide-section"><small>'+(mode?'PROYEK ':'PROGRAM ')+String(x.programIndex).padStart(2,'0')+' · '+fmt(x.program?.kode||x.program?.akr)+'</small><h2>'+fmt(x.title)+'</h2><p>'+fmt(x.program?.nama)+'</p><div class="port-card-grid count-'+x.rows.length+'">'+x.rows.map(row=>'<article><b>'+fmt(row[0])+'</b><p>'+fmt(row[1])+'</p></article>').join('')+'</div></div>';
@@ -845,7 +847,7 @@ function portfolioBuilder(){
  const d=portCfg(),all=portPrograms(),chosen=portSelected(),mode=projectMode(),steps=docSections(),ver=nextVersion(docKind(),docId(),year());
  return '<div class="psbank-card psbank-portfolio-doc"><div class="psbank-sectionhead"><div><h3>'+(mode?'Buat Dokumen Proyek':'Buat Dokumen Portofolio')+' · '+year()+'</h3><p>'+(mode?'Pilih proyek dalam program induk, tentukan substansi, kemudian pratinjau dan unduh dokumen proyek.':'Kompilasi substansi beberapa program, dikelompokkan menurut program sumbernya.')+'</p></div><span class="psbank-count">'+chosen.length+' dari '+all.length+(mode?' usulan proyek':' program')+'</span></div>'+
  '<div class="psbank-docbuilder"><div class="psbank-docsettings"><div class="psbank-doccheckhead"><b>'+(mode?'Pilih Proyek':'Pilih Program')+'</b><button class="btn" type="button" data-port-all>'+(chosen.length===all.length?'Kosongkan':'Pilih Semua')+'</button></div>'+
- '<div class="psbank-portfolio-checks">'+(all.length?all.map(p=>'<label><input type="checkbox" data-port-program="'+E(p.id)+'" '+(d.selected.includes(String(p.id))?'checked':'')+'><span><b>'+E(p.nama)+'</b><small>'+E(p.kode||p.akr)+'</small></span></label>').join('') :'<p>Belum ada '+(mode?'usulan proyek':'program')+' pada tahun ini.</p>')+'</div>'+
+ '<div class="psbank-portfolio-checks">'+(all.length?all.map(p=>'<label><input type="checkbox" data-port-program="'+E(p.id)+'" '+(d.selected.includes(String(p.id))?'checked':'')+'><span><b>'+E(p.nama)+'</b><small>'+E(officialCode(p))+'</small></span></label>').join('') :'<p>Belum ada '+(mode?'usulan proyek':'program')+' pada tahun ini.</p>')+'</div>'+
  '<div class="psbank-doccheckhead"><b>Substansi</b><span>'+d.sections.length+'/'+steps.length+' dipilih</span></div><div class="psbank-docchecks">'+steps.map((x,i)=>'<label><input type="checkbox" data-port-section="'+x[0]+'" '+(d.sections.includes(x[0])?'checked':'')+'>'+(i+1)+'. '+x[1]+'</label>').join('')+'</div>'+
  tteControls(d,'port')+
  '<div class="psbank-template-picker"><label><b>Template dokumen Word/PDF</b><select data-port-template aria-label="Pilih template dokumen">'+[['activity','Warna · Laporan Kegiatan'],['classic','Formal · Navy-Emas']].map(([k,v])=>'<option value="'+k+'" '+((d.template||'activity')===k?'selected':'')+'>'+v+'</option>').join('')+'</select></label><small>Pratinjau dan unduhan memakai template yang sama.</small></div>'+
@@ -944,7 +946,7 @@ async function portfolioExport(){
       rect(sl,xx,yy,5.85,.48,row%2?'F6F9FD':PALE);
       tx(sl,String((page.programOffset||0)+j+1).padStart(2,'0'),xx+.12,yy+.09,.36,.24,10,MID,true);
       tx(sl,program.nama,xx+.6,yy+.05,4.5,.37,11.5,N,true);
-      tx(sl,program.kode||program.akr,xx+5.05,yy+.13,.66,.23,8.5,MUTED,false,{align:'right'});
+      tx(sl,officialCode(program),xx+5.05,yy+.13,.66,.23,8.5,MUTED,false,{align:'right'});
      });
      footer(sl,num);return;
     }
