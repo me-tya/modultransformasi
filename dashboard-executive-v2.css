@@ -110,8 +110,6 @@
 #app .db-series-actual,#app .db-sw-actual{background:#1ca65d}
 #app .db-series-delay,#app .db-sw-delay{background:#e94e62}
 #app .db-group-bar:hover{filter:brightness(.92);z-index:9;box-shadow:0 0 0 2px #102b4c25}
-#app .db-group-bar::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 7px);transform:translateX(-50%);padding:7px 9px;border-radius:7px;background:#102b4c;color:white;font:750 10px/1.3 Inter,Arial,sans-serif;white-space:nowrap;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .12s;z-index:20;box-shadow:0 4px 12px #102b4c35}
-#app .db-group-bar:hover::after{opacity:1;visibility:visible}
 #app .db-group-col.is-selected .db-group-bars{outline:2px solid #e8b738;outline-offset:4px}
 #app .db-plot:has(.db-group-bars){overflow:visible}
 @media(max-width:640px){#app .db-barplot.db-barplot-grouped{gap:4px;padding-inline:4px}#app .db-group-bars{gap:3px;padding-inline:0}#app .db-group-bar{min-width:12px;width:24px}}
