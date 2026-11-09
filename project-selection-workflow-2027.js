@@ -79,7 +79,7 @@ function carrySelected(){
 }
 function count(p){return p?(p.psProjects||[]).length:0;}
 const TOP_HELP={
- usulan:'Susun usulan program: Riwayat Program hanya referensi untuk menyalin data, sedangkan penambahan dan penyuntingan substansi dilakukan di Daftar Program.',
+ usulan:'Susun usulan program: Riwayat Program hanya referensi untuk menyalin data, sedangkan penambahan dan penyuntingan substansi dilakukan di Usulan Program.',
  mapping:'Gunakan Riwayat Proyek untuk mengambil referensi proyek lintas tahun ke program tujuan tanpa mengubah WBS atau realisasi historis. Lengkapi usulan di tab berikutnya.',
  prioritisasi:'Prioritaskan dan nilai proyek dengan kriteria yang tersedia. Hasilnya menjadi masukan pemilihan proyek untuk program.',
  charter:'Susun Charter Program dan rencana kerja sebagai dasar usulan program lintas unit.',
@@ -184,7 +184,7 @@ function formProgram(p){
  (can(p)&&p.psStatus!=='Ditetapkan'?'<button class="btn" data-pswf="edit-program">Ubah Identitas</button>':'')+'</div>'+
  (window.MT_PS_GOV?window.MT_PS_GOV.programPage(p):'')+'</div>';
 }
-function usulan(p){const u=ws(),tab=u.usulanSub||'daftar';const nav='<div class="ps27-minitabs" role="tablist" aria-label="Tahapan usulan program">'+[['daftar','Daftar Program'],['ambil','Ambil Program Tahun Sebelumnya'],['detail','Detail Program & Register']].map(x=>'<button type="button" role="tab" aria-selected="'+(tab===x[0])+'" class="'+(tab===x[0]?'on':'')+'" data-ps27-usul="'+x[0]+'">'+x[1]+'</button>').join('')+'</div>';return nav+(tab==='ambil'?sourcePicker():tab==='detail'?formProgram(p):portfolio());}
+function usulan(p){const u=ws(),tab=u.usulanSub||'daftar';const nav='<div class="ps27-minitabs" role="tablist" aria-label="Tahapan usulan program">'+[['daftar','Usulan Program'],['ambil','Ambil Program Tahun Sebelumnya'],['detail','Detail Program & Register']].map(x=>'<button type="button" role="tab" aria-selected="'+(tab===x[0])+'" class="'+(tab===x[0]?'on':'')+'" data-ps27-usul="'+x[0]+'">'+x[1]+'</button>').join('')+'</div>';return nav+(tab==='ambil'?sourcePicker():tab==='detail'?formProgram(p):portfolio());}
 function mapping(p){
  if(!p)return '<div class="ps27-card"><div class="ps27-empty">Pilih program untuk memetakan proyek/modul.</div></div>';
  const a=p.psProjects||[],rows=p.psWbsDraft||[];
@@ -501,8 +501,8 @@ function helpPage(tab){
  ];
  if(tab==='map'){
   const deep=[
-   [['Riwayat Program','usulan:bank'],['Daftar Program · Kelola & Unggah / Unduh','usulan:detail'],['Dokumen Portofolio','usulan:portfolio'],['Identitas','usulan:detail:identity'],['Business Case','usulan:detail:case'],['Manfaat','usulan:detail:benefits'],['Stakeholder','usulan:detail:stakeholders'],['Risiko','usulan:detail:risks'],['Tata Kelola','usulan:detail:governance'],['Buat Dokumen Program','usulan:detail:docs']],
-   [['Riwayat Proyek','mapping:history'],['Usulan Proyek','mapping:proposal'],['Hasil Pemetaan','mapping:results'],['Buat Dokumen Usulan Proyek','mapping:docs']],
+   [['Riwayat Program','usulan:bank'],['Usulan Program · Kelola & Unggah / Unduh','usulan:detail'],['Dokumen Portofolio','usulan:portfolio'],['Identitas','usulan:detail:identity'],['Business Case','usulan:detail:case'],['Manfaat','usulan:detail:benefits'],['Stakeholder','usulan:detail:stakeholders'],['Risiko','usulan:detail:risks'],['Tata Kelola','usulan:detail:governance'],['Buat Dokumen Program','usulan:detail:docs']],
+   [['Riwayat Proyek','mapping:history'],['Usulan Proyek','mapping:proposal'],['Rekap Program & Proyek','mapping:results'],['Buat Dokumen Usulan Proyek','mapping:docs']],
    [['Penilaian & Peringkat','prioritasi:ranking'],['Kriteria & Bobot','prioritasi:criteria'],['Monev & Manfaat','prioritasi:monev'],['Referensi & Formula','prioritasi:reference']],
    [['As-is','charter:asis'],['To-be','charter:tobe'],['Perbandingan','charter:cs'],['Charter','charter:ch'],['Kriteria','charter:kp'],['Manfaat','charter:mf'],['Linimasa','charter:rk']],
    [['Kontrak K-Wide dan Cakupan Proyek','penetapan-program']],
@@ -529,7 +529,7 @@ function helpPage(tab){
  }
  if(tab==='fill'){
   const tasks=[
-   ['01','Riwayat & usulan','Pilih tahun aktif. Dari Riwayat Program, salin bila perlu. Pada Daftar Program, klik baris untuk membuka detail dan lengkapi data.','usulan:detail'],
+   ['01','Riwayat & usulan','Pilih tahun aktif. Dari Riwayat Program, salin bila perlu. Pada Usulan Program, klik baris untuk membuka detail dan lengkapi data.','usulan:detail'],
    ['02','Business Case','Isi mandat, kebutuhan, tujuan, opsi dan argumentasi nilai tambah program; pastikan konsisten dengan data program.','usulan:detail:case'],
    ['03','Manfaat & indikator','Tetapkan outcome yang terukur, baseline, target, benefit owner, kelompok penerima dan waktu ukur.','usulan:detail:benefits'],
    ['04','Stakeholder & risiko','Petakan pemangku kepentingan, ketergantungan lintas unit, risiko dan rencana mitigasi.','usulan:detail:stakeholders'],
@@ -642,7 +642,7 @@ function sheetPage(tab){
    '<div class="ps27-sheet-grid ps27-sheet-grid3">'+
     ps27SheetCard('01','Pilih sumber','Cari program/proyek di riwayat dan pastikan tahun serta identitasnya benar.',ps27SheetJump('Riwayat Program','usulan:bank'))+
     ps27SheetCard('02','Salin sebagai draf','Buat usulan tahun tujuan dan periksa pemetaan proyek; jangan mengubah arsip sumber.',ps27SheetJump('Riwayat Proyek','mapping:history'))+
-    ps27SheetCard('03','Reviu & tetapkan','Periksa narasi, output, tanggal, benefit owner, sponsor, UIC dan kontrak yang relevan.',ps27SheetJump('Daftar Program','usulan:detail'))+
+    ps27SheetCard('03','Reviu & tetapkan','Periksa narasi, output, tanggal, benefit owner, sponsor, UIC dan kontrak yang relevan.',ps27SheetJump('Usulan Program','usulan:detail'))+
    '</div>'+
    '<div class="ps27-sheet-subhead"><h4>Kontrol kualitas data sebelum penetapan</h4></div>'+
    '<div class="ps27-sheet-checks"><span>□ Tahun tujuan & jadwal relevan</span><span>□ Output TW I–IV diperiksa</span><span>□ Sponsor dan UIC benar</span><span>□ Risiko dan stakeholder terkini</span><span>□ Manfaat & KPI masih tepat</span><span>□ Dokumen sumber dapat ditelusuri</span></div>'+
