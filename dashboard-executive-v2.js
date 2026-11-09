@@ -20,16 +20,21 @@ function dbKpis(rows,n){
 }
 function dbChart(rows,groups){
  const mode=S.ui.dbChart||'bar',selected=(S.ui.pr||'all'),quarter=[1,2,3,4].map(q=>{const a=dbSummary(rows,q);return {q,a,t:rows.length}});
+ const segments=[['Terjadwal','wait'],['Terlambat','late'],['Berjalan','run'],['Tercapai','ok']];
  const legend='<div class="db-legend">'+[['Tercapai','ok'],['Berjalan','run'],['Terlambat','late'],['Terjadwal','wait']].map(([s,c])=>'<span><i class="db-swatch db-sw-'+c+'"></i>'+s+'</span>').join('')+'</div>';
+ const share=(a,k,t)=>dbPct(a[k],t);
+ const seg=(a,k,cl,t)=>{const pct=share(a,k,t),title=k+': '+dbN(a[k])+' modul ('+pct+'%)';return '<i class="db-part db-sw-'+cl+'" style="height:'+pct+'%" title="'+dbEsc(title)+'" aria-label="'+dbEsc(title)+'">'+(pct>=9.5?'<span class="db-part-pct">'+pct+'%</span>':'')+'</i>'};
  let graph='';
  if(mode==='bar'){
-  graph='<div class="db-barplot">'+quarter.map(({q,a,t})=>'<button class="db-barcol '+(selected===String(q)?'is-selected':'')+'" data-act="dbQuarter" data-q="'+q+'" title="Lihat detail TW '+q+'"><b>'+dbN(t)+'</b><span class="db-stack">'+[['Terjadwal','wait'],['Terlambat','late'],['Berjalan','run'],['Tercapai','ok']].map(([k,cl])=>'<i class="db-part db-sw-'+cl+'" style="height:'+(t?a[k]/t*100:0)+'%"></i>').join('')+'</span><small>TW '+q+'</small></button>').join('')+'</div>';
+  graph='<div class="db-barplot" aria-label="Grafik batang bertumpuk per triwulan dengan persentase status">'+quarter.map(({q,a,t})=>'<button class="db-barcol '+(selected===String(q)?'is-selected':'')+'" data-act="dbQuarter" data-q="'+q+'" title="Lihat detail TW '+q+'"><b>'+dbN(t)+'</b><span class="db-stack">'+segments.map(([k,cl])=>seg(a,k,cl,t)).join('')+'</span><small>TW '+q+'</small></button>').join('')+'</div>';
+ }else if(mode==='vertical'){
+  graph='<div class="db-barplot db-barplot-grouped" aria-label="Grafik batang vertikal berdampingan menurut status per triwulan">'+quarter.map(({q,a,t})=>'<button class="db-barcol db-group-col '+(selected===String(q)?'is-selected':'')+'" data-act="dbQuarter" data-q="'+q+'" title="Lihat detail TW '+q+'"><b>'+dbN(t)+'</b><span class="db-group-bars">'+[['Tercapai','ok'],['Berjalan','run'],['Terlambat','late'],['Terjadwal','wait']].map(([k,cl])=>{const pct=share(a,k,t);return '<i class="db-group-bar db-sw-'+cl+'" style="height:'+pct+'%" title="'+dbEsc(k+': '+dbN(a[k])+' modul ('+pct+'%)')+'"><span>'+(pct>=16?pct+'%':'')+'</span></i>'}).join('')+'</span><small>TW '+q+'</small></button>').join('')+'</div>';
  }else if(mode==='heat'){
   graph='<div class="db-heatwrap"><table class="db-heat"><thead><tr><th>Program</th>'+quarter.map(x=>'<th>TW '+x.q+'</th>').join('')+'</tr></thead><tbody>'+groups.map(g=>'<tr><th title="'+dbEsc(g.p.nama)+'">'+dbEsc(g.p.nama)+'</th>'+quarter.map(({q})=>{const total=g.mods.length,done=g.mods.filter(m=>dxAt(m,q).st==='Tercapai').length,p=dbPct(done,total);return '<td><button data-act="dbQuarter" data-q="'+q+'" style="--heat:'+p+'%" title="'+done+' dari '+total+' modul tercapai">'+p+'%</button></td>'}).join('')+'</tr>').join('')+'</tbody></table></div>';
  }else{
   graph='<div class="db-donutrow">'+quarter.map(({q,a,t})=>{const p=dbPct(a.Tercapai,t);return '<button class="db-donutcol '+(selected===String(q)?'is-selected':'')+'" data-act="dbQuarter" data-q="'+q+'"><span class="db-donut" style="--p:'+p+'%"><b>'+p+'%</b></span><small>TW '+q+'</small></button>'}).join('')+'</div>';
  }
- return '<section class="db-panel db-plot"><div class="db-ph"><div><h3>Peta Modul per Triwulan</h3><small>Distribusi status modul berdasarkan target sampai akhir tiap triwulan</small></div><label>Model Grafik <select class="db-select" data-on="dbChart" aria-label="Model grafik"><option value="bar" '+(mode==='bar'?'selected':'')+'>Bar Bertumpuk</option><option value="heat" '+(mode==='heat'?'selected':'')+'>Heatmap</option><option value="donut" '+(mode==='donut'?'selected':'')+'>Donut</option></select></label></div>'+graph+legend+'</section>';
+ return '<section class="db-panel db-plot"><div class="db-ph"><div><h3>Peta Modul per Triwulan</h3><small>Distribusi status modul berdasarkan target sampai akhir tiap triwulan</small></div><label>Model Grafik <select class="db-select" data-on="dbChart" aria-label="Model grafik"><option value="bar" '+(mode==='bar'?'selected':'')+'>Bar Bertumpuk</option><option value="vertical" '+(mode==='vertical'?'selected':'')+'>Bar Vertikal</option><option value="heat" '+(mode==='heat'?'selected':'')+'>Heatmap</option><option value="donut" '+(mode==='donut'?'selected':'')+'>Donut</option></select></label></div>'+graph+legend+'</section>';
 }
 function dbOverview(rows,groups,n){
  const a=dbSummary(rows,n),p=dbPct(a.Tercapai,rows.length),late=rows.filter(({m})=>dxAt(m,n).st==='Terlambat');
