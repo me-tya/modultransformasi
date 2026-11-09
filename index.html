@@ -2562,6 +2562,23 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 @media(max-width:1250px){#app .top .sk-hdrActions .sk-hdrBtn{padding:0 8px!important}}
 @media(max-width:800px){#app .top .sk-hdrActions .sk-hdrBtn span{display:none}#app .top .sk-hdrActions .sk-hdrBtn{padding:0 8px!important}.sk-hdrActions{gap:4px}}
 
+/* Header actions v5: visible on every menu, with fixed geometry and guaranteed contrast. */
+#app header.top .sk-hdrActions{display:flex;align-items:center;gap:7px;flex:none}
+#app header.top .sk-hdrActions .sk-hdrHelp,
+#app header.top .sk-hdrActions .sk-hdrSheet{box-sizing:border-box!important;display:inline-flex!important;flex:0 0 36px!important;width:36px!important;min-width:36px!important;max-width:36px!important;height:36px!important;min-height:36px!important;max-height:36px!important;padding:0!important;margin:0!important;align-items:center!important;justify-content:center!important;gap:0!important;border-radius:10px!important;transform:none!important}
+#app header.top .sk-hdrActions .sk-hdrBtn>span{display:none!important}
+#app header.top .sk-hdrActions .sk-hdrHelp{background:#1178E8!important;border:1px solid #61BBFF!important;color:#fff!important;box-shadow:0 2px 9px rgba(17,120,232,.3)!important}
+#app header.top .sk-hdrActions .sk-hdrHelp i{display:grid!important;place-items:center!important;flex:0 0 23px!important;width:23px!important;height:23px!important;margin:0!important;border-radius:50%!important;background:#FFD037!important;color:#09284D!important;font-style:normal!important;font-size:15px!important;font-weight:900!important;line-height:1!important}
+#app header.top .sk-hdrActions .sk-hdrSheet{background:#FFC425!important;border:1px solid #FFDE73!important;color:#082A50!important;box-shadow:0 2px 9px rgba(255,196,37,.3)!important}
+#app header.top .sk-hdrActions .sk-hdrSheet svg{width:22px!important;height:22px!important;stroke:#082A50!important;stroke-width:2.5!important}
+#app header.top .sk-hdrActions .sk-hdrHelp:hover,#app header.top .sk-hdrActions .sk-hdrHelp:focus-visible{background:#0064CE!important;border-color:#9DD9FF!important;box-shadow:0 0 0 2px rgba(59,163,255,.23),0 4px 11px rgba(0,100,206,.4)!important;transform:none!important}
+#app header.top .sk-hdrActions .sk-hdrSheet:hover,#app header.top .sk-hdrActions .sk-hdrSheet:focus-visible{background:#FFD952!important;border-color:#FFF0AA!important;box-shadow:0 0 0 2px rgba(255,202,61,.22),0 4px 11px rgba(255,196,37,.3)!important;transform:none!important}
+#app header.top #bell{box-sizing:border-box!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 36px!important;width:36px!important;min-width:36px!important;max-width:36px!important;height:36px!important;min-height:36px!important;max-height:36px!important;margin:0!important;padding:0!important;background:#1D507D!important;border:1px solid #E8B932!important;border-radius:10px!important;color:#FFCF29!important;box-shadow:0 0 0 1px rgba(255,207,41,.14)!important;transform:none!important}
+#app header.top #bell svg{width:22px!important;height:22px!important;stroke:#FFCF29!important;stroke-width:2.7!important;fill:rgba(255,207,41,.1)!important}
+#app header.top #bell:hover,#app header.top #bell:focus-visible{background:#FFC425!important;border-color:#FFDB61!important;box-shadow:0 0 0 2px rgba(255,196,37,.24),0 3px 11px rgba(255,196,37,.3)!important;transform:none!important}
+#app header.top #bell:hover svg,#app header.top #bell:focus-visible svg{stroke:#102C4E!important;fill:rgba(16,44,78,.1)!important}
+#app header.top #bell i{background:#F73548!important;color:#fff!important;border:2px solid #102A49!important;font-size:11px!important;font-weight:900!important}
+
 </style>
 <script src="cra-native.js?v=20261107-peta-menu"></script>
 <script src="pengelola-native.js"></script>
@@ -3170,7 +3187,7 @@ function render(){if(ME&&ME.role==='SA'&&S.akses&&!S.akses.KETUA){S.akses.KETUA=
  <div class="main"><header class="top"><button class="hamb" id="hamb" aria-label="Tampilkan/sembunyikan menu">☰</button><div class="crumb">${crumbOf()}</div>
  <label class="tsel"><span>Tahun Anggaran</span><select id="yr" aria-label="Tahun anggaran">${yearsOpt().map(y=>`<option ${S.ui.tahun==y?'selected':''}>${y}</option>`).join('')}</select></label>
  <span class="role">${meLab()}</span>
- ${FB.on?`<span class="dbb" id="dbb" title="Status sinkron Firestore">${FB.st==="Gagal menyimpan"?"⚠ ":"● "}${esc(FB.st||"Firestore")}</span>`:""}<div class="sk-hdrActions"><button type="button" class="hbtn sk-hdrBtn sk-hdrHelp" data-act="helphome" title="Bantuan: panduan pemakaian menu, fitur dan dokumentasi" aria-label="Buka Bantuan penggunaan aplikasi"><i>?</i><span>Bantuan</span></button>${(VIEW==='project-selection'||/^(pmo-|cmo-|modul-)/.test(VIEW))?`<button type="button" class="hbtn sk-hdrBtn sk-hdrSheet" data-act="cheatsheet" data-kind="${VIEW==='project-selection'?'selection':VIEW.startsWith("pmo-")?"pmo":"cmo"}" title="Cheatsheet: framework, tata kelola dan alur koordinasi" aria-label="Buka Cheatsheet tata kelola">▤ <span>Cheatsheet</span></button>`:""}</div><button class="ibtn${tkv.length&&!BELL.seen(tk)?' bell-on':''}" id="bell" aria-label="Notifikasi${tkv.length?', '+tkv.length+' tugas':''}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>${tkv.length?`<i>${tkv.length}</i>`:''}</button>
+ ${FB.on?`<span class="dbb" id="dbb" title="Status sinkron Firestore">${FB.st==="Gagal menyimpan"?"⚠ ":"● "}${esc(FB.st||"Firestore")}</span>`:""}<div class="sk-hdrActions"><button type="button" class="hbtn sk-hdrBtn sk-hdrHelp" data-act="helphome" title="Bantuan: panduan pemakaian menu, fitur dan dokumentasi" aria-label="Buka Bantuan penggunaan aplikasi"><i>?</i><span>Bantuan</span></button><button type="button" class="hbtn sk-hdrBtn sk-hdrSheet" data-act="cheatsheet" data-kind="${VIEW==='project-selection'?'selection':VIEW.startsWith("pmo-")?"pmo":(VIEW.startsWith("cmo-")||VIEW.startsWith("modul-")||/CMO/i.test(meLab()))?"cmo":"pmo"}" title="Cheatsheet: framework, tata kelola dan alur koordinasi" aria-label="Buka Cheatsheet tata kelola">▤ <span>Cheatsheet</span></button></div><button class="ibtn${tkv.length&&!BELL.seen(tk)?' bell-on':''}" id="bell" aria-label="Notifikasi${tkv.length?', '+tkv.length+' tugas':''}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>${tkv.length?`<i>${tkv.length}</i>`:''}</button>
  <button class="av" id="av" aria-label="Akun">${esc(ME.nama.split(' ').map(w=>w[0]).slice(0,2).join(''))}</button></header>
  <main class="view" id="view"></main></div></div>`;
  $('#hamb').onclick=()=>{if(innerWidth<=900)$('#side').classList.toggle('open');else{S.ui.side=S.ui.side===0?1:0;save();$('#app').classList.toggle('collapsed')}};
@@ -10245,7 +10262,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script src="project-selection-workflow-2027.js?v=20261109-guide-rich-v1"></script>
 <script src="project-selection-scope-map.js?v=20261109-5"></script>
 <script src="project-selection-documents.js?v=20261108-4"></script>
-<script src="project-selection-program-bank.js?v=20261109-header-vibrant-v4"></script>
+<script src="project-selection-program-bank.js?v=20261109-header-v5"></script>
 
 
 <script src="planning-tabs-v2.js?v=20261108-3"></script>
