@@ -199,6 +199,7 @@ var PS_GUIDE_TAB={
 var selector=['#app .nav .nv','#app .ps27-tabs button','#app .psbank-subtabs button','#app .psbank-mapping-tabs button','#app .ps27-minitabs button','#app .ps27-kwide-tabs button','#app .pswf-tabs button','#app .ptabs a','#app .subt a','#app .subt button','#app .cm-step','#app .chtabs button','#app .chebar [role="tab"]','#app .act-tabs a','#app .cra-tabs button','#app .cra2-tabs button','#app .pg-tabs button','#app [role="tab"]','[role="tab"]','nav[role="tablist"] button','nav[role="tablist"] a','nav[class*="tabs"] button','nav[class*="tabs"] a','[data-sktab]','[data-ps27-htab]','.sk-tab'].join(',');
 var tooltip=null,active=null,showTimer=0,previousTitle=null,previousDesc=null;
 var GUIDE_KEY='mt_guide_tooltips_v1',guideEnabled=true,headerObserver=null,mutedTitles=new Map();
+var observedSyncBadge=null,syncObserver=null,syncPendingAt=0,syncPendingTimer=null,syncDetails=null;
 try{guideEnabled=window.localStorage.getItem(GUIDE_KEY)!=='off'}catch(e){guideEnabled=true}
 function targetFor(node){return node&&node.closest?node.closest(selector):null;}
 // OFF must also suppress native HTML title tooltips on menus and tabs.
@@ -300,10 +301,10 @@ document.addEventListener('focusin',function(ev){
 document.addEventListener('focusout',function(ev){
  if(active&&ev.target===active)hide();
 });
-document.addEventListener('keydown',function(ev){if(ev.key==='Escape')hide();});
+document.addEventListener('keydown',function(ev){if(ev.key==='Escape'){hide();dismissSyncDetails()}});
 document.addEventListener('scroll',hide,true);
 window.addEventListener('resize',hide);
-document.addEventListener('pointerdown',hide,true);
+document.addEventListener('pointerdown',function(ev){hide();if(syncDetails&&ev.target!==observedSyncBadge&&!syncDetails.contains(ev.target))dismissSyncDetails()},true);
 function setGuide(next){
  guideEnabled=!!next;
  hide();
@@ -319,6 +320,104 @@ function updateGuide(){
  control.setAttribute('title','Guide '+(guideEnabled?'ON: fungsi dan batasan lengkap':'OFF: tooltip menu dan tab disembunyikan')+'. Klik untuk mengubah.');
  var label=control.querySelector('.mt-guide-status');if(label)label.textContent=guideEnabled?'ON':'OFF';
 }
+
+/* Firestore sync: a fixed-size status dot, independent of changing text length.
+ * The existing #dbb text and save mechanism remain untouched. */
+function syncSnapshot(badge){
+ var source=null;
+ try{if(typeof FB!=='undefined'&&FB)source=FB}catch(e){}
+ var raw=String(source&&source.st||badge&&badge.textContent||'').trim();
+ var issue=String(source&&source.err||'').trim();
+ var offline=typeof navigator!=='undefined'&&navigator.onLine===false;
+ var problem=/gagal|error|failed|ditolak|permission.denied/i.test(raw);
+ var pending=/menyimpan|mengirim|mengunggah|pending|connecting|menghubungkan|retry|mencoba|sinkronisasi/i.test(raw);
+ var connected=/tersimpan|tersambung|terhubung|saved|connected/i.test(raw);
+ return {raw:raw,issue:issue,offline:offline,problem:problem,pending:pending,connected:connected};
+}
+function syncColor(s){
+ if(s.problem||s.issue)return 'red';
+ if(s.offline)return 'orange';
+ if(s.pending)return syncPendingAt&&Date.now()-syncPendingAt>=2500?'orange':'green';
+ if(!s.connected)return 'orange';
+ return 'green';
+}
+function dismissSyncDetails(){
+ if(syncDetails){syncDetails.remove();syncDetails=null}
+}
+function updateSyncBadge(badge){
+ if(!badge||!badge.isConnected)return;
+ var s=syncSnapshot(badge);
+ if(s.pending){
+  if(!syncPendingAt)syncPendingAt=Date.now();
+  if(!syncPendingTimer){
+   syncPendingTimer=setTimeout(function(){
+    syncPendingTimer=null;
+    if(badge.isConnected)updateSyncBadge(badge);
+   },2550);
+  }
+ }else{
+  syncPendingAt=0;
+  if(syncPendingTimer){clearTimeout(syncPendingTimer);syncPendingTimer=null}
+ }
+ var color=syncColor(s),summary=color==='red'?'Sinkronisasi bermasalah':color==='orange'?'Sinkronisasi perlu perhatian':'Sinkronisasi normal';
+ var detail=s.issue||s.raw||(s.offline?'Perangkat sedang offline.':'Status belum diketahui.');
+ var hint=color==='red'?' Klik untuk detail kesalahan.':color==='orange'?' Klik untuk melihat kondisi sinkronisasi.':'';
+ badge.dataset.mtSyncState=color;
+ badge.setAttribute('title',summary+'. '+(s.offline?'Tidak terhubung ke internet. ':detail)+hint);
+ badge.setAttribute('aria-label',summary+'. '+(s.offline?'Koneksi internet terputus. ':detail)+hint);
+ badge.setAttribute('role',color==='green'?'status':'button');
+ badge.tabIndex=color==='green'?-1:0;
+ if(color==='green')dismissSyncDetails();
+ else if(syncDetails)renderSyncDetails(badge,s,color);
+}
+function renderSyncDetails(badge,s,color){
+ if(!syncDetails){
+  syncDetails=document.createElement('div');
+  syncDetails.id='mt-sync-details';
+  syncDetails.setAttribute('role','status');
+  document.body.appendChild(syncDetails);
+ }
+ syncDetails.textContent='';
+ var title=document.createElement('strong');
+ title.textContent=color==='red'?'Sinkronisasi gagal':'Sinkronisasi perlu perhatian';
+ var message=document.createElement('span');
+ message.textContent=s.offline?'Koneksi internet terputus. Periksa jaringan.':s.issue||s.raw||'Status sinkronisasi belum dapat dikonfirmasi.';
+ var action=document.createElement('small');
+ action.textContent=color==='red'?'Periksa koneksi dan hak akses, lalu ulangi penyimpanan.':'Periksa koneksi atau tunggu proses sinkronisasi selesai.';
+ syncDetails.appendChild(title);syncDetails.appendChild(message);syncDetails.appendChild(action);
+ var rect=badge.getBoundingClientRect(),width=Math.min(315,window.innerWidth-20);
+ syncDetails.style.width=width+'px';
+ syncDetails.style.left=Math.max(10,Math.min(window.innerWidth-width-10,rect.right-width))+'px';
+ syncDetails.style.top=Math.min(window.innerHeight-128,rect.bottom+10)+'px';
+}
+function installSyncBadge(header){
+ var badge=header.querySelector('#dbb');
+ if(badge!==observedSyncBadge){
+  if(syncObserver){syncObserver.disconnect();syncObserver=null}
+  if(syncPendingTimer){clearTimeout(syncPendingTimer);syncPendingTimer=null}
+  syncPendingAt=0;
+  dismissSyncDetails();
+  observedSyncBadge=badge;
+  if(!badge)return;
+  badge.addEventListener('click',function(){
+   if(badge.dataset.mtSyncState==='green')return;
+   if(syncDetails){dismissSyncDetails();return}
+   var state=syncSnapshot(badge);
+   renderSyncDetails(badge,state,badge.dataset.mtSyncState||'orange');
+  });
+  badge.addEventListener('keydown',function(ev){
+   if(ev.key!=='Enter'&&ev.key!==' ')return;
+   if(badge.dataset.mtSyncState==='green')return;
+   ev.preventDefault();badge.click();
+  });
+  if(typeof MutationObserver==='function'){
+   syncObserver=new MutationObserver(function(){updateSyncBadge(badge)});
+   syncObserver.observe(badge,{childList:true,subtree:true,characterData:true});
+  }
+ }
+ if(badge)updateSyncBadge(badge);
+}
+
 function installHeader(){
  var header=document.querySelector('#app header.top'),avatar=header&&header.querySelector('#av');
  if(!header||!avatar)return;
@@ -345,6 +444,7 @@ function installHeader(){
   sheet.setAttribute('title','Cheatsheet: framework, teori, metode SMART, istilah, K-Wide dan referensi tata kelola. Klik untuk membuka.');
   sheet.setAttribute('aria-label','Buka Cheatsheet referensi dan teori transformasi');
  }
+ installSyncBadge(header);
  if(!guideEnabled)muteNativeMenuTitles();
 }
 function initHeader(){
@@ -365,6 +465,16 @@ function initHeader(){
  '#app .top .sk-hdrActions .sk-hdrHelp>span,#app .top .sk-hdrActions .sk-hdrSheet>span{display:none!important}',
  '#app .top .sk-hdrActions .sk-hdrHelp i{font-size:12px!important;margin:0!important}',
  '#app .top .sk-hdrActions .sk-hdrHelp:hover,#app .top .sk-hdrActions .sk-hdrSheet:hover{transform:translateY(-1px);box-shadow:0 3px 10px #0003!important}',
+ '#app header.top #dbb{box-sizing:border-box!important;display:inline-flex!important;flex:0 0 20px!important;width:20px!important;min-width:20px!important;max-width:20px!important;height:30px!important;min-height:30px!important;padding:0!important;margin:0!important;align-items:center!important;justify-content:center!important;gap:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;font-size:0!important;line-height:0!important;white-space:nowrap!important;overflow:visible!important;cursor:default}',
+ '#app header.top #dbb::before{content:"";display:block;flex:none;width:11px;height:11px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 2px rgba(34,197,94,.13);transition:background-color .18s}',
+ '#app header.top #dbb[data-mt-sync-state="orange"]::before{background:#f59e0b;box-shadow:0 0 0 2px rgba(245,158,11,.16)}',
+ '#app header.top #dbb[data-mt-sync-state="red"]::before{background:#ef4444;box-shadow:0 0 0 2px rgba(239,68,68,.18)}',
+ '#app header.top #dbb[role="button"]{cursor:pointer}',
+ '#app header.top #dbb[role="button"]:focus-visible{outline:2px solid #fdb913;outline-offset:2px;border-radius:8px!important}',
+ '#mt-sync-details{position:fixed;z-index:300001;box-sizing:border-box;display:flex;flex-direction:column;gap:5px;padding:12px 13px;border-radius:10px;background:#102c4e;color:#e9f3ff;border:1px solid #56738e;box-shadow:0 12px 24px #0a1e3b55;font:500 11.5px/1.5 Inter,Arial,sans-serif}',
+ '#mt-sync-details strong{font-size:12px;color:#fff}',
+ '#mt-sync-details span{overflow-wrap:anywhere}',
+ '#mt-sync-details small{color:#ffdb96;font-size:10.5px}',
  '@media(min-width:1050px){#app header.top{flex-wrap:nowrap!important}#app header.top .role{max-width:30vw;overflow:hidden;text-overflow:ellipsis}}',
  '@media(max-width:1180px){#app .top .mt-guide-label{display:none}}'
  ].join('');
@@ -379,5 +489,5 @@ function initHeader(){
 if(typeof document.querySelector==='function'){
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initHeader,{once:true});else initHeader();
 }
-window.MT_MENU_TOOLTIP={hide:hide,resolve:lookup,enabled:function(){return guideEnabled},setEnabled:setGuide,version:'MT-Guide-v2-off-silent'};
+window.MT_MENU_TOOLTIP={hide:hide,resolve:lookup,enabled:function(){return guideEnabled},setEnabled:setGuide,version:'MT-Guide-v2-sync-dot-20261109'};
 })();
