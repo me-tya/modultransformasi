@@ -101,7 +101,7 @@ function top(p){
  (p&&ownerOk(p)&&p.psStatus!=='Ditetapkan'&&year()===2026&&!p.psDraft?'<button type="button" class="btn" data-pswf="ambil-wbs">Ambil Proyek WBS 2026</button>':'')+
  '<span class="pswf-sp"></span><span class="pswf-count">'+num+' program · '+ct+' calon proyek · '+approved+' dipilih</span></div>';
  if(p){
- h+='<div class="prio-hero"><div><h2>'+esc2(p.nama)+'</h2><p>'+esc2(p.kode||p.akr)+' · '+esc2(p.jenis||'Program')+' · UIC '+esc2(p.uic||'Belum ditetapkan')+' · '+esc2(p.psStatus)+'</p></div><div class="prio-hero-actions">'+
+ h+='<div class="prio-hero"><div><h2>'+esc2(p.nama)+'</h2><p>'+esc2(p.kodeResmi||'Kode resmi belum ditetapkan')+' · '+esc2(p.jenis||'Program')+' · UIC '+esc2(p.uic||'Belum ditetapkan')+' · '+esc2(p.psStatus)+'</p></div><div class="prio-hero-actions">'+
  (ownerOk(p)&&p.psStatus!=='Ditetapkan'?'<button type="button" class="btn btn-gold btn-sm" data-pswf="add-project">+ Tambah Proyek</button>':'')+
  '<button type="button" class="btn btn-outline btn-sm prio-btn-light" data-pswf="excel">⇩ Excel</button>'+
  '<button type="button" class="btn btn-outline btn-sm prio-btn-light" data-pswf="report">▤ Laporan</button></div></div>';
@@ -693,7 +693,7 @@ function rkmkContent(p,blank){
  out.push(wt([
   ['Uraian','Informasi'],
   ['Nama Program/Inisiatif Strategis',p&&!blank?p.nama:filler],
-  ['Kode Program',p&&!blank?p.kode:filler],
+  ['Kode Program Resmi',p&&!blank?(p.kodeResmi||'Belum ditetapkan'):filler],
   ['Tahun/Periode',''+y],
   ['Jenis/Tema',p&&!blank?([p.jenis,p.psThemes].filter(Boolean).join(' · ')):filler],
   ['UIC Utama',prop('uic')],
@@ -765,7 +765,7 @@ async function word(p,blank){
    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
   z.file('word/document.xml',wordXml);
   const blob=await z.generateAsync({type:'blob',compression:'DEFLATE'});
-  const a=document.createElement('a'),url=URL.createObjectURL(blob),code=p&&p.kode?p.kode:'KOSONG';
+  const a=document.createElement('a'),url=URL.createObjectURL(blob),code=p?(p.kodeResmi||p.id||p.akr||'KOSONG'):'KOSONG';
   a.href=url;a.download=(blank?'Template_':'Rancangan_')+'RKMK_IS_'+year()+'_'+code.replace(/[^A-Za-z0-9_-]/g,'_')+'.docx';
   document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
   toast((blank?'Template':'Rancangan')+' RKMK Word berhasil dibuat.');
