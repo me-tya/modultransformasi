@@ -1013,3 +1013,24 @@
 .psbank-proposal-program .psbank-proposal-projectrow td:nth-child(2)>b{display:inline;font-weight:800}
 .psbank-proposal-program .psbank-results-actions{white-space:nowrap}
 @media(max-width:750px){.psbank-proposal-program>summary{padding:10px}.psbank-proposal-programtools{flex-wrap:wrap}}
+
+/* MT-08 · Project detail tabs align with Program detail workspace; isolated to project editor. */
+#app .psbank-project-editor .psbank-proj-editor-tabs{
+ display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin;min-width:0;
+ padding:5px 7px 0;margin:0 0 12px;border:1px solid #d7e3ef;
+ border-radius:8px;background:#eaf1f9
+}
+#app .psbank-project-editor .psbank-proj-editor-tabs button{
+ flex:1 0 auto;min-height:37px;padding:9px 11px;
+ border:0;border-bottom:3px solid transparent;
+ background:transparent;color:#476583;font:700 11px 'Inter',sans-serif;
+ cursor:pointer;white-space:nowrap
+}
+#app .psbank-project-editor .psbank-proj-editor-tabs button.on{
+ background:#fff;color:#153d6a;border-bottom-color:#f9b923;border-radius:6px 6px 0 0
+}
+#app .psbank-project-editor .psbank-proj-editor-panel[hidden]{display:none!important}
+#app .psbank-project-editor .psbank-proj-editor-panel{margin:0;min-width:0}
+#app .psbank-project-editor .psbank-proj-editor-tabs button:focus-visible{
+ outline:2px solid #d99a12;outline-offset:-2px
+}
