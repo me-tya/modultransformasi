@@ -165,3 +165,16 @@ test('Firestore header dot is fixed size and reflects real sync, warning, error'
  FB.st='Tersimpan';FB.err='permission-denied';assert.equal(syncColor(syncSnapshot(badge)),'red','Listener errors must override green text');
  FB.err='';FB.st='Firestore';assert.equal(syncColor(syncSnapshot(badge)),'orange');
 });
+
+
+test('header shortcuts use vivid contrasting colors and large bell icon without moving controls',()=>{
+ assert.match(source,/#app \.top \.sk-hdrActions \.sk-hdrHelp\{background:#1178E8!important/);
+ assert.match(source,/#app \.top \.sk-hdrActions \.sk-hdrSheet\{background:#FFC425!important/);
+ assert.match(source,/#app \.top #bell svg\{width:22px!important;height:22px!important;stroke:#FFCF29!important;stroke-width:2\.7!important/);
+ assert.match(source,/#app \.top #bell:hover,#app \.top #bell:focus-visible/);
+ assert.match(source,/#app \.top #bell i\{background:#F73548!important/);
+ assert.match(source,/width:36px!important;min-width:36px!important;height:36px!important/);
+ assert.match(source,/transform:none!important/);
+ assert.match(source,/function installSyncBadge\(header\)/);
+ assert.match(source,/function setGuide\(next\)/);
+});
