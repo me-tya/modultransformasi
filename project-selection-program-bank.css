@@ -1034,3 +1034,83 @@
 #app .psbank-project-editor .psbank-proj-editor-tabs button:focus-visible{
  outline:2px solid #d99a12;outline-offset:-2px
 }
+
+/* MT-09 · Proposal pagination and description, scoped to Project Selection only. */
+#app .psbank-proposal-groups{display:flex;flex-direction:column;gap:12px;min-width:0}
+#app .psbank-proposal-groups .psbank-proposal-head{margin-bottom:0;padding:1px 2px}
+#app .psbank-proposal-groups .psbank-proposal-head h3{margin:0;font:800 15px 'Inter',sans-serif}
+#app .psbank-proposal-controlbar{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;padding:3px 0 7px;min-width:0}
+#app .psbank-proposal-controlbar label{display:flex;flex-direction:column;gap:6px;min-width:0;font:750 11.5px 'Inter',sans-serif;color:#264e78}
+#app .psbank-proposal-controlbar select,#app .psbank-proposal-controlbar input[type=search]{
+ display:block;width:100%;max-width:100%;min-width:0;height:40px;padding:7px 12px;
+ border:1px solid #cbd9e9;border-radius:9px;background:#fff;
+ color:#12375f;font:600 12px 'Inter',sans-serif;box-sizing:border-box
+}
+#app .psbank-proposal-program{
+ border:1px solid #cedcec;border-radius:11px;overflow:hidden;margin:0;background:#fff
+}
+#app .psbank-proposal-program>summary{
+ background:linear-gradient(90deg,#12345e,#1d568c);
+ color:#fff;min-height:74px;padding:12px 17px;border-bottom:3px solid #ffba20
+}
+#app .psbank-proposal-program>summary .psbank-accordion-name>b{
+ display:block;color:#fff;font:800 16px 'Inter',sans-serif;line-height:1.4;margin:3px 0
+}
+#app .psbank-proposal-program>summary .psbank-accordion-name>small{display:block;font:550 11px 'Inter',sans-serif;line-height:1.4;color:#c8dcf1;margin:0}
+#app .psbank-proposal-program>summary .psbank-chevron{width:32px;height:32px;flex-basis:32px;min-width:32px;background:#ffbd24}
+#app .psbank-proposal-program .psbank-proposal-programtools{
+ display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 13px;min-height:47px
+}
+#app .psbank-proposal-program .psbank-proposal-programtools>span{
+ font:800 11px 'Inter',sans-serif;color:#1e4978;letter-spacing:.02em
+}
+#app .psbank-proposal-program .psbank-tablewrap{
+ max-height:none!important;height:auto!important;min-height:0!important;
+ overflow-y:visible!important;overflow-x:auto!important;
+ overscroll-behavior:auto!important;scrollbar-gutter:auto!important;
+ border-radius:0;border:0;margin:0
+}
+#app .psbank-proposal-program .psbank-proposal-table{
+ table-layout:fixed!important;width:100%;min-width:1120px;border-collapse:collapse
+}
+#app .psbank-proposal-program .psbank-proposal-table th{
+ position:static!important;top:auto!important;min-width:0!important;
+ padding:11px 9px;white-space:normal;font:800 10.5px 'Inter',sans-serif;
+ vertical-align:middle;overflow-wrap:break-word
+}
+#app .psbank-proposal-program .psbank-proposal-table td{
+ padding:10px 9px;vertical-align:top;white-space:normal;
+ overflow-wrap:anywhere;word-break:normal;font:550 11px/1.5 'Inter',sans-serif
+}
+#app .psbank-proposal-program .psbank-proposal-table td:nth-child(1){font-weight:800;color:#163a65}
+#app .psbank-proposal-program .psbank-proposal-table td:nth-child(2){font-weight:700;color:#173a65}
+#app .psbank-proposal-program .psbank-proposal-table td:nth-child(3){color:#4d617a}
+#app .psbank-proposal-program .psbank-proposal-table td:nth-child(8){vertical-align:middle}
+#app .psbank-proposal-program .psbank-results-actions{
+ display:flex;align-items:center;justify-content:flex-end;gap:4px;flex-wrap:nowrap!important;min-width:0;white-space:nowrap
+}
+#app .psbank-proposal-program .psbank-results-actions .psbank-action-icon{flex:0 0 auto}
+#app .psbank-proposal-program .psbank-proposal-desc-text{
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:hidden;
+}
+#app .psbank-proposal-pagination{
+ display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+ padding:10px 14px;border-top:1px solid #d9e5f1;background:#f7fafd;
+ color:#435f7d;font:650 11.5px 'Inter',sans-serif;min-height:51px
+}
+#app .psbank-proposal-pagination label{display:flex;align-items:center;gap:8px;margin-left:auto;white-space:nowrap}
+#app .psbank-proposal-pagination select{
+ border:1px solid #cbd9e9;border-radius:7px;height:30px;min-width:57px;
+ background:#fff;padding:4px 6px;color:#153c66;font:650 11px 'Inter',sans-serif
+}
+#app .psbank-proposal-pageactions{display:flex;align-items:center;gap:9px;white-space:nowrap}
+#app .psbank-proposal-pageactions button{
+ display:grid;place-items:center;width:31px;height:31px;border-radius:7px;
+ border:1px solid #cbd9eb;background:#fff;color:#173d69;font:800 17px 'Inter',sans-serif;cursor:pointer
+}
+#app .psbank-proposal-pageactions button:disabled{opacity:.35;cursor:default}
+@media(max-width:780px){
+ #app .psbank-proposal-controlbar{grid-template-columns:1fr}
+ #app .psbank-proposal-program>summary{padding:10px}
+ #app .psbank-proposal-pagination label{margin-left:0}
+}
