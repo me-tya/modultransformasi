@@ -973,3 +973,43 @@
 
 
 #app .psbank-project-editor .psbank-category-hint{display:block;margin-top:4px;font:500 10px/1.45 Inter,Arial,sans-serif;color:#6a7f96;white-space:normal}
+
+
+/* MT-08 · Usulan Proyek per program, scope limited to Pemetaan Proyek. */
+.psbank-proposal-groups{display:flex;flex-direction:column;gap:10px;min-width:0}
+.psbank-proposal-groups .psbank-proposal-head{margin-bottom:2px}
+.psbank-proposal-program{border:1px solid #d7e2ee;border-radius:11px;overflow:hidden;background:#fff;margin:0}
+.psbank-proposal-program>summary{
+ display:flex;align-items:center;gap:10px;min-height:60px;
+ padding:11px 15px;background:#12345d;color:#fff;cursor:pointer;
+ list-style:none;position:relative
+}
+.psbank-proposal-program>summary::-webkit-details-marker{display:none}
+.psbank-proposal-program>summary .psbank-chevron{
+ display:grid;place-items:center;flex:0 0 24px;width:24px;height:24px;
+ border-radius:50%;background:#f9bc28;color:#153252;font-size:15px;font-weight:900;
+ transition:transform .16s
+}
+.psbank-proposal-program[open]>summary .psbank-chevron{transform:rotate(90deg)}
+.psbank-proposal-program>summary .psbank-accordion-name{min-width:0;flex:1}
+.psbank-proposal-program>summary .psbank-accordion-name>b{display:block;font-size:13px;color:#fff}
+.psbank-proposal-program>summary .psbank-accordion-name>small{display:block;color:#d0e1f3;font-size:11px;margin-top:3px}
+.psbank-proposal-program>summary .psbank-accordion-count{border-radius:20px;background:#dbe8fa;color:#173961;font-size:11px;font-weight:800;padding:4px 9px;white-space:nowrap}
+.psbank-proposal-program>.psbank-accordion-body{padding:0}
+.psbank-proposal-programtools{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 13px;background:#eef4fb;border-bottom:1px solid #d9e4f0}
+.psbank-proposal-programtools>span{font-size:11px;color:#4c6380}
+.psbank-proposal-programtools .btn{white-space:nowrap;flex:none}
+.psbank-proposal-program .psbank-tablewrap{margin:0;max-width:100%;overflow-x:auto}
+.psbank-proposal-program .psbank-table{width:100%;table-layout:auto}
+.psbank-proposal-program .psbank-table th{white-space:nowrap;font-size:10px}
+.psbank-proposal-program .psbank-table th:nth-child(1){width:19%}
+.psbank-proposal-program .psbank-table th:nth-child(2){width:25%}
+.psbank-proposal-program .psbank-table th:nth-child(3){width:13%}
+.psbank-proposal-program .psbank-table th:nth-child(4){width:14%}
+.psbank-proposal-program .psbank-table th:nth-child(5){width:12%}
+.psbank-proposal-program .psbank-table th:nth-child(6){width:9%}
+.psbank-proposal-program .psbank-table th:nth-child(7){width:8%}
+.psbank-proposal-program .psbank-proposal-projectrow td{font-size:11px;overflow-wrap:anywhere;vertical-align:middle}
+.psbank-proposal-program .psbank-proposal-projectrow td:nth-child(2)>b{display:inline;font-weight:800}
+.psbank-proposal-program .psbank-results-actions{white-space:nowrap}
+@media(max-width:750px){.psbank-proposal-program>summary{padding:10px}.psbank-proposal-programtools{flex-wrap:wrap}}
