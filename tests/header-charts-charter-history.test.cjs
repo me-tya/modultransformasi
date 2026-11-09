@@ -90,7 +90,12 @@ test('new assets are cache-busted for Pages without disturbing top header sizing
   'project-selection-program-bank.css?v=20261109-mt04-recap-r2'
  ])assert.ok(index.includes(str),str);
  assert.match(index,/#app header\.top #bell\{[^\n]*width:36px!important/);
- assert.match(index,/#app header\.top \.sk-hdrActions \.sk-hdrHelp\{background:#1178E8!important/);
+ assert.match(index,/#app header\.top \.sk-hdrActions \.sk-hdrHelp\{background:#FFC425!important/);
+ assert.match(index,/#app header\.top \.sk-hdrActions \.sk-hdrHelp svg\{[^\n]*width:25px!important;height:25px!important/);
+ assert.match(index,/sk-hdrHelp,\s*\n#app header\.top \.sk-hdrActions \.sk-hdrSheet\{[^\n]*width:36px!important;min-width:36px!important;max-width:36px!important;height:36px!important/);
+ assert.match(index,/class="hbtn sk-hdrBtn sk-hdrHelp" data-act="helphome"[^\n]*<svg viewBox="0 0 32 32"/);
+ assert.doesNotMatch(index,/class="hbtn sk-hdrBtn sk-hdrHelp"[^\n]*<i>\?<\/i>/);
+ assert.match(index,/\.sk-hdrHelp:hover,#[^\n]*\.sk-hdrHelp:focus-visible\{background:#FFD952!important/);
 });
 
 test('project categorization defaults align ICS and OA, and Core Non APBN can be selected',()=>{
