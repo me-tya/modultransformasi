@@ -87,6 +87,7 @@ const PROJECT_FIELDS=[
 const CAT=['Core APBN','Core Non APBN','Office Automation','APBN','Non APBN','Manajemen Birokrasi'];
 function defaultProjectCategory(p){
  const tag=[p?.akr,p?.kode,p?.nama].join(' ').toUpperCase();
+ if(/CORE\s+NON[-\s]?APBN|CORE NON APBN/.test(tag))return 'Core Non APBN';
  if(/\bICS\b|\bCORE\b|INTEGRATED CORE SYSTEM/.test(tag))return 'Core APBN';
  if(/\bDOA\b|\bOA\b|OFFICE AUTOMATION/.test(tag))return 'Office Automation';
  return '';
@@ -95,6 +96,7 @@ function projectCategory(p,x){
  const v=String(x?.category||'').trim(),def=defaultProjectCategory(p);
  if(!v)return def;
  if(def==='Core APBN'&&v==='APBN')return def;
+ if(def==='Core Non APBN'&&v==='Non APBN')return def;
  if(def==='Office Automation'&&(v==='Manajemen Birokrasi'||v==='Non APBN'))return def;
  return v;
 }
