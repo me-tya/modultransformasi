@@ -137,3 +137,31 @@ test('Project Selection help and cheatsheet match PM modal shell and substantive
  assert.match(helpPage('map'),/data-ps27-jump/);
  assert.match(helpPage('fill'),/data-ps27-jump/);
 });
+
+
+test('Firestore header dot is fixed size and reflects real sync, warning, error',()=>{
+ assert.match(source,/#app header\.top #dbb\{[^']*width:20px!important/);
+ assert.match(source,/#app header\.top #dbb::before\{[^']*width:11px;height:11px/);
+ assert.match(source,/data-mt-sync-state="orange"/);
+ assert.match(source,/data-mt-sync-state="red"/);
+ assert.match(source,/function installSyncBadge\(header\)/);
+ assert.match(source,/syncObserver\.observe\(badge,\{childList:true,subtree:true,characterData:true\}\)/);
+ assert.match(source,/if\(s\.pending\)/);
+ assert.match(source,/Date\.now\(\)-syncPendingAt>=2500/);
+ const start=source.indexOf('function syncSnapshot(badge){');
+ const end=source.indexOf('function installHeader(){',start);
+ assert.ok(start>=0&&end>start);
+ const FB={st:'Tersimpan',err:''},navigator={onLine:true};
+ const body='var syncPendingAt=0,syncPendingTimer=null,syncDetails=null,observedSyncBadge=null,syncObserver=null;\n'+source.slice(start,end)+'\nreturn {syncSnapshot,syncColor};';
+ const {syncSnapshot,syncColor}=new Function('FB','navigator','document','window',body)(
+  FB,navigator,{},{}
+ );
+ const badge={textContent:'● Tersimpan'};
+ assert.equal(syncColor(syncSnapshot(badge)),'green');
+ FB.st='Tersimpan ke Firestore';assert.equal(syncColor(syncSnapshot(badge)),'green');
+ FB.st='Menyimpan…';assert.equal(syncColor(syncSnapshot(badge)),'green','Brief writes must not cause orange flicker');
+ navigator.onLine=false;assert.equal(syncColor(syncSnapshot(badge)),'orange');
+ navigator.onLine=true;FB.st='Gagal menyimpan';assert.equal(syncColor(syncSnapshot(badge)),'red');
+ FB.st='Tersimpan';FB.err='permission-denied';assert.equal(syncColor(syncSnapshot(badge)),'red','Listener errors must override green text');
+ FB.err='';FB.st='Firestore';assert.equal(syncColor(syncSnapshot(badge)),'orange');
+});
