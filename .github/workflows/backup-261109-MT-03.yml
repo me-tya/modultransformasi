@@ -1,0 +1,39 @@
+name: Backup utuh MT 261109-MT-03
+on:
+  push:
+    branches:
+      - backup-261109-MT-03
+    paths:
+      - .github/workflows/backup-261109-MT-03.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout seluruh repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Buat ZIP dari snapshot sebelum perubahan
+        run: |
+          set -euo pipefail
+          git archive --format=zip --prefix=modultransformasi/ bccfdab8ee57a4eedf022a08736715a5e2c691af > 261109-MT-03.zip
+          unzip -t 261109-MT-03.zip | tail -1
+          count=$(unzip -Z1 261109-MT-03.zip | grep -c '^[^/]*/.*')
+          echo "Total berkas backup: $count"
+          test "$count" -ge 50
+          sha256sum 261109-MT-03.zip > 261109-MT-03.sha256
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add 261109-MT-03.zip 261109-MT-03.sha256
+          git commit -m "backup: full repository snapshot 261109-MT-03"
+          git push origin HEAD:backup-261109-MT-03
+      - name: Unggah ZIP sebagai artefak
+        uses: actions/upload-artifact@v4
+        with:
+          name: 261109-MT-03
+          path: |
+            261109-MT-03.zip
+            261109-MT-03.sha256
