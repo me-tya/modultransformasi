@@ -880,3 +880,36 @@
 #app .psbank-history-table .psbank-rowactions>.psbank-program-action.add svg{width:16px;height:16px}
 #app .psbank-history-table .psbank-rowactions>.psbank-program-action.add:hover{transform:translateY(-1px)!important;border-color:#7e9fc7!important;background:#e9f2ff!important}
 @media(max-width:1250px){#app .psbank-detail-table{min-width:990px}}
+
+
+/* Project Selection › Riwayat Proyek: balanced columns and clickable, read-only detail. */
+#app .psbank-project-history-table{table-layout:fixed;width:100%;min-width:930px}
+#app .psbank-project-history-table col.pshist-check{width:43px}
+#app .psbank-project-history-table col.pshist-year{width:61px}
+#app .psbank-project-history-table col.pshist-code{width:17%}
+#app .psbank-project-history-table col.pshist-name{width:24%}
+#app .psbank-project-history-table col.pshist-program{width:27%}
+#app .psbank-project-history-table col.pshist-uic{width:20%}
+#app .psbank-project-history-table col.pshist-action{width:62px}
+#app .psbank-project-history-table th,#app .psbank-project-history-table td{padding:8px 9px;vertical-align:middle;overflow-wrap:anywhere}
+#app .psbank-project-history-table th:nth-child(2),#app .psbank-project-history-table td:nth-child(2){min-width:0;max-width:61px;width:61px;text-align:center;padding-inline:3px;white-space:nowrap}
+#app .psbank-project-history-table th:first-child,#app .psbank-project-history-table td:first-child{padding-inline:5px;text-align:center}
+#app .psbank-project-history-table th:last-child,#app .psbank-project-history-table td:last-child{text-align:center;padding-inline:4px}
+#app .psbank-project-history-table .psbank-rowactions{display:table-cell}
+#app .psbank-project-history-table .psbank-action-icon.add{width:33px;height:33px}
+#app .psbank-project-history-table .psbank-action-icon:disabled{opacity:.4;cursor:not-allowed;transform:none}
+#app .psbank-project-history-table .pshist-clickrow{cursor:pointer}
+#app .psbank-project-history-table .pshist-clickrow:hover,#app .psbank-project-history-table .pshist-clickrow:focus-visible{background:#edf5ff;outline:1px solid #b3d3f7;outline-offset:-1px}
+#app .psbank-project-history-table .pshist-name-cell b{color:#164a80}
+#app .psbank-history-detail .psbank-project-dialog{width:min(1030px,95vw)!important;max-height:min(89vh,875px)!important;height:auto!important}
+#app .pshist-summary{display:grid;grid-template-columns:1.15fr 1.3fr .9fr .7fr;gap:8px;margin-bottom:14px}
+#app .pshist-summary>div{border:1px solid #dce7f1;background:#f3f8fe;border-radius:9px;padding:11px;min-width:0}
+#app .pshist-summary small,#app .pshist-fields small{display:block;font-size:10.5px;color:#627b95;font-weight:700;margin-bottom:5px}
+#app .pshist-summary strong,#app .pshist-fields strong{display:block;font-size:12px;color:#163c62;font-weight:750;line-height:1.48;overflow-wrap:anywhere;white-space:pre-line}
+#app .pshist-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+#app .pshist-fields>div{border:1px solid #e4edf4;background:#fff;border-radius:8px;padding:10px 12px;min-width:0}
+#app .pshist-wbs{list-style:none;padding:0;margin:0;display:grid;gap:6px}
+#app .pshist-wbs li{display:grid;grid-template-columns:24px minmax(0,1fr) 110px;gap:7px;align-items:start;border:1px solid #e4edf4;border-radius:7px;padding:8px 10px;font-size:11px}
+#app .pshist-wbs li span{color:#72859a}.pshist-wbs li b{color:#19476e;font-weight:700}.pshist-wbs li small{text-align:right;color:#6b7f93}
+#app .pshist-none{color:#637c94;font-size:11px;margin:0}
+@media(max-width:650px){#app .pshist-summary{grid-template-columns:repeat(2,minmax(0,1fr))}#app .pshist-fields{grid-template-columns:1fr}#app .pshist-wbs li{grid-template-columns:24px minmax(0,1fr)}#app .pshist-wbs li small{grid-column:2;text-align:left}}
