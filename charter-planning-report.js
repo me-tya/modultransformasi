@@ -125,6 +125,13 @@ pCharter=function(){
  return html+cpFooter(c);
 };
 ACT.cpJump=()=>document.getElementById('cp-report-panel')?.scrollIntoView({behavior:'smooth',block:'center'});
+ACT.cpNewImportPptx=el=>{
+ const p=S.programs.find(x=>x.akr===el.dataset.p);
+ if(!p||!chCan('C',p)){toast('Akun tidak memiliki hak membuat draft Charter.');return}
+ ACT.chnew({dataset:{p:p.akr}});
+ if(!CHD){toast('Draft Charter belum siap. Buka Ubah untuk mengimpor.');return}
+ ACT.chimpdoc({dataset:{pptx:'1'}});
+};
 ACT.cpImportPptx=el=>{
  const c=S.charters.find(x=>String(x.id)===String(el.dataset.id));
  if(!c||c.st!=='Draft'||!chCan('U',chProg(c))){toast('Impor hanya tersedia untuk charter Draft yang berhak diubah. Charter disahkan membutuhkan versi baru.');return}
