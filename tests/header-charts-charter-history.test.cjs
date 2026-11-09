@@ -135,33 +135,34 @@ test('preview uses left pane height and Daftar Program renamed Usulan Program',(
  assert.ok(index.includes('project-selection-program-bank.js?v=20261109-mt04-usulan'));
 });
 
-test('MT-06 dashboard chart title and native tooltip alone remain usable',()=>{
- assert.match(db,/Capaian Modul per Triwulan/);
- assert.doesNotMatch(db,/Peta Modul per Triwulan/);
+test('MT-06 chart title and a single native tooltip',()=>{
+ assert.ok(db.includes('Capaian Modul per Triwulan'));
+ assert.ok(!db.includes('Peta Modul per Triwulan'));
  const html=chartWith('vertical');
- assert.match(html,/title="Target: 18 modul \\(90% dari 20 modul\\)"/);
- assert.match(html,/title="Realisasi: 10 modul \\(50% dari 20 modul\\)"/);
- assert.match(html,/title="Terlambat: 3 modul \\(15% dari 20 modul\\)"/);
- assert.doesNotMatch(html,/data-tip=/);
- assert.doesNotMatch(css,/db-group-bar::after/);
+ for(const tip of ['Target: 18 modul (90% dari 20 modul)','Realisasi: 10 modul (50% dari 20 modul)','Terlambat: 3 modul (15% dari 20 modul)']){
+   assert.ok(html.includes('title="'+tip+'"'),tip);
+ }
+ assert.ok(!html.includes('data-tip='),'no extra tooltip attribute');
+ assert.ok(!css.includes('db-group-bar::after'),'no duplicate pseudo tooltip');
 });
 
-test('MT-06 WBS row click opens detail instead of requiring separate WBS navigation',()=>{
- assert.match(index,/function dxItemRows\\(list,M\\)/);
- assert.match(index,/tr class="dx-wbs-row" data-act="dxWbsItem" data-k=/);
- assert.match(index,/tabindex="0" role="button" aria-label="Buka detail item WBS/);
- assert.match(index,/ACT\\.dxWbsItem=el=>/);
- assert.match(index,/const w=wbsBy\\(el\\.dataset\\.k\\)/);
- assert.match(index,/if\\(pop\\)pop\\.remove\\(\\);\\s*wbsDetail\\(w\\)/);
- assert.match(index,/\\.ov \\.lap\\.dx-it tr\\.dx-wbs-row:hover/);
+test('MT-06 modal WBS items navigate to detail through whole-row clicks',()=>{
+ assert.ok(index.includes('function dxItemRows(list,M)'));
+ assert.ok(index.includes('tr class="dx-wbs-row" data-act="dxWbsItem" data-k='));
+ assert.ok(index.includes('tabindex="0" role="button" aria-label="Buka detail item WBS'));
+ assert.ok(index.includes('ACT.dxWbsItem=el=>'));
+ assert.ok(index.includes('const w=wbsBy(el.dataset.k)'));
+ assert.ok(index.includes('if(pop)pop.remove();'));
+ assert.ok(index.includes('wbsDetail(w);'));
+ assert.ok(index.includes('.ov .lap.dx-it tr.dx-wbs-row:hover'));
 });
 
-test('MT-06 compact seven-domain cards keep original domain list and existing help unchanged',()=>{
- assert.match(index,/var domains=\\['Governance','Scope','Schedule','Finance','Stakeholders','Resources','Risk'\\]/);
- assert.match(index,/sk-domain-grid/);
- assert.match(index,/sk-domain-card/);
- assert.match(index,/min-height:62px/);
- assert.match(index,/Tujuh performance domains/);
- assert.match(index,/class="hbtn sk-hdrBtn sk-hdrHelp" data-act="helphome"/);
- assert.match(index,/Bantuan Penggunaan/);
+test('MT-06 PMBOK cards compact, seven domains preserved, active Help untouched',()=>{
+ assert.ok(index.includes("var domains=['Governance','Scope','Schedule','Finance','Stakeholders','Resources','Risk']"));
+ assert.ok(index.includes('sk-domain-grid'));
+ assert.ok(index.includes('sk-domain-card'));
+ assert.ok(index.includes('min-height:62px'));
+ assert.ok(index.includes('Tujuh performance domains'));
+ assert.ok(index.includes('class="hbtn sk-hdrBtn sk-hdrHelp" data-act="helphome"'));
+ assert.ok(index.includes('Bantuan Penggunaan'));
 });
