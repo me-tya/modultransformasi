@@ -559,6 +559,7 @@ function mount(){
  liveSearch('[data-bank-search]',v=>{store().search=v;store().bankPage=1;});
  liveSearch('[data-scope-search]',v=>{Scope.bank().map.q=v;});
  liveSearch('[data-scope-history-search]',v=>{Scope.bank().historySearch=v;});
+ liveSearch('[data-scope-proposal-search]',v=>{const b=store();b.filterScopes=b.filterScopes||{};b.filterScopes.mapping=b.filterScopes.mapping||{};b.filterScopes.mapping.search=v;});
 }
 
 /* Reusable column sorting for all regular data tables in Modul Transformasi.
