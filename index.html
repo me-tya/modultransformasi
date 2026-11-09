@@ -4287,9 +4287,9 @@ function pPorto(){const P=per(),M=P.b,tw=P.lab;const seg=S.ui.seg||'';const PV=p
  (portoTab==='daftar'?tbl('porto',{ent:'program',add:true,edit:true,del:true,addLabel:'Program Baru',wide:true,title:'Daftar Program',
   tools:`<div class="seg" role="group" aria-label="Jenis program">${[['','Semua'],['Berkelanjutan','Berkelanjutan'],['Tematik','Tematik']].map(([v,l])=>`<button data-seg="seg" data-v="${v}" class="${seg===v?'on':''}" aria-pressed="${seg===v}">${l}</button>`).join('')}</div>`,
   ph:'Cari kode, program, unit, atau status…',empty:'Tidak ada program sesuai filter. Gunakan Reset filter atau ubah kriteria.',
-  canAdd:()=>lv('porto').includes('C'),canEdit:p=>canW('porto','U',p.uic),canDel:p=>canW('porto','D',p.uic)&&!S.wbs.some(w=>w.prog===p.akr),list:()=>S.programs,rows:()=>ps.filter(p=>portoMatch(p,items,M)),label:p=>p.kode,
-  validate:(d,row)=>{d.akr=String(d.akr||'').toUpperCase().replace(/[^A-Z]/g,'');d.sing=String(d.sing||'').toUpperCase().trim()||(row?psing(row):'')||d.akr;if(d.akr.length<2||d.akr.length>6){toast('Akronim 2–6 huruf kapital.');return false}const kode=(d.jenis==='Tematik'?'T':'B')+String(d.mulai||S.ui.tahun).slice(-2)+'-'+d.akr;if(S.programs.some(p=>p!==row&&(p.kode===kode||p.akr===d.akr))){toast(`Kode ${kode} atau akronim ${d.akr} sudah dipakai.`);return false}if(row&&row.akr!==d.akr&&S.wbs.some(w=>w.prog===row.akr)){toast('Akronim terkunci karena program sudah memiliki item WBS.');return false}d.kode=kode},
-  cols:[{k:'kode',l:'Kode',frm:false,r:p=>`<a class="code porto-code" href="#pmo-wbs" data-act="gowbs" data-p="${esc(p.akr)}" title="Buka WBS ${esc(p.nama)}">${esc(p.kode)}</a><a class="porto-wbs-code" href="#pmo-wbs" data-act="gowbs" data-p="${esc(p.akr)}" title="Lihat kode WBS yang berawalan ${esc(p.akr)}-">WBS: ${esc(p.akr)}-*</a>`},{k:'jenis',l:'Jenis',t:'sel',o:['Berkelanjutan','Tematik'],r:p=>p.jenis==='Tematik'?'<span class="chip c-info porto-kind">Tematik</span>':'<span class="chip c-gold porto-kind">Berkelanjutan</span>'},{k:'akr',l:'Akronim kode',req:true,tbl:false,hint:'2–6 huruf; menjadi prefiks item WBS'},{k:'sing',l:'Singkatan program',tbl:false,req:true,def:'',hint:'Ditampilkan di daftar program WBS, mis. DCS, DOA, SDK'},{k:'mulai',l:'Tahun mulai',t:'num',req:true,tbl:false,def:()=>S.ui.tahun},
+  canAdd:()=>lv('porto').includes('C'),canEdit:p=>canW('porto','U',p.uic),canDel:p=>canW('porto','D',p.uic)&&!S.wbs.some(w=>w.prog===p.akr),list:()=>S.programs,rows:()=>ps.filter(p=>portoMatch(p,items,M)),label:p=>p.kodeResmi||p.akr,
+  validate:(d,row)=>{d.akr=String(d.akr||'').toUpperCase().replace(/[^A-Z]/g,'');d.sing=String(d.sing||'').toUpperCase().trim()||(row?psing(row):'')||d.akr;if(d.akr.length<2||d.akr.length>6){toast('Akronim 2–6 huruf kapital.');return false}const resmi=String(d.kodeResmi||'').trim().toUpperCase();if(S.programs.some(p=>p!==row&&(p.akr===d.akr||(resmi&&String(p.kodeResmi||'').trim().toUpperCase()===resmi)))){toast('Akronim internal atau kode program resmi sudah dipakai.');return false}if(row&&row.akr!==d.akr&&S.wbs.some(w=>w.prog===row.akr)){toast('Akronim terkunci karena program sudah memiliki item WBS.');return false}d.kodeResmi=resmi;if(!row||!row.kode)d.kode=resmi},
+  cols:[{k:'kode',l:'Kode Program Resmi',frm:false,r:p=>`<a class="code porto-code" href="#pmo-wbs" data-act="gowbs" data-p="${esc(p.akr)}" title="Buka WBS ${esc(p.nama)}">${esc(p.kodeResmi||'Belum ditetapkan')}</a>${!p.kodeResmi&&p.kode?`<small title="Referensi legacy aplikasi, belum dikonfirmasi resmi">Ref. internal: ${esc(p.kode)}</small>`:''}<a class="porto-wbs-code" href="#pmo-wbs" data-act="gowbs" data-p="${esc(p.akr)}" title="Lihat kode WBS yang berawalan ${esc(p.akr)}-">WBS: ${esc(p.akr)}-*</a>`},{k:'kodeResmi',l:'Kode Program Resmi (opsional)',tbl:false,hint:'Isi sesuai master/dokumen penetapan. Kosongkan bila belum tersedia. Tidak otomatis dari B/T dan tahun.'},{k:'jenis',l:'Jenis',t:'sel',o:['Berkelanjutan','Tematik'],r:p=>p.jenis==='Tematik'?'<span class="chip c-info porto-kind">Tematik</span>':'<span class="chip c-gold porto-kind">Berkelanjutan</span>'},{k:'akr',l:'Akronim kode',req:true,tbl:false,hint:'2–6 huruf; menjadi prefiks item WBS'},{k:'sing',l:'Singkatan program',tbl:false,req:true,def:'',hint:'Ditampilkan di daftar program WBS, mis. DCS, DOA, SDK'},{k:'mulai',l:'Tahun mulai',t:'num',req:true,tbl:false,def:()=>S.ui.tahun},
    {k:'nama',l:'Program / proyek',req:true,w:1,r:p=>`<b class="porto-title">${esc(p.nama)}</b>${S.wbs.some(w=>!w.arsip&&w.prog===p.akr&&yrOf(w)===S.ui.tahun)?'':`<span class="chip c-warn porto-nowbs" title="Program ini belum memiliki item WBS untuk tahun ${S.ui.tahun}">Belum ada WBS ${S.ui.tahun}</span>`}<span class="porto-meta" title="${esc(p.lv2||'')} · ${esc(p.periode||'')}">${esc(p.lv2||'')} · ${esc(p.periode||'')}</span>`},{k:'lv2',l:'Klaster (Lv 2)',tbl:false},{k:'sponsor',l:'Sponsor',tbl:false},
    {k:'uic',l:'UIC Utama',req:true,r:p=>esc(p.uic)},{k:'pend',l:'UIC Pendukung',r:p=>`<span class="porto-pend" title="${esc(p.pend||'—')}">${esc(p.pend||'—')}</span>`},{k:'periode',l:'Periode',tbl:false},
    {k:'_p',l:`Capaian ${S.ui.tahun}`,frm:false,r:p=>portoCap(p,items,M),x:p=>{const x=portoMetrics(p,items,M);return x.hasTarget?Math.round(x.cap*10)/10:''}},
@@ -8260,7 +8260,7 @@ const FORMEX={
   ['jenis','Jenis',0,'Berkelanjutan = program multitahun; Tematik = program dengan tema khusus tahun berjalan.','Berkelanjutan'],
   ['akr','Akronim kode',1,'2–6 huruf; menjadi awalan kode item WBS. Pilih yang singkat dan jangan diubah setelah WBS dibuat.','OA'],
   ['sing','Singkatan program',1,'Muncul di tombol filter program pada halaman WBS.','DOA'],
-  ['mulai','Tahun mulai',1,'Tahun program mulai berjalan; ikut membentuk kode program (B25-…, T26-…).','2025'],
+  ['mulai','Tahun mulai',1,'Tahun program mulai berjalan; tidak digunakan untuk membuat kode program resmi.','2025'],
   ['nama','Program / proyek',1,'Nama resmi program, tulis lengkap seperti di Manual IKU.','Digitalisasi Office Automation'],
   ['lv2','Klaster (Lv 2)',0,'Kelompok level 2 pada struktur WBS, bila ada.','HRIS Satu Kemenkeu'],
   ['sponsor','Sponsor',0,'Pimpinan yang menjadi sponsor program.','Sekretaris Jenderal'],
@@ -8796,7 +8796,7 @@ const GUIDE_Q={
  ['Pilihan Kemenkeu | (unit Anda)','Melihat capaian seluruh Kemenkeu atau hanya unit Eselon I Anda (item dengan kolom cakupan UE I = “Ya”).',[],'PMO DJA memilih “DJA” → capaian dihitung dari item yang mencakup DJA saja.']],
 'pmo-portofolio':[
  ['Chip “Belum ada WBS”','Program sudah terdaftar tetapi belum punya item WBS di tahun terpilih, jadi capaiannya belum bisa dihitung.',['Susun WBS lewat Perencanaan › Susun WBS (impor Excel atau tambah item).'],'Program T26-CATP baru didaftarkan → impor WBS-nya → capaian mulai terhitung.','pmo-wbsplan','Buka Susun WBS'],
- ['Kode program (mis. B25-CORE)','Format [B = berkelanjutan / T = tematik][tahun mulai]-[akronim]. Akronim menjadi awalan kode item WBS.',['Pilih akronim singkat dan jangan diubah setelah WBS dibuat.'],'T26-CATP → item WBS CATP-1, CATP-2, …'],
+ ['Kode program resmi','Diisi manual sesuai master atau dokumen penetapan. Akronim internal tetap digunakan untuk kode item WBS.',['Pilih akronim singkat dan jangan diubah setelah WBS dibuat.'],'T26-CATP → item WBS CATP-1, CATP-2, …'],
  ['Milestone 30 hari · Risiko &amp; isu terbuka','Jumlah milestone yang jatuh tempo 30 hari ke depan, dan risiko/isu yang belum ditutup.',['Klik untuk membuka daftarnya, lalu tindak lanjuti di Milestone atau Risiko &amp; Isu.'],'Milestone 30 hari = 4 → cek apakah item WBS pendukungnya sudah berjalan.','pmo-milestone','Buka Milestone']],
 'pmo-program':[
  ['Dari mana daftar proyek dan sub proyek?','Otomatis dari WBS: nama kelompok Lv 4 menjadi proyek, Lv 5 menjadi sub proyek. Khusus CORE: modul dan sub modul.',['Untuk menambah/mengubah proyek, ubah WBS-nya (atau ajukan Change Request bila sudah baseline).'],'Item CORE-120 berada di “Modul PNBP › Sub modul PNBP SDA” → muncul di proyek Modul PNBP.'],
@@ -9076,9 +9076,9 @@ function fexOf(c){if(!CURF||!FORMEX[CURF])return '';const f=FORMEX[CURF].f.find(
 
 /* --- Referensi kode & usulan --- */
 function pRef(){return vh('K','pmo','Referensi Kode & Usulan dari CMO','Master kode program dan usulan item WBS dari CMO.')+pmoTabs('referensi')+
- `<div class="note i"><span>Skema kode: Program <b>[B/T][tahun mulai]-[akronim]</b> (B25-CORE, T26-CATP) · Item WBS <b>[akronim]-[nomor urut]</b> (CORE-27) · Dokumen ADP <b>[kode item ADP].[nomor sub modul]</b> (CORE-72.1).</span></div>`+
+ `<div class="note i"><span>Kode program resmi diisi manual sesuai master atau dokumen penetapan, tanpa awalan B/T otomatis. Kode B25-CORE dan T26-CATP pada data awal adalah <b>referensi internal prototipe yang belum diverifikasi</b>. Identitas teknis menggunakan ID tetap dan akronim WBS. Item WBS <b>[akronim]-[nomor urut]</b> (CORE-27) serta kode ADP lama tetap dipertahankan.</span></div>`+
  tbl('kode',{ent:'kode',title:'Master Kode Program',list:()=>[],rows:()=>pmoProgramList(),noexp:0,
-  cols:[{k:'kode',l:'Kode program',r:p=>`<span class="code">${p.kode}</span>`},{k:'akr',l:'Akronim'},{k:'nama',l:'Program',w:1},{k:'jenis',l:'Jenis'},{k:'n',l:'Item WBS',num:1,r:p=>rp(S.wbs.filter(w=>w.prog===p.akr).length),x:p=>S.wbs.filter(w=>w.prog===p.akr).length},
+  cols:[{k:'kode',l:'Kode program resmi',r:p=>`<span class="code">${esc(p.kodeResmi||'Belum ditetapkan')}</span>${!p.kodeResmi&&p.kode?`<small title="Kode referensi internal yang belum diverifikasi">Ref. internal: ${esc(p.kode)}</small>`:''}`},{k:'akr',l:'Akronim'},{k:'nama',l:'Program',w:1},{k:'jenis',l:'Jenis'},{k:'n',l:'Item WBS',num:1,r:p=>rp(S.wbs.filter(w=>w.prog===p.akr).length),x:p=>S.wbs.filter(w=>w.prog===p.akr).length},
    {k:'last',l:'Kode terakhir',r:p=>{const n=Math.max(0,...S.wbs.filter(w=>w.prog===p.akr).map(w=>+w.k.split('-')[1]||0));return n?`<span class="code">${p.akr}-${n}</span>`:'—'}},{k:'next',l:'Kode berikut',r:p=>`<span class="code">${p.akr}-${Math.max(0,...S.wbs.filter(w=>w.prog===p.akr).map(w=>+w.k.split('-')[1]||0))+1}</span>`}]})+
 tbl('tahap',{ent:'tahapan',title:'Referensi Tahapan',add:true,edit:true,del:true,addLabel:'Tahapan',list:()=>S.tahap,rows:()=>tahapList(),canAdd:()=>lv('ref').includes('C'),canEdit:()=>lv('ref').includes('U'),canDel:()=>lv('ref').includes('D'),label:t=>t.nama,sortDef:{k:'urut',d:'asc'},ps:50,
   notice:`<div class="note i" style="margin:0 14px 10px"><span>Item WBS masuk ke sebuah tahapan bila <b>salah satu level jalurnya (Lv 2 sampai level item itu sendiri)</b> memuat kata kunci tahapan. Pisahkan kata kunci dengan koma; tanda <b>=</b> di depan berarti nama level harus persis sama (mis. <span class="code">=pengembangan</span>). Huruf besar/kecil dan tanda baca diabaikan.</span></div>`,
@@ -10276,12 +10276,12 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 <script src="charter-planning-report.js?v=20261109-charter-import-v3"></script>
 
-<script src="project-selection-flow.js?v=20261109-5"></script>
+<script src="project-selection-flow.js?v=20261109-mt10-codes"></script>
 <script src="project-selection-governance.js?v=20261108-1"></script>
-<script src="project-selection-workflow-2027.js?v=20261109-mt09-ui5-r1"></script>
+<script src="project-selection-workflow-2027.js?v=20261109-mt10-codes"></script>
 <script src="project-selection-scope-map.js?v=20261109-mt09-ui5-r1"></script>
 <script src="project-selection-documents.js?v=20261109-mt08-charter"></script>
-<script src="project-selection-program-bank.js?v=20261109-mt09-ui5-r1"></script>
+<script src="project-selection-program-bank.js?v=20261109-mt10-codes"></script>
 
 
 <script src="planning-tabs-v2.js?v=20261108-3"></script>
