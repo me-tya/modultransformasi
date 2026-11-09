@@ -47,6 +47,9 @@ test('Carry-over clones program and charter but leaves prior-year WBS for fresh 
  assert.equal(copy.psDraft,true);
  assert.notEqual(copy.id,m.p.id);
  assert.notEqual(copy.akr,m.p.akr);
+ assert.equal(copy.kode,'','cloned programs must not infer new B/T-year codes');
+ assert.equal(copy.kodeResmi,'','official program code requires source verification');
+ assert.equal(m.p.kode,'B25-OA','historical reference must remain unchanged');
  assert.equal(copy.psBusinessCase,m.p.psBusinessCase);
  assert.equal(copy.psBenefits[0].target,m.p.psBenefits[0].target);
  assert.equal(copy.psProjects.length,1);
