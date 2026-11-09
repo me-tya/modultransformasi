@@ -42,14 +42,14 @@ test('copy from project history produces new year code but does not mutate sourc
  assert.equal(dst.psProjects[1].psOriginYear,2026);
  assert.equal(prev.psProjects.length,1);
  assert.equal(prev.psProjects[0].psAcronym,'MKER');
- assert.equal(S.ui.psBank.mappingTab,'results');
+ assert.equal(S.ui.psBank.mappingTab,'proposal');
 });
 test('programs display as native accordions with direct open-program actions',()=>{
  const {scope,S}=setup();S.ui.psBank.filterScopes.mapping.allProgramsSelected=true;S.ui.psBank.mappingTab='mapping';
  const html=scope.render();
  assert.match(html,/<details class="psbank-accordion-program"/);
  assert.match(html,/data-scope-program-toggle/);
- assert.match(html,/data-scope-choose/);
+ assert.match(html,/data-scope-aggregate-view/);
 });
 test('results use page scroll and right-aligned summary outside blue banner',()=>{
  const {scope,S}=setup();S.ui.psBank.mappingTab='results';
