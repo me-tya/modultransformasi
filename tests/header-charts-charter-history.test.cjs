@@ -86,8 +86,8 @@ test('new assets are cache-busted for Pages without disturbing top header sizing
   'dashboard-executive-v2.js?v=20261109-mt04-chart',
   'dashboard-executive-v2.css?v=20261109-mt04-chart',
   'charter-planning-report.js?v=20261109-charter-import-v3',
-  'project-selection-scope-map.js?v=20261109-mt04-recap',
-  'project-selection-program-bank.css?v=20261109-mt04-recap'
+  'project-selection-scope-map.js?v=20261109-mt04-recap-r2',
+  'project-selection-program-bank.css?v=20261109-mt04-recap-r2'
  ])assert.ok(index.includes(str),str);
  assert.match(index,/#app header\.top #bell\{[^\n]*width:36px!important/);
  assert.match(index,/#app header\.top \.sk-hdrActions \.sk-hdrHelp\{background:#1178E8!important/);
