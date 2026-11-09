@@ -79,7 +79,7 @@ test('new assets are cache-busted for Pages without disturbing top header sizing
  for(const str of [
   'dashboard-executive-v2.js?v=20261109-chart-v3',
   'dashboard-executive-v2.css?v=20261109-chart-v3',
-  'charter-planning-report.js?v=20261109-charter-import-v2',
+  'charter-planning-report.js?v=20261109-charter-import-v3',
   'project-selection-scope-map.js?v=20261109-history-click-v6',
   'project-selection-program-bank.css?v=20261109-history-click-v6'
  ])assert.ok(index.includes(str),str);
