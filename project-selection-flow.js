@@ -496,7 +496,7 @@ function programModal(p){
   if(!name||!uic){toast('Nama dan UIC Utama wajib diisi.');return}
   // Kode resmi adalah masukan eksplisit. ID p.id dan akronim p.akr adalah referensi internal.
   // Kode B/T historis tidak diasumsikan resmi jika belum dikonfirmasi.
-  if(typed&&allPrograms().some(o=>o!==p&&String(o.kodeResmi||'').trim().toUpperCase()===typed)){
+  if(typed&&allPrograms().some(o=>o!==p&&+o.psYear===+y&&String(o.kodeResmi||'').trim().toUpperCase()===typed)){
    toast('Kode program resmi telah digunakan oleh program lain.');return
   }
   const target=p||{id:uid2('program'),akr:'PS'+y+'-'+uid2('p'),psYear:y,psDraft:true,psStatus:'Draft',psListStatus:'Baru',psThreshold:80,psPrioritize:false,psProjects:[],psWeights:{},psGovernanceV:1,psBenefits:[],psStakeholders:[],psRiskRegister:[],mulai:y,periode:y+'–'+y,status:'Perencanaan'};
