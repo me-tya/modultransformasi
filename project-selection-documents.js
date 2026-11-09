@@ -6,6 +6,7 @@ const E=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').repla
 const X=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
 // Hanya kode yang diisi/ditetapkan yang dinyatakan sebagai kode resmi dalam dokumen.
 const officialCode=p=>String(p?.kodeResmi||'').trim()||'Belum ditetapkan';
+const PPTX_STYLE=Object.freeze({navy:'102F56',mid:'1F4F81',gold:'F9B919',white:'FFFFFF',pale:'F0F5FA',text:'254568',muted:'657E98',font:'Aptos'});
 const STEPS=[['identity','Identitas'],['case','Business Case'],['benefits','Manfaat'],['stakeholders','Stakeholder'],['risks','Risiko'],['governance','Tata Kelola'],['charter','Charter Program']];
 const year=()=>+S.ui.psSelectedYear||+S.ui.tahun||2026;
 const cfg=()=>{S.ui.psBank=S.ui.psBank||{};const b=S.ui.psBank;b.doc=b.doc||{format:'word',sections:STEPS.map(x=>x[0]),cover:true,toc:true,sign:true,annex:true,slide:0};b.doc.sections=[...new Set((Array.isArray(b.doc.sections)?b.doc.sections:STEPS.map(x=>x[0])).filter(k=>STEPS.some(s=>s[0]===k)))];return b.doc};
@@ -135,9 +136,9 @@ const sections=p=>STEPS.filter(s=>cfg().sections.includes(s[0])).map(s=>({key:s[
 /* Tahapan panjang otomatis dipecah menjadi slide lanjutan tanpa kehilangan data. */
 function splitSlideValue(value){
  let rest=String(value==null||value===''?'Belum diisi':value),out=[];
- while(rest.length>190){
-  let k=rest.lastIndexOf(' ',190);
-  if(k<80)k=190;
+ while(rest.length>155){
+  let k=rest.lastIndexOf(' ',155);
+  if(k<70)k=155;
   out.push(rest.slice(0,k).trim());rest=rest.slice(k).trimStart();
  }
  out.push(rest);return out;
@@ -183,7 +184,7 @@ function slidePages(p){
    return;
   }
   const all=section.rows.flatMap(r=>splitSlideValue(r[1]).map((v,i)=>[String(r[0])+(i?' (lanjutan '+(i+1)+')':''),v]));
-  for(let j=0;j<all.length;j+=5)out.push({title:section.title+(j?' (lanjutan)':''),key:section.key,rows:all.slice(j,j+5)});
+  for(let j=0;j<all.length;j+=4)out.push({title:section.title+(j?' (lanjutan)':''),key:section.key,rows:all.slice(j,j+4)});
  });
  if(cfg().sign){const t=tteState(cfg());out.push({title:'Penandatanganan Elektronik (Rancangan)',key:'tte',rows:[
  ['Nama Pejabat',t.name||'Belum ditetapkan'],['Jabatan',t.title||'Belum ditetapkan'],
@@ -684,30 +685,30 @@ async function exportFile(p){
      return;
     }
     if(page.kind==='cover'){
-     sl.background={color:'0B2447'};
-     sl.addShape(ppt.ShapeType.rect,{x:.61,y:.57,w:.14,h:5.4,line:{color:'FDB913',transparency:100},fill:{color:'FDB913'}});
-     sl.addText('KEMENTERIAN KEUANGAN REPUBLIK INDONESIA',{x:1,y:.68,w:11.7,h:.42,fontFace:'Aptos',fontSize:15,color:'FDB913',bold:true,margin:0});
-     sl.addText('DOKUMEN PERENCANAAN PROGRAM',{x:1,y:1.88,w:11.7,h:.8,fontFace:'Aptos',fontSize:32,color:'FFFFFF',bold:true,margin:0,fit:'shrink'});
-     sl.addText(String(p.nama||''),{x:1,y:2.94,w:11.6,h:1.3,fontFace:'Aptos',fontSize:26,color:'FFFFFF',bold:true,margin:0,fit:'shrink'});
-     sl.addText('Tahun '+year()+' · '+(officialCode(p))+' · Versi '+version,{x:1,y:5.42,w:11.4,h:.4,fontFace:'Aptos',fontSize:16,color:'FDB913',margin:0});
+     sl.background={color:PPTX_STYLE.navy};
+     sl.addShape(ppt.ShapeType.rect,{x:.61,y:.57,w:.14,h:5.4,line:{color:PPTX_STYLE.gold,transparency:100},fill:{color:PPTX_STYLE.gold}});
+     sl.addText('KEMENTERIAN KEUANGAN REPUBLIK INDONESIA',{x:1,y:.68,w:11.7,h:.42,fontFace:PPTX_STYLE.font,fontSize:15,color:PPTX_STYLE.gold,bold:true,margin:0});
+     sl.addText('DOKUMEN PERENCANAAN PROGRAM',{x:1,y:1.88,w:11.7,h:.8,fontFace:PPTX_STYLE.font,fontSize:32,color:'FFFFFF',bold:true,margin:0,fit:'shrink'});
+     sl.addText(String(p.nama||''),{x:1,y:2.94,w:11.6,h:1.3,fontFace:PPTX_STYLE.font,fontSize:26,color:'FFFFFF',bold:true,margin:0,fit:'shrink'});
+     sl.addText('Tahun '+year()+' · '+(officialCode(p))+' · Versi '+version,{x:1,y:5.42,w:11.4,h:.4,fontFace:PPTX_STYLE.font,fontSize:16,color:PPTX_STYLE.gold,margin:0});
     }else{
      sl.background={color:'FFFFFF'};
-     sl.addShape(ppt.ShapeType.rect,{x:0,y:0,w:13.333,h:.14,line:{color:'FDB913',transparency:100},fill:{color:'FDB913'}});
-     sl.addText('KEMENTERIAN KEUANGAN · '+(officialCode(p))+' · '+year(),{x:.6,y:.46,w:12,h:.3,fontFace:'Aptos',fontSize:12,bold:true,color:'1E507E',margin:0});
-     sl.addText(String(page.title||''),{x:.6,y:.92,w:12.1,h:.62,fontFace:'Aptos',fontSize:25,bold:true,color:'0B2447',margin:0,fit:'shrink'});
-     sl.addText(p.nama+' · Versi '+version,{x:.6,y:1.59,w:12,h:.29,fontFace:'Aptos',fontSize:12,color:'627892',margin:0});
+     sl.addShape(ppt.ShapeType.rect,{x:0,y:0,w:13.333,h:.14,line:{color:PPTX_STYLE.gold,transparency:100},fill:{color:PPTX_STYLE.gold}});
+     sl.addText('KEMENTERIAN KEUANGAN · '+(officialCode(p))+' · '+year(),{x:.6,y:.46,w:12,h:.3,fontFace:PPTX_STYLE.font,fontSize:12,bold:true,color:PPTX_STYLE.mid,margin:0});
+     sl.addText(String(page.title||''),{x:.6,y:.92,w:12.1,h:.62,fontFace:PPTX_STYLE.font,fontSize:25,bold:true,color:PPTX_STYLE.navy,margin:0,fit:'shrink'});
+     sl.addText(p.nama+' · Versi '+version,{x:.6,y:1.59,w:12,h:.29,fontFace:PPTX_STYLE.font,fontSize:12,color:'627892',margin:0});
      const cards=page.rows||[],cols=2,nRows=Math.ceil(cards.length/cols),gapX=.22,gapY=.16,w=5.95,h=Math.min(1.37,(4.45-(nRows-1)*gapY)/Math.max(1,nRows));
      cards.forEach((a,j)=>{
       const col=j%cols,row=Math.floor(j/cols),xx=.6+col*(w+gapX),yy=2.1+row*(h+gapY);
-      sl.addShape(ppt.ShapeType.rect,{x:xx,y:yy,w,h,line:{color:'DCE6F0'},fill:{color:'F2F6FB'}});
-      sl.addShape(ppt.ShapeType.rect,{x:xx,y:yy,w:.07,h,line:{color:'FDB913',transparency:100},fill:{color:'FDB913'}});
-      sl.addText(String(a[0]||''),{x:xx+.2,y:yy+.12,w:w-.42,h:.3,fontFace:'Aptos',fontSize:11.5,bold:true,color:'19456F',margin:0,fit:'shrink'});
-      sl.addText(String(a[1]||'Belum diisi'),{x:xx+.2,y:yy+.49,w:w-.43,h:h-.58,fontFace:'Aptos',fontSize:11.5,color:'415974',margin:0,valign:'top',fit:'shrink'});
+      sl.addShape(ppt.ShapeType.rect,{x:xx,y:yy,w,h,line:{color:'DCE6F0'},fill:{color:PPTX_STYLE.pale}});
+      sl.addShape(ppt.ShapeType.rect,{x:xx,y:yy,w:.07,h,line:{color:PPTX_STYLE.gold,transparency:100},fill:{color:PPTX_STYLE.gold}});
+      sl.addText(String(a[0]||''),{x:xx+.2,y:yy+.12,w:w-.42,h:.3,fontFace:PPTX_STYLE.font,fontSize:11.5,bold:true,color:'19456F',margin:0,fit:'shrink'});
+      sl.addText(String(a[1]||'Belum diisi'),{x:xx+.2,y:yy+.49,w:w-.43,h:h-.58,fontFace:PPTX_STYLE.font,fontSize:11.5,color:'415974',margin:0,valign:'top',fit:'shrink'});
      });
     }
-    sl.addShape(ppt.ShapeType.rect,{x:0,y:7.22,w:13.333,h:.28,line:{color:page.kind==='cover'?'0B2447':'EAF1F8',transparency:100},fill:{color:page.kind==='cover'?'0B2447':'EAF1F8'}});
-    sl.addText('PROGRAM TRANSFORMASI KEMENTERIAN KEUANGAN',{x:.6,y:7.26,w:9.8,h:.15,fontFace:'Aptos',fontSize:8,color:page.kind==='cover'?'C9D9EB':'66809D',margin:0});
-    sl.addText((i+1)+' / '+count,{x:11.85,y:7.26,w:.85,h:.15,fontFace:'Aptos',fontSize:8,color:page.kind==='cover'?'FDB913':'66809D',align:'right',margin:0});
+    sl.addShape(ppt.ShapeType.rect,{x:0,y:7.22,w:13.333,h:.28,line:{color:page.kind==='cover'?PPTX_STYLE.navy:'EAF1F8',transparency:100},fill:{color:page.kind==='cover'?PPTX_STYLE.navy:'EAF1F8'}});
+    sl.addText('PROGRAM TRANSFORMASI KEMENTERIAN KEUANGAN',{x:.6,y:7.26,w:9.8,h:.15,fontFace:PPTX_STYLE.font,fontSize:8,color:page.kind==='cover'?'C9D9EB':'66809D',margin:0});
+    sl.addText((i+1)+' / '+count,{x:11.85,y:7.26,w:.85,h:.15,fontFace:PPTX_STYLE.font,fontSize:8,color:page.kind==='cover'?PPTX_STYLE.gold:'66809D',align:'right',margin:0});
    });
    await ppt.writeFile({fileName:file+'.pptx'});
   }
@@ -788,7 +789,7 @@ function portfolioModel(){
    chips:['Tahun '+year(),data.length+(mode?' usulan proyek':' program'),'Versi v'+version],scope:[],
    meta:[['Tahun Anggaran',String(year())],['Versi','v'+version],[mode?'Jumlah Usulan Proyek':'Jumlah Program',String(data.length)],['Unit Pengelola',String(ME?.unit||'—')],['Nomor Dokumen',signer.number||'Belum ditetapkan']],noTte:!d.sign,tte:{name:signer.name,title:signer.title,label:signer.label,city:signer.city,date:signer.date}},blocks:B};
 }
-function splitPortText(text,limit=176){
+function splitPortText(text,limit=155){
  const value=String(text||'Belum diisi').trim().replace(/\s+/g,' '),words=value.split(' '),out=[];let line='';
  words.forEach(word=>{
   if(word.length>limit){if(line){out.push(line);line=''}for(let i=0;i<word.length;i+=limit)out.push(word.slice(i,i+limit));return}
@@ -872,9 +873,9 @@ async function portfolioExport(){
    await load('https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js',()=>!!window.PptxGenJS);
    const ppt=new window.PptxGenJS();ppt.layout='LAYOUT_WIDE';ppt.author='PMO Kementerian Keuangan';
    ppt.subject='Dokumen Portofolio Program Transformasi '+year();ppt.title=(mode?'Dokumen Usulan Proyek ':'Portofolio Transformasi ')+year();
-   const N='102F56',MID='1F4F81',G='F9B919',W='FFFFFF',PALE='F0F5FA',TEXT='254568',MUTED='657E98',Shape=ppt.ShapeType;
+   const {navy:N,mid:MID,gold:G,white:W,pale:PALE,text:TEXT,muted:MUTED,font:FONT}=PPTX_STYLE,Shape=ppt.ShapeType;
    const slides=portSlides(),count=slides.length;
-   const tx=(sl,t,x,y,w,h,size=14,color=TEXT,bold=false,other={})=>sl.addText(String(t||'—'),{x,y,w,h,fontFace:'Aptos',fontSize:size,bold,color,margin:0,breakLine:false,fit:'shrink',valign:'mid',...other});
+   const tx=(sl,t,x,y,w,h,size=14,color=TEXT,bold=false,other={})=>sl.addText(String(t||'—'),{x,y,w,h,fontFace:FONT,fontSize:size,bold,color,margin:0,breakLine:false,fit:'shrink',valign:'mid',...other});
    const rect=(sl,x,y,w,h,fill,line=fill,radius=0)=>sl.addShape(radius?Shape.roundRect:Shape.rect,{x,y,w,h,rectRadius:radius,rect:{radius},line:{color:line,transparency:line===fill?100:0},fill:{color:fill},radius});
    const footer=(sl,i,dark=false)=>{
     rect(sl,0,7.22,13.333,.28,dark?N:'E9F0F7');
