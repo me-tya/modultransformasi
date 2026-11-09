@@ -308,7 +308,43 @@ function projectEditor(id,readonly=false){
  const existing=(p.psProjects||[]).find(x=>String(x.id)===String(id));
  if(id&&!existing)return;
  const d=document.createElement('div');d.className='psbank-overlay psbank-project-editor';
- const groups=[...new Set(PROJECT_FIELDS.map(x=>x[3]))];
+ const proposalTabs=[
+  ['identity','Identitas'],['case','Business Case'],['benefits','Manfaat'],
+  ['stakeholders','Stakeholder'],['risks','Risiko'],['governance','Tata Kelola'],['charter','Charter Proyek']
+ ];
+ const proposalExtras=[
+  ['projectBenefit','Manfaat yang Diharapkan','textarea','benefits'],
+  ['projectOutcome','Outcome yang Diharapkan','textarea','benefits'],
+  ['projectBenefitIndicator','Indikator Manfaat','textarea','benefits'],
+  ['projectBaseline','Baseline','text','benefits'],
+  ['projectTarget','Target dan Satuan','text','benefits'],
+  ['projectBenefitOwner','Benefit Owner','text','benefits'],
+  ['projectStakeholders','Daftar Stakeholder / Unit Terdampak','textarea','stakeholders'],
+  ['projectStakeholderRole','Peran dan Pengaruh Stakeholder','textarea','stakeholders'],
+  ['projectEngagementStrategy','Strategi Pelibatan','textarea','stakeholders'],
+  ['projectStakeholderPIC','PIC Koordinasi','text','stakeholders'],
+  ['projectRisks','Daftar Risiko','textarea','risks'],
+  ['projectRiskImpact','Probabilitas dan Dampak','textarea','risks'],
+  ['projectRiskMitigation','Rencana Mitigasi','textarea','risks'],
+  ['projectRiskOwner','Risk Owner','text','risks'],
+  ['projectManager','Manajer Proyek','text','governance'],
+  ['projectDecisionAuthority','Otoritas Keputusan','text','governance'],
+  ['projectResources','Kebutuhan Sumber Daya','textarea','governance'],
+  ['projectDependencies','Dependensi dan Asumsi','textarea','governance'],
+  ['projectCharterObjective','Tujuan Proyek','textarea','charter'],
+  ['projectCharterBackground','Latar Belakang','textarea','charter'],
+  ['projectCharterBreakthrough','Terobosan / Strategi','textarea','charter'],
+  ['projectCharterOutput','Output Utama','textarea','charter'],
+  ['projectCharterOutcome','Outcome','textarea','charter'],
+  ['projectCharterCriteria','Kriteria Penyelesaian','textarea','charter'],
+  ['projectCharterMilestones','Milestone dan Linimasa','textarea','charter']
+ ];
+ const proposalFields=key=>[
+  ...PROJECT_FIELDS.filter(f=>key==='identity'?f[3]==='Identitas Aplikasi':
+   key==='case'?['Telaah & Validasi','Keselarasan & Proses Bisnis'].includes(f[3]):
+   key==='governance'?f[3]==='Pelaksanaan Awal':false),
+  ...proposalExtras.filter(f=>f[3]===key)
+ ];
  const control=([key,label,type])=>type==='select'||type==='status'?
    '<label>'+E(label)+'<select data-scope-field="'+key+'" '+(readonly?'disabled':'')+'>'+((type==='status')?['Usulan','Berjalan','Ditunda','Selesai']:['',...CAT]).map(x=>'<option value="'+E(x)+'" '+(x===(key==='category'?projectCategory(p,existing):projectValue(existing||{},key))?'selected':'')+'>'+E(x||'Pilih kategori')+'</option>').join('')+'</select>'+(key==='category'?'<small class="psbank-category-hint">Kategori awal mengikuti program. Core Non APBN digunakan untuk sektor keuangan; kategori dapat diubah.</small>':'')+'</label>':
    '<label class="'+(type==='textarea'?'psbank-editor-long':'')+'">'+E(label)+(key==='name'?' *':'')+
@@ -316,9 +352,9 @@ function projectEditor(id,readonly=false){
     '<input type="'+type+'" data-scope-field="'+key+'" value="'+E(projectValue(existing||{},key))+'" '+(readonly?'disabled':'')+'>')+'</label>';
  d.innerHTML='<section class="psbank-dialog psbank-project-dialog" role="dialog" aria-modal="true" aria-label="Detail Usulan Proyek">'+
  '<header><div><b>'+(readonly?'Detail':existing?'Ubah':'Tambah')+' Usulan Proyek</b><small>'+E(p.nama)+' · '+year()+'</small></div><button type="button" data-scope-editor-close title="Tutup" aria-label="Tutup">✕</button></header>'+
- '<main class="psbank-dialogbody"><div class="psbank-form-provenance"><b>Sumber Usulan</b><span>'+E(existing?.psOriginYear?existing.psOriginProgram+' · '+existing.psOriginYear:'Usulan baru')+'</span><small>Perubahan isian tahun tujuan tidak mengubah informasi tahun sumber.</small></div>'+
+ '<nav class="psbank-dialogtabs psbank-project-dialogtabs" role="tablist" aria-label="Substansi Usulan Proyek">'+proposalTabs.map((tab,i)=>'<button type="button" role="tab" data-scope-project-tab="'+tab[0]+'" aria-selected="'+(!i)+'" class="'+(!i?'on':'')+'">'+tab[1]+'</button>').join('')+'</nav>'+ '<main class="psbank-dialogbody"><div class="psbank-form-provenance"><b>Sumber Usulan</b><span>'+E(existing?.psOriginYear?existing.psOriginProgram+' · '+existing.psOriginYear:'Usulan baru')+'</span><small>Perubahan isian tahun tujuan tidak mengubah informasi tahun sumber.</small></div>'+
  '<div class="psbank-project-code-preview"><span>Kode Proyek</span><strong data-scope-code-preview>'+E(existing?currentCode(p,existing):String(p.kode||p.akr)+'-…')+'</strong><small>Awalan mengikuti kode program; akronim diisi pada bagian Identitas Aplikasi/Proyek.</small></div>'+
- groups.map(g=>'<section class="psbank-form-section"><h3>'+E(g)+'</h3><div class="psbank-proj-editor-grid">'+PROJECT_FIELDS.filter(x=>x[3]===g).map(control).join('')+'</div></section>').join('')+
+ proposalTabs.map((tab,i)=>'<section class="psbank-form-section psbank-project-section" data-scope-project-section="'+tab[0]+'" '+(i?'hidden':'')+'><h3>'+E(tab[1])+'</h3><div class="psbank-proj-editor-grid">'+proposalFields(tab[0]).map(control).join('')+'</div></section>').join('')+
  '</main><footer><span>Form usulan aplikasi/modul · WBS disusun kemudian.</span><div><button type="button" class="btn" data-scope-editor-close>Tutup</button>'+
  (!readonly?'<button type="button" class="btn pri" data-scope-editor-save>Simpan</button>':can(p)?'<button type="button" class="btn pri" data-scope-editor-edit>✎ Ubah</button>':'')+'</div></footer></section>';
  (document.querySelector('#app')||document.body).appendChild(d);
@@ -331,6 +367,14 @@ function projectEditor(id,readonly=false){
    codePreview.textContent=String(p.kode||p.akr)+'-'+(acronym(acrInput?.value)||suggestedAcronym(projectName?.value)||'…');
  });
  d.addEventListener('click',ev=>{
+  const tab=ev.target.closest('[data-scope-project-tab]');
+  if(tab){
+   const active=tab.dataset.scopeProjectTab;
+   d.querySelectorAll('[data-scope-project-tab]').forEach(el=>{const on=el.dataset.scopeProjectTab===active;el.classList.toggle('on',on);el.setAttribute('aria-selected',String(on))});
+   d.querySelectorAll('[data-scope-project-section]').forEach(el=>{el.hidden=el.dataset.scopeProjectSection!==active});
+   const scroller=d.querySelector('.psbank-dialogbody');if(scroller)scroller.scrollTop=0;
+   return;
+  }
   if(ev.target===d||ev.target.closest('[data-scope-editor-close]')){d.remove();return}
   if(ev.target.closest('[data-scope-editor-edit]')){d.remove();projectEditor(id,false);return}
   if(!ev.target.closest('[data-scope-editor-save]'))return;
