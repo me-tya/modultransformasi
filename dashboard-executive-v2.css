@@ -83,3 +83,17 @@
 @media(max-width:650px){
  #app .db-modgrid:has(.db-module-quarters){grid-template-columns:1fr!important}
 }
+
+
+/* Dashboard: percent in stacked bars and side-by-side vertical bars. */
+.db-stack .db-part{display:flex;align-items:center;justify-content:center;min-height:0;overflow:hidden;font-style:normal}
+.db-part-pct{color:#fff;font-weight:850;font-size:9px;line-height:1;white-space:nowrap;text-shadow:0 1px 2px #11243b80;font-style:normal}
+.db-stack .db-sw-wait .db-part-pct{color:#263b59;text-shadow:none}
+.db-barplot-grouped{gap:clamp(8px,1.5vw,17px);padding-inline:12px}
+.db-group-col{max-width:116px}
+.db-group-bars{height:118px;width:100%;display:flex;align-items:flex-end;justify-content:center;gap:3px;border-bottom:1px solid #d9e3ee}
+.db-group-bar{position:relative;min-width:0;flex:1 1 0;display:flex;justify-content:center;align-items:flex-start;overflow:hidden;border-radius:4px 4px 0 0;font-style:normal}
+.db-group-bar span{display:block;transform:rotate(-90deg);transform-origin:center center;margin-top:10px;color:#fff;font-size:8px;font-weight:800;line-height:1;white-space:nowrap;text-shadow:0 1px 2px #11243b80;font-style:normal}
+.db-group-bar.db-sw-wait span{color:#263b59;text-shadow:none}
+.db-group-col.is-selected .db-group-bars{outline:2px solid #e8b738;outline-offset:3px;border-radius:2px}
+@media(max-width:540px){.db-barplot-grouped{padding-inline:7px;gap:6px}.db-part-pct{font-size:8px}.db-group-bars{gap:2px}}
