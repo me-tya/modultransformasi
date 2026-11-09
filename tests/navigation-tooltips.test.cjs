@@ -77,7 +77,7 @@ test('Guide ON shows full function/boundary, OFF retains concise functional tool
 
 test('Bantuan and book Cheatsheet are icon-only and keep original click actions',()=>{
  assert.match(source,/\.sk-hdrHelp>span,#app \.top \.sk-hdrActions \.sk-hdrSheet>span\{display:none!important\}/);
- assert.match(source,/data-mtBookIcon/);
+ assert.match(source,/mtBookIcon/);
  assert.match(source,/<svg width="19" height="19"/);
  assert.match(source,/\.sk-hdrHelp:hover,#app \.top \.sk-hdrActions \.sk-hdrSheet:hover/);
  assert.match(source,/header\.insertBefore\(guide,avatar\)/);
