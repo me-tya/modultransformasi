@@ -372,3 +372,60 @@
  .ps27-sheet-head h3{font-size:18px}
  .ps27-sheet-subhead{flex-wrap:wrap}
 }
+
+/* MT-09 · Contextual Project Selection filters, isolated from other menus. */
+#app .ps27 .ps27-filter-contextual{
+ border:1px solid #d7e3f0;border-radius:10px;overflow:hidden;max-width:100%;margin:0
+}
+#app .ps27 .ps27-filter-contextual .ps27-filter-header{
+ display:flex;align-items:stretch;background:#163b68!important;min-height:47px;
+}
+#app .ps27 .ps27-filter-contextual .ps27-filter-titlebar{
+ flex:0 1 250px;min-width:175px;max-width:340px;background:#163b68!important;padding:5px 12px
+}
+#app .ps27 .ps27-filter-contextual .ps27-filter-label{
+ font:800 12px 'Inter',sans-serif;line-height:1.4;color:#fff;white-space:normal
+}
+#app .ps27 .ps27-filter-contextual .ps27-filter-active{background:#163b68!important;color:#d4e2f2}
+#app .ps27 .ps27-filter-contextual .ps27-filter-active>b{color:#e2ebf9}
+#app .ps27 .ps27-filter-contextual .ps27-filter-active>span:nth-child(2){color:#d4e2f2}
+#app .ps27 .ps27-filter-contextual .ps27-filter-active em{
+ background:#275783;border:1px solid #5077a0;color:#fff;font-size:10px
+}
+#app .ps27 .ps27-filter-contextual .ps27-filter-expand{border-color:#7a9bbf}
+#app .ps27 .ps27-filter-contextual .ps27-filter-body{
+ background:#fff;padding:12px 16px;border-top:1px solid #dce7f3
+}
+#app .ps27 .ps27-filter-contextual .ps27-filter-fields{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ align-items:end!important;gap:10px 14px!important;background:transparent;
+ border:0;margin:0;padding:0
+}
+#app .ps27 .ps27-filter-contextual .ps27-filter-fields label{
+ width:100%;max-width:none;min-width:0;display:flex;flex-direction:column;
+ gap:5px;color:#395370;font:750 11px 'Inter',sans-serif
+}
+#app .ps27 .ps27-filter-contextual .ps27-filter-fields select{
+ width:100%;max-width:100%;min-width:0!important;height:40px;
+ border:1px solid #cddbea;border-radius:9px;
+ padding:8px 11px;font:600 12px 'Inter',sans-serif
+}
+#app .ps27 .ps27-filter-contextual .ps27-context-search{
+ border-top:1px solid #e0e8f2;background:#f8fbff;padding:9px 15px;min-width:0
+}
+#app .ps27 .ps27-filter-contextual .ps27-context-search label{
+ display:flex;align-items:center;gap:12px;width:100%;min-width:0;
+ color:#2e4e73;font:750 11px 'Inter',sans-serif
+}
+#app .ps27 .ps27-filter-contextual .ps27-context-search input{
+ flex:1;min-width:0;width:100%;height:37px;padding:7px 11px;
+ border:1px solid #cad9ea;border-radius:9px;font:550 12px 'Inter',sans-serif
+}
+@media(max-width:720px){
+ #app .ps27 .ps27-filter-contextual .ps27-filter-header{flex-wrap:wrap}
+ #app .ps27 .ps27-filter-contextual .ps27-filter-titlebar{flex:1 1 100%;max-width:none}
+ #app .ps27 .ps27-filter-contextual .ps27-filter-active{flex:1 1 100%}
+ #app .ps27 .ps27-filter-contextual .ps27-filter-fields{grid-template-columns:1fr!important}
+ #app .ps27 .ps27-filter-contextual .ps27-context-search label{flex-wrap:wrap}
+ #app .ps27 .ps27-filter-contextual .ps27-context-search input{flex:1 1 100%}
+}
