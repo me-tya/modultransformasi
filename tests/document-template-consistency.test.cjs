@@ -12,8 +12,9 @@ const mod=readFileSync('document-experience-v3.js','utf8');
 test('Riwayat dan Daftar Program: Kode Program tepat sebelum Nama Program',()=>{
  assert.match(bank,/<th>Tahun<\/th><th>Kode Program<\/th><th>Nama Program<\/th><th>UIC<\/th>/g);
  assert.equal((bank.match(/<th>Tahun<\/th><th>Kode Program<\/th><th>Nama Program<\/th><th>UIC<\/th>/g)||[]).length,2);
- assert.match(bank, /<td><b>'\+E\(p\.kode\|\|p\.akr\|\|'—'\)\+'<\/b><\/td><td><b>'\+E\(p\.nama\)/);
- assert.match(bank, /<td><b>'\+E\(p\.kode\|\|p\.akr\)\+'<\/b><\/td><td><b>'\+E\(p\.nama\)/);
+ assert.match(bank,/const visibleCode=p=>officialCode\(p\)\|\|'Kode resmi belum ditetapkan'/);
+ assert.equal((bank.match(/oldCodeNote\(p\)\+'<\/td>/g)||[]).length,2,
+  'Riwayat and Usulan Program keep Code before Name and annotate legacy internal references');
 });
 test('Dokumen Program dan Portofolio selalu gunakan engine formal Laporan Akhir Proyek',()=>{
  assert.match(docs,/formal:true,template:d\.template\|\|'activity',toc:!!d\.toc,header:'Dokumen Perencanaan Program/);
