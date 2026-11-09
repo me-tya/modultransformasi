@@ -330,7 +330,8 @@ function projectEditor(id,readonly=false){
  '<header><div><b>'+(readonly?'Detail':existing?'Ubah':'Tambah')+' Usulan Proyek</b><small>'+E(p.nama)+' · '+year()+'</small></div><button type="button" data-scope-editor-close title="Tutup" aria-label="Tutup">✕</button></header>'+
  '<main class="psbank-dialogbody"><div class="psbank-form-provenance"><b>Sumber Usulan</b><span>'+E(existing?.psOriginYear?existing.psOriginProgram+' · '+existing.psOriginYear:'Usulan baru')+'</span><small>Perubahan isian tahun tujuan tidak mengubah informasi tahun sumber.</small></div>'+
  '<div class="psbank-project-code-preview"><span>Kode Proyek</span><strong data-scope-code-preview>'+E(existing?currentCode(p,existing):String(p.kode||p.akr)+'-…')+'</strong><small>Awalan mengikuti kode program; akronim diisi pada bagian Identitas Aplikasi/Proyek.</small></div>'+
- groups.map(g=>'<section class="psbank-form-section"><h3>'+E(g)+'</h3><div class="psbank-proj-editor-grid">'+PROJECT_FIELDS.filter(x=>x[3]===g).map(control).join('')+'</div></section>').join('')+
+ '<nav class="psbank-proj-editor-tabs" role="tablist" aria-label="Substansi Usulan Proyek">'+groups.map((g,i)=>'<button type="button" role="tab" data-scope-editor-tab="'+i+'" aria-selected="'+(!i)+'" class="'+(!i?'on':'')+'">'+E(g)+'</button>').join('')+'</nav>'+
+ groups.map((g,i)=>'<section class="psbank-form-section psbank-proj-editor-panel" data-scope-editor-panel="'+i+'" '+(i?'hidden':'')+'><h3>'+E(g)+'</h3><div class="psbank-proj-editor-grid">'+PROJECT_FIELDS.filter(x=>x[3]===g).map(control).join('')+'</div></section>').join('')+
  '</main><footer><span>Form usulan aplikasi/modul · WBS disusun kemudian.</span><div><button type="button" class="btn" data-scope-editor-close>Tutup</button>'+
  (!readonly?'<button type="button" class="btn pri" data-scope-editor-save>Simpan</button>':can(p)?'<button type="button" class="btn pri" data-scope-editor-edit>✎ Ubah</button>':'')+'</div></footer></section>';
  (document.querySelector('#app')||document.body).appendChild(d);
@@ -343,6 +344,8 @@ function projectEditor(id,readonly=false){
    codePreview.textContent=String(p.kode||p.akr)+'-'+(acronym(acrInput?.value)||suggestedAcronym(projectName?.value)||'…');
  });
  d.addEventListener('click',ev=>{
+  const tab=ev.target.closest('[data-scope-editor-tab]');
+  if(tab){const selected=tab.dataset.scopeEditorTab;d.querySelectorAll('[data-scope-editor-tab]').forEach(x=>{const active=x.dataset.scopeEditorTab===selected;x.classList.toggle('on',active);x.setAttribute('aria-selected',String(active))});d.querySelectorAll('[data-scope-editor-panel]').forEach(x=>x.hidden=x.dataset.scopeEditorPanel!==selected);return}
   if(ev.target===d||ev.target.closest('[data-scope-editor-close]')){d.remove();return}
   if(ev.target.closest('[data-scope-editor-edit]')){d.remove();projectEditor(id,false);return}
   if(!ev.target.closest('[data-scope-editor-save]'))return;
