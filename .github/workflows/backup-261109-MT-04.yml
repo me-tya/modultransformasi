@@ -12,40 +12,21 @@ jobs:
   archive:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository dan sumber lengkap
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Bangun, validasi, dan simpan arsip sebelum perubahan
+      - name: Build archive and validate
         run: |
           set -euo pipefail
           git archive --format=zip --prefix=modultransformasi/ 46a476bb12328f6bedb7a2e3369e0657d615e295 > 261109-MT-04.zip
-          unzip -t 261109-MT-04.zip | tail -1
-          count=$(unzip -Z1 261109-MT-04.zip | grep -cv '/
-          test "$count" -eq 51
+          python -c "import zipfile; z=zipfile.ZipFile('261109-MT-04.zip'); names=[n for n in z.namelist() if not n.endswith('/')]; print('backup files',len(names)); assert len(names)==51; assert z.testzip() is None"
           sha256sum 261109-MT-04.zip > 261109-MT-04.sha256
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name github-actions
+          git config user.email github-actions@users.noreply.github.com
           git add 261109-MT-04.zip 261109-MT-04.sha256
-          git commit -m "backup: complete snapshot 261109-MT-04"
+          git commit -m backup-full-261109-MT-04
           git push origin HEAD:backup-261109-MT-04
-      - name: Publish ZIP artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: 261109-MT-04
-          path: |
-            261109-MT-04.zip
-            261109-MT-04.sha256
-)
-          test "$count" -eq 51
-          sha256sum 261109-MT-04.zip > 261109-MT-04.sha256
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add 261109-MT-04.zip 261109-MT-04.sha256
-          git commit -m "backup: complete snapshot 261109-MT-04"
-          git push origin HEAD:backup-261109-MT-04
-      - name: Publish ZIP artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: 261109-MT-04
           path: |
