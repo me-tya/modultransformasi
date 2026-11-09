@@ -180,13 +180,38 @@ function historyRows(p){
 }
 function historyView(p){
  const b=mapState(),rows=historyRows(p),years=[...new Set(historyRecords().map(r=>r.y))],all=rows.length>0&&rows.every(r=>b.historySelected.includes(r.key));
- return '<div class="psbank-history-projects"><div class="psbank-proposal-head"><div><h3>Riwayat Proyek</h3><p>Daftar referensi proyek lintas tahun. Pilih untuk disalin ke usulan program tujuan; WBS dan realisasi tahun sumber tidak berubah.</p></div><div class="psbank-headright"><span class="psbank-count">'+rows.length+' proyek</span><span class="psbank-helpicon" tabindex="0" role="img" aria-label="Riwayat Proyek hanya referensi. Salin ke program tahun tujuan tanpa mengubah WBS dan realisasi historis." title="Riwayat Proyek hanya referensi. Salin ke program tahun tujuan tanpa mengubah WBS dan realisasi historis.">ⓘ</span></div></div>'+
+ const plus='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+ return '<div class="psbank-history-projects"><div class="psbank-proposal-head"><div><h3>Riwayat Proyek</h3><p>Daftar referensi proyek lintas tahun. Klik baris untuk melihat detail; tombol + menyalin proyek ke usulan tahun tujuan tanpa mengubah WBS sumber.</p></div><div class="psbank-headright"><span class="psbank-count">'+rows.length+' proyek</span><span class="psbank-helpicon" tabindex="0" role="img" aria-label="Riwayat Proyek hanya referensi. Salin ke program tahun tujuan tanpa mengubah WBS dan realisasi historis." title="Riwayat Proyek hanya referensi. Salin ke program tahun tujuan tanpa mengubah WBS dan realisasi historis.">ⓘ</span></div></div>'+
  '<div class="psbank-history-project-controls"><label>Program Tujuan <select data-scope-history-target>'+I.programs().map(x=>'<option value="'+E(x.id)+'" '+(p?.id===x.id?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label>'+
  '<label>Tahun Sumber <select data-scope-history-year><option value="all">Semua Tahun</option>'+years.sort((a,b)=>b-a).map(y=>'<option value="'+y+'" '+(String(b.historyYear)===String(y)?'selected':'')+'>'+y+'</option>').join('')+'</select></label>'+
  '<label>Cari <input type="search" data-scope-history-search value="'+E(b.historySearch||'')+'" placeholder="Nama, kode, akronim, UIC..."></label></div>'+
- '<div class="psbank-tablewrap psbank-project-history-wrap"><table class="psbank-table psbank-project-history-table"><thead><tr><th><input type="checkbox" data-scope-history-all '+(all?'checked':'')+' aria-label="Pilih semua hasil filter"></th><th>Tahun</th><th>Kode Proyek</th><th>Nama Proyek / Modul</th><th>Program Sumber</th><th>UIC</th><th>Aksi</th></tr></thead><tbody>'+
- (rows.length?rows.map(r=>'<tr><td><input type="checkbox" data-scope-history-check="'+E(r.key)+'" '+(b.historySelected.includes(r.key)?'checked':'')+' aria-label="Pilih '+E(r.x.name)+'"></td><td>'+r.y+'</td><td><b>'+E(codeFor(r.p,r.x.original||{name:r.x.name}))+'</b></td><td>'+E(r.x.name)+'</td><td>'+E(r.p.nama)+'</td><td>'+E(r.x.uic||r.p.uic||'—')+'</td><td><button type="button" class="btn btn-outline btn-sm" data-scope-history-add="'+E(r.key)+'" '+(!can(p)?'disabled':'')+'>+ Tambahkan</button></td></tr>').join(''):'<tr><td colspan="7" class="psbank-empty">Tidak ada proyek sesuai filter.</td></tr>')+'</tbody></table></div>'+
+ '<div class="psbank-tablewrap psbank-project-history-wrap"><table class="psbank-table psbank-project-history-table"><colgroup><col class="pshist-check"><col class="pshist-year"><col class="pshist-code"><col class="pshist-name"><col class="pshist-program"><col class="pshist-uic"><col class="pshist-action"></colgroup><thead><tr><th><input type="checkbox" data-scope-history-all '+(all?'checked':'')+' aria-label="Pilih semua hasil filter"></th><th>Tahun</th><th>Kode Proyek</th><th>Nama Proyek / Modul</th><th>Program Sumber</th><th>UIC</th><th>Aksi</th></tr></thead><tbody>'+
+ (rows.length?rows.map(r=>'<tr tabindex="0" class="psbank-clickrow pshist-clickrow" data-scope-history-detail="'+E(r.key)+'" title="Klik untuk melihat detail proyek '+E(r.x.name)+'" aria-label="Lihat detail proyek '+E(r.x.name)+'"><td class="psbank-checkcol"><input type="checkbox" data-scope-history-check="'+E(r.key)+'" '+(b.historySelected.includes(r.key)?'checked':'')+' aria-label="Pilih '+E(r.x.name)+'"></td><td class="pshist-year-cell">'+r.y+'</td><td><b>'+E(codeFor(r.p,r.x.original||{name:r.x.name}))+'</b></td><td class="pshist-name-cell"><b>'+E(r.x.name)+'</b></td><td>'+E(r.p.nama)+'</td><td>'+E(r.x.uic||r.p.uic||'—')+'</td><td class="psbank-rowactions"><button type="button" class="psbank-action-icon psbank-program-action add" data-scope-history-add="'+E(r.key)+'" title="Tambahkan Proyek ke Program Tujuan" aria-label="Tambahkan '+E(r.x.name)+' ke Program Tujuan" '+(!can(p)?'disabled':'')+'>'+plus+'</button></td></tr>').join(''):'<tr><td colspan="7" class="psbank-empty">Tidak ada proyek sesuai filter.</td></tr>')+'</tbody></table></div>'+
  '<div class="psbank-history-project-foot"><small>'+b.historySelected.length+' dipilih · kode proyek tujuan mengikuti program dan akronim yang dapat diedit.</small><button type="button" class="btn pri" data-scope-history-bulk '+(!can(p)||!b.historySelected.length?'disabled':'')+'>+ Tambahkan ke Program Tujuan</button></div></div>';
+}
+function historyDetail(key){
+ const r=historyRecords().find(x=>x.key===key);if(!r)return;
+ const x=r.x.original||{},wbs=r.x.rows||[],fullCode=codeFor(r.p,r.x.original||{name:r.x.name});
+ const groups=[...new Set(PROJECT_FIELDS.map(f=>f[3]))];
+ const val=(k)=>String(projectValue(x,k)??'').trim();
+ const fieldRows=groups.map(g=>{
+  const fields=PROJECT_FIELDS.filter(f=>f[3]===g&&val(f[0]));
+  if(!fields.length)return '';
+  return '<section class="psbank-form-section"><h3>'+E(g)+'</h3><div class="pshist-fields">'+fields.map(([k,label])=>'<div><small>'+E(label)+'</small><strong>'+E(val(k))+'</strong></div>').join('')+'</div></section>';
+ }).join('');
+ const viewWbs=wbs.slice(0,20).map((w,i)=>'<li><span>'+(i+1)+'.</span><b>'+E((Array.isArray(w.p)?w.p.filter(Boolean).slice(-2).join(' / '):'')||'Item WBS')+'</b><small>'+E(String(w.f||w.s||'').slice(0,10)||'—')+'</small></li>').join('');
+ const d=document.createElement('div');d.className='psbank-overlay psbank-project-editor psbank-history-detail';
+ d.innerHTML='<section class="psbank-dialog psbank-project-dialog" role="dialog" aria-modal="true" aria-label="Detail Proyek Historis">'+
+ '<header><div><b>Detail Proyek · '+E(r.x.name)+'</b><small>'+E(r.p.nama)+' · Tahun '+r.y+'</small></div><button type="button" data-pshist-close title="Tutup" aria-label="Tutup">✕</button></header>'+
+ '<main class="psbank-dialogbody"><div class="psbank-form-provenance"><b>Arsip sumber · hanya baca</b><span>Informasi berasal dari tahun '+r.y+'</span><small>Membuka detail tidak menyalin atau mengubah data proyek.</small></div>'+
+ '<div class="pshist-summary"><div><small>Kode Proyek</small><strong>'+E(fullCode)+'</strong></div><div><small>UIC Utama</small><strong>'+E(r.x.uic||r.p.uic||'—')+'</strong></div><div><small>Status</small><strong>'+E(x.status||'Referensi historis')+'</strong></div><div><small>Item WBS Tahun '+r.y+'</small><strong>'+wbs.length+'</strong></div></div>'+
+ (fieldRows||'<div class="psbank-form-section">Detail isian proyek belum tersedia; proyek tercatat dari struktur WBS.</div>')+
+ '<section class="psbank-form-section"><h3>WBS Historis · '+r.y+'</h3>'+(wbs.length?'<ol class="pshist-wbs">'+viewWbs+'</ol>'+(wbs.length>20?'<small>Menampilkan 20 dari '+wbs.length+' item WBS.</small>':''):'<p class="pshist-none">Tidak ada item WBS yang tercatat pada tahun ini.</p>')+'</section></main>'+
+ '<footer><span>Arsip sumber tidak dapat diubah dari Riwayat Proyek.</span><div><button type="button" class="btn" data-pshist-close>Tutup</button></div></footer></section>';
+ (document.querySelector('#app')||document.body).appendChild(d);
+ const close=()=>{d.remove();return true};d.querySelector('[data-pshist-close]')?.focus();
+ d.addEventListener('click',ev=>{if(ev.target===d||ev.target.closest('[data-pshist-close]'))close()});
+ d.addEventListener('keydown',ev=>{if(ev.key==='Escape'){ev.preventDefault();close()}});
 }
 function addHistory(keys){
  const p=target();if(!can(p)||!p){toast('Pilih program tujuan yang dapat diubah.');return}
@@ -367,6 +392,8 @@ function transfer(){
 function click(ev){
  const accordion=ev.target.closest('[data-scope-program-toggle]');
  if(accordion){const details=accordion.closest('details');mapState().programOpen[accordion.dataset.scopeProgramToggle]=!details?.open;save();return true}
+ const detailRow=ev.target.closest('tr[data-scope-history-detail]');
+ if(detailRow&&!ev.target.closest('button,input,select,textarea,a,label')){historyDetail(detailRow.dataset.scopeHistoryDetail);return true}
  const hist=ev.target.closest('[data-scope-history-add],[data-scope-history-bulk]');
  if(hist){addHistory(hist.dataset.scopeHistoryAdd?[hist.dataset.scopeHistoryAdd]:mapState().historySelected.slice());return true}
  const chosen=ev.target.closest('[data-scope-choose],[data-scope-aggregate-view]');
@@ -406,5 +433,6 @@ function change(ev){
  if(el.dataset.scopeTargetAll!==undefined){b.targetSelected=el.checked?proposalRows(target()).map(x=>String(x.id)):[];save();window.render();return true}
  return false;
 }
-window.MT_PS_SCOPE={modules,sourceWbs,render,transfer,click,change,bank,target,codeFor,currentCode,suggestedAcronym,normalizeProjectCodes,projectFields:PROJECT_FIELDS,projectValue,version:'20261109-scope-map-project-codes-v4'};
+document.addEventListener('keydown',ev=>{if(ev.key!=='Enter'&&ev.key!==' ')return;const row=ev.target.closest?.('tr[data-scope-history-detail]');if(row&&ev.target===row){ev.preventDefault();historyDetail(row.dataset.scopeHistoryDetail)}});
+window.MT_PS_SCOPE={modules,sourceWbs,render,transfer,click,change,bank,target,codeFor,currentCode,suggestedAcronym,normalizeProjectCodes,projectFields:PROJECT_FIELDS,projectValue,version:'20261109-project-history-v5'};
 })();
