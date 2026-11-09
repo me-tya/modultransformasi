@@ -1,0 +1,34 @@
+name: Backup utuh MT 261109-MT-06
+on:
+  push:
+    branches:
+      - backup-261109-MT-06
+    paths:
+      - .github/workflows/backup-261109-MT-06.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build archive and validate
+        run: |
+          set -euo pipefail
+          git archive --format=zip --prefix=modultransformasi/ 2619d0d7366a8e55a415df824bc8a216bd38f520 > 261109-MT-06.zip
+          python -c "import zipfile; z=zipfile.ZipFile('261109-MT-06.zip'); names=[n for n in z.namelist() if not n.endswith('/')]; print('backup files',len(names)); assert len(names)==51; assert z.testzip() is None"
+          sha256sum 261109-MT-06.zip > 261109-MT-06.sha256
+          git config user.name github-actions
+          git config user.email github-actions@users.noreply.github.com
+          git add 261109-MT-06.zip 261109-MT-06.sha256
+          git commit -m backup-full-261109-MT-06
+          git push origin HEAD:backup-261109-MT-06
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 261109-MT-06
+          path: |
+            261109-MT-06.zip
+            261109-MT-06.sha256
