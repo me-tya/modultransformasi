@@ -1,7 +1,7 @@
 <!-- PMO / CMO · RKMK (6) · Bantuan & Cheatsheet Visual · 2026-11-06 -->
 <title>Modul Transformasi Kemenkeu</title>
 <link rel="stylesheet" href="charter-planning-report.css?v=20261108-1">
-<link rel="stylesheet" href="dashboard-executive-v2.css?v=20261109-mt04-chart">
+<link rel="stylesheet" href="dashboard-executive-v2.css?v=20261109-mt06-tooltip">
 <link rel="stylesheet" href="project-selection-flow.css?v=20261108-6">
 <link rel="stylesheet" href="project-selection-governance.css?v=20261108-1">
 <link rel="stylesheet" href="project-selection-workflow-2027.css?v=20261109-guide-rich-v1">
@@ -2562,6 +2562,11 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 @media(max-width:1250px){#app .top .sk-hdrActions .sk-hdrBtn{padding:0 8px!important}}
 @media(max-width:800px){#app .top .sk-hdrActions .sk-hdrBtn span{display:none}#app .top .sk-hdrActions .sk-hdrBtn{padding:0 8px!important}.sk-hdrActions{gap:4px}}
 
+/* Executive Dashboard WBS rows: whole-row navigation; no changes to modal geometry. */
+#app .lap.dx-it tr.dx-wbs-row{cursor:pointer;transition:background-color .14s ease}
+#app .lap.dx-it tr.dx-wbs-row:hover{background:#eaf4ff!important}
+#app .lap.dx-it tr.dx-wbs-row:focus-visible{outline:2px solid #E7B42B!important;outline-offset:-2px;background:#f4f8fc!important}
+
 /* Header actions v6: approved solid-gold Help icon; fixed 36px geometry. */
 #app header.top .sk-hdrActions{display:flex;align-items:center;gap:7px;flex:none}
 #app header.top .sk-hdrActions .sk-hdrHelp,
@@ -4003,7 +4008,20 @@ function dxPeta(items){const n=dxTw(),G=dxModules(items),q=(S.ui.dxq||'').trim()
 ACT.dxSt=el=>{const v=el.dataset.v||'';S.ui.dxSt=S.ui.dxSt===v?'':v;save();render()};
 /* ---- Pop-up detail modul ---- */
 ACT.dxMod=el=>{const p=S.programs.find(x=>x.akr===el.dataset.p);const m=dxModules(dxItems()).flatMap(g=>g.mods).find(x=>x.p.akr===el.dataset.p&&x.n===el.dataset.j);if(!m){toast('Data modul tidak ditemukan.');return}dxModPop(m)};
-function dxItemRows(list,M){return list.length?`<div class="tscroll"><table class="lap dx-it"><thead><tr><th>Kode</th><th>Output</th><th>Tahapan</th><th>UIC</th><th>Jadwal</th><th>Status</th><th>Bukti</th></tr></thead><tbody>${list.map(w=>{const st=stOf(w,M);return `<tr><td class="dx-k">${esc(w.k)}</td><td>${esc(deliv(w))}</td><td>${esc(tahapOf(w).map(t=>thShort(t)).join(', ')||'—')}</td><td>${esc(uicU(w)||'—')}</td><td>${pgJadwal(w.s,w.f)}</td><td><span class="chip ${(DX_ST[st==='Selesai'?'Tercapai':st]||DX_ST.Terjadwal)[0]}">${esc(st)}</span></td><td>${esc(buktiSt(w))}</td></tr>`}).join('')}</tbody></table></div>`:'<p class="s">Tidak ada item.</p>'}
+function dxItemRows(list,M){return list.length?`<div class="tscroll"><table class="lap dx-it"><thead><tr><th>Kode</th><th>Output</th><th>Tahapan</th><th>UIC</th><th>Jadwal</th><th>Status</th><th>Bukti</th></tr></thead><tbody>${list.map(w=>{const st=stOf(w,M);return `<tr class="dx-wbs-row" data-act="dxWbsItem" data-k="${esc(w.k)}" tabindex="0" role="button" aria-label="Buka detail item WBS ${esc(w.k)}: ${esc(deliv(w))}" title="Klik untuk melihat detail WBS ${esc(w.k)}"><td class="dx-k">${esc(w.k)}</td><td>${esc(deliv(w))}</td><td>${esc(tahapOf(w).map(t=>thShort(t)).join(', ')||'—')}</td><td>${esc(uicU(w)||'—')}</td><td>${pgJadwal(w.s,w.f)}</td><td><span class="chip ${(DX_ST[st==='Selesai'?'Tercapai':st]||DX_ST.Terjadwal)[0]}">${esc(st)}</span></td><td>${esc(buktiSt(w))}</td></tr>`}).join('')}</tbody></table></div>`:'<p class="s">Tidak ada item.</p>'}
+ACT.dxWbsItem=el=>{
+ const w=wbsBy(el.dataset.k);
+ if(!w){toast('Item WBS tidak ditemukan.');return}
+ const pop=el.closest('.ov');
+ if(pop)pop.remove();
+ wbsDetail(w);
+};
+if(typeof document!=='undefined'&&document.addEventListener)document.addEventListener('keydown',e=>{
+ const row=e.target.closest?.('tr.dx-wbs-row[data-act="dxWbsItem"]');
+ if(row&&e.target===row&&(e.key==='Enter'||e.key===' ')){
+   e.preventDefault();ACT.dxWbsItem(row);
+ }
+});
 function dxModPop(m){const n=dxTw(),cur=dxAt(m,n);const tws=[1,2,3,4].map(i=>({i,s:dxAt(m,i)}));
  const subs=Object.entries(m.subs);const inTw=m.a.filter(w=>+w.tm>=n*3-2&&+w.tm<=n*3).sort((a,b)=>String(a.f).localeCompare(String(b.f)));
  const body=`<div class="dx-mh"><div><span class="code">${esc(m.p.kode)}</span> <span class="s">${esc(m.p.nama)}</span><h3>${esc(m.n)}</h3><span class="s">UIC ${esc(m.x.uic)} · ${m.a.length} item WBS · jadwal ${pgFmtR(m.x.s,m.x.f)}</span></div><div class="dx-mk"><span class="chip ${DX_ST[cur.st][0]}">${esc(cur.st)}</span><b>${cur.pg}%</b><span class="s">tervalidasi s.d. TW ${ROM[n]}</span></div></div>
@@ -10109,7 +10127,7 @@ function pmFramework(){var domains=['Governance','Scope','Schedule','Finance','S
  return intro('PMBOK · Edisi kedelapan','Kerangka Manajemen Proyek PMBOK','Referensi praktik global dari PMI: tujuh performance domains dan lima focus areas. Kerangka profesional ini melengkapi, bukan mengganti, alur manajemen proyek pada RKMK.','PMI · PMBOK Guide 8 (2025)')+
  '<div class="sk-feature"><div class="sk-featureIcon">◎</div><div><b>Value delivery sebagai benang merah</b><span>Proyek bukan hanya menyelesaikan aktivitas, tetapi menghasilkan nilai, keluaran yang diterima, serta manfaat yang dapat dievaluasi.</span></div></div>'+
  '<div class="sk-sectiontitle">Lima focus areas sepanjang siklus proyek</div><div class="sk-bricks">'+focus.map(function(x,i){return '<div class="sk-brick"><span class="sk-num" style="margin:auto auto 6px">'+(i+1)+'</span>'+x+'<small>'+['Otorisasi awal','Rencana dan baseline','Pelaksanaan hasil kerja','Pengendalian dan perubahan','Penerimaan dan penyelesaian'][i]+'</small></div>'}).join('')+'</div>'+
- '<div class="sk-sectiontitle">Tujuh performance domains</div><div class="sk-grid4">'+domains.map(function(x,i){return '<div class="sk-card" style="text-align:center;padding:13px"><div style="font-size:22px;color:#bc8428;margin-bottom:8px">'+['♜','▣','◷','◈','♧','◎','⚑'][i]+'</div><strong>'+x+'</strong><p>'+['Tata kelola','Lingkup dan hasil','Jadwal','Keuangan','Pemangku kepentingan','Sumber daya','Ketidakpastian'][i]+'</p></div>'}).join('')+'</div>'+
+ '<div class="sk-sectiontitle">Tujuh performance domains</div><style>.sk-domain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(142px,1fr));gap:8px;margin:0 0 8px}.sk-domain-grid .sk-domain-card{box-sizing:border-box;display:flex;align-items:center;gap:9px;padding:10px 11px!important;min-height:62px;box-shadow:none;text-align:left!important}.sk-domain-grid .sk-domain-icon{display:block;flex:0 0 22px;font-size:20px;color:#BC8428;line-height:1;text-align:center}.sk-domain-grid .sk-domain-copy{min-width:0}.sk-domain-grid .sk-domain-copy strong{display:block;margin:0 0 2px;font-size:12px;line-height:1.25}.sk-domain-grid .sk-domain-copy p{font-size:10px;line-height:1.3;margin:0;color:#688097}@media(max-width:600px){.sk-domain-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sk-domain-grid .sk-domain-card{padding:9px!important;gap:6px}}</style><div class="sk-domain-grid">'+domains.map(function(x,i){return '<div class="sk-card sk-domain-card"><span class="sk-domain-icon" aria-hidden="true">'+['♜','▣','◷','◈','♧','◎','⚑'][i]+'</span><div class="sk-domain-copy"><strong>'+x+'</strong><p>'+['Tata kelola','Lingkup dan hasil','Jadwal','Keuangan','Pemangku kepentingan','Sumber daya','Ketidakpastian'][i]+'</p></div></div>'}).join('')+'</div>'+
  detail('Bagaimana menerapkannya pada Modul Transformasi?','Inisiasi dan perencanaan memakai Dokumen Proyek dan WBS; pelaksanaan menggunakan WBS dan bukti dukung; pengendalian menggunakan milestone, risiko, capaian dan Change Request; penutupan mengikuti kriteria RKMK; evaluasi manfaat dilakukan pascaproyek. <div class="sk-buttons" style="margin-top:9px">'+jump('Dokumen Proyek','pmo-perencanaan')+jump('WBS','pmo-wbsplan')+jump('Change Request','pmo-cr')+'</div>')+
  note('Sumber rujukan publik: PMI, <i>A Guide to the Project Management Body of Knowledge (PMBOK® Guide)—Eighth Edition</i>, diterbitkan November 2025. Model domain/area fokus ini bersifat nonpreskriptif.');
 }
@@ -10254,7 +10272,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 
 
-<script src="dashboard-executive-v2.js?v=20261109-mt04-chart"></script>
+<script src="dashboard-executive-v2.js?v=20261109-mt06-tooltip"></script>
 
 <script src="charter-planning-report.js?v=20261109-charter-import-v3"></script>
 
