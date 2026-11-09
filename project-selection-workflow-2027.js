@@ -116,48 +116,83 @@ function setFilterField(key,val){
  }
 }
 function filter(p){
- const b=S.ui.psBank||(S.ui.psBank={}),u=state(),arr=list(),tab=b.tab||'bank',w=ws(),
-  f=localFilter(),
-  q=String(f.search||'').toLowerCase(),st=f.status||'all';
- b.search=f.search||'';b.filterStatus=st;b.filterYear=f.year||'all';b.filterUnit=f.unit||'all';b.filterRole=f.unitRole||'all';b.filterPeriod=f.period||'all';b.filterRangeFrom=f.rangeFrom||'';b.filterRangeTo=f.rangeTo||'';
- if(u.tab==='usulan'&&tab==='bank')b.filterProgram=f.program||'';
- if(u.tab==='usulan'&&tab==='detail')b.detailProgram=f.program||'';
- const onBank=u.tab==='usulan'&&tab==='bank',opts=onBank?(S.programs||[]):arr,
-  years=[2025,2026,2027,2028,2029],yFilter=f.year||String(yr()),
-  period=f.period||'all',unit=f.unit||'all',role=f.unitRole||'all';
- const statusOf=x=>window.MT_PS_BANK_CORE?.programStatus?.(x,yr())||(x.arsip?'Arsip':x.psCarry||!x.psYear?'Legacy':'Baru');
- const matchesUnit=x=>{if(!unit||unit==='all')return true;const a=String(x.uic||'').toLowerCase().includes(unit.toLowerCase()),b=String(x.pend||x.psSupportingUic||'').toLowerCase().includes(unit.toLowerCase());return role==='utama'?a:role==='pendukung'?b:a||b};
- const matchesQuarter=x=>{const m=/^TW\s*(\d)$/i.exec(period),ds=(x.psProjects||[]).map(z=>String(z.goLive||z.start||'')).filter(t=>/^\d{4}-\d\d-\d\d/.test(t));if(!ds.length)return true;if(m)return ds.some(t=>Math.ceil(+t.slice(5,7)/3)===+m[1]);if(period==='range'){const from=f.rangeFrom||'',to=f.rangeTo||'';return !from&&!to||ds.some(t=>(!from||t>=from)&&(!to||t<=to))}return true};
- const listOptions=opts.filter(x=>(!q||[x.nama,x.kode,x.akr,x.uic].join(' ').toLowerCase().includes(q))&&(st==='all'||statusOf(x)===st)&&matchesUnit(x)&&matchesQuarter(x));
- const units=[...new Set(opts.flatMap(x=>[x.uic,x.pend||x.psSupportingUic].flatMap(v=>String(v||'').split(/[,;]/).map(k=>k.trim()))).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id'));
+ const b=S.ui.psBank||(S.ui.psBank={}),u=state(),f=localFilter(),w=ws(),stage=u.tab,sub=stage==='usulan'?(b.tab||'bank'):stage==='mapping'?(window.MT_PS_SCOPE?.bank?.()?.mappingTab||'history'):'';
+ const years=[2025,2026,2027,2028,2029],isProgramHistory=stage==='usulan'&&sub==='bank';
+ const y=String(f.year||yr()),unit=String(f.unit||'all'),status=String(f.status||'all');
+ // Program Bank still uses these fields, but Project Selection no longer uses TW-based filtering.
+ if(stage==='usulan'){
+  b.search=f.search||'';b.filterYear=y;b.filterStatus=status;
+  b.filterUnit=unit;b.filterRole=f.unitRole||'all';b.filterPeriod='all';b.filterRangeFrom='';b.filterRangeTo='';
+  if(sub==='bank')b.filterProgram=f.program||'';
+  if(sub==='detail')b.detailProgram=f.program||'';
+ }
+ const allPrograms=stage==='usulan'&&sub==='bank'?(S.programs||[]):list();
+ const unitValues=[...new Set(allPrograms.flatMap(p=>[p.uic,p.pend||p.psSupportingUic].flatMap(v=>String(v||'').split(/[,;]/).map(x=>x.trim()))).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id'));
+ const projectRows=list().flatMap(p=>(p.psProjects||[]).map(x=>({p,x})));
+ const projectUnits=[...new Set(projectRows.map(o=>o.x.uic||o.p.uic).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id'));
+ const projectCategories=[...new Set(projectRows.map(o=>o.x.category).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id'));
+ const projectStatuses=[...new Set(projectRows.map(o=>o.x.status||'Usulan'))].sort((a,b)=>a.localeCompare(b,'id'));
+ const programOptions=list().filter(x=>!x.arsip&&x.psListStatus!=='Arsip');
+ const options=stage==='usulan'&&sub==='bank'?(S.programs||[]):programOptions;
+ const displayStatus=stage==='mapping'&&sub==='proposal'?['all',...projectStatuses]:
+  stage==='usulan'?['all','Baru','Legacy','Arsip']:
+  stage==='prioritasi'?['all','Sudah Dinilai','Belum Dinilai']:
+  stage==='charter'?['all','Draft','Disahkan']:
+  stage==='penetapan-program'?['all','Belum Ditetapkan','Ditetapkan']:
+  stage==='rkmk'?['all','Perlu Reviu','Sudah Direviu']:['all'];
+ const statusLabel=stage==='prioritasi'?'Status Penilaian':stage==='charter'?'Status Charter':stage==='penetapan-program'?'Status Penetapan':stage==='rkmk'?'Status Reviu':'Status';
+ const title={
+  'usulan':'Usulan Program',
+  'mapping':'Pemetaan Proyek',
+  'prioritasi':'Prioritasi',
+  'charter':'Charter Program',
+  'penetapan-program':'Penetapan Program',
+  'rkmk':'Draft RKMK'
+ }[stage]||'Project Selection';
  const active=[];
- if(period!=='all')active.push(period==='range'?'Rentang periode':period);
- if(f.programName)active.push(f.programName);
- else if(f.program)active.push(opts.find(x=>x.id===f.program)?.nama||'Program');
+ if(f.program)active.push(programOptions.find(p=>String(p.id)===String(f.program))?.nama||'Program dipilih');
  if(unit!=='all')active.push(unit);
- if(st!=='all')active.push(st);
- if(q)active.push('Cari: '+q);
- if(role!=='all')active.push(role==='utama'?'UIC Utama':'UIC Pendukung');
- const on=!!w.filterOpen,
-   filterIcon='<span class="ps27-filter-ic" aria-hidden="true">'+
-   '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg></span>';
- return '<div class="ps27-filter ps27-filter-panel'+(w.filterOpen?' is-open':'')+'" aria-label="Filter Project Selection" role="search">'+
- '<div class="ps27-filter-header" data-ps27="filter" role="button" tabindex="0" aria-expanded="'+!!w.filterOpen+'" aria-label="'+(w.filterOpen?'Sembunyikan':'Tampilkan')+' filter Project Selection" title="Klik area filter untuk '+(w.filterOpen?'menyembunyikan':'menampilkan')+' pilihan filter"><div class="ps27-filter-titlebar">'+filterIcon+
- '<button type="button" class="ps27-filter-label" data-ps27="filter" aria-expanded="'+!!w.filterOpen+'">Filter</button></div>'+
- '<div class="ps27-filter-active"><b>FILTER AKTIF</b><span>'+(active.length?active.map(t=>'<em>'+E(t)+'</em>').join(''):'Belum ada — semua data')+'</span>'+
- '<span class="ps27-filter-spacer"></span><small>'+listOptions.length+' dari '+opts.length+' program</small>'+
- '<button type="button" class="ps27-filter-reset" data-ps27-reset title="Atur ulang filter di menu ini">↺ Atur ulang</button>'+
- '<button type="button" class="ps27-filter-expand" data-ps27="filter" title="'+(w.filterOpen?'Tutup filter':'Buka filter')+'" aria-label="'+(w.filterOpen?'Tutup filter':'Buka filter')+'">'+(w.filterOpen?'▴':'▾')+'</button></div></div>'+
- (w.filterOpen?'<div class="ps27-filter-body" id="ps27-filter-options"><div class="ps27-filter-fields">'+
- '<label>Tahun <select data-ps27-year><option value="all" '+(yFilter==='all'?'selected':'')+'>Semua tahun</option>'+years.map(y=>'<option value="'+y+'" '+(String(yFilter)===String(y)?'selected':'')+'>'+y+'</option>').join('')+'</select></label>'+
- '<div class="ps27-filter-period"><b>Periode</b><div class="ps27-filter-periodset">'+[['all','Setahun'],['TW 1','TW 1'],['TW 2','TW 2'],['TW 3','TW 3'],['TW 4','TW 4'],['range','Rentang']].map(x=>
- '<button type="button" data-ps27-period="'+x[0]+'" class="'+(period===x[0]?'on':'')+'" aria-pressed="'+(period===x[0])+'">'+x[1]+'</button>').join('')+'</div></div>'+
- '<label>Program <select data-ps27-prog><option value="">Semua Program</option>'+listOptions.map(x=>'<option value="'+E(x.id)+'" '+((onBank?String(b.filterProgram)===String(x.id):u.tab==='usulan'&&tab==='detail'?String(b.detailProgram)===String(x.id):!f.allProgramsSelected&&p&&x.id===p.id)?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label>'+
- '<label>Unit <select data-ps27-unit><option value="all">Semua UE I</option>'+units.map(x=>'<option value="'+E(x)+'" '+(unit===x?'selected':'')+'>'+E(x)+'</option>').join('')+'</select></label>'+
- '<label>Peran Unit <select data-ps27-role>'+[['all','Utama/Pendukung'],['utama','UIC Utama'],['pendukung','UIC Pendukung']].map(x=>'<option value="'+x[0]+'" '+(role===x[0]?'selected':'')+'>'+x[1]+'</option>').join('')+'</select></label>'+
- '<label>Status <select data-ps27-status>'+[['all','Semua Status'],['Baru','Baru'],['Legacy','Legacy'],['Arsip','Arsip']].map(x=>'<option value="'+x[0]+'" '+(st===x[0]?'selected':'')+'>'+x[1]+'</option>').join('')+'</select></label>'+
- '<label class="ps27-filter-search">Cari <input type="search" data-ps27-query value="'+E(f.search||'')+'" placeholder="Nama, kode, UIC..."></label>'+
- '</div>'+(period==='range'?'<div class="ps27-filter-range"><label>Dari <input type="date" data-ps27-range-from value="'+E(f.rangeFrom||'')+'"></label><label>Sampai <input type="date" data-ps27-range-to value="'+E(f.rangeTo||'')+'"></label><small>Menampilkan program dengan rencana proyek pada rentang terpilih; program tanpa jadwal tetap ditampilkan.</small></div>':'')+'</div>':'')+'</div>';
+ if(status!=='all')active.push(status);
+ if(f.category&&f.category!=='all'&&stage==='mapping')active.push(f.category);
+ if(f.contractStatus&&f.contractStatus!=='all'&&stage==='penetapan-program')active.push('Kontrak: '+f.contractStatus);
+ if(f.search)active.push('Cari: '+f.search);
+ const mkSel=(attr,values,selected,defaultLabel)=>'<select '+attr+'><option value="all">'+E(defaultLabel)+'</option>'+values.filter(x=>x!=='all').map(x=>'<option value="'+E(x)+'" '+(selected===x?'selected':'')+'>'+E(x)+'</option>').join('')+'</select>';
+ const yearField='<label>Tahun Anggaran <select data-ps27-year>'+
+  (isProgramHistory?'<option value="all" '+(y==='all'?'selected':'')+'>Semua Tahun</option>':'')+
+  years.map(n=>'<option value="'+n+'" '+(y===String(n)?'selected':'')+'>'+n+'</option>').join('')+'</select></label>';
+ const statusField='<label>'+statusLabel+mkSel('data-ps27-status',displayStatus,status,'Semua Status')+'</label>';
+ const unitField=stage==='mapping'?'<label>UIC Proyek'+mkSel('data-ps27-unit',projectUnits,unit,'Semua Unit')+'</label>':
+  '<label>UIC Utama / Pendukung'+mkSel('data-ps27-unit',unitValues,unit,'Semua Unit')+'</label>';
+ const categoryField='<label>Kategori Proyek'+mkSel('data-ps27-category',projectCategories,String(f.category||'all'),'Semua Kategori')+'</label>';
+ const programField='<label>Program <select data-ps27-prog><option value="">Semua Program</option>'+options.map(x=>
+  '<option value="'+E(x.id)+'" '+(String(f.program||'')===String(x.id)?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label>';
+ let fields=yearField;
+ if(stage==='mapping'&&sub==='proposal')fields+=unitField+statusField+categoryField;
+ else if(stage==='mapping'&&sub==='history')fields+='';
+ else if(stage==='mapping'&&sub==='docs')fields+=programField;
+ else if(stage==='usulan')fields+=unitField+statusField+programField;
+ else if(stage==='prioritasi')fields+=programField+unitField+statusField;
+ else if(stage==='charter')fields+=programField+statusField;
+ else if(stage==='penetapan-program'){
+  fields+=programField+statusField+
+   '<label>Status Kontrak'+mkSel('data-ps27-contract-status',['all','Konsep','Ditetapkan'],String(f.contractStatus||'all'),'Semua Status')+'</label>';
+ }else if(stage==='rkmk')fields+=programField+statusField;
+ const searchAlreadyInBody=stage==='mapping'&&(sub==='proposal'||sub==='history');
+ const placeholder=stage==='mapping'?'Cari proyek, aplikasi, kode atau UIC...':
+  stage==='usulan'?'Cari program, kode atau UIC...':
+  stage==='charter'?'Cari isi atau bagian Charter...':
+  stage==='rkmk'?'Cari bagian atau narasi RKMK...':
+  stage==='prioritasi'?'Cari proyek, kriteria atau indikator...':'Cari program, proyek atau nomor dokumen...';
+ const icon='<span class="ps27-filter-ic" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg></span>';
+ return '<div class="ps27-filter ps27-filter-panel ps27-filter-contextual'+(w.filterOpen?' is-open':'')+'" aria-label="Filter Project Selection" role="search">'+
+  '<div class="ps27-filter-header" data-ps27="filter" role="button" tabindex="0" aria-expanded="'+!!w.filterOpen+'"><div class="ps27-filter-titlebar">'+icon+
+  '<button type="button" class="ps27-filter-label" data-ps27="filter">Filter · '+E(stage==='mapping'?(sub==='proposal'?'Usulan Proyek':sub==='history'?'Riwayat Proyek':'Buat Dokumen Proyek'):title)+'</button></div>'+
+  '<div class="ps27-filter-active"><b>FILTER AKTIF</b><span>'+(active.length?active.map(t=>'<em>'+E(t)+'</em>').join(''):'Belum ada — semua data')+'</span>'+
+  '<span class="ps27-filter-spacer"></span><button type="button" class="ps27-filter-reset" data-ps27-reset>↺ Atur ulang</button>'+
+  '<button type="button" class="ps27-filter-expand" data-ps27="filter" aria-label="Buka atau tutup filter">'+(w.filterOpen?'▴':'▾')+'</button></div></div>'+
+  (w.filterOpen?'<div class="ps27-filter-body"><div class="ps27-filter-fields">'+fields+'</div></div>':'')+
+  (searchAlreadyInBody?'':'<div class="ps27-context-search"><label>Cari pada '+E(title)+' <input type="search" data-ps27-query value="'+E(f.search||'')+'" placeholder="'+E(placeholder)+'"></label></div>')+
+ '</div>';
 }
 function actionBar(){return '<div class="ps27-actionbar" hidden></div>';}
 function sourcePicker(){
