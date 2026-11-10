@@ -125,8 +125,9 @@ function filter(p){
  if(stage==='usulan'){
   b.search=f.search||'';b.filterYear=y;b.filterStatus=status;
   b.filterUnit=unit;b.filterRole=f.unitRole||'all';b.filterPeriod='all';b.filterRangeFrom='';b.filterRangeTo='';
-  if(sub==='bank')b.filterProgram=f.program||'';
-  if(sub==='detail')b.detailProgram=f.program||'';
+  b.filterOrigin=f.origin||'all';
+  // Usulan memakai Asal, bukan dropdown Program; cegah filter tersisa yang tersembunyi.
+  f.program='';b.filterProgram='';b.detailProgram='';
  }
  const allPrograms=stage==='usulan'&&sub==='bank'?(S.programs||[]):list();
  const unitValues=[...new Set(allPrograms.flatMap(p=>[p.uic,p.pend||p.psSupportingUic].flatMap(v=>String(v||'').split(/[,;]/).map(x=>x.trim()))).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id'));
@@ -155,6 +156,7 @@ function filter(p){
  if(f.program)active.push(programOptions.find(p=>String(p.id)===String(f.program))?.nama||'Program dipilih');
  if(unit!=='all')active.push(unit);
  if(status!=='all')active.push(status);
+ if(stage==='usulan'&&f.origin&&f.origin!=='all')active.push(f.origin==='baru'?'Asal: Program Baru':'Asal: Dari Tahun Sebelumnya');
  if(f.category&&f.category!=='all'&&stage==='mapping')active.push(f.category);
  if(f.contractStatus&&f.contractStatus!=='all'&&stage==='penetapan-program')active.push('Kontrak: '+f.contractStatus);
  if(f.search)active.push('Cari: '+f.search);
@@ -166,13 +168,15 @@ function filter(p){
  const unitField=stage==='mapping'?'<label>UIC Proyek'+mkSel('data-ps27-unit',projectUnits,unit,'Semua Unit')+'</label>':
   '<label>UIC Utama / Pendukung'+mkSel('data-ps27-unit',unitValues,unit,'Semua Unit')+'</label>';
  const categoryField='<label>Kategori Proyek'+mkSel('data-ps27-category',projectCategories,String(f.category||'all'),'Semua Kategori')+'</label>';
+ const originOptions=[['all','Semua Asal'],['baru','Program Baru'],['lanjutan','Dari Tahun Sebelumnya']];
+ const originField='<label>Asal <select data-ps27-origin>'+originOptions.map(([v,l])=>'<option value="'+v+'"'+((f.origin||'all')===v?' selected':'')+'>'+l+'</option>').join('')+'</select></label>';
  const programField='<label>Program <select data-ps27-prog><option value="">Semua Program</option>'+options.map(x=>
   '<option value="'+E(x.id)+'" '+(String(f.program||'')===String(x.id)?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label>';
  let fields=yearField;
  if(stage==='mapping'&&sub==='proposal')fields+=unitField+statusField+categoryField;
  else if(stage==='mapping'&&sub==='history')fields+='';
  else if(stage==='mapping'&&sub==='docs')fields+=programField;
- else if(stage==='usulan')fields+=unitField+statusField+programField;
+ else if(stage==='usulan')fields+=unitField+originField+statusField+'<label class="ps27-filter-search">Cari <input type="search" data-ps27-query value="'+E(f.search||'')+'" placeholder="Cari program, kode atau UIC..." aria-label="Cari program"></label>';
  else if(stage==='prioritasi')fields+=programField+unitField+statusField;
  else if(stage==='charter')fields+=programField+statusField;
  else if(stage==='penetapan-program'){
@@ -186,14 +190,14 @@ function filter(p){
   stage==='rkmk'?'Cari bagian atau narasi RKMK...':
   stage==='prioritasi'?'Cari proyek, kriteria atau indikator...':'Cari program, proyek atau nomor dokumen...';
  const icon='<span class="ps27-filter-ic" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg></span>';
- return '<div class="ps27-filter ps27-filter-panel ps27-filter-contextual'+(w.filterOpen?' is-open':'')+'" aria-label="Filter Project Selection" role="search">'+
+ return '<div class="ps27-filter ps27-filter-panel ps27-filter-contextual'+(stage==='usulan'?' ps27-filter-usulan':'')+(w.filterOpen?' is-open':'')+'" aria-label="Filter Project Selection" role="search">'+
   '<div class="ps27-filter-header" data-ps27="filter" role="button" tabindex="0" aria-expanded="'+!!w.filterOpen+'"><div class="ps27-filter-titlebar">'+icon+
   '<button type="button" class="ps27-filter-label" data-ps27="filter">Filter · '+E(stage==='mapping'?(sub==='proposal'?'Usulan Proyek':sub==='history'?'Riwayat Proyek':'Buat Dokumen Proyek'):title)+'</button></div>'+
   '<div class="ps27-filter-active"><b>FILTER AKTIF</b><span>'+(active.length?active.map(t=>'<em>'+E(t)+'</em>').join(''):'Belum ada — semua data')+'</span>'+
   '<span class="ps27-filter-spacer"></span><button type="button" class="ps27-filter-reset" data-ps27-reset>↺ Atur ulang</button>'+
   '<button type="button" class="ps27-filter-expand" data-ps27="filter" aria-label="Buka atau tutup filter">'+(w.filterOpen?'▴':'▾')+'</button></div></div>'+
   (w.filterOpen?'<div class="ps27-filter-body"><div class="ps27-filter-fields">'+fields+'</div></div>':'')+
-  (searchAlreadyInBody?'':'<div class="ps27-context-search"><label>Cari pada '+E(title)+' <input type="search" data-ps27-query value="'+E(f.search||'')+'" placeholder="'+E(placeholder)+'"></label></div>')+
+  (searchAlreadyInBody||stage==='usulan'?'':'<div class="ps27-context-search"><label>Cari pada '+E(title)+' <input type="search" data-ps27-query value="'+E(f.search||'')+'" placeholder="'+E(placeholder)+'"></label></div>')+
  '</div>';
 }
 function actionBar(){return '<div class="ps27-actionbar" hidden></div>';}
@@ -426,8 +430,8 @@ function mount(){
   if(b.dataset.ps27Usul){ws().usulanSub=b.dataset.ps27Usul;save();render();return}
   if(b.dataset.ps27Remove){toast('Hapus proyek hanya tersedia di Pemetaan Proyek → Usulan Proyek.');return}
   if(b.hasAttribute('data-ps27-reset')){
-   const f=localFilter();Object.assign(f,{search:'',status:'all',program:'',category:'all',contractStatus:'all',programName:'',unit:'all',unitRole:'all',period:'all',rangeFrom:'',rangeTo:'',year:state().tab==='usulan'&&(S.ui.psBank?.tab||'bank')==='bank'?'all':String(yr())});
-   const st=S.ui.psBank||(S.ui.psBank={});st.filterProgram='';st.detailProgram='';f.allProgramsSelected=false;st.search='';st.filterStatus='all';st.filterYear=f.year;
+   const f=localFilter();Object.assign(f,{search:'',status:'all',program:'',category:'all',origin:'all',contractStatus:'all',programName:'',unit:'all',unitRole:'all',period:'all',rangeFrom:'',rangeTo:'',year:state().tab==='usulan'&&(S.ui.psBank?.tab||'bank')==='bank'?'all':String(yr())});
+   const st=S.ui.psBank||(S.ui.psBank={});st.filterProgram='';st.detailProgram='';f.allProgramsSelected=false;st.search='';st.filterStatus='all';st.filterOrigin='all';st.filterYear=f.year;
    save();render();return;
   }
   if(b.hasAttribute('data-ps27-period')){setFilterField('period',b.dataset.ps27Period);save();render();return}
@@ -499,6 +503,7 @@ function mount(){
    }
    if(el.dataset.ps27Status!==undefined){S.ui.psBank=S.ui.psBank||{};setFilterField('status',el.value);save();render();return}
    if(el.dataset.ps27Unit!==undefined){setFilterField('unit',el.value);save();render();return}
+   if(el.dataset.ps27Origin!==undefined){setFilterField('origin',el.value);save();render();return}
    if(el.dataset.ps27Category!==undefined){setFilterField('category',el.value);save();render();return}
    if(el.dataset.ps27ContractStatus!==undefined){setFilterField('contractStatus',el.value);save();render();return}
    if(el.dataset.ps27Role!==undefined){setFilterField('unitRole',el.value);save();render();return}

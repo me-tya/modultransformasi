@@ -170,6 +170,9 @@ function programAction(kind,id,title){
  return '<button type="button" class="psbank-action-icon psbank-program-action '+kind+'" '+attr+'="'+E(id)+'" title="'+E(title)+'" aria-label="'+E(title)+'">'+
  '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+icons[kind]+'</svg></button>';
 }
+function matchesOrigin(p,origin='all'){
+ return origin==='baru'?!p.psCarry:origin==='lanjutan'?!!p.psCarry:true;
+}
 function matchesUnit(p,unit='all',role='all'){
  if(!unit||unit==='all')return true;
  const needle=String(unit).toLowerCase(),main=String(p.uic||'').toLowerCase().includes(needle),support=String(p.pend||p.psSupportingUic||'').toLowerCase().includes(needle);
@@ -186,7 +189,7 @@ function matchesPeriod(p,period='all',from='',to=''){
 }
 function bank(){
  const b=store(),q=String(b.search||'').toLowerCase(),list=records();
- const rows=list.filter(x=>(b.filterYear==='all'||+b.filterYear===x.year)&&(!b.filterProgram||x.p.id===b.filterProgram)&&(b.filterStatus==='all'||!b.filterStatus||labelStatus(x.p,x.year)===b.filterStatus)&&matchesUnit(x.p,b.filterUnit,b.filterRole)&&matchesPeriod(x.p,b.filterPeriod,b.filterRangeFrom,b.filterRangeTo)&&[x.p.nama,x.p.kodeResmi,x.p.kode,x.p.uic,x.p.akr].join(' ').toLowerCase().includes(q));
+ const rows=list.filter(x=>(b.filterYear==='all'||+b.filterYear===x.year)&&(!b.filterProgram||x.p.id===b.filterProgram)&&matchesOrigin(x.p,b.filterOrigin)&&(b.filterStatus==='all'||!b.filterStatus||labelStatus(x.p,x.year)===b.filterStatus)&&matchesUnit(x.p,b.filterUnit,b.filterRole)&&matchesPeriod(x.p,b.filterPeriod,b.filterRangeFrom,b.filterRangeTo)&&[x.p.nama,x.p.kodeResmi,x.p.kode,x.p.uic,x.p.akr].join(' ').toLowerCase().includes(q));
  const pageSize=b.bankPageSize,pages=Math.max(1,Math.ceil(rows.length/pageSize));
  b.bankPage=Math.min(Math.max(1,+b.bankPage||1),pages);
  const from=(b.bankPage-1)*pageSize,pageRows=rows.slice(from,from+pageSize);
@@ -213,7 +216,7 @@ function bank(){
 }
 function detail(){
  const b=store(),q=String(b.search||'').toLowerCase(),status=b.filterStatus||'all';
- const rows=active().filter(p=>(!b.detailProgram||p.id===b.detailProgram)&&[p.nama,p.kodeResmi,p.kode,p.uic,p.akr].join(' ').toLowerCase().includes(q)&&(status==='all'||labelStatus(p)===status)&&matchesUnit(p,b.filterUnit,b.filterRole)&&matchesPeriod(p,b.filterPeriod,b.filterRangeFrom,b.filterRangeTo));
+ const rows=active().filter(p=>(!b.detailProgram||p.id===b.detailProgram)&&matchesOrigin(p,b.filterOrigin)&&[p.nama,p.kodeResmi,p.kode,p.uic,p.akr].join(' ').toLowerCase().includes(q)&&(status==='all'||labelStatus(p)===status)&&matchesUnit(p,b.filterUnit,b.filterRole)&&matchesPeriod(p,b.filterPeriod,b.filterRangeFrom,b.filterRangeTo));
  const size=b.detailPageSize,pages=Math.max(1,Math.ceil(rows.length/size));
  b.detailPage=Math.min(Math.max(1,+b.detailPage||1),pages);
  const from=(b.detailPage-1)*size,visibleRows=rows.slice(from,from+size);
@@ -523,7 +526,7 @@ function onChange(ev){
  if(q.dataset.bankDetailPageSize!==undefined){b.detailPageSize=Number(q.value);b.detailPage=1;saveUI();return}
  if(q.dataset.bankYear!==undefined){b.filterYear=q.value;b.bankPage=1;saveUI();return}
  if(q.dataset.bankCheckall!==undefined){
-  const filtered=records().filter(x=>(b.filterYear==='all'||+b.filterYear===x.year)&&(!b.filterProgram||x.p.id===b.filterProgram)&&(b.filterStatus==='all'||!b.filterStatus||labelStatus(x.p,x.year)===b.filterStatus)&&matchesUnit(x.p,b.filterUnit,b.filterRole)&&matchesPeriod(x.p,b.filterPeriod,b.filterRangeFrom,b.filterRangeTo)&&[x.p.nama,x.p.kodeResmi,x.p.kode,x.p.uic,x.p.akr].join(' ').toLowerCase().includes(String(b.search||'').toLowerCase()));
+  const filtered=records().filter(x=>(b.filterYear==='all'||+b.filterYear===x.year)&&(!b.filterProgram||x.p.id===b.filterProgram)&&matchesOrigin(x.p,b.filterOrigin)&&(b.filterStatus==='all'||!b.filterStatus||labelStatus(x.p,x.year)===b.filterStatus)&&matchesUnit(x.p,b.filterUnit,b.filterRole)&&matchesPeriod(x.p,b.filterPeriod,b.filterRangeFrom,b.filterRangeTo)&&[x.p.nama,x.p.kodeResmi,x.p.kode,x.p.uic,x.p.akr].join(' ').toLowerCase().includes(String(b.search||'').toLowerCase()));
   const visible=filtered.slice((b.bankPage-1)*b.bankPageSize,b.bankPage*b.bankPageSize).map(x=>x.key);
   b.check=q.checked?[...new Set([...b.check,...visible])]:b.check.filter(x=>!visible.includes(x));
   saveUI();return;

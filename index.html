@@ -98,7 +98,8 @@ a{color:var(--blue)}
 .nv.on .new{background:var(--navy);color:var(--yellow)}
 .grp{display:flex;flex-direction:column;gap:2px}
 .grp[hidden]{display:none}
-.side .foot{margin-top:auto;padding:12px 20px;font-size:10.5px;color:var(--side-mute);border-top:1px solid rgba(255,255,255,.06)}
+.side .foot{margin-top:auto;position:sticky;bottom:0;z-index:1;padding:10px 15px;font-size:10px;color:var(--side-mute);border-top:1px solid rgba(255,255,255,.06);background:var(--side)}
+.side .foot .mt-copyright{display:block;margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,.06);font-size:9.5px;line-height:1.4;color:#CBD7E8;overflow-wrap:anywhere}
 .main{min-width:0;display:flex;flex-direction:column}
 .top{position:sticky;top:0;z-index:30;min-height:58px;background:var(--top);color:#fff;display:flex;align-items:center;gap:10px;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));flex-wrap:wrap;padding-block:8px}
 .hamb{background:none;border:1px solid rgba(255,255,255,.22);color:#fff;border-radius:8px;height:34px;width:38px;cursor:pointer;flex:none}
@@ -3190,7 +3191,7 @@ function render(){if(ME&&ME.role==='SA'&&S.akses&&!S.akses.KETUA){S.akses.KETUA=
  if(!mm&&!allowedViews().includes(VIEW))VIEW='beranda';
  const cur=curKey();const tk=tasks();const tkv=BELL.vis(tk);
  $('#root').innerHTML=`<div class="app ${S.ui.side===0?'collapsed':''}" id="app"><aside class="side" id="side"><div class="brand"><span class="glyph"></span><b>satu</b><span>kemenkeu</span></div>
- <nav class="nav" aria-label="Menu utama">${navHTML(navTree(),0,cur)}</nav><div class="foot">Modul Transformasi · prototipe v3<br>Data WBS: Kompilasi 2026 (930 item)</div></aside>
+ <nav class="nav" aria-label="Menu utama">${navHTML(navTree(),0,cur)}</nav><div class="foot">Modul Transformasi · prototipe v3<br>Data WBS: Kompilasi 2026 (930 item)<span class="mt-copyright">© 2026 Atitya Pritasari<br>Pusat Manajemen Transformasi dan Perubahan<br>Kementerian Keuangan</span></div></aside>
  <div class="main"><header class="top"><button class="hamb" id="hamb" aria-label="Tampilkan/sembunyikan menu">☰</button><div class="crumb">${crumbOf()}</div>
  <label class="tsel"><span>Tahun Anggaran</span><select id="yr" aria-label="Tahun anggaran">${yearsOpt().map(y=>`<option ${S.ui.tahun==y?'selected':''}>${y}</option>`).join('')}</select></label>
  <span class="role">${meLab()}</span>
