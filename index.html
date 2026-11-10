@@ -5585,6 +5585,7 @@ function actImportDashboardBackup(data){
   if(!a?.id)continue;
   const id='cm-import-'+String(a.id).replace(/[^a-zA-Z0-9_-]/g,''),old=S.oneonone.find(x=>x.id===id||x.cmDashboardId===a.id);
   const x=old||{id,keAkt:true};
+  const oldFiles=old?Object.fromEntries(['und','st','materi','dok','notula'].map(k=>[k,attNorm(old[k])])):{};
   const first=String(a.tglMulai||'').slice(0,10),year=+first.slice(0,4)||+S.ui.tahun;
   const timeStart=String(a.jamMulai||'').slice(0,5),timeEnd=String(a.jamSelesai||'').slice(0,5),waktu=String(a.waktu||'');
   const cats=String(a.kategori||'Rapat Koordinasi'),sv=String(a.layanan||'').toLowerCase();
@@ -5605,6 +5606,13 @@ function actImportDashboardBackup(data){
   x.materi=attachments(a.materiFiles,linkItem(a.materi,'Materi kegiatan'));
   x.dok=attachments(a.dokumentasi);
   x.notula=attachments(a.notula);
+  // Impor ulang JSON/ZIP tidak boleh menghapus berkas Firestore yang telah dimigrasikan.
+  if(old)for(const field of ['und','st','materi','dok','notula']){
+   const oldItems=attNorm(oldFiles[field]).items.filter(m=>m.t==='f'&&m.sourceRefId);
+   const target=attNorm(x[field]);
+   for(const m of oldItems){target.items=target.items.filter(z=>z.externalRefId!==m.sourceRefId);if(!target.items.some(z=>z.t==='f'&&z.sourceRefId===m.sourceRefId))target.items.push(m)}
+   x[field]=target;
+  }
   const sourceNotula=arr(a.notula),extractText=sourceNotula.map(z=>z.searchPreview||'').filter(Boolean).join('\n\n');
   x.notulaTeks=a.notulaTeks||extractText||'';x.ringkas=a.ringkasanHasil||'';x.tl=a.tindakLanjut||'';
   x.dashboardSource={id:a.id,updatedAt:a.updatedAt||'',kategori:a.kategori||'',sourceFile:'DashboardCM',eoChecklist:a.eoChecklist||'[]',notulaMeta:sourceNotula,dokumentasiMeta:arr(a.dokumentasi),undanganMeta:arr(a.undanganFiles),suratTugasMeta:arr(a.suratTugasFiles),materiMeta:arr(a.materiFiles),searchMeta:a._search||'',extra:{estimasiBiaya:a.estimasiBiaya||'',statusManual:a.statusManual||'',statusNeedsUpdate:!!a.statusNeedsUpdate,eoEnabled:!!a.eoEnabled}};
