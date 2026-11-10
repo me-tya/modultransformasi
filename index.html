@@ -2395,6 +2395,35 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 .sw #one-rte ol ol ol,.sw #one-rte-sim ol ol ol{list-style:lower-roman}
 
 
+
+/* A4 portrait preview: actual Word-style layout including Surat Tugas table. */
+.mt-preview-help{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 0 10px;font-size:11.5px;color:#50617A}
+.mt-preview-help b{color:#112B51;font-size:12px}
+.mt-preview-help mark,.mt-word-page mark{background:#FFF59B;color:#111;padding:0 2px;border-radius:1px}
+.mt-preview-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px;margin:0 0 12px}
+.mt-preview-edit{min-width:0;display:flex;flex-direction:column;gap:4px;font-size:11.5px;font-weight:650;color:#334966}
+.mt-preview-edit.wide{grid-column:1/-1}.mt-preview-edit input{height:36px}
+.mt-preview-edit textarea{resize:vertical;min-height:72px}
+.mt-doc-scroller{background:#E8EDF5;border-radius:12px;overflow:auto;padding:20px 12px;max-height:68vh}
+.mt-docpv{display:flex;justify-content:center}
+.mt-word-page{position:relative;box-sizing:border-box;flex:none;width:794px;min-height:1123px;padding:66px 72px 82px;background:white;box-shadow:0 3px 15px rgba(20,39,67,.17);font-family:Arial,Helvetica,sans-serif!important;font-size:11.5pt!important;line-height:1.46;color:#111}
+.mt-word-kop{display:flex;align-items:center;gap:14px;border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:21px;font-family:Arial,Helvetica,sans-serif!important}
+.mt-word-kop img{flex:none;width:63px;height:67px;object-fit:contain}.mt-word-kop>div{flex:1;text-align:center;display:flex;flex-direction:column;gap:2px}
+.mt-word-kop b{font-size:11pt;line-height:1.3}.mt-word-kop small{font-size:8pt;line-height:1.35}
+.mt-word-content p{margin:0 0 13px;text-align:justify;text-indent:33px}.mt-word-content .mt-word-recipient{text-indent:0;margin:28px 0 25px}
+.mt-word-title{text-align:center;margin:16px 0 27px;display:flex;flex-direction:column;line-height:1.5;gap:2px}
+.mt-word-title b,.mt-word-title strong{font-size:12pt}.mt-word-title b{text-decoration:underline;text-underline-offset:3px}
+.mt-word-st-table{width:100%;border-collapse:collapse;table-layout:fixed;margin:11px 0 21px;font-size:9.3pt}
+.mt-word-st-table th,.mt-word-st-table td{border:1px solid #444;padding:6px 5px;vertical-align:top;overflow-wrap:anywhere;line-height:1.35}
+.mt-word-st-table th{background:#E7E6E6;text-align:center;font-weight:700}
+.mt-word-st-table th:first-child{width:6%}.mt-word-st-table th:nth-child(2){width:27%}.mt-word-st-table th:nth-child(3){width:16%}.mt-word-st-table th:nth-child(4){width:19%}.mt-word-st-table th:last-child{width:32%}
+.mt-word-facts{margin:0 0 16px 57px}.mt-word-facts>div{display:grid;grid-template-columns:115px 1fr;gap:6px}
+.mt-word-header-rows{margin:5px 0 18px;font-size:11pt}.mt-word-header-rows>div{display:grid;grid-template-columns:78px minmax(0,1fr) auto;gap:8px;line-height:1.45}
+.mt-word-sign{width:265px;margin:26px 0 15px auto;display:flex;flex-direction:column;line-height:1.48;gap:1px}
+.mt-word-sign .mt-word-space{height:58px}.mt-word-sign small{font-size:9pt;color:#707070}.mt-word-sign b{font-size:11pt;font-weight:400;margin-top:3px}
+.mt-word-footer{position:absolute;bottom:26px;left:70px;right:70px;border-top:1px solid #DBDBDB;padding-top:8px;font-size:6.5pt;line-height:1.3;text-align:justify;color:#555}
+@media(max-width:900px){.mt-preview-fields{grid-template-columns:1fr}.mt-doc-scroller{padding:10px}.mt-word-page{width:794px;min-height:1123px}}
+
 /* Tim CM dan referensi pegawai Pusmantap */
 .mt-team-page{display:flex;flex-direction:column;gap:14px}.mt-team-hero{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 20px;background:#10294F;color:#fff;border-radius:13px}.mt-team-hero h3{color:#fff;font-size:18px;margin:0 0 4px}.mt-team-hero p{color:#D3E0F2;font-size:12px;margin:0}
 .mt-team-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.mt-team-stats>div{border:1px solid #DFE5F0;border-radius:11px;padding:12px 14px;background:#fff}.mt-team-stats strong{display:block;color:#112B52;font-size:24px}.mt-team-stats small{font-size:11px;color:#667791}
@@ -4913,14 +4942,54 @@ function actEoDefault(tgl){const d=n=>{if(!tgl)return '';const t=new Date(tgl+'T
 
 /* Draft surat: pratinjau, edit dan unduh memakai generator Word yang sudah ada. */
 function actDraftPreview(kind,src,apply){
- const fields=[['nama','Nama kegiatan'],['tujuan','Latar belakang / tujuan'],['peserta','Peserta / penerima'],['tgl','Tanggal'],['lokasi','Tempat']];
- const body='<p class="s">Bagian kuning adalah placeholder yang wajib disesuaikan. Edit isian sebelum mengunduh Word.</p><div class="fgrid">'+fields.map(([k,t])=>'<div class="fld"><label>'+t+'</label><input class="inp" data-doc-edit="'+k+'" '+(k==='tgl'?'type="date"':'')+' value="'+esc(src[k]||'')+'"></div>').join('')+'</div><div class="nl-pv" id="mt-docpv"></div>';
- const read=o=>{const x=oneClone(src);o.querySelectorAll('[data-doc-edit]').forEach(e=>x[e.dataset.docEdit]=e.value);return x};
- const preview=o=>{const x=read(o),v=t=>t?esc(t):'<mark>[perlu disesuaikan]</mark>',label=kind==='st'?'SURAT TUGAS':'UNDANGAN';
-  o.querySelector('#mt-docpv').innerHTML='<div class="nl-pg"><div class="nl-kop"><b>KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</b><b>BADAN TEKNOLOGI, INFORMASI, DAN INTELIJEN KEUANGAN</b><b>PUSAT MANAJEMEN TRANSFORMASI DAN PERUBAHAN</b></div><h3 style="text-align:center">KONSEP '+label+'</h3><p>Nomor: <mark>[@Nomor'+(kind==='st'?'ST':'ND')+']</mark></p>'+(kind==='st'?'<p>Dalam rangka '+v(x.tujuan)+', ditugaskan pegawai untuk menghadiri kegiatan <b>'+v(x.nama)+'</b> tanggal '+v(x.tgl)+' bertempat di '+v(x.lokasi)+'.</p><p>Pelaksana: '+v((x.pic||[]).join(', '))+'.</p>':'<p>Yth. '+v(x.peserta)+'</p><p>Sehubungan dengan '+v(x.tujuan)+', kami mengundang Bapak/Ibu untuk menghadiri kegiatan <b>'+v(x.nama)+'</b> pada tanggal '+v(x.tgl)+' bertempat di '+v(x.lokasi)+'.</p><p>Atas perhatian dan kerja sama Bapak/Ibu disampaikan terima kasih.</p>')+'<small>Pratinjau ringkas; ekspor menggunakan format Word Pusmantap.</small></div>';
+ const isST=kind==='st',isND=kind==='ndnot';
+ const title=isST?'Surat Tugas':isND?'Nota Dinas Penyampaian Notula':'Undangan';
+ const fields=isND?[['nama','Nama kegiatan'],['tgl','Tanggal kegiatan'],['lokasi','Tempat pelaksanaan'],['peserta','Penerima nota dinas'],['ndNarasi','Contoh arahan/tindak lanjut (stabilo kuning)']]:
+ [['nama','Nama kegiatan'],['tujuan','Latar belakang / tujuan'],['peserta','Peserta / penerima'],['tgl','Tanggal kegiatan'],['lokasi','Tempat pelaksanaan']].concat(isST?[['undHal','Hal undangan'],['stHal','Hal Surat Tugas']]:[['undHal','Hal undangan']]);
+ const isLong=k=>k==='ndNarasi'||k==='tujuan'||k==='peserta';
+ const body=`<div class="mt-preview-help"><b>Pratinjau A4 (portrait)</b><span>Susunan mengikuti dokumen Word Pusmantap. Bagian <mark>kuning</mark> merupakan placeholder atau contoh narasi yang perlu disesuaikan.</span></div>
+ <div class="mt-preview-fields">${fields.map(([key,label])=>`<label class="mt-preview-edit ${isLong(key)?'wide':''}"><span>${label}</span>${key==='ndNarasi'?`<textarea class="inp" data-doc-edit="${key}" rows="3" placeholder="Arahan yang dapat disesuaikan">${esc(src[key]||'')}</textarea>`:`<input class="inp" data-doc-edit="${key}" ${key==='tgl'?'type="date"':'type="text"'} value="${esc(src[key]||'')}">`}</label>`).join('')}</div>
+ <div class="mt-doc-scroller"><div id="mt-docpv" class="mt-docpv"></div></div>`;
+ const read=ov=>{const x=oneClone(src);ov.querySelectorAll('[data-doc-edit]').forEach(f=>x[f.dataset.docEdit]=f.value);return x};
+ const render=ov=>{
+  const x=read(ov),ph=t=>'<mark>'+esc(t)+'</mark>',v=(z,placeholder)=>String(z||'').trim()?esc(z):ph(placeholder),
+   tgl=x.tgl?actTglShort(x.tgl):'',tempat=actTempat(x),jam=actJam(x),m=actMaster(),
+   pen=m.pen||{},und=attNorm(x.und),st=attNorm(x.st);
+  const kop=`<div class="mt-word-kop"><img src="${ONE_LOGO}" alt="Logo Kementerian Keuangan"><div><b>KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</b><b>BADAN TEKNOLOGI, INFORMASI, DAN INTELIJEN KEUANGAN</b><b>PUSAT MANAJEMEN TRANSFORMASI DAN PERUBAHAN</b><small>GEDUNG JB. SUMARLIN LANTAI 1–6, JALAN DR. WAHIDIN RAYA NO. 1, JAKARTA 10710</small></div></div>`;
+  const signature=`<div class="mt-word-sign"><div>Jakarta, ${ph(isST?'[@TanggalST]':'[@TanggalND]')}</div><div>Kepala Pusat Manajemen</div><div>Transformasi dan Perubahan</div><div class="mt-word-space"></div><small>Ditandatangani secara elektronik</small><b>${v(pen.nama,'[nama penandatangan]')}</b></div>`;
+  const rows=(x.pic||[]).length?x.pic:[''];
+  const stRows=rows.map((n,i)=>{const p=n?actPicOf(n):{};return `<tr><td>${i+1}.</td><td>${v(n,'[nama pegawai]')}<br>${v(p.nip,'[NIP]')}</td><td>${v(p.pang,'[pangkat/gol.]')}</td><td>${v(p.jab,'[jabatan]')}</td><td>${v(tgl,'[tanggal]')}<br>${v(tempat,'[tempat]')}</td></tr>`}).join('');
+  let content='';
+  if(isST){
+   content=`<div class="mt-word-title"><b>SURAT TUGAS</b><strong>NOMOR ${v(st.no&&st.no!=='-'?st.no:'','[@NomorST]')}</strong></div>
+   <p>Sehubungan dengan Undangan ${v(x.undDari,'[penerbit undangan]')} nomor ${v(und.no&&und.no!=='-'?und.no:'','[nomor undangan]')} tanggal ${v(x.undTgl?actTglShort(x.undTgl):'','[tanggal undangan]')} hal ${v(x.undHal||x.nama,'[hal undangan]')}, bersama ini kami menugasi pejabat/pegawai berikut:</p>
+   <table class="mt-word-st-table"><thead><tr><th>No.</th><th>Nama / NIP</th><th>Pangkat / Gol.</th><th>Jabatan</th><th>Tanggal dan Lokasi</th></tr></thead><tbody>${stRows}</tbody></table>
+   <p>Untuk hadir dalam kegiatan tersebut yang akan diselenggarakan pada:</p><div class="mt-word-facts"><div><span>tanggal</span><span>: sesuai tabel penugasan;</span></div><div><span>pukul</span><span>: ${v(jam,'[pukul]')};</span></div><div><span>tempat</span><span>: sesuai tabel penugasan.</span></div></div>
+   <p>Segala biaya yang timbul sebagai akibat dilaksanakannya surat ini dibebankan pada DIPA ${v(x.dipa,'[unit/satker pemilik DIPA]')} Tahun Anggaran ${esc((x.tgl||TODAY).slice(0,4))}.</p>
+   <p>Surat Tugas ini disusun untuk dilaksanakan dan setelah selesai dilaksanakan, pelaksana segera menyampaikan laporan. Kepada instansi terkait, kami mohon bantuan demi kelancaran pelaksanaan tugas tersebut.</p>${signature}`;
+  }else if(isND){
+   const contoh=String(x.ndNarasi||'').trim()||'Mohon agar hasil pembahasan dan butir tindak lanjut dalam notula dimaksud menjadi perhatian unit terkait serta ditindaklanjuti sesuai tugas dan kewenangan masing-masing';
+   content=`<div class="mt-word-header-rows"><div><span>Nomor</span><span>: ${ph('[@NomorND]')}</span><span>${ph('[@TanggalND]')}</span></div><div><span>Sifat</span><span>: ${ph('[Biasa / Segera]')}</span></div><div><span>Lampiran</span><span>: 1 (satu) berkas</span></div><div><span>Hal</span><span>: Penyampaian Notula ${v(x.nama,'[nama kegiatan]')}</span></div></div>
+   <p class="mt-word-recipient">Yth. ${v(x.peserta,'[pejabat/unit penerima nota dinas]')}</p>
+   <p>Menindaklanjuti pelaksanaan kegiatan <b>${v(x.nama,'[nama kegiatan]')}</b> pada ${v(tgl,'[tanggal kegiatan]')}${jam?' pukul '+esc(jam):''} bertempat di ${v(tempat,'[tempat kegiatan]')}, bersama ini kami sampaikan notula kegiatan dimaksud sebagai bahan dokumentasi, koordinasi, dan tindak lanjut.</p>
+   <p>${ph(contoh)}.</p><p>Demikian kami sampaikan. Atas perhatian dan kerja sama Saudara, kami mengucapkan terima kasih.</p>${signature}`;
+  }else{
+   content=`<div class="mt-word-header-rows"><div><span>Nomor</span><span>: ${ph('[@NomorND]')}</span><span>${ph('[@TanggalND]')}</span></div><div><span>Sifat</span><span>: ${ph('Segera')}</span></div><div><span>Lampiran</span><span>: ${ph('-')}</span></div><div><span>Hal</span><span>: Undangan ${v(x.nama,'[nama kegiatan]')}</span></div></div>
+   <p class="mt-word-recipient">Yth. ${v(x.peserta,'[daftar undangan]')}</p>
+   <p>Sehubungan dengan ${v(x.tujuan,'[latar belakang/tujuan kegiatan]')}, kami bermaksud mengadakan ${v(x.nama,'[nama kegiatan]')}. Berkenaan dengan hal dimaksud, kami mohon Saudara untuk dapat menugaskan perwakilan pejabat/pegawai yang memiliki peran terkait untuk dapat hadir pada:</p>
+   <div class="mt-word-facts"><div><span>hari, tanggal</span><span>: ${v(x.tgl?actTglLong(x):'','[hari, tanggal]')};</span></div><div><span>pukul</span><span>: ${v(jam,'[pukul]')};</span></div><div><span>tempat</span><span>: ${v(tempat,'[tempat]')}.</span></div></div>
+   <p>Demi kelancaran jalannya acara, ${ph('[tambahkan arahan persiapan, mis. materi atau tautan presensi]')}. Mengingat pentingnya acara dimaksud, kami mohon agar pejabat/pegawai yang ditugaskan agar hadir tepat pada waktunya.</p>
+   <p>Demikian yang dapat kami sampaikan, atas perhatian dan kerja sama Saudara diucapkan terima kasih.</p>${signature}`;
+  }
+  ov.querySelector('#mt-docpv').innerHTML=`<article class="mt-word-page">${kop}<div class="mt-word-content">${content}</div><div class="mt-word-footer">${esc(ACT_BSRE)}</div></article>`;
  };
- const ov=modal('Pratinjau & Edit Konsep '+(kind==='st'?'Surat Tugas':'Undangan'),body,'Terapkan ke Aktivitas',o=>apply(read(o)),{size:'hp',extra:'<button type="button" class="btn gold" data-mx="dl">⬇ Unduh Word</button>',onExtra:(k,o)=>{if(k==='dl'){const x=read(o);(kind==='st'?actDocxST(x):actDocxUndangan(x)).then(b=>mtRptDownloadBlob(b,'Konsep_'+(kind==='st'?'ST':'Undangan')+'_'+actName(x).replace(/[^\\w]+/g,'_').slice(0,50)+'.docx')).catch(e=>toast('Gagal mengunduh Word: '+e.message))}return false}});
- ov.addEventListener('input',()=>preview(ov));preview(ov);return ov;
+ const ov=modal('Pratinjau & Edit Konsep '+title,body,'Terapkan ke Aktivitas',o=>apply(read(o)),{size:'hp',extra:'<button type="button" class="btn gold" data-mx="dl" title="Unduh konsep format Word Pusmantap">⬇ Unduh Word</button>',onExtra:(k,o)=>{
+  if(k!=='dl')return false;
+  const x=read(o),generate=isST?actDocxST:isND?actDocxNDNotula:actDocxUndangan;
+  generate(x).then(b=>mtRptDownloadBlob(b,'Konsep_'+(isST?'ST':isND?'ND_Notula':'Undangan')+'_'+actName(x).replace(/[^\\w]+/g,'_').slice(0,50)+'.docx')).catch(e=>toast('Gagal mengunduh Word: '+e.message));
+  return false;
+ }});
+ ov.addEventListener('input',()=>render(ov));render(ov);return ov;
 }
 
 function editOneOnOne(item,step,after){
