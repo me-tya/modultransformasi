@@ -41,7 +41,7 @@ function importJson(obj){
   const grade=typeof z.pangkat==='object'?z.pangkat?.kodeGolongan||'':z.golongan||'';
   const old=db().people.find(p=>(nip&&String(p.nip||'').replace(/\D/g,'')===nip)||(!nip&&p.name.toLowerCase()===name.toLowerCase()));
   const p=old||{id:nip?'person-'+nip:uid(),type:'Pegawai Tetap',capacity:100,wfh:[],leave:[]};
-  const days=(z.wfhDays||[]).map(d=>typeof d==='number'?d:DAYS.findIndex(k=>k.toLowerCase()===String(d).toLowerCase())).filter(n=>n>=0&&n<5);
+  const days=(z.wfhDays||[]).map(d=>typeof d==='number'?(d>=1&&d<=5?d-1:d):DAYS.findIndex(k=>k.toLowerCase()===String(d).toLowerCase())).filter(n=>n>=0&&n<5);
   p.name=name;p.nip=nip||p.nip||'';p.position=j.namaJabatan||z.jabatan||p.position||'';
   p.unit=Array.isArray(z.jabatan)?'Pusat Manajemen Transformasi dan Perubahan':(z.unit||p.unit||'Pusmantap, BATII');
   p.email=z.emailKemenkeu||z.email||p.email||'';p.phone=z.noHp||p.phone||'';
