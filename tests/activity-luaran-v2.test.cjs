@@ -36,5 +36,6 @@ test('Menu wizard padat dan field hasil serta tindak lanjut memanfaatkan ruang',
   assert.match(html,/\.sw \.sw-nav button em\{[\s\S]*?grid-column:3;[\s\S]*?grid-row:1;/);
   assert.match(html,/\.sw \.sw-nav button\.on\{[\s\S]*?background:#FFFFFF/);
   assert.match(html,/b\.dataset\.complete=tot&&dn===tot\?'done':dn\?'partial':'empty'/);
+  assert.ok(html.includes("b.textContent=(tot&&dn===tot?'✓ ':'')+dn+'/'+tot"));
   assert.match(html,/\.sw \.act-outcome-section \.act-result-grid textarea\{flex:1/);
 });
