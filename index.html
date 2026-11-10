@@ -4683,7 +4683,7 @@ function actMaster(){const d=oneCfgDocs().find(x=>x.id==='cfg-master'),m=(d&&d.m
 function actMasterSave(m){let d=oneCfgDocs().find(x=>x.id==='cfg-master');if(!d){d={id:'cfg-master',kind:'cfg',tahun:0,tw:0};S.oneonone.push(d)}d.master=oneClone(m);save()}
 const actPicOf=n=>actMaster().pic.find(p=>p.n===n)||{n};
 /* ---- status ---- */
-const actHasNotula=x=>!!((x.notula&&notulaChip(x.notula,1))||String(x.notulaTeks||'').replace(/<[^>]*>|&nbsp;/g,'').trim());
+const actHasNotula=x=>!!((x.notula&&notulaChip(x.notula,1))||(String(x.notulaTeks||'')+String(x.notulaSimHtml||'')).replace(/<[^>]*>|&nbsp;/g,'').trim());
 function actSt(x){const s=x.stat||'',m=ACT_MAN.includes(s)&&ACT_STS.find(a=>a[0]===s);if(m)return m;
  if(!x.tgl)return ['Belum dijadwalkan','c-gray'];const e=x.tglSelesai&&x.tglSelesai>=x.tgl?x.tglSelesai:x.tgl;
  if(e<TODAY)return [actHasNotula(x)?'Selesai · notula ada':'Selesai','c-ok'];if(x.tgl>TODAY)return ['Terjadwal','c-info'];
@@ -4709,15 +4709,20 @@ const actLink=x=>x.link||(/^https?:/i.test(x.lokasi||'')?x.lokasi:'');
 const actTempat=x=>{const l=/^https?:/i.test(x.lokasi||'')?'':(x.lokasi||''),k=actLink(x);return [l,k?(l?'tautan rapat '+k:'melalui '+k):''].filter(Boolean).join(' dan ')||''};
 /* ---- model notula dari catatan notulen (HTML) ---- */
 function actNotulaItems(html){const d=document.createElement('div');d.innerHTML=actSan(html);const items=[];let cur=null;
- const txt=n=>n.textContent.replace(/\s+/g,' ').trim(),
- tree=l=>[...l.children].filter(c=>c.tagName==='LI').map(li=>{const c=li.cloneNode(true);c.querySelectorAll('ul,ol').forEach(z=>z.remove());return {t:txt(c),s:[...li.children].filter(z=>/^(UL|OL)$/.test(z.tagName)).flatMap(tree)}});
- const add=t=>{if(!t)return;if(!cur){cur={j:'',t:'',s:[]};items.push(cur)}cur.t+=(cur.t?' ':'')+t};
- const step=n=>{if(n.nodeType===3){add(n.textContent.replace(/\s+/g,' ').trim());return}if(n.nodeType!==1)return;
-  if(/^H[34]$/.test(n.tagName)){cur={j:txt(n),t:'',s:[]};items.push(cur);return}
-  if(/^(UL|OL)$/.test(n.tagName)){if(!cur){cur={j:'',t:'',s:[]};items.push(cur)}cur.s=cur.s.concat(tree(n));return}
+ const txt=n=>n.textContent.replace(/\s+/g,' ').trim(),clean=t=>String(t||'').replace(/^\s*(?:\d{1,3}|[a-z])[.)]\s+/i,'').trim();
+ const tree=l=>[...l.children].filter(c=>c.tagName==='LI').map(li=>{const c=li.cloneNode(true);c.querySelectorAll('ul,ol').forEach(z=>z.remove());return {t:clean(txt(c)),html:c.innerHTML,s:[...li.children].filter(z=>/^(UL|OL)$/.test(z.tagName)).flatMap(tree)}});
+ const add=(t,h)=>{if(!t)return;if(!cur){cur={j:'',t:'',html:'',s:[]};items.push(cur)}cur.t+=(cur.t?' ':'')+t;cur.html+=(cur.html?' ':'')+(h||esc(t))};
+ const step=n=>{if(n.nodeType===3){const t=clean(n.textContent.replace(/\s+/g,' ').trim());add(t,esc(t));return}if(n.nodeType!==1)return;
+  if(/^H[34]$/.test(n.tagName)){cur={j:clean(txt(n)),jHtml:n.innerHTML,t:'',html:'',s:[]};items.push(cur);return}
+  if(/^(UL|OL)$/.test(n.tagName)){const a=tree(n);if(!cur||(!cur.j&&!cur.t)){a.forEach(x=>items.push({j:'',t:x.t,html:x.html,s:x.s}));cur=null}else cur.s=cur.s.concat(a);return}
   if(n.tagName==='DIV'&&n.querySelector('ul,ol,h3,h4,p,div')){[...n.childNodes].forEach(step);return}
-  if(n.tagName==='BR')return;add(txt(n))};
+  if(n.tagName==='BR')return;add(clean(txt(n)),n.innerHTML)};
  [...d.childNodes].forEach(step);return items.filter(i=>i.j||i.t||i.s.length)}
+function actSimItems(html){const root=document.createElement('div');root.innerHTML=actSan(html);const out=[];
+ const add=n=>{if(n.nodeType!==1)return;if(/^(UL|OL)$/.test(n.tagName)){[...n.children].filter(c=>c.tagName==='LI').forEach(li=>{const c=li.cloneNode(true);c.querySelectorAll('ul,ol').forEach(x=>x.remove());const t=actLines(c.textContent).join(' ');if(t)out.push({t,html:c.innerHTML});[...li.children].filter(x=>/^(UL|OL)$/.test(x.tagName)).forEach(add)});return}
+ if(n.tagName==='DIV'&&n.querySelector('p,ul,ol,div,h3,h4')){[...n.children].forEach(add);return}
+ const t=actLines(n.textContent).join(' ');if(t)out.push({t,html:n.innerHTML})};
+ [...root.children].forEach(add);return out}
 const actLines=s=>String(s||'').split(/\r?\n/).map(l=>l.replace(/^\s*(?:\d{1,2}[.)]|[a-z][.)]|[-•*])\s+/i,'').trim()).filter(Boolean);
 /* model notula: dipakai pratinjau HTML dan Word */
 function actNotulaModel(x,o={}){const m=actMaster(),pics=(x.pic||[]);
@@ -4728,8 +4733,8 @@ function actNotulaModel(x,o={}){const m=actMaster(),pics=(x.pic||[]);
  const agenda=String(x.tujuan||'').trim();
  const peserta=String(x.peserta||'').trim();
  const buka=o.buka!=null?o.buka:(x.notulaBuka||('Rapat dibuka oleh '+(pics.length?'Tim Change Management, Pusat Manajemen Transformasi dan Perubahan (Pusmantap)':'[pimpinan rapat]')+', dengan peserta '+(peserta?peserta:'[peserta]')+(x.narsum?', serta narasumber dari '+x.narsum:'')+'. Pusmantap menyampaikan bahwa rapat diselenggarakan'+(agenda?' untuk '+agenda.replace(/^./,c=>c.toLowerCase()).replace(/[.\s]+$/,''):' untuk [tujuan rapat]')+'.'));
- const items=actNotulaItems(x.notulaTeks),sim=actLines(x.ringkas),tl=actLines(x.tl);
- return {judul:(actName(x)).toUpperCase(),dasar,dasarKosong:!dasar.length,tgl,tempat,jam:actJam(x),tglRange:actTglLong(x),agenda,peserta,buka,items,sim,tl,
+ const items=actNotulaItems(x.notulaTeks),simRich=actSimItems(x.notulaSimHtml||''),sim=simRich.length?simRich.map(i=>i.t):actLines(x.ringkas),tl=actLines(x.tl);const f=x.notulaFmt||{},fmt={font:['Arial','Calibri','Times New Roman','Bookman Old Style'].includes(f.font)?f.font:'Arial',size:[10,11,12,14,16].includes(+f.size)?+f.size:11,indent:Math.max(0,Math.min(6,+f.indent||0)),align:['left','center','right','justify'].includes(f.align)?f.align:'justify'};
+ return {judul:(actName(x)).toUpperCase(),dasar,dasarKosong:!dasar.length,tgl,tempat,jam:actJam(x),tglRange:actTglLong(x),agenda,peserta,buka,items,sim,simRich,tl,fmt,
   buat:o.buat||x.notulaTgl||x.tglSelesai||x.tgl||TODAY,ketua:o.ketua||x.notulaKetua||m.ketua,notulis:o.notulis!=null?o.notulis:(x.notulaNotulis||m.notulis)}}
 
 /* ---- Word: notula, surat tugas, konsep undangan (kop dan logo dari dxKop) ---- */
@@ -4887,7 +4892,7 @@ function editOneOnOne(item,step,after){
   sec(3,'Notula <span class="mt-nlinfo" title="Berkas Notula yang diunggah disimpan langsung. Pengisian editor tersimpan setelah tombol Simpan. Dapat mengunggah lebih dari satu berkas." aria-label="Informasi notula">ⓘ</span>','Susun Pembahasan dan Simpulan dengan penomoran rapi.',`${nlp()}<div class="rte" id="one-rtew"><div class="rte-tb" role="toolbar" aria-label="Format teks">${rteFmt}${rteBtn('bold','<b>B</b>','Tebal')}${rteBtn('italic','<i>I</i>','Miring')}${rteBtn('underline','<u>U</u>','Garis bawah')}<span class="sep"></span>${rteBtn('formatBlock','H','Judul butir','H3')}${rteBtn('insertUnorderedList','•≡','Daftar poin')}${rteBtn('insertOrderedList','1≡','Daftar nomor')}<span class="sep"></span>${rteBtn('justifyLeft','≡','Rata kiri')}${rteBtn('justifyCenter','☰','Rata tengah')}${rteBtn('justifyFull','▤','Rata kiri kanan')}${rteBtn('outdent','⇤','Kurangi inden')}${rteBtn('indent','⇥','Tambah inden')}<span class="sep"></span>${rteBtn('createLink','🔗','Tautan')}${rteBtn('removeFormat','⌫','Hapus format')}<button type="button" class="rte-fs" data-rtefs>⤢ Layar penuh</button></div><div class="rte-ruler" title="Atur inden paragraf"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6 cm</span><input type="range" min="0" max="6" step="0.5" value="${fmt.indent}" data-rteindent aria-label="Inden kiri (cm)"><output data-rteout>${fmt.indent} cm</output></div><div class="rte-section-tag">II. Pembahasan</div>
    <div class="rte-ct" id="one-rte" contenteditable="true" data-ph="Ketik notulen di sini: pokok bahasan, kesepakatan, tindak lanjut…">${actSan(item.notulaTeks||'')}</div><div class="rte-section-tag">III. Simpulan</div><div class="rte-ct rte-ct-sm" id="one-rte-sim" contenteditable="true" data-ph="Ketik simpulan dan kesepakatan; gunakan numbering atau bullet…">${actSan(item.notulaSimHtml||actLines(item.ringkas).map(t=>'<p>'+esc(t)+'</p>').join(''))}</div><div class="rte-ft"><span id="one-rtec">0 kata</span><span>Pembahasan &amp; Simpulan ikut menjadi isi dokumen notula.</span></div></div>`,'sw-grow')+`<div class="act-nlbar"><button type="button" class="btn act-nlbtn" data-gen="notula" title="Pratinjau notula dan unduh Word">Pratinjau &amp; Unduh Word</button></div>`;
  const p5=sec(1,'Dokumentasi','Foto, daftar hadir, tangkapan layar.',`<div class="fgrid">${at('dok')}</div>`,'sw-nolab')+
-  sec(2,'Hasil & tindak lanjut','Menjadi bagian Simpulan pada notula.',`<div class="fgrid">${ta('ringkas','Ringkasan hasil (satu simpulan per baris)',5,'Capaian kegiatan, kesepakatan utama…',0)}${ta('tl','Tindak lanjut (satu per baris)',5,'Rencana aksi, PIC, tenggat. Menjadi daftar a, b, c pada notula.',0)}</div>`);
+  sec(2,'Hasil & tindak lanjut','Menjadi bagian Simpulan pada notula.',`<div class="fgrid">${ta('ringkas','Ringkasan hasil (cadangan Simpulan jika editor kosong)',5,'Capaian kegiatan, kesepakatan utama…',0)}${ta('tl','Tindak lanjut (satu per baris)',5,'Rencana aksi, PIC, tenggat. Menjadi daftar a, b, c pada notula.',0)}</div>`);
  const ov=document.createElement('div');ov.className='ov';
  ov.innerHTML=`<div class="md sw" role="dialog" aria-modal="true" aria-label="Aktivitas"><aside class="sw-sd"><span class="sw-pill">${isNew?'+ AKTIVITAS BARU':'UBAH AKTIVITAS'}</span>
   <div class="sw-card"><b data-swt>Aktivitas tanpa judul</b><span data-swd></span><em data-sws class="chip c-info"></em></div>
@@ -5242,7 +5247,7 @@ function actNotulaModal(x,onSave){const M0=actNotulaModel(x);
  const ov=modal('Generate Notula',body,'Terapkan ke aktivitas',o=>{const r=read(o);onSave({notulaBuka:r.buka,notulaTgl:r.buat,notulaKetua:r.ketua,notulaNotulis:r.notulis})},{size:'hp',extra:'<button type="button" class="btn gold" data-mx="dl">⬇ Unduh Word</button>',onExtra:(k,o)=>{if(k==='dl'){actDocxNotula(x,read(o)).then(b=>mtRptDownloadBlob(b,'Notula_'+actName(x).replace(/[^\w]+/g,'_').slice(0,50)+'.docx')).catch(e=>toast('Gagal membuat Word: '+e.message))}return false}});
  const pv=()=>{ov.querySelector('#nl-pv').innerHTML=actNotulaHtml(x,read(ov))};pv();ov.addEventListener('input',pv);return ov}
 /* ---- Daftar aktivitas (CRUD) ---- */
-const actHay=x=>[actName(x),x.program,x.tema,x.uic,x.kat,x.unitP,(x.pic||[]).join(' '),x.lokasi,x.link,x.tujuan,x.narsum,x.peserta,x.ringkas,x.tl,x.undHal,attNorm(x.und).no,String(x.notulaTeks||'').replace(/<[^>]*>/g,' ')].join(' ').toLowerCase();
+const actHay=x=>[actName(x),x.program,x.tema,x.uic,x.kat,x.unitP,(x.pic||[]).join(' '),x.lokasi,x.link,x.tujuan,x.narsum,x.peserta,x.ringkas,x.tl,x.undHal,attNorm(x.und).no,String(x.notulaSimHtml||''),String(x.notulaTeks||'').replace(/<[^>]*>/g,' ')].join(' ').toLowerCase();
 const actStBase=x=>actSt(x)[0].split(' · ')[0];
 function oneDocs(x){const c=(k,l)=>{const h=notulaChip(x[k],1);return h?'<div class="one-dc"><b>'+l+'</b>'+h+'</div>':''};const nt=String(x.notulaTeks||'').replace(/<[^>]*>|&nbsp;/g,'').trim()?'<div class="one-dc"><b>Notula</b><span class="nt-chip sm"><i>✎</i><span>'+actWords(x.notulaTeks)+' kata</span></span></div>':'';
  return c('und','Undangan')+c('st','Surat tugas')+c('materi','Materi')+c('notula','Notula')+nt+c('dok','Dokumentasi')||'<span class="s">—</span>'}
