@@ -71,3 +71,5 @@ test('Notula preview retains rich editor formatting and separates discussion par
  assert.match(html,/if\(!current\|\|current\.t\)make\(\)/);
  assert.match(html,/class="nl-sign-blank"/);
 });
+
+// Additional MT-10 regression cases: activity-luaran-v2.test.cjs
