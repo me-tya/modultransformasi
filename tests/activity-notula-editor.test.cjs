@@ -15,8 +15,10 @@ test('Dasar surat: ikon interaktif, tombol duplikat terhapus, kontrol ringkas',(
  assert.match(slot,/class="sl-ic \$\{cls\} sl-create" data-gen="\$\{k\}"/);
  assert.doesNotMatch(slot,/mt-docgen/);
  for(const kind of ['link','file','tog'])assert.ok(slot.includes('data-slk="'+kind+'" title='));
- assert.match(html,/const isUnd=el\.dataset\.sl==='und'/);
- assert.match(html,/Hal surat undangan/);
+ assert.match(slot,/data-sl-no/);
+ assert.match(slot,/one-\$\{k\}Hal/);
+ assert.match(html,/r\.push\(\['Undangan atau Tidak ada'/);
+ assert.match(html,/r\.push\(\['Surat Tugas atau Tidak ada'/);
  assert.doesNotMatch(html,/class="sl-tag cur">TERBARU/);
 });
 test('PIC: pegawai Pusmantap lengkap dan kelompok penugasan dipisahkan',()=>{
@@ -46,4 +48,17 @@ test('Notula: pratinjau lebih mendekati kertas Word, DOCX page margin tetap',()=
  assert.match(html,/w:pgMar w:top="720" w:right="1134" w:bottom="/);
  assert.match(html,/w:left="1418"/);
  assert.match(html,/notaIndent=\(M\.fmt\.indent\|\|0\)\*28\.35/);
+});
+
+test('Aktivitas: A4 surat, kelengkapan surat, nomor notula dan ND penyampaian',()=>{
+ assert.match(html,/mt-word-page/);
+ assert.match(html,/function actDocxNDNotula/);
+ assert.match(html,/data-gen="ndnot"/);
+ assert.match(html,/\['ndnot','one-ndnot'/);
+ assert.doesNotMatch(html,/id="at-no-one-not"/);
+ assert.match(html,/const ONE_MODE=\['Offline','Hybrid','Online'\]/);
+ assert.match(html,/data-reason/);
+ assert.match(html,/\['overview','Overview'\],\['daftar','Daftar Aktivitas'\]/);
+ assert.match(html,/data-rtefs/);
+ assert.match(html,/data-rteindent/);
 });
