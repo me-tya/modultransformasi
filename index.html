@@ -5260,7 +5260,7 @@ function pAktDaftar(){const all=getOneOnOne().filter(x=>!isOne(x)||x.keAkt),tw=+
  const today='<section class="today-agenda'+(tcol?' collapsed':'')+'"><div class="today-agenda-body"><button type="button" class="today-summary" data-act="actTodayCol"><span class="today-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span><span class="today-summary-copy"><b>Agenda Hari Ini</b><small>'+esc(dlab)+'</small></span><span class="today-summary-total"><small>Total hari ini</small><strong>'+tdy.length+'</strong></span></button><div class="today-list-wrap"><div class="today-list-head"><span>Waktu</span><span>Agenda</span><span>Kategori</span><span>PIC</span><span>Status</span></div><div class="today-list">'+(tdy.length?tdy.slice(0,5).map(trow).join(''):'<div class="today-empty">Tidak ada agenda yang dijadwalkan hari ini.</div>')+'</div>'+(tdy.length>5?'<div class="today-more">+'+(tdy.length-5)+' agenda lainnya</div>':'')+'</div></div><button type="button" class="today-collapse" data-act="actTodayCol" aria-expanded="'+!tcol+'" title="'+(tcol?'Buka':'Tutup')+' Agenda Hari Ini"><span>'+(tcol?'▾':'▴')+'</span></button>'+(tcol?'<button type="button" class="today-collapsed-line" data-act="actTodayCol"><b>Agenda Hari Ini</b><span class="count-badge">'+tdy.length+'</span><small>'+esc(dlab)+'</small></button>':'')+'</section>';
  return '<div class="cmx">'+vh('1','pmo','Aktivitas','Seluruh kegiatan PMO dan CMO Kemenkeu: 1-on-1 T-Program, forum, rapat koordinasi, pendampingan, lengkap dengan PIC, notulen, dokumentasi, dan notula.',acts)+actTabs()+
  fbar+today+'<div class="card"><div class="ch"><h3>Daftar Aktivitas <span class="s">('+rows.length+')</span></h3></div>'+
- (editable?'<div class="act-bar"><span class="act-one"><b>1-on-1:</b><button class="btn sm" data-act="oneDraft" title="Buat konsep undangan rapat 1-on-1 satu triwulan">⎙ Konsep undangan</button><button class="btn sm" data-act="oneImp">⇪ Impor undangan</button><button class="btn sm" data-act="oneCopyTw" title="Salin sesi 1-on-1 ke triwulan berikutnya">⧉ Salin ke TW berikutnya</button></span></div>':'')+
+ (editable?'<div class="act-bar"><span class="act-one"><b>1-on-1:</b><button class="btn sm" data-act="oneDraft" title="Buat konsep undangan rapat 1-on-1 satu triwulan">⎙ Konsep undangan</button><button class="btn sm" data-act="oneImp">⇪ Impor undangan</button><button class="btn sm" data-act="oneCopyTw" title="Salin sesi 1-on-1 ke triwulan berikutnya">⧉ Salin ke TW berikutnya</button></span><span class="act-one"><button class="btn sm pri" data-act="actJsonImport" title="Impor seluruh aktivitas dari backup Dashboard CM; yang memiliki ID sama diperbarui">⇪ Impor Aktivitas Dashboard CM</button><input type="file" id="act-json-file" accept=".json,application/json" hidden></span></div>':'')+
  '<div class="tscroll act-cm"><table class="act-tbl"><colgroup><col class="c-no"><col class="c-date"><col class="c-act"><col class="c-svc"><col class="c-unit"><col class="c-cat"><col class="c-prog"><col class="c-pic"><col class="c-st"><col class="c-ax"></colgroup><thead><tr><th>No</th>'+th('tgl','Tanggal / Jam')+th('nama','Kegiatan')+th('lay','Layanan')+th('unit','Unit')+th('kat','Kategori')+th('prog','Program')+'<th>PIC</th>'+th('st','Status')+'<th>Aksi</th></tr></thead><tbody>'+
  (paged.length?paged.map(tr).join(''):'<tr><td colspan="10" class="od-emp">'+(all.length?'Tidak ada aktivitas yang cocok dengan filter.':'Belum ada aktivitas.')+' Klik <b>+ Aktivitas</b> atau <b>Import Undangan</b> untuk menambah.</td></tr>')+'</tbody></table></div>'+pgn+'</div></div>';
 }
@@ -5556,6 +5556,75 @@ ACT.oneSt=el=>{const x=(S.oneonone||[]).find(v=>v.id===el.dataset.id);if(!x)retu
 document.addEventListener('change',e=>{const f=e.target.closest&&e.target.closest('[data-actf]');if(!f)return;e.stopPropagation();S.ui[f.dataset.actf]=f.value;if(f.dataset.actf!=='actPs')S.ui.actPg=1;S.ui.kuPg=1;save();render()},true);
 
 ACT.oneEdit=el=>{const item=(S.oneonone||[]).find(x=>x.id===el.dataset.id);if(item)editOneOnOne(item,+el.dataset.step||1)};
+
+/* Impor data aktivitas dari backup Dashboard CM melalui browser, bukan menaruh JSON internal di GitHub publik.
+   Referensi penyimpanan berbentuk refId tidak otomatis menjadi file lokal yang dapat diunduh. */
+function actImportDashboardBackup(data){
+ if(!actCanEdit())throw new Error('Anda tidak memiliki akses untuk mengimpor aktivitas.');
+ const agendas=Array.isArray(data?.agendas)?data.agendas:null;
+ if(!agendas||!agendas.length)throw new Error('JSON harus berupa backup Dashboard CM yang memuat agendas.');
+ const arr=x=>{if(Array.isArray(x))return x;if(typeof x==='string'){try{const a=JSON.parse(x);return Array.isArray(a)?a:[]}catch(e){return []}}return []};
+ let unresolved=0,added=0,updated=0;
+ const attachments=(raw,extras=[])=>{
+  const items=[],keys=new Set();
+  for(const m of [...arr(raw),...extras]){
+   if(!m)continue;
+   const url=typeof m==='string'&&/^https?:\/\//i.test(m)?m:typeof m==='object'?(m.url||m.link||''):'';
+   const name=typeof m==='object'?m.name||m.fileName||m.nama||'':'';
+   const reference=typeof m==='object'?m.refId||m.storagePath||m.id||'':'';
+   const key=url||reference||name;if(!key||keys.has(key))continue;keys.add(key);
+   if(/^https?:\/\//i.test(url))items.push({t:'l',link:url,nama:name});
+   else if(typeof m==='object'&&typeof m.data==='string'&&/^data:/i.test(m.data))items.push({t:'d',data:m.data,nama:name||'Dokumentasi'});
+   else {items.push({t:'n',nama:name||'Berkas dari Dashboard CM',externalRefId:reference,unresolved:true});unresolved++}
+  }
+  return {items,no:''};
+ };
+ const linkItem=(url,name)=>/^https?:\/\//i.test(String(url||''))?[{url:String(url),name:name||'Tautan'}]:[];
+ const statusMap={Completed:'Selesai',Cancelled:'Dibatalkan',Postponed:'Ditunda',Pending:'Menunggu Konfirmasi','Not Attended':'Tidak Dihadiri',Scheduled:'',Ongoing:''};
+ for(const a of agendas){
+  if(!a?.id)continue;
+  const id='cm-import-'+String(a.id).replace(/[^a-zA-Z0-9_-]/g,''),old=S.oneonone.find(x=>x.id===id||x.cmDashboardId===a.id);
+  const x=old||{id,keAkt:true};
+  const first=String(a.tglMulai||'').slice(0,10),year=+first.slice(0,4)||+S.ui.tahun;
+  const timeStart=String(a.jamMulai||'').slice(0,5),timeEnd=String(a.jamSelesai||'').slice(0,5),waktu=String(a.waktu||'');
+  const cats=String(a.kategori||'Rapat Koordinasi'),sv=String(a.layanan||'').toLowerCase();
+  x.cmDashboardId=a.id;x.cmImportedAt=new Date().toISOString();x.tahun=year;x.tw=first?Math.ceil((+first.slice(5,7)||1)/3):1;x.no=Number(a.no)||0;
+  x.kat=cats;x.nama=a.namaKegiatan||'';x.keAkt=true;
+  x.tgl=first;x.tglSelesai=String(a.tglSelesai||'').slice(0,10)||first;
+  x.jam=timeStart&&timeEnd?timeStart+' - '+timeEnd:waktu;
+  x.layanan=['ya','yes','true'].includes(sv)?'Ya':'Tidak';
+  x.unitP=a.unitPemohon||'';x.program=a.programTerkait||'';
+  x.tujuan=a.tujuanOutput||'';x.catatan=a.catatan||'';
+  x.peserta=a.pesertaTarget||'';x.narsum=a.unitAsalNarsum||'';
+  x.pic=String(a.picTimCM||'').split(/[,;]+/).map(p=>p.trim()).filter(Boolean);
+  x.lokasi=a.meetingLocation||a.lokasiChannel||'';x.link=a.meetingLink||(/^https?:\/\//.test(x.lokasi)?x.lokasi:'');
+  x.mode=a.meetingMode||'Hybrid';
+  x.stat=statusMap[a.statusNorm]??statusMap[a.status]??'';
+  x.und=attachments(a.undanganFiles,linkItem(a.undanganUrl,'Surat undangan'));x.und.no=a.undangan||'';
+  x.st=attachments(a.suratTugasFiles,linkItem(a.suratTugasUrl,'Surat tugas'));x.st.no=a.suratTugas||'';
+  x.materi=attachments(a.materiFiles,linkItem(a.materi,'Materi kegiatan'));
+  x.dok=attachments(a.dokumentasi);
+  x.notula=attachments(a.notula);
+  x.notulaTeks=a.notulaTeks||'';x.ringkas=a.ringkasanHasil||'';x.tl=a.tindakLanjut||'';
+  x.dashboardSource={id:a.id,updatedAt:a.updatedAt||'',kategori:a.kategori||'',sourceFile:'DashboardCM',eoChecklist:a.eoChecklist||'[]'};
+  if(old)updated++;else{S.oneonone.push(x);added++}
+ }
+ save();render();
+ toast('Impor: '+added+' aktivitas baru, '+updated+' diperbarui. '+unresolved+' referensi berkas belum berisi file fisik.');
+ return {added,updated,unresolved};
+}
+ACT.actJsonImport=()=>{if(!actCanEdit())return toast('Tidak berwenang mengimpor aktivitas.');document.getElementById('act-json-file')?.click()};
+document.addEventListener('change',async e=>{
+ if(e.target?.id!=='act-json-file')return;
+ const file=e.target.files?.[0];if(!file)return;
+ try{
+  if(file.size>20*1024*1024)throw new Error('Backup terlalu besar; maksimal 20 MB.');
+  const data=JSON.parse(await file.text());if(!Array.isArray(data.agendas))throw new Error('File bukan backup Dashboard CM.');
+  if(!window.confirm('Impor '+data.agendas.length+' aktivitas dari Dashboard CM? Aktivitas dengan ID sumber yang sama akan diperbarui, dan lampiran yang hanya berupa refId ditandai sebagai belum terhubung.'))return;
+  actImportDashboardBackup(data);
+ }catch(err){toast('Gagal mengimpor: '+(err.message||String(err)))}finally{e.target.value=''}
+},true);
+
 ACT.oneAdd=()=>{getOneOnOne();const x={id:uid(),keAkt:true,tahun:+S.ui.tahun,tw:+S.ui.oneTw||oneTwNow(),no:0,kat:S.ui.actKat||'Rapat Koordinasi',tgl:'',jam:'',program:'',tema:'',uic:'',spv:'',katim:'',anggota:'',lokasi:'',mode:'Hybrid'};editOneOnOne(x)};
 ACT.oneDup=el=>{const s0=(S.oneonone||[]).find(x=>x.id===el.dataset.id);if(!s0)return;const x=oneClone(s0);x.id=uid();x.tgl='';x.tglSelesai='';x.jam='';x.notula=null;x.und=null;x.st=null;x.materi=null;x.dok=null;x.stat='';x.alasan='';x.ringkas='';x.tl='';x.notulaTeks='';delete x.notulaBuka;delete x.notulaTgl;x.undTgl='';x.undHal='';x.cek=true;if(x.eo&&x.eo.items)x.eo.items.forEach(i=>{i.done=false;i.id=uid()});x.no=isOne(x)?oneSessions(s0.tahun,oneTwOf(s0)).length+1:S.oneonone.filter(v=>v.kind!=='cfg'&&+v.tahun===+s0.tahun).length+1;if(x.nama)x.nama=x.nama;editOneOnOne(x);toast('Duplikat aktivitas: isi tanggal dan jam baru lalu Simpan.')};
 ACT.oneCopyTw=()=>{if(!lv('wbs').includes('U')&&!lv('wbs').includes('C')){toast('Tidak memiliki izin mengubah jadwal.');return}getOneOnOne();
