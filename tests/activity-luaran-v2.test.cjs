@@ -29,7 +29,12 @@ test('Lampiran baru bisa pratinjau dan unduh; dokumentasi menjadi thumbnail',()=
   assert.match(html,/data-atdl=/);
 });
 test('Menu wizard padat dan field hasil serta tindak lanjut memanfaatkan ruang',()=>{
-  assert.match(html,/\.sw \.sw-nav button span small\{display:none\}/);
-  assert.match(html,/\.sw \.sw-nav button em\{margin-left:auto/);
+  // Sidebar tetap mempertahankan deskripsi; badge diposisikan di kolom ketiga, bukan di bawah.
+  assert.match(html,/grid-template-columns:38px minmax\(0,1fr\) max-content/);
+  assert.match(html,/\.sw \.sw-nav button span small\{/);
+  assert.match(html,/display:block;[\s\S]*?text-overflow:ellipsis;/);
+  assert.match(html,/\.sw \.sw-nav button em\{[\s\S]*?grid-column:3;[\s\S]*?grid-row:1;/);
+  assert.match(html,/\.sw \.sw-nav button\.on\{[\s\S]*?background:#FFFFFF/);
+  assert.match(html,/b\.dataset\.complete=tot&&dn===tot\?'done':dn\?'partial':'empty'/);
   assert.match(html,/\.sw \.act-outcome-section \.act-result-grid textarea\{flex:1/);
 });

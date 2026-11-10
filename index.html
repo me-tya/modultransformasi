@@ -2483,14 +2483,91 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 @media(max-width:760px){.pk-g>div{grid-template-columns:1fr}.sl .sl-summary{grid-template-columns:1fr}.sw-nav button{grid-template-columns:29px minmax(0,1fr)}}
 
 
-/* MT-10: kelengkapan sejajar dan lebih ringkas */
-.sw .sw-nav{gap:4px}
-.sw .sw-nav button{padding:6px 9px;min-height:40px;gap:8px;border-radius:10px}
-.sw .sw-nav button i{width:27px;height:27px;border-radius:8px;font-size:14px}
-.sw .sw-nav button span{display:flex;align-items:center;min-width:0}
-.sw .sw-nav button span b{font-size:12.5px}
-.sw .sw-nav button span small{display:none}
-.sw .sw-nav button em{margin-left:auto;white-space:nowrap;padding:2px 6px;font-variant-numeric:tabular-nums}
+/* MT-11: side menu Aktivitas sesuai referensi visual.
+   Ikon besar | judul + deskripsi bertumpuk | kelengkapan pada ujung kanan.
+   Tidak mengubah ukuran header, ring kemajuan, atau layout konten modal. */
+.sw .sw-nav{gap:6px}
+.sw .sw-nav button{
+ display:grid;
+ grid-template-columns:38px minmax(0,1fr) max-content;
+ grid-template-rows:auto;
+ align-items:center;
+ column-gap:9px;
+ row-gap:0;
+ min-height:64px;
+ padding:9px 10px;
+ border-radius:13px;
+ background:transparent;
+ color:#fff;
+}
+.sw .sw-nav button:hover{background:rgba(255,255,255,.09)}
+.sw .sw-nav button i{
+ grid-column:1;
+ grid-row:1;
+ width:38px;
+ height:38px;
+ border-radius:10px;
+ background:rgba(255,255,255,.09);
+ color:#F6C65E;
+ display:grid;
+ place-items:center;
+ font-size:17px;
+}
+.sw .sw-nav button span{
+ grid-column:2;
+ grid-row:1;
+ display:flex;
+ flex-direction:column;
+ align-items:flex-start;
+ justify-content:center;
+ gap:2px;
+ min-width:0;
+ width:100%;
+}
+.sw .sw-nav button span b{display:block;font-size:13px;line-height:1.25;font-weight:800;overflow-wrap:anywhere}
+.sw .sw-nav button span small{
+ display:block;
+ width:100%;
+ font-size:10.5px;
+ line-height:1.35;
+ font-weight:500;
+ opacity:.82;
+ white-space:nowrap;
+ overflow:hidden;
+ text-overflow:ellipsis;
+}
+.sw .sw-nav button em{
+ grid-column:3;
+ grid-row:1;
+ align-self:center;
+ justify-self:end;
+ margin:0;
+ white-space:nowrap;
+ padding:3px 7px;
+ font-size:10.5px;
+ font-weight:800;
+ line-height:1.45;
+ font-variant-numeric:tabular-nums;
+ background:rgba(255,255,255,.12);
+ color:#BDD0EC;
+}
+.sw .sw-nav button:not(.on) em[data-complete="partial"]{color:#F7D36F;background:rgba(255,255,255,.15)}
+.sw .sw-nav button.on{
+ background:#FFFFFF;
+ color:#12254A;
+}
+.sw .sw-nav button.on:hover{background:#FFFFFF}
+.sw .sw-nav button.on i{background:linear-gradient(135deg,#F4D571,#D0A73C);color:#10274C}
+.sw .sw-nav button.on span small{color:#64748D;opacity:1}
+.sw .sw-nav button.on em{background:#E9EEF5;color:#657590}
+.sw .sw-nav button.on em[data-complete="done"]{background:#E0F3EB;color:#16835E}
+.sw .sw-nav button.on em[data-complete="partial"]{background:#FFF2D5;color:#9A6B0B}
+/* Di viewport sempit, pertahankan ikon, judul, deskripsi, dan badge. */
+@media(max-width:860px){
+ .sw .sw-nav{flex-direction:column;overflow:visible}
+ .sw .sw-nav button{width:100%;flex:none}
+ .sw .sw-nav button span small{display:block}
+}
 .sw .sw-ring small{line-height:1.22}
 .sw .sw-bd>[data-swp-5]:not([hidden]){min-height:100%;flex:1}
 .sw .sw-bd>[data-swp-5]>.act-outcome-section{flex:1;min-height:310px}
@@ -5180,7 +5257,7 @@ function editOneOnOne(item,step,after){
   drawJb();dirty=true;upd();return n};
  const upd=()=>{const reason=q('[data-reason]');if(reason)reason.hidden=!['Ditunda','Tidak Dihadiri','Dibatalkan'].includes(stat);slSum();nlSum();clashChk();const tp=stNow();q('[data-swt]').textContent=(V('nama').trim()||(isOneNow()&&V('program').trim()?'Rapat 1-on-1 · '+V('program').trim():'Aktivitas tanpa judul'));q('[data-swd]').textContent=V('tgl')?oneLong(V('tgl')):'Belum bertanggal';const sc=q('[data-sws]');sc.textContent=stat!=='Terjadwal'?stat:tp[0];sc.className='chip '+(stat!=='Terjadwal'?(ACT_STS.find(a=>a[0]===stat)||[0,'c-info'])[1]:tp[1]);
   const R=REQ(),ok=R.filter(r=>r[1]()).length,pct=Math.round(ok/R.length*100);q('[data-swp]').textContent=pct+'%';q('[data-swr]').setAttribute('stroke-dasharray',pct+' 100');q('[data-swq]').textContent=ok<R.length?'Isian wajib belum lengkap':'Isian wajib lengkap';
-  const O=OPT();[1,2,3,4,5].forEach(n=>{const r=R.filter(x=>x[2]===n),o=O[n]||[],tot=r.length+o.length,dn=r.filter(x=>x[1]()).length+o.filter(f=>f()).length;const b=q('[data-swb="'+n+'"]');if(b)b.textContent=dn+'/'+tot});
+  const O=OPT();[1,2,3,4,5].forEach(n=>{const r=R.filter(x=>x[2]===n),o=O[n]||[],tot=r.length+o.length,dn=r.filter(x=>x[1]()).length+o.filter(f=>f()).length;const b=q('[data-swb="'+n+'"]');if(b){b.textContent=dn+'/'+tot;b.dataset.complete=tot&&dn===tot?'done':dn?'partial':'empty'}});
   const miss=R.find(r=>!r[1]());q('[data-swm2]').innerHTML=miss?'<b class="sw-e">!</b> Wajib belum diisi: <b>'+miss[0]+'</b>':'<b class="sw-o">✓</b> Isian wajib lengkap';q('[data-sws-t="3"]').hidden=!eo.on;const rc=q('#one-rtec'),rt=(actWords(q('#one-rte').innerHTML)+actWords(q('#one-rte-sim').innerHTML))+' kata';if(rc.textContent!==rt)rc.textContent=rt};
  const go=n=>{if(n===3&&!eo.on)n=4;cur=n;[1,2,3,4,5].forEach(i=>q('[data-swp-'+i+']').hidden=i!==n);ov.querySelectorAll('[data-sws-t]').forEach(b=>{const on=+b.dataset.swsT===n;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});
   q('[data-swn]').textContent=['1','2','EO','3','4'][n-1];q('[data-swh]').textContent=SW_STEPS[n-1][0];q('[data-swu]').textContent=SW_DESC[n-1];
