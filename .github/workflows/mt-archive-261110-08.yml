@@ -1,9 +1,7 @@
 name: Arsip cadangan lengkap MT 261110-08
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - '.github/workflows/mt-archive-261110-08.yml'
+  push:
+    branches: ['chore/261110-MT-08-archive']
   workflow_dispatch:
 jobs:
   arsip-full:
