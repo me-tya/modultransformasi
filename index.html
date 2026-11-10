@@ -4677,7 +4677,8 @@ function actMaster(){const d=oneCfgDocs().find(x=>x.id==='cfg-master'),m=(d&&d.m
  const kat=arr(m.kat,ACT_KAT);if(!kat.includes(ONE_KAT))kat.unshift(ONE_KAT);
  const cm=new Set(['Arifudin Miftakhul Huda','Atitya Pritasari','Kurniawan Jabar Malik','Sarah Khairina','Dina Septiani']),tmp=new Set(['Johan Pandu Asa','Muhammad Nailun Najih']);
  const group=n=>cm.has(n)?'CM':tmp.has(n)?'Sementara':'Pusmantap';
- const saved=Array.isArray(m.pic)?m.pic:[],pic=ACT_PIC0.map(n=>Object.assign({n},saved.find(p=>p.n===n)||{},{tim:group(n)}));
+ const roles={'Arifudin Miftakhul Huda':'Supervisor Tim Change Management','Atitya Pritasari':'Ketua Tim Change Management','Johan Pandu Asa':'Secondment','Muhammad Nailun Najih':'Magang Kemnaker'};
+ const saved=Array.isArray(m.pic)?m.pic:[],pic=ACT_PIC0.map(n=>Object.assign({n,jab:roles[n]||''},saved.find(p=>p.n===n)||{},{tim:group(n)}));
  saved.filter(p=>p&&p.n&&!pic.some(a=>a.n===p.n)).forEach(p=>pic.push(p));
  return {pic,kat,unit:arr(m.unit,ACT_UNIT),pen:m.pen||{nama:'Wawan Juswanto',jab:'Kepala Pusat Manajemen Transformasi dan Perubahan'},ketua:m.ketua||{nama:'Atitya Pritasari',jab:'Ketua Tim Kerja Pengelolaan Manajemen Perubahan'},notulis:m.notulis||'Tim Change Management'}}
 function actMasterSave(m){let d=oneCfgDocs().find(x=>x.id==='cfg-master');if(!d){d={id:'cfg-master',kind:'cfg',tahun:0,tw:0};S.oneonone.push(d)}d.master=oneClone(m);save()}
@@ -4769,7 +4770,7 @@ async function actDocxNotula(x,o){await docZip();const M=actNotulaModel(x,o),TW=
  const notaIndent=(M.fmt.indent||0)*28.35;
  b+=R('II','Pembahasan');
  if(!M.items.length)b+=P(h('[Isi catatan notulen pada tahap Pelaksanaan: judul menjadi butir bernomor, daftar menjadi a, b, c]',1),{left:54});
- M.items.forEach((it,i)=>{const li=72+notaIndent;b+=dxP(dxR((i+1)+'.')+dxTab+(it.j?dxR(it.j+(it.t?'. ':''),{b:true}):'')+actDocxRuns(it.html||esc(it.t),M.fmt),{left:li,hang:18,tabs:[[li,'left']],line:14,jc:M.fmt.align==='justify'?'both':M.fmt.align})+subs(it.s,90+notaIndent,1)});
+ M.items.forEach((it,i)=>{const li=72+notaIndent;b+=dxP(dxR((i+1)+'.')+dxTab+(it.j?dxR(it.j+(it.t?'. ':''),{b:true,font:M.fmt.font,sz:M.fmt.size}):'')+actDocxRuns(it.html||esc(it.t),M.fmt),{left:li,hang:18,tabs:[[li,'left']],line:14,jc:M.fmt.align==='justify'?'both':M.fmt.align})+subs(it.s,90+notaIndent,1)});
  b+=R('III','Simpulan');
  if(!M.sim.length&&!M.tl.length)b+=P(h('[Simpulan rapat: isi Ringkasan hasil dan Tindak lanjut pada tahap Hasil & Luaran]',1),{left:54});
  M.sim.forEach((t,i)=>{const li=72+notaIndent;b+=dxP(dxR((i+1)+'.')+dxTab+actDocxRuns((M.simRich[i]||{}).html||esc(t),M.fmt),{left:li,hang:18,tabs:[[li,'left']],line:14,jc:M.fmt.align==='justify'?'both':M.fmt.align})});
