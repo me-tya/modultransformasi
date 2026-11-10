@@ -5605,8 +5605,9 @@ function actImportDashboardBackup(data){
   x.materi=attachments(a.materiFiles,linkItem(a.materi,'Materi kegiatan'));
   x.dok=attachments(a.dokumentasi);
   x.notula=attachments(a.notula);
-  x.notulaTeks=a.notulaTeks||'';x.ringkas=a.ringkasanHasil||'';x.tl=a.tindakLanjut||'';
-  x.dashboardSource={id:a.id,updatedAt:a.updatedAt||'',kategori:a.kategori||'',sourceFile:'DashboardCM',eoChecklist:a.eoChecklist||'[]'};
+  const sourceNotula=arr(a.notula),extractText=sourceNotula.map(z=>z.searchPreview||'').filter(Boolean).join('\n\n');
+  x.notulaTeks=a.notulaTeks||extractText||'';x.ringkas=a.ringkasanHasil||'';x.tl=a.tindakLanjut||'';
+  x.dashboardSource={id:a.id,updatedAt:a.updatedAt||'',kategori:a.kategori||'',sourceFile:'DashboardCM',eoChecklist:a.eoChecklist||'[]',notulaMeta:sourceNotula,dokumentasiMeta:arr(a.dokumentasi),undanganMeta:arr(a.undanganFiles),suratTugasMeta:arr(a.suratTugasFiles),materiMeta:arr(a.materiFiles)};
   if(old)updated++;else{S.oneonone.push(x);added++}
  }
  save();render();
