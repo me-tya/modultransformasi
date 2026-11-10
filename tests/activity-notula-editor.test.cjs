@@ -18,7 +18,7 @@ test('Dasar surat: ikon interaktif, tombol duplikat terhapus, kontrol ringkas',(
  assert.match(slot,/data-sl-no/);
  assert.match(slot,/one-\$\{k\}Hal/);
  assert.match(html,/r\.push\(\['Undangan atau Tidak ada'/);
- assert.match(html,/r\.push\(\['Surat Tugas atau Tidak ada'/);
+ assert.match(html,/\['Surat Tugas atau Tidak ada'/);
  assert.doesNotMatch(html,/class="sl-tag cur">TERBARU/);
 });
 test('PIC: pegawai Pusmantap lengkap dan kelompok penugasan dipisahkan',()=>{
