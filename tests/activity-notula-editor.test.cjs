@@ -26,7 +26,7 @@ test('PIC: pegawai Pusmantap lengkap dan kelompok penugasan dipisahkan',()=>{
  for(const part of ['Tim Change Management','Pegawai Pusmantap Lainnya','Pegawai Sementara'])assert.ok(html.includes(part));
 });
 test('Notula: kontrol disederhanakan dan dua editor tersimpan',()=>{
- assert.match(html,/class="act-nlbtn" data-gen="notula"/);
+ assert.match(html,/class="btn act-nlbtn" data-gen="notula"/);
  assert.match(html,/class="mt-nlinfo"/);
  assert.match(html,/id="one-rte-sim" contenteditable="true"/);
  assert.match(html,/data-rtefont/);assert.match(html,/data-rtesize/);
