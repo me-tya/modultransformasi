@@ -2380,6 +2380,20 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 @media(max-width:1100px){.sw .sl-h{flex-wrap:wrap}.sw .sl-a{margin-left:39px;justify-content:flex-start}}
 
 
+/* Koreksi preview Notula agar sesuai ukuran A4, indent dan baris tanda tangan Word. */
+#nl-pv .nl-pg h4,#nl-pv .nl-pg h5{font-size:14.67px;line-height:1.28}
+#nl-pv .nl-pg .nl-b{padding-left:24px}
+#nl-pv .nl-pg .nl-e>h5,#nl-pv .nl-pg .nl-e>p{margin-left:48px}
+#nl-pv .nl-pg .nl-e ol.nl-n{margin:4px 0 4px 46px;padding-left:22px;list-style:decimal}
+#nl-pv .nl-pg .nl-e ol.nl-1{list-style:lower-alpha;margin-left:0;padding-left:24px}
+#nl-pv .nl-pg .nl-e ol.nl-2{list-style:lower-roman;margin-left:0;padding-left:24px}
+#nl-pv .nl-pg .nl-e ol.nl-3{list-style:decimal;margin-left:0;padding-left:24px}
+#nl-pv .nl-pg .nl-e li{padding-left:2px;margin:0 0 2px}
+#nl-pv .nl-pg .nl-sg-word p{margin:0;padding:0;line-height:14pt;font-size:11pt;min-height:14pt}
+#nl-pv .nl-pg .nl-sg-word .nl-esign{margin-top:30pt;color:#A6A6A6;font-size:9.5pt}
+#nl-pv .nl-pg .nl-sg-word .nl-sign-blank{min-height:14pt}
+#nl-pv .nl-pg .nl-sg-word .nl-sg-right>p:nth-child(2),#nl-pv .nl-pg .nl-sg-word .nl-sg-right>p:last-child{margin-top:0}
+
 /* Rich notula editor — two compact areas and ruler */
 .sw .rte-tb .rte-opt{height:29px;border:1px solid #D5DFEE;border-radius:7px;background:#fff;color:#0B2447;font:600 12px 'Inter',sans-serif;padding:0 6px}
 .sw .rte-tb .rte-font{max-width:155px}.sw .rte-tb .rte-size{width:72px}
@@ -4777,16 +4791,33 @@ function actJam(x,sel){const j=oneJamParse(x.jam);return j[0]?j[0].replace(':','
 const actLink=x=>x.link||(/^https?:/i.test(x.lokasi||'')?x.lokasi:'');
 const actTempat=x=>{const l=/^https?:/i.test(x.lokasi||'')?'':(x.lokasi||''),k=actLink(x);return [l,k?(l?'tautan rapat '+k:'melalui '+k):''].filter(Boolean).join(' dan ')||''};
 /* ---- model notula dari catatan notulen (HTML) ---- */
-function actNotulaItems(html){const d=document.createElement('div');d.innerHTML=actSan(html);const items=[];let cur=null;
- const txt=n=>n.textContent.replace(/\s+/g,' ').trim(),clean=t=>String(t||'').replace(/^\s*(?:\d{1,3}|[a-z])[.)]\s+/i,'').trim();
- const tree=l=>[...l.children].filter(c=>c.tagName==='LI').map(li=>{const c=li.cloneNode(true);c.querySelectorAll('ul,ol').forEach(z=>z.remove());return {t:clean(txt(c)),html:c.innerHTML,s:[...li.children].filter(z=>/^(UL|OL)$/.test(z.tagName)).flatMap(tree)}});
- const add=(t,h)=>{if(!t)return;if(!cur){cur={j:'',t:'',html:'',s:[]};items.push(cur)}cur.t+=(cur.t?' ':'')+t;cur.html+=(cur.html?' ':'')+(h||esc(t))};
- const step=n=>{if(n.nodeType===3){const t=clean(n.textContent.replace(/\s+/g,' ').trim());add(t,esc(t));return}if(n.nodeType!==1)return;
-  if(/^H[34]$/.test(n.tagName)){cur={j:clean(txt(n)),jHtml:n.innerHTML,t:'',html:'',s:[]};items.push(cur);return}
-  if(/^(UL|OL)$/.test(n.tagName)){const a=tree(n);if(!cur||(!cur.j&&!cur.t)){a.forEach(x=>items.push({j:'',t:x.t,html:x.html,s:x.s}));cur=null}else cur.s=cur.s.concat(a);return}
-  if(n.tagName==='DIV'&&n.querySelector('ul,ol,h3,h4,p,div')){[...n.childNodes].forEach(step);return}
-  if(n.tagName==='BR')return;add(clean(txt(n)),n.innerHTML)};
- [...d.childNodes].forEach(step);return items.filter(i=>i.j||i.t||i.s.length)}
+/* Parse setiap paragraf sebagai butir mandiri, pertahankan format teks dan sublevel. */
+function actNotulaItems(html){const root=document.createElement('div');root.innerHTML=actSan(html),items=[];let current=null;
+ const clean=t=>String(t||'').replace(/\s+/g,' ').trim().replace(/^(?:\d{1,3}|[a-z])[.)]\s+/i,'').trim();
+ const rich=t=>actSan(String(t||'').replace(/^(\s*(?:<[^>]+>\s*)*)(?:\d{1,3}|[a-z])[.)]\s+/i,'$1'));
+ const make=(j='',jHtml='')=>{current={j,t:'',html:'',jHtml,s:[]};items.push(current);return current};
+ const branch=li=>{const cp=li.cloneNode(true);cp.querySelectorAll('ul,ol').forEach(x=>x.remove());return {t:clean(cp.textContent),html:rich(cp.innerHTML),s:[...li.children].filter(x=>/^(UL|OL)$/.test(x.tagName)).flatMap(x=>[...x.children].filter(y=>y.tagName==='LI').map(branch))}};
+ const paragraph=(n,h)=>{const t=clean(n.textContent);if(!t)return;
+  if(!current||current.t)make();
+  current.t=t;current.html=rich(h)
+ };
+ const walk=n=>{if(n.nodeType===3){if(clean(n.textContent))paragraph(n,esc(n.textContent));return}
+  if(n.nodeType!==1)return;
+  const tag=n.tagName;
+  if(/^H[34]$/.test(tag)){make(clean(n.textContent),rich(n.innerHTML));return}
+  if(tag==='UL'||tag==='OL'){
+   const entries=[...n.children].filter(x=>x.tagName==='LI').map(branch).filter(x=>x.t||x.s.length);
+   if(current&&(current.j||current.t))current.s.push(...entries);
+   else{entries.forEach(e=>{const top=make();top.t=e.t;top.html=e.html;top.s=e.s});current=null}
+   return
+  }
+  if(tag==='BR')return;
+  if((tag==='DIV'||tag==='SECTION')&&n.querySelector('p,div,ul,ol,h3,h4')){[...n.childNodes].forEach(walk);return}
+  paragraph(n,n.innerHTML)
+ };
+ [...root.childNodes].forEach(walk);
+ return items.filter(x=>x.j||x.t||x.s.length)
+}
 function actSimItems(html){const root=document.createElement('div');root.innerHTML=actSan(html);const out=[];
  const add=n=>{if(n.nodeType===3){const t=actLines(n.textContent).join(' ');if(t)out.push({t,html:esc(t)});return}if(n.nodeType!==1)return;if(/^(UL|OL)$/.test(n.tagName)){[...n.children].filter(c=>c.tagName==='LI').forEach(li=>{const c=li.cloneNode(true);c.querySelectorAll('ul,ol').forEach(x=>x.remove());const t=actLines(c.textContent).join(' ');if(t)out.push({t,html:c.innerHTML});[...li.children].filter(x=>/^(UL|OL)$/.test(x.tagName)).forEach(add)});return}
  if(n.tagName==='DIV'&&n.querySelector('p,ul,ol,div,h3,h4')){[...n.children].forEach(add);return}
@@ -4900,18 +4931,21 @@ async function actDocxNDNotula(x){
  +dxP(dxR(m.pen.nama||'[nama pejabat penandatangan]'),{left:287.2});
  return dxPack(b);
 }
-function actNotulaHtml(x,o){const M=actNotulaModel(x,o),ef='font-family:'+M.fmt.font+';font-size:'+M.fmt.size+'pt;padding-left:'+(M.fmt.indent*37.8)+'px;text-align:'+M.fmt.align,y=t=>'<mark>'+esc(t)+'</mark>',sec=(k,t,body)=>`<h4><b>${k}.</b> ${t}</h4><div class="nl-b">${body}</div>`;
- const subs=(a,lv)=>a.length?'<ol class="nl-'+Math.min(lv,3)+'">'+a.map(s=>'<li>'+esc(s.t)+(s.s&&s.s.length?subs(s.s,lv+1):'')+'</li>').join('')+'</ol>':'';
+function actNotulaHtml(x,o){const M=actNotulaModel(x,o),ef='font-family:'+M.fmt.font+';font-size:'+M.fmt.size+'pt;padding-left:'+(M.fmt.indent*37.8)+'px;text-align:'+M.fmt.align;
+ const y=t=>'<mark>'+esc(t)+'</mark>',rich=h=>actSan(h||''),sec=(k,t,body)=>`<h4><b>${k}.</b> ${t}</h4><div class="nl-b">${body}</div>`;
+ const subs=(a,lv)=>a.length?'<ol class="nl-'+Math.min(lv,3)+'">'+a.map(s=>'<li>'+rich(s.html||esc(s.t))+(s.s&&s.s.length?subs(s.s,lv+1):'')+'</li>').join('')+'</ol>':'';
+ const item=(it)=>'<li>'+(it.j?'<b>'+esc(it.j)+(it.t?'.':'')+'</b> ':'')+rich(it.html||esc(it.t))+subs(it.s,1)+'</li>';
+ const conclusion=(t,i)=>'<li>'+rich((M.simRich[i]||{}).html||esc(t))+'</li>';
  return `<div class="nl-pg"><div class="nl-kop"><img src="${ONE_LOGO}" alt="Kemenkeu"><div><b>KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</b><b>BADAN TEKNOLOGI, INFORMASI, DAN INTELIJEN KEUANGAN</b><b>PUSAT MANAJEMEN TRANSFORMASI DAN PERUBAHAN</b><small>GEDUNG JB. SUMARLIN LANTAI 1-6, JALAN DR. WAHIDIN RAYA NO. 1, JAKARTA 10710</small></div></div>
  <div class="nl-t"><b>NOTULA</b><b>${esc(M.judul)}</b></div>
  ${sec('A','Dasar',M.dasarKosong?y('[Surat undangan atau surat tugas yang menjadi dasar rapat]'):M.dasar.map(d=>esc(d.t)+d.v.map((v,i)=>(i?' ':'')+esc(v[0])+' '+(v[1]?esc(v[1]):y('['+v[0].toLowerCase()+']'))).join('')).join('; ')+'.')}
  ${sec('B','Waktu dan Tempat','Rapat dilaksanakan pada '+(M.tgl?esc(M.tgl):y('[hari, tanggal]'))+' pukul '+(M.jam?esc(M.jam):y('[pukul]'))+' bertempat di '+(M.tempat?esc(M.tempat):y('[tempat]'))+'.')}
- ${sec('C','Agenda',M.agenda?esc(M.agenda):y('[Agenda rapat]'))}
- ${sec('D','Peserta',M.peserta?esc(M.peserta)+'. Daftar hadir peserta terlampir.':'Daftar hadir peserta terlampir.')}
- <h4><b>E.</b> Pelaksanaan Rapat</h4><div class="nl-b" style="${ef}"><h5>I. Pembukaan</h5><p>${esc(M.buka)}</p><h5>II. Pembahasan</h5>${M.items.length?'<ol class="nl-n">'+M.items.map(it=>'<li>'+(it.j?'<b>'+esc(it.j)+(it.t?'.':'')+'</b> ':'')+esc(it.t)+subs(it.s,1)+'</li>').join('')+'</ol>':'<p>'+y('[Isi catatan notulen pada tahap Pelaksanaan]')+'</p>'}
- <h5>III. Simpulan</h5>${(M.sim.length||M.tl.length)?'<ol class="nl-n">'+M.sim.map(t=>'<li>'+esc(t)+'</li>').join('')+(M.tl.length?'<li>Tindak lanjut yang disepakati:'+subs(M.tl.map(t=>({t:t.replace(/[.;\s]+$/,'')})),1)+'</li>':'')+'</ol>':'<p>'+y('[Simpulan rapat]')+'</p>'}</div>
- <div class="nl-sg"><div class="nl-sg-left"><div>Mengetahui,<br>${esc(M.ketua.jab)}</div><div class="nl-sign-spacer"></div><small>Ditandatangani secara elektronik</small><div>${esc(M.ketua.nama)}</div></div><div class="nl-sg-right"><div>Dibuat di Jakarta<br>Pada tanggal ${esc(actTglShort(M.buat))}</div><div>Notulis</div><div class="nl-sign-spacer right"></div><div>ttd.</div><div>${esc(M.notulis)}</div></div></div></div>`}
-
+ ${sec('C','Agenda',M.agenda?esc(M.agenda.replace(/[.\s]+$/,'')+'.'):y('[Agenda rapat]'))}
+ ${sec('D','Peserta',M.peserta?esc(M.peserta.replace(/[.\s]+$/,'')+'. Daftar hadir peserta terlampir.'):'Daftar hadir peserta terlampir.')}
+ <h4><b>E.</b> Pelaksanaan Rapat</h4><div class="nl-b nl-e" style="${ef}"><h5>I. Pembukaan</h5><p>${esc(M.buka)}</p><h5>II. Pembahasan</h5>${M.items.length?'<ol class="nl-n">'+M.items.map(item).join('')+'</ol>':'<p>'+y('[Isi catatan notula pada tahap Pelaksanaan]')+'</p>'}
+ <h5>III. Simpulan</h5>${(M.sim.length||M.tl.length)?'<ol class="nl-n">'+M.sim.map(conclusion).join('')+(M.tl.length?'<li>Tindak lanjut yang disepakati:'+subs(M.tl.map(t=>({t:t.replace(/[.;\s]+$/,'')})),1)+'</li>':'')+'</ol>':'<p>'+y('[Simpulan rapat]')+'</p>'}</div>
+ <div class="nl-sg nl-sg-word"><div class="nl-sg-left"><p>Mengetahui,</p><p>${esc(M.ketua.jab)}</p><p class="nl-sign-blank">&nbsp;</p><p class="nl-sign-blank">&nbsp;</p><p class="nl-esign">Ditandatangani secara elektronik</p><p>${esc(M.ketua.nama)}</p></div><div class="nl-sg-right"><p>Dibuat di Jakarta</p><p>Pada tanggal ${esc(actTglShort(M.buat))}</p><p class="nl-sign-blank">&nbsp;</p><p>Notulis</p><p>ttd.</p><p class="nl-sign-blank">&nbsp;</p><p>${esc(M.notulis)}</p></div></div></div>`
+}
 /* ---- PIC Pusmantap, kategori, unit ---- */
 const actCanEdit=()=>lv('wbs').includes('U')||lv('wbs').includes('C');
 function actPicPick(cur,done){const m=actMaster(),sel=new Set(cur);
