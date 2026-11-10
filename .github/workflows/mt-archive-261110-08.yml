@@ -1,0 +1,27 @@
+name: Arsip cadangan lengkap MT 261110-08
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/mt-archive-261110-08.yml'
+  workflow_dispatch:
+jobs:
+  arsip-full:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: backup/261110-MT-08
+          fetch-depth: 1
+      - name: Arsip seluruh file repository sebelum perubahan
+        run: |
+          git archive --format=zip --output=261110-MT-08.zip HEAD
+          unzip -t 261110-MT-08.zip | tail -n 1
+          sha256sum 261110-MT-08.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 261110-MT-08
+          path: 261110-MT-08.zip
+          retention-days: 90
