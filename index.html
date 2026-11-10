@@ -2474,6 +2474,53 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 .nl-pg ol.nl-3{list-style:lower-roman}
 @media(max-width:760px){.pk-g>div{grid-template-columns:1fr}.sl .sl-summary{grid-template-columns:1fr}.sw-nav button{grid-template-columns:29px minmax(0,1fr)}}
 
+
+/* MT-10: kelengkapan sejajar dan lebih ringkas */
+.sw .sw-nav{gap:4px}
+.sw .sw-nav button{padding:6px 9px;min-height:40px;gap:8px;border-radius:10px}
+.sw .sw-nav button i{width:27px;height:27px;border-radius:8px;font-size:14px}
+.sw .sw-nav button span{display:flex;align-items:center;min-width:0}
+.sw .sw-nav button span b{font-size:12.5px}
+.sw .sw-nav button span small{display:none}
+.sw .sw-nav button em{margin-left:auto;white-space:nowrap;padding:2px 6px;font-variant-numeric:tabular-nums}
+.sw .sw-ring small{line-height:1.22}
+.sw .sw-bd>[data-swp-5]:not([hidden]){min-height:100%;flex:1}
+.sw .sw-bd>[data-swp-5]>.act-outcome-section{flex:1;min-height:310px}
+.sw .act-outcome-section .sw-sb{display:flex;min-height:0}
+.sw .act-outcome-section .act-result-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:stretch;flex:1;min-height:250px}
+.sw .act-outcome-section .act-result-grid .fld{display:flex;flex-direction:column;min-height:0;min-width:0}
+.sw .act-outcome-section .act-result-grid textarea{flex:1;min-height:250px;height:clamp(250px,calc(100vh - 510px),620px);resize:vertical}
+.sw .act-doc-section .at-list{margin-bottom:3px}
+.sw .act-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:9px;width:100%}
+.sw .act-photo-tile{border:1px solid #DCE5F1;border-radius:10px;background:#fff;overflow:hidden;min-width:0}
+.sw .act-photo-cover{border:0;padding:0;display:grid;place-items:center;width:100%;height:103px;background:#EEF3FB;cursor:pointer}
+.sw .act-photo-cover img{display:block;width:100%;height:100%;object-fit:cover}
+.sw .act-photo-file{font-size:33px;color:#5F7396}
+.sw .act-photo-caption{display:flex;align-items:center;gap:4px;padding:5px 7px;min-height:31px}
+.sw .act-photo-caption>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1;font-size:11px;font-weight:700;color:#31415D}
+.sw .act-photo-actions,.sw .act-attachment-actions{display:flex;gap:3px;align-items:center}
+.sw .act-photo-actions button,.sw .act-photo-actions a,.sw .act-attachment-actions button,.sw .act-attachment-actions a{border:0;background:#EDF3FB;color:#26456D;display:grid;place-items:center;border-radius:5px;width:23px;height:23px;text-decoration:none;cursor:pointer;font-size:14px}
+.sw .act-photo-actions button:hover,.sw .act-attachment-actions button:hover{background:#D6E5F7}
+.sw .act-photo-empty{background:#F6F9FE;border:1px dashed #CEDBEC;padding:14px;border-radius:10px;color:#72809A;width:100%}
+.sw .act-attachment-rows{display:grid;gap:7px}
+.sw .act-attachment-row{display:flex;align-items:center;gap:9px;border:1px solid #DEE6F3;background:#fff;border-radius:9px;padding:6px 9px;min-width:0}
+.sw .act-attachment-kind{background:#F1F5FB;border-radius:5px;color:#395C83;font-size:10px;font-weight:800;padding:5px;flex:none}
+.sw .act-attachment-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;font-size:12px}
+.sw .act-attachment-label small{display:block;color:#8291AB;font-weight:500}
+.sw .act-attachment-remove{color:#BE4646!important}
+.act-sheet-preview{max-height:62vh;overflow:auto}
+.act-sheet-preview table{border-collapse:collapse;font-size:12px}
+.act-sheet-preview th,.act-sheet-preview td{border:1px solid #DCE3EE;padding:5px 8px;white-space:nowrap}
+.act-sheet-pre{white-space:pre-wrap;line-height:1.45}
+#nl-pv .nl-pg .nl-e ol.nl-1{list-style-type:lower-alpha}
+#nl-pv .nl-pg .nl-e ol.nl-2{list-style-type:decimal}
+#nl-pv .nl-pg .nl-e ol.nl-3{list-style-type:lower-alpha}
+#nl-pv .nl-pg .nl-e ol.nl-4{list-style-type:lower-roman;margin-left:0;padding-left:24px}
+#nl-pv .nl-pg .nl-e ol.nl-1>li::marker{content:counter(list-item,lower-alpha) ". "}
+#nl-pv .nl-pg .nl-e ol.nl-2>li::marker{content:counter(list-item,decimal) ") "}
+#nl-pv .nl-pg .nl-e ol.nl-3>li::marker{content:counter(list-item,lower-alpha) ") "}
+#nl-pv .nl-pg .nl-e ol.nl-4>li::marker{content:counter(list-item,lower-roman) ". "}
+@media(max-width:900px){.sw .act-outcome-section .act-result-grid{grid-template-columns:1fr}.sw .act-outcome-section .act-result-grid textarea{height:250px}}
 </style>
 
 <style>
@@ -4854,8 +4901,8 @@ function actDocxRuns(html,fmt={}){const root=document.createElement('div');root.
  return [...root.childNodes].map(n=>walk(n)).join('')}
 async function actDocxNotula(x,o){await docZip();const M=actNotulaModel(x,o),TW=467.8,GR='A6A6A6',h=(t,hl)=>dxR(t,{hl:!!hl});
  const P=(r,po)=>dxP(r,Object.assign({line:14,jc:'both'},po||{})),H=(k,t)=>dxP(dxR(k+'.',{b:true})+dxTab+dxR(t,{b:true}),{left:18,hang:18,tabs:[[18,'left']],before:10,line:14,keep:true}),B=(r,po)=>P(r,Object.assign({left:18},po||{}));
- const sub=(lv,i,t,left,html)=>dxP(dxR(lv===1?actAbc(i)+'.':lv===2?actRom(i)+')':i+')')+dxTab+actDocxRuns(html||esc(t),M.fmt),{left,hang:18,tabs:[[left,'left']],line:14,jc:M.fmt.align==='justify'?'both':M.fmt.align});
- const subs=(arr,left,lv)=>arr.map((s,i)=>sub(lv,i+1,s.t,left,s.html)+(s.s&&s.s.length?subs(s.s,left+18,Math.min(lv+1,3)):'')).join('');
+ const sub=(lv,i,t,left,html)=>dxP(dxR(lv===1?actAbc(i)+'.':lv===2?i+')':lv===3?actAbc(i)+')':actRom(i)+'.')+dxTab+actDocxRuns(html||esc(t),M.fmt),{left,hang:18,tabs:[[left,'left']],line:14,jc:M.fmt.align==='justify'?'both':M.fmt.align});
+ const subs=(arr,left,lv)=>arr.map((s,i)=>sub(lv,i+1,s.t,left,s.html)+(s.s&&s.s.length?subs(s.s,left+18,Math.min(lv+1,4)):'')).join('');
  let b=dxKop(TW)+dxP('',{line:8})+dxP(dxR('NOTULA',{b:true,sz:12}),{jc:'center',line:15,before:6})+dxP(dxR(M.judul,{b:true,sz:12}),{jc:'center',line:15,after:6});
  b+=H('A','Dasar');
  if(M.dasarKosong)b+=B(h('[Surat undangan atau surat tugas yang menjadi dasar rapat: nomor, tanggal, hal]',1));
@@ -4933,7 +4980,7 @@ async function actDocxNDNotula(x){
 }
 function actNotulaHtml(x,o){const M=actNotulaModel(x,o),ef='font-family:'+M.fmt.font+';font-size:'+M.fmt.size+'pt;padding-left:'+(M.fmt.indent*37.8)+'px;text-align:'+M.fmt.align;
  const y=t=>'<mark>'+esc(t)+'</mark>',rich=h=>actSan(h||''),sec=(k,t,body)=>`<h4><b>${k}.</b> ${t}</h4><div class="nl-b">${body}</div>`;
- const subs=(a,lv)=>a.length?'<ol class="nl-'+Math.min(lv,3)+'">'+a.map(s=>'<li>'+rich(s.html||esc(s.t))+(s.s&&s.s.length?subs(s.s,lv+1):'')+'</li>').join('')+'</ol>':'';
+ const subs=(a,lv)=>a.length?'<ol class="nl-'+Math.min(lv,4)+'">'+a.map(s=>'<li>'+rich(s.html||esc(s.t))+(s.s&&s.s.length?subs(s.s,lv+1):'')+'</li>').join('')+'</ol>':'';
  const item=(it)=>'<li>'+(it.j?'<b>'+esc(it.j)+(it.t?'.':'')+'</b> ':'')+rich(it.html||esc(it.t))+subs(it.s,1)+'</li>';
  const conclusion=(t,i)=>'<li>'+rich((M.simRich[i]||{}).html||esc(t))+'</li>';
  return `<div class="nl-pg"><div class="nl-kop"><img src="${ONE_LOGO}" alt="Kemenkeu"><div><b>KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</b><b>BADAN TEKNOLOGI, INFORMASI, DAN INTELIJEN KEUANGAN</b><b>PUSAT MANAJEMEN TRANSFORMASI DAN PERUBAHAN</b><small>GEDUNG JB. SUMARLIN LANTAI 1-6, JALAN DR. WAHIDIN RAYA NO. 1, JAKARTA 10710</small></div></div>
@@ -4970,7 +5017,7 @@ function actListMgr(key,title,after){if(!actCanEdit()){toast('Tidak memiliki izi
 /* ---- Wizard aktivitas: meniru New Activity Dashboard CM (Info Utama, Perencanaan, Event EO, Pelaksanaan, Hasil & Luaran) ---- */
 const SW_STEPS=[['Info Utama','Waktu, surat, metode'],['Perencanaan','Tujuan, PIC, peserta'],['Event (EO)','Checklist per tahap'],['Pelaksanaan','Materi dan notula'],['Hasil & Luaran','Dokumentasi, notula']],SW_ICO=['ⓘ','◎','☑','▤','▣'],
  SW_DESC=['Kapan, kepada siapa, surat dasar, dan bagaimana kegiatan berjalan. Isian bertanda * wajib.','Tujuan, status, PIC Pusmantap, narasumber, dan peserta.','Checklist tugas per tahap untuk kegiatan yang dikelola sebagai event.','Bahan kegiatan serta notula.','Dokumentasi, hasil, tindak lanjut, dan pembuatan notula.'];
-const oneAtts=()=>[['und','one-und','Surat undangan',NOPH.UND],['st','one-st','Surat tugas',NOPH.ST],['materi','one-mat','Materi',null],['notula','one-not','Berkas notula (unggahan)',null],['ndnot','one-ndnot','Nota Dinas Penyampaian Notula',null],['dok','one-dok','Dokumentasi (foto, daftar hadir, tangkapan layar)',null]];
+const oneAtts=()=>[['und','one-und','Surat undangan',NOPH.UND],['st','one-st','Surat tugas',NOPH.ST],['materi','one-mat','Materi',null],['notula','one-not','Berkas notula (draft/unggahan)',null],['ndnot','one-ndnot','Nota Dinas Penyampaian Notula',null],['dok','one-dok','Dokumentasi foto dan tangkapan layar',null],['hadir','one-hadir','Daftar hadir',null],['notulaTte','one-tte','Notula yang sudah ditandatangani secara elektronik (TTE)',null]];
 const oneAtt=(key,old)=>{const r=attCollect(key);if(r===false)return false;if(r===null)return old||null;return (r.items.length||r.no)?Object.assign(r,{tgl:TODAY,by:(ME&&ME.nama)||''}):null};
 function actEoDefault(tgl){const d=n=>{if(!tgl)return '';const t=new Date(tgl+'T00:00:00');t.setDate(t.getDate()+n);return t.toISOString().slice(0,10)};return ACT_EO0.map(r=>({id:uid(),phase:r[0],task:r[1],pic:'',due:d(r[2]),pri:r[3],done:false}))}
 
@@ -5030,7 +5077,7 @@ function editOneOnOne(item,step,after){
  if(!actCanEdit()){toast('Tidak memiliki izin mengubah aktivitas.');return}
  const isNew=!S.oneonone.some(x=>x.id===item.id),j=oneJamParse(item.jam),canDel=!isNew&&lv('wbs').includes('D'),M=actMaster();let ndNarasi=item.ndNarasi||'';
  oneAtts().forEach(a=>delete ATT[a[1]]);
- const at=k=>{const a=oneAtts().find(v=>v[0]===k);return attField(a[1],item[k],a[2],a[3]?{no:a[3]}:{})};
+ const at=k=>{const a=oneAtts().find(v=>v[0]===k),opt=a[3]?{no:a[3]}:{};if(k==='notulaTte')opt.accept='.pdf';return attField(a[1],item[k],a[2],opt)};
  const un=attNorm(item.und);
  let kat=item.kat||(isNew?'Rapat Koordinasi':ONE_KAT),mode=item.mode||'Offline',lay=item.layanan||'Ya',stat=ACT_MAN.includes(item.stat)?item.stat:'Terjadwal',pic=(item.pic||[]).slice(),eo=item.eo?oneClone(item.eo):{on:false,items:[]},nlo={},fmt=Object.assign({font:'Arial',size:11,indent:0,align:'justify'},item.notulaFmt||{}),activeEditor='one-rte';
  const inp=(k,l,o={})=>`<div class="fld${o.w?' wide':''}"><label for="one-${k}">${l}${o.req?' <i class="sw-rq">*</i>':''}</label><input class="inp" id="one-${k}" type="${o.t||'text'}" value="${esc(o.v!=null?o.v:item[k]||'')}"${o.list?' list="'+o.list+'"':''}${o.ph?' placeholder="'+esc(o.ph)+'"':''}></div>`;
@@ -5066,8 +5113,10 @@ function editOneOnOne(item,step,after){
   sec(3,'Notula <span class="mt-nlinfo" title="Berkas Notula yang diunggah disimpan langsung. Pengisian editor tersimpan setelah tombol Simpan. Dapat mengunggah lebih dari satu berkas." aria-label="Informasi notula">ⓘ</span>','Susun Pembahasan dan Simpulan dengan penomoran rapi.',`${nlp()}<div class="rte" id="one-rtew"><div class="rte-tb" role="toolbar" aria-label="Format teks">${rteFmt}${rteBtn('bold','<b>B</b>','Tebal')}${rteBtn('italic','<i>I</i>','Miring')}${rteBtn('underline','<u>U</u>','Garis bawah')}<span class="sep"></span>${rteBtn('formatBlock','H','Judul butir','H3')}${rteBtn('insertUnorderedList','•≡','Daftar poin')}${rteBtn('insertOrderedList','1≡','Daftar bernomor bertingkat (Tab untuk sublevel)')}<span class="sep"></span>${rteBtn('justifyLeft','≡','Rata kiri')}${rteBtn('justifyCenter','☰','Rata tengah')}${rteBtn('justifyFull','▤','Rata kiri kanan')}${rteBtn('outdent','⇤','Kurangi inden')}${rteBtn('indent','⇥','Tambah inden')}<span class="sep"></span>${rteBtn('createLink','🔗','Tautan')}${rteBtn('removeFormat','⌫','Hapus format')}<button type="button" class="rte-fs" data-rtefs>⤢ Layar penuh</button></div><div class="rte-ruler" title="Atur inden paragraf"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6 cm</span><input type="range" min="0" max="6" step="0.5" value="${fmt.indent}" data-rteindent aria-label="Inden kiri (cm)"><output data-rteout>${fmt.indent} cm</output></div><div class="rte-section-tag">II. Pembahasan</div>
    <div class="rte-ct" id="one-rte" contenteditable="true" data-ph="Ketik Pembahasan notula: pokok bahasan, kesepakatan, dan tindak lanjut…">${actSan(item.notulaTeks||'')}</div><div class="rte-section-tag">III. Simpulan</div><div class="rte-ct rte-ct-sm" id="one-rte-sim" contenteditable="true" data-ph="Ketik simpulan dan kesepakatan; gunakan numbering atau bullet…">${actSan(item.notulaSimHtml||actLines(item.ringkas).map(t=>'<p>'+esc(t)+'</p>').join(''))}</div><div class="rte-ft"><span id="one-rtec">0 kata</span><span>Pembahasan &amp; Simpulan ikut menjadi isi dokumen notula.</span></div></div>`,'sw-grow')+`<div class="act-nlbar"><button type="button" class="btn act-nlbtn" data-gen="notula" title="Pratinjau notula dan unduh Word">Pratinjau &amp; Unduh Word</button></div>`+
  sec(4,'Nota Dinas Penyampaian Notula','Konsep surat pengantar dan unggahan ND yang telah diterbitkan.',`<div class="fgrid">${at('ndnot')}</div><div class="act-nlbar"><button type="button" class="btn sm" data-gen="ndnot" title="Buat, pratinjau, dan unduh konsep Nota Dinas Penyampaian Notula">▤ Konsep Nota Dinas Penyampaian Notula</button></div>`,'sw-nolab');
- const p5=sec(1,'Dokumentasi','Foto, daftar hadir, tangkapan layar.',`<div class="fgrid">${at('dok')}</div>`,'sw-nolab')+
-  sec(2,'Hasil & tindak lanjut','Menjadi bagian Simpulan pada notula.',`<div class="fgrid">${ta('ringkas','Ringkasan hasil (cadangan Simpulan jika editor kosong)',5,'Capaian kegiatan, kesepakatan utama…',0)}${ta('tl','Tindak lanjut (satu per baris)',5,'Rencana aksi, PIC, tenggat. Menjadi daftar a, b, c pada notula.',0)}</div>`);
+ const p5=sec(1,'Dokumentasi','Foto kegiatan dan tangkapan layar ditampilkan sebagai thumbnail.',`<div class="fgrid">${at('dok')}</div>`,'sw-nolab act-doc-section')+
+  sec(2,'Daftar Hadir','Unggah daftar hadir; tersedia pratinjau dan unduh.',`<div class="fgrid">${at('hadir')}</div>`,'sw-nolab')+
+  sec(3,'Notula TTE','Unggah notula final bertanda tangan elektronik (PDF); tersedia pratinjau dan unduh.',`<div class="fgrid">${at('notulaTte')}</div>`,'sw-nolab')+
+  sec(4,'Hasil & tindak lanjut','Menjadi bagian Simpulan pada notula.',`<div class="fgrid act-result-grid">${ta('ringkas','Hasil akhir / ringkasan hasil',12,'Capaian kegiatan, kesepakatan utama…',0)}${ta('tl','Tindak lanjut (satu per baris)',12,'Rencana aksi, PIC, tenggat. Menjadi daftar a, b, c pada notula.',0)}</div>`,'act-outcome-section');
  const ov=document.createElement('div');ov.className='ov';
  ov.innerHTML=`<div class="md sw" role="dialog" aria-modal="true" aria-label="Aktivitas"><aside class="sw-sd"><span class="sw-pill">${isNew?'+ AKTIVITAS BARU':'UBAH AKTIVITAS'}</span>
   <div class="sw-card"><b data-swt>Aktivitas tanpa judul</b><span data-swd></span><em data-sws class="chip c-info"></em></div>
@@ -5077,14 +5126,14 @@ function editOneOnOne(item,step,after){
   <div class="sw-mn"><header><span class="sw-n" data-swn>1</span><div><h3 data-swh></h3><p data-swu></p></div><button type="button" class="sw-x" data-swcl aria-label="Tutup">×</button></header>
   <div class="sw-bd">${[p1,p2,p3,p4,p5].map((p,i)=>`<div data-swp-${i+1}${i?' hidden':''}>${p}</div>`).join('')}</div>
   <footer><span class="sw-msg" data-swm2></span><button type="button" class="btn" data-swcl2>Batal</button><button type="button" class="btn" data-swnx></button><button type="button" class="btn" data-swsv>Simpan</button><button type="button" class="btn gold" data-swsc>Simpan &amp; Tutup</button></footer></div></div>`;
- document.body.appendChild(ov);ov.querySelectorAll('.sl').forEach(el=>{const input=ov.querySelector('#at-no-'+el.dataset.slid),target=el.querySelector('[data-sl-no]');if(input&&target){input.placeholder='Nomor surat';input.setAttribute('aria-label','Nomor '+(el.dataset.sl==='und'?'undangan':'surat tugas'));target.appendChild(input)}});const q=s=>ov.querySelector(s),V=id=>{const e=ov.querySelector('#one-'+id);return e?e.value:''};
+ document.body.appendChild(ov);ov.querySelectorAll('.sl').forEach(el=>{const input=ov.querySelector('#at-no-'+el.dataset.slid),target=el.querySelector('[data-sl-no]');if(input&&target){input.placeholder='Nomor surat';input.setAttribute('aria-label','Nomor '+(el.dataset.sl==='und'?'undangan':'surat tugas'));target.appendChild(input)}});actHydrateThumbs(ov);const q=s=>ov.querySelector(s),V=id=>{const e=ov.querySelector('#one-'+id);return e?e.value:''};
  let cur=1,dirty=false;const isOneNow=()=>V('kat')===ONE_KAT;
- const idm={und:'und',st:'st',materi:'mat',notula:'not',dok:'dok'},filled=k=>{const A=ATT[('one-'+idm[k])],u=ov.querySelector('#at-u-one-'+idm[k]),nn=ov.querySelector('#at-no-one-'+idm[k]);return !!((A&&A.items.length)||(u&&u.value.trim())||(nn&&/^[-–—]$/.test(nn.value.trim())))};
+ const idm={und:'und',st:'st',materi:'mat',notula:'not',dok:'dok',hadir:'hadir',notulaTte:'tte'},filled=k=>{const A=ATT[('one-'+idm[k])],u=ov.querySelector('#at-u-one-'+idm[k]),nn=ov.querySelector('#at-no-one-'+idm[k]);return !!((A&&A.items.length)||(u&&u.value.trim())||(nn&&/^[-–—]$/.test(nn.value.trim())))};
  const tabs=()=>eo.on?[1,2,3,4,5]:[1,2,4,5];
  const REQ=()=>{const o=isOneNow(),r=[];if(o)r.push(['Nama program (Program terkait)',()=>V('program').trim(),1]);else r.push(['Nama kegiatan',()=>V('nama').trim(),1]);
   r.push(['Tanggal mulai',()=>V('tgl'),1],['Jam mulai',()=>V('j1'),1],['Jam selesai',()=>V('j2'),1],['Lokasi atau tautan rapat',()=>V('lokasi').trim()||V('link').trim(),1]);
   r.push(['Undangan atau Tidak ada',()=>filled('und'),1],['Surat Tugas atau Tidak ada',()=>filled('st'),1]);if(o)r.push(['UIC Utama',()=>V('uic').trim(),2],['Supervisor',()=>V('spv').trim(),2],['Ketua tim',()=>V('katim').trim(),2]);return r};
- const OPT=()=>({1:[()=>V('kat')],2:[()=>V('tujuan').trim(),()=>pic.length,()=>V('peserta').trim()],3:[()=>eo.items.length],4:[()=>filled('materi'),()=>filled('notula')||actWords(q('#one-rte').innerHTML)>0],5:[()=>filled('dok'),()=>V('ringkas').trim()||V('tl').trim()]});
+ const OPT=()=>({1:[()=>V('kat')],2:[()=>V('tujuan').trim(),()=>pic.length,()=>V('peserta').trim()],3:[()=>eo.items.length],4:[()=>filled('materi'),()=>filled('notula')||actWords(q('#one-rte').innerHTML)>0],5:[()=>filled('dok'),()=>filled('hadir'),()=>filled('notulaTte'),()=>V('ringkas').trim()||V('tl').trim()]});
  const stNow=()=>{const tmp={tgl:V('tgl'),tglSelesai:V('tglSelesai'),jam:oneJam(V('j1'),V('j2')),stat:stat==='Terjadwal'?'':stat,notula:filled('notula')?{items:[1]}:null,notulaTeks:q('#one-rte').innerHTML};return actSt(tmp)};
  const drawPics=()=>{q('#one-pics').innerHTML=pic.length?pic.map(n=>{const p=actPicOf(n);return `<span class="act-pic" title="${esc(p.jab||'')}"><i>${esc(n.split(' ').map(w=>w[0]).slice(0,2).join(''))}</i>${esc(n)}${p.tim?`<em>${p.tim}</em>`:''}<button type="button" data-pkrm="${esc(n)}" aria-label="Hapus ${esc(n)}">✕</button></span>`}).join(''):'<span class="s">Belum ada PIC. Klik Pilih PIC.</span>'};
  const drawEo=()=>{const b=q('#eo-b'),dn=eo.items.filter(i=>i.done).length;q('#eo-pg').textContent=eo.items.length?dn+' dari '+eo.items.length+' tugas selesai':'Belum ada tugas';
@@ -5423,9 +5472,9 @@ function actNotulaModal(x,onSave){const M0=actNotulaModel(x);
 const actHay=x=>[actName(x),x.program,x.tema,x.uic,x.kat,x.unitP,(x.pic||[]).join(' '),x.lokasi,x.link,x.tujuan,x.narsum,x.peserta,x.ringkas,x.tl,x.undHal,attNorm(x.und).no,String(x.notulaSimHtml||''),String(x.notulaTeks||'').replace(/<[^>]*>/g,' ')].join(' ').toLowerCase();
 const actStBase=x=>actSt(x)[0].split(' · ')[0];
 function oneDocs(x){const c=(k,l)=>{const h=notulaChip(x[k],1);return h?'<div class="one-dc"><b>'+l+'</b>'+h+'</div>':''};const nt=String(x.notulaTeks||'').replace(/<[^>]*>|&nbsp;/g,'').trim()?'<div class="one-dc"><b>Notula</b><span class="nt-chip sm"><i>✎</i><span>'+actWords(x.notulaTeks)+' kata</span></span></div>':'';
- return c('und','Undangan')+c('st','Surat tugas')+c('materi','Materi')+c('notula','Notula')+nt+c('dok','Dokumentasi')||'<span class="s">—</span>'}
+ return c('und','Undangan')+c('st','Surat tugas')+c('materi','Materi')+c('notula','Notula')+nt+c('dok','Dokumentasi')+c('hadir','Daftar hadir')+c('notulaTte','Notula TTE')||'<span class="s">—</span>'}
 /* Dokumen di daftar: ringkas (undangan sudah menjadi badge di kolom Kegiatan). Rincian/unduh ada di Ubah aktivitas. */
-function actDocPills(x){const n=k=>{const a=attNorm(x[k]);return a.items.length||(a.no?1:0)},o=[['st','ST',n('st')],['ndnot','ND Notula',n('ndnot')],['materi','Materi',n('materi')],['notula','Notula',n('notula')],['notulaTeks','Notula',String(x.notulaTeks||'').replace(/<[^>]*>|&nbsp;/g,'').trim()?1:0],['dok','Dok.',n('dok')]].filter(r=>r[2]);
+function actDocPills(x){const n=k=>{const a=attNorm(x[k]);return a.items.length||(a.no?1:0)},o=[['st','ST',n('st')],['ndnot','ND Notula',n('ndnot')],['materi','Materi',n('materi')],['notula','Notula',n('notula')],['notulaTeks','Notula',String(x.notulaTeks||'').replace(/<[^>]*>|&nbsp;/g,'').trim()?1:0],['dok','Dok.',n('dok')],['hadir','Hadir',n('hadir')],['notulaTte','Notula TTE',n('notulaTte')]].filter(r=>r[2]);
  return o.length?o.map(r=>'<span class="dpill" title="'+r[1]+(r[2]>1?' ('+r[2]+' berkas)':'')+'">'+r[1]+(r[2]>1?' <i>'+r[2]+'</i>':'')+'</span>').join(''):''}
 function pAktDaftar(){const all=actRows(),tw=+S.ui.oneTw||0,kat=S.ui.actKat||'',sf=S.ui.actSt||'',pf=S.ui.actPic||'',qq=(S.ui.actQ||'').toLowerCase().trim(),M=actMaster();
  const U=S.ui,rows=all.filter(x=>(!U.actTahun||String(x.tahun)===String(U.actTahun))&&(!tw||oneTwOf(x)===tw)&&(!kat||actKatOf(x)===kat)&&(!sf||actStBase(x)===sf)&&(!pf||(x.pic||[]).includes(pf))&&(!U.actProg||x.program===U.actProg)&&(!U.actUnit||x.unitP===U.actUnit)&&(!U.actLay||x.layanan===U.actLay)&&(!U.actFrom||(x.tglSelesai||x.tgl||'')>=U.actFrom)&&(!U.actTo||(x.tgl||'9999')<=U.actTo)&&(!qq||actHay(x).includes(qq)));
@@ -6860,7 +6909,60 @@ function attChips(v,sm){const a=attNorm(v);if(!a.items.length&&!a.no)return '';c
   i.t==='d'?`<a class="${c}" href="${esc(i.data)}" download="${esc(i.nama)}" title="Unduh ${esc(i.nama)}"><i>⬇</i><span>${esc(i.nama)}</span></a>`:
   i.t==='l'?`<a class="${c}" href="${esc(i.link)}" target="_blank" rel="noopener" title="Buka ${esc(i.link)}"><i>↗</i><span>${esc(i.nama||(/sharepoint/i.test(i.link)?'SharePoint':'Tautan'))}</span></a>`:
   `<span class="${c}" title="Berkas tercatat (isi berkas tidak tersimpan)"><i>📄</i><span>${esc(i.nama)}</span></span>`).join('')}
-function attListHtml(key){const A=ATT[key];if(!A)return '';if(A.render)return A.render(A);return A.items.length?A.items.map((i,x)=>`<span class="at-it">${attChips({items:[i]},1)}${i.size?`<em>${attFmtSize(i.size)}</em>`:''}${A.ro?'':`<button type="button" class="at-x" data-atrm="${esc(key)}" data-i="${x}" title="Hapus" aria-label="Hapus ${esc(i.nama||'lampiran')}">✕</button>`}</span>`).join(''):`<span class="s at-empty">Belum ada berkas/tautan.</span>`}
+function actPhotoTiles(A,key){
+ if(!A.items.length)return '<div class="act-photo-empty">Belum ada dokumentasi. Unggah foto kegiatan atau tambahkan tautan.</div>';
+ return '<div class="act-photo-grid">'+A.items.map((it,i)=>{
+  const label=esc(it.nama||it.link||'Dokumentasi'),isImage=/\.(png|jpe?g|webp|gif)$/i.test(it.nama||'')||/^image\//.test(it.type||'');
+  const media=isImage?`<img data-actthumb="${key}" data-i="${i}" alt="Pratinjau ${label}" loading="lazy" ${it.t==='d'?'src="'+esc(it.data)+'"':''}>`:`<span class="act-photo-file" aria-hidden="true">${it.t==='l'?'↗':'▤'}</span>`;
+  const open=it.t==='l'?`<a class="act-photo-cover" href="${esc(it.link)}" rel="noopener" target="_blank" title="Buka tautan">${media}</a>`:`<button type="button" class="act-photo-cover" data-atpv="${key}" data-i="${i}" title="Pratinjau ${label}">${media}</button>`;
+  const dl=it.t==='f'?`<button type="button" title="Unduh" data-atdl="${esc(JSON.stringify({id:it.id,n:it.n,nama:it.nama,type:it.type}))}">↓</button>`:it.t==='d'?`<a href="${esc(it.data)}" download="${label}" title="Unduh">↓</a>`:'';
+  return `<div class="act-photo-tile">${open}<div class="act-photo-caption"><span title="${label}">${label}</span><div class="act-photo-actions">${dl}${A.ro?'':`<button type="button" data-atrm="${key}" data-i="${i}" title="Hapus">×</button>`}</div></div></div>`;
+ }).join('')+'</div>';
+}
+function actAttachmentRows(A,key){
+ if(!A.items.length)return '<span class="s at-empty">Belum ada berkas/tautan.</span>';
+ return '<div class="act-attachment-rows">'+A.items.map((it,i)=>{
+ const label=esc(it.nama||it.link||'Lampiran'),size=it.size?attFmtSize(it.size):'',kind=String(it.nama||'').split('.').pop().toUpperCase().slice(0,5);
+ const preview=it.t==='l'?`<a href="${esc(it.link)}" target="_blank" rel="noopener" title="Buka tautan">↗</a>`:`<button type="button" data-atpv="${key}" data-i="${i}" title="Pratinjau ${label}" aria-label="Pratinjau ${label}">👁</button>`;
+ const dl=it.t==='f'?`<button type="button" data-atdl="${esc(JSON.stringify({id:it.id,n:it.n,nama:it.nama,type:it.type}))}" title="Unduh ${label}">↓</button>`:it.t==='d'?`<a href="${esc(it.data)}" download="${label}" title="Unduh">↓</a>`:'';
+ return `<div class="act-attachment-row"><span class="act-attachment-kind">${esc(kind||'FILE')}</span><span class="act-attachment-label" title="${label}">${label}${size?`<small>${esc(size)}</small>`:''}</span><span class="act-attachment-actions">${preview}${dl}${A.ro?'':`<button type="button" class="act-attachment-remove" data-atrm="${key}" data-i="${i}" title="Hapus lampiran">×</button>`}</span></div>`;
+ }).join('')+'</div>';
+}
+function actHydrateThumbs(root){
+ if(!root||!root.querySelectorAll)return;
+ root.querySelectorAll('img[data-actthumb]').forEach(img=>{
+  if(img.dataset.ready||img.dataset.pending||img.getAttribute('src'))return;
+  const a=ATT[img.dataset.actthumb],meta=a&&a.items[Number(img.dataset.i)];
+  if(!meta||meta.t!=='f')return;
+  img.dataset.pending='1';
+  fileLoad(meta).then(blob=>{
+    if(!img.isConnected)return;
+    const url=URL.createObjectURL(blob);
+    img.onload=()=>URL.revokeObjectURL(url);
+    img.onerror=()=>URL.revokeObjectURL(url);
+    img.src=url;img.dataset.ready='1';
+  }).catch(()=>{if(img.isConnected){img.alt='Pratinjau tidak tersedia';img.dataset.ready='error'}}).finally(()=>{delete img.dataset.pending});
+ });
+}
+async function actAttachmentPreview(it){
+ if(!it)return;
+ if(it.t==='l'){window.open(it.link,'_blank','noopener');return}
+ if(it.t==='d'){window.open(it.data,'_blank','noopener');return}
+ if(it.t!=='f'){toast('Pratinjau tidak tersedia untuk berkas ini.');return}
+ const name=String(it.nama||'');
+ if(/\.(xlsx?|csv|txt)$/i.test(name)){
+  try{
+   const blob=await fileLoad(it);let content='';
+   if(/\.txt$/i.test(name))content='<pre class="act-sheet-pre">'+esc(await blob.text())+'</pre>';
+   else if(window.XLSX){const book=window.XLSX.read(await blob.arrayBuffer(),{type:'array'}),sheet=book.Sheets[book.SheetNames[0]];content=window.XLSX.utils.sheet_to_html(sheet)}
+   else {fileDownload(it);return}
+   modal(esc(name),'<div class="act-sheet-preview">'+content+'</div>','',null,{cancel:'Tutup',size:'wide',extra:'<button type="button" class="btn" data-mx="dl">↓ Unduh</button>',onExtra:(k)=>{if(k==='dl')fileDownload(it);return false}});
+  }catch(err){toast('Gagal membuka pratinjau: '+(err.message||err))}
+  return
+ }
+ suratPreview(it);
+}
+function attListHtml(key){const A=ATT[key];if(!A)return '';if(key==='one-dok')return actPhotoTiles(A,key);if(key==='one-hadir'||key==='one-tte')return actAttachmentRows(A,key);if(A.render)return A.render(A);return A.items.length?A.items.map((i,x)=>`<span class="at-it">${attChips({items:[i]},1)}${i.size?`<em>${attFmtSize(i.size)}</em>`:''}${A.ro?'':`<button type="button" class="at-x" data-atrm="${esc(key)}" data-i="${x}" title="Hapus" aria-label="Hapus ${esc(i.nama||'lampiran')}">✕</button>`}</span>`).join(''):`<span class="s at-empty">Belum ada berkas/tautan.</span>`}
 /* Panel berkas notula (meniru Meeting minutes Dashboard CM): kartu per berkas, boleh banyak berkas. */
 function nlExt(i){const n=String(i.nama||'').toLowerCase();return i.t==='l'?'LINK':/\.docx?$/.test(n)?'DOCX':/\.pdf$/.test(n)?'PDF':/\.xlsx?$/.test(n)?'XLSX':/\.pptx?$/.test(n)?'PPTX':/\.(png|jpe?g)$/.test(n)?'IMG':/\.txt$/.test(n)?'TXT':'FILE'}
 function nlRender(A){const n=A.items.length;
@@ -6879,12 +6981,12 @@ function attField(key,v,label,o={}){const a=attNorm(v);ATT[key]={items:a.items.s
  const iconUpload='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5"/><path d="M4 16v4h16v-4"/></svg>';
  const actions=o.iconOnly?`<div class="at-add tp-at-actions">
    <button type="button" class="tp-att-icon" data-tplink="${kk}" title="Tambahkan tautan SharePoint/OneDrive" aria-label="Tambahkan tautan SharePoint atau OneDrive">${iconLink}</button>
-   <label class="tp-att-icon tp-upload-icon" title="Unggah berkas" aria-label="Unggah berkas">${iconUpload}<input type="file" multiple data-atfile="${kk}" hidden accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.zip,.txt,.csv"></label>
+   <label class="tp-att-icon tp-upload-icon" title="Unggah berkas" aria-label="Unggah berkas">${iconUpload}<input type="file" multiple data-atfile="${kk}" hidden accept="${esc(o.accept||'.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.zip,.txt,.csv')}"></label>
    <div class="tp-link-entry" data-tplink-editor="${kk}" hidden>
     <input type="url" class="inp" id="at-u-${kk}" placeholder="https://sharepoint…/dokumen" aria-label="Tautan berkas">
     <button type="button" class="tp-att-icon tp-link-confirm" data-atlink="${kk}" title="Simpan tautan" aria-label="Simpan tautan">✓</button>
    </div>
-  </div>`:`<div class="at-add"><input type="url" class="inp" id="at-u-${kk}" placeholder="Tempel tautan SharePoint / OneDrive…"><button type="button" class="btn sm" data-atlink="${kk}">+ Tautan</button><label class="btn sm at-up">⇪ Unggah berkas<input type="file" multiple data-atfile="${kk}" hidden accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.zip,.txt,.csv"></label></div>`;
+  </div>`:`<div class="at-add"><input type="url" class="inp" id="at-u-${kk}" placeholder="Tempel tautan SharePoint / OneDrive…"><button type="button" class="btn sm" data-atlink="${kk}">+ Tautan</button><label class="btn sm at-up">⇪ Unggah berkas<input type="file" multiple data-atfile="${kk}" hidden accept="${esc(o.accept||'.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.zip,.txt,.csv')}"></label></div>`;
  return `<div class="${o.compact?'at-fld cp':'fld wide at-fld'}${o.iconOnly?' tp-attach-icon':''}" data-at="${kk}">${label?`<label>${label}${o.req?' <i>*</i>':' <span class="nt-opt">opsional</span>'}</label>`:''}${noIn}
   <div class="at-list" id="at-l-${kk}">${attListHtml(key)}</div>${o.ro?'':actions}
   ${o.compact?'':`<small class="at-msg" id="at-m-${kk}">Bisa lebih dari satu berkas, maks. 5 MB per berkas. Berkas lebih besar: unggah ke SharePoint lalu tempel tautannya.</small>`}</div>`}
@@ -6896,7 +6998,7 @@ document.addEventListener('click',e=>{
  if(!panel.hidden){const f=panel.querySelector('input');if(f)f.focus()}
 });
 function attChanged(key){const A=ATT[key];if(A&&A.cb){try{A.cb({no:'',items:A.items.slice()})}catch(e){}}}
-function attRedraw(key){const el=document.getElementById('at-l-'+key);if(el)el.innerHTML=attListHtml(key)}
+function attRedraw(key){const el=document.getElementById('at-l-'+key);if(el){el.innerHTML=attListHtml(key);if(key==='one-dok')actHydrateThumbs(el)}}
 function attMsg(key,h){const el=document.getElementById('at-m-'+key);if(el)el.innerHTML=h;else if(h)toast(h.replace(/<[^>]+>/g,''))}
 /* Kembalikan {no, items} atau false bila masih mengunggah */
 function attCollect(key){const A=ATT[key];if(!A)return null;if(A.busy){toast('Tunggu unggahan berkas selesai.');return false}
@@ -6905,6 +7007,7 @@ function attCollect(key){const A=ATT[key];if(!A)return null;if(A.busy){toast('Tu
  if(A.rm.length){const rm=A.rm.slice();A.rm=[];rm.forEach(m=>fileDel(m).catch(()=>{}))}return r}
 const attFirstLink=a=>{const i=(attNorm(a).items||[]).find(x=>x.t==='l');return i?i.link:''};
 document.addEventListener('click',e=>{
+ const preview=e.target.closest('[data-atpv]');if(preview){e.preventDefault();const A=ATT[preview.dataset.atpv],it=A&&A.items[Number(preview.dataset.i)];if(it)actAttachmentPreview(it);return}
  const d=e.target.closest('[data-atdl]');if(d){e.preventDefault();try{fileDownload(JSON.parse(d.dataset.atdl))}catch(x){}return}
  const l=e.target.closest('[data-atlink]');if(l){const k=l.dataset.atlink,u=document.getElementById('at-u-'+k),A=ATT[k];if(!u||!A)return;const v=u.value.trim();if(!v){u.focus();return}if(!/^https?:\/\//i.test(v)){toast('Tautan harus diawali http:// atau https://');return}A.items.push({t:'l',link:v,nama:'',tgl:TODAY,by:(ME&&ME.nama)||''});u.value='';attRedraw(k);attChanged(k);return}
  const r=e.target.closest('[data-atrm]');if(r){const k=r.dataset.atrm,A=ATT[k];if(!A)return;const it=A.items.splice(+r.dataset.i,1)[0];if(it&&it.t==='f')A.rm.push(it);attRedraw(k);attChanged(k)}});
