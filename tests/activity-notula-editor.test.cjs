@@ -15,7 +15,10 @@ test('Dasar surat: ikon interaktif, tombol duplikat terhapus, kontrol ringkas',(
  assert.match(slot,/class="sl-ic \$\{cls\} sl-create" data-gen="\$\{k\}"/);
  assert.doesNotMatch(slot,/mt-docgen/);
  for(const kind of ['link','file','tog'])assert.ok(slot.includes('data-slk="'+kind+'" title='));
- assert.match(slot,/data-sl-no/);
+ assert.doesNotMatch(slot,/data-sl-no/);
+ assert.match(slot,/data-sls/);
+ assert.match(slot,/id="one-undStatus"/);
+ assert.match(slot,/hiddenNo:true/);
  assert.match(slot,/one-\$\{k\}Hal/);
  assert.match(html,/r\.push\(\['Undangan atau Tidak ada'/);
  assert.match(html,/\['Surat Tugas atau Tidak ada'/);

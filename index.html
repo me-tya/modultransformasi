@@ -5958,10 +5958,8 @@ ACT.oneUndImp=()=>{ACT.oneAdd();setTimeout(()=>{const b=document.querySelector('
 ACT.oneUndPv=el=>{const x=(S.oneonone||[]).find(v=>v.id===el.dataset.id);if(!x)return;const it=attNorm(x.und).items;if(!it.length){toast('Berkas undangan belum diunggah. Buka Ubah aktivitas untuk melampirkan.');return}suratPreview(it[it.length-1])};
 ACT.oneUnd=el=>{const x=(S.oneonone||[]).find(v=>v.id===el.dataset.id);if(!x)return;const it=attNorm(x.und).items;
  if(!it.length){toast('Berkas undangan belum diunggah. Buka Ubah aktivitas untuk melampirkan.');return}
- const go1=m=>{if(m.t==='l'||m.link)window.open(m.link,'_blank','noopener');else fileDownload(m)};
- if(it.length===1){go1(it[0]);return}
- modal('Surat undangan · '+actName(x),'<div class="inv-list">'+it.map((m,i)=>'<button type="button" class="btn" data-invi="'+i+'">'+(m.t==='l'?'🔗 ':'⬇ ')+esc(m.nama||m.link||('Berkas '+(i+1)))+'</button>').join('')+'</div>',null,null,{size:'sm'});
- setTimeout(()=>document.querySelectorAll('[data-invi]').forEach(b=>b.addEventListener('click',()=>go1(it[+b.dataset.invi]))),30)};
+ const m=it[it.length-1];if(m.t==='l'||m.link)window.open(m.link,'_blank','noopener');else fileDownload(m);
+};
 ACT.oneCp=el=>{const v=el.dataset.link||'';if(!v)return;const ok=()=>toast('Link rapat disalin.');if(navigator.clipboard)navigator.clipboard.writeText(v).then(ok,()=>toast('Link gagal disalin.'));else toast('Link gagal disalin.')};
 /* Teks penugasan WhatsApp: format sama dengan Dashboard CM; "@" diisi manual oleh PIC. Teks disalin lalu WhatsApp dibuka. */
 function actWaText(x){const hr=x.tgl?['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][new Date(x.tgl+'T00:00:00').getDay()]+', '+fmtD(x.tgl)+(x.tglSelesai&&x.tglSelesai>x.tgl?' – '+fmtD(x.tglSelesai):''):'-',lk=actLink(x),lok=(/^https?:/i.test(x.lokasi||'')?'':(x.lokasi||''))||lk;
