@@ -77,6 +77,25 @@ function form(mode,items,go){
  };
  const sel=host.querySelector('[data-rptlang]');sel.value=opts.lang||'id';return host;
 }
+
+function mtArGallery(items){
+ const cards=[];
+ for(const x of items){const files=attNorm(x.dok).items||[];
+  files.forEach((f,i)=>{
+   const isImg=/\.(?:png|jpe?g|webp|gif)$/i.test(f.nama||'')||/^image\//.test(f.type||'');
+   if(f.t==='f'&&isImg)cards.push('<figure><img data-rptimg="'+E(x.id)+'" data-rptfi="'+i+'" alt="'+E(f.nama||'Foto')+'"><figcaption><b>'+E(actName(x))+'</b><small>'+E(f.nama||'Foto')+'</small></figcaption></figure>');
+   else if(f.t==='l')cards.push('<figure class="mt-ar-gallery-link"><b>'+E(actName(x))+'</b><a href="'+E(f.link)+'" target="_blank" rel="noopener">Buka dokumentasi eksternal</a></figure>');
+  });
+ }
+ return cards.length?'<div class="mt-ar-gallery">'+cards.slice(0,60).join('')+'</div>':'<p>Belum ada dokumentasi foto.</p>';
+}
+function mtArLoadGallery(root,items){
+ root.querySelectorAll('img[data-rptimg]').forEach(img=>{
+  const x=items.find(v=>String(v.id)===img.dataset.rptimg),m=x&&attNorm(x.dok).items[Number(img.dataset.rptfi)];
+  if(!m||m.t!=='f')return;
+  fileLoad(m).then(blob=>{if(!img.isConnected)return;const u=URL.createObjectURL(blob);img.onload=()=>URL.revokeObjectURL(u);img.onerror=()=>URL.revokeObjectURL(u);img.src=u}).catch(()=>{img.alt='Foto tidak tersedia'});
+ });
+}
 function card(label,n,sub){return '<div class="mt-ar-kpi"><small>'+E(label)+'</small><b>'+E(n)+'</b><span>'+E(sub||'')+'</span></div>';}
 function table(head,rows){return '<table class="mt-ar-table"><thead><tr>'+head.map(h=>'<th>'+E(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(c=>'<td>'+E(c)+'</td>').join('')+'</tr>').join('')+'</tbody></table>';}
 function chapter(t,body){return '<section class="mt-ar-chapter"><h3>'+E(t)+'</h3>'+body+'</section>';}
@@ -94,7 +113,7 @@ function render(mode,items,opt){
   if(mode==='filtered'&&opt.inc.charts!==false||mode==='compiled'&&opt.inc.monev!==false)sections.push(chapter('Grafik & Statistik','<h4>Distribusi status</h4>'+bars(st.by.status)+'<h4>Aktivitas per bulan</h4>'+bars(st.by.bulan)));
   if(mode==='filtered'&&opt.inc.docs!==false)sections.push(chapter('Kelengkapan Dokumen','<p>Rata-rata kelengkapan '+st.docPct+'% dari tujuh kelompok dokumen.</p>'+table(['Dokumen','Terisi'],[['Undangan','und'],['Surat Tugas','st'],['Materi','materi'],['Notula','notula'],['Dokumentasi','dok'],['Daftar Hadir','hadir'],['Notula TTE','notulaTte']].map(([l,k])=>[l,items.filter(x=>docs(x).find(a=>a.k===k)?.ok).length+' / '+items.length]))));
   if(mode==='filtered'&&opt.inc.list!==false||mode==='compiled'&&opt.inc.calendar!==false)sections.push(chapter('Daftar Kegiatan',table(['Tanggal','Kegiatan','Unit','Status'],items.map(x=>[dt(x.tgl),actName(x),x.unitP||'-',actSt(x)[0]]))));
-  if(mode==='filtered'&&opt.inc.gallery!==false)sections.push(chapter('Dokumentasi Foto',table(['Kegiatan','Berkas / Tautan'],items.filter(x=>attNorm(x.dok).items.length).map(x=>[actName(x),attNorm(x.dok).items.map(i=>i.nama||i.link||'Lampiran').join('; ')]))));
+  if(mode==='filtered'&&opt.inc.gallery!==false)sections.push(chapter('Dokumentasi Foto',mtArGallery(items)));
   if(mode==='filtered'&&opt.inc.analysis!==false||mode==='compiled'&&opt.inc.monev!==false)sections.push(chapter('Kendala & Tindak Lanjut',table(['Kegiatan','Catatan / kendala','Tindak lanjut'],items.filter(x=>X(x.tl)||X(x.catatan)).map(x=>[actName(x),strip(x.catatan)||'-',x.tl||'-']))));
   if(mode==='compiled'&&opt.inc.status!==false)sections.push(chapter('Status Kegiatan (Workboard)',bars(st.by.status)));
   if(mode==='compiled'&&opt.inc.matrix!==false)sections.push(chapter('Matriks Kategori, Program & Unit','<h4>Kategori</h4>'+bars(st.by.kategori)+'<h4>Program</h4>'+bars(st.by.program)+'<h4>Unit</h4>'+bars(st.by.unit)));
@@ -132,7 +151,7 @@ async function word(mode,items,opt){
 }
 function preview(mode,items,opt,go){
  const h=document.createElement('div');h.className='mt-ar-overlay';h.innerHTML='<div class="mt-ar-modal preview" role="dialog" aria-modal="true"><header><div><h2>Preview '+E(mode==='single'?'Laporan Kegiatan':mode==='compiled'?'Kompilasi Laporan':'Laporan Monitoring & Evaluasi')+'</h2><p>'+fmt(items.length)+' kegiatan sesuai cakupan</p></div><button title="Tutup" data-close>×</button></header><div class="mt-ar-previewbody">'+render(mode,items,opt)+'</div><footer><button type="button" data-back>Kembali</button><button type="button" data-print>Cetak / Simpan PDF</button><button type="button" class="mt-ar-gold" data-word>⬇ Unduh Word</button></footer></div>';
- document.body.appendChild(h);
+ document.body.appendChild(h);mtArLoadGallery(h,items);
  h.addEventListener('click',e=>{if(e.target===h||e.target.closest('[data-close]'))h.remove()});
  h.querySelector('[data-back]').onclick=()=>{h.remove();form(mode,items,go)};
  h.querySelector('[data-print]').onclick=()=>{const area=h.querySelector('.mt-ar-paper'),w=window.open('','_blank');if(!w){toast('Izinkan pop-up untuk pratinjau cetak.');return}w.document.write('<!doctype html><html><head><title>'+E(title(mode,items,opt.lang))+'</title><style>body{font:11pt Arial;color:#12275A;margin:16mm}h1{font-size:17pt}h3{font-size:13pt;margin-top:22px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #bcc6d7;padding:5px}.mt-ar-kpis{display:flex;gap:18px}.mt-ar-kpi{display:grid}.mt-ar-bars{display:none}.mt-ar-sign{margin-top:40px;text-align:right}.mt-ar-signspace{height:50px}</style></head><body>'+area.innerHTML+'</body></html>');w.document.close();w.focus();w.print()};
