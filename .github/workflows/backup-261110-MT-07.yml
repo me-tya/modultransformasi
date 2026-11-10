@@ -1,0 +1,44 @@
+name: Arsip cadangan lengkap MT 261110-07
+on:
+  push:
+    branches:
+      - backup/261110-MT-07
+permissions:
+  contents: write
+jobs:
+  backup:
+    if: "!contains(github.event.head_commit.message, '[backup generated]')"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout snapshot asli sebelum perubahan
+        uses: actions/checkout@v4
+        with:
+          ref: ec756b8e5c948cd1c6560083d217edec3927aba5
+          path: snapshot
+      - name: Buat ZIP utuh
+        run: |
+          cd snapshot
+          zip -q -r ../261110-MT-07.zip . -x '.git/*'
+          cd ..
+          unzip -t 261110-MT-07.zip | tail -1
+      - name: Simpan juga sebagai artefak GitHub Actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: 261110-MT-07
+          path: 261110-MT-07.zip
+          retention-days: 90
+      - name: Checkout cabang backup
+        uses: actions/checkout@v4
+        with:
+          ref: backup/261110-MT-07
+          path: backup-repo
+      - name: Simpan ZIP ke cabang backup permanen
+        run: |
+          mkdir -p backup-repo/backups
+          cp 261110-MT-07.zip backup-repo/backups/261110-MT-07.zip
+          cd backup-repo
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add backups/261110-MT-07.zip
+          git commit -m "Arsip ZIP lengkap 261110-MT-07 [backup generated]"
+          git push origin HEAD:backup/261110-MT-07
