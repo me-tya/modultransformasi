@@ -44,7 +44,8 @@ test('Simpulan: toolbar formatting marks editor as edited before save',()=>{
 test('Notula: pratinjau lebih mendekati kertas Word, DOCX page margin tetap',()=>{
  assert.match(html,/#nl-pv \.nl-pg\{box-sizing:border-box;max-width:none;width:794px/);
  assert.match(html,/padding:48px 76px 74px 94px/);
- assert.match(html,/class="nl-sign-spacer"/);
+ assert.match(html,/class="nl-sg nl-sg-word"/);
+ assert.match(html,/class="nl-esign"/);
  assert.match(html,/w:pgMar w:top="720" w:right="1134" w:bottom="/);
  assert.match(html,/w:left="1418"/);
  assert.match(html,/notaIndent=\(M\.fmt\.indent\|\|0\)\*28\.35/);
@@ -61,4 +62,12 @@ test('Aktivitas: A4 surat, kelengkapan surat, nomor notula dan ND penyampaian',(
  assert.match(html,/\['overview','Overview'\],\['daftar','Daftar Aktivitas'\]/);
  assert.match(html,/data-rtefs/);
  assert.match(html,/data-rteindent/);
+});
+
+test('Notula preview retains rich editor formatting and separates discussion paragraphs',()=>{
+ assert.match(html,/M\.items\.map\(item\)/);
+ assert.match(html,/rich\(it\.html\|\|esc\(it\.t\)\)/);
+ assert.match(html,/rich\(\(M\.simRich\[i\]\|\|\{\}\)\.html\|\|esc\(t\)\)/);
+ assert.match(html,/if\(!current\|\|current\.t\)make\(\)/);
+ assert.match(html,/class="nl-sign-blank"/);
 });
