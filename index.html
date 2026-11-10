@@ -5203,8 +5203,8 @@ function oneDocs(x){const c=(k,l)=>{const h=notulaChip(x[k],1);return h?'<div cl
 /* Dokumen di daftar: ringkas (undangan sudah menjadi badge di kolom Kegiatan). Rincian/unduh ada di Ubah aktivitas. */
 function actDocPills(x){const n=k=>{const a=attNorm(x[k]);return a.items.length||(a.no?1:0)},o=[['st','ST',n('st')],['materi','Materi',n('materi')],['notula','Notula',n('notula')],['notulaTeks','Notulen',String(x.notulaTeks||'').replace(/<[^>]*>|&nbsp;/g,'').trim()?1:0],['dok','Dok.',n('dok')]].filter(r=>r[2]);
  return o.length?o.map(r=>'<span class="dpill" title="'+r[1]+(r[2]>1?' ('+r[2]+' berkas)':'')+'">'+r[1]+(r[2]>1?' <i>'+r[2]+'</i>':'')+'</span>').join(''):''}
-function pAktDaftar(){const all=getOneOnOne().filter(x=>!isOne(x)||x.keAkt),tw=+S.ui.oneTw||0,kat=S.ui.actKat||'',sf=S.ui.actSt||'',pf=S.ui.actPic||'',qq=(S.ui.actQ||'').toLowerCase().trim(),M=actMaster();
- const U=S.ui,rows=all.filter(x=>(!tw||oneTwOf(x)===tw)&&(!kat||actKatOf(x)===kat)&&(!sf||actStBase(x)===sf)&&(!pf||(x.pic||[]).includes(pf))&&(!U.actProg||x.program===U.actProg)&&(!U.actUnit||x.unitP===U.actUnit)&&(!U.actLay||x.layanan===U.actLay)&&(!U.actFrom||(x.tglSelesai||x.tgl||'')>=U.actFrom)&&(!U.actTo||(x.tgl||'9999')<=U.actTo)&&(!qq||actHay(x).includes(qq)));
+function pAktDaftar(){const all=actRows(),tw=+S.ui.oneTw||0,kat=S.ui.actKat||'',sf=S.ui.actSt||'',pf=S.ui.actPic||'',qq=(S.ui.actQ||'').toLowerCase().trim(),M=actMaster();
+ const U=S.ui,rows=all.filter(x=>(!U.actTahun||String(x.tahun)===String(U.actTahun))&&(!tw||oneTwOf(x)===tw)&&(!kat||actKatOf(x)===kat)&&(!sf||actStBase(x)===sf)&&(!pf||(x.pic||[]).includes(pf))&&(!U.actProg||x.program===U.actProg)&&(!U.actUnit||x.unitP===U.actUnit)&&(!U.actLay||x.layanan===U.actLay)&&(!U.actFrom||(x.tglSelesai||x.tgl||'')>=U.actFrom)&&(!U.actTo||(x.tgl||'9999')<=U.actTo)&&(!qq||actHay(x).includes(qq)));
  const editable=actCanEdit(),canDel=lv('wbs').includes('D'),hari=all.filter(x=>x.tgl&&x.tgl<=TODAY&&(x.tglSelesai||x.tgl)>=TODAY&&!['Dibatalkan','Ditunda'].includes(x.stat));
  const nUp=all.filter(x=>x.tgl&&x.tgl>=TODAY&&!['Dibatalkan','Ditunda','Tidak Dihadiri'].includes(x.stat)).length,nDone=all.filter(x=>actStBase(x)==='Selesai').length,nNot=all.filter(actHasNotula).length;
  const ic=p=>`<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
@@ -5250,7 +5250,7 @@ function pAktDaftar(){const all=getOneOnOne().filter(x=>!isOne(x)||x.keAkt),tw=+
  const fbar='<div class="card filter-bar" style="border-radius:14px"><div class="filter-bar-row1"><div class="search-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input type="search" data-actf="actQ" value="'+esc(U.actQ||'')+'" placeholder="Cari kegiatan, PIC, program, kategori, lokasi, notulen… lalu Enter" aria-label="Cari aktivitas">'+(U.actQ?'<button type="button" class="search-clear-btn" data-act="actClear" title="Hapus pencarian" aria-label="Hapus pencarian"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>':'')+'</div>'+
   '<button type="button" class="btn-filter-toggle'+(fopen?' open':'')+'" data-act="actFOpen" aria-expanded="'+fopen+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>Filter'+(nAct?' <span class="filter-active-badge">'+nAct+'</span>':'')+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 15l6-6 6 6"/></svg></button></div>'+
   '<div class="filter-bar-body'+(fopen?'':' hidden')+'">'+
-  '<select class="filter-select" data-actf="oneTw" aria-label="Triwulan"><option value="0">Semua Triwulan</option>'+[1,2,3,4].map(t=>'<option value="'+t+'"'+(tw===t?' selected':'')+'>TW '+ONE_RM[t]+'</option>').join('')+'</select>'+
+  '<select class="filter-select" data-actf="actTahun" aria-label="Tahun aktivitas"><option value="">Semua Tahun</option>'+[...new Set(all.map(x=>String(x.tahun||'')).filter(Boolean))].sort().reverse().map(y=>'<option value="'+esc(y)+'"'+(String(U.actTahun||'')===y?' selected':'')+'>'+esc(y)+'</option>').join('')+'</select>'+ '<select class="filter-select" data-actf="oneTw" aria-label="Triwulan"><option value="0">Semua Triwulan</option>'+[1,2,3,4].map(t=>'<option value="'+t+'"'+(tw===t?' selected':'')+'>TW '+ONE_RM[t]+'</option>').join('')+'</select>'+
   fsel('actKat','Semua Kategori',M.kat,kat)+fsel('actProg','Semua Program',uniq(x=>x.program),U.actProg||'')+fsel('actUnit','Semua Unit Pemohon',uniq(x=>x.unitP),U.actUnit||'')+fsel('actLay','Semua (Layanan & Non-Layanan)',['Ya','Tidak'].map(v=>[v,v==='Ya'?'Layanan':'Non-Layanan']),U.actLay||'')+fsel('actSt','Semua Status',['Menunggu Konfirmasi','Terjadwal','Hari ini','Berlangsung','Selesai','Ditunda','Tidak Dihadiri','Dibatalkan','Belum dijadwalkan'],sf)+fsel('actPic','Semua PIC',picNames,pf)+
   '<input type="date" class="filter-date" data-actf="actFrom" value="'+esc(U.actFrom||'')+'" aria-label="Dari tanggal"><span class="filter-date-sep">s.d.</span><input type="date" class="filter-date" data-actf="actTo" value="'+esc(U.actTo||'')+'" aria-label="Sampai tanggal">'+
   '<button type="button" class="cb rst" data-act="oneReset">'+'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+'<path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>Reset</button><button type="button" class="cb rep" data-act="oneExport" title="Ekspor daftar aktivitas ke Excel">'+'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+'<path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4M10 13h6M10 17h6"/></svg>Laporan</button></div></div>';
@@ -5283,7 +5283,7 @@ function kpAv(p,cls){return p.foto?'<img class="kp-ph '+(cls||'')+'" src="'+esc(
 function kpPeranPills(p){return (p.peran||[]).map(k=>{const r=KP_PERAN.find(x=>x[0]===k);return r?'<span class="kp-pr" style="--c:'+r[2]+'">'+esc(r[1])+'</span>':''}).join('')}
 function actTabs(){const t=S.ui.actTab||'daftar',T=[['daftar','Daftar'],['overview','Overview'],['matriks','Matriks'],['timk','Tim PMO & CMO Kemenkeu'],['timu','Tim PMO & CMO Unit']];return '<nav class="ptabs act-tabs" aria-label="Tab Aktivitas">'+T.map(x=>'<a href="#aktivitas" data-act="actTab" data-v="'+x[0]+'" class="'+(t===x[0]?'on':'')+'"><span>'+x[1]+'</span></a>').join('')+'</nav>'}
 function pAktivitas(){const t=S.ui.actTab||'daftar';if(t==='overview')return pAktOverview();if(t==='matriks')return pAktMatriks();if(t==='timk')return pAktTimK();if(t==='timu')return pAktTimU();return pAktDaftar()}
-function actRows(){return getOneOnOne().filter(x=>!isOne(x)||x.keAkt)}
+function actRows(){getOneOnOne();return (S.oneonone||[]).filter(x=>x.kind!=='cfg'&&(!isOne(x)||x.keAkt)).sort((a,b)=>String(a.tgl||'9999').localeCompare(String(b.tgl||'9999'))||(+a.no||0)-(+b.no||0))}
 const AKT_HDR=()=>vh('1','pmo','Aktivitas','Seluruh kegiatan PMO dan CMO Kemenkeu, ringkasan grafik, matriks, serta daftar tim PMO & CMO Kemenkeu dan Unit.','')+actTabs();
 /* ---------- Overview (grafik sama dengan Dashboard CM) ---------- */
 const AK_C={navy:'#1B3A73',gold:'#C8A84B'};
@@ -5546,7 +5546,7 @@ ACT.oneHist=el=>{const x=(S.oneonone||[]).find(v=>v.id===el.dataset.id);if(!x)re
 /* klik baris = ubah aktivitas (kecuali klik tombol/tautan di dalam baris) */
 document.addEventListener('click',e=>{const r=e.target.closest&&e.target.closest('tr[data-rowedit]');if(!r||e.target.closest('a,button,input,select,[data-act],[data-atdl]'))return;if(!actCanEdit())return;ACT.oneEdit({dataset:{id:r.dataset.rowedit}})});
 ACT.oneTw=el=>{S.ui.oneTw=+el.dataset.v||0;save();render()};
-ACT.oneReset=()=>{['actKat','actSt','actPic','actQ','actProg','actUnit','actLay','actFrom','actTo'].forEach(k=>S.ui[k]='');S.ui.oneTw=0;S.ui.actPg=1;save();render()};
+ACT.oneReset=()=>{['actTahun','actKat','actSt','actPic','actQ','actProg','actUnit','actLay','actFrom','actTo'].forEach(k=>S.ui[k]='');S.ui.oneTw=0;S.ui.actPg=1;save();render()};
 ACT.actClear=()=>{S.ui.actQ='';S.ui.actPg=1;save();render()};
 ACT.actFOpen=()=>{S.ui.actFClosed=!S.ui.actFClosed;save();render()};
 ACT.actTodayCol=()=>{S.ui.actTodayCol=!S.ui.actTodayCol;save();render()};
@@ -5607,11 +5607,12 @@ function actImportDashboardBackup(data){
   x.notula=attachments(a.notula);
   const sourceNotula=arr(a.notula),extractText=sourceNotula.map(z=>z.searchPreview||'').filter(Boolean).join('\n\n');
   x.notulaTeks=a.notulaTeks||extractText||'';x.ringkas=a.ringkasanHasil||'';x.tl=a.tindakLanjut||'';
-  x.dashboardSource={id:a.id,updatedAt:a.updatedAt||'',kategori:a.kategori||'',sourceFile:'DashboardCM',eoChecklist:a.eoChecklist||'[]',notulaMeta:sourceNotula,dokumentasiMeta:arr(a.dokumentasi),undanganMeta:arr(a.undanganFiles),suratTugasMeta:arr(a.suratTugasFiles),materiMeta:arr(a.materiFiles)};
+  x.dashboardSource={id:a.id,updatedAt:a.updatedAt||'',kategori:a.kategori||'',sourceFile:'DashboardCM',eoChecklist:a.eoChecklist||'[]',notulaMeta:sourceNotula,dokumentasiMeta:arr(a.dokumentasi),undanganMeta:arr(a.undanganFiles),suratTugasMeta:arr(a.suratTugasFiles),materiMeta:arr(a.materiFiles),searchMeta:a._search||'',extra:{estimasiBiaya:a.estimasiBiaya||'',statusManual:a.statusManual||'',statusNeedsUpdate:!!a.statusNeedsUpdate,eoEnabled:!!a.eoEnabled}};
   if(old)updated++;else{S.oneonone.push(x);added++}
  }
+ S.ui.actTahun='';S.ui.oneTw=0;['actKat','actSt','actPic','actQ','actProg','actUnit','actLay','actFrom','actTo'].forEach(k=>S.ui[k]='');S.ui.actPg=1;
  save();render();
- toast('Impor: '+added+' aktivitas baru, '+updated+' diperbarui. '+unresolved+' referensi berkas belum berisi file fisik.');
+ toast('Impor selesai: '+added+' baru, '+updated+' diperbarui; total '+(added+updated)+' dari '+agendas.length+' aktivitas sumber. '+unresolved+' referensi berkas perlu dihubungkan kembali.');
  return {added,updated,unresolved};
 }
 ACT.actJsonImport=()=>{if(!actCanEdit())return toast('Tidak berwenang mengimpor aktivitas.');document.getElementById('act-json-file')?.click()};
@@ -5636,7 +5637,7 @@ ACT.oneCopyTw=()=>{if(!lv('wbs').includes('U')&&!lv('wbs').includes('C')){toast(
  modal('Salin ke triwulan berikutnya',`<p style="margin:0 0 8px">Salin <b>${todo.length}</b> sesi dari <b>TW ${ONE_RM[from]} ${S.ui.tahun}</b> ke <b>TW ${ONE_RM[tt]} ${ty}</b>?</p><p class="s" style="margin:0">Program, UIC, tim, dan mode ikut disalin. Tanggal, jam, dan berkas undangan/notula dikosongkan. Sesi ditandai <b>perlu dicek</b> sampai tanggal dan jam diisi.${have.size?' '+have.size+' program yang sudah ada dilewati.':''}</p>`,'Salin',()=>{
   todo.forEach(s=>{const x=oneClone(s);x.id=uid();x.tahun=ty;x.tw=tt;x.tgl='';x.jam='';x.notula=null;x.und=null;x.materi=null;x.dok=null;x.stat='';x.alasan='';x.ringkas='';x.tl='';x.cek=true;S.oneonone.push(x)});oneSessions(ty,tt).forEach((x,i)=>x.no=i+1);
   log('Salin Jadwal 1-on-1','TW '+ONE_RM[from]+' '+S.ui.tahun+' → TW '+ONE_RM[tt]+' '+ty+' · '+todo.length+' sesi');if(ty===+S.ui.tahun)S.ui.oneTw=tt;save();render();toast(todo.length+' sesi disalin. Buka Draft undangan untuk mengisi tanggal.');return true},{size:'sm'})};
-ACT.oneExport=()=>xlsxSave(getOneOnOne().map(x=>({
+ACT.oneExport=()=>xlsxSave(actRows().map(x=>({
  'No':x.no,'Kategori':actKatOf(x),'Nama kegiatan':actName(x),'Tanggal mulai':x.tgl,'Tanggal selesai':x.tglSelesai||'','Jam':x.jam,'Status':actSt(x)[0],'Layanan':x.layanan||'','Unit pemohon':x.unitP||'','Program terkait':x.program||'','Tema':x.tema||'',
  'Metode':x.mode||'Hybrid','Lokasi':/^https?:/i.test(x.lokasi||'')?'':(x.lokasi||''),'Tautan rapat':actLink(x),'PIC Pusmantap':(x.pic||[]).join(', '),'Narasumber':x.narsum||'','Target peserta':x.peserta||'','Tujuan':x.tujuan||'',
  'Nomor undangan':attNorm(x.und).no||'','Hal undangan':x.undHal||'','UIC Utama':x.uic||'','SPV':x.spv||'','Katim':x.katim||'','Anggota':x.anggota||'','Ringkasan hasil':x.ringkas||'','Tindak lanjut':x.tl||'','Notulen (teks)':String(x.notulaTeks||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim()
