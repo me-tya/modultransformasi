@@ -4530,7 +4530,7 @@ const prompt0=t=>{const v=window.prompt?window.prompt(t,''):'';return v};
 ACT.oneDraft=()=>oneDraftOpen();
 /* ---- Word (.docx) ---- */
 const dxX=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-const dxR=(t,o={})=>`<w:r><w:rPr>${o.b?'<w:b/>':''}${o.i?'<w:i/>':''}${o.col?`<w:color w:val="${o.col}"/>`:''}${o.sz?`<w:sz w:val="${Math.round(o.sz*2)}"/><w:szCs w:val="${Math.round(o.sz*2)}"/>`:''}${o.hl?'<w:highlight w:val="yellow"/>':''}${o.u?'<w:u w:val="single"/>':''}</w:rPr><w:t xml:space="preserve">${dxX(t)}</w:t></w:r>`;
+const dxR=(t,o={})=>`<w:r><w:rPr>${o.b?'<w:b/>':''}${o.i?'<w:i/>':''}${o.font&&/^[A-Za-z0-9 ,\-]+$/.test(o.font)?`<w:rFonts w:ascii="${o.font}" w:hAnsi="${o.font}" w:eastAsia="${o.font}"/>`:''}${o.col?`<w:color w:val="${o.col}"/>`:''}${o.sz?`<w:sz w:val="${Math.round(o.sz*2)}"/><w:szCs w:val="${Math.round(o.sz*2)}"/>`:''}${o.hl?'<w:highlight w:val="yellow"/>':''}${o.u?'<w:u w:val="single"/>':''}</w:rPr><w:t xml:space="preserve">${dxX(t)}</w:t></w:r>`;
 const dxTab='<w:r><w:tab/></w:r>';
 function dxRich(t,o={}){return String(t).split(/(1-on-1|Initiative Owner|pemilik program transformasi)/).filter(Boolean).map(s=>dxR(s,Object.assign({},o,s==='1-on-1'||s==='Initiative Owner'?{i:true}:s==='pemilik program transformasi'?{b:true}:{}))).join('')}
 function dxP(runs,o={}){const t=v=>Math.round(v*20);let pr='';if(o.keep)pr+='<w:keepNext/>';if(o.pb)pr+='<w:pageBreakBefore/>';
@@ -4742,10 +4742,20 @@ const ACT_BSRE='Dokumen ini telah ditandatangani menggunakan sertifikat elektron
 const actRom=n=>['','i','ii','iii','iv','v','vi','vii','viii','ix','x','xi','xii','xiii','xiv','xv','xvi','xvii','xviii','xix','xx'][n]||String(n);
 const actAbc=n=>String.fromCharCode(96+((n-1)%26)+1);
 const actFoot=()=>dxP(dxR(ACT_BSRE,{sz:7.5,col:'555555'}),{line:9,jc:'both'});
+/* Runs from sanitized rich editor: preserve bold, italic and underline in DOCX.
+   Font, point size and ruler indent are stored per activity; page margins are never changed. */
+function actDocxRuns(html,fmt={}){const root=document.createElement('div');root.innerHTML=actSan(html);
+ const base={font:fmt.font||'Arial',sz:fmt.size||11};
+ const walk=(n,attrs={})=>{if(n.nodeType===3)return n.textContent?dxR(n.textContent,Object.assign({},base,attrs)):'';
+  if(n.nodeType!==1)return '';if(n.tagName==='BR')return dxR(' ',Object.assign({},base,attrs));
+  const opt=Object.assign({},attrs);
+  if(n.matches('b,strong,h3,h4'))opt.b=true;if(n.matches('i,em'))opt.i=true;if(n.matches('u'))opt.u=true;
+  return [...n.childNodes].map(ch=>walk(ch,opt)).join('')};
+ return [...root.childNodes].map(n=>walk(n)).join('')}
 async function actDocxNotula(x,o){await docZip();const M=actNotulaModel(x,o),TW=467.8,GR='A6A6A6',h=(t,hl)=>dxR(t,{hl:!!hl});
  const P=(r,po)=>dxP(r,Object.assign({line:14,jc:'both'},po||{})),H=(k,t)=>dxP(dxR(k+'.',{b:true})+dxTab+dxR(t,{b:true}),{left:18,hang:18,tabs:[[18,'left']],before:10,line:14,keep:true}),B=(r,po)=>P(r,Object.assign({left:18},po||{}));
- const sub=(lv,i,t,left)=>dxP(dxR(lv===1?actAbc(i)+'.':actRom(i)+')')+dxTab+dxR(t),{left,hang:18,tabs:[[left,'left']],line:14,jc:'both'});
- const subs=(arr,left,lv)=>arr.map((s,i)=>sub(lv,i+1,s.t,left)+(s.s&&s.s.length?subs(s.s,left+18,2):'')).join('');
+ const sub=(lv,i,t,left,html)=>dxP(dxR(lv===1?actAbc(i)+'.':actRom(i)+')')+dxTab+actDocxRuns(html||esc(t),M.fmt),{left,hang:18,tabs:[[left,'left']],line:14,jc:M.fmt.align==='justify'?'both':M.fmt.align});
+ const subs=(arr,left,lv)=>arr.map((s,i)=>sub(lv,i+1,s.t,left,s.html)+(s.s&&s.s.length?subs(s.s,left+18,2):'')).join('');
  let b=dxKop(TW)+dxP('',{line:8})+dxP(dxR('NOTULA',{b:true,sz:12}),{jc:'center',line:15,before:6})+dxP(dxR(M.judul,{b:true,sz:12}),{jc:'center',line:15,after:6});
  b+=H('A','Dasar');
  if(M.dasarKosong)b+=B(h('[Surat undangan atau surat tugas yang menjadi dasar rapat: nomor, tanggal, hal]',1));
@@ -4756,13 +4766,14 @@ async function actDocxNotula(x,o){await docZip();const M=actNotulaModel(x,o),TW=
  b+=H('E','Pelaksanaan Rapat');
  const R=(k,t)=>dxP(dxR(k+'.',{b:true})+dxTab+dxR(t,{b:true}),{left:54,hang:36,tabs:[[54,'left']],before:6,line:14,keep:true});
  b+=R('I','Pembukaan')+P(dxR(M.buka),{left:54});
+ const notaIndent=(M.fmt.indent||0)*28.35;
  b+=R('II','Pembahasan');
  if(!M.items.length)b+=P(h('[Isi catatan notulen pada tahap Pelaksanaan: judul menjadi butir bernomor, daftar menjadi a, b, c]',1),{left:54});
- M.items.forEach((it,i)=>{b+=dxP(dxR((i+1)+'.')+dxTab+(it.j?dxR(it.j+(it.t?'. ':''),{b:true}):'')+dxR(it.t),{left:72,hang:18,tabs:[[72,'left']],line:14,jc:'both'})+subs(it.s,90,1)});
+ M.items.forEach((it,i)=>{const li=72+notaIndent;b+=dxP(dxR((i+1)+'.')+dxTab+(it.j?dxR(it.j+(it.t?'. ':''),{b:true}):'')+actDocxRuns(it.html||esc(it.t),M.fmt),{left:li,hang:18,tabs:[[li,'left']],line:14,jc:M.fmt.align==='justify'?'both':M.fmt.align})+subs(it.s,90+notaIndent,1)});
  b+=R('III','Simpulan');
  if(!M.sim.length&&!M.tl.length)b+=P(h('[Simpulan rapat: isi Ringkasan hasil dan Tindak lanjut pada tahap Hasil & Luaran]',1),{left:54});
- M.sim.forEach((t,i)=>{b+=dxP(dxR((i+1)+'.')+dxTab+dxR(t),{left:72,hang:18,tabs:[[72,'left']],line:14,jc:'both'})});
- if(M.tl.length){b+=dxP(dxR((M.sim.length+1)+'.')+dxTab+dxR('Tindak lanjut yang disepakati:'),{left:72,hang:18,tabs:[[72,'left']],line:14,keep:true})+M.tl.map((t,i)=>sub(1,i+1,t.replace(/[.;\s]+$/,'')+(i<M.tl.length-1?';':'.'),90)).join('')}
+ M.sim.forEach((t,i)=>{const li=72+notaIndent;b+=dxP(dxR((i+1)+'.')+dxTab+actDocxRuns((M.simRich[i]||{}).html||esc(t),M.fmt),{left:li,hang:18,tabs:[[li,'left']],line:14,jc:M.fmt.align==='justify'?'both':M.fmt.align})});
+ if(M.tl.length){b+=dxP(dxR((M.sim.length+1)+'.')+dxTab+dxR('Tindak lanjut yang disepakati:'),{left:72,hang:18,tabs:[[72,'left']],line:14,keep:true})+M.tl.map((t,i)=>sub(1,i+1,t.replace(/[.;\s]+$/,'')+(i<M.tl.length-1?';':'.'),90+notaIndent)).join('')}
  const L=[['Mengetahui,',0],[M.ketua.jab,0],['',0],['',0],['Ditandatangani secara elektronik',2],[M.ketua.nama,0]],Rr=[['Dibuat di Jakarta',0],['Pada tanggal '+actTglShort(M.buat),0],['',0],['Notulis',0],['ttd.',0],['',0],[M.notulis,0]];
  const col=(a,w)=>dxCell(w,a.map(([t,k])=>dxP(t?dxR(t,k===2?{sz:9.5,col:GR}:{}):'',{line:14,before:t==='Ditandatangani secara elektronik'?30:0})).join(''),{});
  b+=dxP('',{line:10,before:14,keep:true})+dxTbl([300,TW-300],[col(L,300)+col(Rr,TW-300)],{nomar:true,cant:true});
@@ -4799,7 +4810,7 @@ async function actDocxUndangan(x){await docZip();const m=actMaster(),TW=467.8,h=
   +dxP(dxR('Demikian yang dapat kami sampaikan, atas perhatian dan kerja sama Saudara diucapkan terima kasih.'),{jc:'both',first:36,before:13.6})
   +dxP(dxR('Kepala Pusat Manajemen'),{left:287.2,before:25.6})+dxP(dxR('Transformasi dan Perubahan'),{left:287.2})+dxP(dxR('Ditandatangani secara elektronik',{sz:9.5,col:'A6A6A6'}),{left:287.2,before:62,line:12})+dxP(dxR(m.pen.nama),{left:287.2});
  return dxPack(b)}
-function actNotulaHtml(x,o){const M=actNotulaModel(x,o),y=t=>'<mark>'+esc(t)+'</mark>',sec=(k,t,body)=>`<h4><b>${k}.</b> ${t}</h4><div class="nl-b">${body}</div>`;
+function actNotulaHtml(x,o){const M=actNotulaModel(x,o),ef='font-family:'+M.fmt.font+';font-size:'+M.fmt.size+'pt;padding-left:'+(M.fmt.indent*37.8)+'px;text-align:'+M.fmt.align,y=t=>'<mark>'+esc(t)+'</mark>',sec=(k,t,body)=>`<h4><b>${k}.</b> ${t}</h4><div class="nl-b">${body}</div>`;
  const subs=(a,lv)=>a.length?'<ol class="nl-'+lv+'">'+a.map(s=>'<li>'+esc(s.t)+(s.s&&s.s.length?subs(s.s,2):'')+'</li>').join('')+'</ol>':'';
  return `<div class="nl-pg"><div class="nl-kop"><img src="${ONE_LOGO}" alt="Kemenkeu"><div><b>KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</b><b>BADAN TEKNOLOGI, INFORMASI, DAN INTELIJEN KEUANGAN</b><b>PUSAT MANAJEMEN TRANSFORMASI DAN PERUBAHAN</b><small>GEDUNG JB. SUMARLIN LANTAI 1-6, JALAN DR. WAHIDIN RAYA NO. 1, JAKARTA 10710</small></div></div>
  <div class="nl-t"><b>NOTULA</b><b>${esc(M.judul)}</b></div>
@@ -4807,7 +4818,7 @@ function actNotulaHtml(x,o){const M=actNotulaModel(x,o),y=t=>'<mark>'+esc(t)+'</
  ${sec('B','Waktu dan Tempat','Rapat dilaksanakan pada '+(M.tgl?esc(M.tgl):y('[hari, tanggal]'))+' pukul '+(M.jam?esc(M.jam):y('[pukul]'))+' bertempat di '+(M.tempat?esc(M.tempat):y('[tempat]'))+'.')}
  ${sec('C','Agenda',M.agenda?esc(M.agenda):y('[Agenda rapat]'))}
  ${sec('D','Peserta',M.peserta?esc(M.peserta)+'. Daftar hadir peserta terlampir.':'Daftar hadir peserta terlampir.')}
- <h4><b>E.</b> Pelaksanaan Rapat</h4><div class="nl-b"><h5>I. Pembukaan</h5><p>${esc(M.buka)}</p><h5>II. Pembahasan</h5>${M.items.length?'<ol class="nl-n">'+M.items.map(it=>'<li>'+(it.j?'<b>'+esc(it.j)+(it.t?'.':'')+'</b> ':'')+esc(it.t)+subs(it.s,1)+'</li>').join('')+'</ol>':'<p>'+y('[Isi catatan notulen pada tahap Pelaksanaan]')+'</p>'}
+ <h4><b>E.</b> Pelaksanaan Rapat</h4><div class="nl-b" style="${ef}"><h5>I. Pembukaan</h5><p>${esc(M.buka)}</p><h5>II. Pembahasan</h5>${M.items.length?'<ol class="nl-n">'+M.items.map(it=>'<li>'+(it.j?'<b>'+esc(it.j)+(it.t?'.':'')+'</b> ':'')+esc(it.t)+subs(it.s,1)+'</li>').join('')+'</ol>':'<p>'+y('[Isi catatan notulen pada tahap Pelaksanaan]')+'</p>'}
  <h5>III. Simpulan</h5>${(M.sim.length||M.tl.length)?'<ol class="nl-n">'+M.sim.map(t=>'<li>'+esc(t)+'</li>').join('')+(M.tl.length?'<li>Tindak lanjut yang disepakati:'+subs(M.tl.map(t=>({t:t.replace(/[.;\s]+$/,'')})),1)+'</li>':'')+'</ol>':'<p>'+y('[Simpulan rapat]')+'</p>'}</div>
  <div class="nl-sg"><div class="nl-sg-left"><div>Mengetahui,<br>${esc(M.ketua.jab)}</div><div class="nl-sign-spacer"></div><small>Ditandatangani secara elektronik</small><div>${esc(M.ketua.nama)}</div></div><div class="nl-sg-right"><div>Dibuat di Jakarta<br>Pada tanggal ${esc(actTglShort(M.buat))}</div><div>Notulis</div><div class="nl-sign-spacer right"></div><div>ttd.</div><div>${esc(M.notulis)}</div></div></div></div>`}
 
