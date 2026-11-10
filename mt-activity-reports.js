@@ -49,7 +49,27 @@ async function aiAnalysis(items,mode,lang){
 }
 function settings(){try{return JSON.parse(localStorage.getItem('mt-activity-report-settings')||'{}')}catch(e){return {}}}
 function signer(){const p=settings().tte||{};return {date:p.date||new Date().toISOString().slice(0,10),city:p.city||'Jakarta',label:p.label||'Mengetahui,',title:p.title||'Ketua Tim Pengelolaan Manajemen Perubahan',name:p.name||''}}
-function save(options){try{localStorage.setItem('mt-activity-report-settings',JSON.stringify(options))}catch(e){}}
+function saveReportPrefs(options){try{localStorage.setItem('mt-activity-report-settings',JSON.stringify(options))}catch(e){}}
+
+function mtArFeedbackCount(items){return items.reduce((n,x)=>n+(Array.isArray(x.reportFeedback)?x.reportFeedback.length:0),0)}
+function mtArFeedbackOpen(items){
+ const root=document.createElement('div');root.className='mt-ar-overlay';
+ const all=items.flatMap(x=>(Array.isArray(x.reportFeedback)?x.reportFeedback:[]).map(f=>({item:x,t:f.text,at:f.at,by:f.by}))).sort((a,b)=>String(b.at).localeCompare(String(a.at)));
+ const cards=all.length?all.slice(0,75).map(f=>'<article><strong>'+E(actName(f.item))+'</strong><p>'+E(f.t)+'</p><small>'+E(f.at||'')+' · '+E(f.by||'')+'</small></article>').join(''):'<p>Belum ada feedback internal.</p>';
+ root.innerHTML='<div class="mt-ar-modal mt-ar-feedback-modal" role="dialog" aria-modal="true"><header><div><h2>Feedback Internal</h2><p>Catatan untuk tim pengelola, tidak masuk ke laporan.</p></div><button data-fbclose title="Tutup">×</button></header><div class="mt-ar-body"><div class="mt-ar-feedback-list">'+cards+'</div><label class="mt-ar-feedback-field">Kegiatan<select data-fbitem>'+items.map(x=>'<option value="'+E(x.id)+'">'+E(actName(x).slice(0,110))+'</option>').join('')+'</select></label><label class="mt-ar-feedback-field">Umpan balik / tindak lanjut<textarea rows="4" data-fbtext placeholder="Tuliskan feedback untuk kegiatan terpilih..."></textarea></label></div><footer><button data-fbclose>Batal</button><button class="mt-ar-gold" data-fbsave>Simpan Feedback</button></footer></div>';
+ document.body.appendChild(root);
+ root.addEventListener('click',e=>{if(e.target===root||e.target.closest('[data-fbclose]'))root.remove()});
+ root.querySelector('[data-fbsave]').onclick=()=>{
+  const x=items.find(z=>String(z.id)===root.querySelector('[data-fbitem]').value),val=X(root.querySelector('[data-fbtext]').value);
+  if(!x||!val){toast('Pilih kegiatan dan isi feedback.');return}
+  if(!actCanEdit()){toast('Tidak memiliki izin mengubah feedback.');return}
+  if(!Array.isArray(x.reportFeedback))x.reportFeedback=[];
+  x.reportFeedback.unshift({at:new Date().toISOString().slice(0,16).replace('T',' '),by:(ME&&ME.nama)||'',text:val});
+  save();root.remove();
+  document.querySelectorAll('.mt-ar-feedback-btn span').forEach(el=>el.textContent=String(mtArFeedbackCount(items)));
+  toast('Feedback berhasil disimpan untuk kegiatan.');
+ };
+}
 function tteForm(){const t=signer();const f=(k,l,ph='')=>'<label>'+l+'<input data-rpttte="'+k+'" '+(k==='date'?'type="date"':'type="text"')+' value="'+E(t[k])+'" placeholder="'+E(ph)+'"></label>';
  return '<section class="mt-ar-tte"><b>✍ Tanda tangan elektronik (TTE)</b><div class="mt-ar-ttegrid">'+f('date','Tanggal tanda tangan')+f('city','Kota (opsional)','Jakarta')+f('label','Keterangan di atas jabatan (opsional)','Mengetahui,')+f('title','Jabatan','[Jabatan]')+f('name','Nama pejabat','[Nama Pejabat]')+'</div></section>';}
 function readTte(root){const o={};root.querySelectorAll('[data-rpttte]').forEach(x=>o[x.dataset.rpttte]=X(x.value));return o}
@@ -63,9 +83,10 @@ function form(mode,items,go){
  if(mode==='compiled')inner='<b>Laporan yang dihimpun</b>'+checks(PART,'mt-ar-two')+'<p>Setiap bagian memakai filter aktif yang sama. Bagian kalender mengikuti tanggal kegiatan pada periode tersebut.</p>';
  if(mode==='single')inner='';
  inner+='<label class="mt-ar-ai"><input type="checkbox" data-rptai '+(aiAvailable()?'':'disabled')+' '+(opts.ai&&aiAvailable()?'checked':'')+'><span><b>✦ Analisis berbasis AI</b><small>'+(aiAvailable()?'Menggunakan AI Worker DashboardCM yang dikonfigurasi untuk menganalisis capaian, kendala, tindak lanjut dan rekomendasi. Data aktivitas terpilih dikirim ke Worker hanya jika dicentang.':'Konfigurasi AI Worker belum tersedia; laporan biasa tetap dapat dibuat.')+'</small></span></label>'+tteForm()+'<label class="mt-ar-language">Bahasa<select data-rptlang><option value="id">Bahasa Indonesia</option><option value="en">English</option></select></label>';
- host.innerHTML='<div class="mt-ar-modal" role="dialog" aria-modal="true" aria-label="'+E(LBL[mode])+'"><header><div><h2>'+E(LBL[mode])+'</h2><p>'+E(mode==='single'?actName(items[0])+' · '+dt(items[0].tgl):fmt(items.length)+' kegiatan sesuai filter aktif')+'</p>'+(mode==='single'?'':'<p><b>Cakupan laporan:</b> '+E(scope(items))+'</p>')+'</div><button data-rptclose title="Tutup" aria-label="Tutup">×</button></header><div class="mt-ar-body">'+inner+'</div><footer><button type="button" data-rptclose>Batal</button><button type="button" class="mt-ar-gold" data-rptgo>Preview Laporan</button></footer></div>';
+ host.innerHTML='<div class="mt-ar-modal" role="dialog" aria-modal="true" aria-label="'+E(LBL[mode])+'"><header><div><h2>'+E(LBL[mode])+'</h2><p>'+E(mode==='single'?actName(items[0])+' · '+dt(items[0].tgl):fmt(items.length)+' kegiatan sesuai filter aktif')+'</p>'+(mode==='single'?'':'<p><b>Cakupan laporan:</b> '+E(scope(items))+'</p>')+'</div><button data-rptclose title="Tutup" aria-label="Tutup">×</button></header><div class="mt-ar-body">'+inner+'</div><footer>'+(mode==='filtered'?'<button type="button" class="mt-ar-feedback-btn" data-rptfb>▤ Feedback <span>'+mtArFeedbackCount(items)+'</span></button>':'')+'<button type="button" data-rptclose>Batal</button><button type="button" class="mt-ar-gold" data-rptgo>Preview Laporan</button></footer></div>';
  document.body.appendChild(host);
  host.addEventListener('click',e=>{if(e.target===host||e.target.closest('[data-rptclose]'))host.remove();});
+ if(host.querySelector('[data-rptfb]'))host.querySelector('[data-rptfb]').onclick=()=>mtArFeedbackOpen(items);
  host.querySelector('[data-rptgo]').onclick=async()=>{
   const inc={};host.querySelectorAll('[data-rptinc]').forEach(e=>inc[e.dataset.rptinc]=e.checked);
   if(mode!=='single'&&!Object.values(inc).some(Boolean)){toast('Pilih sekurangnya satu bagian laporan.');return}
@@ -73,7 +94,7 @@ function form(mode,items,go){
   const btn=host.querySelector('[data-rptgo]');btn.disabled=true;btn.textContent=ai?'Menganalisis data…':'Menyusun pratinjau…';
   let aiText='';
   if(ai){try{aiText=await aiAnalysis(items,mode,lang)}catch(err){toast('Analisis AI tidak dapat dibuat: '+(err.message||err)+'. Laporan tetap dibuat tanpa AI.')}}
-  save(Object.assign({},opts,{tte,[mode]:inc,lang,ai}));host.remove();preview(mode,items,{inc,tte,lang,aiText},go);
+  saveReportPrefs(Object.assign({},opts,{tte,[mode]:inc,lang,ai}));host.remove();preview(mode,items,{inc,tte,lang,aiText},go);
  };
  const sel=host.querySelector('[data-rptlang]');sel.value=opts.lang||'id';return host;
 }
