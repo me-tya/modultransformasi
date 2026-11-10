@@ -36,8 +36,8 @@ test('Notula: kontrol disederhanakan dan dua editor tersimpan',()=>{
  assert.match(html,/actDocxRuns\(\(M\.simRich\[i\]/);
 });
 test('Simpulan: toolbar formatting marks editor as edited before save',()=>{
- assert.match(html,/if\\(activeEditor==='one-rte-sim'\\)r\\.dataset\\.edited='1'/);
- assert.match(html,/modal\\('Pilih PIC Pusmantap',body/);
+ assert.ok(html.includes("if(activeEditor==='one-rte-sim')r.dataset.edited='1'"));
+ assert.ok(html.includes("modal('Pilih PIC Pusmantap',body"));
 });
 test('Notula: pratinjau lebih mendekati kertas Word, DOCX page margin tetap',()=>{
  assert.match(html,/#nl-pv \.nl-pg\{box-sizing:border-box;max-width:none;width:794px/);
