@@ -68,3 +68,24 @@
 .mt-ar-signspace{height:64px}
 .mt-ar-sign small{display:block;color:#76869C;font-size:9px}
 @media(max-width:700px){.mt-ar-modal>header,.mt-ar-body{padding:14px}.mt-ar-modal>footer{padding:10px}.mt-ar-checks.mt-ar-two{grid-template-columns:1fr}.mt-ar-ttegrid label,.mt-ar-ttegrid label:nth-child(4),.mt-ar-ttegrid label:nth-child(5){grid-column:span 6}.mt-ar-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.mt-ar-previewbody{padding:6px}.mt-ar-paper{padding:25px 15px}.mt-ar-bar{grid-template-columns:80px 1fr 30px}}
+
+/* Gallery dokumentasi asli pada preview, dan feedback internal per kegiatan. */
+.mt-ar-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.mt-ar-gallery figure{margin:0;min-width:0;border:1px solid #DEE5EF;border-radius:10px;overflow:hidden;background:#FAFBFF;display:flex;flex-direction:column}
+.mt-ar-gallery figure img{width:100%;height:130px;object-fit:cover;background:#E6EBF5;display:block}
+.mt-ar-gallery figcaption{display:flex;flex-direction:column;gap:2px;padding:7px 9px;min-width:0}
+.mt-ar-gallery figcaption b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#27466F;font-size:10px}
+.mt-ar-gallery figcaption small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#677991;font-size:9px}
+.mt-ar-gallery-link{padding:10px;gap:5px}
+.mt-ar-gallery-link a{font-size:10px}
+.mt-ar-feedback-btn{margin-right:auto!important;border-color:#D5DEEF!important;color:#183A73!important}
+.mt-ar-feedback-btn span{display:inline-block;margin-left:6px;background:#FBE4E9;color:#CE4B66;border-radius:999px;padding:1px 6px;font-size:11px}
+.mt-ar-feedback-modal{max-width:790px}
+.mt-ar-feedback-list{display:grid;gap:8px;max-height:240px;overflow:auto}
+.mt-ar-feedback-list article{background:#F7F9FD;border:1px solid #E5EAF2;border-radius:9px;padding:10px 12px}
+.mt-ar-feedback-list article strong{font-size:12px;color:#25416F}
+.mt-ar-feedback-list article p{font-size:12px;color:#303F55;margin:4px 0;white-space:pre-wrap}
+.mt-ar-feedback-list article small{font-size:10px;color:#74839D}
+.mt-ar-feedback-field{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:800;color:#31435F}
+.mt-ar-feedback-field select,.mt-ar-feedback-field textarea{border:1px solid #DBE3F0;border-radius:9px;padding:9px 10px;width:100%;font:inherit;font-size:12px;resize:vertical;background:#fff}
+@media(max-width:700px){.mt-ar-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}.mt-ar-gallery figure img{height:110px}}
