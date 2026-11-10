@@ -29,6 +29,24 @@ function stats(items){
  return {n:items.length,done,pct:pct(done,items.length),docPct:pct(docSum,items.length*7),by};
 }
 function top(obj){return Object.entries(obj||{}).sort((a,b)=>b[1]-a[1]).slice(0,10)}
+
+/* Memakai AI Worker yang sama dengan DashboardCM, hanya saat checkbox dipilih. */
+function aiWorker(){try{return X(localStorage.getItem('cm_ai_worker_url_v1')||'https://cm-assistant.ristya-onlineshop.workers.dev')}catch(e){return ''}}
+function aiAvailable(){return /^https:\/\//i.test(aiWorker())}
+async function aiAnalysis(items,mode,lang){
+ if(!aiAvailable())throw Error('AI Worker belum dikonfigurasi di DashboardCM.');
+ const rows=items.slice(0,60).map(x=>({nama:actName(x),tgl:x.tgl,unit:x.unitP,program:x.program,status:actSt(x)[0],tujuan:x.tujuan,hasil:x.ringkas,tindakLanjut:x.tl,catatan:strip(x.notulaTeks||x.catatan)}));
+ const prompt=lang==='en'?'Analyze the following activity data. Use headings: Key Achievements, Issues Identified, Follow-up Actions, Recommendations. Use facts only.':'Analisis data kegiatan berikut dalam Bahasa Indonesia formal. Gunakan subjudul: Capaian Utama, Identifikasi Kendala, Tindak Lanjut, Rekomendasi. Berikan analisis ringkas berbasis data, jangan mengarang fakta, tanggal, atau angka. Pusmantap adalah pendamping manajemen perubahan.';
+ const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),45000);
+ try{
+  const response=await fetch(aiWorker(),{method:'POST',headers:{'Content-Type':'application/json'},signal:ctrl.signal,
+   body:JSON.stringify({question:prompt,history:[],conversationScope:{dateFrom:S.ui.actFrom||'',dateTo:S.ui.actTo||'',activityIds:items.slice(0,60).map(x=>x.id)},routeHint:'activity',locale:lang,currentTab:'table',context:('REPORT DATA\n'+JSON.stringify(rows)).slice(0,14000),responseStyle:'Formal report analysis with grounded, short paragraphs.',privateContext:false,clientVersion:'MT-20261110'})});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)throw Error(data.error||data.message||('HTTP '+response.status));
+  if(!X(data.answer))throw Error('AI Worker tidak mengembalikan hasil.');
+  return X(data.answer).slice(0,12000);
+ }finally{clearTimeout(timer)}
+}
 function settings(){try{return JSON.parse(localStorage.getItem('mt-activity-report-settings')||'{}')}catch(e){return {}}}
 function signer(){const p=settings().tte||{};return {date:p.date||new Date().toISOString().slice(0,10),city:p.city||'Jakarta',label:p.label||'Mengetahui,',title:p.title||'Ketua Tim Pengelolaan Manajemen Perubahan',name:p.name||''}}
 function save(options){try{localStorage.setItem('mt-activity-report-settings',JSON.stringify(options))}catch(e){}}
@@ -36,7 +54,7 @@ function tteForm(){const t=signer();const f=(k,l,ph='')=>'<label>'+l+'<input dat
  return '<section class="mt-ar-tte"><b>✍ Tanda tangan elektronik (TTE)</b><div class="mt-ar-ttegrid">'+f('date','Tanggal tanda tangan')+f('city','Kota (opsional)','Jakarta')+f('label','Keterangan di atas jabatan (opsional)','Mengetahui,')+f('title','Jabatan','[Jabatan]')+f('name','Nama pejabat','[Nama Pejabat]')+'</div></section>';}
 function readTte(root){const o={};root.querySelectorAll('[data-rpttte]').forEach(x=>o[x.dataset.rpttte]=X(x.value));return o}
 function title(mode,items,lang){const type=mode==='single'?'Laporan Kegiatan':mode==='compiled'?'Kompilasi Laporan':'Laporan Monitoring dan Evaluasi';
- return type+(items.length===1&&mode==='single'?' — '+actName(items[0]):' — '+present(items));}
+ const u=S.ui||{},subject=[u.actProg,u.actUnit].filter(Boolean).join(' / ');return type+(items.length===1&&mode==='single'?' — '+actName(items[0]):' '+(u.actTahun||'')+(u.oneTw?' TW '+u.oneTw:'')+' — '+(subject||present(items)));}
 function form(mode,items,go){
  const opts=settings(),host=document.createElement('div');host.className='mt-ar-overlay';host.setAttribute('role','presentation');
  const checks=(arr,cls)=>'<div class="mt-ar-checks '+cls+'">'+arr.map(([k,l])=>'<label><input type="checkbox" data-rptinc="'+k+'" '+((opts[mode]||{})[k]!==false?'checked':'')+'> '+E(l)+'</label>').join('')+'</div>';
@@ -44,15 +62,18 @@ function form(mode,items,go){
  if(mode==='filtered')inner='<div class="mt-ar-banner"><small>JUDUL LAPORAN (OTOMATIS DARI FILTER)</small><b>'+E(title(mode,items,'id'))+'</b><em>Rentang bulanan atau triwulanan dan pilihan Program/Unit mengikuti filter aktif.</em></div><b>Sertakan</b>'+checks(INC,'mt-ar-two');
  if(mode==='compiled')inner='<b>Laporan yang dihimpun</b>'+checks(PART,'mt-ar-two')+'<p>Setiap bagian memakai filter aktif yang sama. Bagian kalender mengikuti tanggal kegiatan pada periode tersebut.</p>';
  if(mode==='single')inner='';
- inner+='<label class="mt-ar-ai"><input type="checkbox" disabled><span><b>✦ Analisis berbasis AI</b><small>Integrasi AI Worker belum tersedia di Modul Transformasi. Laporan tetap dihitung dari data asli tanpa membuat analisis AI palsu.</small></span></label>'+tteForm()+'<label class="mt-ar-language">Bahasa<select data-rptlang><option value="id">Bahasa Indonesia</option><option value="en">English</option></select></label>';
+ inner+='<label class="mt-ar-ai"><input type="checkbox" data-rptai '+(aiAvailable()?'':'disabled')+' '+(opts.ai&&aiAvailable()?'checked':'')+'><span><b>✦ Analisis berbasis AI</b><small>'+(aiAvailable()?'Menggunakan AI Worker DashboardCM yang dikonfigurasi untuk menganalisis capaian, kendala, tindak lanjut dan rekomendasi. Data aktivitas terpilih dikirim ke Worker hanya jika dicentang.':'Konfigurasi AI Worker belum tersedia; laporan biasa tetap dapat dibuat.')+'</small></span></label>'+tteForm()+'<label class="mt-ar-language">Bahasa<select data-rptlang><option value="id">Bahasa Indonesia</option><option value="en">English</option></select></label>';
  host.innerHTML='<div class="mt-ar-modal" role="dialog" aria-modal="true" aria-label="'+E(LBL[mode])+'"><header><div><h2>'+E(LBL[mode])+'</h2><p>'+E(mode==='single'?actName(items[0])+' · '+dt(items[0].tgl):fmt(items.length)+' kegiatan sesuai filter aktif')+'</p>'+(mode==='single'?'':'<p><b>Cakupan laporan:</b> '+E(scope(items))+'</p>')+'</div><button data-rptclose title="Tutup" aria-label="Tutup">×</button></header><div class="mt-ar-body">'+inner+'</div><footer><button type="button" data-rptclose>Batal</button><button type="button" class="mt-ar-gold" data-rptgo>Preview Laporan</button></footer></div>';
  document.body.appendChild(host);
  host.addEventListener('click',e=>{if(e.target===host||e.target.closest('[data-rptclose]'))host.remove();});
- host.querySelector('[data-rptgo]').onclick=()=>{
+ host.querySelector('[data-rptgo]').onclick=async()=>{
   const inc={};host.querySelectorAll('[data-rptinc]').forEach(e=>inc[e.dataset.rptinc]=e.checked);
   if(mode!=='single'&&!Object.values(inc).some(Boolean)){toast('Pilih sekurangnya satu bagian laporan.');return}
-  const tte=readTte(host),lang=host.querySelector('[data-rptlang]').value;
-  save(Object.assign({},opts,{tte,[mode]:inc,lang}));host.remove();preview(mode,items,{inc,tte,lang},go);
+  const tte=readTte(host),lang=host.querySelector('[data-rptlang]').value,ai=!!host.querySelector('[data-rptai]')?.checked;
+  const btn=host.querySelector('[data-rptgo]');btn.disabled=true;btn.textContent=ai?'Menganalisis data…':'Menyusun pratinjau…';
+  let aiText='';
+  if(ai){try{aiText=await aiAnalysis(items,mode,lang)}catch(err){toast('Analisis AI tidak dapat dibuat: '+(err.message||err)+'. Laporan tetap dibuat tanpa AI.')}}
+  save(Object.assign({},opts,{tte,[mode]:inc,lang,ai}));host.remove();preview(mode,items,{inc,tte,lang,aiText},go);
  };
  const sel=host.querySelector('[data-rptlang]');sel.value=opts.lang||'id';return host;
 }
@@ -78,6 +99,7 @@ function render(mode,items,opt){
   if(mode==='compiled'&&opt.inc.status!==false)sections.push(chapter('Status Kegiatan (Workboard)',bars(st.by.status)));
   if(mode==='compiled'&&opt.inc.matrix!==false)sections.push(chapter('Matriks Kategori, Program & Unit','<h4>Kategori</h4>'+bars(st.by.kategori)+'<h4>Program</h4>'+bars(st.by.program)+'<h4>Unit</h4>'+bars(st.by.unit)));
  }
+ if(opt.aiText)sections.push(chapter('Analisis Berbasis AI','<p class="mt-ar-preserve">'+E(opt.aiText)+'</p>'));
  const signature='<section class="mt-ar-sign"><p>'+E(opt.tte.city||'Jakarta')+', '+E(dt(opt.tte.date))+'</p><p>'+E(opt.tte.label||'')+'</p><p>'+E(opt.tte.title||'')+'</p><div class="mt-ar-signspace"></div><b>'+E(opt.tte.name||'[Nama pejabat]')+'</b><small>Ditandatangani secara elektronik</small></section>';
  return '<article class="mt-ar-paper"><div class="mt-ar-kop"><b>KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</b><span>BADAN TEKNOLOGI, INFORMASI, DAN INTELIJEN KEUANGAN</span><span>PUSAT MANAJEMEN TRANSFORMASI DAN PERUBAHAN</span></div><h1>'+E(title(mode,items,opt.lang))+'</h1><p class="mt-ar-sub">'+E(sub)+' · '+fmt(items.length)+' kegiatan · '+E(scope(items))+'</p>'+sections.join('')+signature+'</article>';
 }
@@ -104,6 +126,7 @@ async function word(mode,items,opt){
   if(mode==='compiled'&&opt.inc.status!==false){body+=heading('Status Kegiatan');for(const [l,v] of top(st.by.status))body+=row(l,String(v));}
   if(mode==='compiled'&&opt.inc.matrix!==false)for(const [k,l] of [['kategori','Kategori'],['program','Program'],['unit','Unit']]){body+=heading('Matriks '+l);for(const [name,n] of top(st.by[k]))body+=row(name,String(n));}
  }
+ if(opt.aiText)body+=heading('Analisis Berbasis AI')+pp(opt.aiText);
  body+=heading((opt.tte.city||'Jakarta')+', '+dt(opt.tte.date))+pp(opt.tte.label||'')+pp(opt.tte.title||'')+dxP('',{before:38})+pp(opt.tte.name||'[Nama pejabat]')+pp('Ditandatangani secara elektronik');
  return dxPack(body);
 }
