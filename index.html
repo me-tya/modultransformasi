@@ -2406,7 +2406,15 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 .sw #one-rte ol,.sw #one-rte-sim ol{list-style:decimal;margin:5px 0;padding-left:28px}
 .sw #one-rte ul,.sw #one-rte-sim ul{list-style:disc;margin:5px 0;padding-left:28px}
 .sw #one-rte ol ol,.sw #one-rte-sim ol ol{list-style:lower-alpha}
-.sw #one-rte ol ol ol,.sw #one-rte-sim ol ol ol{list-style:lower-roman}
+.sw #one-rte ol ol ol,.sw #one-rte-sim ol ol ol{list-style:decimal}
+.sw #one-rte ol ol ol>li::marker,.sw #one-rte-sim ol ol ol>li::marker{content:counter(list-item,decimal) ") "}
+.sw #one-rte ol ol ol ol,.sw #one-rte-sim ol ol ol ol{list-style:lower-alpha}
+.sw #one-rte ol ol ol ol>li::marker,.sw #one-rte-sim ol ol ol ol>li::marker{content:counter(list-item,lower-alpha) ") "}
+.sw #one-rte ol ol ol ol ol,.sw #one-rte-sim ol ol ol ol ol{list-style:lower-roman}
+.sw #one-rte ol ol ol ol ol>li::marker,.sw #one-rte-sim ol ol ol ol ol>li::marker{content:counter(list-item,lower-roman) ". "}
+.sw #one-rte{counter-reset:act-top-level}
+.sw #one-rte h3,.sw #one-rte h4{counter-increment:act-top-level}
+.sw #one-rte h3::before,.sw #one-rte h4::before{content:counter(act-top-level) ". ";margin-right:5px}
 
 
 
