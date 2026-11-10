@@ -114,7 +114,7 @@ function mtArLoadGallery(root,items){
  root.querySelectorAll('img[data-rptimg]').forEach(img=>{
   const x=items.find(v=>String(v.id)===img.dataset.rptimg),m=x&&attNorm(x.dok).items[Number(img.dataset.rptfi)];
   if(!m||m.t!=='f')return;
-  fileLoad(m).then(blob=>{if(!img.isConnected)return;const u=URL.createObjectURL(blob);img.onload=()=>URL.revokeObjectURL(u);img.onerror=()=>URL.revokeObjectURL(u);img.src=u}).catch(()=>{img.alt='Foto tidak tersedia'});
+  fileLoad(m).then(blob=>{if(!img.isConnected)return;const u=URL.createObjectURL(blob);root._mtArUrls=root._mtArUrls||[];root._mtArUrls.push(u);img.src=u}).catch(()=>{img.alt='Foto tidak tersedia'});
  });
 }
 function card(label,n,sub){return '<div class="mt-ar-kpi"><small>'+E(label)+'</small><b>'+E(n)+'</b><span>'+E(sub||'')+'</span></div>';}
@@ -173,8 +173,9 @@ async function word(mode,items,opt){
 function preview(mode,items,opt,go){
  const h=document.createElement('div');h.className='mt-ar-overlay';h.innerHTML='<div class="mt-ar-modal preview" role="dialog" aria-modal="true"><header><div><h2>Preview '+E(mode==='single'?'Laporan Kegiatan':mode==='compiled'?'Kompilasi Laporan':'Laporan Monitoring & Evaluasi')+'</h2><p>'+fmt(items.length)+' kegiatan sesuai cakupan</p></div><button title="Tutup" data-close>×</button></header><div class="mt-ar-previewbody">'+render(mode,items,opt)+'</div><footer><button type="button" data-back>Kembali</button><button type="button" data-print>Cetak / Simpan PDF</button><button type="button" class="mt-ar-gold" data-word>⬇ Unduh Word</button></footer></div>';
  document.body.appendChild(h);mtArLoadGallery(h,items);
- h.addEventListener('click',e=>{if(e.target===h||e.target.closest('[data-close]'))h.remove()});
- h.querySelector('[data-back]').onclick=()=>{h.remove();form(mode,items,go)};
+ const mtArClosePreview=()=>{(h._mtArUrls||[]).forEach(u=>URL.revokeObjectURL(u));h.remove()};
+ h.addEventListener('click',e=>{if(e.target===h||e.target.closest('[data-close]'))mtArClosePreview()});
+ h.querySelector('[data-back]').onclick=()=>{mtArClosePreview();form(mode,items,go)};
  h.querySelector('[data-print]').onclick=()=>{const area=h.querySelector('.mt-ar-paper'),w=window.open('','_blank');if(!w){toast('Izinkan pop-up untuk pratinjau cetak.');return}w.document.write('<!doctype html><html><head><title>'+E(title(mode,items,opt.lang))+'</title><style>body{font:11pt Arial;color:#12275A;margin:16mm}h1{font-size:17pt}h3{font-size:13pt;margin-top:22px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #bcc6d7;padding:5px}.mt-ar-kpis{display:flex;gap:18px}.mt-ar-kpi{display:grid}.mt-ar-bars{display:none}.mt-ar-sign{margin-top:40px;text-align:right}.mt-ar-signspace{height:50px}</style></head><body>'+area.innerHTML+'</body></html>');w.document.close();w.focus();w.print()};
  h.querySelector('[data-word]').onclick=async e=>{const b=e.currentTarget;b.disabled=true;b.textContent='Menyusun Word…';try{const doc=await word(mode,items,opt);const file=title(mode,items,opt.lang).replace(/[\\/:*?"<>|]+/g,'_').slice(0,90)+'.docx';mtRptDownloadBlob(doc,file);toast('Dokumen Word berhasil dibuat.')}catch(err){toast('Gagal membuat Word: '+(err.message||err))}finally{b.disabled=false;b.textContent='⬇ Unduh Word'}};
 }
