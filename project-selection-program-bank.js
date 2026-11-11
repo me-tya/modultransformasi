@@ -746,7 +746,7 @@ if(typeof VIEW!=='undefined'&&VIEW==='project-selection'&&ME)render();
  if(!document.createElement||!document.head||typeof document.head.appendChild!=='function')return;
  window.MT_MENU_TOOLTIP_LOADER=true;
  var script=document.createElement('script');
- script.src='ui-menu-tooltips.js?v=20261111-mt13-info';
+ script.src='ui-menu-tooltips.js?v=20261111-ghost1';
  script.async=true;
  document.head.appendChild(script);
 })();

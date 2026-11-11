@@ -1,0 +1,54 @@
+/* Header kanan — Opsi A "Ghost Line" (dipilih 11 Nov 2026).
+   Ikon garis tipis tanpa kotak; lonceng kuning bergaris putih agar menonjol.
+   Prefix "html body" sengaja dipakai agar menang dari aturan header lama (index.html, ui-tabs, ui-menu-tooltips). */
+html body #app header.top{gap:6px!important}
+html body #app header.top>.hamb{order:0}html body #app header.top>.crumb{order:1}html body #app header.top>.tsel{order:2}
+html body #app header.top>#dbb{order:3}html body #app header.top>.role{order:4}html body #app header.top>.sk-hdrActions{order:5}
+html body #app header.top>#bell{order:6}html body #app header.top>#mt-guide-toggle{order:7}html body #app header.top>#av{order:8}
+
+/* Peran: teks kecil, unit berwarna emas */
+html body #app header.top .role{height:auto!important;min-height:0!important;padding:0 2px!important;background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;
+ color:#C9D6E6!important;font:500 13px Inter,Arial,sans-serif!important;letter-spacing:0!important;display:inline-flex!important;align-items:center;gap:4px;white-space:nowrap}
+html body #app header.top .role b{color:#FDB913!important;font-weight:700!important}
+/* Titik status sinkron menempel di kiri peran */
+html body #app header.top #dbb{flex:0 0 12px!important;width:12px!important;min-width:12px!important;max-width:12px!important;margin:0 -2px 0 4px!important}
+html body #app header.top #dbb::before{width:8px!important;height:8px!important;box-shadow:0 0 0 3px rgba(34,197,94,.18)!important}
+
+/* Grup ikon: Bantuan, Cheatsheet, Notifikasi */
+html body #app header.top .sk-hdrActions{display:inline-flex!important;align-items:center!important;gap:2px!important;margin-left:6px!important;padding-left:10px!important;border-left:1px solid #34506F!important;height:24px!important}
+html body #app header.top .sk-hdrActions .sk-hdrHelp,html body #app header.top .sk-hdrActions .sk-hdrSheet,html body #app header.top #bell{
+ box-sizing:border-box!important;width:36px!important;min-width:36px!important;max-width:36px!important;height:36px!important;min-height:36px!important;padding:0!important;
+ background:transparent!important;border:0!important;border-radius:9px!important;box-shadow:none!important;color:#D7E2F0!important;transform:none!important;
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;position:relative!important;filter:none!important}
+html body #app header.top .sk-hdrActions .sk-hdrHelp:hover,html body #app header.top .sk-hdrActions .sk-hdrHelp:focus-visible,
+html body #app header.top .sk-hdrActions .sk-hdrSheet:hover,html body #app header.top .sk-hdrActions .sk-hdrSheet:focus-visible,
+html body #app header.top #bell:hover,html body #app header.top #bell:focus-visible{background:rgba(255,255,255,.09)!important;color:#fff!important;box-shadow:none!important;border:0!important}
+html body #app header.top .sk-hdrActions .sk-hdrHelp>span,html body #app header.top .sk-hdrActions .sk-hdrSheet>span,html body #app header.top .sk-hdrActions .sk-hdrHelp>i{display:none!important}
+html body #app header.top .sk-hdrActions .sk-hdrHelp svg,html body #app header.top .sk-hdrActions .sk-hdrSheet svg{width:18px!important;height:18px!important;stroke:currentColor!important;stroke-width:1.8!important;fill:none!important;filter:none!important}
+html body #app header.top .sk-hdrActions .sk-hdrHelp svg *,html body #app header.top .sk-hdrActions .sk-hdrSheet svg *{stroke:currentColor!important}
+
+/* Lonceng: kuning, garis putih — sengaja paling mencolok */
+html body #app header.top #bell{margin-left:2px!important}
+html body #app header.top #bell svg,html body #app header.top #bell:hover svg,html body #app header.top #bell:focus-visible svg{width:20px!important;height:20px!important;fill:#FDB913!important;stroke:#FFFFFF!important;stroke-width:1.7!important;filter:none!important}
+html body #app header.top #bell:hover,html body #app header.top #bell:focus-visible{background:rgba(253,185,19,.14)!important}
+/* Jumlah notifikasi menjadi titik merah kecil (jumlah tetap ada di label aksesibilitas & panel) */
+html body #app header.top #bell i{position:absolute!important;top:6px!important;right:6px!important;left:auto!important;width:9px!important;height:9px!important;min-width:9px!important;padding:0!important;
+ border-radius:50%!important;background:#F73548!important;border:2px solid #102C4E!important;box-shadow:none!important;font-size:0!important;line-height:0!important;color:transparent!important;overflow:hidden!important}
+
+/* Guide: saklar mini, dipisah garis tipis kiri-kanan */
+html body #app header.top .mt-guide-toggle{height:24px!important;padding:0 12px!important;margin:0 4px 0 6px!important;background:transparent!important;border:0!important;border-left:1px solid #34506F!important;border-right:1px solid #34506F!important;border-radius:0!important;
+ color:#C9D6E6!important;font:600 12.5px Inter,Arial,sans-serif!important;gap:7px!important}
+html body #app header.top .mt-guide-toggle:hover{background:transparent!important;color:#fff!important}
+html body #app header.top .mt-guide-status{display:none!important}
+html body #app header.top .mt-guide-track{width:26px!important;height:15px!important}
+html body #app header.top .mt-guide-track i{width:11px!important;height:11px!important}
+html body #app header.top .mt-guide-toggle[aria-checked="true"] .mt-guide-track{background:#E0A92E!important}
+html body #app header.top .mt-guide-toggle[aria-checked="true"] .mt-guide-track i{transform:translateX(11px)!important}
+html body #app header.top .mt-guide-label{display:inline!important}
+
+/* Avatar bulat 34 px dengan titik online */
+html body #app header.top #av{width:34px!important;min-width:34px!important;height:34px!important;min-height:34px!important;border-radius:50%!important;padding:0!important;background:#E9EFF7!important;border:0!important;color:#102C4E!important;
+ font:800 12.5px Inter,Arial,sans-serif!important;position:relative!important;box-shadow:none!important;margin-left:4px!important}
+html body #app header.top #av::after{content:"";position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border-radius:50%;background:#22C55E;border:2px solid #102C4E}
+
+@media(max-width:900px){html body #app header.top .role{display:none!important}html body #app header.top .mt-guide-label{display:none!important}}

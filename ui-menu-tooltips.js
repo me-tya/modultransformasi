@@ -437,6 +437,19 @@ function installHeader(){
   help.setAttribute('title','Bantuan: panduan tahapan, peta menu, pengisian, peran dan checklist. Klik untuk membuka.');
   help.setAttribute('aria-label','Buka Bantuan penggunaan aplikasi');
  }
+ // Opsi A Ghost Line: ikon Bantuan bergaya garis (lingkaran + tanda tanya), unit pada label peran berwarna emas.
+ if(help&&help.dataset.mtGhost!=='1'){
+  help.dataset.mtGhost='1';
+  help.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.6"/><path d="M12 17h.01"/></svg><span>Bantuan</span>';
+ }
+ var role=header.querySelector('.role');
+ if(role&&role.dataset.mtGhost!=='1'){
+  var txt=role.textContent||'',at=txt.indexOf('·');
+  if(at>0){role.dataset.mtGhost='1';role.title=txt.trim();
+   var a=document.createElement('span');a.textContent=txt.slice(0,at+1)+' ';
+   var b=document.createElement('b');b.textContent=txt.slice(at+1).trim();
+   role.textContent='';role.appendChild(a);role.appendChild(b);}
+ }
  var sheet=header.querySelector('.sk-hdrActions .sk-hdrSheet');
  if(sheet){
   if(sheet.dataset.mtBookIcon!=='1'){
