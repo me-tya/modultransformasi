@@ -296,7 +296,7 @@ function aggregateView(){
  if(on==='history')content=historyView(target());
  else if(on==='docs')content=window.MT_PS_DOC?.portfolioBuilder?.()||'<div class="psbank-empty">Generator dokumen belum tersedia.</div>';
  else content=proposalView();
- return '<div class="psbank-card psbank-scope-stage"><div class="psbank-sectionhead"><div><h3>Pemetaan Proyek / Modul</h3><p>Ringkasan semua program tahun '+y+'. Buka accordion untuk melihat proyek atau membuka program.</p></div></div>'+
+ return '<div class="psbank-card psbank-scope-stage"><div class="psbank-sectionhead"><div><h3 tabindex="0" data-mt-guide="Ringkasan semua program tahun '+E(y)+'. Buka accordion untuk melihat proyek atau membuka program." data-mt-guide-bound="Ringkasan hanya menampilkan data; pemetaan proyek bukan penetapan program.">Pemetaan Proyek / Modul</h3></div></div>'+
  scopeTabs(on,rows)+content+'</div>';
 }
 function ensureProjectCodes(){

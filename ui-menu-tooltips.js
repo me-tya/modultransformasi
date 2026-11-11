@@ -142,6 +142,8 @@ function labelOf(el){
 }
 function lookup(el,label){
  var data=el.dataset||{},key,n=norm(label);
+ // Elemen umum (mis. judul bagian) yang deskripsinya hanya tampil sebagai tooltip saat Guide ON.
+ if(data.mtGuide!==undefined)return [data.mtGuide,data.mtGuideBound||COMMON];
  if(data.ext!==undefined)return ['Membuka menu Satu Kemenkeu di luar modul Transformasi.','Fitur ini berada di luar cakupan prototipe dan mungkin belum dapat digunakan.'];
  if(data.nav!==undefined)return ['Membuka atau menutup kelompok navigasi '+label+'.','Hanya mengubah tampilan menu, bukan data maupun penetapan transformasi.'];
  if(data.ps27Tab!==undefined)return PRIMARY[data.ps27Tab]||null;
@@ -196,7 +198,7 @@ var PS_GUIDE_TAB={
  terms:['Menyajikan glosarium istilah proyek, program, SMART, K-Wide dan WBS.','Istilah tidak menggantikan aturan dan dokumen resmi.'],
  reference:['Menjelaskan sumber referensi, praktik dan batasan penggunaan kerangka.','Referensi konseptual bukan dasar otorisasi baru.']
 };
-var selector=['#app .nav .nv','#app .ps27-tabs button','#app .psbank-subtabs button','#app .psbank-mapping-tabs button','#app .ps27-minitabs button','#app .ps27-kwide-tabs button','#app .pswf-tabs button','#app .ptabs a','#app .subt a','#app .subt button','#app .cm-step','#app .chtabs button','#app .chebar [role="tab"]','#app .act-tabs a','#app .cra-tabs button','#app .cra2-tabs button','#app .pg-tabs button','#app [role="tab"]','[role="tab"]','nav[role="tablist"] button','nav[role="tablist"] a','nav[class*="tabs"] button','nav[class*="tabs"] a','[data-sktab]','[data-ps27-htab]','.sk-tab'].join(',');
+var selector=['#app .nav .nv','#app .ps27-tabs button','#app .psbank-subtabs button','#app .psbank-mapping-tabs button','#app .ps27-minitabs button','#app .ps27-kwide-tabs button','#app .pswf-tabs button','#app .ptabs a','#app .subt a','#app .subt button','#app .cm-step','#app .chtabs button','#app .chebar [role="tab"]','#app .act-tabs a','#app .cra-tabs button','#app .cra2-tabs button','#app .pg-tabs button','#app [role="tab"]','[role="tab"]','nav[role="tablist"] button','nav[role="tablist"] a','nav[class*="tabs"] button','nav[class*="tabs"] a','[data-sktab]','[data-ps27-htab]','.sk-tab','#app [data-mt-guide]'].join(',');
 var tooltip=null,active=null,showTimer=0,previousTitle=null,previousDesc=null;
 var GUIDE_KEY='mt_guide_tooltips_v1',guideEnabled=true,headerObserver=null,mutedTitles=new Map();
 var observedSyncBadge=null,syncObserver=null,syncPendingAt=0,syncPendingTimer=null,syncDetails=null;
