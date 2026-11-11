@@ -17,6 +17,7 @@ function config(){
  if(!['classic','activity'].includes(d.template))d.template='activity';
  if(!d.tte||typeof d.tte!=='object')d.tte={name:'',title:'',label:'Mengetahui',city:'Jakarta',date:'',number:''};
  if(d.sign==null)d.sign=true;
+ if(typeof d.programOpen!=='boolean')d.programOpen=false;
  return d;
 }
 const chosen=()=>{const d=config();return all().filter(p=>d.selected.includes(String(p.akr)))};
@@ -98,8 +99,10 @@ function preview(){
 function builder(){
  const d=config(),ps=all(),selected=chosen(),keys=sections(),v=version(),api=window.MT_PS_DOC;
  return '<div class="psbank-card psbank-portfolio-doc mt-plan-document" id="mt-plan-builder"><div class="psbank-sectionhead"><div><h3>Buat Dokumen Perencanaan · '+year()+'</h3><p>Kompilasi tujuh dokumen proyek berdasarkan pilihan program dan substansi; pratinjau dan ekspor tanpa mengubah charter sumber.</p></div><span class="psbank-count">'+selected.length+' dari '+ps.length+' program</span></div>'+
- '<div class="psbank-docbuilder"><div class="psbank-docsettings"><div class="psbank-doccheckhead"><b>Pilih Program</b><button class="btn" type="button" data-plan-all>'+(selected.length===ps.length?'Kosongkan':'Pilih Semua')+'</button></div>'+
- '<div class="psbank-portfolio-checks">'+(ps.length?ps.map(p=>'<label><input type="checkbox" data-plan-program="'+E(p.akr)+'" '+(d.selected.includes(String(p.akr))?'checked':'')+'><span><b>'+E(p.nama)+'</b><small>'+E(p.kodeResmi||p.kode)+' · '+E(current(p)?.st||'Belum dibuat')+'</small></span></label>').join(''):'<p>Belum ada program yang tersedia untuk filter saat ini.</p>')+'</div>'+
+ '<div class="psbank-docbuilder"><div class="psbank-docsettings">'+
+ '<details class="mt-plan-program-accordion" id="mt-plan-program-accordion" '+(d.programOpen?'open':'')+'><summary aria-label="Buka atau tutup pilihan program"><b>Pilih Program</b><span class="mt-plan-program-selected">'+selected.length+' dipilih</span><span class="mt-plan-program-chevron" aria-hidden="true">⌄</span></summary>'+
+ '<div class="mt-plan-program-content"><div class="mt-plan-program-toolbar"><span>Centang program yang akan digabungkan.</span><button class="btn" type="button" data-plan-all>'+(selected.length===ps.length?'Kosongkan':'Pilih Semua')+'</button></div>'+
+ '<div class="psbank-portfolio-checks" role="group" aria-label="Daftar program yang akan dikompilasi">'+(ps.length?ps.map(p=>'<label><input type="checkbox" data-plan-program="'+E(p.akr)+'" '+(d.selected.includes(String(p.akr))?'checked':'')+'><span><b>'+E(p.nama)+'</b><small>'+E(p.kodeResmi||p.kode)+' · '+E(current(p)?.st||'Belum dibuat')+'</small></span></label>').join(''):'<p>Belum ada program yang tersedia untuk filter saat ini.</p>')+'</div></div></details>'+
  '<div class="psbank-doccheckhead"><b>Substansi Perencanaan</b><span>'+d.sections.length+' / '+keys.length+' dipilih</span></div>'+
  '<div class="psbank-docchecks">'+keys.map((x,i)=>'<label><input type="checkbox" data-plan-section="'+E(x[0])+'" '+(d.sections.includes(x[0])?'checked':'')+'>'+(i+1)+'. '+E(x[1])+'</label>').join('')+'</div>'+
  '<div class="psbank-template-picker"><label><b>Template Word / PDF</b><select data-plan-template><option value="activity" '+(d.template==='activity'?'selected':'')+'>Warna · Laporan Kegiatan</option><option value="classic" '+(d.template==='classic'?'selected':'')+'>Formal · Navy–Emas</option></select></label></div>'+
@@ -117,6 +120,7 @@ function page(){
 }
 function redraw(){
  const old=document.getElementById('mt-plan-builder');if(!old)return;
+ const accordion=old.querySelector('#mt-plan-program-accordion');if(accordion)config().programOpen=accordion.open;
  const settings=old.querySelector('.psbank-docsettings')?.scrollTop||0;
  const previewScroll=old.querySelector('.psbank-docscroll')?.scrollTop||0;
  old.outerHTML=builder();
@@ -166,6 +170,10 @@ document.addEventListener('click',function(e){
  if(t.closest('[data-doc-signed-kind]')){window.MT_PS_DOC?.processSigned?.(e);return}
  if(t.closest('[data-doc-proof-open]')){window.MT_PS_DOC?.openSignedProof?.(e);return}
 });
+document.addEventListener('toggle',function(e){
+ const el=e.target;if(el?.id!=='mt-plan-program-accordion'||!el.isConnected)return;
+ const d=config();if(d.programOpen!==el.open){d.programOpen=el.open;save()}
+},true);
 document.addEventListener('change',function(e){
  if(!e.target.closest('#mt-plan-builder'))return;
  const t=e.target,d=config();
@@ -181,6 +189,19 @@ const css=document.createElement('style');css.id='mt-plan-document-style';css.te
  '#app .mt-plan-document{font-family:inherit;--mt-navy:#102f56}'+
  '#app .mt-plan-document .psbank-docbuilder{grid-template-columns:minmax(310px,.76fr) minmax(0,1.5fr);min-height:550px}'+
  '#app .mt-plan-document .psbank-docsettings{max-height:660px;overflow-y:auto}'+
+ '#app .mt-plan-program-accordion{display:block;flex:0 0 auto;min-width:0;border:1px solid #d7e3f0;border-radius:9px;background:#fff;overflow:hidden}'+
+ '#app .mt-plan-program-accordion>summary{display:flex;align-items:center;gap:8px;padding:12px 13px;min-height:43px;box-sizing:border-box;cursor:pointer;list-style:none;color:#163b66;font-size:12px;font-weight:800}'+
+ '#app .mt-plan-program-accordion>summary::-webkit-details-marker{display:none}'+
+ '#app .mt-plan-program-accordion[open]>summary{background:#edf4fc;border-bottom:1px solid #d7e3f0}'+
+ '#app .mt-plan-program-selected{margin-left:auto;font-size:11px;color:#456887;font-weight:700;background:#e8f0fa;padding:4px 8px;border-radius:12px;white-space:nowrap}'+
+ '#app .mt-plan-program-chevron{display:block;font-size:18px;font-weight:600;line-height:1;transition:transform .16s ease}'+
+ '#app .mt-plan-program-accordion[open] .mt-plan-program-chevron{transform:rotate(180deg)}'+
+ '#app .mt-plan-program-content{padding:11px 12px 12px}'+
+ '#app .mt-plan-program-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;font-size:11px;color:#536c88}'+
+ '#app .mt-plan-program-toolbar .btn{flex:0 0 auto;font-size:11px;min-height:32px}'+
+ '#app .mt-plan-program-accordion .psbank-portfolio-checks{max-height:280px!important;min-height:0;overflow-y:auto!important;flex:0 0 auto;scrollbar-width:thin}'+
+ '#app .mt-plan-program-accordion .psbank-portfolio-checks label{flex:0 0 auto;min-height:41px;box-sizing:border-box}'+
+ '#app .mt-plan-program-accordion .psbank-portfolio-checks label>span{min-width:0;overflow-wrap:anywhere}'+
  '#app .mt-plan-document .psbank-docscroll{min-height:0;height:570px!important;max-height:65vh!important;overflow:auto!important}'+
  '#app .mt-plan-tte{border:1px solid #d7e3f0;border-radius:8px;padding:10px;font-size:11px;color:#264969}'+
  '#app .mt-plan-tte>label{display:flex;align-items:center;gap:7px;font-weight:750}'+
