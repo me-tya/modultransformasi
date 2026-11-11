@@ -17,7 +17,7 @@ function config(){
  if(!['classic','activity'].includes(d.template))d.template='activity';
  if(!d.tte||typeof d.tte!=='object')d.tte={name:'',title:'',label:'Mengetahui',city:'Jakarta',date:'',number:''};
  if(d.sign==null)d.sign=true;
- if(typeof d.programOpen!=='boolean')d.programOpen=false;
+ if(d.programOpenDefaultVersion!==2){d.programOpen=true;d.programOpenDefaultVersion=2}
  return d;
 }
 const chosen=()=>{const d=config();return all().filter(p=>d.selected.includes(String(p.akr)))};
