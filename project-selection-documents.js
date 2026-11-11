@@ -1169,5 +1169,5 @@ function change(ev,inline=false){
 }
 // Laporan Akhir Proyek: pertahankan iframe HTML asli agar scroll per halaman bekerja.
 // installFinalReportPreview();
-window.MT_PS_DOC={exportFormalPdf,readLocalProof,fields,sections,slidePages,programDeck,programSlideHtml,paper,builder,exportFile,click,change,documentPreview,programReportModel,tteControls,hydrateProgram,hydratePortfolio,showActualDocumentPreview,versionPanel,nextVersion,registerExport,confirmSigned,uploadProgramAttachment,history,processSigned,openSignedProof,portfolioModel,portSlides,splitPortText,portfolioBuilder,portfolioClick,portfolioChange,portfolioExport,version:'20261109-program-document-builder-v5-native-charter'};
+window.MT_PS_DOC={exportFormalPdf,assertOfficialWordTemplate,readLocalProof,fields,sections,slidePages,programDeck,programSlideHtml,paper,builder,exportFile,click,change,documentPreview,programReportModel,tteControls,hydrateProgram,hydratePortfolio,showActualDocumentPreview,versionPanel,nextVersion,registerExport,confirmSigned,uploadProgramAttachment,history,processSigned,openSignedProof,portfolioModel,portSlides,splitPortText,portfolioBuilder,portfolioClick,portfolioChange,portfolioExport,version:'20261109-program-document-builder-v5-native-charter'};
 })();
