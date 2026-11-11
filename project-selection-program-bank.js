@@ -343,7 +343,7 @@ function showPreview(key,initialTab='identity',startEdit=false){
   }
   p.psUpdatedAt=new Date().toISOString();p.psUpdatedBy=ME?.email||'';v().edit=!!keepEditing;v().dirty=false;save();return true;
  };
- d.innerHTML='<section class="psbank-dialog" role="dialog" aria-modal="true" aria-label="Detail Program"><header><div><b>Detail Program</b><small>'+E(p.nama)+' · '+rec.year+' · '+E(visibleCode(p))+'</small></div><button type="button" data-bank-dismiss aria-label="Tutup">✕</button></header>'+
+ d.innerHTML='<section class="psbank-dialog" role="dialog" aria-modal="true" aria-label="Dokumen Program"><header><div><b>Dokumen Program</b><small>'+E(p.nama)+' · '+rec.year+' · '+E(visibleCode(p))+'</small></div><button type="button" data-bank-dismiss aria-label="Tutup">✕</button></header>'+
  '<nav class="psbank-dialogtabs" role="tablist">'+tabs.map(x=>'<button role="tab" aria-selected="'+(x[0]===v().tab)+'" class="'+(x[0]===v().tab?'on':'')+'" data-bank-pstep="'+x[0]+'">'+x[1]+'</button>').join('')+'</nav>'+
  '<main class="psbank-dialogbody">'+view()+'</main><footer><span>'+(isTarget?'Dokumen program tahun '+year():'Histori program '+rec.year)+'</span><div></div></footer></section>';
  (document.querySelector('#app')||document.body).appendChild(d);foot();
@@ -354,7 +354,7 @@ function showPreview(key,initialTab='identity',startEdit=false){
   if(step){autoSaveAnd(()=>{v().tab=step.dataset.bankPstep;v().dirty=false;redraw()});return}
   if(v().tab==='docs'&&Docs.click(ev,p,true)){if(!ev.target.closest('[data-doc-export],[data-doc-signed-kind]'))redraw();return}
   if(ev.target.closest('[data-bank-preview-edit]')){if(!editable)return;v().edit=true;v().dirty=false;redraw();return}
-  if(ev.target.closest('[data-bank-preview-save]')){if(saveForm(true)){redraw();toast('Detail Program tersimpan. Mode edit tetap aktif.')}return}
+  if(ev.target.closest('[data-bank-preview-save]')){if(saveForm(true)){redraw();toast('Dokumen Program tersimpan. Mode edit tetap aktif.')}return}
   if(ev.target.closest('[data-bank-preview-saveclose]')){if(saveForm()){d.remove();render();}return}
   if(ev.target.closest('[data-bank-entry-add]')){const list=d.querySelector('[data-bank-entry-list]'),template=d.querySelector('template[data-bank-entry-template]');list.insertAdjacentHTML('beforeend',template.innerHTML);v().dirty=true;return}
   if(ev.target.closest('[data-bank-entry-remove]')){ev.target.closest('[data-bank-edit-entry]')?.remove();v().dirty=true;return}

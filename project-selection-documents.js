@@ -145,18 +145,19 @@ function splitSlideValue(value){
 }
 /* One Charter Program = the exact three-slide deck used by the Charter Program tab.
    Do not flatten Charter fields into generic report cards. */
-function programCharterSource(p){
+function programCharterSource(p,requestedYear){
+ const y=+requestedYear||year();
  const stored=p.psProgramCharter;
- const legacy=charter(p,year());
- const y0=+(p.mulai||p.psYear||year())||year();
+ const legacy=charter(p,y);
+ const y0=+(p.mulai||p.psYear||y)||y;
  const years=String(p.periode||'').match(/20\d{2}/g)||[];
  const y1=Math.max(y0,+(years[years.length-1]||y0));
- const fallback={prog:p.akr,judul:p.nama||'',tahun:year(),ver:1,st:'Draft',
+ const fallback={prog:p.akr,judul:p.nama||'',tahun:y,ver:1,st:'Draft',
   p1:y0,p2:y1,tujuan:p.psObjective||'',lb:[p.psBackground||''].filter(Boolean),
   tb:p.psStrategy||'',out:[],oc:[p.psOutcome||''].filter(Boolean),ms:[],ris:[],
   pk:[],ch:p.sponsor||'',ow:[p.uic||''].filter(Boolean),kp:[],rk:[]};
  const fromLegacy=legacy&&!stored?Object.assign({},legacy,{
-  tahun:+p.psYear||year(),st:'Draft',
+  tahun:+p.psYear||y,st:'Draft',
   tujuan:p.psObjective||legacy.tujuan,
   lb:p.psBackground?[p.psBackground]:legacy.lb,
   tb:p.psStrategy||legacy.tb,
@@ -1169,5 +1170,5 @@ function change(ev,inline=false){
 }
 // Laporan Akhir Proyek: pertahankan iframe HTML asli agar scroll per halaman bekerja.
 // installFinalReportPreview();
-window.MT_PS_DOC={exportFormalPdf,assertOfficialWordTemplate,readLocalProof,fields,sections,slidePages,programDeck,programSlideHtml,paper,builder,exportFile,click,change,documentPreview,programReportModel,tteControls,hydrateProgram,hydratePortfolio,showActualDocumentPreview,versionPanel,nextVersion,registerExport,confirmSigned,uploadProgramAttachment,history,processSigned,openSignedProof,portfolioModel,portSlides,splitPortText,portfolioBuilder,portfolioClick,portfolioChange,portfolioExport,version:'20261109-program-document-builder-v5-native-charter'};
+window.MT_PS_DOC={programCharterSource,exportFormalPdf,assertOfficialWordTemplate,readLocalProof,fields,sections,slidePages,programDeck,programSlideHtml,paper,builder,exportFile,click,change,documentPreview,programReportModel,tteControls,hydrateProgram,hydratePortfolio,showActualDocumentPreview,versionPanel,nextVersion,registerExport,confirmSigned,uploadProgramAttachment,history,processSigned,openSignedProof,portfolioModel,portSlides,splitPortText,portfolioBuilder,portfolioClick,portfolioChange,portfolioExport,version:'20261109-program-document-builder-v5-native-charter'};
 })();

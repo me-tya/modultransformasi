@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="project-selection-governance.css?v=20261108-1">
 <link rel="stylesheet" href="project-selection-workflow-2027.css?v=20261110-mt11-filter">
 <link rel="stylesheet" href="project-selection-program-bank.css?v=20261109-mt09-ui5-r1">
+<link rel="stylesheet" href="program-documents-detail.css?v=20261111-mt04">
 
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -7641,6 +7642,7 @@ ACT.prjJF=el=>{S.ui.prjJF=el.dataset.v||'';S.ui.prjPages=S.ui.prjPages||{};S.ui.
 ACT.prjJV=el=>{S.ui.prjJV=el.dataset.v==='tbl'?'tbl':'lin';save();render()};
 
 ACT.prjDemoPdf=el=>{const w=S.wbs.find(x=>x.k===el.dataset.k);if(!w){toast('Item WBS tidak ditemukan');return}const clean=t=>String(t||'').normalize('NFKD').replace(/[^\x20-\x7E]/g,' ').replace(/[()\\]/g,' ').slice(0,115);const lines=['RINGKASAN ITEM WBS','Modul Transformasi - Kementerian Keuangan','Kode WBS: '+clean(w.k),'Program: '+clean(w.prog),'Output: '+clean(deliv(w)),'UIC: '+clean(uicU(w)),'Target: '+clean(w.f),'Status: '+clean(stOf(w,12)),'Validasi: '+(w.v?'Tercatat tervalidasi':'Belum tervalidasi'),'Dicetak: '+clean(TODAY)];const stream='BT /F1 12 Tf 45 775 Td 18 TL '+lines.map((v,i)=>(i?'T* ':'')+'('+clean(v)+') Tj').join(' ')+' ET';const objs=['<< /Type /Catalog /Pages 2 0 R >>','<< /Type /Pages /Kids [3 0 R] /Count 1 >>','<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>','<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>','<< /Length '+stream.length+' >>\nstream\n'+stream+'\nendstream'];let pdf='%PDF-1.4\n',offset=[0];objs.forEach((o,i)=>{offset.push(pdf.length);pdf+=(i+1)+' 0 obj\n'+o+'\nendobj\n'});const at=pdf.length;pdf+='xref\n0 '+(objs.length+1)+'\n0000000000 65535 f \n';offset.slice(1).forEach(n=>pdf+=String(n).padStart(10,'0')+' 00000 n \n');pdf+='trailer << /Size '+(objs.length+1)+' /Root 1 0 R >>\nstartxref\n'+at+'\n%%EOF';const url=URL.createObjectURL(new Blob([pdf],{type:'application/pdf'}));const a=document.createElement('a');a.href=url;a.download=w.k+'_Ringkasan.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500)};
+ACT.pmProgramDoc=el=>window.MT_PM_PROGRAM_DOCS?.handle(el);
 ACT.prjProgram=el=>{const p=progOf(el.dataset.v);const projects=p?progProjects(p):[];if(!projects.length){toast('Belum ada proyek WBS untuk program ini.');return}ACT.prjOpen({dataset:{scope:projectKey(p.akr,projects[0].n),tab:'ringkasan'}})};
 ACT.prjOpen=el=>{S.ui.prjScope=el.dataset.scope;S.ui.prjTab=el.dataset.tab||'ringkasan';S.ui.prjSearch='';S.ui.prjPages={};save();render();document.querySelector('.prj-close')?.focus()};
 ACT.prjHelp=el=>{const g=el.dataset.guide,h=PROJECT_GUIDE[g]||PROJECT_GUIDE.workspace,fid=PROJECT_FORMS[g],fx=fid&&FORMEX[fid];
@@ -7683,7 +7685,7 @@ function pProgram(){
     </div>
     <div class="pm-program-aside">
      <div class="pm-program-indicators">${chipSt(p.status)}<span class="pm-program-count">${P.length} proyek</span><span class="pm-program-progress">Capaian WBS <b>${x.pg}%</b></span></div>
-     <div class="pm-program-actions"><button type="button" class="btn sm pm-rep-btn" data-act="pgRep" data-k="prog" data-p="${esc(p.akr)}" title="Generate laporan program sesuai filter">${RPT_ICO(15)}Laporan</button><a class="btn sm" href="#pmo-charter" data-act="chopen" data-p="${esc(p.akr)}">Lihat Charter</a><button type="button" class="btn sm" data-act="prjProgram" data-v="${esc(p.akr)}" title="Lihat Detail Proyek">Kelola Proyek ›</button></div>
+     <div class="pm-program-actions mtpd-actions" role="group" aria-label="Dokumen program dan charter"><div class="mtpd-group"><span>Dokumen Program</span><button type="button" class="mtpd-icon" data-act="pmProgramDoc" data-kind="program" data-mode="preview" data-p="${esc(p.akr)}" title="Pratinjau Dokumen Program hasil TTE" aria-label="Pratinjau Dokumen Program"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M2 12s3.7-7 10-7 10 7 10 7-3.7 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button><button type="button" class="mtpd-icon" data-act="pmProgramDoc" data-kind="program" data-mode="download" data-p="${esc(p.akr)}" title="Unduh PDF Dokumen Program hasil TTE" aria-label="Unduh Dokumen Program"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 17v4h16v-4"/></svg></button></div><div class="mtpd-group"><span>Charter Program</span><button type="button" class="mtpd-icon" data-act="pmProgramDoc" data-kind="charter" data-mode="preview" data-p="${esc(p.akr)}" title="Pratinjau 3 slide Charter Program" aria-label="Pratinjau Charter Program"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M2 12s3.7-7 10-7 10 7 10 7-3.7 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button><button type="button" class="mtpd-icon" data-act="pmProgramDoc" data-kind="charter" data-mode="download" data-p="${esc(p.akr)}" title="Unduh Charter Program (PPTX 3 slide)" aria-label="Unduh Charter Program"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 17v4h16v-4"/></svg></button></div></div>
     </div>
    </div>
    <div class="pm-program-detail" id="${id}" ${closed?'hidden':''}>
@@ -10871,6 +10873,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script src="project-selection-scope-map.js?v=20261109-mt10-final"></script>
 <script src="project-selection-documents.js?v=20261109-mt10-final"></script>
 <script src="project-selection-program-bank.js?v=20261110-mt11-filter"></script>
+<script src="program-documents-detail.js?v=20261111-mt04"></script>
 
 
 <script src="pmo-planning-document.js?v=20261111-mt03"></script>
