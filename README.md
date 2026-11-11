@@ -34,3 +34,12 @@ Aturan ini berlaku untuk seluruh area Modul Transformasi (acuan pertama: Project
 | Prioritasi › Penilaian & Peringkat | Tahun, Program, UIC Proyek, Status Penilaian | proyek, UIC, kategori |
 | Charter Program, Penetapan Program | Tahun, Program | — |
 | Draft RKMK | Tahun, Program, Status Reviu | — |
+
+### Peta filter Change Management
+
+Panel Filter CM memakai grid 6 kolom (`.fbar.mt-g6`, fungsi `fGrid` di index.html): field terakhir otomatis melebar sehingga setiap baris penuh.
+
+- **Filter cakupan (semua tab)**: Tahun, Periode, Program, Unit, Peran unit, Tahapan, Modul.
+- **Filter kolom tabel (otomatis per tab)**: kolom pilihan (`t:'sel'`) pada tabel yang sedang tampil, selain Modul, ditambah kolom turunan pada `CF_EXTRA` (Register Risiko: Jenis risiko & Tingkat; Keberhasilan CM: Status; Monev Pelaksanaan: Status implementasi; Pelaksanaan: Status). Pilihan diambil dari nilai yang ada di tabel. State: `S.ui.cf[idTabel][kolom]`; diterapkan di `tRows` sebelum pencarian teks.
+- **Cari**: bila satu baris subtab hanya membawahi satu tabel, kolom Cari tabel dipindah ke kanan baris subtab (`MT_PLACE_TBL_SEARCH`). Tab tanpa subtab (Jaringan, Pelaksanaan, Evaluasi Pasca, Penutupan) tetap memakai Cari di header tabel.
+- Atur ulang mengosongkan filter cakupan, filter kolom, dan Cari pada tabel yang tampil.
