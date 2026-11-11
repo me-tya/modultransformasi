@@ -2894,9 +2894,9 @@ const SCOPES=['Semua','Unit','Modul'];
 const SCOPE_DESK={Semua:'seluruh data',Unit:'data yang unitnya UIC Utama',Modul:'modul yang ditugaskan'};
 const UNREAD_SCOPED=['dash','porto','wbs','mil','risk','cr','crok','bukti','valid','lap','ref','adopsi','adp','reviu','usul','user','akses','sinkron','log'];
 const CMT=[['adp','ADP'],['rencana','Perencanaan'],['jaringan','Jaringan Perubahan'],['cra','CRA'],['pelaksanaan','Pelaksanaan'],['monev','Monev'],['pasca','Evaluasi Pasca'],['closing','Penutupan CM']];
-const PMT=[['siklus','Overview','porto'],['program','Workspace Proyek','porto'],['perencanaan','Dokumen Proyek','charter'],['wbsplan','WBS','wbs'],['wbs','WBS & progres','wbs'],['bukti','Bukti Dukung','bukti'],['cr','Change Request','cr'],['milestone','Milestone','mil'],['risiko','Risiko & Isu','risk'],['laporan','Capaian TW','lap'],['narasi','Narasi T-Program','lap'],['oneonone','Jadwal 1-on-1','wbs'],['penutupan','Penutupan','porto'],['pascaproyek','Pascaproyek','porto'],['referensi','Referensi Kode','ref']];
+const PMT=[['siklus','Overview','porto'],['program','Workspace Proyek','porto'],['perencanaan','Dokumen Proyek','charter'],['wbsplan','WBS','wbs'],['dokplan','Buat Dokumen Perencanaan','charter'],['wbs','WBS & progres','wbs'],['bukti','Bukti Dukung','bukti'],['cr','Change Request','cr'],['milestone','Milestone','mil'],['risiko','Risiko & Isu','risk'],['laporan','Capaian TW','lap'],['narasi','Narasi T-Program','lap'],['oneonone','Jadwal 1-on-1','wbs'],['penutupan','Penutupan','porto'],['pascaproyek','Pascaproyek','porto'],['referensi','Referensi Kode','ref']];
 /* kelompok tab PMO mengikuti alur Draft KEP Kepala BaTii: perencanaan → pelaksanaan → pemantauan → penutupan */
-const PMG=[['siklus','Overview',0,['siklus']],['program','Workspace Proyek',0,['program']],['plan','Perencanaan',1,['perencanaan','wbsplan']],['exec','Pelaksanaan',2,['wbs','narasi','bukti','cr']],['mon','Pemantauan',3,['milestone','risiko','laporan','oneonone']],['close','Penutupan',4,['penutupan']],['eval','Pascaproyek',5,['pascaproyek']],['ref','Referensi',0,['referensi']]];
+const PMG=[['siklus','Overview',0,['siklus']],['program','Workspace Proyek',0,['program']],['plan','Perencanaan',1,['perencanaan','wbsplan','dokplan']],['exec','Pelaksanaan',2,['wbs','narasi','bukti','cr']],['mon','Pemantauan',3,['milestone','risiko','laporan','oneonone']],['close','Penutupan',4,['penutupan']],['eval','Pascaproyek',5,['pascaproyek']],['ref','Referensi',0,['referensi']]];
 const STN=[['set-pengguna','Pengguna','user'],['set-akses','Hak Akses Peran','akses'],['set-sinkron','Aturan Sinkron CM','sinkron'],['set-log','Log Aktivitas','log'],['set-db','Database','user']];
 const LV_UB=['—','Minor','Moderate','Significant'], LV_RS=['—','Rendah','Sedang','Tinggi'];
 const DIMS=[['P','Proses Bisnis'],['O','Organisasi'],['S','SDM'],['T','Teknologi'],['R','Regulasi']];
@@ -4493,7 +4493,7 @@ function pEval(){
  {k:'hasil',l:'Hasil dan manfaat',t:'ta',w:1},{k:'rtl',l:'Rekomendasi tindak lanjut',t:'ta',w:1},
  {k:'st',l:'Status evaluasi',t:'sel',o:['Direncanakan','Berjalan','Selesai'],r:x=>chipSt(x.st||'Direncanakan')}]});
 }
-function viewPmo(tab){const f={charter:pCharter,siklus:pOverview,portofolio:pPorto,program:pProgram,perencanaan:pPerencanaan,wbsplan:pWbs,wbs:pWbs,oneonone:pOneOnOne,milestone:pMilestone,risiko:pRisiko,cr:pCr,bukti:pBukti,laporan:pLaporan,narasi:pNarasi,penutupan:pPenutupan,pascaproyek:pEval,referensi:pRef}[tab];return f?f():''}
+function viewPmo(tab){const f={charter:pCharter,siklus:pOverview,portofolio:pPorto,program:pProgram,perencanaan:pPerencanaan,wbsplan:pWbs,dokplan:()=>window.MT_PMO_PLAN?.page()||'<div class="note w">Fitur dokumen perencanaan belum termuat.</div>',wbs:pWbs,oneonone:pOneOnOne,milestone:pMilestone,risiko:pRisiko,cr:pCr,bukti:pBukti,laporan:pLaporan,narasi:pNarasi,penutupan:pPenutupan,pascaproyek:pEval,referensi:pRef}[tab];return f?f():''}
 /* --- Portofolio --- */
 function pbChart(PV,items,M,tw,jenis='Berkelanjutan'){
  const L=PV.filter(p=>jenis==='Semua'||p.jenis===jenis).map(p=>{const s=sumTR(items.filter(w=>w.prog===p.akr),M);const pItems=items.filter(w=>w.prog===p.akr);const has=!!s.a,missing=!pItems.length?'Belum ada WBS':pItems.every(w=>!(+w.w>0))?'Bobot WBS belum diisi':'Bulan target/bobot belum lengkap';const v=has?s.r/s.a*100:0,t=has?s.t/s.a*100:0,g=v-t;
@@ -10189,7 +10189,7 @@ document.addEventListener('change',async e=>{
 </script>
 <script>
 /* Tooltip navigasi memakai tujuan menu, bukan teks tombol. */
-const DESTINASI_PMO={siklus:'Overview',oneonone:'Pemantauan - Jadwal 1-on-1',portofolio:'Portofolio',program:'Program',perencanaan:'Perencanaan - Dokumen Proyek',charter:'Perencanaan - Dokumen Proyek',wbsplan:'Perencanaan - WBS',wbs:'Pelaksanaan - WBS & Progres',bukti:'Pelaksanaan - Bukti Dukung',cr:'Pelaksanaan - Change Request',milestone:'Pemantauan - Milestone',risiko:'Pemantauan - Risiko & Isu',laporan:'Pemantauan - Capaian Triwulanan',narasi:'Pelaksanaan - Narasi T-Program',penutupan:'Penutupan Proyek',pascaproyek:'Pascaproyek',referensi:'Referensi Kode'};
+const DESTINASI_PMO={siklus:'Overview',oneonone:'Pemantauan - Jadwal 1-on-1',portofolio:'Portofolio',program:'Program',perencanaan:'Perencanaan - Dokumen Proyek',dokplan:'Perencanaan - Buat Dokumen Perencanaan',charter:'Perencanaan - Dokumen Proyek',wbsplan:'Perencanaan - WBS',wbs:'Pelaksanaan - WBS & Progres',bukti:'Pelaksanaan - Bukti Dukung',cr:'Pelaksanaan - Change Request',milestone:'Pemantauan - Milestone',risiko:'Pemantauan - Risiko & Isu',laporan:'Pemantauan - Capaian Triwulanan',narasi:'Pelaksanaan - Narasi T-Program',penutupan:'Penutupan Proyek',pascaproyek:'Pascaproyek',referensi:'Referensi Kode'};
 const DESTINASI_CMO={pasca:'Evaluasi Pascaimplementasi Perubahan',adp:'Perencanaan - Analisis Dampak Perubahan',rencana:'Perencanaan - Rencana Manajemen Perubahan',impl:'Implementasi Manajemen Perubahan',monev:'Monitoring dan Evaluasi',closing:'Penutupan Manajemen Perubahan'};
 function tujuanMenu(href){const dest=String(href||'').replace(/^#/,'');if(dest.startsWith('pmo-'))return DESTINASI_PMO[dest.slice(4)]||'PMO - '+dest.slice(4);if(dest.startsWith('cmo-'))return DESTINASI_CMO[dest.slice(4)]||'CMO - '+dest.slice(4);if(dest==='dashboard')return 'Dashboard Eksekutif';return ''}
 document.addEventListener('mouseover',function(e){const el=e.target.closest('a[href^="#"],button[data-act],button[data-seg]');if(!el)return;let h=el.getAttribute('href')||'';const action=el.dataset.act||'';if(!h){if(action==='gowbs')h='#pmo-wbs';else if(action==='pchipgo')h='#pmo-wbs';else if(action==='chopen')h='#pmo-perencanaan';else if(action==='portoTab'){el.title='Tampilkan tab '+(el.textContent||'').trim();return}else return}
@@ -10346,7 +10346,7 @@ var PM=[
 ];
 var menuPM=[
 ['Project Selection','Portofolio, program, risiko, manfaat, stakeholder, dan seleksi proyek','project-selection'],['Overview','Capaian dan ringkasan kinerja','pmo-siklus'],['Workspace Proyek','Proyek, progres, risiko, stakeholder, isu, dan keputusan','pmo-program'],
-['Dokumen Proyek','As-Is, To-Be, Charter, persetujuan','pmo-perencanaan'],['WBS Perencanaan','Penyusunan aktivitas dan bobot','pmo-wbsplan'],
+['Dokumen Proyek','As-Is, To-Be, Charter, persetujuan','pmo-perencanaan'],['Buat Dokumen Perencanaan','Kompilasi 7 dokumen proyek, preview dan ekspor','pmo-dokplan'],['WBS Perencanaan','Penyusunan aktivitas dan bobot','pmo-wbsplan'],
 ['WBS & Progres','Pelaksanaan, target, realisasi','pmo-wbs'],['Bukti Dukung','Unggah dan validasi bukti','pmo-bukti'],['Change Request','Pengendalian perubahan baseline','pmo-cr'],
 ['Milestone','Tonggak waktu proyek','pmo-milestone'],['Risiko & Isu','Risiko dan tindak lanjut','pmo-risiko'],['Capaian Triwulanan','Laporan kinerja periodik','pmo-laporan'],
 ['Narasi T-Program','Uraian pelaksanaan per program','pmo-narasi'],['Jadwal 1-on-1','Rencana pertemuan koordinasi','pmo-oneonone'],
@@ -10490,7 +10490,7 @@ var skDeepTabsPM={
   ['4 · Charter Proyek','pmo-charter','ch'],
   ['5 · Kriteria Penyelesaian','pmo-charter','kp'],
   ['6 · Manfaat Proyek','pmo-charter','mf'],
-  ['7 · Rencana Kerja','pmo-charter','rk']],
+  ['7 · Rencana Kerja','pmo-charter','rk'],['Buat Dokumen Perencanaan','pmo-dokplan','']],
  'pmo-penutupan':[
   ['Kesiapan','pmo-penutupan','closure:siap'],
   ['Data Penutupan','pmo-penutupan','closure:lap'],
@@ -10873,6 +10873,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script src="project-selection-program-bank.js?v=20261110-mt11-filter"></script>
 
 
+<script src="pmo-planning-document.js?v=20261111-mt01"></script>
 <script src="planning-tabs-v2.js?v=20261108-3"></script>
 
 <script src="standard-wbs-template.js?v=20261109-1"></script>
