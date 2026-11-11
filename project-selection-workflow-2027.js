@@ -204,7 +204,7 @@ function filter(p){
 function actionBar(){return '<div class="ps27-actionbar" hidden></div>';}
 function sourcePicker(){
  const w=ws(),arr=sourcePrograms().filter(p=>(p.nama+' '+(p.kodeResmi||'')+' '+(p.kode||'')+' '+p.uic).toLowerCase().includes(String(w.search||'').toLowerCase())),to=yr(),allSel=arr.length&&arr.every(p=>(w.selected||[]).includes(String(p.id)));
- return '<div class="ps27-card"><div class="ps27-cardtop"><div><h3>Ambil Program Tahun Sebelumnya</h3><p>Salin seluruh detail, charter dan dokumen, daftar proyek, serta draft WBS. Data sumber tetap utuh dan capaian tidak disalin.</p></div><span class="ps27-info">Multi-select</span></div>'+
+ return '<div class="ps27-card"><div class="ps27-cardtop"><div><h3>Ambil Program Tahun Sebelumnya'+(typeof MT_INFO_ICON==='function'?MT_INFO_ICON:()=>'')('Salin seluruh detail, charter dan dokumen, daftar proyek, serta draft WBS. Data sumber tetap utuh dan capaian tidak disalin.')+'</h3></div><span class="ps27-info">Multi-select</span></div>'+
  '<div class="ps27-controls"><label>Tahun Sumber <select data-ps27-source>'+[2025,2026,2027,2028].filter(y=>y<=to).map(y=>'<option '+(y===+w.sourceYear?'selected':'')+'>'+y+'</option>').join('')+'</select></label>'+
  '<label class="ps27-grow">Cari program <input type="search" data-ps27-search value="'+E(w.search||'')+'" placeholder="Nama, kode atau UIC"></label>'+
  '<button class="btn pri" data-ps27="carry" '+(!w.selected.length||to<=+w.sourceYear?'disabled':'')+'>+ Tambah '+w.selected.length+' Program ke '+to+'</button></div>'+
@@ -214,7 +214,7 @@ function sourcePicker(){
  '</tbody></table></div></div>';
 }
 function portfolio(){
- const arr=list();return '<div class="ps27-card"><div class="ps27-cardtop"><div><h3>Daftar Usulan Program · '+yr()+'</h3><p>Pilih program untuk melengkapi profil dan register, atau ambil program yang sudah berjalan dari tahun sebelumnya.</p></div><strong>'+arr.length+' program</strong></div>'+
+ const arr=list();return '<div class="ps27-card"><div class="ps27-cardtop"><div><h3>Daftar Usulan Program · '+yr()+''+(typeof MT_INFO_ICON==='function'?MT_INFO_ICON:()=>'')('Pilih program untuk melengkapi profil dan register, atau ambil program yang sudah berjalan dari tahun sebelumnya.')+'</h3></div><strong>'+arr.length+' program</strong></div>'+
  '<div class="ps27-tablewrap"><table class="ps27-table"><thead><tr><th>Program</th><th>UIC</th><th>Asal</th><th>Status</th><th>Proyek</th><th>WBS draft</th><th>Aksi</th></tr></thead><tbody>'+
  (arr.length?arr.map(p=>'<tr><td><b>'+E(p.nama)+'</b><small>'+E(p.kodeResmi||'Kode resmi belum ditetapkan')+'</small></td><td>'+E(p.uic||'—')+'</td><td>'+E(p.psCarry?'Carry over '+p.psCarry.sourceYear:'Baru / existing')+'</td><td><span class="ps27-status">'+E(p.psStatus||'Berjalan')+'</span></td><td>'+(p.psProjects?.length||0)+'</td><td>'+(p.psWbsDraft?.length||0)+'</td><td><button class="btn btn-outline btn-sm" data-ps27-pick="'+E(p.id)+'">Buka</button></td></tr>').join(''):'<tr><td colspan="7" class="ps27-center">Belum ada program pada tahun ini.</td></tr>')+
  '</tbody></table></div></div>';
@@ -222,7 +222,7 @@ function portfolio(){
 function formProgram(p){
  if(!p)return '<div class="ps27-card"><div class="ps27-empty">Pilih program di daftar untuk membuka detail usulan.</div></div>';
  return '<div class="ps27-card ps27-governance">'+
- '<div class="ps27-cardtop"><div><h3>Profil dan Kelengkapan Program</h3><p>Identitas → Business Case → Manfaat → Stakeholder → Risiko → Tata Kelola → Reviu.</p></div>'+
+ '<div class="ps27-cardtop"><div><h3>Profil dan Kelengkapan Program'+(typeof MT_INFO_ICON==='function'?MT_INFO_ICON:()=>'')('Identitas → Business Case → Manfaat → Stakeholder → Risiko → Tata Kelola → Reviu.')+'</h3></div>'+
  (can(p)&&p.psStatus!=='Ditetapkan'?'<button class="btn" data-pswf="edit-program">Ubah Identitas</button>':'')+'</div>'+
  (window.MT_PS_GOV?window.MT_PS_GOV.programPage(p):'')+'</div>';
 }
@@ -230,7 +230,7 @@ function usulan(p){const u=ws(),tab=u.usulanSub||'daftar';const nav='<div class=
 function mapping(p){
  if(!p)return '<div class="ps27-card"><div class="ps27-empty">Pilih program untuk memetakan proyek/modul.</div></div>';
  const a=p.psProjects||[],rows=p.psWbsDraft||[];
- return '<div class="ps27-card"><div class="ps27-cardtop"><div><h3>Pemetaan Proyek / Modul</h3><p>'+E(p.nama)+' · Cocokkan daftar proyek dengan draft WBS dari tahun sumber sebelum prioritisasi.</p></div>'+
+ return '<div class="ps27-card"><div class="ps27-cardtop"><div><h3>Pemetaan Proyek / Modul'+(typeof MT_INFO_ICON==='function'?MT_INFO_ICON:()=>'')(''+E(p.nama)+' · Cocokkan daftar proyek dengan draft WBS dari tahun sumber sebelum prioritisasi.')+'</h3></div>'+
  (can(p)&&p.psStatus!=='Ditetapkan'?'<button class="btn pri" data-pswf="add-project">+ Tambah Proyek</button>':'')+'</div>'+
  '<div class="ps27-minimetrics"><span><b>'+a.length+'</b> proyek/modul</span><span><b>'+rows.length+'</b> item WBS draft</span><span><b>'+a.filter(x=>x.included!==false).length+'</b> diusulkan</span></div>'+
  '<div class="ps27-tablewrap"><table class="ps27-table"><thead><tr><th>Proyek / Modul</th><th>UIC / PIC</th><th>Target</th><th>Item WBS terkait</th><th>Aksi</th></tr></thead><tbody>'+
@@ -253,7 +253,7 @@ function charter(p){
  if(!p)return '<div class="ps27-card ps27-empty">Pilih program untuk menampilkan Charter Program.</div>';
  S.ui.chp=p.akr;
  const c=foundCharter(p,yr())||(S.charters||[]).find(x=>x.prog===p.akr);
- let body='<div class="ps27-cardtop"><div><h3>Charter Program · 7 Dokumen Perencanaan</h3><p>Editor menggunakan komponen charter native Project Management: As-is, To-be, Perbandingan, Charter, Kriteria, Manfaat dan Linimasa.</p></div><span class="ps27-status">'+E(c?c.st:'Belum dibuat')+'</span></div>';
+ let body='<div class="ps27-cardtop"><div><h3>Charter Program · 7 Dokumen Perencanaan'+(typeof MT_INFO_ICON==='function'?MT_INFO_ICON:()=>'')('Editor menggunakan komponen charter native Project Management: As-is, To-be, Perbandingan, Charter, Kriteria, Manfaat dan Linimasa.')+'</h3></div><span class="ps27-status">'+E(c?c.st:'Belum dibuat')+'</span></div>';
  if(typeof pCharter==='function'){
   const h=pCharter(),at=h.indexOf('<div class="chbc">');if(at>=0){let content=h.slice(at).replace('href="#pmo-perencanaan"','href="#project-selection"');body+='<div class="ps27-charter-native">'+content+'</div>';}
   else body+='<div class="ps27-empty">Gunakan editor Charter lengkap.</div>';
@@ -294,7 +294,7 @@ function widePanel(){
  const sum=wideSummary(d,all),status=d.contract.status||'Konsep',fixed=status==='Ditetapkan';
  const filled=active.filter(p=>[1,2,3,4].some(qq=>{const r=wideRow(d,p,qq);return String(r.targets||'').trim()&&Number(r.targetCount)>0}));
  return '<section class="ps27-card ps27-kwide" aria-label="Penetapan Program melalui Kontrak Kinerja K-Wide">'+
-  '<div class="ps27-cardtop"><div><h3>Penetapan Program · Kontrak Kinerja K-Wide '+y+'</h3><p>Rancang target output dan tanggal cut-off per triwulan. Jumlah target/realisasi dan capaian dihitung untuk seluruh program aktif, mengikuti sheet Capaian K-Wide.</p></div><span class="ps27-status">'+E(status)+'</span></div>'+
+  '<div class="ps27-cardtop"><div><h3>Penetapan Program · Kontrak Kinerja K-Wide '+y+''+(typeof MT_INFO_ICON==='function'?MT_INFO_ICON:()=>'')('Rancang target output dan tanggal cut-off per triwulan. Jumlah target/realisasi dan capaian dihitung untuk seluruh program aktif, mengikuti sheet Capaian K-Wide.')+'</h3></div><span class="ps27-status">'+E(status)+'</span></div>'+
   '<div class="ps27-wide-summary">'+sum.map(x=>'<div><b>TW '+x.q+'</b><strong>'+x.actual+' / '+x.target+'</strong><small>Capaian '+(x.pct==null?'—':x.pct.toLocaleString('id-ID')+'%')+'</small></div>').join('')+'</div>'+
   '<div class="ps27-kwide-contract">'+
   [['number','Nomor Kontrak Kinerja K-Wide','text'],['date','Tanggal Penetapan','date'],['link','Tautan / Referensi Dokumen Kontrak','url'],['signer','Pejabat Penetap','text']].map(([k,label,type])=>
@@ -338,7 +338,7 @@ function collectWide(root){
 function penetapan(p){
  if(!p)return '<div class="ps27-card ps27-empty">Pilih program untuk menetapkan daftar proyek setelah kontrak K-Wide dicatat.</div>';
  const a=I.chosen(p)||[],r=window.MT_PS_GOV?.readiness(p),rows=p.psWbsDraft||[],already=p.psStatus==='Ditetapkan';
- return '<div class="ps27-card ps27-approval-panel" id="ps27-project-approval"><div class="ps27-cardtop"><div><h3>Cakupan Proyek dalam Penetapan Program</h3><p>Kontrak K-Wide menjadi prasyarat. Program ditetapkan beserta proyek terpilih; daftar final menjadi acuan Project Management → Perencanaan → WBS. Prioritisasi SMART bersifat opsional.</p></div><span class="ps27-status">'+E(p.psStatus||'Draft')+'</span></div>'+
+ return '<div class="ps27-card ps27-approval-panel" id="ps27-project-approval"><div class="ps27-cardtop"><div><h3>Cakupan Proyek dalam Penetapan Program'+(typeof MT_INFO_ICON==='function'?MT_INFO_ICON:()=>'')('Kontrak K-Wide menjadi prasyarat. Program ditetapkan beserta proyek terpilih; daftar final menjadi acuan Project Management → Perencanaan → WBS. Prioritisasi SMART bersifat opsional.')+'</h3></div><span class="ps27-status">'+E(p.psStatus||'Draft')+'</span></div>'+
  '<div class="ps27-approval-select"><label>Program yang ditetapkan <select data-ps27-approval-program aria-label="Pilih program untuk menetapkan beserta proyeknya">'+list().filter(x=>!x.arsip&&x.psListStatus!=='Arsip').map(x=>'<option value="'+E(x.id)+'" '+(String(p.id)===String(x.id)?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label></div>'+ 
  '<div class="ps27-minimetrics"><span><b>'+a.length+'</b> proyek dipilih</span><span><b>'+rows.length+'</b> WBS draft</span><span><b>'+(r?r.done+'/7':'—')+'</b> kesiapan dokumen</span></div>'+
  (r&&r.applies&&!r.ok?'<div class="ps27-warning">Kelengkapan program belum memenuhi persyaratan: '+E(r.missing.join(', '))+'. <button class="btn btn-outline btn-sm" data-ps27-tab="usulan">Lengkapi Usulan</button></div>':'')+
@@ -353,7 +353,7 @@ function rkmk(p){
  if(!p.psRkmk)p.psRkmk=newRkmk(p);
  if(!p.psRkmkReviewed)p.psRkmkReviewed={};
  const s=p.psRkmk,rev=p.psRkmkReviewed,remain=RKMK_FIELDS.filter(x=>!rev[x[0]]).length,edit=can(p)&&p.psStatus!=='Ditetapkan';
- return '<div class="ps27-card"><div class="ps27-cardtop"><div><h3>Draft Narasi RKMK · '+yr()+'</h3><p>Sumber awal: <b>'+E(p.psRkmkSource||'Data usulan program')+'</b>. Prioritaskan narasi 2025 jika tersedia; bagian kuning perlu direviu untuk tahun tujuan.</p></div><span class="ps27-reviewcount">'+remain+' perlu reviu</span></div>'+
+ return '<div class="ps27-card"><div class="ps27-cardtop"><div><h3>Draft Narasi RKMK · '+yr()+''+(typeof MT_INFO_ICON==='function'?MT_INFO_ICON:()=>'')('Sumber awal: <b>'+E(p.psRkmkSource||'Data usulan program')+'</b>. Prioritaskan narasi 2025 jika tersedia; bagian kuning perlu direviu untuk tahun tujuan.')+'</h3></div><span class="ps27-reviewcount">'+remain+' perlu reviu</span></div>'+
  '<div class="ps27-rkmkgrid">'+RKMK_FIELDS.map(f=>'<label class="ps27-rkmkfield '+(rev[f[0]]?'reviewed':'needs-review')+'"><span><b>'+E(f[1])+'</b><em>'+(rev[f[0]]?'Sudah direviu':'Perlu penyesuaian')+'</em></span><textarea data-ps27-rkmk="'+f[0]+'" rows="4" '+(edit?'':'disabled')+' placeholder="Lengkapi narasi '+E(f[1])+' untuk tahun '+yr()+'">'+E(s[f[0]]||'')+'</textarea><span class="ps27-reviewline"><input type="checkbox" data-ps27-reviewed="'+f[0]+'" '+(rev[f[0]]?'checked':'')+' '+(edit?'':'disabled')+'> Sudah direviu untuk tahun '+yr()+'</span></label>').join('')+'</div>'+
  '<div class="ps27-footer"><span>Highlight kuning menandai area yang memerlukan konfirmasi; bukan otomatis dinyatakan valid.</span>'+(edit?'<button class="btn pri" data-ps27="save-rkmk">Simpan Narasi</button>':'')+'<button class="btn" data-pswf="generate-word">Unduh Draft Word</button></div></div>';
 }

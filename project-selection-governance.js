@@ -28,7 +28,7 @@ function checks(p){
 }
 function readiness(p){const a=checks(p),req=a.filter(x=>x[3]);return {items:a,done:a.filter(x=>x[2]).length,total:a.length,missing:req.filter(x=>!x[2]).map(x=>x[1]),ok:req.every(x=>x[2]),applies:p&&p.psGovernanceV===1};}
 function portfolioPage(p,programs,year){
- const arr=programs||[];let h='<section class="psgov" aria-label="Portofolio Program Transformasi"><div class="psgov-sectionhead"><div><h3>Portofolio Transformasi · '+year+'</h3><p>Inventaris, evaluasi, dan penetapan program. Pilih program untuk melengkapi business case dan register tingkat program.</p></div></div>';
+ const arr=programs||[];let h='<section class="psgov" aria-label="Portofolio Program Transformasi"><div class="psgov-sectionhead"><div><h3>Portofolio Transformasi · '+year+''+(typeof MT_INFO_ICON==='function'?MT_INFO_ICON:()=>'')('Inventaris, evaluasi, dan penetapan program. Pilih program untuk melengkapi business case dan register tingkat program.')+'</h3></div></div>';
  h+='<div class="psgov-metrics"><div><b>'+arr.length+'</b><span>Total program</span></div><div><b>'+arr.filter(x=>x.psStatus==='Ditetapkan'||x.psStatus==='Berjalan (legacy)').length+'</b><span>Ditetapkan / berjalan</span></div><div><b>'+arr.filter(x=>x.psStatus==='Draft').length+'</b><span>Draft</span></div><div><b>'+arr.reduce((n,x)=>n+(x.psProjects||[]).length,0)+'</b><span>Calon proyek</span></div></div>';
  if(!arr.length)return h+'<div class="psgov-empty"><b>Belum ada program tahun '+year+'</b><p>Daftarkan program lebih dulu. Lengkapi profil, manfaat, stakeholder, risiko, kemudian ajukan proyek untuk seleksi.</p></div></section>';
  h+='<div class="psgov-tablewrap"><table class="psgov-table"><thead><tr><th>Program & kode</th><th>UIC utama</th><th>Status</th><th>Kesiapan dokumen</th><th>Proyek</th><th>Aksi</th></tr></thead><tbody>';
@@ -36,7 +36,7 @@ function portfolioPage(p,programs,year){
  return h+'</tbody></table></div><div class="psgov-info">Portofolio menghimpun program berdasarkan sasaran strategis; program mengoordinasikan proyek terkait untuk menghasilkan manfaat bersama. Capaian WBS dikelola pada Project Management.</div></section>';
 }
 function sectionHeader(title,desc,action){
- return '<div class="psgov-sectionhead"><div><h3>'+title+'</h3><p>'+desc+'</p></div>'+(action||'')+'</div>';
+ return '<div class="psgov-sectionhead"><div><h3>'+title+(typeof MT_INFO_ICON==='function'?MT_INFO_ICON:()=>'')(desc)+'</h3></div>'+(action||'')+'</div>';
 }
 function coreCard(rows){return '<dl class="psgov-data">'+rows.map(r=>'<div><dt>'+E(r[0])+'</dt><dd>'+E(r[1]||'—')+'</dd></div>').join('')+'</dl>';}
 function editFields(p,kind){

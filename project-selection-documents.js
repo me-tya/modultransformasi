@@ -453,7 +453,7 @@ function documentPreview(p){
 }
 function builder(p){
  const d=cfg(),list=STEPS,fmt=d.format||'word',ver=nextVersion('program',p.id||p.akr,year());
- return '<div class="psbank-docbuilder"><div class="psbank-docsettings"><div class="psbank-docsetting-head"><h3>Dokumen Perencanaan Program · Pratinjau & Ekspor</h3><p>Substansi dokumen dan riwayat pengesahan versi '+ver+'.</p></div>'+
+ return '<div class="psbank-docbuilder"><div class="psbank-docsettings"><div class="psbank-docsetting-head"><h3>Dokumen Perencanaan Program · Pratinjau & Ekspor'+(typeof MT_INFO_ICON==='function'?MT_INFO_ICON:()=>'')('Substansi dokumen dan riwayat pengesahan versi '+ver+'.')+'</h3></div>'+
  '<div class="psbank-doccheckhead"><b>Substansi dokumen</b><span>'+STEPS.filter(x=>d.sections.includes(x[0])).length+' / '+STEPS.length+' dipilih</span></div>'+
  '<div class="psbank-docchecks">'+list.map((x,i)=>'<label><input type="checkbox" data-doc-section="'+x[0]+'" '+(d.sections.includes(x[0])?'checked':'')+'> '+(i+1)+'. '+E(x[1])+'</label>').join('')+'</div>'+
  '<div class="psbank-docextras"><label><input type="checkbox" data-doc-extra="cover" '+(d.cover?'checked':'')+'> Sampul & identitas</label>'+
@@ -951,7 +951,7 @@ function portfolioPreview(){
 }
 function portfolioBuilder(){
  const d=portCfg(),all=portPrograms(),chosen=portSelected(),mode=projectMode(),steps=docSections(),ver=nextVersion(docKind(),docId(),year());
- return '<div class="psbank-card psbank-portfolio-doc"><div class="psbank-sectionhead"><div><h3>'+(mode?'Buat Dokumen Proyek':'Buat Dokumen Portofolio')+' · '+year()+'</h3><p>'+(mode?'Pilih proyek dalam program induk, tentukan substansi, kemudian pratinjau dan unduh dokumen proyek.':'Kompilasi substansi beberapa program, dikelompokkan menurut program sumbernya.')+'</p></div><span class="psbank-count">'+chosen.length+' dari '+all.length+(mode?' usulan proyek':' program')+'</span></div>'+
+ return '<div class="psbank-card psbank-portfolio-doc"><div class="psbank-sectionhead"><div><h3>'+(mode?'Buat Dokumen Proyek':'Buat Dokumen Portofolio')+' · '+year()+''+(typeof MT_INFO_ICON==='function'?MT_INFO_ICON:()=>'')(''+(mode?'Pilih proyek dalam program induk, tentukan substansi, kemudian pratinjau dan unduh dokumen proyek.':'Kompilasi substansi beberapa program, dikelompokkan menurut program sumbernya.')+'')+'</h3></div><span class="psbank-count">'+chosen.length+' dari '+all.length+(mode?' usulan proyek':' program')+'</span></div>'+
  '<div class="psbank-docbuilder"><div class="psbank-docsettings"><div class="psbank-doccheckhead"><b>'+(mode?'Pilih Proyek':'Pilih Program')+'</b><button class="btn" type="button" data-port-all>'+(chosen.length===all.length?'Kosongkan':'Pilih Semua')+'</button></div>'+
  '<div class="psbank-portfolio-checks">'+(all.length?all.map(p=>'<label><input type="checkbox" data-port-program="'+E(p.id)+'" '+(d.selected.includes(String(p.id))?'checked':'')+'><span><b>'+E(p.nama)+'</b><small>'+E(officialCode(p))+'</small></span></label>').join('') :'<p>Belum ada '+(mode?'usulan proyek':'program')+' pada tahun ini.</p>')+'</div>'+
  '<div class="psbank-doccheckhead"><b>Substansi</b><span>'+d.sections.length+'/'+steps.length+' dipilih</span></div><div class="psbank-docchecks">'+steps.map((x,i)=>'<label><input type="checkbox" data-port-section="'+x[0]+'" '+(d.sections.includes(x[0])?'checked':'')+'>'+(i+1)+'. '+x[1]+'</label>').join('')+'</div>'+

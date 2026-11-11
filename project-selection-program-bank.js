@@ -82,10 +82,10 @@ const canDelete=p=>canManage(p)&&+p.psYear===year()&&year()>=2027&&isConcept(p)&
  !(S.psWideTargets?.[year()]?.contract?.status==='Ditetapkan'&&S.psWideTargets[year()].contract.programIds?.includes(String(p.id)));
 const helpInfo={
  bank:'Riwayat Program merupakan arsip referensi lintas tahun. Pilih program untuk disalin menjadi usulan pada tahun aktif. Data historis tidak diedit di sini.',
- detail:'Usulan Program memuat calon program transformasi. Lengkapi substansi dan proyek pendukung, kemudian ajukan penetapan melalui kontrak kinerja K-Wide. Pengubahan dilakukan pada daftar ini.',
+ detail:'Usulan Program memuat calon program transformasi. Lengkapi substansi dan proyek pendukung, kemudian ajukan penetapan melalui kontrak kinerja K-Wide. Klik program untuk mengedit.',
  portfolio:'Gabungkan substansi usulan program tahun aktif menjadi dokumen portofolio. Dokumen ini tidak menggantikan penetapan melalui kontrak kinerja K-Wide.'
 };
-const infoIcon=(key)=>'<span class="psbank-helpicon" tabindex="0" role="img" aria-label="'+E(helpInfo[key])+'" title="'+E(helpInfo[key])+'">ⓘ</span>';
+const infoIcon=(key)=>'<span class="psbank-helpicon" tabindex="0" role="button" data-mt-info="'+E(helpInfo[key])+'" aria-label="Informasi: '+E(helpInfo[key])+'">ⓘ</span>';
 function deleteConcept(p){
  if(!canDelete(p)){toast('Hanya program berstatus Konsep/Draft tahun 2027 ke atas yang belum ditetapkan, belum memiliki WBS aktif, dan tidak menjadi sumber salinan yang dapat dihapus.');return}
  const perform=()=>{
@@ -194,7 +194,7 @@ function bank(){
  b.bankPage=Math.min(Math.max(1,+b.bankPage||1),pages);
  const from=(b.bankPage-1)*pageSize,pageRows=rows.slice(from,from+pageSize);
  const checked=pageRows.length>0&&pageRows.every(x=>b.check.includes(x.key));
- return '<div class="psbank-card"><div class="psbank-sectionhead"><div><h3>Riwayat Program</h3><p>Referensi histori program lintas tahun. Program dapat disalin ke tahun aktif; untuk memperbarui isian, buka Usulan Program.</p></div><div class="psbank-headright"><span class="psbank-count">'+rows.length+' entri</span>'+infoIcon('bank')+'</div></div>'+
+ return '<div class="psbank-card"><div class="psbank-sectionhead"><div><h3>Riwayat Program</h3></div><div class="psbank-headright"><span class="psbank-count">'+rows.length+' entri</span>'+infoIcon('bank')+'</div></div>'+
  '<div class="psbank-tablewrap"><table class="psbank-table psbank-history-table"><colgroup><col><col><col><col><col><col><col><col></colgroup><thead><tr>'+
  '<th class="psbank-checkcol"><input type="checkbox" data-bank-checkall '+(checked?'checked':'')+' aria-label="Pilih semua program pada halaman ini" title="Pilih semua program pada halaman ini"></th>'+
  '<th>Tahun</th><th>Kode Program</th><th>Nama Program</th><th>UIC</th><th>Status</th><th>Jumlah Modul</th><th>Aksi</th></tr></thead><tbody>'+
@@ -221,7 +221,7 @@ function detail(){
  b.detailPage=Math.min(Math.max(1,+b.detailPage||1),pages);
  const from=(b.detailPage-1)*size,visibleRows=rows.slice(from,from+size);
  const allRows=active(),complete=p=>window.MT_PS_GOV?.readiness(p)||{done:0,total:7};
- return '<div class="psbank-card"><div class="psbank-sectionhead"><div><h3>Usulan Program · '+year()+'</h3><p>Kumpulan usulan program transformasi yang perlu dilengkapi substansi dan proyeknya sebelum ditetapkan melalui kontrak kinerja K-Wide. Klik program untuk mengedit.</p></div><div class="psbank-headright"><span class="psbank-count">'+rows.length+' program</span>'+infoIcon('detail')+'</div></div>'+
+ return '<div class="psbank-card"><div class="psbank-sectionhead"><div><h3>Usulan Program · '+year()+'</h3></div><div class="psbank-headright"><span class="psbank-count">'+rows.length+' program</span>'+infoIcon('detail')+'</div></div>'+
  '<div class="psbank-tablewrap"><table class="psbank-table psbank-detail-table"><colgroup><col><col><col><col><col><col><col><col><col></colgroup><thead><tr><th>Tahun</th><th>Kode Program</th><th>Nama Program</th><th>UIC</th><th>Asal</th><th>Status</th><th>Kelengkapan</th><th>Modul</th><th>Aksi</th></tr></thead><tbody>'+
  (visibleRows.length?visibleRows.map(p=>{const readiness=complete(p);return '<tr tabindex="0" data-bank-detailrow="'+E(p.id)+'" class="psbank-clickrow" title="Klik baris untuk melihat Dokumen Program"><td>'+year()+'</td><td><b>'+E(visibleCode(p))+'</b>'+oldCodeNote(p)+'</td><td><b>'+E(p.nama)+'</b></td><td>'+E(p.uic||'—')+'</td><td>'+E(p.psCarry?'Dari '+p.psCarry.sourceYear:'Program baru')+'</td><td><span class="psbank-tag psbank-'+labelStatus(p).toLowerCase()+'" title="Status otomatis berdasarkan asal program dan persetujuan penutupan proyek">'+labelStatus(p)+'</span></td><td><b>'+readiness.done+'/'+readiness.total+'</b><small>'+E(readiness.ok?'Siap direviu':'Perlu dilengkapi')+'</small></td><td>'+Scope.modules(p,year()).length+'</td>'+
  '<td class="psbank-rowactions psbank-program-actions">'+programAction('map',p.id,'Pemetaan Proyek')+programAction('edit',p.id,'Edit Dokumen Program')+programAction('upload',p.id,'Unggah Dokumen Program')+(canDelete(p)?programAction('delete',p.id,'Hapus konsep program yang belum ditetapkan'):'')+'</td></tr>'}).join(''):'<tr><td colspan="9" class="psbank-empty">Belum ada program sesuai filter. Tambahkan program dari Riwayat Program.</td></tr>')+'</tbody></table></div>'+
@@ -746,7 +746,7 @@ if(typeof VIEW!=='undefined'&&VIEW==='project-selection'&&ME)render();
  if(!document.createElement||!document.head||typeof document.head.appendChild!=='function')return;
  window.MT_MENU_TOOLTIP_LOADER=true;
  var script=document.createElement('script');
- script.src='ui-menu-tooltips.js?v=20261109-header-vibrant-v4';
+ script.src='ui-menu-tooltips.js?v=20261111-mt13-info';
  script.async=true;
  document.head.appendChild(script);
 })();

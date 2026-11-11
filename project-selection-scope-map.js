@@ -212,7 +212,7 @@ function historyRows(p){
 function historyView(p){
  const b=mapState(),rows=historyRows(p),years=[...new Set(historyRecords().map(r=>r.y))],all=rows.length>0&&rows.every(r=>b.historySelected.includes(r.key));
  const plus='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
- return '<div class="psbank-history-projects"><div class="psbank-proposal-head"><div><h3>Riwayat Proyek</h3><p>Daftar referensi proyek lintas tahun. Klik baris untuk melihat detail; tombol + menyalin proyek ke usulan tahun tujuan tanpa mengubah WBS sumber.</p></div><div class="psbank-headright"><span class="psbank-count">'+rows.length+' proyek</span><span class="psbank-helpicon" tabindex="0" role="img" aria-label="Riwayat Proyek hanya referensi. Salin ke program tahun tujuan tanpa mengubah WBS dan realisasi historis." title="Riwayat Proyek hanya referensi. Salin ke program tahun tujuan tanpa mengubah WBS dan realisasi historis.">ⓘ</span></div></div>'+
+ return '<div class="psbank-history-projects"><div class="psbank-proposal-head"><div><h3>Riwayat Proyek</h3></div><div class="psbank-headright"><span class="psbank-count">'+rows.length+' proyek</span><span class="psbank-helpicon" tabindex="0" role="button" data-mt-info="Riwayat Proyek hanya referensi lintas tahun. Klik baris untuk melihat detail; tombol + menyalin proyek ke program tahun tujuan tanpa mengubah WBS dan realisasi historis." aria-label="Informasi: Riwayat Proyek hanya referensi lintas tahun. Klik baris untuk melihat detail; tombol + menyalin proyek ke program tahun tujuan tanpa mengubah WBS dan realisasi historis.">ⓘ</span></div></div>'+
  '<div class="psbank-history-project-controls"><label>Program Tujuan <select data-scope-history-target>'+I.programs().map(x=>'<option value="'+E(x.id)+'" '+(p?.id===x.id?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label>'+
  '<label>Tahun Sumber <select data-scope-history-year><option value="all">Semua Tahun</option>'+years.sort((a,b)=>b-a).map(y=>'<option value="'+y+'" '+(String(b.historyYear)===String(y)?'selected':'')+'>'+y+'</option>').join('')+'</select></label>'+
  '<label>Cari <input type="search" data-scope-history-search value="'+E(b.historySearch||'')+'" placeholder="Nama, kode, akronim, UIC..."></label></div>'+
@@ -318,7 +318,7 @@ function render(){
  const p=target();
  if(!p)return '<div class="psbank-card psbank-empty">Belum ada program tahun '+year()+'. Tambahkan dari Riwayat Program atau Usulan Program terlebih dahulu.</div>';
  const b=mapState(),on=MAPPING_TABS.some(x=>x[0]===b.mappingTab)?b.mappingTab:'history';
- return '<div class="psbank-card psbank-scope-stage"><div class="psbank-sectionhead"><div><h3>Pemetaan Proyek / Modul</h3><p>Tentukan ruang lingkup program, lengkapi detail usulan, tinjau hasil, lalu buat dokumen.</p></div></div>'+
+ return '<div class="psbank-card psbank-scope-stage"><div class="psbank-sectionhead"><div><h3>Pemetaan Proyek / Modul'+(typeof MT_INFO_ICON==='function'?MT_INFO_ICON:()=>'')('Tentukan ruang lingkup program, lengkapi detail usulan, tinjau hasil, lalu buat dokumen.')+'</h3></div></div>'+
  scopeTabs(on,proposalRows(p))+
  (on==='history'?historyView(p):on==='proposal'?proposalView():on==='docs'?(window.MT_PS_DOC?.portfolioBuilder?.()||'<div class="psbank-empty">Generator dokumen belum tersedia.</div>'):mappingView(p))+'</div>';
 }
