@@ -26,16 +26,24 @@ function signedRows(p){
    String(b.createdAt||'').localeCompare(String(a.createdAt||''))||
    Number(b.version||0)-Number(a.version||0));
 }
+function charterSourceProgram(p){
+ const all=(S.programs||[]).filter(x=>String(x.akr)===String(p.akr)&&x.psProgramCharter&&typeof x.psProgramCharter==='object'&&Object.keys(x.psProgramCharter).length);
+ if(p.psProgramCharter&&typeof p.psProgramCharter==='object'&&Object.keys(p.psProgramCharter).length)return p;
+ const cy=currentYear();all.sort((a,b)=>(Number(b.psYear)===cy)-(Number(a.psYear)===cy)||Number(b.psYear||0)-Number(a.psYear||0));
+ return all[0]||p;
+}
 function hasCharter(p){
  if(p.psProgramCharter&&typeof p.psProgramCharter==='object'&&Object.keys(p.psProgramCharter).length)return true;
  return (S.charters||[]).some(c=>String(c.prog)===String(p.akr)&&c.st!=='Arsip');
 }
 function buildDeck(p){
- if(!hasCharter(p))throw Error('Charter Program belum dibuat untuk program ini di Project Selection.');
+ const sourceProgram=charterSourceProgram(p);
+ if(!hasCharter(sourceProgram))throw Error('Charter Program belum dibuat untuk program ini di Project Selection.');
  if(typeof chDeck3!=='function'||typeof dkHtml!=='function'||typeof dkPptx!=='function'||!docs()?.programCharterSource)
   throw Error('Mesin dokumen Charter Program belum tersedia. Muat ulang aplikasi.');
- const year=Number(p.psYear)||currentYear();
- const deck=chDeck3(docs().programCharterSource(p,year));
+ const year=Number(sourceProgram.psYear)||currentYear();
+ const deck=chDeck3(docs().programCharterSource(sourceProgram,year),Object.assign({},sourceProgram,{kode:sourceProgram.kodeResmi||sourceProgram.kode}));
+ deck.mtSourceProgram=sourceProgram;
  if(!deck?.slides||deck.slides.length!==3)throw Error('Charter Program harus menghasilkan tiga slide.');
  return deck;
 }
@@ -149,7 +157,8 @@ function drawSlide(s,i){
  requestAnimationFrame(fit);
 }
 function showCharter(p,deck){
- const s=dialog('Charter Program',p.nama+' · '+(p.kodeResmi||p.kode||p.akr||''));
+ const origin=deck.mtSourceProgram||p;
+ const s=dialog('Charter Program',origin.nama+' · '+(origin.kodeResmi||origin.kode||origin.akr||'')+' · Tahun '+(origin.psYear||currentYear()));
  s.deck=deck;
  s.node.querySelector('[data-mtpd-footnote]').textContent='Pratinjau dan PPTX menggunakan model 3 slide yang sama · font dapat bervariasi menurut perangkat.';
  const btn=s.node.querySelector('[data-mtpd-download]');btn.disabled=false;btn.textContent='Unduh PPTX';

@@ -7358,7 +7358,7 @@ ACT.chdeck=el=>{const c=el.dataset.id?S.charters.find(x=>x.id===el.dataset.id):n
 
 
 /* ===== Ekspor charter 3 slide (format resmi Charter · Kriteria · Rencana Kerja), tampilan modern navy–emas ===== */
-function chDeck3(c){const p=chProg(c),J=chJudul(c),per=c.p1+(c.p2>c.p1?' s.d. '+c.p2:''),A=[],B=[],C=[];
+function chDeck3(c,programOverride){const p=programOverride||chProg(c),J=chJudul(c),per=c.p1+(c.p2>c.p1?' s.d. '+c.p2:''),A=[],B=[],C=[];
  const frame=(E,no,title)=>{E.push(dkR(0,0,13.33,7.5,'FFFFFF'));E.push(dkR(0,0,13.33,.1,DK.navy));E.push(dkR(0,.1,3.2,.05,DK.gold));
   E.push(dkT(.45,.28,7,.3,'KEMENTERIAN KEUANGAN REPUBLIK INDONESIA',{s:12,b:1,c:DK.mute,sp:2}));
   E.push(dkT(.45,.56,8.6,.5,title,{s:22,b:1,c:DK.navy}));E.push(dkT(.45,1.02,8.8,.36,'Program Transformasi: '+J,{s:13,c:DK.ink}));

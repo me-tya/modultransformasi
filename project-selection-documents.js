@@ -170,7 +170,7 @@ function programCharterSource(p,requestedYear){
 }
 function charterPptSlides(p){
  if(typeof chDeck3!=='function')throw new Error('Template Charter Program resmi tidak tersedia.');
- const deck=chDeck3(programCharterSource(p));
+ const deck=chDeck3(programCharterSource(p),Object.assign({},p,{kode:p.kodeResmi||p.kode}));
  if(!deck?.slides||deck.slides.length!==3)throw new Error('Template Charter Program harus berisi tiga slide.');
  return deck.slides.map((native,i)=>({
   title:native.n||['Charter Program','Kriteria Penyelesaian','Rencana Kerja'][i],
