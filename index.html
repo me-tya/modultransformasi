@@ -5284,7 +5284,7 @@ function editOneOnOne(item,step,after){
  const slSum=()=>ov.querySelectorAll('.sl').forEach(el=>{
   const A=ATT[el.dataset.slid],no=((ov.querySelector('#at-no-'+el.dataset.slid)||{}).value||'').trim(),n=A?A.items.length:0,last=n?A.items[n-1]:null,na=/^[-–—]$/.test(no);
   const c=el.querySelector('[data-slc]'),ss=el.querySelector('[data-sls]'),cb=el.querySelector('[data-slna]'),st=el.querySelector('#one-undStatus'),version=n>1?n+' versi':n?'1':'';
-  if(c)c.textContent=version;
+  if(c&&c.textContent!==version)c.textContent=version;
   const number=last&&last.no||(!na?no:'');
   const label=na?'<span class="sl-tag na">Tidak diperlukan</span>':last?'<button type="button" class="sl-no" data-slpv="'+esc(el.dataset.slid)+'" title="'+(el.dataset.sl==='und'?'Unduh surat undangan':'Lihat surat')+'">'+esc(number||last.nama||'Surat terunggah')+'</button>'+(last.hal?'<span class="sl-letter-sub" title="'+esc(last.hal)+'">'+esc(last.hal)+'</span>':''):no?'<span class="sl-letter-sub">'+esc(no)+'</span>':st&&st.value.trim()?'<span class="sl-pending">'+esc(st.value.trim())+'</span>':'Belum ada dokumen — opsional';
   if(ss&&ss.dataset.h!==label){ss.dataset.h=label;ss.innerHTML=label}
