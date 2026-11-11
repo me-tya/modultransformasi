@@ -147,7 +147,7 @@ async function exportFile(){
   if(d.format==='word'){
    if(!window.JSZip)await chLib('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',()=>!!window.JSZip);
    mtRptDownloadBlob(await mtRptDocx(m),m.fileName+'.docx');
-  }else if(d.format==='pdf')await downloadPdf(m);
+  }else if(d.format==='pdf')await (api?.exportFormalPdf?api.exportFormalPdf(m,m.fileName+'.pdf'):downloadPdf(m));
   else mtRptDownloadBlob(await rptPptx(m),m.fileName+'.pptx');
   api?.registerExport?.('planning','all',year(),d.format,m.fileName+'.'+(d.format==='word'?'docx':d.format),{sections:d.sections.slice(),programs:chosen().map(p=>p.akr)});
   toast('Dokumen Perencanaan v'+version()+' berhasil diunduh. Nomor versi baru setelah bukti TTE tercatat.');
