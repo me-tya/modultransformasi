@@ -93,7 +93,7 @@ function preview(){
    '<div class="psbank-slidecontrols"><button class="btn" data-plan-slide="-1" '+(!i?'disabled':'')+'>‹ Sebelumnya</button><span>Slide '+(i+1)+' / '+s.length+'</span><button class="btn" data-plan-slide="1" '+(i>=s.length-1?'disabled':'')+'>Berikutnya ›</button></div>';
  }
  if(typeof mtRptHtml!=='function')return '<p class="note">Mesin pratinjau belum siap.</p>';
- return '<iframe class="psbank-port-report-frame" title="Pratinjau Dokumen Perencanaan" srcdoc="'+E(mtRptHtml(model()))+'"></iframe>';
+ return '<div class="psbank-actual-view" data-doc-actual="planning" data-doc-format="'+d.format+'"><small data-actual-progress>Menyiapkan pratinjau '+(d.format==='word'?'Word':'PDF')+'…</small><iframe class="psbank-port-report-frame" title="Pratinjau Dokumen Perencanaan" srcdoc="'+E(mtRptHtml(model()))+'"></iframe></div>';
 }
 function builder(){
  const d=config(),ps=all(),selected=chosen(),keys=sections(),v=version(),api=window.MT_PS_DOC;
@@ -110,7 +110,9 @@ function builder(){
  '<div class="psbank-docpreview"><div class="psbank-docpreview-head"><div><b>Pratinjau '+(d.format==='pptx'?'PowerPoint':d.format==='pdf'?'PDF':'Word')+'</b><small>Dokumen Perencanaan · '+year()+'</small></div><span>v'+v+' · '+selected.length+' program</span></div>'+
  '<div class="psbank-docscroll">'+preview()+'</div><div class="psbank-portfolio-download"><button type="button" class="btn pri" data-plan-export '+(!selected.length||!d.sections.length?'disabled':'')+'>↓ Unduh '+(d.format==='word'?'DOCX':d.format.toUpperCase())+'</button></div></div></div></div>';
 }
+function hydrate(){const root=document.getElementById('mt-plan-builder');if(root&&config().format!=='pptx')window.MT_PS_DOC?.showActualDocumentPreview?.(root,model(),config().format)}
 function page(){
+ setTimeout(hydrate,0);
  return vh('C','pmo','Buat Dokumen Perencanaan','Pilih program dan tujuh substansi dokumen proyek, lalu pratinjau serta ekspor sesuai kebutuhan.')+pmoTabs('dokplan')+builder();
 }
 function redraw(){
@@ -119,7 +121,7 @@ function redraw(){
  const previewScroll=old.querySelector('.psbank-docscroll')?.scrollTop||0;
  old.outerHTML=builder();
  const next=document.getElementById('mt-plan-builder');
- if(next){next.querySelector('.psbank-docsettings').scrollTop=settings;next.querySelector('.psbank-docscroll').scrollTop=previewScroll}
+ if(next){next.querySelector('.psbank-docsettings').scrollTop=settings;next.querySelector('.psbank-docscroll').scrollTop=previewScroll;hydrate()}
 }
 async function downloadPdf(m){
  if(!window.jspdf)await chLib('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',()=>!!window.jspdf);
@@ -146,7 +148,7 @@ async function exportFile(){
  try{
   if(d.format==='word'){
    if(!window.JSZip)await chLib('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',()=>!!window.JSZip);
-   mtRptDownloadBlob(await mtRptDocx(m),m.fileName+'.docx');
+   mtRptDownloadBlob(api?.assertOfficialWordTemplate?await api.assertOfficialWordTemplate(await mtRptDocx(m)):await mtRptDocx(m),m.fileName+'.docx');
   }else if(d.format==='pdf')await (api?.exportFormalPdf?api.exportFormalPdf(m,m.fileName+'.pdf'):downloadPdf(m));
   else mtRptDownloadBlob(await rptPptx(m),m.fileName+'.pptx');
   api?.registerExport?.('planning','all',year(),d.format,m.fileName+'.'+(d.format==='word'?'docx':d.format),{sections:d.sections.slice(),programs:chosen().map(p=>p.akr)});
