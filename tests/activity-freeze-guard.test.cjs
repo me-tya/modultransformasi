@@ -7,8 +7,8 @@ const vm=require('node:vm');
 
 test('Aktivitas: pembaruan ringkasan lampiran tidak memicu mutasi DOM berulang',()=>{
   const source=fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');
-  const start=source.indexOf('  const slSum=()=>');
-  const end=source.indexOf("\n  ATT['one-und'].cb",start);
+  const start=source.indexOf(' const slSum=()=>');
+  const end=source.indexOf("\n ATT['one-und'].cb",start);
   assert.ok(start>0&&end>start,'Implementasi slSum ditemukan');
   assert.match(source,/new MutationObserver\(upd\)\.observe\(ov\.querySelector\('\.sw-bd'\),/);
   let countWrites=0,labelWrites=0;
