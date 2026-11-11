@@ -216,7 +216,7 @@ function bank(){
 }
 function detail(){
  const b=store(),q=String(b.search||'').toLowerCase(),status=b.filterStatus||'all';
- const rows=active().filter(p=>(!b.detailProgram||p.id===b.detailProgram)&&matchesOrigin(p,b.filterOrigin)&&[p.nama,p.kodeResmi,p.kode,p.uic,p.akr].join(' ').toLowerCase().includes(q)&&(status==='all'||labelStatus(p)===status)&&matchesUnit(p,b.filterUnit,b.filterRole)&&matchesPeriod(p,b.filterPeriod,b.filterRangeFrom,b.filterRangeTo));
+ const rows=active().filter(p=>(!b.filterReady||b.filterReady==='all'||(b.filterReady==='ok')===!!(window.MT_PS_GOV?.readiness?.(p)||{}).ok)&&(!b.detailProgram||p.id===b.detailProgram)&&matchesOrigin(p,b.filterOrigin)&&[p.nama,p.kodeResmi,p.kode,p.uic,p.akr].join(' ').toLowerCase().includes(q)&&(status==='all'||labelStatus(p)===status)&&matchesUnit(p,b.filterUnit,b.filterRole)&&matchesPeriod(p,b.filterPeriod,b.filterRangeFrom,b.filterRangeTo));
  const size=b.detailPageSize,pages=Math.max(1,Math.ceil(rows.length/size));
  b.detailPage=Math.min(Math.max(1,+b.detailPage||1),pages);
  const from=(b.detailPage-1)*size,visibleRows=rows.slice(from,from+size);
@@ -243,7 +243,7 @@ function usulan(){
  const b=store(),tab=b.tab;
  return '<div class="psbank-subhead"><nav class="psbank-subtabs" role="tablist" aria-label="Usulan Program">'+
  [['bank','Riwayat Program'],['detail','Usulan Program'],['portfolio','Buat Dokumen Portofolio']].map(t=>'<button type="button" class="'+(tab===t[0]?'on':'')+'" data-bank-tab="'+t[0]+'" title="'+E(helpInfo[t[0]])+'">'+t[1]+(t[0]==='detail'?' <b>'+active().length+'</b>':'')+'</button>').join('')+
- '</nav>'+(tab==='detail'?'<button class="btn pri" data-bank-new>+ Tambah Program Baru</button>':'')+'</div>'+
+ '</nav>'+(tab!=='portfolio'?(typeof MT_TABSEARCH==='function'?MT_TABSEARCH:()=>'')('ps-usulan',b.search,tab==='bank'?'Cari nama program, kode atau UIC...':'Cari nama program, kode atau UIC...'):'')+(tab==='detail'?'<button class="btn pri" data-bank-new>+ Tambah Program Baru</button>':'')+'</div>'+
  (tab==='bank'?bank():tab==='portfolio'?(Docs.portfolioBuilder?.(active())||'<div class="psbank-card">Fitur dokumen portofolio belum tersedia.</div>'):detail());
 }
 const EDIT_FIELDS={

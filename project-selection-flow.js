@@ -135,8 +135,14 @@ function projectsPage(p){
  '<button type="button" class="prio-kpi k-top'+(active==='top'?' is-filtered':'')+'" data-pswf-kpi="top" aria-pressed="'+(active==='top')+'" title="Tampilkan proyek skor tertinggi"><small>Prioritas teratas</small><b>'+(top?esc2(top.x.name):'—')+'</b><small>'+(top?labelScore(top.r):'Belum ada penilaian')+'</small></button></div>';
  h+='<div class="prio-toolbar prio-toolbar-compact"><span class="pswf-sp"></span><span class="prio-toolbar-label">Urutkan</span><div class="prio-seg">'+[['score','Skor ↓'],['golive','Go-live'],['name','Nama']].map(t=>'<button type="button" class="'+(u.sort===t[0]?'on':'')+'" data-pswf-sort="'+t[0]+'">'+t[1]+'</button>').join('')+'</div>'+
  '<div class="prio-seg">'+[['list','☰ Daftar'],['quad','◫ Kuadran']].map(t=>'<button type="button" class="'+(u.view===t[0]?'on':'')+'" data-pswf-view="'+t[0]+'">'+t[1]+'</button>').join('')+'</div></div>';
+ // Filter panel Prioritasi (UIC, Status Penilaian) + kolom Cari di samping tab.
+ const pf=(S.ui&&S.ui.psBank&&S.ui.psBank.filterScopes&&S.ui.psBank.filterScopes.prioritasi)||{},pq=String(pf.search||'').trim().toLowerCase();
  const filtered=scored.filter(z=>{
   const x=z.x,r=z.r,st=x.status||'Usulan',sel=included(x,p);
+  if(pf.unit&&pf.unit!=='all'&&(x.uic||p.uic)!==pf.unit)return false;
+  if(pf.status==='Sudah Dinilai'&&r.score==null)return false;
+  if(pf.status==='Belum Dinilai'&&r.score!=null)return false;
+  if(pq&&![x.name,x.applicationName,x.uic,x.category,x.psAcronym,st].join(' ').toLowerCase().includes(pq))return false;
   if(u.filter==='top'&&(!top||top.x.id!==x.id))return false;
   if(u.filter==='selected'&&!sel)return false;
   if(['Usulan','Berjalan'].includes(u.filter)&&st!==u.filter)return false;

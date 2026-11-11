@@ -170,7 +170,7 @@ function proposalView(){
  const shown=programs.filter(p=>matched(p).length||(!q&&(!filter.status||filter.status==='all')&&(!filter.unit||filter.unit==='all')&&(!filter.category||filter.category==='all')));
  const total=shown.reduce((n,p)=>n+matched(p).length,0),state=mapState();state.proposalPaging=state.proposalPaging||{};
  return '<section class="psbank-proposals-detail psbank-proposal-groups"><div class="psbank-proposal-head"><div><h3>Usulan Proyek · '+year()+'</h3></div><div class="psbank-headright"><span class="psbank-count">'+shown.length+' program · '+total+' proyek</span></div></div>'+
- '<div class="psbank-proposal-controlbar"><label>Pilih Program<select data-scope-proposal-program><option value="">Semua Program</option>'+I.programs().map(p=>'<option value="'+E(p.id)+'" '+(String(filter.program||'')===String(p.id)?'selected':'')+'>'+E(p.nama)+'</option>').join('')+'</select></label><label>Cari Usulan Proyek<input type="search" data-scope-proposal-search value="'+E(filter.search||'')+'" placeholder="Nama, kode, deskripsi, aplikasi atau UIC..."></label></div>'+
+ 
  (shown.length?shown.map(p=>{
   const rows=matched(p),expanded=state.programOpen[p.id]!==false,editable=can(p),code=p.kodeResmi||'Belum ditetapkan',internalRef=p.kode||p.akr;
   const paging=state.proposalPaging[p.id]||(state.proposalPaging[p.id]={page:1,size:10});
@@ -206,16 +206,16 @@ function historyRecords(){
 }
 function historyRows(p){
  const b=mapState(),q=String(b.historySearch||'').toLowerCase();
- return historyRecords().filter(r=>!(p&&r.p.id===p.id&&r.y===year())&&(b.historyYear==='all'||+b.historyYear===r.y)&&
+ const hp=String(b.historyProgram||'all'),hu=String(b.historyUnit||'all');
+ return historyRecords().filter(r=>!(p&&r.p.id===p.id&&r.y===year())&&(b.historyYear==='all'||+b.historyYear===r.y)&&(hp==='all'||r.p.nama===hp)&&(hu==='all'||(r.x.uic||r.p.uic)===hu)&&
   [r.x.name,r.p.nama,r.p.kode,r.x.uic,codeFor(r.p,r.x.original||{name:r.x.name})].join(' ').toLowerCase().includes(q));
 }
 function historyView(p){
  const b=mapState(),rows=historyRows(p),years=[...new Set(historyRecords().map(r=>r.y))],all=rows.length>0&&rows.every(r=>b.historySelected.includes(r.key));
  const plus='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
  return '<div class="psbank-history-projects"><div class="psbank-proposal-head"><div><h3>Riwayat Proyek</h3></div><div class="psbank-headright"><span class="psbank-count">'+rows.length+' proyek</span><span class="psbank-helpicon" tabindex="0" role="button" data-mt-info="Riwayat Proyek hanya referensi lintas tahun. Klik baris untuk melihat detail; tombol + menyalin proyek ke program tahun tujuan tanpa mengubah WBS dan realisasi historis." aria-label="Informasi: Riwayat Proyek hanya referensi lintas tahun. Klik baris untuk melihat detail; tombol + menyalin proyek ke program tahun tujuan tanpa mengubah WBS dan realisasi historis.">ⓘ</span></div></div>'+
- '<div class="psbank-history-project-controls"><label>Program Tujuan <select data-scope-history-target>'+I.programs().map(x=>'<option value="'+E(x.id)+'" '+(p?.id===x.id?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label>'+
- '<label>Tahun Sumber <select data-scope-history-year><option value="all">Semua Tahun</option>'+years.sort((a,b)=>b-a).map(y=>'<option value="'+y+'" '+(String(b.historyYear)===String(y)?'selected':'')+'>'+y+'</option>').join('')+'</select></label>'+
- '<label>Cari <input type="search" data-scope-history-search value="'+E(b.historySearch||'')+'" placeholder="Nama, kode, akronim, UIC..."></label></div>'+
+ '<div class="psbank-history-project-controls psbank-history-target"><label>Program Tujuan <select data-scope-history-target>'+I.programs().map(x=>'<option value="'+E(x.id)+'" '+(p?.id===x.id?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label>'+
+ '</div>'+
  '<div class="psbank-tablewrap psbank-project-history-wrap"><table class="psbank-table psbank-project-history-table"><colgroup><col class="pshist-check"><col class="pshist-year"><col class="pshist-code"><col class="pshist-name"><col class="pshist-program"><col class="pshist-uic"><col class="pshist-action"></colgroup><thead><tr><th><input type="checkbox" data-scope-history-all '+(all?'checked':'')+' aria-label="Pilih semua hasil filter"></th><th>Tahun</th><th>Kode Proyek</th><th>Nama Proyek / Modul</th><th>Program Sumber</th><th>UIC</th><th>Aksi</th></tr></thead><tbody>'+
  (rows.length?rows.map(r=>'<tr tabindex="0" class="psbank-clickrow pshist-clickrow" data-scope-history-detail="'+E(r.key)+'" title="Klik untuk melihat detail proyek '+E(r.x.name)+'" aria-label="Lihat detail proyek '+E(r.x.name)+'"><td class="psbank-checkcol"><input type="checkbox" data-scope-history-check="'+E(r.key)+'" '+(b.historySelected.includes(r.key)?'checked':'')+' aria-label="Pilih '+E(r.x.name)+'"></td><td class="pshist-year-cell">'+r.y+'</td><td><b>'+E(codeFor(r.p,r.x.original||{name:r.x.name}))+'</b></td><td class="pshist-name-cell"><b>'+E(r.x.name)+'</b></td><td>'+E(r.p.nama)+'</td><td>'+E(r.x.uic||r.p.uic||'—')+'</td><td class="psbank-rowactions"><button type="button" class="psbank-action-icon psbank-program-action add" data-scope-history-add="'+E(r.key)+'" title="Tambahkan Proyek ke Program Tujuan" aria-label="Tambahkan '+E(r.x.name)+' ke Program Tujuan" '+(!can(p)?'disabled':'')+'>'+plus+'</button></td></tr>').join(''):'<tr><td colspan="7" class="psbank-empty">Tidak ada proyek sesuai filter.</td></tr>')+'</tbody></table></div>'+
  '<div class="psbank-history-project-foot"><small>'+b.historySelected.length+' dipilih · kode proyek tujuan mengikuti program dan akronim yang dapat diedit.</small><button type="button" class="btn pri" data-scope-history-bulk '+(!can(p)||!b.historySelected.length?'disabled':'')+'>+ Tambahkan ke Program Tujuan</button></div></div>';
@@ -283,7 +283,7 @@ const MAPPING_TABS=[['history','Riwayat Proyek','Referensi proyek lintas tahun; 
 function scopeTabs(on,rows){
  return '<div class="psbank-scope-tabline"><nav class="psbank-mapping-tabs" role="tablist" aria-label="Tahapan Pemetaan Proyek">'+
  MAPPING_TABS.map(x=>'<button type="button" role="tab" data-scope-tab="'+x[0]+'" title="'+E(x[2])+'" aria-label="'+E(x[1]+'. '+x[2])+'" aria-selected="'+(on===x[0])+'" class="'+(on===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+
- '</nav></div>';
+ '</nav>'+(on==='history'?(typeof MT_TABSEARCH==='function'?MT_TABSEARCH:()=>'')('ps-history',mapState().historySearch,'Cari nama proyek, kode, program atau UIC...'):on==='proposal'?(typeof MT_TABSEARCH==='function'?MT_TABSEARCH:()=>'')('ps-proposal',S.ui?.psBank?.filterScopes?.mapping?.search,'Cari proyek, aplikasi, deskripsi atau UIC...'):'')+'</div>';
 }
 function aggregateView(){
  const b=mapState(),on=MAPPING_TABS.some(x=>x[0]===b.mappingTab)?b.mappingTab:'history',y=year();
@@ -482,5 +482,5 @@ function change(ev){
  return false;
 }
 if(typeof document!=='undefined'&&typeof document.addEventListener==='function')document.addEventListener('keydown',ev=>{if(ev.key!=='Enter'&&ev.key!==' ')return;const row=ev.target.closest?.('tr[data-scope-history-detail]');if(row&&ev.target===row){ev.preventDefault();historyDetail(row.dataset.scopeHistoryDetail);return}const rec=ev.target.closest?.('tr[data-scope-aggregate-view]');if(rec&&ev.target===rec){ev.preventDefault();click({target:rec})}});
-window.MT_PS_SCOPE={modules,sourceWbs,render,transfer,click,change,bank,target,codeFor,currentCode,suggestedAcronym,normalizeProjectCodes,projectFields:PROJECT_FIELDS,projectValue,projectCategory,version:'20261109-project-recap-v6'};
+window.MT_PS_SCOPE={historyRecords,modules,sourceWbs,render,transfer,click,change,bank,target,codeFor,currentCode,suggestedAcronym,normalizeProjectCodes,projectFields:PROJECT_FIELDS,projectValue,projectCategory,version:'20261109-project-recap-v6'};
 })();

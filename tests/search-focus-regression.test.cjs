@@ -33,5 +33,6 @@ test('project history is first; redundant Pemetaan tab is absent', () => {
   const code = read('project-selection-scope-map.js');
   assert.match(code, /const MAPPING_TABS=\[\['history','Riwayat Proyek'/);
   assert.doesNotMatch(code, /\['mapping','Pemetaan'\]/);
-  assert.match(code, /data-scope-history-search/);
+  // Cari Riwayat Proyek kini berada di samping tab (mt-filter-kit), bukan di badan tabel.
+  assert.match(code, /MT_TABSEARCH:\(\)=>''\)\('ps-history'/);
 });
