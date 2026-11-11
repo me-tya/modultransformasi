@@ -183,7 +183,8 @@ function filter(p){
   fields+=programField+statusField+
    '<label>Status Kontrak'+mkSel('data-ps27-contract-status',['all','Konsep','Ditetapkan'],String(f.contractStatus||'all'),'Semua Status')+'</label>';
  }else if(stage==='rkmk')fields+=programField+statusField;
- const searchAlreadyInBody=stage==='mapping'&&(sub==='proposal'||sub==='history');
+ // Tab "Buat Dokumen Proyek" (sub docs) tidak memakai pencarian: generator dokumen memilih proyek lewat checklist sendiri.
+ const searchAlreadyInBody=stage==='mapping'&&(sub==='proposal'||sub==='history'||sub==='docs');
  const placeholder=stage==='mapping'?'Cari proyek, aplikasi, kode atau UIC...':
   stage==='usulan'?'Cari program, kode atau UIC...':
   stage==='charter'?'Cari isi atau bagian Charter...':
