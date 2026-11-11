@@ -7,9 +7,9 @@ const esc=value=>String(value==null?'':value).replace(/&/g,'&amp;').replace(/</g
 let active=null;
 const docs=()=>window.MT_PS_DOC;
 const currentYear=()=>Number(S?.ui?.tahun)||2026;
-function findProgram(code){
+function findProgram(code,id){
  const all=Array.isArray(S?.programs)?S.programs:[];
- return all.find(p=>String(p.akr)===String(code))||all.find(p=>String(p.id)===String(code))||null;
+ return (id?all.find(p=>String(p.id)===String(id)):null)||all.find(p=>String(p.akr)===String(code))||all.find(p=>String(p.id)===String(code))||null;
 }
 function signedRows(p){
  const ids=new Set([p.id,p.akr].filter(Boolean).map(String));
@@ -171,7 +171,7 @@ function errorDialog(title,detail){
  message(s,'Dokumen belum tersedia',detail);
 }
 async function handle(button){
- const p=findProgram(button?.dataset?.p),kind=button?.dataset?.kind,mode=button?.dataset?.mode;
+ const p=findProgram(button?.dataset?.p,button?.dataset?.programId),kind=button?.dataset?.kind,mode=button?.dataset?.mode;
  if(!p)return errorDialog('Dokumen Program','Program tidak ditemukan pada data aplikasi.');
  if(kind==='program'){
   const rows=signedRows(p);
