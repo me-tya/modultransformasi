@@ -74,7 +74,7 @@ function model(){
   fileName:'Dokumen_Perencanaan_Proyek_'+year()+'_v'+v,header:'Dokumen Perencanaan Proyek · '+year(),
   cover:{kicker:'DOKUMEN PERENCANAAN PROYEK',title:'Kompilasi Dokumen Perencanaan',subject:'Tahun Anggaran '+year(),chips:[data.length+' program',d.sections.length+' substansi','Draft v'+v],scope:[],
    meta:[['Nomor Dokumen',t.number||'Belum ditetapkan'],['Tahun Anggaran',String(year())],['Versi','v'+v],['Program terpilih',String(data.length)],['Pengelola',ME?.unit||'PMO Kementerian Keuangan']],
-   noTte:!d.sign,tte:{name:t.name,title:t.title,label:t.label,city:t.city,date:t.date}}},blocks:B};
+   noTte:!d.sign,tte:{name:t.name,title:t.title,label:t.label,city:t.city,date:t.date}},blocks:B};
 }
 function slides(){
  const data=bundle(),pages=[{title:'Dokumen Perencanaan Proyek',sub:'Tahun Anggaran '+year(),rows:[['Program',String(data.length)],['Substansi',String(config().sections.length)],['Versi','v'+version()]]}];
