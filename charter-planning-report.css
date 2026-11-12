@@ -12,14 +12,14 @@
 .cp-modal{display:flex;flex-direction:column;gap:10px;min-height:320px}
 .cp-control-panel{background:#f6f9fd;border:1px solid #d6e3f3;border-radius:10px;padding:13px 15px}
 .cp-note{display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px;color:#14345d;font-size:12px}
-.cp-note small{color:#677b95}
+.cp-note small{color:#5F6B85}
 .cp-config{border:1px solid #dce5f1;border-radius:9px;background:white;margin:8px 0}
 .cp-config>summary{font-size:12px;font-weight:800;cursor:pointer;color:#183b6c;padding:10px 12px}
-.cp-config>summary b{font-weight:700;color:#6c7891;margin-left:7px}
+.cp-config>summary b{font-weight:700;color:#5F6B85;margin-left:7px}
 .cp-check-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:0 12px 12px}
 .cp-check-grid label{display:flex;align-items:center;gap:8px;font-size:12px;color:#244269;border:1px solid #e4ebf5;border-radius:7px;padding:7px 9px;cursor:pointer}
 .cp-check-grid input,.cp-opt-grid input{accent-color:#1d61a8;width:15px;height:15px}
-.cp-check-grid label b{color:#7b8ca4}
+.cp-check-grid label b{color:#5F6B85}
 .cp-tools{display:flex;gap:6px;padding:0 12px 12px}
 .cp-tools button{background:#f6f9fe;border:1px solid #cfddec;color:#1d5795;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:11px}
 .cp-tools button:hover{background:#eaf3ff}
@@ -40,7 +40,7 @@
 #app .cp-report-inline{padding:12px;background:#fff}
 #app .cp-inline-top{display:flex;align-items:center;gap:12px;min-height:49px;justify-content:flex-end;padding:0 2px 10px}
 #app .cp-inline-top>span{min-width:0;flex:1;font-size:13px;color:#15395c}
-#app .cp-inline-top>span small{display:block;color:#7a8ca0;font-size:11px;margin-top:3px}
+#app .cp-inline-top>span small{display:block;color:#5F6B85;font-size:11px;margin-top:3px}
 #app .cp-inline-top label{display:flex;align-items:center;gap:9px;color:#345879;font:750 11.5px 'Inter',sans-serif}
 #app .cp-inline-top select{min-width:175px;height:36px;padding:7px 10px;border-radius:7px;border:1px solid #cbd8e8;color:#20486d;background:#fff;font:650 11.5px 'Inter',sans-serif}
 #app .cp-report-inline .cp-modal{display:grid;grid-template-columns:minmax(310px,.86fr) minmax(0,1.14fr);gap:12px;height:min(69vh,700px);min-height:510px;align-items:stretch}
@@ -65,16 +65,16 @@
 #app .cp-report-inline .cp-frame-wrap{height:100%;display:flex;flex-direction:column}
 #app .cp-report-inline .cp-frame-wrap #cp-report-frame{min-height:0;height:auto;flex:1}
 #app .cp-report-inline .cp-frame-wrap .cp-inline-slides{min-height:0;flex:1}
-#app .cp-report-inline .cp-inline-download{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:0 0 auto;padding:10px 12px;background:#fff;border-top:1px solid #d9e4ef;font:600 10.7px 'Inter',sans-serif;color:#71849b}
+#app .cp-report-inline .cp-inline-download{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:0 0 auto;padding:10px 12px;background:#fff;border-top:1px solid #d9e4ef;font:600 11px 'Inter',sans-serif;color:#5F6B85}
 #app .cp-inline-download>div{display:flex;align-items:center;gap:7px}
 #app .cp-inline-download .btn{min-height:35px}
 #app .cp-inline-download .btn.pri{background:#123760;color:#fff}
 #app .cp-report-inline .cp-version-panel{margin-top:10px}
 #app .cp-report-inline .psbank-version-panel{margin-top:8px;border:1px solid #d6e2f0;border-radius:8px;background:#fff}
 #app .cp-report-inline .psbank-version-panel summary{padding:9px 10px;font-size:11px;font-weight:750;color:#254b6d;cursor:pointer}
-#app .cp-report-inline .psbank-version-panel p{padding:0 10px;font-size:10.3px;color:#657f97}
-#app .cp-report-inline .psbank-version-upload{padding:7px 10px;display:grid;gap:7px;font-size:10.7px}
+#app .cp-report-inline .psbank-version-panel p{padding:0 10px;font-size:11px;color:#5F6B85}
+#app .cp-report-inline .psbank-version-upload{padding:7px 10px;display:grid;gap:7px;font-size:11px}
 #app .cp-report-inline .psbank-version-upload label{display:grid;gap:5px}
 #app .cp-report-inline .psbank-version-rows>div{padding:7px 10px;border-top:1px solid #e0e9f1}
-#app .cp-report-inline .psbank-version-rows span{display:block;font-size:10px;color:#71859c}
+#app .cp-report-inline .psbank-version-rows span{display:block;font-size:11px;color:#5F6B85}
 @media(max-width:900px){#app .cp-report-inline .cp-modal{grid-template-columns:1fr;height:auto}#app .cp-report-inline .cp-frame-wrap{height:520px}}

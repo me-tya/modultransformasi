@@ -36,5 +36,5 @@
 .mtpd-slide-controls>div{display:flex;gap:6px}
 .mtpd-slide-controls button{padding:7px 10px;border-radius:7px;border:1px solid #cbd7e7;background:#fff;color:#17416e;font:inherit;font-size:11.5px;font-weight:700;cursor:pointer}
 .mtpd-slide-controls button:disabled{opacity:.45;cursor:default}
-@media(max-width:990px){.pm-program-aside{max-width:65%}.mtpd-group>span{font-size:10.5px}}
+@media(max-width:990px){.pm-program-aside{max-width:65%}.mtpd-group>span{font-size:11px}}
 @media(max-width:700px){.pm-program-aside{max-width:100%;align-items:flex-start}.mtpd-backdrop{padding:6px}.mtpd-dialog{height:97dvh}.mtpd-slide-panel{grid-template-columns:1fr}.mtpd-slide-nav{flex-direction:row;overflow:auto}.mtpd-slide-nav button{flex:1;padding:7px;white-space:nowrap}.mtpd-slide-nav button b{font-size:10px}.mtpd-footer{align-items:flex-start;flex-direction:column}.mtpd-slide-box{max-height:none}}

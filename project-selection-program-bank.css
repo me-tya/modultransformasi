@@ -3,12 +3,12 @@
 #app .psbank-subtabs{display:flex;align-items:stretch;gap:4px;overflow-x:auto}
 #app .psbank-subtabs button{background:transparent;border:1px solid transparent;border-bottom:3px solid transparent;border-radius:9px 9px 0 0;padding:9px 17px;color:#63748e;white-space:nowrap;font:750 12.5px 'Inter',sans-serif;cursor:pointer}
 #app .psbank-subtabs button.on{background:#fff;color:#0d305a;border-color:#dbe3ef;border-bottom-color:#ffc12b}
-#app .psbank-subtabs b{background:#e6eef9;border-radius:15px;padding:3px 7px;margin-left:5px;font-size:10px;color:#244f78}
+#app .psbank-subtabs b{background:#e6eef9;border-radius:15px;padding:3px 7px;margin-left:5px;font-size:11px;color:#244f78}
 #app .psbank-subhead>.btn{align-self:center;white-space:nowrap}
 #app .psbank-card{background:#fff;border:1px solid #dce4ef;border-radius:13px;padding:14px 16px;min-width:0;font-family:'Inter',sans-serif;font-size:12.5px}
 #app .psbank-sectionhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px}
 #app .psbank-sectionhead h3{font:800 15px/1.3 'Inter',sans-serif;color:#102f57;margin:0 0 3px}
-#app .psbank-sectionhead p{font:400 12px/1.5 'Inter',sans-serif;color:#697d94;margin:0}
+#app .psbank-sectionhead p{font:400 12px/1.5 'Inter',sans-serif;color:#5F6B85;margin:0}
 #app .psbank-sectionhead>.btn{white-space:nowrap}
 #app .psbank-count{display:inline-flex;align-items:center;padding:6px 10px;background:#eff5fc;color:#22547f;border-radius:7px;font-weight:750;font-size:11px;white-space:nowrap}
 #app .psbank-toolbar{display:flex;align-items:end;gap:10px;flex-wrap:wrap;padding:0 0 12px}
@@ -25,7 +25,7 @@
 #app .psbank-table td:nth-child(3){min-width:175px}
 #app .psbank-table td:nth-child(3) input{width:100%;min-width:150px}
 #app .psbank-table td b{color:#173a60;font-weight:750}
-#app .psbank-table td small{display:block;margin-top:3px;color:#7c8fa1;font-size:10.8px}
+#app .psbank-table td small{display:block;margin-top:3px;color:#5F6B85;font-size:11px}
 #app .psbank-table .psbank-clickrow{cursor:pointer}
 #app .psbank-table .psbank-clickrow:hover td{background:#f5f9ff}
 #app .psbank-table .psbank-selected td{background:#f0f6ff}
@@ -37,15 +37,15 @@
 #app .psbank-tag.psbank-baru{background:#eaf9ef;color:#24734f}
 #app .psbank-tag.psbank-legacy{background:#eaf2fb;color:#2f6089}
 #app .psbank-tag.psbank-arsip{background:#eef0f2;color:#6c7885}
-#app .psbank-note{margin-top:11px;font-size:11.5px;line-height:1.5;color:#647a8e}
-#app .psbank-muted{font-size:11px;color:#8797a5}
-#app .psbank-empty{padding:23px 14px;text-align:center;color:#73859c}
+#app .psbank-note{margin-top:11px;font-size:11.5px;line-height:1.5;color:#5F6B85}
+#app .psbank-muted{font-size:11px;color:#5F6B85}
+#app .psbank-empty{padding:23px 14px;text-align:center;color:#5F6B85}
 #app .psbank-workspace{margin-top:13px}
 #app .psbank-steptabs{display:flex;overflow-x:auto;gap:0;border:1px solid #dfe7f1;background:#f2f5fb;border-radius:10px;margin-bottom:11px;scrollbar-width:thin}
 #app .psbank-steptabs button{display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;flex:1;min-height:47px;padding:9px 11px;font:750 11.5px 'Inter',sans-serif;border:0;border-right:1px solid #dce5ee;background:transparent;color:#58718b;cursor:pointer}
 #app .psbank-steptabs button:last-child{border-right:0}
 #app .psbank-steptabs button.on{background:#1f5280;color:#fff}
-#app .psbank-steptabs em{font-style:normal;font-size:10.5px;color:inherit}
+#app .psbank-steptabs em{font-style:normal;font-size:11px;color:inherit}
 #app .psbank-native .psgov{margin:0}
 #app .psbank-native .psgov-main{padding:9px 0 0}
 #app .psbank-native .psgov-summ{margin-bottom:8px}
@@ -53,12 +53,12 @@
 #app .psbank-mapcols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:12px;align-items:start}
 #app .psbank-mapbox{min-width:0;background:#fbfcfe;border:1px solid #dce5ef;border-radius:11px;padding:13px}
 #app .psbank-mapbox h4{color:#1a466f;margin:0 0 3px;font:800 13px 'Inter',sans-serif}
-#app .psbank-mapbox p{margin:0 0 12px;color:#6c7f93;font-size:11.5px;line-height:1.5}
+#app .psbank-mapbox p{margin:0 0 12px;color:#5F6B85;font-size:11.5px;line-height:1.5}
 #app .psbank-mapitems{display:flex;flex-direction:column;gap:6px;max-height:490px;overflow:auto;padding-right:3px;scrollbar-width:thin}
 #app .psbank-mapitems>article{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;border:1px solid #e2e9f2;border-radius:9px;padding:9px 11px}
 #app .psbank-mapitems>article>div:first-child{min-width:0;flex:1}
 #app .psbank-mapitems>article b{display:block;color:#20436b;font-size:12px;line-height:1.35}
-#app .psbank-mapitems>article small,#app .psbank-catalogitem small{display:block;color:#788a9b;font-size:10.5px;margin-top:4px}
+#app .psbank-mapitems>article small,#app .psbank-catalogitem small{display:block;color:#5F6B85;font-size:11px;margin-top:4px}
 #app .psbank-mapcontrols{display:grid;grid-template-columns:130px minmax(0,1fr);gap:8px;margin-bottom:10px}
 #app .psbank-mapcontrols label,.psbank-searchlabel,#app .psbank-toolbar label{min-width:0}
 #app .psbank-mapcontrols label,.psbank-searchlabel{display:flex;flex-direction:column;gap:5px;color:#315574;font-size:11.5px;font-weight:750}
@@ -103,9 +103,9 @@
 #app .psbank-docsettings,#app .psbank-docpreview{background:#f5f8fc;border:1px solid #dae4ef;border-radius:10px;overflow:hidden;min-width:0}
 #app .psbank-docsettings{padding:14px;display:flex;flex-direction:column;gap:11px}
 #app .psbank-docsetting-head h3{font:800 14px 'Inter',sans-serif;color:#17395e;margin:0 0 4px}
-#app .psbank-docsetting-head p{font-size:11.5px;color:#718298;line-height:1.45;margin:0}
+#app .psbank-docsetting-head p{font-size:11.5px;color:#5F6B85;line-height:1.45;margin:0}
 #app .psbank-doccheckhead{display:flex;align-items:center;justify-content:space-between;gap:6px;color:#1a466f;font-weight:800;font-size:12px}
-#app .psbank-doccheckhead span{color:#647b93;font-size:11px}
+#app .psbank-doccheckhead span{color:#5F6B85;font-size:11px}
 #app .psbank-docchecks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:9px;background:#fff;border:1px solid #dce6ef;border-radius:9px}
 #app .psbank-docchecks label,#app .psbank-docextras label{display:flex;align-items:center;gap:8px;border:1px solid #e1e9f1;border-radius:8px;background:#fff;padding:9px 11px;font-size:11.5px;color:#365777;min-width:0;line-height:1.4;cursor:pointer}
 #app .psbank-docchecks label input,#app .psbank-docextras label input{accent-color:#1f5a8c;width:15px;height:15px;flex-shrink:0}
@@ -131,11 +131,11 @@
 #app .psbank-doctoc b{color:#183c63;margin-bottom:4px}
 #app .psbank-docsection{padding:16px 0;border-bottom:1px solid #e2e8f1}
 #app .psbank-docsection h4{font-size:13px;color:#123d68;margin:0 0 9px;border-left:4px solid #ffc22d;padding-left:10px}
-#app .psbank-docsection table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:10.8px}
+#app .psbank-docsection table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px}
 #app .psbank-docsection th{width:33%;text-align:left;background:#eff4fa;color:#204b71;font-weight:750}
 #app .psbank-docsection th,#app .psbank-docsection td{border:1px solid #dfe7ef;padding:8px 10px;vertical-align:top;overflow-wrap:anywhere;line-height:1.5}
 #app .psbank-docsignature{margin:30px 0;text-align:right;padding-right:15px}
-#app .psbank-docfoot{font-size:10px;color:#7b8ca0;text-align:right;margin:20px 0 0}
+#app .psbank-docfoot{font-size:11px;color:#5F6B85;text-align:right;margin:20px 0 0}
 #app .psbank-slidepreview{aspect-ratio:16/9;width:100%;min-height:420px;background:white;border-top:7px solid #ffbb21;box-shadow:0 3px 13px #0b24472a;padding:22px 26px;display:flex;flex-direction:column}
 #app .psbank-slidetop{display:flex;justify-content:space-between;color:#255075;font-size:10px;font-weight:800;letter-spacing:.08em}
 #app .psbank-slidetop strong{background:#102d55;color:#ffc62d;padding:6px 13px;border-radius:18px;font-size:10px}
@@ -175,7 +175,7 @@
 .psbank-carry-item{display:grid;grid-template-columns:minmax(0,1fr) minmax(200px,1.2fr) 116px;gap:12px;align-items:center;padding:12px;background:white;border:1px solid #dce6f1;border-radius:10px}
 .psbank-carry-item>div:first-child{min-width:0}
 .psbank-carry-item b{font-size:12px;color:#183e65}
-.psbank-carry-item small{display:block;font-size:10.5px;color:#74899f;margin-top:3px}
+.psbank-carry-item small{display:block;font-size:11px;color:#5F6B85;margin-top:3px}
 .psbank-carry-item label{font-size:11px;font-weight:750;color:#325b7d}
 .psbank-carry-item label input{margin-top:5px}
 .psbank-carry-code{font-size:12px;font-weight:800;color:#174d7d;background:#edf5ff;border-radius:8px;text-align:center;padding:11px 6px;overflow-wrap:anywhere}
@@ -217,20 +217,20 @@
 #app .psbank-version-panel{margin:9px 0 0;background:#fff;border:1px solid #dce6ef;border-radius:9px;overflow:hidden;font:11px 'Inter',sans-serif}
 #app .psbank-version-panel>summary{padding:10px 11px;font-weight:800;color:#173e69;cursor:pointer}
 #app .psbank-version-panel>summary b{margin-left:7px;color:#855d00}
-#app .psbank-version-panel p{margin:8px 11px;font-size:10.7px;line-height:1.5;color:#62778c}
+#app .psbank-version-panel p{margin:8px 11px;font-size:11px;line-height:1.5;color:#62778c}
 #app .psbank-version-upload{padding:8px 11px;display:flex;flex-direction:column;gap:8px}
 #app .psbank-version-upload>label{display:flex;flex-direction:column;gap:5px;color:#2b5070;font-weight:750}
-#app .psbank-version-upload input[type=file]{font-size:10px;max-width:100%}
+#app .psbank-version-upload input[type=file]{font-size:11px;max-width:100%}
 #app .psbank-version-upload .psbank-version-attest{display:flex;flex-direction:row;align-items:flex-start}
 #app .psbank-version-rows{max-height:140px;overflow:auto;border-top:1px solid #dae4ee}
 #app .psbank-version-rows>div{padding:7px 11px;border-bottom:1px solid #e6edf4}
-#app .psbank-version-rows b{display:block;color:#183d63;font-size:10.5px}
-#app .psbank-version-rows span{display:block;color:#6b8094;font-size:10px;margin-top:3px}
-#app .psbank-version-disclaimer{font-size:10px!important}
+#app .psbank-version-rows b{display:block;color:#183d63;font-size:11px}
+#app .psbank-version-rows span{display:block;color:#5F6B85;font-size:11px;margin-top:3px}
+#app .psbank-version-disclaimer{font-size:11px!important}
 #app .psbank-portfolio-doc .psbank-docbuilder{grid-template-columns:minmax(310px,.76fr) minmax(0,1.5fr);gap:12px;min-height:510px}
 #app .psbank-portfolio-checks{display:flex;flex-direction:column;gap:5px;max-height:200px;overflow:auto}
 #app .psbank-portfolio-checks label{display:flex;align-items:center;gap:9px;padding:8px;border:1px solid #dce6f0;border-radius:7px;font-size:11px}
-#app .psbank-portfolio-checks small{display:block;color:#71869c;margin-top:2px}
+#app .psbank-portfolio-checks small{display:block;color:#5F6B85;margin-top:2px}
 #app .psbank-portfolio-download{display:flex;justify-content:flex-end;padding:10px 12px;background:#fff;border-top:1px solid #dfe7ef}
 #app .psbank-portfolio-doc .psbank-docscroll{height:580px;max-height:65vh}
 #app table th:not([data-nosort]){user-select:none}
@@ -247,7 +247,7 @@
 #app .psbank-inputsummary-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:9px;padding:11px}
 #app .psbank-inputsummary article{min-width:0;border:1px solid #e0e9f2;background:#fafcfe;padding:11px;border-radius:8px}
 #app .psbank-inputsummary article b{font-size:12px;color:#153d64}
-#app .psbank-inputsummary article small{display:block;color:#768ca2;margin:4px 0 9px;font-size:10px}
+#app .psbank-inputsummary article small{display:block;color:#5F6B85;margin:4px 0 9px;font-size:11px}
 #app .psbank-inputsummary article p{margin:5px 0;font-size:11px;line-height:1.45;color:#3d5470;overflow-wrap:anywhere}
 
 /* Mapping: two-step navigation, selectable target/source, editable project houses. */
@@ -256,7 +256,7 @@
 #app .psbank-mapping-tabs button.on{border-bottom-color:#ffbc20;color:#153a68;background:#f1f6fd}
 #app .psbank-mapping-tabs button b{background:#e5effa;border-radius:12px;margin-left:5px;padding:2px 7px;font-size:11px}
 #app .psbank-maphead{display:flex;align-items:center;justify-content:space-between;gap:8px}
-#app .psbank-maphead span{font-size:11px;color:#647b94}
+#app .psbank-maphead span{font-size:11px;color:#5F6B85}
 #app .psbank-mapselectall{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid #dde6f0;margin-bottom:8px}
 #app .psbank-mapselectall label{display:flex;align-items:center;gap:7px;color:#345878;font-size:11.5px;cursor:pointer}
 #app .psbank-mapselectall input,#app .psbank-catalogitem input{width:16px;height:16px;accent-color:#174d81;flex-shrink:0}
@@ -264,7 +264,7 @@
 #app .psbank-target-project{cursor:pointer}
 #app .psbank-proposal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:9px 0 14px}
 #app .psbank-proposal-head h3{margin:0 0 4px;color:#163960;font-size:15px}
-#app .psbank-proposal-head p{margin:0;color:#6b8297;font-size:11.5px}
+#app .psbank-proposal-head p{margin:0;color:#5F6B85;font-size:11.5px}
 #app .psbank-proposal-table{table-layout:auto}
 #app .psbank-proposal-table th:first-child{width:50px}
 #app .psbank-proposal-table th:last-child{min-width:195px}
@@ -277,7 +277,7 @@
 #app .psbank-proj-origin{padding:10px;background:#f2f7fd;border:1px solid #dbe7f2;border-radius:8px}
 #app .psbank-proj-origin b{font-size:11.5px;color:#244d75}
 #app .psbank-proj-origin p{margin:5px 0;color:#335979;font-size:11.5px}
-#app .psbank-proj-origin small{color:#73889b;font-size:10px}
+#app .psbank-proj-origin small{color:#5F6B85;font-size:11px}
 @media(max-width:730px){#app .psbank-proj-editor-grid{grid-template-columns:1fr}#app .psbank-proposal-table .psbank-rowactions{flex-wrap:wrap}}
 
 /* Editorial portfolio preview: matching paginated report and 16:9 slide output. */
@@ -310,7 +310,7 @@
 #app .port-card-grid article{background:#f0f5fb;border-left:4px solid #f3b512;padding:12px 14px;min-width:0;min-height:0;overflow:auto;border-radius:5px}
 #app .port-card-grid article b{display:block;color:#1b507f;font-size:12px;margin-bottom:7px}
 #app .port-card-grid article p{font-size:11.5px;line-height:1.5;color:#34546f;margin:0;overflow-wrap:anywhere}
-#app .mt-shared-filter{display:inline-flex!important;align-items:center;justify-content:flex-end;gap:6px;white-space:nowrap;cursor:pointer;font:750 10.5px 'Inter',sans-serif;color:inherit;min-height:29px;max-width:100%;margin-left:auto;padding:4px 7px;border-radius:7px;background:#edf4fd;border:1px solid #d8e4f0}
+#app .mt-shared-filter{display:inline-flex!important;align-items:center;justify-content:flex-end;gap:6px;white-space:nowrap;cursor:pointer;font:750 11px 'Inter',sans-serif;color:inherit;min-height:29px;max-width:100%;margin-left:auto;padding:4px 7px;border-radius:7px;background:#edf4fd;border:1px solid #d8e4f0}
 #app .mt-shared-filter input{width:15px!important;height:15px!important;min-width:15px;accent-color:#185392;cursor:pointer}
 #app .ps27 .ps27-filter.ps27-filter-compact{grid-template-columns:105px minmax(185px,1.4fr) 140px minmax(140px,1fr) 168px}
 #app .ps27 .ps27-filter-compact>.mt-shared-filter{color:#274d74;align-self:center}
@@ -329,7 +329,7 @@
 #app .psbank-proposal-detail{margin-top:12px;border:1px solid #d8e4ee;border-radius:11px;background:#fff;padding:12px}
 #app .psbank-proposal-detailhead{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-bottom:11px}
 #app .psbank-proposal-detailhead h3{font:800 14px 'Inter',sans-serif;color:#173d6b;margin:0}
-#app .psbank-proposal-detailhead small{font:500 11px 'Inter',sans-serif;color:#70849c}
+#app .psbank-proposal-detailhead small{font:500 11px 'Inter',sans-serif;color:#5F6B85}
 #app .psbank-detailgroup{margin:0 0 13px}
 #app .psbank-detailgroup h4{font:800 12px 'Inter',sans-serif;color:#153b68;margin:0;padding:8px 10px;background:#eef4fb;border-left:3px solid #f6b71d;border-radius:5px}
 #app .psbank-proposal-kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px;padding:3px 10px 0}
@@ -338,7 +338,7 @@
 #app .psbank-proposal-kv p{font:600 11.5px/1.45 'Inter',sans-serif;color:#12345b;margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
 #app .psbank-workspace-program{border:1px solid #dce5f0;border-radius:13px;overflow:hidden;background:#fff}
 #app .psbank-workspace-banner{background:linear-gradient(106deg,#10315a,#20588a);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:15px;padding:16px 19px;border-bottom:4px solid #f4bb2b}
-#app .psbank-workspace-banner small{color:#fbd16e;font:800 10.5px 'Inter',sans-serif;letter-spacing:.04em}
+#app .psbank-workspace-banner small{color:#fbd16e;font:800 11px 'Inter',sans-serif;letter-spacing:.04em}
 #app .psbank-workspace-banner h3{margin:5px 0;color:#fff;font:800 19px 'Inter',sans-serif}
 #app .psbank-workspace-banner p{font:500 11px 'Inter',sans-serif;color:#d3e2f5;margin:0}
 #app .psbank-workspace-kpis{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
@@ -346,7 +346,7 @@
 #app .psbank-workspace-kpis b{color:#fff;margin-right:4px}
 #app .psbank-workspace-subhead{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:10px 15px;background:#edf3fa}
 #app .psbank-workspace-subhead b{display:block;font:800 11.5px 'Inter',sans-serif;color:#234d79}
-#app .psbank-workspace-subhead small{display:block;font:500 10.5px 'Inter',sans-serif;color:#607894;margin-top:3px}
+#app .psbank-workspace-subhead small{display:block;font:500 11px 'Inter',sans-serif;color:#607894;margin-top:3px}
 #app .psbank-results-table{width:100%;table-layout:auto}
 #app .psbank-results-table th:last-child{width:149px;text-align:center}
 #app .psbank-results-table td{vertical-align:middle}
@@ -357,13 +357,13 @@
 #app .psbank-action-icon.edit{color:#d2840d;border-color:#f0d5a1;background:#fff9ed}
 #app .psbank-action-icon.delete{color:#d74e4e;border-color:#f3c1c3;background:#fff5f5}
 #app .psbank-action-icon:focus-visible{outline:2px solid #f0b11b;outline-offset:2px}
-#app .psbank-selected-hint{font:650 10.5px 'Inter',sans-serif;color:#637c94}
+#app .psbank-selected-hint{font:650 11px 'Inter',sans-serif;color:#5F6B85}
 #app .psbank-project-editor .psbank-project-dialog{width:min(1050px,94vw)!important;height:min(87vh,830px)!important;max-height:min(87vh,830px)!important;min-height:0!important;display:flex;flex-direction:column}
 #app .psbank-project-editor .psbank-dialogbody{min-height:0;overflow-y:auto;flex:1;padding:15px 17px}
 #app .psbank-form-provenance{display:flex;align-items:center;gap:10px;background:#f1f6fc;border:1px solid #dce7f2;border-radius:8px;padding:10px 12px;margin-bottom:11px}
 #app .psbank-form-provenance b{font:750 11px 'Inter',sans-serif;color:#173f6f}
 #app .psbank-form-provenance span{font:650 11px 'Inter',sans-serif;color:#315f87}
-#app .psbank-form-provenance small{font:500 10.5px 'Inter',sans-serif;color:#7189a1;margin-left:auto}
+#app .psbank-form-provenance small{font:500 11px 'Inter',sans-serif;color:#5F6B85;margin-left:auto}
 #app .psbank-form-section{border:1px solid #dce6f1;border-radius:10px;margin-bottom:10px;overflow:hidden;background:#fff}
 #app .psbank-form-section h3{font:800 12.5px 'Inter',sans-serif;color:#143f6b;margin:0;background:#f0f5fb;padding:10px 12px;border-left:4px solid #f2b620}
 #app .psbank-form-section .psbank-proj-editor-grid{padding:12px;gap:10px 13px}
@@ -391,7 +391,7 @@
 #app .psbank-paper-editrow textarea:focus,#app .psbank-register-grid textarea:focus{outline:2px solid #f2bd33;outline-offset:1px;border-color:#bf9541}
 #app .psbank-paper-edit .psbank-register-toolbar{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:9px;padding:5px 1px}
 #app .psbank-register-toolbar b{display:block;color:#193e6c;font:800 13px 'Inter',sans-serif}
-#app .psbank-register-toolbar small{display:block;font:500 10.5px 'Inter',sans-serif;color:#74889a;margin-top:3px}
+#app .psbank-register-toolbar small{display:block;font:500 11px 'Inter',sans-serif;color:#5F6B85;margin-top:3px}
 #app .psbank-paper-edit [data-bank-entry-list]{grid-column:1/-1;display:grid;grid-template-columns:1fr;gap:10px}
 #app .psbank-register-card{border:1px solid #d7e2ef;border-radius:10px;background:#fff;overflow:hidden}
 #app .psbank-register-head{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:#eef5fc;border-bottom:1px solid #dce6f0}
@@ -416,7 +416,7 @@
 #app .psbank-all-programs{display:grid;grid-template-columns:1fr;gap:7px}
 #app .psbank-all-item{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:12px 14px;border:1px solid #dbe5f0;border-radius:9px;background:#fff}
 #app .psbank-all-item b{display:block;font:800 12px 'Inter',sans-serif;color:#1a416a}
-#app .psbank-all-item small{display:block;margin-top:4px;font:500 10.5px 'Inter',sans-serif;color:#7188a1}
+#app .psbank-all-item small{display:block;margin-top:4px;font:500 11px 'Inter',sans-serif;color:#5F6B85}
 /* Audit Trail actions, consistently positioned without changing header height. */
 #app .mt-audit-trigger{position:absolute;right:11px;top:8px;z-index:5;display:inline-flex;align-items:center;gap:6px;padding:7px 11px;height:33px;min-height:33px;max-height:33px;background:#f2f6fc;color:#244f83;border:1px solid #c7daee;border-radius:9px;box-shadow:0 1px 2px #122d4c0a;font:750 11px 'Inter',sans-serif;cursor:pointer;white-space:nowrap}
 #app .mt-audit-trigger:hover{background:#e8f2ff;border-color:#a5c4e7}
@@ -427,7 +427,7 @@
 .mt-audit-title{display:flex;gap:12px;align-items:center}
 .mt-audit-symbol{height:45px;width:45px;display:grid;place-items:center;border-radius:50%;background:#eaf1fc;color:#174b89;font-size:26px}
 .mt-audit-title h3{margin:0;color:#102e50;font:800 18px 'Inter',sans-serif}
-.mt-audit-title small{display:block;color:#72829a;margin-top:4px;font:500 11.5px 'Inter',sans-serif}
+.mt-audit-title small{display:block;color:#5F6B85;margin-top:4px;font:500 11.5px 'Inter',sans-serif}
 .mt-audit-dialog>header button{border:0;background:#f1f4f9;color:#546b88;height:34px;width:34px;border-radius:9px;font-size:18px;cursor:pointer}
 .mt-audit-controls{display:grid;grid-template-columns:minmax(0,1fr) 180px 160px;gap:11px;padding:14px 20px;flex:0 0 auto}
 .mt-audit-controls input,.mt-audit-controls select{height:37px;border:1px solid #cbd8e7;border-radius:8px;padding:8px 11px;font:550 11.5px 'Inter',sans-serif;color:#263f61;background:#fff;min-width:0}
@@ -440,21 +440,21 @@
 .mt-audit-scroll th:nth-child(3){width:17%}
 .mt-audit-scroll th:nth-child(4){width:49%}
 .mt-audit-scroll th:nth-child(5){width:15%}
-.mt-audit-scroll td small{display:block;font:500 10px 'Inter',sans-serif;color:#72829a;margin-top:4px}
+.mt-audit-scroll td small{display:block;font:500 11px 'Inter',sans-serif;color:#5F6B85;margin-top:4px}
 .mt-audit-date{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;white-space:normal}
-.mt-audit-chip{display:inline-block;border-radius:20px;padding:5px 10px;font:800 10px 'Inter',sans-serif;background:#eaf1fc;color:#1e57a0;white-space:nowrap}
+.mt-audit-chip{display:inline-block;border-radius:20px;padding:5px 10px;font:800 11px 'Inter',sans-serif;background:#eaf1fc;color:#1e57a0;white-space:nowrap}
 .mt-audit-chip.ditambahkan{background:#e8f7ef;color:#108352}
 .mt-audit-chip.dihapus{background:#fce9e9;color:#c83f4b}
 .mt-audit-scroll details{margin-top:7px}
-.mt-audit-scroll summary{color:#295e93;cursor:pointer;font-size:10.5px;font-weight:750}
+.mt-audit-scroll summary{color:#295e93;cursor:pointer;font-size:11px;font-weight:750}
 .mt-audit-changes{padding:8px;background:#f5f8fc;border:1px solid #e2eaf2;border-radius:8px;display:grid;gap:7px;margin-top:6px}
 .mt-audit-changes>div{border-bottom:1px solid #e1eaf1;padding-bottom:6px}
-.mt-audit-changes b{font-size:10px;color:#315b84}
-.mt-audit-changes p{display:flex;align-items:flex-start;gap:8px;margin:4px 0 0;font-size:10px;overflow-wrap:anywhere}
+.mt-audit-changes b{font-size:11px;color:#315b84}
+.mt-audit-changes p{display:flex;align-items:flex-start;gap:8px;margin:4px 0 0;font-size:11px;overflow-wrap:anywhere}
 .mt-audit-changes p>span{flex:1;min-width:0}
 .mt-audit-changes p>strong{color:#d69911}
-.mt-audit-empty{text-align:center;padding:32px!important;color:#607b98}
-.mt-audit-disclaimer{margin:12px 20px;background:#edf4fc;border:1px solid #d4e3f6;border-radius:8px;padding:10px 13px;color:#3564a2;font:500 10.5px/1.6 'Inter',sans-serif}
+.mt-audit-empty{text-align:center;padding:32px!important;color:#5F6B85}
+.mt-audit-disclaimer{margin:12px 20px;background:#edf4fc;border:1px solid #d4e3f6;border-radius:8px;padding:10px 13px;color:#3564a2;font:500 11px/1.6 'Inter',sans-serif}
 .mt-audit-dialog>footer{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #edf1f7}
 .mt-audit-dialog>footer span{color:#7486a0;font:600 11px 'Inter',sans-serif}
 .mt-audit-dialog>footer button{padding:8px 13px;border:1px solid #cbd9ec;background:#fff;border-radius:9px;color:#173969;font:750 11px 'Inter',sans-serif;cursor:pointer}
@@ -468,7 +468,7 @@
 .psbank-confirm-transfer-row{display:grid;grid-template-columns:minmax(120px,.9fr) minmax(0,1.5fr);gap:7px;align-items:center;padding:9px 1px;border-bottom:1px solid #e2eaf4}
 .psbank-confirm-transfer-row:last-child{border-bottom:0}
 .psbank-confirm-transfer-row b{font:750 11.5px/1.45 'Inter',sans-serif;color:#173b63;overflow-wrap:anywhere}
-.psbank-confirm-transfer-row span{font:500 10.5px/1.55 'Inter',sans-serif;color:#476482;overflow-wrap:anywhere}
+.psbank-confirm-transfer-row span{font:500 11px/1.55 'Inter',sans-serif;color:#476482;overflow-wrap:anywhere}
 .psbank-confirm-transfer-row strong{color:#214d79;font-weight:800}
 .psbank-confirm-transfer-row em{color:#ce9421;font-style:normal;font-weight:850;margin:0 3px}
 #app .psbank-tag.psbank-usulan{background:#fff2d5!important;color:#936001!important;border:1px solid #ecca7e}
@@ -514,7 +514,7 @@
 #app .psbank-pagination-steps button{width:30px;height:30px;display:grid;place-items:center;border:1px solid #c6d8ec;border-radius:7px;background:#f7fbff;color:#1c497d;font-size:19px;cursor:pointer}
 #app .psbank-pagination-steps button:disabled{opacity:.35;cursor:default}
 #app .psbank-pagination-steps strong{font:800 11px 'Inter',sans-serif;min-width:82px;text-align:center}
-#app .psbank-phase{font:800 9.5px/1.3 'Inter',sans-serif;display:inline-flex;margin-left:5px;padding:3px 6px;border-radius:5px;vertical-align:middle;white-space:nowrap}
+#app .psbank-phase{font:800 11px/1.3 'Inter',sans-serif;display:inline-flex;margin-left:5px;padding:3px 6px;border-radius:5px;vertical-align:middle;white-space:nowrap}
 #app .psbank-phase.draft{background:#fff5da;color:#8f6410;border:1px solid #eadba4}
 #app .psbank-phase.established{background:#e4f5eb;color:#14744a;border:1px solid #b6dbc5}
 #app .psbank-subhead{min-height:43px!important;margin-bottom:0!important;gap:6px!important}
@@ -529,13 +529,13 @@
 #app .psbank-tte-settings>summary::-webkit-details-marker{display:none}
 #app .psbank-tte-settings>summary:before{content:'▸';font-size:12px;color:#d59b15}
 #app .psbank-tte-settings[open]>summary:before{content:'▾'}
-#app .psbank-tte-settings>summary small{margin-left:auto;font:500 10px 'Inter',sans-serif;color:#607b96}
+#app .psbank-tte-settings>summary small{margin-left:auto;font:500 11px 'Inter',sans-serif;color:#5F6B85}
 #app .psbank-tte-fields{padding:10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;background:#fff}
-#app .psbank-tte-fields>label{display:flex;flex-direction:column;gap:4px;min-width:0;color:#2c4d72;font:750 10.5px 'Inter',sans-serif}
+#app .psbank-tte-fields>label{display:flex;flex-direction:column;gap:4px;min-width:0;color:#2c4d72;font:750 11px 'Inter',sans-serif}
 #app .psbank-tte-fields>label.psbank-tte-check{grid-column:1/-1;flex-direction:row;align-items:center;gap:7px;background:#f3f7fc;padding:8px;border-radius:8px}
 #app .psbank-tte-fields input:not([type=checkbox]){box-sizing:border-box;width:100%;min-width:0;height:33px;padding:6px 8px;border:1px solid #cbd9e9;border-radius:7px;background:#fff;color:#17365e;font:500 11px 'Inter',sans-serif}
 #app .psbank-tte-fields input[type=checkbox]{accent-color:#174978;width:15px;height:15px}
-#app .psbank-tte-fields>small{grid-column:1/-1;font:500 10px/1.5 'Inter',sans-serif;color:#73859d}
+#app .psbank-tte-fields>small{grid-column:1/-1;font:500 11px/1.5 'Inter',sans-serif;color:#5F6B85}
 #app .psbank-program-report-frame{display:block;width:100%;min-height:960px;height:1200px;border:0;background:#f1f5fa}
 #app .psbank-docscroll:has(.psbank-program-report-frame){padding:0!important}
 @media(max-width:780px){#app .psbank-tte-fields{grid-template-columns:1fr}#app .psbank-program-report-frame{height:1100px}}
@@ -581,26 +581,26 @@
 #app .psbank-upload-form,#app .psbank-upload-history{border:1px solid #d9e5f1;border-radius:10px;background:white;padding:14px;min-width:0}
 #app .psbank-upload-form{display:flex;flex-direction:column;gap:11px}
 #app .psbank-upload-form>label{display:flex;flex-direction:column;gap:5px;color:#20466c;font:800 11.5px 'Inter',sans-serif}
-#app .psbank-upload-form>label small{display:inline;color:#6e8098;font:500 10.5px 'Inter',sans-serif}
+#app .psbank-upload-form>label small{display:inline;color:#5F6B85;font:500 11px 'Inter',sans-serif}
 #app .psbank-upload-form select,#app .psbank-upload-form input:not([type=checkbox]){box-sizing:border-box;display:block;width:100%;min-width:0;border:1px solid #c9d8e9;border-radius:8px;background:#fff;padding:9px 10px;color:#153b65;font:600 12px 'Inter',sans-serif}
-#app .psbank-upload-form input[type=file]{padding:8px;font-size:10.5px}
+#app .psbank-upload-form input[type=file]{padding:8px;font-size:11px}
 #app .psbank-upload-form>label.psbank-upload-attest{flex-direction:row;align-items:flex-start;gap:7px;font:550 11.5px/1.5 'Inter',sans-serif;background:#fff6e3;border-radius:7px;padding:9px}
 #app .psbank-upload-form>label.psbank-upload-attest input{flex:0 0 auto;accent-color:#194f82;margin-top:2px}
 #app .psbank-upload-dialog [hidden]{display:none!important}
-#app .psbank-upload-help{font:500 10.8px/1.5 'Inter',sans-serif;color:#627a93;margin:0;padding:10px;background:#f0f5fc;border-radius:7px}
+#app .psbank-upload-help{font:500 11px/1.5 'Inter',sans-serif;color:#5F6B85;margin:0;padding:10px;background:#f0f5fc;border-radius:7px}
 #app .psbank-upload-error{font:600 11.5px/1.5 'Inter',sans-serif;color:#a32323;background:#fff0ef;border:1px solid #f3c6c3;border-radius:7px;padding:8px 9px}
 #app .psbank-upload-hist-head{display:flex;justify-content:space-between;gap:8px;align-items:center;padding-bottom:10px;border-bottom:1px solid #e6edf5;font:800 12.5px 'Inter',sans-serif;color:#153961}
-#app .psbank-upload-hist-head span{font-size:10.5px;color:#67809b}
+#app .psbank-upload-hist-head span{font-size:11px;color:#5F6B85}
 #app .psbank-upload-record{display:flex;align-items:center;gap:9px;border-bottom:1px solid #e6edf5;padding:10px 0}
 #app .psbank-upload-record:last-child{border-bottom:0}
 #app .psbank-upload-recordicon{width:30px;height:30px;flex:0 0 30px;border:1px solid #d5e4f5;border-radius:8px;display:grid;place-items:center;background:#eff5fc;color:#315d8a}
 #app .psbank-upload-record>div{flex:1;min-width:0}
 #app .psbank-upload-record b{display:block;overflow-wrap:anywhere;color:#15385c;font:750 11px 'Inter',sans-serif}
-#app .psbank-upload-record small{display:block;margin-top:4px;overflow-wrap:anywhere;color:#70869c;font:500 10.3px/1.5 'Inter',sans-serif}
+#app .psbank-upload-record small{display:block;margin-top:4px;overflow-wrap:anywhere;color:#5F6B85;font:500 11px/1.5 'Inter',sans-serif}
 #app .psbank-upload-download{width:30px;height:30px;flex:0 0 30px;border:1px solid #ccdcee;border-radius:8px;background:#fff;color:#1d588a;font:850 15px 'Inter',sans-serif;cursor:pointer}
-#app .psbank-upload-empty{padding:20px 6px;color:#7186a0;font:500 11.5px/1.6 'Inter',sans-serif;text-align:center}
+#app .psbank-upload-empty{padding:20px 6px;color:#5F6B85;font:500 11.5px/1.6 'Inter',sans-serif;text-align:center}
 #app .psbank-upload-dialog>footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-top:1px solid #e4ebf4;background:#fff}
-#app .psbank-upload-dialog>footer small{max-width:435px;color:#70829a;font:500 10.5px/1.5 'Inter',sans-serif}
+#app .psbank-upload-dialog>footer small{max-width:435px;color:#70829a;font:500 11px/1.5 'Inter',sans-serif}
 #app .psbank-upload-dialog>footer>div{display:flex;gap:8px;flex:0 0 auto}
 #app .psbank-upload-dialog>footer .btn{height:35px;padding:7px 13px;font-size:11.5px}
 @media(max-width:690px){#app .psbank-upload-content{grid-template-columns:1fr}#app .psbank-upload-dialog>footer{align-items:stretch;flex-direction:column}#app .psbank-upload-dialog>footer small{max-width:none}#app .psbank-upload-dialog>footer>div{justify-content:flex-end}}
@@ -672,7 +672,7 @@
 #app .psbank-history-table .psbank-tablewrap,
 #app .psbank-detail-table .psbank-tablewrap{max-height:none}
 @media(max-width:1100px){
- #app .psbank-history-table th,#app .psbank-detail-table th{font-size:10.5px!important}
+ #app .psbank-history-table th,#app .psbank-detail-table th{font-size:11px!important}
  #app .psbank-history-table td,#app .psbank-detail-table td{font-size:11.4px!important}
 }
 
@@ -710,7 +710,7 @@
 
 /* WYSIWYG document preview: the blob being downloaded is the one rendered. */
 #app .psbank-actual-view{width:100%;min-height:450px;position:relative;overflow:auto;background:#e7edf5}
-#app .psbank-actual-progress{display:block;padding:6px 10px;font:650 10px/1.4 'Inter',sans-serif;color:#627e99;background:#f4f7fc}
+#app .psbank-actual-progress{display:block;padding:6px 10px;font:650 11px/1.4 'Inter',sans-serif;color:#5F6B85;background:#f4f7fc}
 #app .psbank-actual-docx{width:100%;min-height:480px;padding:12px 8px;overflow:auto;background:#e7edf5}
 #app .psbank-actual-docx>.docx-wrapper{background:transparent!important;padding:8px 0!important}
 #app .psbank-actual-docx .docx{margin:0 auto 18px!important;box-shadow:0 3px 12px #16345a22!important}
@@ -797,7 +797,7 @@
 #app .psbank-template-picker{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;background:#f0f5fc;border:1px solid #dce6f1;border-radius:9px;padding:9px 11px}
 #app .psbank-template-picker label{display:flex;align-items:center;justify-content:space-between;gap:9px;flex:1;min-width:225px;font:700 11px 'Inter',sans-serif;color:#183a63}
 #app .psbank-template-picker select{background:#fff;border:1px solid #cddbea;border-radius:7px;padding:7px 9px;max-width:240px;min-width:0;flex:1;font:700 11px 'Inter',sans-serif;color:#19395b}
-#app .psbank-template-picker small{font:400 10px 'Inter',sans-serif;color:#6c7e94}
+#app .psbank-template-picker small{font:400 11px 'Inter',sans-serif;color:#5F6B85}
 @media(max-width:640px){#app .psbank-template-picker label{flex-direction:column;align-items:stretch}#app .psbank-template-picker select{max-width:none}}
 
 /* Project Selection mapping refinement: compact accordion, one vertical page scroll. */
@@ -810,7 +810,7 @@
 #app .psbank-scope-stage .psbank-results-open{border:0;box-shadow:none;overflow:visible;background:transparent}
 #app .psbank-scope-stage .psbank-results-programline{display:flex;align-items:center;min-height:52px;padding:9px 13px;background:#f1f6fc;border:1px solid #dce7f3;border-radius:9px 9px 0 0}
 #app .psbank-results-programline b{display:block;color:#173f6a;font:800 13px 'Inter',sans-serif}
-#app .psbank-results-programline small{display:block;color:#607b98;font:550 11px 'Inter',sans-serif;margin-top:3px}
+#app .psbank-results-programline small{display:block;color:#5F6B85;font:550 11px 'Inter',sans-serif;margin-top:3px}
 #app .psbank-scope-stage .psbank-results-open .psbank-workspace-subhead{border:1px solid #dce7f3;border-top:0;padding:9px 12px}
 #app .psbank-scope-stage .psbank-results-tablewrap,#app .psbank-scope-stage .psbank-accordion-tablewrap,#app .psbank-scope-stage .psbank-project-history-wrap{
  max-height:none!important;height:auto!important;min-height:0!important;overflow-y:visible!important;overscroll-behavior-y:auto!important;scrollbar-gutter:auto!important;
@@ -836,16 +836,16 @@
 #app .psbank-accordion-program .psbank-chevron{flex:0 0 19px;color:#1c558f;font:800 17px 'Inter',sans-serif}
 #app .psbank-accordion-name{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
 #app .psbank-accordion-name b{font:800 12px 'Inter',sans-serif;color:#123c69}
-#app .psbank-accordion-name small{font:500 10.5px 'Inter',sans-serif;color:#69819e}
+#app .psbank-accordion-name small{font:500 11px 'Inter',sans-serif;color:#5F6B85}
 #app .psbank-accordion-count{flex:0 0 auto;background:#e8f0fa;border-radius:7px;padding:6px 10px;font:700 11px 'Inter',sans-serif;color:#255480}
 #app .psbank-accordion-body{padding:10px 13px 12px}
 #app .psbank-accordion-projects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
 #app .psbank-accordion-projects>div{background:#f8fafc;border:1px solid #e3ebf3;border-radius:7px;padding:8px 10px;min-width:0}
 #app .psbank-accordion-projects b{display:block;font:650 11px 'Inter',sans-serif;color:#254b75}
-#app .psbank-accordion-projects small{display:block;font:500 10px 'Inter',sans-serif;color:#75889b;margin-top:2px;overflow-wrap:anywhere}
+#app .psbank-accordion-projects small{display:block;font:500 11px 'Inter',sans-serif;color:#5F6B85;margin-top:2px;overflow-wrap:anywhere}
 #app .psbank-accordion-actions{display:flex;justify-content:flex-end;margin-top:10px}
 #app .psbank-history-project-controls{display:grid;grid-template-columns:minmax(160px,1.4fr) minmax(115px,.6fr) minmax(180px,1.8fr);gap:9px;align-items:end;margin:9px 0}
-#app .psbank-history-project-controls label{display:flex;flex-direction:column;gap:5px;min-width:0;color:#2a567c;font:750 10.5px 'Inter',sans-serif}
+#app .psbank-history-project-controls label{display:flex;flex-direction:column;gap:5px;min-width:0;color:#2a567c;font:750 11px 'Inter',sans-serif}
 #app .psbank-history-project-controls :is(select,input){width:100%;min-width:0;height:35px;border:1px solid #cdddeb;border-radius:8px;background:#fff;color:#214d76;padding:7px 10px;font:600 11px 'Inter',sans-serif}
 #app .psbank-project-history-table th:first-child{width:38px}
 #app .psbank-project-history-table td{font-size:11px}
@@ -856,7 +856,7 @@
 #app .psbank-project-code-preview>span{font-size:11px;font-weight:800;color:#355a80}
 #app .psbank-project-code-preview strong{font-size:12px;color:#113d6a;letter-spacing:.015em}
 #app .psbank-project-code-preview small{font-size:10.5px;color:#6b839c}
-@media(max-width:1180px){#app .psbank-tab-summary span{padding:6px;font-size:10px}}
+@media(max-width:1180px){#app .psbank-tab-summary span{padding:6px;font-size:11px}}
 @media(max-width:750px){#app .psbank-scope-stage .psbank-scope-tabline{flex-wrap:wrap}#app .psbank-scope-stage .psbank-mapping-tabs{width:100%}#app .psbank-tab-summary{width:100%;justify-content:flex-end}#app .psbank-history-project-controls{grid-template-columns:1fr 1fr}#app .psbank-history-project-controls label:last-child{grid-column:1/-1}#app .psbank-accordion-projects{grid-template-columns:1fr}}
 
 #app .psbank-accordion-program .psbank-chevron{display:inline-block;transition:transform .14s ease;transform-origin:center center}
@@ -904,14 +904,14 @@
 #app .psbank-history-detail .psbank-project-dialog{width:min(1030px,95vw)!important;max-height:min(89vh,875px)!important;height:auto!important}
 #app .pshist-summary{display:grid;grid-template-columns:1.15fr 1.3fr .9fr .7fr;gap:8px;margin-bottom:14px}
 #app .pshist-summary>div{border:1px solid #dce7f1;background:#f3f8fe;border-radius:9px;padding:11px;min-width:0}
-#app .pshist-summary small,#app .pshist-fields small{display:block;font-size:10.5px;color:#627b95;font-weight:700;margin-bottom:5px}
+#app .pshist-summary small,#app .pshist-fields small{display:block;font-size:11px;color:#5F6B85;font-weight:700;margin-bottom:5px}
 #app .pshist-summary strong,#app .pshist-fields strong{display:block;font-size:12px;color:#163c62;font-weight:750;line-height:1.48;overflow-wrap:anywhere;white-space:pre-line}
 #app .pshist-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
 #app .pshist-fields>div{border:1px solid #e4edf4;background:#fff;border-radius:8px;padding:10px 12px;min-width:0}
 #app .pshist-wbs{list-style:none;padding:0;margin:0;display:grid;gap:6px}
 #app .pshist-wbs li{display:grid;grid-template-columns:24px minmax(0,1fr) 110px;gap:7px;align-items:start;border:1px solid #e4edf4;border-radius:7px;padding:8px 10px;font-size:11px}
-#app .pshist-wbs li span{color:#72859a}.pshist-wbs li b{color:#19476e;font-weight:700}.pshist-wbs li small{text-align:right;color:#6b7f93}
-#app .pshist-none{color:#637c94;font-size:11px;margin:0}
+#app .pshist-wbs li span{color:#5F6B85}.pshist-wbs li b{color:#19476e;font-weight:700}.pshist-wbs li small{text-align:right;color:#5F6B85}
+#app .pshist-none{color:#5F6B85;font-size:11px;margin:0}
 @media(max-width:650px){#app .pshist-summary{grid-template-columns:repeat(2,minmax(0,1fr))}#app .pshist-fields{grid-template-columns:1fr}#app .pshist-wbs li{grid-template-columns:24px minmax(0,1fr)}#app .pshist-wbs li small{grid-column:2;text-align:left}}
 
 
@@ -939,7 +939,7 @@
 #app .psbank-recap .psbank-recap-children{padding:0}
 #app .psbank-recap .psbank-recap-children .psbank-tablewrap{overflow-x:auto;overflow-y:visible;max-height:none!important}
 #app .psbank-recap-table{width:100%;min-width:900px;table-layout:fixed}
-#app .psbank-recap-table th{position:static!important;background:#f6f8fc;padding:9px;font-size:10.5px}
+#app .psbank-recap-table th{position:static!important;background:#f6f8fc;padding:9px;font-size:11px}
 #app .psbank-recap-table td{padding:10px 9px;vertical-align:middle;font-size:11px;overflow-wrap:anywhere}
 #app .psbank-recap-table th:nth-child(1){width:16%}
 #app .psbank-recap-table th:nth-child(2){width:27%}
@@ -952,12 +952,12 @@
 #app .psbank-recap-projectrow{cursor:pointer}
 #app .psbank-recap-projectrow:hover,#app .psbank-recap-projectrow:focus-visible{background:#f1f7fe;outline:1px solid #bfdaef;outline-offset:-1px}
 #app .psbank-recap-projectrow strong{font-size:11.3px;color:#163c67;font-weight:750}
-#app .psbank-recap-projectrow small{display:block;color:#788aa0;font-size:10px;margin-top:3px}
+#app .psbank-recap-projectrow small{display:block;color:#5F6B85;font-size:11px;margin-top:3px}
 #app .psbank-tree-branch{display:inline-block;vertical-align:middle;color:#8aaed0;font:700 18px monospace;margin:0 9px 0 5px;width:15px}
-#app .psbank-recap-projectrow .psbank-tag{white-space:normal;font-size:10px}
+#app .psbank-recap-projectrow .psbank-tag{white-space:normal;font-size:11px}
 #app .psbank-proposals-detail .psbank-proposal-head{margin:0 0 10px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 #app .psbank-proposal-detail-table{table-layout:fixed;width:100%;min-width:1020px}
-#app .psbank-proposal-detail-table th{position:static!important;padding:9px;font-size:10.5px}
+#app .psbank-proposal-detail-table th{position:static!important;padding:9px;font-size:11px}
 #app .psbank-proposal-detail-table td{padding:9px;font-size:11px;vertical-align:middle;overflow-wrap:anywhere}
 #app .psbank-proposal-detail-table th:nth-child(1){width:14%;min-width:0}
 #app .psbank-proposal-detail-table th:nth-child(2){width:22%}
@@ -968,11 +968,11 @@
 #app .psbank-proposal-detail-table th:nth-child(7){width:14%;min-width:135px;text-align:center}
 #app .psbank-proposal-detail-table .psbank-results-actions{display:table-cell;text-align:center;white-space:nowrap}
 #app .psbank-proposal-detail-table .psbank-results-actions .psbank-action-icon{width:29px;height:29px;min-width:29px;margin-inline:2px}
-#app .psbank-proposal-detail-table td:nth-child(2) small{display:block;font-size:10px;color:#72869e;margin-top:4px}
+#app .psbank-proposal-detail-table td:nth-child(2) small{display:block;font-size:11px;color:#5F6B85;margin-top:4px}
 #app .psbank-proposal-detail-table tr.psbank-clickrow:hover,#app .psbank-proposal-detail-table tr.psbank-clickrow:focus-visible{background:#f3f8ff;outline:1px solid #bbd6ef;outline-offset:-1px}
 
 
-#app .psbank-project-editor .psbank-category-hint{display:block;margin-top:4px;font:500 10px/1.45 Inter,Arial,sans-serif;color:#6a7f96;white-space:normal}
+#app .psbank-project-editor .psbank-category-hint{display:block;margin-top:4px;font:500 11px/1.45 Inter,Arial,sans-serif;color:#5F6B85;white-space:normal}
 
 
 /* MT-08 · Usulan Proyek per program, scope limited to Pemetaan Proyek. */
@@ -1001,7 +1001,7 @@
 .psbank-proposal-programtools .btn{white-space:nowrap;flex:none}
 .psbank-proposal-program .psbank-tablewrap{margin:0;max-width:100%;overflow-x:auto}
 .psbank-proposal-program .psbank-table{width:100%;table-layout:auto}
-.psbank-proposal-program .psbank-table th{white-space:nowrap;font-size:10px}
+.psbank-proposal-program .psbank-table th{white-space:nowrap;font-size:11px}
 .psbank-proposal-program .psbank-table th:nth-child(1){width:19%}
 .psbank-proposal-program .psbank-table th:nth-child(2){width:25%}
 .psbank-proposal-program .psbank-table th:nth-child(3){width:13%}
@@ -1088,7 +1088,7 @@
 }
 #app .psbank-proposal-program .psbank-proposal-table th{
  position:static!important;top:auto!important;min-width:0!important;
- padding:11px 9px;white-space:normal;font:800 10.5px 'Inter',sans-serif;
+ padding:11px 9px;white-space:normal;font:800 11px 'Inter',sans-serif;
  vertical-align:middle;overflow-wrap:break-word
 }
 #app .psbank-proposal-program .psbank-proposal-table td{
@@ -1177,7 +1177,7 @@
   padding:3px 5px;border:0;background:transparent!important
  }
  #app .psbank-proposal-program .psbank-proposal-table tbody>tr.psbank-proposal-projectrow>td::before{
-  content:attr(data-label);display:block;font:800 9px 'Inter',sans-serif;
+  content:attr(data-label);display:block;font:800 11px 'Inter',sans-serif;
   text-transform:uppercase;letter-spacing:.02em;color:#647f9a
  }
  #app .psbank-proposal-program .psbank-proposal-table tbody>tr.psbank-proposal-projectrow>td:nth-child(2){grid-column:span 2}
