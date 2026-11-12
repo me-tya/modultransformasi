@@ -2761,7 +2761,7 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 .btn.ch-ib[data-tip]:hover::after,.btn.ch-ib[data-tip]:focus-visible::after{content:attr(data-tip);position:absolute;top:calc(100% + 7px);left:50%;transform:translateX(-50%);z-index:60;white-space:nowrap;background:var(--navy);color:#fff;font-size:11.5px;font-weight:600;padding:5px 9px;border-radius:7px;box-shadow:0 6px 16px rgba(11,31,69,.2);pointer-events:none}
 .ch-tools .btn.ch-ib:last-of-type[data-tip]:hover::after{left:auto;right:0;transform:none}
 .act-mig-toast{display:flex;align-items:center;gap:10px;margin:10px 14px 4px;padding:9px 12px;border:1px solid #C9D7EC;background:#F2F6FC;border-radius:10px;font-size:12.5px;color:#1D3557}
-.act-mig-toast[hidden]{display:none}.act-mig-toast .ic{font-weight:900;width:16px;text-align:center}.act-mig-toast .tx{flex:1;min-width:0}
+.act-mig-toast[hidden]{display:none}.at-msg:empty{display:none}.at-add>.mt-info-ic{align-self:center;flex:none}.act-mig-toast .ic{font-weight:900;width:16px;text-align:center}.act-mig-toast .tx{flex:1;min-width:0}
 .act-mig-toast .x{border:0;background:none;font:inherit;font-weight:800;color:inherit;cursor:pointer;white-space:nowrap;opacity:.85}.act-mig-toast .x:hover{opacity:1;text-decoration:underline}
 .act-mig-toast.ok{border-color:#BFE5CB;background:#EFFAF2;color:#14532D}.act-mig-toast.err{border-color:#F3C7C3;background:#FDF1F0;color:#8E1F17}
 @media(max-width:760px){.card>.ch.act-ch{flex-wrap:wrap}.ch-tools{width:100%;flex-wrap:wrap}}
@@ -7239,6 +7239,8 @@ async function actLetterMetadata(file){
    n=n.replace(/[\s\/|,;-]+$/,'').trim();if(n&&/[A-Za-z]/.test(n)&&n.length<=80&&!peg.includes(n))peg.push(n)}}
  return {no,hal,tgl0,peg};
 }
+/* Ketentuan unggah: ditaruh di ikon ⓘ di samping tombol Unggah berkas, bukan teks terbuka di bawah kolom. */
+const ATT_HINT='Bisa lebih dari satu berkas, maks. 5 MB per berkas. Berkas lebih besar: unggah ke SharePoint/OneDrive lalu tempel tautannya.';
 /* attField(key, nilai, label, {no: placeholder nomor surat, req, compact, ro}) */
 function attField(key,v,label,o={}){const a=attNorm(v);ATT[key]={items:a.items.slice(),rm:[],busy:0,ro:!!o.ro,cb:o.cb||null};
  const kk=esc(key);const noIn=o.no?`<input ${o.hiddenNo?'type="hidden"':'type="text"'} class="inp at-noin" id="at-no-${kk}" value="${esc(a.no||'')}" placeholder="${esc(o.no)}" title="Nomor surat/dokumen. Format: ${esc(o.no)}"${o.ro?' disabled':''}>`:'';
@@ -7251,10 +7253,10 @@ function attField(key,v,label,o={}){const a=attNorm(v);ATT[key]={items:a.items.s
     <input type="url" class="inp" id="at-u-${kk}" placeholder="https://sharepoint…/dokumen" aria-label="Tautan berkas">
     <button type="button" class="tp-att-icon tp-link-confirm" data-atlink="${kk}" title="Simpan tautan" aria-label="Simpan tautan">✓</button>
    </div>
-  </div>`:`<div class="at-add"><input type="url" class="inp" id="at-u-${kk}" placeholder="Tempel tautan SharePoint / OneDrive…"><button type="button" class="btn sm" data-atlink="${kk}">+ Tautan</button><label class="btn sm at-up">⇪ Unggah berkas<input type="file" multiple data-atfile="${kk}" hidden accept="${esc(o.accept||'.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.zip,.txt,.csv')}"></label></div>`;
+  </div>`:`<div class="at-add"><input type="url" class="inp" id="at-u-${kk}" placeholder="Tempel tautan SharePoint / OneDrive…"><button type="button" class="btn sm" data-atlink="${kk}">+ Tautan</button><label class="btn sm at-up">⇪ Unggah berkas<input type="file" multiple data-atfile="${kk}" hidden accept="${esc(o.accept||'.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.zip,.txt,.csv')}"></label>${o.compact?'':(window.MT_INFO_ICON?MT_INFO_ICON(ATT_HINT):'')}</div>`;
  return `<div class="${o.compact?'at-fld cp':'fld wide at-fld'}${o.iconOnly?' tp-attach-icon':''}" data-at="${kk}">${label?`<label>${label}${o.req?' <i>*</i>':' <span class="nt-opt">opsional</span>'}</label>`:''}${noIn}
   <div class="at-list" id="at-l-${kk}">${attListHtml(key)}</div>${o.ro?'':actions}
-  ${o.compact?'':`<small class="at-msg" id="at-m-${kk}">Bisa lebih dari satu berkas, maks. 5 MB per berkas. Berkas lebih besar: unggah ke SharePoint lalu tempel tautannya.</small>`}</div>`}
+  ${o.compact?'':`<small class="at-msg" id="at-m-${kk}"></small>`}</div>`}
 document.addEventListener('click',e=>{
  const b=e.target.closest&&e.target.closest('[data-tplink]');if(!b)return;
  e.preventDefault();e.stopPropagation();
