@@ -2751,6 +2751,20 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 .sw .act-letter-section .sl-mf .inp{height:32px;font-size:12.5px;padding:0 9px}
 .sw .act-letter-section .sl-no-empty{color:#AD322F;text-decoration-style:dashed}
 @media(max-width:1000px){.sw .act-letter-section .sl-meta{flex:1 1 100%;margin-left:60px}}
+/* Toolbar ikon Daftar Aktivitas + notifikasi status impor */
+.card>.ch.act-ch{flex-wrap:nowrap}.act-ch h3{flex:1;min-width:0}
+.ch-tools{display:flex;align-items:center;gap:6px;flex:none}
+.ch-lbl{font-size:10.5px;font-weight:800;letter-spacing:.6px;color:#7A879C;margin:0 2px 0 4px}
+.ch-sep{width:1px;height:24px;background:#DCE3EE;margin:0 6px}
+.btn.ch-ib{position:relative;width:36px;min-width:36px;height:36px;padding:0;display:inline-grid;place-items:center;color:var(--navy);flex:none}
+.btn.ch-ib:hover,.btn.ch-ib:focus-visible{border-color:var(--navy);background:#EEF3FB}
+.btn.ch-ib[data-tip]:hover::after,.btn.ch-ib[data-tip]:focus-visible::after{content:attr(data-tip);position:absolute;top:calc(100% + 7px);left:50%;transform:translateX(-50%);z-index:60;white-space:nowrap;background:var(--navy);color:#fff;font-size:11.5px;font-weight:600;padding:5px 9px;border-radius:7px;box-shadow:0 6px 16px rgba(11,31,69,.2);pointer-events:none}
+.ch-tools .btn.ch-ib:last-of-type[data-tip]:hover::after{left:auto;right:0;transform:none}
+.act-mig-toast{display:flex;align-items:center;gap:10px;margin:10px 14px 4px;padding:9px 12px;border:1px solid #C9D7EC;background:#F2F6FC;border-radius:10px;font-size:12.5px;color:#1D3557}
+.act-mig-toast[hidden]{display:none}.act-mig-toast .ic{font-weight:900;width:16px;text-align:center}.act-mig-toast .tx{flex:1;min-width:0}
+.act-mig-toast .x{border:0;background:none;font:inherit;font-weight:800;color:inherit;cursor:pointer;white-space:nowrap;opacity:.85}.act-mig-toast .x:hover{opacity:1;text-decoration:underline}
+.act-mig-toast.ok{border-color:#BFE5CB;background:#EFFAF2;color:#14532D}.act-mig-toast.err{border-color:#F3C7C3;background:#FDF1F0;color:#8E1F17}
+@media(max-width:760px){.card>.ch.act-ch{flex-wrap:wrap}.ch-tools{width:100%;flex-wrap:wrap}}
 </style>
 <style id="compact-transformasi-ux">
 /* Rapi, ringkas, satu baris pada desktop */
@@ -5743,9 +5757,20 @@ function pAktDaftar(){const all=actRows(),tw=+S.ui.oneTw||0,kat=S.ui.actKat||'',
  const dlab=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'}),tcol=!!U.actTodayCol;
  const trow=x=>{const st=actSt(x),lk=actLink(x),tm=String(x.jam||'').match(/(\d{1,2})[.:]\d{2}/);return '<div class="today-agenda-row" role="button" tabindex="0" data-act="oneEdit" data-id="'+esc(x.id)+'" title="Buka detail aktivitas"><span class="today-time '+(tm?(+tm[1]<12?'am':'pm'):'')+'">'+esc(x.jam?jm(x.jam):'Seharian')+'</span><span class="today-main"><span class="today-title-line"><b>'+esc(actName(x))+'</b>'+(lk?'<a class="today-open-link" href="'+esc(lk)+'" target="_blank" rel="noopener" title="Buka tautan" aria-label="Buka tautan" onclick="event.stopPropagation()">↗</a>':'')+'</span><small>'+esc(x.unitP||'')+'</small></span><span class="cat-badge" style="'+kcol(actKatOf(x))+'">'+esc(actKatOf(x))+'</span><span class="today-pic">'+esc((x.pic||[]).join(', '))+'</span><span class="status-badge" style="'+scol(st[0])+'">'+esc(st[0])+'</span></div>'};
  const today='<section class="today-agenda'+(tcol?' collapsed':'')+'"><div class="today-agenda-body"><button type="button" class="today-summary" data-act="actTodayCol"><span class="today-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span><span class="today-summary-copy"><b>Agenda Hari Ini</b><small>'+esc(dlab)+'</small></span><span class="today-summary-total"><small>Total hari ini</small><strong>'+tdy.length+'</strong></span></button><div class="today-list-wrap"><div class="today-list-head"><span>Waktu</span><span>Agenda</span><span>Kategori</span><span>PIC</span><span>Status</span></div><div class="today-list">'+(tdy.length?tdy.slice(0,5).map(trow).join(''):'<div class="today-empty">Tidak ada agenda yang dijadwalkan hari ini.</div>')+'</div>'+(tdy.length>5?'<div class="today-more">+'+(tdy.length-5)+' agenda lainnya</div>':'')+'</div></div><button type="button" class="today-collapse" data-act="actTodayCol" aria-expanded="'+!tcol+'" title="'+(tcol?'Buka':'Tutup')+' Agenda Hari Ini"><span>'+(tcol?'▾':'▴')+'</span></button>'+(tcol?'<button type="button" class="today-collapsed-line" data-act="actTodayCol"><b>Agenda Hari Ini</b><span class="count-badge">'+tdy.length+'</span><small>'+esc(dlab)+'</small></button>':'')+'</section>';
+ /* Toolbar Daftar Aktivitas (Opsi B): tombol ikon dikelompokkan 1-ON-1 | MIGRASI di header kartu; nama fitur di tooltip.
+    Status impor tampil sebagai notifikasi yang bisa ditutup (actMigStatus), tidak lagi teks permanen. */
+ const cib=(act,label,p)=>'<button type="button" class="btn ch-ib" data-act="'+act+'" aria-label="'+label+'" data-tip="'+label+'">'+ic(p)+'</button>';
+ const tools=editable?'<span class="ch-tools"><span class="ch-lbl">1-ON-1</span>'
+  +cib('oneDraft','Konsep undangan 1-on-1','<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 17l1-3 5-5 2 2-5 5z"/>')
+  +cib('oneImp','Impor undangan 1-on-1 (PDF/Word)','<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>')
+  +cib('oneCopyTw','Salin sesi 1-on-1 ke TW berikutnya','<rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>')
+  +'<span class="ch-sep" aria-hidden="true"></span><span class="ch-lbl">MIGRASI</span>'
+  +cib('actJsonImport','Impor JSON aktivitas (Dashboard CM)','<path d="M8 3H7a2 2 0 0 0-2 2v4a2 2 0 0 1-2 2 2 2 0 0 1 2 2v4a2 2 0 0 0 2 2h1M16 3h1a2 2 0 0 1 2 2v4a2 2 0 0 0 2 2 2 2 0 0 0-2 2v4a2 2 0 0 1-2 2h-1"/>')
+  +cib('actZipImport','Impor paket + lampiran (ZIP)','<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M10 6h1M10 9h1M10 12h1M10 15h1v3h-1z"/>')
+  +'<input type="file" id="act-json-file" accept=".json,application/json" hidden><input type="file" id="act-migration-zip" accept=".zip,application/zip" hidden></span>':'';
+ const ms=window.__actMig||null,mst=ms?'<div class="act-mig-toast '+ms.k+'" id="act-migration-status" role="status"><span class="ic">'+(ms.k==='ok'?'✓':ms.k==='err'?'!':'⟳')+'</span><span class="tx">'+esc(ms.t)+'</span><button type="button" class="x" data-act="actMigClose" aria-label="Tutup notifikasi">Tutup ✕</button></div>':'<div id="act-migration-status" hidden></div>';
  return '<div class="cmx">'+vh('1','pmo','Aktivitas','Seluruh kegiatan PMO dan CMO Kemenkeu: 1-on-1 T-Program, forum, rapat koordinasi, pendampingan, lengkap dengan PIC, notulen, dokumentasi, dan notula.',acts)+actTabs()+
- fbar+today+'<div class="card"><div class="ch"><h3>Daftar Aktivitas <span class="s">('+rows.length+')</span></h3></div>'+
- (editable?'<div class="act-bar"><span class="act-one"><b>1-on-1:</b><button class="btn sm" data-act="oneDraft" title="Buat konsep undangan rapat 1-on-1 satu triwulan">⎙ Konsep undangan</button><button class="btn sm" data-act="oneImp">⇪ Impor undangan</button><button class="btn sm" data-act="oneCopyTw" title="Salin sesi 1-on-1 ke triwulan berikutnya">⧉ Salin ke TW berikutnya</button></span><span class="act-one"><button class="btn sm pri" data-act="actJsonImport" title="Impor data aktivitas dari JSON Dashboard CM">⇪ Impor JSON Aktivitas</button><button class="btn sm pri" data-act="actZipImport" title="Impor ZIP berisi seluruh aktivitas dan lampiran Firestore dari menu Settings Dashboard CM">⇪ Impor Paket + Lampiran (ZIP)</button><input type="file" id="act-json-file" accept=".json,application/json" hidden><input type="file" id="act-migration-zip" accept=".zip,application/zip" hidden><small id="act-migration-status" role="status" style="display:block;flex-basis:100%;font-size:12px;color:#334155"></small></span></div>':'')+
+ fbar+today+'<div class="card"><div class="ch act-ch"><h3>Daftar Aktivitas <span class="s">('+rows.length+')</span></h3>'+tools+'</div>'+mst+
  '<div class="tscroll act-cm"><table class="act-tbl"><colgroup><col class="c-no"><col class="c-date"><col class="c-act"><col class="c-svc"><col class="c-unit"><col class="c-cat"><col class="c-prog"><col class="c-pic"><col class="c-st"><col class="c-ax"></colgroup><thead><tr><th>No</th>'+th('tgl','Tanggal / Jam')+th('nama','Kegiatan')+th('lay','Layanan')+th('unit','Unit')+th('kat','Kategori')+th('prog','Program')+'<th>PIC</th>'+th('st','Status')+'<th>Aksi</th></tr></thead><tbody>'+
  (paged.length?paged.map(tr).join(''):'<tr><td colspan="10" class="od-emp">'+(all.length?'Tidak ada aktivitas yang cocok dengan filter.':'Belum ada aktivitas.')+' Klik <b>+ Aktivitas</b> atau <b>Import Undangan</b> untuk menambah.</td></tr>')+'</tbody></table></div>'+pgn+'</div></div>';
 }
@@ -6138,6 +6163,10 @@ function actImportDashboardBackup(data){
  toast('Impor selesai: '+added+' baru, '+updated+' diperbarui; total '+(added+updated)+' dari '+agendas.length+' aktivitas sumber. '+unresolved+' referensi berkas perlu dihubungkan kembali.');
  return {added,updated,unresolved};
 }
+/* Notifikasi status impor migrasi (JSON/ZIP): disimpan di window agar tetap tampil setelah render ulang. k: info | ok | err. */
+function actMigStatus(t){const k=/^gagal/i.test(t)?'err':/selesai/i.test(t)?'ok':'info';window.__actMig=t?{t,k}:null;const n=document.getElementById('act-migration-status');
+ if(n&&t){n.hidden=false;n.className='act-mig-toast '+k;n.setAttribute('role','status');n.innerHTML='<span class="ic">'+(k==='ok'?'✓':k==='err'?'!':'⟳')+'</span><span class="tx">'+esc(t)+'</span><button type="button" class="x" data-act="actMigClose" aria-label="Tutup notifikasi">Tutup ✕</button>'}else if(n&&!t){n.hidden=true;n.className='';n.innerHTML=''}}
+ACT.actMigClose=()=>actMigStatus('');
 ACT.actJsonImport=()=>{if(!actCanEdit())return toast('Tidak berwenang mengimpor aktivitas.');document.getElementById('act-json-file')?.click()};
 document.addEventListener('change',async e=>{
  if(e.target?.id!=='act-json-file')return;
@@ -6146,8 +6175,8 @@ document.addEventListener('change',async e=>{
   if(file.size>20*1024*1024)throw new Error('Backup terlalu besar; maksimal 20 MB.');
   const data=JSON.parse(await file.text());if(!Array.isArray(data.agendas))throw new Error('File bukan backup Dashboard CM.');
   if(!window.confirm('Impor '+data.agendas.length+' aktivitas dari Dashboard CM? Aktivitas dengan ID sumber yang sama akan diperbarui, dan lampiran yang hanya berupa refId ditandai sebagai belum terhubung.'))return;
-  actImportDashboardBackup(data);
- }catch(err){toast('Gagal mengimpor: '+(err.message||String(err)))}finally{e.target.value=''}
+  const r=actImportDashboardBackup(data)||{};actMigStatus('Impor selesai: '+data.agendas.length+' aktivitas (baru '+(r.added||0)+', diperbarui '+(r.updated||0)+')'+(r.unresolved?', '+r.unresolved+' lampiran belum terhubung':'')+'.');
+ }catch(err){const m='Gagal mengimpor: '+(err.message||String(err));toast(m);actMigStatus(m)}finally{e.target.value=''}
 },true);
 
 ACT.oneAdd=()=>{getOneOnOne();const x={id:uid(),keAkt:true,tahun:+S.ui.tahun,tw:+S.ui.oneTw||oneTwNow(),no:0,kat:S.ui.actKat||'Rapat Koordinasi',tgl:'',jam:'',program:'',tema:'',uic:'',spv:'',katim:'',anggota:'',lokasi:'',mode:'Offline',pic:[]};editOneOnOne(x)};

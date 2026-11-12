@@ -2,7 +2,7 @@
    Lampiran disimpan melalui fileStore() ke koleksi files MT; tidak menyimpan Base64 di dokumen aktivitas. */
 (function(){
   const parseArray=v=>{if(Array.isArray(v))return v;if(typeof v==='string'){try{const d=JSON.parse(v);return Array.isArray(d)?d:[]}catch(e){return []}}return []};
-  const progress=t=>{const node=document.getElementById('act-migration-status');if(node)node.textContent=t};
+  const progress=t=>{if(typeof actMigStatus==='function'){actMigStatus(t);return}const node=document.getElementById('act-migration-status');if(node)node.textContent=t};
   const fieldMap={dokumentasi:'dok',notula:'notula',undanganFiles:'und',suratTugasFiles:'st',materiFiles:'materi'};
   async function importZip(file){
     if(!actCanEdit())throw Error('Tidak memiliki izin mengimpor aktivitas.');
