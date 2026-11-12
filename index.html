@@ -2738,7 +2738,7 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 .sw .act-letter-section .sl-mv{display:flex;flex-direction:column;gap:3px;flex:1 1 260px;min-width:0}
 .sw .act-letter-section .sl-mv.sl-mv-d{flex:0 0 130px}
 .sw .act-letter-section .sl-mv span{font-size:11px;font-weight:700;color:#7A879C}
-.sw .act-letter-section .sl-mv b{font-size:13px;font-weight:650;color:#1D2B44;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sw .act-letter-section .sl-mv b{font-size:13px;font-weight:650;color:#1D2B44;line-height:1.35;white-space:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
 .sw .act-letter-section .sl-letter .sl-t{flex:0 0 230px}
 .sw .act-letter-section .sl-letter .sl-t>b{white-space:nowrap}
 .sw .act-letter-section .sl-letter .sl-no{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;display:inline-block}
@@ -5317,7 +5317,7 @@ function editOneOnOne(item,step,after){
   const A=ATT[el.dataset.slid],noEl=ov.querySelector('#at-no-'+el.dataset.slid),no=((noEl||{}).value||'').trim(),n=A?A.items.length:0,last=n?A.items[n-1]:null,na=!n&&/^[-–—]$/.test(no),isU=el.dataset.sl==='und';
   const c=el.querySelector('[data-slc]'),ss=el.querySelector('[data-sls]'),st=el.querySelector('#one-'+el.dataset.sl+'Status'),mt=el.querySelector('[data-slmeta]'),version=n>1?n+' versi':n?'1':'';
   if(c&&c.textContent!==version)c.textContent=version;
-  const realNo=/\d/.test(no)?no:'',lastNo=last&&/\d/.test(last.no||'')?last.no:'',number=isU?(lastNo||realNo):(realNo||lastNo);
+  const okNo=v=>isU?/\d/.test(v||''):/^ST-?\d/i.test(v||''),realNo=okNo(no)?no:'',lastNo=last&&okNo(last.no)?last.no:'',number=isU?(lastNo||realNo):(realNo||lastNo);
   const label=na?'<span class="sl-tag na">Tidak diperlukan</span>':last?'<button type="button" class="sl-no'+(number?'':' sl-no-empty')+'" data-slpv="'+esc(el.dataset.slid)+'" title="'+(isU?'Unduh surat undangan':'Lihat surat tugas')+'">'+esc(number||(isU?last.nama||'Surat terunggah':'Nomor ST tidak terbaca — lihat surat'))+'</button>':realNo?'<span class="sl-letter-sub">'+esc(realNo)+'</span>':'Belum ada dokumen atau tautan';
   if(ss&&ss.dataset.h!==label){ss.dataset.h=label;ss.innerHTML=label}
   const mvH=el.querySelector('[data-mv="hal"]'),mvT=el.querySelector('[data-mv="tgl"]'),hI=ov.querySelector('#one-'+el.dataset.sl+'Hal'),tI=ov.querySelector('#one-'+el.dataset.sl+'Tgl');
@@ -5330,13 +5330,13 @@ function editOneOnOne(item,step,after){
  /* Hal, Tanggal (dan Nomor) terisi otomatis dari isi berkas terakhir yang sudah diunggah (undangan & ST); hanya mengisi kolom yang masih kosong.
     Tautan SharePoint/OneDrive tidak dapat dibaca isinya dari peramban, jadi diisi manual. */
  const slAuto=async k=>{const id='one-'+k,A=ATT[id],el=ov.querySelector('.sl[data-sl="'+k+'"]');if(!A||!A.items.length||!el)return;const m=A.items[A.items.length-1];
-  const hal=q('#one-'+k+'Hal'),tg=q('#one-'+k+'Tgl'),noIn=q('#at-no-'+id),sn=q('[data-slno="'+id+'"]'),noOk=v=>/\d/.test(v||'');
-  if(!hal||!tg||(hal.value.trim()&&tg.value&&(k!=='st'||noOk(sn&&sn.value))))return;
+  const hal=q('#one-'+k+'Hal'),tg=q('#one-'+k+'Tgl'),noIn=q('#at-no-'+id),sn=null,noOk=v=>k==='st'?/^ST-?\d/i.test(v||''):/\d/.test(v||'');
+  if(!hal||!tg||(hal.value.trim()&&tg.value&&noOk(noIn&&noIn.value)))return;
   let md={no:m.no||'',hal:m.hal||'',tgl0:m.tgl0||''};
   if(m.t==='f'&&(!md.hal||!md.tgl0||!noOk(md.no))){el.classList.add('sl-reading');try{const b=await fileLoad(m),r=await actLetterMetadata(new File([b],m.nama||'surat',{type:m.type||b.type||''}));md={no:noOk(md.no)?md.no:r.no,hal:md.hal||r.hal,tgl0:md.tgl0||r.tgl0};Object.assign(m,md)}catch(e){}el.classList.remove('sl-reading')}
   if(!document.body.contains(ov))return;let ch=0;
   if(!hal.value.trim()&&md.hal){hal.value=md.hal;ch=1}if(!tg.value&&md.tgl0){tg.value=md.tgl0;ch=1}
-  if(noOk(md.no)&&noIn&&!noOk(noIn.value)){noIn.value=md.no;if(sn)sn.value=md.no;ch=1}
+  if(noOk(md.no)&&noIn&&!noOk(noIn.value)){noIn.value=md.no;m.no=md.no;ch=1}
   if(ch){dirty=true;upd()}};
  setTimeout(()=>{slAuto('und');slAuto('st')},0);
  const nlSum=()=>{const A=ATT['one-not'],n=A?A.items.length:0,p=q('[data-nlpp]'),c=q('[data-nlpn]');if(!p)return;const t1=n?n+'/'+n+' tersimpan':'Belum ada berkas',t2=n?n+' berkas':'';if(p.textContent!==t1)p.textContent=t1;p.classList.toggle('ok',n>0);if(c.textContent!==t2)c.textContent=t2};
@@ -7179,8 +7179,12 @@ async function nlView(i){if(!i||i.t!=='f')return;const nm=String(i.nama||'').toL
 async function actLetterMetadata(file){
  const txt=await undExtractText(file),lines=String(txt||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean),head=lines.slice(0,75);
  const field=(re,max)=>{for(let i=0;i<head.length;i++){const m=re.exec(head[i]);if(m){let v=(m[1]||'').trim();if(!v&&head[i+1])v=head[i+1];return v.slice(0,max)}}return ''};
- let no=field(/^(?:nomor(?: surat)?|no\.?)\s*[:：\t-]\s*(.*)$/i,120)||((txt.match(/\b(?:UND|ND|ST|S|B|SR)-?\d{1,5}\/[A-Z0-9.\/-]+\/20\d{2}\b/i)||[])[0]||'');
- no=String(no).split('\t')[0].replace(/\s+\d{1,2}\s+[A-Za-z]+\s+20\d{2}\s*$/,'').trim();
+ /* Nomor surat: hanya nilai yang berbentuk nomor naskah (huruf-angka/kode/tahun). Baris "No." pada tabel ST (No. | Nama / NIP) dan
+    "nomor UND-…" di kalimat rujukan ST tidak boleh terbaca sebagai nomor ST: untuk Surat Tugas diutamakan pola ST-…. */
+ const NRE=/\b(?:[A-Z]{1,6}-)?\d{1,6}\/[A-Z0-9.\/-]*\/?20\d{2}\b/i,isST=/surat\s+tugas/i.test(head.slice(0,15).join(' '));
+ const fromLbl=()=>{for(const l of head){const m=/^(?:nomor(?:\s+surat)?|no\.?)\s*[:：\t-]?\s*(.+)$/i.exec(l);if(!m)continue;const v=(NRE.exec(m[1].split('\t')[0])||NRE.exec(m[1])||[])[0];if(v)return v}return ''};
+ let no=isST?((txt.match(/\bST-?\d{1,6}\/[A-Z0-9.\/-]+\/20\d{2}\b/i)||[])[0]||fromLbl()):(fromLbl()||((txt.match(/\b(?:UND|ND|ST|S|B|SR)-?\d{1,5}\/[A-Z0-9.\/-]+\/20\d{2}\b/i)||[])[0]||''));
+ no=String(no).trim();
  const BL=['januari','februari','maret','april','mei','juni','juli','agustus','september','oktober','november','desember'],cut=head.findIndex(l=>/^(yth|kepada|sehubungan|dalam rangka|menindaklanjuti|bersama ini)\b/i.test(l)),top=(cut>0?head.slice(0,cut):head.slice(0,20)).join('\n');
  const dm=/(?:tanggal\s*[:：]\s*)?(\d{1,2})\s+(januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|desember)\s+(20\d{2})/i.exec(top);
  const iso=d=>d?d[3]+'-'+String(BL.indexOf(d[2].toLowerCase())+1).padStart(2,'0')+'-'+String(d[1]).padStart(2,'0'):'';
