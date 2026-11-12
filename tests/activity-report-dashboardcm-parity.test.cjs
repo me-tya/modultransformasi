@@ -11,7 +11,7 @@ test('Dasar Surat dan Metode: struktur sama dengan referensi DashboardCM, Hal & 
  assert.match(html,/act-letter-section/);assert.match(html,/act-method-section/);
  assert.match(html,/sl-letter/);assert.match(html,/sl-pending-input/);
  assert.match(html,/data-slk="link"/);assert.match(html,/data-slk="file"/);assert.match(html,/data-slk="tog"/);
- assert.match(html,/hiddenNo:true/);assert.match(html,/id="one-undHal"/);assert.match(html,/id="one-undTgl"/);assert.match(html,/data-slno=/);assert.match(html,/data-slmeta hidden/);
+ assert.match(html,/hiddenNo:true/);assert.match(html,/id="one-\$\{k\}Hal"/);assert.match(html,/id="one-\$\{k\}Tgl"/);assert.match(html,/data-mv="hal"/);assert.match(html,/data-slmeta hidden/);
  assert.doesNotMatch(html,/class="sl-summary"/);
  assert.match(html,/function actLetterMetadata\(/);
  assert.match(html,/undExtractText\(file\)/);

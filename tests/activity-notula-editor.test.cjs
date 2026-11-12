@@ -20,8 +20,8 @@ test('Dasar surat: ikon interaktif, tombol duplikat terhapus, kontrol ringkas',(
  assert.match(slot,/id="one-\$\{k\}Status"/);
  assert.doesNotMatch(slot,/data-slna/);
  assert.match(slot,/hiddenNo:true/);
- assert.match(slot,/id="one-undHal"/);
- assert.match(slot,/id="one-stHal"/);
+ assert.match(slot,/type="hidden" id="one-\$\{k\}Hal"/);
+ assert.match(slot,/data-mv="hal"/);
  assert.match(html,/r\.push\(\['Undangan \(berkas\/tautan atau keterangan penyiapan\)'/);
  assert.match(html,/\['Surat Tugas \(berkas\/tautan atau keterangan penyiapan\)'/);
  assert.doesNotMatch(html,/class="sl-tag cur">TERBARU/);
