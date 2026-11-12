@@ -34,7 +34,7 @@ test('PIC: pegawai Pusmantap lengkap dan kelompok penugasan dipisahkan',()=>{
 });
 test('Notula: kontrol disederhanakan dan dua editor tersimpan',()=>{
  assert.match(html,/class="btn act-nlbtn" data-gen="notula"/);
- assert.match(html,/class="mt-nlinfo"/);
+ assert.match(html,/sec\(3,'Notula','[^']*Berkas Notula yang diunggah disimpan langsung/);
  assert.match(html,/id="one-rte-sim" contenteditable="true"/);
  assert.match(html,/data-rtefont/);assert.match(html,/data-rtesize/);
  assert.match(html,/data-rteindent/);assert.match(html,/data-cmd="\$\{c\}"/);
