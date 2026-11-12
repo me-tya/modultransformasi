@@ -2731,15 +2731,15 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 /* Tab Event (EO) di wizard aktivitas hanya tampil bila toggle EO aktif: [hidden] harus menang atas display:grid. */
 .sw-nav button[hidden],.sw .sw-nav button[hidden]{display:none!important}
 /* Kartu surat: metadata Hal/Tanggal undangan & Nomor ST, kolom keterangan penyiapan. */
-.sw .act-letter-section .sl-meta{display:flex;gap:10px;align-items:flex-end;flex:0 1 640px;min-width:0}
+.sw .act-letter-section .sl-meta{display:flex;gap:16px;align-items:flex-start;flex:1 1 auto;min-width:0}
 .sw .act-letter-section .sl-meta[hidden]{display:none}
 .sw .act-letter-section .sl-mf{display:flex;flex-direction:column;gap:3px;flex:1 1 220px;min-width:0;font-size:11px;font-weight:700;color:#53627A}
 .sw .act-letter-section .sl-mf.sl-mf-d{flex:0 0 150px}
-.sw .act-letter-section .sl-mv{display:flex;flex-direction:column;gap:3px;flex:1 1 260px;min-width:0}
+.sw .act-letter-section .sl-mv{display:flex;flex-direction:column;gap:3px;flex:1 1 auto;min-width:0}
 .sw .act-letter-section .sl-mv.sl-mv-d{flex:0 0 130px}
 .sw .act-letter-section .sl-mv span{font-size:11px;font-weight:700;color:#7A879C}
-.sw .act-letter-section .sl-mv b{font-size:13px;font-weight:650;color:#1D2B44;line-height:1.35;white-space:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
-.sw .act-letter-section .sl-letter .sl-t{flex:0 0 230px}
+.sw .act-letter-section .sl-mv b{font-size:13px;font-weight:650;color:#1D2B44;line-height:1.4;white-space:normal;overflow-wrap:anywhere}
+.sw .act-letter-section .sl-letter.has .sl-t{flex:0 0 175px;max-width:175px}
 .sw .act-letter-section .sl-letter .sl-t>b{white-space:nowrap}
 .sw .act-letter-section .sl-letter .sl-no{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;display:inline-block}
 .sw .act-letter-section .sl-letter:not(.has) .sl-t{flex:1 1 auto}
@@ -5258,7 +5258,7 @@ function editOneOnOne(item,step,after){
   /* Hal & Tanggal hanya tampilan (view only) dari isi berkas yang diunggah; nilai disimpan di input tersembunyi. Nomor ST tampil sebagai tautan di bawah label. */
   const lst=an.items.at(-1)||{},hv=item[k+'Hal']||lst.hal||'',tv=item[k+'Tgl']||lst.tgl0||'';
   const pv=k==='st'?(item.stPeg||(Array.isArray(lst.peg)?lst.peg.join('; '):'')):'';
-  const meta=(isU?`<div class="sl-mv"><span>Hal</span><b data-mv="hal" title="${esc(hv)}">${esc(hv||'—')}</b></div>`:`<div class="sl-mv"><span>Pegawai ditugaskan</span><b data-mv="peg">${esc(pv?pv.split(/;\s*/).join(', '):'—')}</b></div><input type="hidden" id="one-stPeg" value="${esc(pv)}">`)+`<div class="sl-mv sl-mv-d"><span>Tanggal</span><b data-mv="tgl">${esc(tv?actTglShort(tv):'—')}</b></div><input type="hidden" id="one-${k}Hal" value="${esc(hv)}"><input type="hidden" id="one-${k}Tgl" value="${esc(tv)}">`;
+  const meta=(isU?`<div class="sl-mv"><span>Hal</span><b data-mv="hal" title="${esc(hv)}">${esc(hv||'—')}</b></div>`:`<div class="sl-mv"><span>Pegawai ditugaskan</span><b data-mv="peg">${esc(pv?pv.split(/;\s*/).map(x=>x.replace(/[\s\/|,;-]+$/,'').trim()).filter(Boolean).join(', '):'—')}</b></div><input type="hidden" id="one-stPeg" value="${esc(pv)}">`)+`<div class="sl-mv sl-mv-d"><span>Tanggal</span><b data-mv="tgl">${esc(tv?actTglShort(tv):'—')}</b></div><input type="hidden" id="one-${k}Hal" value="${esc(hv)}"><input type="hidden" id="one-${k}Tgl" value="${esc(tv)}">`;
   return `<div class="sl sl-letter" data-sl="${k}" data-slid="${a[1]}"><div class="sl-h"><button type="button" class="sl-ic ${cls} sl-create" data-gen="${k}" title="Buat, edit, pratinjau dan unduh template ${title}" aria-label="Buat template ${title}">▤</button><div class="sl-t"><b>${title} <em class="sl-cnt" data-slc></em></b><small data-sls>Belum ada dokumen — opsional</small><input class="inp sl-pending-input" id="one-${k}Status" value="${esc(item[k+'Status']||oldTxt)}" maxlength="180" placeholder="Siapa yang sedang menyiapkan ${isU?'undangan':'surat tugas'}, mis. Disiapkan Sarah" aria-label="Keterangan penyiapan ${title}"></div><div class="sl-meta" data-slmeta hidden>${meta}</div><div class="sl-a"><button type="button" class="sl-b sl-icon" data-slk="link" title="Tambah tautan" aria-label="Tambah tautan">🔗</button><button type="button" class="sl-b sl-icon" data-slk="file" title="Unggah surat" aria-label="Unggah surat">⇧</button><button type="button" class="sl-b sl-icon" data-slk="tog" title="Riwayat surat" aria-label="Riwayat surat">◷</button></div></div><div class="sl-bd" hidden>${attField(a[1],item[k],'',{no:a[3],compact:true,hiddenNo:true})}</div></div>`};
  const mfld=(k,l,ph,req)=>`<div class="fld" data-mf="${k}"><label for="one-${k}">${l}${req?' <i class="sw-rq">*</i>':''}</label><div class="sw-iw"><input class="inp" id="one-${k}" value="${esc(item[k]||'')}" placeholder="${esc(ph)}"><button type="button" class="sw-cp" data-cp="${k}" title="Salin" aria-label="Salin ${l}">⧉</button></div></div>`;
  const p1=`<div class="und-card"><span class="und-ic">⇪</span><div class="und-tx"><b>${isNew?'Punya surat undangan?':'Perbarui dari surat undangan'}</b><small>Unggah PDF atau Word untuk mengisi nama, tanggal, jam, lokasi, tautan, unit, peserta, dan nomor surat. Hasilnya bisa diperiksa dulu.</small></div><button type="button" class="btn sm" data-undimp>Import Undangan</button></div>`+
@@ -5324,7 +5324,7 @@ function editOneOnOne(item,step,after){
   const mvH=el.querySelector('[data-mv="hal"]'),mvT=el.querySelector('[data-mv="tgl"]'),hI=ov.querySelector('#one-'+el.dataset.sl+'Hal'),tI=ov.querySelector('#one-'+el.dataset.sl+'Tgl');
   if(mvH&&hI){const v=hI.value.trim()||'—';if(mvH.textContent!==v){mvH.textContent=v;mvH.title=v}}
   const mvP=el.querySelector('[data-mv="peg"]'),pI=ov.querySelector('#one-stPeg');
-  if(mvP&&pI){const ns=pI.value.split(/;\s*/).map(x=>x.trim()).filter(Boolean),v=ns.join(', ')||'—';if(mvP.textContent!==v)mvP.textContent=v;
+  if(mvP&&pI){const ns=pI.value.split(/;\s*/).map(x=>x.replace(/[\s\/|,;-]+$/,'').trim()).filter(Boolean),v=ns.join(', ')||'—';if(mvP.textContent!==v)mvP.textContent=v;
    /* Ringkasan berbasis aturan: jumlah & nama pegawai + kegiatan + tanggal + tempat (dari isian aktivitas). */
    const gv=id=>((ov.querySelector('#one-'+id)||{}).value||'').trim(),keg=gv('nama')||gv('stHal'),tgK=gv('tgl'),lok=gv('lokasi')||(gv('link')?'daring':'');
    const sum=ns.length?'Menugaskan '+ns.length+' pegawai ('+ns.join(', ')+')'+(keg?' menghadiri '+keg:'')+(tgK?', '+actTglShort(tgK):'')+(lok?', '+lok:'')+'.':'Nama pegawai belum terbaca dari ST.';
@@ -7205,7 +7205,7 @@ async function actLetterMetadata(file){
     buang NIP (18 digit), pangkat/golongan, dan jabatan yang ikut terbaca. */
  const peg=[];if(isST){const hi=lines.findIndex(l=>/\bnama\b/i.test(l)&&/\bnip\b/i.test(l));if(hi>=0)for(const l of lines.slice(hi+1,hi+80)){if(/^(untuk|segala|surat tugas ini|demikian|kepada instansi)/i.test(l)||/diselenggarakan pada/i.test(l))break;const m=/^(\d{1,3})[.)]\s*(.+)$/.exec(l);if(!m)continue;
    let n=m[2].split('\t')[0].replace(/\s*(?:NIP\.?\s*)?\d{8}\s?\d{6}\s?\d\s?\d{3}.*$/i,'').replace(/\s+(?:Penata|Pembina|Pengatur|Juru|Pengatur)\b.*$/,'').replace(/\s+\d{1,2}\s+\w+\s+20\d{2}.*$/,'').trim();
-   if(n&&/[A-Za-z]/.test(n)&&n.length<=80&&!peg.includes(n))peg.push(n)}}
+   n=n.replace(/[\s\/|,;-]+$/,'').trim();if(n&&/[A-Za-z]/.test(n)&&n.length<=80&&!peg.includes(n))peg.push(n)}}
  return {no,hal,tgl0,peg};
 }
 /* attField(key, nilai, label, {no: placeholder nomor surat, req, compact, ro}) */
