@@ -2730,6 +2730,14 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 @media(max-width:640px){.vh .acts:has(>:nth-child(3)) .btn.vh-ib{flex:0 0 36px}}
 /* Tab Event (EO) di wizard aktivitas hanya tampil bila toggle EO aktif: [hidden] harus menang atas display:grid. */
 .sw-nav button[hidden],.sw .sw-nav button[hidden]{display:none!important}
+/* Kartu surat: metadata Hal/Tanggal undangan & Nomor ST, kolom keterangan penyiapan. */
+.sw .act-letter-section .sl-meta{display:flex;gap:10px;align-items:flex-end;flex:0 1 460px;min-width:0}
+.sw .act-letter-section .sl-meta[hidden]{display:none}
+.sw .act-letter-section .sl-mf{display:flex;flex-direction:column;gap:3px;flex:1 1 220px;min-width:0;font-size:11px;font-weight:700;color:#53627A}
+.sw .act-letter-section .sl-mf.sl-mf-d{flex:0 0 150px}
+.sw .act-letter-section .sl-mf .inp{height:32px;font-size:12.5px;padding:0 9px}
+.sw .act-letter-section .sl-no-empty{color:#AD322F;text-decoration-style:dashed}
+@media(max-width:1000px){.sw .act-letter-section .sl-meta{flex:1 1 100%;margin-left:60px}}
 </style>
 <style id="compact-transformasi-ux">
 /* Rapi, ringkas, satu baris pada desktop */
@@ -5233,7 +5241,12 @@ function editOneOnOne(item,step,after){
  const chips=(name,list,cur)=>`<div class="act-chips" role="radiogroup" data-ch="${name}">${list.map(v=>`<button type="button" role="radio" data-chv="${esc(v)}" aria-checked="${v===cur}" class="${v===cur?'on':''}">${esc(v)}</button>`).join('')}</div>`;
  const opts=(arr,cur,ph)=>`<option value="">${ph}</option>`+arr.concat(cur&&!arr.includes(cur)?[cur]:[]).map(v=>`<option${v===cur?' selected':''}>${esc(v)}</option>`).join('');
  const mgr=(k,l)=>`<label for="one-${k}">${l} ${actCanEdit()?`<button type="button" class="act-mg" data-mg="${k}">Kelola</button>`:''}</label>`;
- const slot=(k,title,cls)=>{const a=oneAtts().find(v=>v[0]===k);return `<div class="sl sl-letter" data-sl="${k}" data-slid="${a[1]}"><div class="sl-h"><button type="button" class="sl-ic ${cls} sl-create" data-gen="${k}" title="Buat, edit, pratinjau dan unduh template ${title}" aria-label="Buat template ${title}">▤</button><div class="sl-t"><b>${title} <em class="sl-cnt" data-slc></em></b><input type="hidden" id="one-${k}Hal" value="${esc(item[k+'Hal']||'')}"><small data-sls>Belum ada dokumen — opsional</small>${k==='und'?`<input class="inp sl-pending-input" id="one-undStatus" value="${esc(item.undStatus||'')}" maxlength="180" placeholder="Status bila diproses, mis. Disiapkan Sarah" aria-label="Status proses undangan">`:''}</div><div class="sl-a"><label class="sl-na" title="Tidak ada / tidak diperlukan; dihitung lengkap."><input type="checkbox" data-slna> Tidak ada</label><button type="button" class="sl-b sl-icon" data-slk="link" title="Tambah tautan" aria-label="Tambah tautan">🔗</button><button type="button" class="sl-b sl-icon" data-slk="file" title="Unggah surat" aria-label="Unggah surat">⇧</button><button type="button" class="sl-b sl-icon" data-slk="tog" title="Riwayat surat" aria-label="Riwayat surat">◷</button></div></div><div class="sl-bd" hidden>${attField(a[1],item[k],'',{no:a[3],compact:true,hiddenNo:true})}</div></div>`};
+ /* Kartu surat (undangan/ST). Sudah ada berkas/tautan → tampil nomor (hyperlink) + metadata (Hal & Tanggal undangan, Nomor ST).
+    Belum ada → kolom teks bebas "siapa yang sedang menyiapkan" (undStatus/stStatus). Pilihan "Tidak ada" dihapus; data lama bernilai "-" tetap dibaca sebagai Tidak diperlukan. */
+ const slot=(k,title,cls)=>{const a=oneAtts().find(v=>v[0]===k),isU=k==='und',an=attNorm(item[k]),lastNo=(an.items.at(-1)||{}).no||'',oldTxt=an.no&&!/\d/.test(an.no)&&!/^[-–—]$/.test(an.no)?an.no:'';
+  const meta=isU?`<label class="sl-mf"><span>Hal</span><input class="inp" id="one-undHal" value="${esc(item.undHal||(an.items.at(-1)||{}).hal||'')}" placeholder="Hal surat undangan"></label><label class="sl-mf sl-mf-d"><span>Tanggal</span><input class="inp" id="one-undTgl" type="date" value="${esc(item.undTgl||(an.items.at(-1)||{}).tgl0||'')}"></label>`
+   :`<label class="sl-mf"><span>Nomor ST</span><input class="inp" data-slno="${a[1]}" value="${esc((an.no&&/\d/.test(an.no)?an.no:'')||(/\d/.test(lastNo)?lastNo:''))}" placeholder="${esc(a[3]||'ST-…')}"></label><input type="hidden" id="one-stHal" value="${esc(item.stHal||'')}">`;
+  return `<div class="sl sl-letter" data-sl="${k}" data-slid="${a[1]}"><div class="sl-h"><button type="button" class="sl-ic ${cls} sl-create" data-gen="${k}" title="Buat, edit, pratinjau dan unduh template ${title}" aria-label="Buat template ${title}">▤</button><div class="sl-t"><b>${title} <em class="sl-cnt" data-slc></em></b><small data-sls>Belum ada dokumen — opsional</small><input class="inp sl-pending-input" id="one-${k}Status" value="${esc(item[k+'Status']||oldTxt)}" maxlength="180" placeholder="Siapa yang sedang menyiapkan ${isU?'undangan':'surat tugas'}, mis. Disiapkan Sarah" aria-label="Keterangan penyiapan ${title}"></div><div class="sl-meta" data-slmeta hidden>${meta}</div><div class="sl-a"><button type="button" class="sl-b sl-icon" data-slk="link" title="Tambah tautan" aria-label="Tambah tautan">🔗</button><button type="button" class="sl-b sl-icon" data-slk="file" title="Unggah surat" aria-label="Unggah surat">⇧</button><button type="button" class="sl-b sl-icon" data-slk="tog" title="Riwayat surat" aria-label="Riwayat surat">◷</button></div></div><div class="sl-bd" hidden>${attField(a[1],item[k],'',{no:a[3],compact:true,hiddenNo:true})}</div></div>`};
  const mfld=(k,l,ph,req)=>`<div class="fld" data-mf="${k}"><label for="one-${k}">${l}${req?' <i class="sw-rq">*</i>':''}</label><div class="sw-iw"><input class="inp" id="one-${k}" value="${esc(item[k]||'')}" placeholder="${esc(ph)}"><button type="button" class="sw-cp" data-cp="${k}" title="Salin" aria-label="Salin ${l}">⧉</button></div></div>`;
  const p1=`<div class="und-card"><span class="und-ic">⇪</span><div class="und-tx"><b>${isNew?'Punya surat undangan?':'Perbarui dari surat undangan'}</b><small>Unggah PDF atau Word untuk mengisi nama, tanggal, jam, lokasi, tautan, unit, peserta, dan nomor surat. Hasilnya bisa diperiksa dulu.</small></div><button type="button" class="btn sm" data-undimp>Import Undangan</button></div>`+
   sec(1,'Kegiatan','Nama dan waktu pelaksanaan.',`${inp('nama','Nama kegiatan <span class="act-one-hint" data-genreq></span>',{ph:'mis. Rapat Koordinasi Kesiapan Modul SIPN',v:item.nama||''})}<div class="sw-g4">${inp('tgl','Tanggal mulai',{t:'date',req:1})}${inp('tglSelesai','Tanggal selesai',{t:'date',v:item.tglSelesai||''})}<div class="fld"><label for="one-j1">Jam mulai <i class="sw-rq">*</i></label><input class="inp" id="one-j1" type="time" value="${j[0]}"></div><div class="fld"><label for="one-j2">Jam selesai <i class="sw-rq">*</i></label><input class="inp" id="one-j2" type="time" value="${j[1]}"></div></div>
@@ -5269,7 +5282,7 @@ function editOneOnOne(item,step,after){
   <div class="sw-card"><b data-swt>Aktivitas tanpa judul</b><span data-swd></span><em data-sws class="chip c-info"></em></div>
   <div class="sw-ring"><svg viewBox="0 0 36 36" width="54" height="54" aria-hidden="true"><circle cx="18" cy="18" r="15.5" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="4"/><circle data-swr cx="18" cy="18" r="15.5" fill="none" stroke="#F6B800" stroke-width="4" stroke-linecap="round" stroke-dasharray="0 100" transform="rotate(-90 18 18)" pathLength="100"/></svg><div><b data-swp>0%</b><small>Kelengkapan data<br><span data-swq></span></small></div></div>
   <nav class="sw-nav" role="tablist">${SW_STEPS.map((t,i)=>`<button type="button" role="tab" data-sws-t="${i+1}"${i===2?' hidden':''}><i>${SW_ICO[i]}</i><span><b>${t[0]}</b><small>${t[1]}</small></span><em data-swb="${i+1}">0/0</em></button>`).join('')}</nav>
-  <div class="sw-ft"><small>Tahap boleh dibuka bebas, isian tidak hilang saat berpindah.</small><small><kbd>Ctrl</kbd> + <kbd>S</kbd> untuk menyimpan</small>${isNew?'':'<button type="button" class="sw-del" data-swdup style="background:rgba(255,255,255,.1)">⧉ Duplikat</button>'}${canDel?'<button type="button" class="sw-del" data-swdel>Hapus aktivitas</button>':''}</div></aside>
+  <div class="sw-ft"><small>Tahap boleh dibuka bebas, isian tidak hilang saat berpindah.</small><small><kbd>Ctrl</kbd> + <kbd>S</kbd> untuk menyimpan</small></div></aside>
   <div class="sw-mn"><header><span class="sw-n" data-swn>1</span><div><h3 data-swh></h3><p data-swu></p></div><button type="button" class="sw-x" data-swcl aria-label="Tutup">×</button></header>
   <div class="sw-bd">${[p1,p2,p3,p4,p5].map((p,i)=>`<div data-swp-${i+1}${i?' hidden':''}>${p}</div>`).join('')}</div>
   <footer><span class="sw-msg" data-swm2></span><button type="button" class="btn" data-swcl2>Batal</button><button type="button" class="btn" data-swnx></button><button type="button" class="btn" data-swsv>Simpan</button><button type="button" class="btn gold" data-swsc>Simpan &amp; Tutup</button></footer></div></div>`;
@@ -5279,7 +5292,7 @@ function editOneOnOne(item,step,after){
  const tabs=()=>eo.on?[1,2,3,4,5]:[1,2,4,5];
  const REQ=()=>{const o=isOneNow(),r=[];if(o)r.push(['Nama program (Program terkait)',()=>V('program').trim(),1]);else r.push(['Nama kegiatan',()=>V('nama').trim(),1]);
   r.push(['Tanggal mulai',()=>V('tgl'),1],['Jam mulai',()=>V('j1'),1],['Jam selesai',()=>V('j2'),1],['Lokasi atau tautan rapat',()=>V('lokasi').trim()||V('link').trim(),1]);
-  r.push(['Undangan atau Tidak ada',()=>filled('und'),1],['Surat Tugas atau Tidak ada',()=>filled('st'),1]);if(o)r.push(['UIC Utama',()=>V('uic').trim(),2],['Supervisor',()=>V('spv').trim(),2],['Ketua tim',()=>V('katim').trim(),2]);return r};
+  r.push(['Undangan (berkas/tautan atau keterangan penyiapan)',()=>filled('und')||V('undStatus').trim(),1],['Surat Tugas (berkas/tautan atau keterangan penyiapan)',()=>filled('st')||V('stStatus').trim(),1]);if(o)r.push(['UIC Utama',()=>V('uic').trim(),2],['Supervisor',()=>V('spv').trim(),2],['Ketua tim',()=>V('katim').trim(),2]);return r};
  const OPT=()=>({1:[()=>V('kat')],2:[()=>V('tujuan').trim(),()=>pic.length,()=>V('peserta').trim()],3:[()=>eo.items.length],4:[()=>filled('materi'),()=>filled('notula')||actWords(q('#one-rte').innerHTML)>0],5:[()=>filled('dok'),()=>filled('hadir'),()=>filled('notulaTte'),()=>V('ringkas').trim()||V('tl').trim()]});
  const stNow=()=>{const tmp={tgl:V('tgl'),tglSelesai:V('tglSelesai'),jam:oneJam(V('j1'),V('j2')),stat:stat==='Terjadwal'?'':stat,notula:filled('notula')?{items:[1]}:null,notulaTeks:q('#one-rte').innerHTML};return actSt(tmp)};
  const drawPics=()=>{q('#one-pics').innerHTML=pic.length?pic.map(n=>{const p=actPicOf(n);return `<span class="act-pic" title="${esc(p.jab||'')}"><i>${esc(n.split(' ').map(w=>w[0]).slice(0,2).join(''))}</i>${esc(n)}${p.tim?`<em>${p.tim}</em>`:''}<button type="button" data-pkrm="${esc(n)}" aria-label="Hapus ${esc(n)}">✕</button></span>`}).join(''):'<span class="s">Belum ada PIC. Klik Pilih PIC.</span>'};
@@ -5289,14 +5302,16 @@ function editOneOnOne(item,step,after){
 
  /* Ringkasan kartu surat (TERBARU / TIDAK ADA), panel notula, dan peringatan jadwal PIC bentrok. Hanya menulis DOM bila berubah agar MutationObserver tidak berputar. */
  const slSum=()=>ov.querySelectorAll('.sl').forEach(el=>{
-  const A=ATT[el.dataset.slid],no=((ov.querySelector('#at-no-'+el.dataset.slid)||{}).value||'').trim(),n=A?A.items.length:0,last=n?A.items[n-1]:null,na=/^[-–—]$/.test(no);
-  const c=el.querySelector('[data-slc]'),ss=el.querySelector('[data-sls]'),cb=el.querySelector('[data-slna]'),st=el.querySelector('#one-undStatus'),version=n>1?n+' versi':n?'1':'';
+  const A=ATT[el.dataset.slid],noEl=ov.querySelector('#at-no-'+el.dataset.slid),no=((noEl||{}).value||'').trim(),n=A?A.items.length:0,last=n?A.items[n-1]:null,na=!n&&/^[-–—]$/.test(no),isU=el.dataset.sl==='und';
+  const c=el.querySelector('[data-slc]'),ss=el.querySelector('[data-sls]'),st=el.querySelector('#one-'+el.dataset.sl+'Status'),mt=el.querySelector('[data-slmeta]'),version=n>1?n+' versi':n?'1':'';
   if(c&&c.textContent!==version)c.textContent=version;
-  const number=last&&last.no||(!na?no:'');
-  const label=na?'<span class="sl-tag na">Tidak diperlukan</span>':last?'<button type="button" class="sl-no" data-slpv="'+esc(el.dataset.slid)+'" title="'+(el.dataset.sl==='und'?'Unduh surat undangan':'Lihat surat')+'">'+esc(number||last.nama||'Surat terunggah')+'</button>'+(last.hal?'<span class="sl-letter-sub" title="'+esc(last.hal)+'">'+esc(last.hal)+'</span>':''):no?'<span class="sl-letter-sub">'+esc(no)+'</span>':st&&st.value.trim()?'<span class="sl-pending">'+esc(st.value.trim())+'</span>':'Belum ada dokumen — opsional';
+  const realNo=/\d/.test(no)?no:'',lastNo=last&&/\d/.test(last.no||'')?last.no:'',number=isU?(lastNo||realNo):(realNo||lastNo);
+  const label=na?'<span class="sl-tag na">Tidak diperlukan</span>':last?'<button type="button" class="sl-no'+(number?'':' sl-no-empty')+'" data-slpv="'+esc(el.dataset.slid)+'" title="'+(isU?'Unduh surat undangan':'Lihat surat tugas')+'">'+esc(number||(isU?last.nama||'Surat terunggah':'Nomor ST belum diisi'))+'</button>':realNo?'<span class="sl-letter-sub">'+esc(realNo)+'</span>':'Belum ada dokumen atau tautan';
   if(ss&&ss.dataset.h!==label){ss.dataset.h=label;ss.innerHTML=label}
-  if(cb)cb.checked=na;if(st)st.hidden=!!(n||na);el.classList.toggle('na',na);el.classList.toggle('has',!!(n||no));
+  if(st&&st.hidden!==!!(n||na))st.hidden=!!(n||na);if(mt&&mt.hidden!==!n)mt.hidden=!n;el.classList.toggle('na',na);el.classList.toggle('has',!!(n||realNo));
  });
+ /* Migrasi tampilan data lama: nomor "-" (Tidak ada) atau teks tanpa angka (mis. "Disiapkan Sarah") pindah ke keterangan penyiapan. */
+ [['und','one-und'],['st','one-st']].forEach(([k,id])=>{const no=ov.querySelector('#at-no-'+id),st=ov.querySelector('#one-'+k+'Status');if(!no||!st)return;const v=no.value.trim();if(v&&!/\d/.test(v)){if(!st.value.trim())st.value=/^[-–—]$/.test(v)?'Tidak ada':v;no.value=''}});
  ATT['one-und'].cb=()=>{slSum();upd()};ATT['one-st'].cb=()=>{slSum();upd()};
  const nlSum=()=>{const A=ATT['one-not'],n=A?A.items.length:0,p=q('[data-nlpp]'),c=q('[data-nlpn]');if(!p)return;const t1=n?n+'/'+n+' tersimpan':'Belum ada berkas',t2=n?n+' berkas':'';if(p.textContent!==t1)p.textContent=t1;p.classList.toggle('ok',n>0);if(c.textContent!==t2)c.textContent=t2};
  const clashChk=()=>{const b=q('#one-clash');if(!b)return;const s=V('tgl'),e=V('tglSelesai')||s,a1=V('j1'),a2=V('j2'),sig=[pic.join('|'),s,e,a1,a2].join('#');if(b._sig===sig)return;b._sig=sig;
@@ -5321,7 +5336,7 @@ function editOneOnOne(item,step,after){
   if(mode!=='Online')set('lokasi',v.lokasi);if(mode!=='Offline')set('link',v.link);
   if(v.unit){const sel=q('#one-unitP');let o=[...sel.options].find(x=>x.value.toLowerCase()===v.unit.toLowerCase());if(!o){o=new Option(v.unit,v.unit);sel.add(o)}sel.value=o.value;n++;flash(sel.closest('.fld'))}
   set('peserta',v.peserta);if(v.nomor){const e=q('#at-no-one-und');if(e){e.value=v.nomor;n++}}
-  if(file){fileStore(file).then(async m=>{try{const md=await actLetterMetadata(file);Object.assign(m,md);if(md.no)q('#at-no-one-und').value=md.no;if(md.hal)q('#one-undHal').value=md.hal}catch(err){}ATT['one-und'].items.push(m);attRedraw('one-und');attChanged('one-und');upd()}).catch(err=>toast('Gagal melampirkan undangan: '+(err.message||err)))}
+  if(file){fileStore(file).then(async m=>{try{const md=await actLetterMetadata(file);Object.assign(m,md);if(md.no)q('#at-no-one-und').value=md.no;if(md.hal)q('#one-undHal').value=md.hal;if(md.tgl0&&q('#one-undTgl'))q('#one-undTgl').value=md.tgl0}catch(err){}ATT['one-und'].items.push(m);attRedraw('one-und');attChanged('one-und');upd()}).catch(err=>toast('Gagal melampirkan undangan: '+(err.message||err)))}
   drawJb();dirty=true;upd();return n};
  const upd=()=>{const reason=q('[data-reason]');if(reason)reason.hidden=!['Ditunda','Tidak Dihadiri','Dibatalkan'].includes(stat);slSum();nlSum();clashChk();const tp=stNow();q('[data-swt]').textContent=(V('nama').trim()||(isOneNow()&&V('program').trim()?'Rapat 1-on-1 · '+V('program').trim():'Aktivitas tanpa judul'));q('[data-swd]').textContent=V('tgl')?oneLong(V('tgl')):'Belum bertanggal';const sc=q('[data-sws]');sc.textContent=stat!=='Terjadwal'?stat:tp[0];sc.className='chip '+(stat!=='Terjadwal'?(ACT_STS.find(a=>a[0]===stat)||[0,'c-info'])[1]:tp[1]);
   const R=REQ(),ok=R.filter(r=>r[1]()).length,pct=Math.round(ok/R.length*100);q('[data-swp]').textContent=pct+'%';q('[data-swr]').setAttribute('stroke-dasharray',pct+' 100');q('[data-swq]').textContent=ok<R.length?'Isian wajib belum lengkap':'Isian wajib lengkap';
@@ -5330,7 +5345,7 @@ function editOneOnOne(item,step,after){
  const go=n=>{if(n===3&&!eo.on)n=4;cur=n;[1,2,3,4,5].forEach(i=>q('[data-swp-'+i+']').hidden=i!==n);ov.querySelectorAll('[data-sws-t]').forEach(b=>{const on=+b.dataset.swsT===n;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});
   q('[data-swn]').textContent=['1','2','EO','3','4'][n-1];q('[data-swh]').textContent=SW_STEPS[n-1][0];q('[data-swu]').textContent=SW_DESC[n-1];
   const t=tabs(),nx=t[t.indexOf(n)+1],nb=q('[data-swnx]');nb.style.display=nx?'':'none';nb.textContent=nx?SW_STEPS[nx-1][0]+' →':'';nb.dataset.to=nx||'';q('.sw-bd').scrollTop=0};
- const collect=(into,withAtt)=>{['nama','program','tema','uic','spv','katim','anggota','lokasi','link','alasan','ringkas','tl','tujuan','catatan','narsum','peserta','unitP','tglSelesai','undHal','stHal'].forEach(k=>into[k]=V(k).trim());{const kc=q('#one-keAkt');into.keAkt=isOneNow()?!!(kc&&kc.checked):true;into.undStatus=V('undStatus').trim()}
+ const collect=(into,withAtt)=>{['nama','program','tema','uic','spv','katim','anggota','lokasi','link','alasan','ringkas','tl','tujuan','catatan','narsum','peserta','unitP','tglSelesai','undHal','undTgl','stHal'].forEach(k=>into[k]=V(k).trim());{const kc=q('#one-keAkt');into.keAkt=isOneNow()?!!(kc&&kc.checked):true;into.undStatus=V('undStatus').trim();into.stStatus=V('stStatus').trim()}
   into.kat=V('kat')||(isNew?'Lainnya':item.kat||ONE_KAT);into.layanan=lay;into.mode=mode;into.tgl=V('tgl');into.jam=oneJam(V('j1'),V('j2'));into.stat=stat==='Terjadwal'?'':stat;into.pic=pic.slice();into.eo=eo.on||eo.items.length?{on:eo.on,items:eo.items}:null;
   into.ndNarasi=ndNarasi;into.notulaTeks=actSan(q('#one-rte').innerHTML);into.notulaSimHtml=q('#one-rte-sim').dataset.edited==='1'?actSan(q('#one-rte-sim').innerHTML):(item.notulaSimHtml||'');into.notulaFmt=Object.assign({},fmt);Object.assign(into,nlo);
   if(mode==='Online')into.lokasi='';if(mode==='Offline')into.link='';
@@ -5376,6 +5391,7 @@ function editOneOnOne(item,step,after){
  applyFmt();
  const ch=e=>{const t=e.target;
   if(t.matches('[data-rtefont],[data-rtesize],[data-rteindent]')){if(t.hasAttribute('data-rtefont'))fmt.font=t.value;if(t.hasAttribute('data-rtesize'))fmt.size=+t.value;if(t.hasAttribute('data-rteindent'))fmt.indent=+t.value;applyFmt();dirty=true;upd();draftLater();return}
+  if(t.matches&&t.matches('[data-slno]')){const no=q('#at-no-'+t.dataset.slno);if(no)no.value=t.value.trim();dirty=true;upd();draftLater();return}
   if(t.matches&&t.matches('[data-slna]')){const el=t.closest('.sl'),no=q('#at-no-'+el.dataset.slid);if(t.checked){const c=no.value.trim();if(c&&!/^[-–—]$/.test(c))el.dataset.prev=c;no.value='-'}else no.value=el.dataset.prev||'';dirty=true;upd();draftLater();return}
   if(t.closest('#one-jbl')){const r=t.closest('[data-jbd]'),ins=r.querySelectorAll('input');jb[r.dataset.jbd]=[ins[0].value,ins[1].value];dirty=true;upd();draftLater();return}
   if(t.id==='one-jb'||t.id==='one-tgl'||t.id==='one-tglSelesai')drawJb();
@@ -5389,7 +5405,7 @@ function editOneOnOne(item,step,after){
  const DK='mt_act_draft|'+(isNew?'new':item.id);let dtm=null;
  const draftClear=()=>{clearTimeout(dtm);try{localStorage.removeItem(DK)}catch(e){}};
  const draftLater=()=>{clearTimeout(dtm);dtm=setTimeout(()=>{if(dirty&&document.body.contains(ov)){try{localStorage.setItem(DK,JSON.stringify({at:Date.now(),v:snap(),jb}))}catch(e){}}},1500)};
- const draftApply=d=>{const o=d&&d.v;if(!o)return;['nama','program','tema','uic','spv','katim','anggota','lokasi','link','alasan','ringkas','tl','tujuan','catatan','narsum','peserta','tgl','tglSelesai','undHal','stHal'].forEach(k=>{const e=q('#one-'+k);if(e&&o[k]!=null)e.value=o[k]});
+ const draftApply=d=>{const o=d&&d.v;if(!o)return;['nama','program','tema','uic','spv','katim','anggota','lokasi','link','alasan','ringkas','tl','tujuan','catatan','narsum','peserta','tgl','tglSelesai','undHal','undTgl','stHal','undStatus','stStatus'].forEach(k=>{const e=q('#one-'+k);if(e&&o[k]!=null)e.value=o[k]});
   const jm=oneJamParse(o.jam);q('#one-j1').value=jm[0];q('#one-j2').value=jm[1];
   ['unitP','kat'].forEach(k=>{const sel=q('#one-'+k);if(sel&&o[k]){if(![...sel.options].some(x=>x.value===o[k]))sel.add(new Option(o[k],o[k]));sel.value=o[k]}});if(o.tw&&q('#one-tw'))q('#one-tw').value=o.tw;
   lay=o.layanan||lay;stat=ACT_MAN.includes(o.stat)?o.stat:'Terjadwal';mode=o.mode||mode;pic=(o.pic||[]).slice();
@@ -7138,7 +7154,10 @@ async function actLetterMetadata(file){
  const txt=await undExtractText(file),lines=String(txt||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean),head=lines.slice(0,75);
  const field=(re,max)=>{for(let i=0;i<head.length;i++){const m=re.exec(head[i]);if(m){let v=(m[1]||'').trim();if(!v&&head[i+1])v=head[i+1];return v.slice(0,max)}}return ''};
  const no=field(/^(?:nomor(?: surat)?|no\.?)\s*[:：\t-]\s*(.*)$/i,120)||((txt.match(/\b(?:UND|ND|ST|S|B|SR)-?\d{1,5}\/[A-Z0-9.\/-]+\/20\d{2}\b/i)||[])[0]||'');
- return {no,hal:field(/^(?:hal|perihal)\s*[:：\t-]\s*(.*)$/i,250)};
+ const BL=['januari','februari','maret','april','mei','juni','juli','agustus','september','oktober','november','desember'],cut=head.findIndex(l=>/^(yth|kepada|sehubungan|dalam rangka|menindaklanjuti|bersama ini)\b/i.test(l)),top=(cut>0?head.slice(0,cut):head.slice(0,20)).join('\n');
+ const dm=/(?:tanggal\s*[:：]\s*)?(\d{1,2})\s+(januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|desember)\s+(20\d{2})/i.exec(top);
+ const tgl0=dm?dm[3]+'-'+String(BL.indexOf(dm[2].toLowerCase())+1).padStart(2,'0')+'-'+String(dm[1]).padStart(2,'0'):'';
+ return {no,hal:field(/^(?:hal|perihal)\s*[:：\t-]\s*(.*)$/i,250),tgl0};
 }
 /* attField(key, nilai, label, {no: placeholder nomor surat, req, compact, ro}) */
 function attField(key,v,label,o={}){const a=attNorm(v);ATT[key]={items:a.items.slice(),rm:[],busy:0,ro:!!o.ro,cb:o.cb||null};
@@ -7181,7 +7200,7 @@ document.addEventListener('change',e=>{const u=e.target.closest&&e.target.closes
 document.addEventListener('change',async e=>{const f=e.target.closest('[data-atfile]');if(!f)return;e.stopPropagation();const k=f.dataset.atfile,A=ATT[k];const files=[...f.files];f.value='';if(!A||!files.length)return;
  const big=files.filter(x=>x.size>ATT_MAX);if(big.length)attMsg(k,`<b style="color:var(--bad)">${big.map(x=>esc(x.name)).join(', ')} melebihi 5 MB.</b> Unggah ke SharePoint lalu tempel tautannya.`);
  for(const file of files.filter(x=>x.size<=ATT_MAX)){A.busy++;attMsg(k,`Mengunggah <b>${esc(file.name)}</b> (${attFmtSize(file.size)})…`);
-  try{const m=await fileStore(file);if(k==='one-und'||k==='one-st'){try{const md=await actLetterMetadata(file);Object.assign(m,md);const no=document.getElementById('at-no-'+k),hal=document.getElementById('one-'+(k==='one-und'?'und':'st')+'Hal');if(no&&md.no)no.value=md.no;if(hal&&md.hal)hal.value=md.hal}catch(err){attMsg(k,'Berkas tersimpan, nomor belum bisa diekstrak otomatis.')}}A.items.push(m);attRedraw(k);attChanged(k);attMsg(k,`<b style="color:var(--ok)">✔ ${esc(file.name)}</b> tersimpan. Klik Simpan untuk menyimpan isian.`)}
+  try{const m=await fileStore(file);if(k==='one-und'||k==='one-st'){try{const md=await actLetterMetadata(file);Object.assign(m,md);const no=document.getElementById('at-no-'+k),hal=document.getElementById('one-'+(k==='one-und'?'und':'st')+'Hal');if(no&&md.no)no.value=md.no;if(hal&&md.hal)hal.value=md.hal;const tg=document.getElementById('one-undTgl');if(k==='one-und'&&tg&&md.tgl0)tg.value=md.tgl0;const sn=document.querySelector('[data-slno="'+k+'"]');if(sn&&md.no)sn.value=md.no}catch(err){attMsg(k,'Berkas tersimpan, nomor belum bisa diekstrak otomatis.')}}A.items.push(m);attRedraw(k);attChanged(k);attMsg(k,`<b style="color:var(--ok)">✔ ${esc(file.name)}</b> tersimpan. Klik Simpan untuk menyimpan isian.`)}
   catch(err){attMsg(k,`<b style="color:var(--bad)">Gagal mengunggah ${esc(file.name)}:</b> ${esc(err.message||String(err))}`)}finally{A.busy--}}},true);
 /* Penyimpanan isi berkas */
 const IDBF={db:null,open(){return this.db?Promise.resolve(this.db):new Promise((res,rej)=>{const r=indexedDB.open('mt_files',1);r.onupgradeneeded=()=>r.result.createObjectStore('f');r.onsuccess=()=>{this.db=r.result;res(this.db)};r.onerror=()=>rej(r.error)})},

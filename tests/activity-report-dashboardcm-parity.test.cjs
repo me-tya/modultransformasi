@@ -6,12 +6,12 @@ const report=fs.readFileSync(path.join(__dirname,'..','mt-activity-reports.js'),
 const css=fs.readFileSync(path.join(__dirname,'..','mt-activity-reports.css'),'utf8');
 const script=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map(x=>x[1]).find(x=>x.includes('function editOneOnOne'));
 
-test('Dasar Surat dan Metode: struktur sama dengan referensi DashboardCM, tanpa input nomor dan hal tampak',()=>{
+test('Dasar Surat dan Metode: struktur sama dengan referensi DashboardCM, Hal & Tanggal undangan serta Nomor ST tampil setelah ada berkas',()=>{
  assert.doesNotThrow(()=>new vm.Script(script));
  assert.match(html,/act-letter-section/);assert.match(html,/act-method-section/);
  assert.match(html,/sl-letter/);assert.match(html,/sl-pending-input/);
  assert.match(html,/data-slk="link"/);assert.match(html,/data-slk="file"/);assert.match(html,/data-slk="tog"/);
- assert.match(html,/hiddenNo:true/);assert.match(html,/id="one-\$\{k\}Hal"/);
+ assert.match(html,/hiddenNo:true/);assert.match(html,/id="one-undHal"/);assert.match(html,/id="one-undTgl"/);assert.match(html,/data-slno=/);assert.match(html,/data-slmeta hidden/);
  assert.doesNotMatch(html,/class="sl-summary"/);
  assert.match(html,/function actLetterMetadata\(/);
  assert.match(html,/undExtractText\(file\)/);

@@ -17,11 +17,13 @@ test('Dasar surat: ikon interaktif, tombol duplikat terhapus, kontrol ringkas',(
  for(const kind of ['link','file','tog'])assert.ok(slot.includes('data-slk="'+kind+'" title='));
  assert.doesNotMatch(slot,/data-sl-no/);
  assert.match(slot,/data-sls/);
- assert.match(slot,/id="one-undStatus"/);
+ assert.match(slot,/id="one-\$\{k\}Status"/);
+ assert.doesNotMatch(slot,/data-slna/);
  assert.match(slot,/hiddenNo:true/);
- assert.match(slot,/one-\$\{k\}Hal/);
- assert.match(html,/r\.push\(\['Undangan atau Tidak ada'/);
- assert.match(html,/\['Surat Tugas atau Tidak ada'/);
+ assert.match(slot,/id="one-undHal"/);
+ assert.match(slot,/id="one-stHal"/);
+ assert.match(html,/r\.push\(\['Undangan \(berkas\/tautan atau keterangan penyiapan\)'/);
+ assert.match(html,/\['Surat Tugas \(berkas\/tautan atau keterangan penyiapan\)'/);
  assert.doesNotMatch(html,/class="sl-tag cur">TERBARU/);
 });
 test('PIC: pegawai Pusmantap lengkap dan kelompok penugasan dipisahkan',()=>{
