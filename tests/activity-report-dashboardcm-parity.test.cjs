@@ -26,8 +26,8 @@ test('Nomor undangan pada Daftar Aktivitas unduh berkas terbaru; status free tex
 });
 test('Laporan kegiatan, filter dan kompilasi memakai modal dan pratinjau fungsional',()=>{
  assert.doesNotThrow(()=>new vm.Script(report));
- assert.match(html,/data-act="oneReportFilter"/);
- assert.match(html,/data-act="oneReportCompile"/);
+ assert.match(html,/data-act="oneReportFilter"|hib\('oneReportFilter'/);
+ assert.match(html,/data-act="oneReportCompile"|hib\('oneReportCompile'/);
  assert.match(html,/ib\('oneReport'/);
  assert.match(html,/mt-activity-reports\.js/);
  assert.match(html,/mt-activity-reports\.css/);

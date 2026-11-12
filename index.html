@@ -2724,6 +2724,10 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 .tp-md .tp-tabs{gap:4px}
 @media(max-width:900px){.md.tp-md{max-width:99vw;width:99vw}.tp-doc-scroll{margin-inline:-2px}}
 @media(max-width:600px){.tp-doc-summary{align-items:flex-start}.tp-doc-summary-side{justify-content:flex-start}.tp-doc-legend{display:none}}
+.vh .acts .btn.vh-ib{position:relative;width:36px;min-width:36px;padding:0;display:inline-grid;place-items:center;flex:none;color:var(--navy)}
+.vh .acts .btn.vh-ib:hover,.vh .acts .btn.vh-ib:focus-visible{border-color:var(--navy);background:#EEF3FB}
+.vh .acts .btn.vh-ib[data-tip]:hover::after,.vh .acts .btn.vh-ib[data-tip]:focus-visible::after{content:attr(data-tip);position:absolute;top:calc(100% + 6px);right:0;z-index:60;white-space:nowrap;background:var(--navy);color:#fff;font-size:11.5px;font-weight:600;padding:5px 9px;border-radius:7px;box-shadow:0 6px 16px rgba(11,31,69,.2);pointer-events:none}
+@media(max-width:640px){.vh .acts:has(>:nth-child(3)) .btn.vh-ib{flex:0 0 36px}}
 </style>
 <style id="compact-transformasi-ux">
 /* Rapi, ringkas, satu baris pada desktop */
@@ -5628,7 +5632,14 @@ function pAktDaftar(){const all=actRows(),tw=+S.ui.oneTw||0,kat=S.ui.actKat||'',
  const editable=actCanEdit(),canDel=lv('wbs').includes('D'),hari=all.filter(x=>x.tgl&&x.tgl<=TODAY&&(x.tglSelesai||x.tgl)>=TODAY&&!['Dibatalkan','Ditunda'].includes(x.stat));
  const nUp=all.filter(x=>x.tgl&&x.tgl>=TODAY&&!['Dibatalkan','Ditunda','Tidak Dihadiri'].includes(x.stat)).length,nDone=all.filter(x=>actStBase(x)==='Selesai').length,nNot=all.filter(actHasNotula).length;
  const ic=p=>`<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
- const acts='<button class="btn" data-act="oneReportFilter" title="Laporan Monev aktivitas sesuai filter aktif">▤ Generate Laporan</button><button class="btn" data-act="oneReportCompile" title="Kompilasi laporan sesuai filter aktif">▦ Kompilasi Laporan</button><button class="btn" data-act="oneExport">Ekspor Excel</button>'+(editable?'<button class="btn" data-act="oneUndImp" title="Buat aktivitas baru dari surat undangan (PDF/Word)">⇪ Import Undangan</button><button class="btn" data-act="oneKelola">⚙ Kelola PIC</button><button class="btn pri" data-act="oneAdd">+ Aktivitas</button>':'');
+ /* Aksi header berupa tombol ikon (label di tooltip & aria-label) agar tinggi/lebar header sama dengan sub menu lain → transisi tab mulus. */
+ const hib=(act,label,p)=>'<button type="button" class="btn vh-ib" data-act="'+act+'" aria-label="'+label+'" data-tip="'+label+'">'+ic(p)+'</button>';
+ const acts=hib('oneReportFilter','Generate Laporan Monev (sesuai filter aktif)','<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/>')
+  +hib('oneReportCompile','Kompilasi Laporan (sesuai filter aktif)','<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>')
+  +hib('oneExport','Ekspor Excel','<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 12l6 6M15 12l-6 6"/>')
+  +(editable?hib('oneUndImp','Import Undangan (buat aktivitas dari surat PDF/Word)','<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/>')
+  +hib('oneKelola','Kelola PIC','<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 11.5-4.2"/><circle cx="18" cy="17" r="2.5"/><path d="M18 12.5v2M18 19.5v2M13.5 17h2M20.5 17h2"/>')
+  +'<button class="btn pri" data-act="oneAdd">+ Aktivitas</button>':'');
  const seg='<span class="seg" role="group" aria-label="Filter triwulan"><button data-act="oneTw" data-v="0"'+(!tw?' class="on"':'')+'>Semua</button>'+[1,2,3,4].map(t=>`<button data-act="oneTw" data-v="${t}"${tw===t?' class="on"':''}>TW ${ONE_RM[t]} <span class="s">${all.filter(x=>oneTwOf(x)===t).length}</span></button>`).join('')+'</span>';
  const sel=(k,label,list,cur)=>`<select class="inp act-f" data-actf="${k}" aria-label="${label}"><option value="">${label}: semua</option>${list.map(v=>`<option${v===cur?' selected':''}>${esc(v)}</option>`).join('')}</select>`;
  const picNames=[...new Set(M.pic.map(p=>p.n).concat(all.flatMap(x=>x.pic||[])))];
