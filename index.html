@@ -2761,7 +2761,29 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 .btn.ch-ib[data-tip]:hover::after,.btn.ch-ib[data-tip]:focus-visible::after{content:attr(data-tip);position:absolute;top:calc(100% + 7px);left:50%;transform:translateX(-50%);z-index:60;white-space:nowrap;background:var(--navy);color:#fff;font-size:11.5px;font-weight:600;padding:5px 9px;border-radius:7px;box-shadow:0 6px 16px rgba(11,31,69,.2);pointer-events:none}
 .ch-tools .btn.ch-ib:last-of-type[data-tip]:hover::after{left:auto;right:0;transform:none}
 .act-mig-toast{display:flex;align-items:center;gap:10px;margin:10px 14px 4px;padding:9px 12px;border:1px solid #C9D7EC;background:#F2F6FC;border-radius:10px;font-size:12.5px;color:#1D3557}
-.act-mig-toast[hidden]{display:none}.at-msg:empty{display:none}.wz-lbl{font-size:12.5px;color:var(--navy)}.sw-sh b .mt-info-ic{margin-left:6px;vertical-align:2px}.nik-h{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--navy)}.at-add>.mt-info-ic{align-self:center;flex:none}.act-mig-toast .ic{font-weight:900;width:16px;text-align:center}.act-mig-toast .tx{flex:1;min-width:0}
+.act-mig-toast[hidden]{display:none}.at-msg:empty{display:none}.sw .act-letter-section.sw-sec{display:grid;grid-template-columns:172px minmax(0,1fr);gap:14px;padding:11px 14px;border-radius:12px}
+.sw .act-letter-section .sw-sh{margin-bottom:0;align-items:start}
+.sw .act-letter-section .sw-sh{grid-template-columns:22px 1fr;gap:2px 8px}
+.sw .act-letter-section .sw-sh i{width:22px;height:22px;border-radius:6px;font-size:11px}
+.sw .act-letter-section .sw-sh b{font-size:13.5px}
+.sw .act-letter-section .sw-sb{gap:8px}
+.sw .act-letter-section .sl{padding:9px 12px;border-radius:11px}
+.sw .act-letter-section .sl-h{gap:10px;min-height:0}
+.sw .act-letter-section .sl-ic{width:36px;height:36px;border-radius:10px;font-size:17px}
+.sw .act-letter-section .sl-t b{font-size:13.5px}
+.sw .act-letter-section .sl-t small{margin-top:2px}
+.sw .act-letter-section .sl-a .sl-b{width:34px;height:34px;min-width:34px;font-size:15px;border-radius:9px}
+.sw .act-letter-section .sl-pending-input{height:30px;margin-top:5px}
+.sw .act-method2 .sw-mm{display:grid;grid-template-columns:minmax(230px,260px) minmax(0,1fr);gap:9px 12px;align-items:start}
+.sw .act-method2 .sw-mm>.fld{margin:0}
+.sw .act-method2 .sw-mode{height:38px;padding:3px;box-sizing:border-box}
+.sw .act-method2 .sw-mode button{padding:0 8px;font-size:12.5px}
+.sw .act-method2 #one-mf{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 12px;min-width:0}
+.sw .act-method2 #one-mf.single{grid-template-columns:1fr}
+.sw .act-method2 #one-mf>.fld[hidden]{display:none}
+.sw .act-method2 .sw-iw{height:38px}.sw .act-method2 .sw-cp{height:36px}
+@media(max-width:1000px){.sw .act-method2 .sw-mm{grid-template-columns:1fr}.sw .act-method2 #one-mf{grid-template-columns:1fr}}
+.wz-lbl{font-size:12.5px;color:var(--navy)}.sw-sh b .mt-info-ic{margin-left:6px;vertical-align:2px}.nik-h{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--navy)}.at-add>.mt-info-ic{align-self:center;flex:none}.act-mig-toast .ic{font-weight:900;width:16px;text-align:center}.act-mig-toast .tx{flex:1;min-width:0}
 .act-mig-toast .x{border:0;background:none;font:inherit;font-weight:800;color:inherit;cursor:pointer;white-space:nowrap;opacity:.85}.act-mig-toast .x:hover{opacity:1;text-decoration:underline}
 .act-mig-toast.ok{border-color:#BFE5CB;background:#EFFAF2;color:#14532D}.act-mig-toast.err{border-color:#F3C7C3;background:#FDF1F0;color:#8E1F17}
 @media(max-width:760px){.card>.ch.act-ch{flex-wrap:wrap}.ch-tools{width:100%;flex-wrap:wrap}}
@@ -5284,7 +5306,7 @@ function editOneOnOne(item,step,after){
    ${inp('program','Program terkait <span class="act-one-hint" data-onereq>(wajib untuk 1-on-1)</span>',{list:'one-progs'})}<datalist id="one-progs">${progVis().map(p=>'<option value="'+esc(p.nama)+'">').join('')}</datalist>
    <div class="sw-g2" data-one><div class="fld"><label for="one-tw">Triwulan</label><select class="inp" id="one-tw">${[1,2,3,4].map(t=>`<option value="${t}"${oneTwOf(item)===t?' selected':''}>TW ${ONE_RM[t]}</option>`).join('')}</select></div><div class="fld"><label for="one-tema">Tema pembahasan</label><input class="inp" id="one-tema" value="${esc(item.tema||'')}"></div></div>`)+
   sec(3,'Dasar surat','Bisa menambahkan beberapa file atau tautan. Surat undangan dan surat tugas bersifat opsional.',`${slot('und','Surat undangan','b')}${slot('st','Surat tugas','p')}`,'act-letter-section')+
-  sec(4,'Metode','Tempat dan/atau tautan rapat.',`<div class="sw-mm"><div class="fld"><label>Metode pelaksanaan</label><div class="sw-mode" role="group" aria-label="Metode">${ONE_MODE.map(m=>`<button type="button" data-swm="${m}"${m===mode?' class="on"':''}>${m}</button>`).join('')}</div></div><div class="sw-g2" id="one-mf">${mfld('lokasi','Lokasi rapat','mis. Ruang Rapat Gedung JB. Sumarlin Lt. 4',1)}${mfld('link','Tautan rapat','https://teams.microsoft.com/…')}</div></div>`,'act-method-section');
+  sec(4,'Metode','Tempat dan/atau tautan rapat.',`<div class="sw-mm"><div class="fld"><label>Metode pelaksanaan</label><div class="sw-mode" role="group" aria-label="Metode">${ONE_MODE.map(m=>`<button type="button" data-swm="${m}"${m===mode?' class="on"':''}>${m}</button>`).join('')}</div></div><div class="sw-g2" id="one-mf">${mfld('lokasi','Lokasi rapat','mis. Ruang Rapat Gedung JB. Sumarlin Lt. 4',1)}${mfld('link','Tautan rapat','https://teams.microsoft.com/…')}</div></div>`,'act-method2');
  const p2=sec(1,'Tujuan & catatan','Dipakai sebagai Agenda pada notula.',`<div class="sw-g2">${ta('tujuan','Tujuan / output',4,'Apa yang ingin dicapai kegiatan ini.',0)}${ta('catatan','Catatan',4,'',0)}</div>`)+
   sec(2,'Status & PIC','Pilih status dan PIC Pusmantap.',`<div class="fld"><label>Status ${IC('Terjadwal otomatis menjadi Berlangsung lalu Selesai mengikuti tanggal dan jam. Status lain ditetapkan manual.')}</label>${chips('stat',ACT_STS.map(s=>s[0]),stat)}</div>
    <div class="fld wide" style="margin-top:10px"><label>PIC Pegawai Pusmantap</label><div class="act-pics" id="one-pics"></div><div class="act-pbt"><button type="button" class="btn sm pri" data-pkb="pick">+ Pilih PIC</button>${actCanEdit()?'<button type="button" class="btn sm" data-pkb="mgr">⚙ Kelola PIC</button>':''}</div><div class="sw-clash" id="one-clash" hidden></div></div>
