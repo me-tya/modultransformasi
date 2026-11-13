@@ -441,7 +441,7 @@ function onClick(e){const r=e.target.closest('#t2,#t2-layer');if(!r)return;const
  if((el=g('[data-tkunew]'))){const u=el.dataset.tkuU||(grp()==='unit'?ME.unit:'');const ov=kuForm({unit:u,peran:['pmo']},el.dataset.tkunew==='1');lockUnit(u);return}
  if((el=g('[data-tku]'))){const c=kpPeople().find(x=>x._id===el.dataset.tku);if(c){kuForm(c);lockUnit(grp()==='unit'?ME.unit:'')}return}
  if((el=g('[data-timp]'))){impChooser();return}
- if((el=g('[data-timpsrc]'))){const v=el.dataset.timpsrc;document.querySelectorAll('.ov').forEach(o=>o.remove());if(v==='dcm')impDcm();else if(v==='peng')impPengelola();else impPegawai(v);return}
+ if((el=g('[data-timpsrc]'))){const v=el.dataset.timpsrc;document.querySelectorAll('.ov').forEach(o=>o.remove());if(v==='squad')impSquad();else if(v==='dcm')impDcm();else if(v==='peng')impPengelola();else impPegawai(v);return}
  if((el=g('[data-texo]'))){ST.exOpen=!ST.exOpen;rr();return}
  if((el=g('[data-tslotpick]'))){slotPick(el.dataset.tslotpick);return}
  if((el=g('[data-treact]'))){const n=el.dataset.treact;savePic(n,r=>{r.status='WFO';r.statusKerja='WFO';r.statusMulai='';r.statusSelesai='';r.catatanStatus=''});ST.dr=null;toastT(n+' diaktifkan kembali.');rr();return}
@@ -515,8 +515,8 @@ function impPengelola(){if(!canEdit())return;let x=null;try{x=S.modMeta.__PENGEL
    NIK, NPWP, KK, agama, tanggal lahir, kontak darurat, dll. TIDAK dibaca/disimpan. */
 function impChooser(){if(!canEdit())return;let peng=0;try{const x=(S.modMeta||{}).__PENGELOLA_TRANSFORMASI__;peng=x&&Array.isArray(x.people)?x.people.length:0}catch(e){}
  const it=(v,icn,t,d)=>'<button type="button" class="t-hlrow" data-timpsrc="'+v+'"><span class="t-ico" style="background:var(--t-navy-l);color:var(--t-navy)">'+ic(icn)+'</span><div class="t-x"><b>'+t+'</b><div class="t-xs t-muted">'+d+'</div></div></button>';
- const ov=modal('Impor pegawai','<div class="t2">'+it('json','list','JSON Satu Kemenkeu','File data pegawai (format API HRIS, mis. pusmantap.json). Jabatan struktural & ex-pegawai dipetakan otomatis.')+it('xlsx','layout','Excel / CSV','Satu baris per pegawai. Unduh templat di langkah berikut.')+it('ocr','idc','Skrinsyut profil Satu Kemenkeu','Bisa beberapa gambar sekaligus. Dibaca dengan OCR di perangkat Anda.')+it('dcm','sync','Resource Tim CM (Dashboard CM)','File Backup All dari Dashboard CM.')+(peng?it('peng','users','Data menu Pengelola lama ('+peng+')','Salin profil & penugasan dari menu Pengelola.'):'')+'</div>',null,null,{size:'md',cancel:'Tutup'});
- ov.addEventListener('click',e=>{const b=e.target.closest('[data-timpsrc]');if(!b)return;const v=b.dataset.timpsrc;ov.remove();if(v==='dcm')impDcm();else if(v==='peng')impPengelola();else impPegawai(v)})}
+ const ov=modal('Impor pegawai','<div class="t2">'+it('json','list','JSON Satu Kemenkeu','File data pegawai (format API HRIS, mis. pusmantap.json). Jabatan struktural & ex-pegawai dipetakan otomatis.')+it('xlsx','layout','Excel / CSV','Satu baris per pegawai. Unduh templat di langkah berikut.')+it('ocr','idc','Skrinsyut profil Satu Kemenkeu','Bisa beberapa gambar sekaligus. Dibaca dengan OCR di perangkat Anda.')+it('squad','users','Squad Team (Dashboard CM)','Tim CM (Tim Pengelola Perubahan) + PIC PMO, CMO Unit & Pemilik Probis per unit. Dibaca langsung dari Dashboard CM.')+it('dcm','sync','Resource Tim CM (Dashboard CM)','File Backup All dari Dashboard CM.')+(peng?it('peng','users','Data menu Pengelola lama ('+peng+')','Salin profil & penugasan dari menu Pengelola.'):'')+'</div>',null,null,{size:'md',cancel:'Tutup'});
+ ov.addEventListener('click',e=>{const b=e.target.closest('[data-timpsrc]');if(!b)return;const v=b.dataset.timpsrc;ov.remove();if(v==='squad')impSquad();else if(v==='dcm')impDcm();else if(v==='peng')impPengelola();else impPegawai(v)})}
 function strSlot(jab,org){const j=String(jab||'').toLowerCase(),o=String(org||'').toLowerCase(),a=j+' '+o;
  if(/^kepala pusat/.test(j))return 'kapus';if(/^kepala bidang/.test(j))return 'kabid';
  if(/^kepala sub ?bagian/.test(j)&&/tata usaha/.test(a))return 'tu';
@@ -566,6 +566,59 @@ function impApply(rows){const M=actMaster(),k=kpCfg();k.str=k.str||{};k.ptx=k.pt
   if(o.timx&&!o.off){const L=o.timx.split(/[,;]/).map(s=>k.tims.find(t=>t.toLowerCase()===s.trim().toLowerCase()||tshort(t).toLowerCase()===s.trim().toLowerCase())).filter(t=>t&&t!==k.pt[x.n]);if(L.length)k.ptx[x.n]=[...new Set((k.ptx[x.n]||[]).concat(L))]}});
  actMasterSave(M);try{log('Impor pegawai',add+' baru, '+upd+' diperbarui, '+st+' struktural, '+ex+' ex-pegawai')}catch(e){}
  toastT(add+' baru, '+upd+' diperbarui'+(st?', '+st+' struktural':'')+(ex?', '+ex+' ex-pegawai':'')+'.');rr()}
+
+/* ---------- impor Squad Team Dashboard CM: bagian Tim CM (sheet ST CM) + direktori PIC PMO / CMO Unit / Pemilik Probis ----------
+   Dashboard CM sudah tertanam (dashboard-cm-shared.html, origin sama) → dimuat tersembunyi, data dibaca memakai fungsi Dashboard CM sendiri
+   (data terbaru dari Firestore Dashboard CM bila sudah login di sana; bila belum, data bawaan/lokal). Dashboard CM tidak diubah. */
+function unitNorm(x){const U=UNITS_ALL(),t=String(x||'').replace(/\s+/g,' ').trim();if(!t||t==='-')return '';const f=v=>U.find(u=>u.toLowerCase()===String(v).trim().toLowerCase());
+ if(f(t))return f(t);const last=t.split(',').pop().trim();if(f(last))return f(last);let ab='';try{ab=kqSuggestUnit(t)}catch(e){}if(ab&&f(ab))return f(ab);
+ if(/sekretariat jenderal|^setjen/i.test(t))return f('Setjen')||'Setjen';if(/inspektorat jenderal/i.test(t))return f('Itjen')||'Itjen';return ab||last||t}
+function dcmFrame(prog){return new Promise((res,rej)=>{let fr=document.getElementById('t2-dcm-fr');if(!fr){fr=document.createElement('iframe');fr.id='t2-dcm-fr';fr.src='dashboard-cm-shared.html?mt_module=contact';fr.setAttribute('aria-hidden','true');fr.tabIndex=-1;fr.style.cssText='position:fixed;width:1px;height:1px;left:-9999px;top:0;border:0;opacity:0';document.body.appendChild(fr)}
+ const t0=Date.now();const tick=()=>{let ok=false;try{ok=fr.contentWindow.eval("typeof reviewLoad==='function'&&typeof reviewProfile==='function'&&typeof state==='object'")}catch(e){}
+  if(ok)return res(fr.contentWindow);if(Date.now()-t0>45000)return rej(new Error('Dashboard CM tidak termuat. Periksa koneksi lalu coba lagi.'));prog('Memuat Dashboard CM… '+Math.round((Date.now()-t0)/1000)+' dtk');setTimeout(tick,500)};tick()})}
+async function dcmSquadRead(prog){const w=await dcmFrame(prog),E=c=>w.eval(c),sl=ms=>new Promise(r=>setTimeout(r,ms));
+ prog('Menunggu sinkronisasi Dashboard CM…');let logged=false;for(let i=0;i<16;i++){try{logged=E('isLoggedIn()')}catch(e){}if(logged)break;await sl(500)}
+ E('reviewLoad();reviewProfileLoad();');for(let i=0;i<(logged?20:6);i++){let n=0;try{n=E('(state.contacts||[]).length')}catch(e){}if(n)break;await sl(500)}if(logged)await sl(2500);
+ const data=JSON.parse(E(`JSON.stringify((()=>{const rows=(reviewRows||[]).map(r=>({unit:r.unit,pic:((typeof reviewFindMember==='function'&&reviewFindMember(r.pic))||{}).nama||r.pic||'',pmo:r.pmo||'',pmoPhone:r.pmoPhone||'',pmoRole:r.pmoRole||'',cmo:r.cmo||'',cmoPhone:r.cmoPhone||'',cmoRole:r.cmoRole||'',dualRole:r.dualRole||'',ex:(r.cmoExtra||[]).map(x=>({nama:x.nama||'',phone:x.phone||'',role:x.role||''}))}));
+  const names=new Set();rows.forEach(r=>{[r.pmo,r.cmo].concat(r.ex.map(x=>x.nama)).forEach(n=>{if(String(n||'').trim())names.add(String(n).trim())})});const prof={};names.forEach(n=>{const p=reviewProfile(n);if(p)prof[n.toLowerCase()]={nip:p.nip||'',jabatan:p.jabatan||'',pangkat:p.pangkat||'',email:p.email||'',foto:p.foto||'',hp:p.hp||p.phone||''}});
+  let CT=state.contacts||[];if(!CT.length){try{CT=normalizeContactList(JSON.parse(document.getElementById('contactSeedJson').textContent))}catch(e){CT=[]}}const st=CT.filter(c=>c.sheet==='ST CM').map(c=>({nama:c.nama,nip:c.nip,jabatan:c.jabatan,peran:c.peran,squad:c.squadTeam,ue:c.unitEselonI,email:c.email,hp:c.hp,pangkat:c.pangkat,fotoId:c.fotoId}));
+  return {logged:isLoggedIn(),rows,prof,st}})())`));
+ try{prog('Mengambil foto…');data.ph=await E(`(async()=>{const o={};for(const c of (state.contacts||[]).filter(c=>c.sheet==='ST CM'&&c.fotoId)){try{const v=await sqPhotoGet(c.fotoId);if(v)o[c.fotoId]=v}catch(e){}}return o})()`)||{}}catch(e){data.ph={}}
+ return data}
+const keysOf=(lbl,def)=>{const t=String(lbl||'').toLowerCase(),k=[];if(/\bpmo\b/.test(t))k.push('pmo');if(/\bcmo\b/.test(t))k.push('cmo');if(/pemilik|probis|bisnis|business/.test(t))k.push('probis');return k.length?k:def};
+function squadMap(d){const C={},G=[],A=[],KP=[];
+ const add=(unit,nama,peran,o)=>{unit=unitNorm(unit);nama=String(nama||'').replace(/\s+/g,' ').trim();if(!unit||!nama||/belum (dicatat|diisi|ada)/i.test(nama))return;const key=unit+'|'+nz(nama);const pr=d.prof[nama.toLowerCase()]||{};
+  const c=C[key]=C[key]||{unit,nama,peran:[],nip:'',jabatan:'',pangkat:'',email:'',hp:'',foto:'',ket:[]};peran.forEach(x=>{if(!c.peran.includes(x))c.peran.push(x)});
+  [['nip',pr.nip||o.nip],['jabatan',pr.jabatan||o.jabatan],['pangkat',pr.pangkat||o.pangkat],['email',pr.email||o.email],['hp',o.hp||pr.hp],['foto',pr.foto||o.foto]].forEach(([k,v])=>{if(v&&!c[k])c[k]=String(v).trim()});if(o.ket&&!c.ket.includes(o.ket))c.ket.push(o.ket)};
+ d.rows.forEach(r=>{const pm=r.pmo.trim(),cm=r.cmo.trim();
+  if(pm&&cm&&pm.toLowerCase()===cm.toLowerCase())add(r.unit,pm,keysOf(r.dualRole,['pmo','cmo']),{hp:r.cmoPhone||r.pmoPhone,ket:'Direktori PMO/CMO'});
+  else{if(pm)add(r.unit,pm,keysOf(r.pmoRole,['pmo']),{hp:r.pmoPhone,ket:'Direktori PMO/CMO'});if(cm)add(r.unit,cm,keysOf(r.cmoRole,['cmo']),{hp:r.cmoPhone,ket:'Direktori PMO/CMO'})}
+  r.ex.forEach(x=>add(r.unit,x.nama,keysOf(x.role,['cmo']),{hp:x.phone,ket:'Direktori PMO/CMO'}));
+  if(r.pic&&unitNorm(r.unit))A.push({unit:unitNorm(r.unit),pic:r.pic})});
+ d.st.forEach(c=>{const sq=String(c.squad||''),foto=c.fotoId&&d.ph[c.fotoId]||'';
+  if(/pusat manajemen transformasi/i.test(c.ue||'')){KP.push({n:String(c.nama||'').trim(),nip:String(c.nip||''),jab:c.jabatan||'',pang:c.pangkat||'',emailK:/@kemenkeu\.go\.id$/i.test(c.email||'')?c.email:'',hp:c.hp||'',foto,ket:(c.peran?c.peran+' · ':'')+sq});return}
+  const pr=/pengelola proyek/i.test(sq)?['pmo']:['cmo'];add(c.ue,c.nama,pr,{nip:c.nip,jabatan:c.jabatan,pangkat:c.pangkat,email:c.email,hp:c.hp,foto,ket:sq.replace(/^Squad Team\s*/i,'Squad: ')+(c.peran?' ('+c.peran+')':'')})});
+ return {C:Object.values(C),A,KP}}
+function impSquad(){if(!canEdit())return;const lab={pmo:'PMO Unit',cmo:'CMO Unit',probis:'Pemilik Probis'};
+ const ov=modal('Impor dari Squad Team (Dashboard CM)','<div class="t2 t-imp"><p class="t-s" style="margin:0 0 8px">Yang diambil hanya <b>Tim CM</b> (Tim Pengelola Perubahan) dan direktori <b>PIC PMO, CMO Unit & Pemilik Probis</b> per unit. Squad program lain (ICS, DOA, SSB) tidak ikut. Dashboard CM tidak diubah.</p><div id="t2-sq-r"><div class="t-s">Memuat…</div></div></div>','Impor terpilih',ov=>{const m=ov._m;if(!m){toastT('Data belum termuat.');return false}const pick=k=>[...ov.querySelectorAll('[data-sq'+k+']')].filter(c=>c.checked).map(c=>+c.getAttribute('data-sq'+k));squadApply(m,pick('c'),pick('p'),pick('a'))},{size:'lg'});
+ const out=ov.querySelector('#t2-sq-r');
+ dcmSquadRead(t=>{out.innerHTML='<div class="t-s">'+H(t)+'</div>'}).then(d=>{const m=squadMap(d);ov._m=m;const M=actMaster(),have=kpPeople();
+  const exC=c=>have.find(x=>x.unit===c.unit&&((c.nip&&x.nip===c.nip)||nz(x.nama)===nz(c.nama)));
+  m.KP.forEach(o=>{o._m=matchPic(o,M.pic)});m.A.forEach(a=>{const p=matchPic({n:a.pic},M.pic);a._p=p?p.n:''});
+  const tb=(h,rows)=>'<div class="t-impt" style="max-height:30vh;margin-bottom:10px"><table><thead><tr>'+h.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+rows+'</tbody></table></div>';
+  out.innerHTML='<div class="t-strip" style="margin-bottom:8px"><span class="t-chip '+(d.logged?'t-pm':'t-gr')+'">'+(d.logged?'Data terbaru Dashboard CM (tersinkron)':'Belum login Dashboard CM — memakai data bawaan/lokal')+'</span><span class="t-chip t-gr">'+m.C.length+' kontak unit</span><span class="t-chip t-gr">'+m.KP.length+' pegawai Pusmantap</span><span class="t-chip t-gr">'+m.A.length+' penugasan pendamping</span></div>'+
+   '<div class="t-sec" style="margin-top:0">Kontak unit — PMO / CMO Unit / Pemilik Probis</div>'+tb(['','Unit','Nama','Peran','Sumber','Aksi'],m.C.map((c,i)=>'<tr><td><input type="checkbox" data-sqc="'+i+'" checked></td><td><b>'+H(c.unit)+'</b></td><td>'+H(c.nama)+(c.jabatan?'<div class="t-xs t-muted">'+H(c.jabatan)+'</div>':'')+'</td><td>'+c.peran.map(r=>'<span class="t-chip '+(r==='pmo'?'t-pm':r==='cmo'?'t-cm':'t-tmp')+'">'+lab[r]+'</span>').join(' ')+'</td><td class="t-xs">'+H(c.ket.join('; '))+'</td><td class="t-xs">'+(exC(c)?'Perbarui':'<b style="color:var(--t-o)">Baru</b>')+'</td></tr>').join(''))+
+   '<div class="t-sec">Pegawai Pusmantap di Tim CM (Squad Team)</div>'+tb(['','Nama','Jabatan','Squad','Aksi'],m.KP.map((o,i)=>'<tr><td><input type="checkbox" data-sqp="'+i+'" checked></td><td><b>'+H(o.n)+'</b></td><td class="t-xs">'+H(o.jab)+'</td><td class="t-xs">'+H(o.ket)+'</td><td class="t-xs">'+(o._m?'Lengkapi <b>'+H(o._m.n)+'</b>':'<b style="color:var(--t-o)">Baru</b>')+'</td></tr>').join(''))+
+   '<div class="t-sec">PIC Tim CM per unit → Pendamping Kemenkeu</div>'+tb(['','Unit','PIC','Dipetakan ke'],m.A.map((a,i)=>'<tr><td><input type="checkbox" data-sqa="'+i+'" '+(a._p?'checked':'disabled')+'></td><td><b>'+H(a.unit)+'</b></td><td>'+H(a.pic)+'</td><td class="t-xs">'+(a._p?H(a._p):'<span style="color:var(--bad)">Belum ada di daftar pegawai</span>')+'</td></tr>').join(''))+
+   '<p class="t-xs t-muted" style="margin:4px 0 0">Data yang sudah ada tidak ditimpa — hanya kolom kosong yang diisi dan peran ditambahkan.</p>'}).catch(er=>{out.innerHTML='<span style="color:var(--bad)">'+H(er.message||String(er))+'</span>'})}
+function squadApply(m,ci,pi,ai){const have=kpPeople(),M=actMaster(),k=kpCfg();let cA=0,cU=0,pA=0,pU=0,aN=0;
+ ci.map(i=>m.C[i]).forEach(c=>{const ex=have.find(x=>x.unit===c.unit&&((c.nip&&x.nip===c.nip)||nz(x.nama)===nz(c.nama)));const ket=c.ket.join('; ');
+  if(ex){const o=Object.assign({},ex);o.peran=[...new Set((o.peran||[]).concat(c.peran))];['nip','jabatan','pangkat','email','hp','foto'].forEach(f=>{if(c[f]&&(!o[f]||(f==='hp'&&/\*/.test(o[f])&&!/\*/.test(c[f]))))o[f]=c[f]});if(!o.ket)o.ket=ket;kpPersonSave(o);cU++}
+  else{kpPersonSave({unit:c.unit,nama:c.nama,peran:c.peran,nip:c.nip,jabatan:c.jabatan,pangkat:c.pangkat,email:c.email,hp:c.hp,foto:c.foto,ket,sheet:'Squad Team'});cA++}});
+ pi.map(i=>m.KP[i]).forEach(o=>{const x=matchPic(o,M.pic);if(x){['nip','jab','pang','emailK','hp','foto'].forEach(f=>{if(o[f]&&!x[f])x[f]=o[f]});pU++}else{M.pic.push({n:o.n,nip:o.nip,jab:o.jab,pang:o.pang,emailK:o.emailK,hp:o.hp,foto:o.foto,jenis:'Definitif',status:'WFO',statusKerja:'WFO',cuti:[],wfhDays:[]});pA++;const cm=k.tims.find(t=>/(^|\s)CM(\s|$)/i.test(t));if(cm&&!k.pt[o.n])k.pt[o.n]=cm}});
+ ai.map(i=>m.A[i]).forEach(a=>{if(!a._p)return;k.asg[a.unit]=k.asg[a.unit]||[];if(!k.asg[a.unit].includes(a._p)){k.asg[a.unit].push(a._p);aN++}});
+ actMasterSave(M);save();try{log('Impor Squad Team (Dashboard CM)',cA+' kontak baru, '+cU+' diperbarui; '+pA+' pegawai baru, '+pU+' dilengkapi; '+aN+' penugasan pendamping')}catch(e){}
+ toastT('Kontak unit: '+cA+' baru, '+cU+' diperbarui · Pegawai: '+pA+' baru, '+pU+' dilengkapi · Pendamping: '+aN+' penugasan.');rr()}
 
 /* ---------- CSS ---------- */
 const css=`
