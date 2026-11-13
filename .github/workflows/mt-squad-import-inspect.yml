@@ -1,0 +1,51 @@
+name: Inspect MT contact schema and DCM Squad Team backup
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/mt-squad-import-inspect.yml']
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect contact model definitions in Module
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf8')
+          for name in ['function kpPeople(', 'function kpCfg(', 'function kpContact', 'function kpPerson','function kpSave','function kpAdd','function kpUnit','function kpAssign', 'function actMasterSave(', 'function kpMaster', 'function kpPeopleSave', 'function kpSavePeople']:
+            i=s.find(name);print('\nPATTERN',name,'OFFSET',i)
+            if i>=0:print(s[max(i-160,0):i+4800][:4800].replace('\n',' '))
+          for line in s.splitlines():
+            if re.search(r'kpPeople\(|cfg-kp-|kpCfg\(|kpContact',line) and len(line)<600:
+              print('MATCH',line[:600])
+          PY
+      - name: Inspect Dashboard CM Squad Team source shape (without personal data)
+        run: |
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          import json,re
+          from pathlib import Path
+          class Capture(HTMLParser):
+            def __init__(self):super().__init__();self.capture=False;self.parts=[]
+            def handle_starttag(self,tag,attrs):
+              if tag=='script' and dict(attrs).get('id')=='contactSeedJson':self.capture=True
+            def handle_endtag(self,tag):
+              if tag=='script':self.capture=False
+            def handle_data(self,data):
+              if self.capture:self.parts.append(data)
+          s=Path('dashboard-cm-shared.html').read_text(encoding='utf8')
+          parser=Capture();parser.feed(s)
+          if not parser.parts:
+            m=re.search(r'<script id="contactSeedJson" type="application/json">(.*?)</script>',s,re.S)
+            raw=m.group(1) if m else '[]'
+          else:raw=''.join(parser.parts)
+          rows=json.loads(raw)
+          print('SQUAD SEED count',len(rows))
+          print('FIELD KEYS',sorted(set(k for r in rows for k in r.keys())))
+          for key in ['sheet','sheetTitle','squadTeam','unitEselonI','peran','role','jenisPeran']:
+            from collections import Counter
+            vals=Counter(str(r.get(key,'')).strip() for r in rows)
+            print('FIELD',key, 'unique',len(vals),'TOP',vals.most_common(55))
+          PY
