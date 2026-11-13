@@ -5047,10 +5047,11 @@ function actMaster(){const d=oneCfgDocs().find(x=>x.id==='cfg-master'),m=(d&&d.m
  saved.filter(p=>p&&p.n&&!pic.some(a=>a.n===p.n)).forEach(p=>pic.push(Object.assign({jenis:'Definitif',tim:'Pusmantap',statusKerja:'Belum diatur'},p)));
  return {pic,kat,unit:arr(m.unit,ACT_UNIT),pen:m.pen||{nama:'Wawan Juswanto',jab:'Kepala Pusat Manajemen Transformasi dan Perubahan'},ketua:m.ketua||{nama:'Atitya Pritasari',jab:'Ketua Tim Kerja Pengelolaan Manajemen Perubahan'},notulis:m.notulis||'Tim Change Management'}}
 /* Singkatan nama PIC di Daftar Aktivitas. Singkatan khusus (Referensi Pegawai → "Singkatan nama") diutamakan.
-   Otomatis: nama ≤ 2 kata tidak disingkat; ≥ 3 kata → kata terpanjang jadi inisial. Bila kata terpanjang sama panjang dan
-   salah satunya kata pertama, yang disingkat kata berikutnya (Johan Pandu Asa → Johan P. Asa; Kurniawan Jabar Malik → K. Jabar Malik). */
+   Otomatis: nama ≤ 2 kata tidak disingkat; ≥ 3 kata → kata terpanjang jadi inisial. Bila
+   ada beberapa kata terpanjang yang sama panjang, yang paling awal tidak disingkat; yang disingkat kata terpanjang berikutnya
+   (Johan Pandu Asa → Johan P. Asa; Dessy Monica Wirsal → Dessy Monica W.; Kurniawan Jabar Malik → K. Jabar Malik). */
 function picAutoShort(n){const w=String(n||'').trim().split(/\s+/).filter(Boolean);if(w.length<3)return w.join(' ');
- const L=w.map(x=>x.replace(/[^\p{L}]/gu,'').length),mx=Math.max(...L),c=L.map((l,i)=>l===mx?i:-1).filter(i=>i>=0),i=c.find(j=>j!==0)??c[0];
+ const L=w.map(x=>x.replace(/[^\p{L}]/gu,'').length),mx=Math.max(...L),c=L.map((l,i)=>l===mx?i:-1).filter(i=>i>=0),i=c.length>1?c[1]:c[0];
  w[i]=w[i].charAt(0).toUpperCase()+'.';return w.join(' ')}
 function picShort(n,M){const p=((M||actMaster()).pic||[]).find(x=>x.n===n),c=p&&String(p.sing||'').trim();return c||picAutoShort(n)}
 function actMasterSave(m){let d=oneCfgDocs().find(x=>x.id==='cfg-master');if(!d){d={id:'cfg-master',kind:'cfg',tahun:0,tw:0};S.oneonone.push(d)}d.master=oneClone(m);save()}
