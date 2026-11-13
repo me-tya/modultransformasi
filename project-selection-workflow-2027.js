@@ -234,7 +234,7 @@ function filter(p){
  const icon='<span class="ps27-filter-ic" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg></span>';
  return '<div class="ps27-filter ps27-filter-panel ps27-filter-contextual mt-std-filter'+(w.filterOpen?' is-open':'')+'" aria-label="Filter Project Selection" role="search">'+
   '<div class="ps27-filter-header" data-ps27="filter" role="button" tabindex="0" aria-expanded="'+!!w.filterOpen+'"><div class="ps27-filter-titlebar">'+icon+
-  '<button type="button" class="ps27-filter-label" data-ps27="filter">Filter · '+E(viewTitle)+'</button></div>'+
+  '<button type="button" class="ps27-filter-label" data-ps27="filter">'+E(viewTitle)+'</button></div>'+
   '<div class="ps27-filter-active"><b>FILTER AKTIF</b><span>'+(active.length?active.map(t=>'<em>'+E(t)+'</em>').join(''):'Belum ada — semua data')+'</span>'+
   '<span class="ps27-filter-spacer"></span><button type="button" class="ps27-filter-reset" data-ps27-reset>↺ Atur ulang</button>'+
   '<button type="button" class="ps27-filter-expand" data-ps27="filter" aria-label="Buka atau tutup filter">'+(w.filterOpen?'▴':'▾')+'</button></div></div>'+
