@@ -118,9 +118,9 @@ function cutiList(){const L=[];P.forEach(p=>{(p.raw.cuti||[]).forEach((c,i)=>{if
 
 /* ---------- ringkasan publik (pub-tim) ---------- */
 function pubBuild(){const people={},units={},t0=today(),t1=addD(t0,45);
- P.forEach(p=>{const off=[];(p.raw.cuti||[]).forEach(c=>{if(c&&c.mulai&&(c.selesai||c.mulai)>=t0)off.push([c.mulai,c.selesai||c.mulai])});const r=p.raw;if(r.status==='Cuti'&&r.statusMulai)off.push([r.statusMulai,r.statusSelesai||'9999-12-31']);
+ P.forEach(p=>{const off=[];(p.raw.cuti||[]).forEach(c=>{if(c&&c.mulai&&(c.selesai||c.mulai)>=t0)off.push({a:c.mulai,b:c.selesai||c.mulai})});const r=p.raw;if(r.status==='Cuti'&&r.statusMulai)off.push({a:r.statusMulai,b:r.statusSelesai||'9999-12-31'});
   const ov={};Object.entries(C().ovr).forEach(([k,o])=>{const[n,d]=k.split('|');if(n===p.n&&d>=t0&&d<=t1)ov[d]=o.c});
-  const st=(STX[p.n]||[]).filter(x=>x.b>=t0).map(x=>[x.a,x.b]);
+  const st=(STX[p.n]||[]).filter(x=>x.b>=t0).map(x=>({a:x.a,b:x.b}));
   people[p.n]={nk:nk(p),j:p.j,t:p.t,tx:p.tx,k:p.k?1:0,hp:p.hp,emailK:p.emailK,wfh:(r.wfhDays||[]).map(Number),off,ov,st}});
  const k=kpCfg(),us=[...new Set([...UNITS_ALL(),...Object.keys(k.asg)])];
  us.forEach(u=>{const pend=(k.asg[u]||[]).filter(n=>people[n]);const kontak=kpPeople().filter(c=>c.unit===u).map(c=>({nama:c.nama,peran:c.peran||[],jab:c.jabatan||'',email:c.email||'',hp:c.hp||''}));if(pend.length||kontak.length)units[u]={pend,kontak}});
@@ -130,7 +130,8 @@ function pubSync(){if(!canEdit()||!FB||!FB.on)return;const pub=pubBuild(),d=docG
 function UNITS_ALL(){try{return UNITS.slice()}catch(e){return []}}
 function pubData(){if(grp()==='pusat'){const d=docGet('pub-tim');return d&&d.pub?d.pub:pubBuild()}return S.pubTim&&S.pubTim.pub?S.pubTim.pub:(docGet('pub-tim')||{}).pub||null}
 function pubPeople(pub){return Object.entries(pub.people||{}).map(([n,x])=>({n,nk:x.nk,j:x.j,t:x.t,tx:x.tx||[],k:!!x.k,hp:x.hp,emailK:x.emailK,u:[],ext:1,pub:x}))}
-function pubCode(p,ds){const x=p.pub;if(!work(ds))return 'l';if((x.off||[]).some(r=>ds>=r[0]&&ds<=r[1]))return 'c';if((x.st||[]).some(r=>ds>=r[0]&&ds<=r[1]))return 's';const o=(x.ov||{})[ds];if(o)return o;if((x.wfh||[]).includes(dow(ds)))return 'h';return ((PUB&&PUB.wfhd)||[5]).includes(dow(ds))?'h':'o'}
+const inR=(r,ds)=>{const a=Array.isArray(r)?r[0]:r&&r.a,b=Array.isArray(r)?r[1]:r&&r.b;return !!a&&ds>=a&&ds<=(b||a)};
+function pubCode(p,ds){const x=p.pub;if(!work(ds))return 'l';if((x.off||[]).some(r=>inR(r,ds)))return 'c';if((x.st||[]).some(r=>inR(r,ds)))return 's';const o=(x.ov||{})[ds];if(o)return o;if((x.wfh||[]).includes(dow(ds)))return 'h';return ((PUB&&PUB.wfhd)||[5]).includes(dow(ds))?'h':'o'}
 
 /* ---------- komponen ---------- */
 const tcol=p=>p.kap?'#8C6B12':p.t?team(p.t).c:'#7E889B';
