@@ -2331,6 +2331,9 @@ table.matrix-table th,table.matrix-table td{border:1px solid var(--line-2);paddi
 table.matrix-table th{background:var(--bg);font-weight:700;color:var(--ink-2);font-size:11px}table.matrix-table td.matrix-label{text-align:left;font-weight:600;background:var(--bg);color:var(--ink-2)}
 table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-table td.matrix-total{background:var(--gold-l);font-weight:800;color:#0D2847}
 .act-tabs{margin:0 0 10px}
+/* Daftar/Kalender dirender di dalam .cmx (block, margin melipat) sedangkan Ringkasan/Tim langsung di #view (flex, gap 6px).
+   Samakan jaraknya agar header, tab, dan isi tidak bergeser saat pindah tab. */
+#view .cmx>.act-tabs{margin-top:10px!important;margin-bottom:16px!important}
 .kp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:12px;padding:12px}.kp-grid.c{grid-template-columns:repeat(auto-fill,minmax(290px,1fr))}.kp-grid>*{min-width:0}
 .kp-pc{padding:12px}.kp-ph-row,.kp-top{display:flex;gap:10px;align-items:center;margin-bottom:8px}.kp-top{align-items:flex-start}
 .kp-ph{width:38px;height:38px;border-radius:50%;object-fit:cover;flex:none;border:2px solid #fff;box-shadow:0 0 0 1px var(--line)}.kp-ph.lg{width:54px;height:54px}
