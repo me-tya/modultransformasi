@@ -18,8 +18,10 @@ test('Dasar Surat dan Metode: struktur sama dengan referensi DashboardCM, Hal & 
  assert.match(html,/data-slpv/);
  assert.match(html,/x\.undStatus/);
 });
-test('Nomor undangan pada Daftar Aktivitas unduh berkas terbaru; status free text ditampilkan',()=>{
- assert.match(html,/data-act="oneUnd"/);
+test('Nomor undangan pada Daftar Aktivitas membuka pratinjau berkas terbaru (unduh dari pratinjau); status free text ditampilkan',()=>{
+ assert.match(html,/data-act="oneUndPv"/);
+ assert.doesNotMatch(html,/class="inv-[nd]" data-act="oneUnd"/);
+ assert.match(html,/data-pvdl/);
  assert.match(html,/it\[it\.length-1\]/);
  assert.match(html,/inv-badge pending/);
  assert.match(html,/into\.undStatus=V\('undStatus'\)/);
