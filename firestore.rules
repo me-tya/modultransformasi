@@ -25,15 +25,17 @@ service cloud.firestore {
     //  Tim Pengelola Proyek: membaca dokumen yang modKeys-nya memuat salah satu modulnya;
     //  menulis hanya dokumen ownGrp == 'tim' yang ownMods-nya memuat modulnya.
     //  Pemilik dokumen tidak dapat dialihkan oleh unit/tim (dicek pada data lama dan baru).
-    function pusatBaca() { return role(['SA','PMOK','CMOK','KETUA']); }
+    //  Ka. Pusmantap & Sekretarisnya membaca seluruh koleksi; Sekretaris hanya menulis agenda pimpinan (cfg-agpim).
+    //  'pub-tim' = ringkasan pendamping Kemenkeu & kontak unit tanpa data pribadi, dibaca semua akun aktif.
+    function pusatBaca() { return role(['SA','PMOK','CMOK','KETUA','KAPUS','SEKPIM']); }
     function pusatTulis() { return role(['SA','PMOK','CMOK']); }
     function milikUnit(d) { return role(['PMOU','CMOU']) && d.get('ownGrp', '') == 'unit' && d.get('ownUnit', '') == me().unit; }
     function milikTim(d) { return role(['TIM']) && d.get('ownGrp', '') == 'tim' && d.get('ownMods', []).hasAny(me().get('modules', [])); }
     function bacaTim(d) { return role(['TIM']) && d.get('modKeys', []).hasAny(me().get('modules', [])); }
     match /oneonone/{id} {
-      allow read: if pusatBaca() || milikUnit(resource.data) || bacaTim(resource.data);
-      allow create: if pusatTulis() || milikUnit(request.resource.data) || milikTim(request.resource.data);
-      allow update: if pusatTulis()
+      allow read: if pusatBaca() || milikUnit(resource.data) || bacaTim(resource.data) || (aktif() && id == 'pub-tim');
+      allow create: if pusatTulis() || milikUnit(request.resource.data) || milikTim(request.resource.data) || (role(['SEKPIM']) && id == 'cfg-agpim');
+      allow update: if pusatTulis() || (role(['SEKPIM']) && id == 'cfg-agpim')
                     || (milikUnit(resource.data) && milikUnit(request.resource.data))
                     || (milikTim(resource.data) && milikTim(request.resource.data));
       allow delete: if pusatTulis() || milikUnit(resource.data) || milikTim(resource.data);
