@@ -10147,13 +10147,13 @@ function cmoFlt(f,tab){const open=S.ui.fopen===1;const u=cU(),r=S.ui.crole||'';c
  return `<section class="flt fx2 pmo-unified cm-unified${open?' open':''}" aria-label="Filter CMO">${fltHead(open,'Filter',chips,nAct,'<button class="freset" data-act="cfreset">↺ Atur ulang</button>',[ms.length,allM,'modul'])}
  <div class="fbar mt-g6"${open?'':' hidden'}>${fGrid([
   {span:1,html:`<span class="fg pm-year"><label for="c-th">Tahun</label><select class="sel" id="c-th" data-on="tahun">${yearsOpt().map(y=>`<option ${S.ui.tahun==y?'selected':''}>${y}</option>`).join('')}</select></span>`},
-  {span:2,html:perSeg('cpr',P.pr)},
+  {span:3,html:perSeg('cpr',P.pr)},
   ...(P.pr==='r'?[{span:1,html:`<span class="fg"><label for="c-d1">Dari</label><input type="date" class="sel act" id="c-d1" data-on="cd1" value="${P.d1}"></span>`},{span:1,html:`<span class="fg"><label for="c-d2">s.d.</label><input type="date" class="sel act" id="c-d2" data-on="cd2" value="${P.d2}"></span>`}]:[]),
   {span:2,html:`<span class="fg w2 pm-program"><label for="c-pg">Program</label><select class="sel${act(S.ui.cprog)}" id="c-pg" data-on="cprog"><option value="">Semua program</option>${pv.map(p=>`<option value="${p.akr}" ${S.ui.cprog===p.akr?'selected':''}>${p.kode} · ${esc(p.nama)}</option>`).join('')}</select></span>`},
   ...(lockU()?[]:[{span:1,html:`<span class="fg pm-unit"><label for="c-un">Unit</label><select class="sel${act(u)}" id="c-un" data-on="cunit"><option value="">Semua UE I</option>${ME.unit?`<option value="${esc(ME.unit)}" ${u===ME.unit?'selected':''}>${esc(ME.unit)} (unit Anda)</option>`:''}${UNITS.filter(x=>x!==ME.unit).map(x=>`<option ${u===x?'selected':''}>${x}</option>`).join('')}</select></span>`}]),
-  {span:1,html:`<span class="fg fgr pm-role"><label for="c-ro">${lockU()?esc(lockU())+' sebagai':'Peran unit'}<span class="lhint" tabindex="0" role="note" data-tip="Pemilik probis utama dapat menambah, mengubah, dan menghapus data. UIC pendukung hanya dapat melihat." aria-label="Pemilik probis utama dapat menambah, mengubah, dan menghapus data. UIC pendukung hanya dapat melihat.">i</span></label><select class="sel${act(r)}" id="c-ro" data-on="crole" ${u?'':'disabled'}>${opts([['','Utama + pendukung'],['u','Pemilik probis utama'],['p','UIC pendukung']],r)}</select></span>`},
+  {span:2,html:`<span class="fg fgr pm-role w2"><label for="c-ro">${lockU()?esc(lockU())+' sebagai':'Peran unit'}<span class="lhint" tabindex="0" role="note" data-tip="Pemilik probis utama dapat menambah, mengubah, dan menghapus data. UIC pendukung hanya dapat melihat." aria-label="Pemilik probis utama dapat menambah, mengubah, dan menghapus data. UIC pendukung hanya dapat melihat.">i</span></label><select class="sel${act(r)}" id="c-ro" data-on="crole" ${u?'':'disabled'}>${opts([['','Utama + pendukung'],['u','Pemilik probis utama'],['p','UIC pendukung']],r)}</select></span>`},
   {span:1,html:`<span class="fg"><label for="c-th2">Tahapan</label><select class="sel${act(S.ui.cth)}" id="c-th2" data-on="cth">${tahapOpts(S.ui.cth||'')}</select></span>`},
-  ...(tab!=='siklus'?[{span:2,html:`<span class="fg w2"><label for="c-mo">Modul</label>${modFilter(f)}</span>`}]:[]),
+  ...(tab!=='siklus'?[{span:cfFields().length?1:2,html:`<span class="fg${cfFields().length?'':' w2'}"><label for="c-mo">Modul</label>${modFilter(f)}</span>`}]:[]),
   ...cfFields()])}
  </div></div></section>`}
 ACT.cfreset=()=>{S.ui.cunit='';S.ui.crole='';S.ui.mod='';S.ui.cpr='';S.ui.cprog='';S.ui.cth='';(window.TVIEW||[]).forEach(id=>{if(S.ui.cf)delete S.ui.cf[id];Q[id]=''});Object.keys(PG).forEach(x=>PG[x]=0);save();render()};
@@ -11330,7 +11330,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 <script src="charter-planning-report.js?v=20261109-charter-import-v3"></script>
 
-<script src="mt-filter-kit.js?v=20261114-hidefix"></script>
+<script src="mt-filter-kit.js?v=20261114-clip1"></script>
 <script src="mt-info-icon.js?v=20261111-mt13-info"></script>
 <style id="mt-cal-modal-css">
 /* Modal Kalender & Hari libur — tingkat atas (modal berada di luar .cmx) */
