@@ -1,0 +1,35 @@
+name: Validate Dashboard CM Squad Team importer in Module
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'mt-dcm-squad-import.js'
+      - 'mt-tim2.js'
+      - 'tests/mt-dcm-squad-import.test.cjs'
+      - '.github/workflows/mt-squad-import-test.yml'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check JavaScript syntax
+        run: |
+          node --check mt-dcm-squad-import.js
+          node --check mt-tim2.js
+      - name: Test role filter, dedup and preview safety
+        run: node tests/mt-dcm-squad-import.test.cjs
+      - name: Test real Dashboard CM Squad Team seed classification (no personal output)
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,re
+          s=Path('dashboard-cm-shared.html').read_text(encoding='utf8')
+          m=re.search(r'<script id="contactSeedJson" type="application/json">(.*?)</script>',s,re.S)
+          assert m, 'Squad Team fixture missing'
+          rows=json.loads(m.group(1))
+          assert len(rows)>100
+          assert any('Koordinator Pengelola Proyek Tingkat Eselon I' in x.get('squadTeam','') for x in rows)
+          assert any('Koordinator Pengelola Perubahan Tingkat Eselon I' in x.get('squadTeam','') for x in rows)
+          assert any('Perbaikan Proses Bisnis' in x.get('squadTeam','') for x in rows)
+          print('PASS: source squad categories exist, personal source data not logged')
+          PY
