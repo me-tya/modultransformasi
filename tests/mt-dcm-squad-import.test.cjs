@@ -6,7 +6,7 @@ const api=browser.MT_DCM_SQUAD_IMPORT;
 assert(api,'Importer exported');
 function plain(x){return JSON.parse(JSON.stringify(x))}
 const sample={
- kind:'cm-dashboard-backup',version:3,
+ kind:'cm-dashboard-backup',version:3,contactPhotos:{avatar1:'data:image/png;base64,AAAA'},
  resources:[
   {nama:'Pegawai Tim CM',nip:'198501012009012001',jabatan:'Analis',emailKemenkeu:'timcm@kemenkeu.go.id',wfhDays:[5],rencanaCuti:[{mulai:'2026-11-20',selesai:'2026-11-21',jenis:'Cuti Tahunan'}],noHp:'0812345678'},
   {nama:'Pegawai Lain Tim CM',nip:'198501012009012002',jabatan:'Prakom'}
@@ -14,7 +14,7 @@ const sample={
  contacts:[
   {sheet:'ST CM',squadTeam:'Squad Team Koordinator Pengelola Perubahan',unitEselonI:'Pusat Manajemen Transformasi dan Perubahan, BaTii',nama:'Pegawai Tim CM',nip:'198501012009012001',jabatan:'Analis',peran:'Anggota'},
   {sheet:'ST CM',squadTeam:'Squad Team Koordinator Pengelola Perubahan',unitEselonI:'Pusmantap BaTii',nama:'Baru Dari Squad',nip:'198501012009012003',peran:'Anggota'},
-  {sheet:'ST ICS',squadTeam:'Squad Team Koordinator Pengelola Proyek Tingkat Eselon I',unitEselonI:'DJPB',nama:'PIC Bersama',nip:'198501012009012004',jabatan:'Analis',peran:'Ketua',email:'kantor@kemenkeu.go.id'},
+  {sheet:'ST ICS',squadTeam:'Squad Team Koordinator Pengelola Proyek Tingkat Eselon I',unitEselonI:'DJPB',nama:'PIC Bersama',nip:'198501012009012004',jabatan:'Analis',peran:'Ketua',fotoId:'avatar1',email:'kantor@kemenkeu.go.id'},
   {sheet:'ST CM',squadTeam:'Squad Team Koordinator Pengelola Perubahan Tingkat Eselon I',unitEselonI:'DJPB',nama:'PIC Bersama',nip:'198501012009012004',peran:'Anggota'},
   {sheet:'ST CM',squadTeam:'Squad Team Koordinator Pengelola Perubahan Tingkat Eselon I',unitEselonI:'DJPK',nama:'PIC CMO DJPK',nip:'198501012009012005',peran:'Ketua'},
   {sheet:'ST ICS',squadTeam:'Squad Team Perbaikan Proses Bisnis PNBP',unitEselonI:'DJA',nama:'Kandidat Pemilik Probis',nip:'198501012009012006',peran:'Ketua'},
@@ -33,7 +33,9 @@ assert.equal(parsed.entries.filter(x=>x.kind==='candidate').length,1);
 assert.equal(parsed.excluded.other,2);
 const combined=parsed.entries.find(x=>x.n==='PIC Bersama');
 assert.deepEqual(plain(combined.peran).sort(),['cmo','pmo']);
-assert.equal(combined.unit,'DJPB');
+assert.equal(combined.unit,'DJPb');
+assert.equal(combined.sourceUnit,'DJPB');
+assert.equal(combined.photo,'data:image/png;base64,AAAA');
 assert.equal(parsed.entries.find(x=>x.kind==='candidate').selected,false,'inferred owner must be opt-in');
 assert.equal(parsed.entries.find(x=>x.n==='Pegawai Tim CM').labels.length,2,'CM resource and Squad must unify');
 assert(!parsed.entries.some(x=>x.n==='Pegawai Tidak Relevan'),'Unrelated squads must not import');
@@ -60,6 +62,10 @@ assert(!k.pt['PIC Bersama'],'Unit PIC must NOT get a Pusmantap team');
 assert(M.pic.find(x=>x.n==='Pegawai Tim CM').wfhDays.includes(5));
 assert.deepEqual(plain(contacts.find(x=>x.nama==='PIC Bersama').peran).sort(),['cmo','pmo']);
 assert.equal(contacts.find(x=>x.nama==='PIC CMO DJPK').unit,'DJPK');
+assert.equal(contacts.find(x=>x.nama==='PIC Bersama').unit,'DJPb');
+assert.equal(contacts.find(x=>x.nama==='PIC Bersama').foto,'data:image/png;base64,AAAA');
+assert(/Unit sumber: DJPB/.test(contacts.find(x=>x.nama==='PIC Bersama').ket));
+assert.equal(api.unitCode('Dit. SP DJPB (PMO UE I)'),'DJPb');
 const again=api.applySelection(selection,deps);
 assert.equal(again.profilesNew,0);assert.equal(again.contactsNew,0);
 assert.equal(M.pic.length,3);assert.equal(contacts.length,2);
