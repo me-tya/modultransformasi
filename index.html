@@ -5388,7 +5388,7 @@ function editOneOnOne(item,step,after){
   const c=el.querySelector('[data-slc]'),ss=el.querySelector('[data-sls]'),st=el.querySelector('#one-'+el.dataset.sl+'Status'),mt=el.querySelector('[data-slmeta]'),version=n>1?n+' versi':n?'1':'';
   if(c&&c.textContent!==version)c.textContent=version;
   const okNo=v=>isU?/\d/.test(v||''):/^ST-?\d/i.test(v||''),realNo=okNo(no)?no:'',lastNo=last&&okNo(last.no)?last.no:'',number=isU?(lastNo||realNo):(realNo||lastNo);
-  const label=na?'<span class="sl-tag na">Tidak diperlukan</span>':last?'<button type="button" class="sl-no'+(number?'':' sl-no-empty')+'" data-slpv="'+esc(el.dataset.slid)+'" title="'+(isU?'Unduh surat undangan':'Lihat surat tugas')+'">'+esc(number||(isU?last.nama||'Surat terunggah':'Nomor ST tidak terbaca — lihat surat'))+'</button>':realNo?'<span class="sl-letter-sub">'+esc(realNo)+'</span>':'Belum ada dokumen atau tautan';
+  const label=na?'<span class="sl-tag na">Tidak diperlukan</span>':last?'<button type="button" class="sl-no'+(number?'':' sl-no-empty')+'" data-slpv="'+esc(el.dataset.slid)+'" title="'+(isU?'Lihat surat undangan':'Lihat surat tugas')+'">'+esc(number||(isU?last.nama||'Surat terunggah':'Nomor ST tidak terbaca — lihat surat'))+'</button>':realNo?'<span class="sl-letter-sub">'+esc(realNo)+'</span>':'Belum ada dokumen atau tautan';
   if(ss&&ss.dataset.h!==label){ss.dataset.h=label;ss.innerHTML=label}
   const mvH=el.querySelector('[data-mv="hal"]'),mvT=el.querySelector('[data-mv="tgl"]'),hI=ov.querySelector('#one-'+el.dataset.sl+'Hal'),tI=ov.querySelector('#one-'+el.dataset.sl+'Tgl');
   if(mvH&&hI){const v=hI.value.trim()||'—';if(mvH.textContent!==v){mvH.textContent=v;mvH.title=v}}
@@ -5476,7 +5476,7 @@ function editOneOnOne(item,step,after){
    if(k==='tog'){bd.hidden=!bd.hidden;tg.textContent=bd.hidden?'▾':'▴';tg.title=bd.hidden?'Buka riwayat':'Tutup riwayat';return}
    bd.hidden=false;tg.textContent='▴';tg.title='Tutup riwayat';if(k==='link'){const u=q('#at-u-'+id);if(u)u.focus();return}if(k==='file'){const f=q('[data-atfile="'+id+'"]');if(f)f.click();return}}
   const cp=e.target.closest('[data-cp]');if(cp){const v=V(cp.dataset.cp);if(v&&navigator.clipboard)navigator.clipboard.writeText(v).then(()=>toast('Tersalin.'),()=>toast('Gagal menyalin.'));return}
-  const spv=e.target.closest('[data-slpv]');if(spv){e.stopPropagation();const A=ATT[spv.dataset.slpv],m=A&&A.items[A.items.length-1];if(m){if(spv.dataset.slpv==='one-und'){if(m.t==='l')window.open(m.link,'_blank','noopener');else fileDownload(m)}else suratPreview(m)}return}
+  const spv=e.target.closest('[data-slpv]');if(spv){e.stopPropagation();const A=ATT[spv.dataset.slpv],m=A&&A.items[A.items.length-1];if(m)suratPreview(m);return}
   const nv=e.target.closest('[data-nlv]');if(nv){nlView(ATT['one-not'].items[+nv.dataset.nlv]);return}
   const dr=e.target.closest('[data-drr],[data-drx]');if(dr){const bn=dr.closest('.sw-draft');if(dr.hasAttribute('data-drr')){try{draftApply(JSON.parse(localStorage.getItem(DK)||'{}'))}catch(x){}}else draftClear();bn.remove();return}
   const g=e.target.closest('[data-gen]');if(g){gen(g.dataset.gen);return}
