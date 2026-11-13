@@ -97,8 +97,8 @@ function matchingPerson(entry,people){
  return nameMatch.length===1?nameMatch[0]:null;
 }
 function matchingContact(entry,people){
- const id=nip(entry.nip),name=fold(entry.n),unit=fold(entry.unit);
- const cand=people.filter(p=>fold(p.unit)===unit&&(id&&nip(p.nip)===id||fold(p.nama)===name));
+ const id=nip(entry.nip),name=fold(entry.n),unit=fold(unitCode(entry.unit));
+ const cand=people.filter(p=>fold(unitCode(p.unit))===unit&&(id&&nip(p.nip)===id||fold(p.nama)===name));
  return cand.length===1?cand[0]:null;
 }
 function applySelection(selected,deps){
