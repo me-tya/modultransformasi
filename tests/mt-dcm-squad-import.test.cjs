@@ -88,4 +88,18 @@ const ui=fs.readFileSync('mt-tim2.js','utf8');
 assert(ui.includes('mt-dcm-squad-import.js?v=20261114-01'),'Existing button must load new importer');
 assert(ui.includes("if(v==='dcm')impDcm()"),'Existing chooser wiring must remain');
 assert(ui.includes('Tim CM + PIC PMO/CMO/Probis'),'Chooser should explain both source categories');
+// Verify the filter against the actual bundled Dashboard CM Squad Team fixture.
+const sourceHtml=fs.readFileSync('dashboard-cm-shared.html','utf8');
+const seed=sourceHtml.match(/<script id="contactSeedJson" type="application\/json">([\s\S]*?)<\/script>/);
+assert(seed,'Bundled Squad Team source missing');
+const seedContacts=JSON.parse(seed[1]);
+const reality=api.parseBackup({kind:'cm-dashboard-backup',contacts:seedContacts});
+const groupCounts={};
+for(const x of reality.entries)groupCounts[x.kind]=(groupCounts[x.kind]||0)+1;
+assert(groupCounts.cm>0&&groupCounts.pmo>0&&groupCounts.cmo>0,'Real Squad data needs Tim CM, PMO Unit, CMO Unit');
+assert(groupCounts.candidate>0,'Process-business lead candidates must be surfaced for verification');
+assert(reality.excluded.other>0,'Non-target Squad Team members must be excluded');
+assert(reality.entries.every(x=>x.kind!=='candidate'||!x.selected),'No inferred business owner can import silently');
+assert(reality.entries.every(x=>!x.unit||!x.unit.includes('undefined')),'Unit mapping must be valid');
+console.log('PASS real Squad source filters (counts only):',JSON.stringify({total:seedContacts.length,eligible:reality.entries.length,excluded:reality.excluded.other,groups:groupCounts}));
 console.log('PASS: Resource, CM Squad, PMO, CMO, owner review; safe IDs, dedup, idempotent merge, unit contacts and existing data');
