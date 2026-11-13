@@ -1,0 +1,32 @@
+name: Uji aturan Firestore
+
+on:
+  push:
+    paths:
+      - 'firestore.rules'
+      - 'tests/firestore-rules.emu.mjs'
+      - '.github/workflows/uji-rules-firestore.yml'
+  pull_request:
+    paths:
+      - 'firestore.rules'
+      - 'tests/firestore-rules.emu.mjs'
+  workflow_dispatch:
+
+jobs:
+  uji:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Pasang Firebase CLI dan pustaka uji
+        run: npm i --no-save firebase-tools@13 @firebase/rules-unit-testing@3 firebase@10
+      - name: Siapkan konfigurasi emulator
+        run: echo '{"firestore":{"rules":"firestore.rules"},"emulators":{"firestore":{"port":8080},"ui":{"enabled":false}}}' > firebase.json
+      - name: Jalankan uji di Firestore Emulator
+        run: npx firebase emulators:exec --only firestore --project demo-mt "node tests/firestore-rules.emu.mjs"
