@@ -5899,7 +5899,12 @@ function kpWa(hp){const d=String(hp||'').replace(/\D/g,'').replace(/^0/,'62');re
 const kpIni=n=>String(n||'?').split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
 function kpAv(p,cls){return p.foto?'<img class="kp-ph '+(cls||'')+'" src="'+esc(p.foto)+'" alt="">':'<i class="kp-ph kp-in '+(cls||'')+'">'+esc(kpIni(p.nama))+'</i>'}
 function kpPeranPills(p){return (p.peran||[]).map(k=>{const r=KP_PERAN.find(x=>x[0]===k);return r?'<span class="kp-pr" style="--c:'+r[2]+'">'+esc(r[1])+'</span>':''}).join('')}
-function actTabs(){const t=actTabNow(),T=actGrp()==='pusat'?[['overview','Overview'],['daftar','Daftar Aktivitas'],['kalender','Kalender'],['matriks','Matriks'],['timcm','Tim CM Pusmantap'],['referensi','Referensi Pegawai'],['timk','Tim PMO & CMO Kemenkeu'],['timu','Tim PMO & CMO Unit']]:[['daftar','Daftar Aktivitas'],['kalender','Kalender']];return '<nav class="ptabs act-tabs" aria-label="Tab Aktivitas">'+T.map(x=>'<a href="#aktivitas" data-act="actTab" data-v="'+x[0]+'" class="'+(t===x[0]?'on':'')+'"><span>'+x[1]+'</span></a>').join('')+'</nav>'}
+/* Menu Aktivitas ringkas: Ringkasan (Overview + Matriks), Daftar Aktivitas, Kalender, Tim PMO & CMO
+   (gabungan Tim CM Pusmantap, Referensi Pegawai, Tim PMO & CMO Kemenkeu, Tim PMO & CMO Unit). Unit & tim: Daftar + Kalender. */
+const ACT_TAB_IC={ringkasan:'<path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/>',daftar:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',kalender:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/>',tim:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17.5" cy="9" r="2.5"/><path d="M16 14.5a5 5 0 0 1 6 5.5"/>'};
+function actTabs(){const t=actTabNow(),pus=actGrp()==='pusat';let n=0;try{n=actRows().length}catch(e){}
+ const T=pus?[['ringkasan','Ringkasan'],['daftar','Daftar Aktivitas',n],['kalender','Kalender'],['tim','Tim PMO & CMO']]:[['daftar','Daftar Aktivitas',n],['kalender','Kalender']];
+ return '<nav class="ptabs act-tabs" aria-label="Tab Aktivitas">'+T.map(x=>'<a href="#aktivitas" data-act="actTab" data-v="'+x[0]+'" class="'+(t===x[0]?'on':'')+'"'+(t===x[0]?' aria-current="page"':'')+'><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ACT_TAB_IC[x[0]]+'</svg><span>'+x[1]+'</span>'+(x[2]!=null?'<span class="act-tc">'+x[2]+'</span>':'')+'</a>').join('')+'</nav>'}
 function pAktTimCM(){
  const people=actMaster().pic.filter(p=>(p.tim==='CM'||p.tim==='Sementara')&&p.statusKerja!=='Nonaktif');
  const definitive=people.filter(p=>p.jenis!=='Sementara'),temporary=people.filter(p=>p.jenis==='Sementara');
@@ -5940,7 +5945,8 @@ function actFixSatuLink(){if(window.__actFixSatu||typeof actCanEdit!=='function'
  (S.oneonone||[]).forEach(x=>{if(!x||x.kind==='cfg')return;const lok=String(x.lokasi||'').trim();if(!lok||/^https?:/i.test(lok)||!bare.test(String(x.link||'')))return;x.link='';x.mode='Offline';n++});
  if(n){try{log('Perbaikan metode rapat',n+' aktivitas: tautan satu.kemenkeu.go.id dihapus, metode Offline')}catch(e){}save();toast(n+' aktivitas diperbaiki: tautan satu.kemenkeu.go.id dihapus dan metode menjadi Offline.');setTimeout(render,0)}}
 /* Unit & tim hanya punya tab Daftar Aktivitas dan Kalender. */
-function actTabNow(){const t=S.ui.actTab||'daftar';return actGrp()==='pusat'||t==='kalender'?t:'daftar'}
+const ACT_TAB_OLD={overview:'ringkasan',matriks:'ringkasan',timcm:'tim',referensi:'tim',timk:'tim',timu:'tim'};
+function actTabNow(){let t=S.ui.actTab||'daftar';t=ACT_TAB_OLD[t]||t;if(!['ringkasan','daftar','kalender','tim'].includes(t))t='daftar';return actGrp()==='pusat'||t==='kalender'?t:'daftar'}
 /* ===== Aktivitas · Kalender (mengikuti Kalender Dashboard CM) =====
    Data = actRows() (sudah tersaring role). Kegiatan lintas hari tampil di tiap tanggalnya, diurutkan jam mulai.
    Titik merah = agenda paralel (jam mulai sama). Klik kegiatan: ubah (bila berhak) atau lihat ringkasan; klik tanggal kosong: tambah kegiatan bertanggal itu. */
@@ -6042,7 +6048,7 @@ ACT.calExport=el=>{const R=window.MT_DCM_REPORT,m=/^\d{4}-\d{2}$/.test(S.ui.calM
 ACT.calNav=el=>{const v=+el.dataset.v;if(!v)S.ui.calMonth=TODAY.slice(0,7);else{let [y,m]=(S.ui.calMonth||TODAY.slice(0,7)).split('-').map(Number);m+=v;if(m<1){m=12;y--}if(m>12){m=1;y++}S.ui.calMonth=y+'-'+String(m).padStart(2,'0')}save();render()};
 ACT.actCalToday=()=>{S.ui.actTab='kalender';S.ui.calMonth=TODAY.slice(0,7);save();render();setTimeout(()=>{const c=document.getElementById('mt-cal-today');if(c){c.scrollIntoView({block:'center',behavior:'smooth'});c.classList.add('pulse');setTimeout(()=>c.classList.remove('pulse'),1600)}},60)};
 document.addEventListener('click',e=>{const c=e.target.closest&&e.target.closest('.mt-cal-cell.can-add[data-caldate]');if(!c||e.target.closest('button,a'))return;ACT.oneAdd({dataset:{date:c.dataset.caldate}})});
-function pAktivitas(){setTimeout(actFixSatuLink,0);const t=actTabNow();if(t==='kalender')return pAktKalender();if(t==='overview')return pAktOverview();if(t==='matriks')return pAktMatriks();if(t==='timcm')return pAktTimCM();if(t==='referensi')return pAktRefPegawai();if(t==='timk')return pAktTimK();if(t==='timu')return pAktTimU();return pAktDaftar()}
+function pAktivitas(){setTimeout(actFixSatuLink,0);const t=actTabNow();if(t==='kalender')return pAktKalender();if(t==='ringkasan'){let mx='';try{mx=pAktMatriks().replace(AKT_HDR(),'')}catch(e){}return pAktOverview()+'<h3 class="act-sec-h">Matriks Kategori</h3>'+mx}if(t==='tim')return typeof pAktTim==='function'?pAktTim():AKT_HDR()+'<p class="s">Memuat…</p>';return pAktDaftar()}
 const ACT_CST={'T-TALK':['#EDE9FB','#6D53C7'],'T-LAB':['#E7EFFC','#2F6FCE'],'T-FORUM':['#FFF0E0','#B85C10'],'T-MEDIA':['#FBE7F1','#C3488B'],'T-BOND':['#E1F3F3','#188A8A'],'T-SPACE':['#E7F6E2','#2E8B3D'],'T-WALK':['#E7F6E2','#2E8B3D'],'T-CONNECT':['#E7EFFC','#2F6FCE'],'T-PEDIA':['#F6EFDC','#8A6A1B'],'T-COURSE':['#F6EFDC','#8A6A1B'],'T-QUIZ':['#FFF0E0','#B85C10'],'T-SURVEY':['#E1F3F3','#188A8A'],'1-ON-1':['#E7EFFC','#2F6FCE'],'RAPAT':['#EEF0F4','#6B7284']};
 const actKcol=k=>{const u=String(k||'').toUpperCase();const key=Object.keys(ACT_CST).find(c=>u.includes(c));const c=key?ACT_CST[key]:['#EEF0F4','#6B7284'];return 'background:'+c[0]+';color:'+c[1]};
 function actRows(){getOneOnOne();return (S.oneonone||[]).filter(x=>x.kind!=='cfg'&&(!isOne(x)||x.keAkt)&&actVisible(x)).sort((a,b)=>String(a.tgl||'9999').localeCompare(String(b.tgl||'9999'))||(+a.no||0)-(+b.no||0))}
@@ -6201,7 +6207,9 @@ function kqParseProfile(lines){
   const isNameLike=t=>{const c=kqCleanName(t);return c.length>=3&&!/@|\d{4,}/.test(t)&&!/jabatan|pangkat|golongan|unit|satu\s*kemenkeu/i.test(t)&&c.replace(/[^A-Za-z]/g,'').length>=c.length*0.6;};
   // Buang token sampah di depan nama (foto/ikon sering terbaca "O", "@", "&").
   const takeName=i=>{const L=lines[i];const words=(L.words&&L.words.length)?L.words:T[i].split(' ').map(t=>({text:t,bbox:null}));
-    let k=0;while(k<words.length-1&&(/^[^A-Za-z]+$/.test(words[k].text)||(/^[A-Za-z]$/.test(words[k].text)&&words.length>2)))k++;
+    /* Token di depan nama yang berasal dari foto bulat: tanpa huruf, satu huruf, mengandung kurung (mis. "La)"), atau kotaknya jauh lebih tinggi dari kata berikutnya. */
+    const tall=(a,b)=>a&&b&&a.bbox&&b.bbox&&(a.bbox.y1-a.bbox.y0)>1.8*(b.bbox.y1-b.bbox.y0);
+    let k=0;while(k<words.length-1&&(/^[^A-Za-z]+$/.test(words[k].text)||(/^[A-Za-z]$/.test(words[k].text)&&words.length>2)||/[()\[\]{}|]/.test(words[k].text)||tall(words[k],words[k+1])))k++;
     const kept=words.slice(k);out.nama=kqCleanName(kept.map(w=>w.text).join(' '));
     const fb=kept[0]&&kept[0].bbox;out._nameLine={text:out.nama,bbox:fb?{x0:fb.x0,y0:L.bbox.y0,x1:L.bbox.x1,y1:L.bbox.y1}:L.bbox};};
   if(nipIdx>0){for(let i=nipIdx-1;i>=0;i--){if(isNameLike(T[i])){takeName(i);break;}}}
@@ -6219,6 +6227,8 @@ function kqParseProfile(lines){
     if(cut<0&&block.length>=2)cut=1;
     const jab=(cut<0?block:block.slice(0,cut)).join(' '),unit=(cut<0?[]:block.slice(cut)).join(' ');
     out.jabatan=jab.replace(/\s+/g,' ').replace(/^[^A-Za-z]+/,'').trim();
+    /* OCR sering membuang angka Romawi "I" setelah "Tk." (mis. "Penelaah Teknis Kebijakan Tk.I"). */
+    if(/\bTk\.?$/i.test(out.jabatan))out.jabatan=out.jabatan.replace(/\bTk\.?$/i,'Tk.I');
     out.unitKerja=unit.replace(/\s+/g,' ').replace(/\s+,/g,',').trim();
   }
   // Pangkat / golongan
@@ -6287,7 +6297,7 @@ ACT.kuDel=el=>{const p=kpPeople().find(x=>x._id===el.dataset.id);if(!p)return;co
 ACT.kuEdit=el=>kuForm(kpPeople().find(x=>x._id===el.dataset.id));
 ACT.kuAdd=el=>kuForm(null,!!(el&&el.dataset&&el.dataset.shot));
 function kuResize(file,size){return new Promise((res,rej)=>{const r=new FileReader();r.onerror=()=>rej(new Error('Gagal membaca gambar'));r.onload=()=>{const i=new Image();i.onerror=()=>rej(new Error('Gambar tidak dapat dibaca'));i.onload=()=>{const s=Math.min(i.naturalWidth,i.naturalHeight),c=document.createElement('canvas');c.width=c.height=size||128;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.imageSmoothingQuality='high';x.drawImage(i,(i.naturalWidth-s)/2,(i.naturalHeight-s)/2,s,s,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',0.82))};i.src=r.result};r.readAsDataURL(file)})}
-function kuForm(p,shot){const isNew=!p;p=Object.assign({peran:['pmo']},p||{});let foto=p.foto||'';const units=kpUnitList();
+function kuForm(p,shot){const isNew=!p||!p._id;p=Object.assign({peran:['pmo']},p||{});let foto=p.foto||'';const units=kpUnitList();
  const f=(k,l,ph,w)=>'<div class="fld'+(w?' wide':'')+'"><label>'+l+'</label><input class="inp" data-kf="'+k+'" value="'+esc(p[k]||'')+'" placeholder="'+(ph||'')+'"></div>';
  const body='<div class="kp-imp" id="kp-drop" tabindex="0"><div class="kp-imp-t"><b>Import dari skrinsyut profil Satu Kemenkeu</b><span>Tarik gambar ke sini, tempel (Ctrl+V), atau <label class="kp-lnk" for="kp-shot">pilih file</label>. Dibaca lokal di browser; gambar tidak diunggah.</span><div class="kp-prog" hidden><div><i></i></div><em></em></div></div><input type="file" id="kp-shot" accept="image/*" hidden></div>'+
  '<div class="fgrid" style="margin-top:10px"><div class="fld wide"><label>Peran *</label><div class="kp-roles">'+KP_PERAN.map(r=>'<label style="--c:'+r[2]+'"><input type="checkbox" data-role="'+r[0]+'"'+((p.peran||[]).includes(r[0])?' checked':'')+'><span>'+r[1]+'</span></label>').join('')+'</div></div>'+
@@ -11308,6 +11318,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script src="mt-info-icon.js?v=20261111-mt13-info"></script>
 <style id="mt-cal-modal-css">
 /* Modal Kalender & Hari libur — tingkat atas (modal berada di luar .cmx) */
+.act-sec-h{margin:18px 2px 8px;font:800 15px 'Sora',inherit;color:#13233F}
 .md .mt-lbi-merge{display:flex!important;gap:9px;align-items:flex-start;margin:4px 0 8px;padding:9px 11px;border:1px solid #CFE3D6;border-radius:9px;background:#F3FAF6;font-size:12px;font-weight:400;color:#24543A;cursor:pointer}.md .mt-lbi-merge input{margin-top:2px}.md .mt-lbi-merge b{color:#15603F}
 .mt-lb-wrap{max-height:60vh;overflow:auto;border:1px solid #E3E8F0;border-radius:10px}
 .mt-lb-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
@@ -11361,6 +11372,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 .mt-cal-di em{font-style:normal;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
 </style>
 <script src="mt-libur.js?v=20261113-libur1"></script>
+<script src="mt-tim.js?v=20261113-tim1"></script>
 <script src="project-selection-flow.js?v=20261111-mt14-filter"></script>
 <script src="project-selection-governance.js?v=20261111-mt13-info"></script>
 <script src="project-selection-workflow-2027.js?v=20261113-mt17-filterpm"></script>
