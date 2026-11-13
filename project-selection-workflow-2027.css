@@ -430,3 +430,15 @@
  #app .ps27 .ps27-filter-contextual.ps27-filter-usulan .ps27-filter-fields .ps27-filter-search{grid-column:1/-1!important}
 }
 @media(max-width:720px){#app .ps27 .ps27-filter-contextual.ps27-filter-usulan .ps27-filter-fields{grid-template-columns:minmax(0,1fr)!important}}
+
+/* MT-16 · Filter Project Selection = filter Project Management (warna, ukuran, tipografi identik). */
+#app .ps27 .ps27-filter.ps27-filter-contextual .ps27-filter-header{background:transparent!important}
+#app .ps27 .ps27-filter.ps27-filter-contextual .ps27-filter-titlebar{flex:0 0 145px!important;width:145px!important;min-width:145px!important;max-width:145px!important;background:linear-gradient(120deg,#0B2447,#163A6B)!important;padding:0 10px!important;gap:8px!important}
+#app .ps27 .ps27-filter.ps27-filter-contextual .ps27-filter-ic{width:29px!important;height:29px!important;min-width:29px!important;max-width:29px!important;flex:0 0 29px!important;padding:0!important;border-radius:50%!important;box-sizing:border-box!important}
+#app .ps27 .ps27-filter.ps27-filter-contextual .ps27-filter-label{font:700 14px/1 'Inter',sans-serif!important;padding:0!important;color:#fff!important}
+#app .ps27 .ps27-filter.ps27-filter-contextual .ps27-filter-active{background:linear-gradient(120deg,#F6FAFF,#E6F0FC)!important;gap:8px!important;padding:0 10px!important}
+#app .ps27 .ps27-filter.ps27-filter-contextual .ps27-filter-active>b{font:800 11px 'Inter',sans-serif!important;color:#163A6B!important;letter-spacing:.6px!important;text-transform:uppercase}
+#app .ps27 .ps27-filter.ps27-filter-contextual .ps27-filter-active>span:nth-child(2){font-size:12.5px!important;color:#4A6488!important}
+#app .ps27 .ps27-filter.ps27-filter-contextual .ps27-filter-active em{background:#0B2447!important;border:0!important;color:#fff!important;border-radius:20px!important;padding:3px 11px!important;font:700 11.5px 'Inter',sans-serif!important;font-style:normal!important}
+#app .ps27 .ps27-filter.ps27-filter-contextual .ps27-filter-expand{width:29px!important;height:29px!important;min-width:29px!important;padding:0!important;display:grid!important;place-items:center!important;background:#FDB913!important;color:#0B1F45!important;border:0!important;box-shadow:0 2px 6px rgba(200,168,75,.35)}
+#app .ps27 .ps27-filter.ps27-filter-contextual .ps27-filter-header:hover .ps27-filter-expand{background:#FFD24A!important}

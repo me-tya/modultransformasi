@@ -234,8 +234,8 @@ function filter(p){
   '<div class="ps27-filter-header" data-ps27="filter" role="button" tabindex="0" aria-expanded="'+!!w.filterOpen+'"><div class="ps27-filter-titlebar">'+icon+
   '<button type="button" class="ps27-filter-label" data-ps27="filter">Filter</button></div>'+
   '<div class="ps27-filter-active"><b>FILTER AKTIF</b><span>'+(active.length?active.map(t=>'<em>'+E(t)+'</em>').join(''):'Belum ada — semua data')+'</span>'+
-  '<span class="ps27-filter-spacer"></span><button type="button" class="ps27-filter-reset" data-ps27-reset>↺ Atur ulang</button>'+
-  '<button type="button" class="ps27-filter-expand" data-ps27="filter" aria-label="Buka atau tutup filter">'+(w.filterOpen?'▴':'▾')+'</button></div></div>'+
+  '<span class="ps27-filter-spacer"></span>'+(active.length?'<button type="button" class="ps27-filter-reset" data-ps27-reset>↺ Atur ulang</button>':'')+
+  '<button type="button" class="ps27-filter-expand" data-ps27="filter" aria-label="Buka atau tutup filter"><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"'+(w.filterOpen?' style="transform:rotate(180deg)"':'')+'><path d="M2.2 3.8h7.6L6 8.6z" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/></svg></button></div></div>'+
   (w.filterOpen?'<div class="ps27-filter-body"><div class="ps27-filter-fields mt-fgrid" style="--mt-fcols:'+fcols+'">'+fields+'</div></div>':'')+
  '</div>';
 }
