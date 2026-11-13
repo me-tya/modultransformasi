@@ -683,3 +683,9 @@ html.mt-ui-embedded :is(.tabs .count-badge,.cm-ap-cnt,.prio-tab-n){
 #app table.pdocs .pdocs-action-icon:hover:not(:disabled){filter:brightness(.95)}
 #app table.pdocs .pdocs-action-icon:disabled{opacity:.4;cursor:not-allowed}
 #app table.pdocs .pdocs-action-icon:focus-visible{outline:2px solid #1765b4;outline-offset:2px}
+
+/* Angka jumlah pada tab/chip: label kecil bersudut (bukan lingkaran/pil) agar berbeda dari nomor urut tahap.
+   Tab aktif berlatar gelap → teks emas di atas latar transparan; tab aktif berlatar terang → teks gelap di atas emas muda. */
+#app :is(.subt.ctabs.wbs-with-actions > a .sb,.subt a .sb,.ws-tab b,.hp-tabs button b,.dx-tabs .dx-badge,.ws-bk-chip b){border-radius:6px!important;font-weight:800!important;letter-spacing:.02em}
+#app :is(.subt.ctabs.wbs-with-actions > a.on .ws-x,.ws-tab.on b,.hp-tabs button.on b,.ws-bk-chip.on b){background:rgba(255,255,255,.13)!important;color:#FFC22D!important;box-shadow:inset 0 0 0 1px rgba(255,194,45,.35)!important}
+#app :is(.subt.ctabs.wbs-with-actions > a.on .sb,.subt a.on .sb,.dx-tabs button.on .dx-badge){background:#FFF3CC!important;color:#7A5600!important;box-shadow:inset 0 0 0 1px rgba(253,185,19,.55)!important}
