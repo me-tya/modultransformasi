@@ -61,3 +61,13 @@ jobs:
             print('\n###',name,'hits',len(hits))
             for i in hits[:8]:print(s[max(0,i-380):i+900].replace('\n',' ')[:1280])
           PY
+
+      - name: Find canonical unit labels expected by contact cards
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text()
+          for needle in ['UNITS_ALL=', 'UNITS_ALL =', 'UNITS_ALL()', 'const UNITS', 'function kpContact', 'function pAktKP']:
+            i=s.find(needle)
+            print('UNIT-TOKEN',needle,'offset',i,'context',s[i:i+1300].replace('\n',' ') if i>=0 else '')
+          PY
