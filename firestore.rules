@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function signedIn() { return request.auth != null && request.auth.token.email.matches('.*@kemenkeu[.]go[.]id$'); }
+    function myRef() { return /databases/$(db)/documents/users/$(request.auth.token.email); }
+    function me() { return get(myRef()).data; }
+    function aktif() { return signedIn() && exists(myRef()) && me().aktif == true; }
+    function role(rs) { return aktif() && me().role in rs; }
+    function kosong() { return !exists(/databases/$(db)/documents/config/akses); }
+
+    // Pengguna: dibaca semua akun aktif; dikelola Superadmin.
+    // Pengecualian: saat database masih kosong, akun pertama boleh mendaftarkan dirinya sebagai Superadmin.
+    match /users/{email} {
+      allow read: if signedIn();
+      allow create: if role(['SA']) || (signedIn() && kosong() && email == request.auth.token.email && request.resource.data.role == 'SA');
+      allow update, delete: if role(['SA']);
+    }
+    match /config/{id} {
+      allow read: if signedIn();
+      allow write: if role(['SA']);
+    }
+    // Aktivitas & Kalender (koleksi oneonone) — dibaca/ditulis sesuai pemilik dokumen.
+    //  Pusat (SA, PMO/CMO Kementerian, Ketua) membaca seluruh koleksi; SA/PMOK/CMOK menulis.
+    //  PMO & CMO Unit Eselon I: hanya dokumen ownGrp == 'unit' dengan ownUnit == unit akunnya.
+    //  Tim Pengelola Proyek: membaca dokumen yang modKeys-nya memuat salah satu modulnya;
+    //  menulis hanya dokumen ownGrp == 'tim' yang ownMods-nya memuat modulnya.
+    //  Pemilik dokumen tidak dapat dialihkan oleh unit/tim (dicek pada data lama dan baru).
+    function pusatBaca() { return role(['SA','PMOK','CMOK','KETUA']); }
+    function pusatTulis() { return role(['SA','PMOK','CMOK']); }
+    function milikUnit(d) { return role(['PMOU','CMOU']) && d.get('ownGrp', '') == 'unit' && d.get('ownUnit', '') == me().unit; }
+    function milikTim(d) { return role(['TIM']) && d.get('ownGrp', '') == 'tim' && d.get('ownMods', []).hasAny(me().get('modules', [])); }
+    function bacaTim(d) { return role(['TIM']) && d.get('modKeys', []).hasAny(me().get('modules', [])); }
+    match /oneonone/{id} {
+      allow read: if pusatBaca() || milikUnit(resource.data) || bacaTim(resource.data);
+      allow create: if pusatTulis() || milikUnit(request.resource.data) || milikTim(request.resource.data);
+      allow update: if pusatTulis()
+                    || (milikUnit(resource.data) && milikUnit(request.resource.data))
+                    || (milikTim(resource.data) && milikTim(request.resource.data));
+      allow delete: if pusatTulis() || milikUnit(resource.data) || milikTim(resource.data);
+    }
+    // Data PMO
+    match /{col}/{id} {
+      allow read: if aktif() && col in ['programs','charters','tahap','projectRisks','projectStakeholders','projectDecisions','wbs','bukti','ms','kwide','kwideLinks','risks','crs','usul','sub','ind','sh','impl','jj','jjMod','pantau','adopsi','tr','reviu','modMeta','log'];
+      allow write: if col in ['programs','charters','tahap','projectRisks','projectStakeholders','projectDecisions','wbs','bukti','ms','kwide','kwideLinks','risks','crs'] && role(['SA','PMOK','CMOK','PMOU']);
+      allow write: if col == 'sh' && role(['SA','PMOK','CMOK','PMOU','CMOU','TIM']);
+      allow write: if col == 'usul' && role(['SA','PMOK','CMOK','PMOU','CMOU']);
+      allow write: if col in ['sub','ind','impl','jj','jjMod','pantau','adopsi','tr','reviu','modMeta'] && role(['SA','PMOK','CMOK','CMOU','TIM']);
+      allow create: if col == 'log' && aktif();
+      allow read, write: if col == 'files' && aktif();
+      allow update, delete: if col == 'log' && role(['SA']);
+    }
+  }
+}
