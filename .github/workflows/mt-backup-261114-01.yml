@@ -1,0 +1,22 @@
+name: Backup Modul Transformasi before Squad Team import
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/mt-backup-261114-01.yml']
+permissions:
+  contents: read
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Full repository archive of original version
+        run: |
+          git fetch origin refs/heads/backup/261114-MT-01:refs/remotes/origin/backup/261114-MT-01
+          git archive --format=zip --output=/tmp/261114-MT-01.zip origin/backup/261114-MT-01
+          unzip -t /tmp/261114-MT-01.zip | tail -1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 261114-MT-01
+          path: /tmp/261114-MT-01.zip
+          retention-days: 30
