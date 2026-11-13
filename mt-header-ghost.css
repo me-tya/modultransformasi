@@ -52,3 +52,13 @@ html body #app header.top #av{width:34px!important;min-width:34px!important;heig
 html body #app header.top #av::after{content:"";position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border-radius:50%;background:#22C55E;border:2px solid #102C4E}
 
 @media(max-width:900px){html body #app header.top .role{display:none!important}html body #app header.top .mt-guide-label{display:none!important}}
+
+/* MT-18 · Hover "negatif": Bantuan & Cheatsheet jadi kotak putih ikon navy; lonceng jadi kotak kuning ikon navy. */
+html body #app header.top .sk-hdrActions .sk-hdrHelp:hover,html body #app header.top .sk-hdrActions .sk-hdrHelp:focus-visible,
+html body #app header.top .sk-hdrActions .sk-hdrSheet:hover,html body #app header.top .sk-hdrActions .sk-hdrSheet:focus-visible{background:#FFFFFF!important;color:#102C4E!important}
+html body #app header.top .sk-hdrActions .sk-hdrHelp:hover *,html body #app header.top .sk-hdrActions .sk-hdrHelp:focus-visible *,
+html body #app header.top .sk-hdrActions .sk-hdrSheet:hover *,html body #app header.top .sk-hdrActions .sk-hdrSheet:focus-visible *{color:#102C4E!important;stroke:#102C4E!important}
+html body #app header.top #bell:hover,html body #app header.top #bell:focus-visible{background:#FDB913!important;color:#102C4E!important}
+html body #app header.top #bell:hover svg,html body #app header.top #bell:focus-visible svg{fill:#102C4E!important;stroke:#102C4E!important}
+html body #app header.top #bell:hover svg *,html body #app header.top #bell:focus-visible svg *{fill:#102C4E!important;stroke:#102C4E!important}
+html body #app header.top #bell:hover i,html body #app header.top #bell:focus-visible i{border-color:#FDB913!important}
