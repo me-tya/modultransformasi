@@ -1561,10 +1561,109 @@ function openFiltered(){
  if(!MT_FILTERED.length){toast('Tidak ada aktivitas sesuai filter.');return}
  cmOpenActivityReportBuilder();
 }
+
+/* ===== Ekspor Kalender bulanan ke Word & Excel (port cmXBuildCalendarModel / cmXExportCalendarExcel Dashboard CM) =====
+   Data = kegiatan yang terlihat di Kalender Aktivitas (sudah tersaring role, lihat actRows), hari libur dari liburYear()
+   (impor resmi → SKB bawaan → proyeksi). */
+const xL=lang=>(i,e)=>cmRptT(lang,i,e);
+const xLoc=lang=>lang==='en'?'en':'id';
+const xMonth=(m,lang)=>{const d=dayjs(m+'-01');return d.isValid()?d.locale(xLoc(lang)).format('MMMM YYYY'):m};
+const xDay=(d,lang,fmt='dddd, D MMMM YYYY')=>{const x=dayjs(d);return x.isValid()?x.locale(xLoc(lang)).format(fmt):cmReportSafe(d)};
+const xPics=a=>cmPicList(a.picTimCM);
+const xSorted=obj=>Object.entries(obj||{}).sort((a,b)=>b[1]-a[1]||String(a[0]).localeCompare(String(b[0])));
+function xDateRange(a,lang){const s=a.tglMulai,e=a.tglSelesai&&a.tglSelesai!==a.tglMulai?a.tglSelesai:'';if(!e)return xDay(s,lang,'D MMM YYYY');const ds=dayjs(s),de=dayjs(e);if(ds.isValid()&&de.isValid()&&ds.isSame(de,'month'))return `${ds.format('D')}–${de.locale(xLoc(lang)).format('D MMM YYYY')}`;return `${xDay(s,lang,'D MMM YYYY')} – ${xDay(e,lang,'D MMM YYYY')}`}
+const xHolText=h=>h?(h.id||h.en||''):'';
+function xCalData(month){
+ const ms=dayjs(month+'-01').startOf('day'),me=ms.endOf('month').startOf('day'),firstDow=(ms.day()+6)%7,byDay={},items=[];
+ mtAllAgendas().forEach(a=>{const s=dayjs(a.tglMulai).startOf('day');if(!s.isValid())return;let e=dayjs(a.tglSelesai||a.tglMulai).startOf('day');if(!e.isValid()||e.isBefore(s))e=s;
+  if(e.isBefore(ms,'day')||s.isAfter(me,'day'))return;items.push(a);let c=s.isBefore(ms,'day')?ms:s;const end=e.isAfter(me,'day')?me:e;
+  while(!c.isAfter(end,'day')){const k=c.format('YYYY-MM-DD');(byDay[k]||(byDay[k]=[])).push(a);c=c.add(1,'day')}});
+ items.sort((a,b)=>String(a.tglMulai).localeCompare(String(b.tglMulai))||String(a.jamMulai||a.waktu||'').localeCompare(String(b.jamMulai||b.waktu||'')));
+ Object.values(byDay).forEach(l=>l.sort((a,b)=>String(a.jamMulai||'99').localeCompare(String(b.jamMulai||'99'))));
+ let LB={items:{},label:'',src:''};try{if(typeof liburYear==='function')LB=liburYear(ms.year())}catch(e){}
+ const holidays=[];for(let d=1;d<=ms.daysInMonth();d++){const k=ms.date(d).format('YYYY-MM-DD'),h=LB.items[k];if(h)holidays.push({date:k,item:h})}
+ const weekOf=k=>Math.floor((dayjs(k).date()-1+firstDow)/7)+1;
+ return {month,ms,me,firstDow,byDay,items,holidays,holSrc:LB.src,holLabel:LB.label,weekOf,weeks:Math.ceil((firstDow+ms.daysInMonth())/7)};
+}
+function xCalNarr(d,lang){const L=xL(lang),n=d.items.length,mLab=xMonth(d.month,lang);
+ if(!n)return L(`Tidak ada kegiatan yang tercatat pada **${mLab}**.${d.holidays.length?` Bulan ini memiliki ${d.holidays.length} hari libur nasional/cuti bersama.`:''}`,`No activities are recorded in **${mLab}**.`);
+ const days=Object.keys(d.byDay).sort(),busy=[...days].sort((a,b)=>d.byDay[b].length-d.byDay[a].length||a.localeCompare(b))[0];
+ let work=0;for(let i=1;i<=d.ms.daysInMonth();i++){const k=d.ms.date(i),dow=(k.day()+6)%7,ks=k.format('YYYY-MM-DD');if(dow<5&&!d.holidays.some(h=>h.date===ks))work++}
+ const workDays=days.filter(k=>{const dow=(dayjs(k).day()+6)%7;return dow<5&&!d.holidays.some(h=>h.date===k)}).length;
+ const wk={};days.forEach(k=>{wk[d.weekOf(k)]=(wk[d.weekOf(k)]||0)+d.byDay[k].length});const topW=xSorted(wk)[0];
+ const offDay=d.items.filter(a=>{const k=a.tglMulai,dow=(dayjs(k).day()+6)%7;return dow>=5||d.holidays.some(h=>h.date===k)}).length;
+ const done=d.items.filter(a=>a.statusNorm==='Completed').length,multi=d.items.filter(a=>a.tglSelesai&&a.tglSelesai!==a.tglMulai).length;
+ let t=L(`Pada **${mLab}** terdapat **${n} kegiatan** yang tersebar pada ${days.length} hari kalender, mencakup ${workDays} dari ${work} hari kerja (${cmRptPct(workDays,work)}%). Hari tersibuk adalah **${xDay(busy,lang,'dddd, D MMMM')}** dengan ${d.byDay[busy].length} kegiatan, dan pekan ke-${topW[0]} menjadi pekan terpadat (${topW[1]} kegiatan-hari).`,
+  `In **${mLab}** there are **${n} activities** across ${days.length} calendar days.`);
+ t+=L(` Sebanyak ${done} kegiatan (${cmRptPct(done,n)}%) berstatus selesai.`,` ${done} completed.`);
+ if(multi)t+=L(` ${multi} kegiatan berlangsung lebih dari satu hari.`,` ${multi} span more than one day.`);
+ if(d.holidays.length)t+=L(` Bulan ini memiliki ${d.holidays.length} hari libur nasional/cuti bersama${d.holSrc==='proyeksi'?' (proyeksi, belum berdasarkan SKB)':''}${offDay?`, dan ${offDay} kegiatan dimulai pada akhir pekan atau hari libur`:''}.`,` ${d.holidays.length} holidays.`);
+ else if(offDay)t+=L(` ${offDay} kegiatan dimulai pada akhir pekan.`,` ${offDay} start on a weekend.`);
+ return t}
+function xWrap({lang,signer,kicker,title,subject,chips,scope,meta,fileName,header,blocks}){const L=xL(lang),sg=signer||cmRptSigner(),date=cmRptLongDate(sg.date||dayjs().format('YYYY-MM-DD'),lang);
+ return {kind:'menu',lang,fileName:cmRptFileName(fileName),title:`${kicker} ${title}`,
+  cover:{kicker,title,subject,chips:chips||[],scope:scope||[],meta:[...(meta||[]),[L('Disusun oleh','Prepared by'),'Pusmantap — BaTii'],[L('Tanggal penyusunan','Prepared on'),date]],tte:{qr:null,name:sg.name,title:sg.title,label:sg.label,city:sg.city,date}},header,blocks}}
+function xScope(){let g='';try{g=typeof actGrp==='function'?actGrp():''}catch(e){}let u='';try{u=(ME&&ME.unit)||''}catch(e){}
+ return g==='unit'?['Kegiatan PMO & CMO '+u]:g==='tim'?['Kegiatan terkait modul tim']:['Kegiatan PMO & CMO Kemenkeu (Pusat)']}
+async function buildCalendarModel(month,o){o=o||{};prepare();const lang=o.lang||'id',L=xL(lang);cmRptLangCur=lang;
+ const d=xCalData(month),n=d.items.length,mLab=xMonth(d.month,lang),blocks=[],dn=['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
+ const days=Object.keys(d.byDay).sort(),busy=[...days].sort((a,b)=>d.byDay[b].length-d.byDay[a].length||a.localeCompare(b))[0];
+ const done=d.items.filter(a=>a.statusNorm==='Completed').length,open=d.items.filter(a=>['Scheduled','Ongoing','Pending'].includes(a.statusNorm)).length;
+ blocks.push({t:'h1',text:L('Ringkasan Bulan','Monthly Summary')});
+ blocks.push({t:'kpis',items:[{label:'Kegiatan',value:n,sub:mLab,color:'2F5BD3'},{label:'Hari berkegiatan',value:days.length,sub:'hari kalender',color:'1BA7C9'},
+  {label:'Hari tersibuk',value:busy?dayjs(busy).format('D'):'-',sub:busy?`${xDay(busy,lang,'dddd')} · ${d.byDay[busy].length} kegiatan`:'-',color:'7C5CE0'},
+  {label:'Selesai',value:done,sub:`${cmRptPct(done,n)}%`,color:'16A37F'},{label:'Belum selesai',value:open,sub:'terjadwal / menunggu',color:'F2A93B'},
+  {label:'Hari libur',value:d.holidays.length,sub:d.holSrc==='proyeksi'?'nasional & cuti (proyeksi)':'nasional & cuti bersama',color:'E25563'}]});
+ blocks.push({t:'p',text:xCalNarr(d,lang)});
+ blocks.push({t:'h1',text:`Kalender ${mLab}`});
+ const rows=[];for(let w=0;w<d.weeks;w++){const r=[];for(let i=0;i<7;i++){const dayNum=w*7+i-d.firstDow+1;if(dayNum<1||dayNum>d.ms.daysInMonth()){r.push({text:'',bg:'F5F6F8'});continue}
+  const k=d.ms.date(dayNum).format('YYYY-MM-DD'),evs=d.byDay[k]||[],h=d.holidays.find(x=>x.date===k);let txt=`**${dayNum}**`;if(h)txt+=`\n${xHolText(h.item)}`;
+  evs.slice(0,3).forEach(a=>{txt+=`\n• ${a.jamMulai?a.jamMulai.replace(':','.')+' ':''}${cmReportSafe(a.namaKegiatan).slice(0,48)}${String(a.namaKegiatan||'').length>48?'…':''}`});if(evs.length>3)txt+=`\n+${evs.length-3} lainnya`;
+  r.push(h?{text:txt,bg:h.item.type==='collective'?'E3F4F5':'FDECEE'}:(i>=5?{text:txt,bg:'F8FAFD'}:txt))}rows.push(r)}
+ blocks.push({t:'table',small:true,fixed:true,head:dn,widths:[14,14,14,14,14,15,15],rows});
+ blocks.push({t:'p',muted:true,text:'Sel merah muda menandai hari libur nasional, hijau toska muda menandai cuti bersama, dan abu-abu muda menandai akhir pekan. Sumber hari libur: '+(d.holLabel||'-')+'.'});
+ if(n){blocks.push({t:'h1',text:'Sebaran Waktu Kegiatan'});
+  const wkMap={};for(let w=1;w<=d.weeks;w++)wkMap[w]=0;days.forEach(k=>{wkMap[d.weekOf(k)]+=d.byDay[k].length});
+  const dowMap=[0,0,0,0,0,0,0];days.forEach(k=>{dowMap[(dayjs(k).day()+6)%7]+=d.byDay[k].length});
+  try{const wkImg=await cmRptChart(cmRptBarCfg(Object.keys(wkMap).map(w=>`Pekan ${w}`),Object.values(wkMap),{colors:Object.keys(wkMap).map(()=>'#2F5BD3')}),460,300);
+   const dowImg=await cmRptChart(cmRptBarCfg(dn,dowMap,{colors:dn.map((_,i)=>i>=5?'#8A94A6':'#16A37F')}),460,300);
+   blocks.push({t:'charts',items:[{title:'Kegiatan per pekan',img:wkImg},{title:'Kegiatan per hari dalam pekan',img:dowImg}]})}catch(e){console.info('Grafik kalender:',e)}
+  const wkE=xSorted(wkMap),dE=dowMap.map((v,i)=>[dn[i],v]).sort((a,b)=>b[1]-a[1]),quiet=Object.entries(wkMap).filter(x=>!x[1]).map(x=>x[0]);
+  blocks.push({t:'p',text:`Grafik kiri menghitung kegiatan per hari kalender pada setiap pekan (kegiatan multi-hari dihitung pada setiap harinya). Pekan ke-${wkE[0][0]} paling padat dengan ${wkE[0][1]} kegiatan-hari${quiet.length?`, sementara pekan ke-${quiet.join(', ')} tidak memiliki kegiatan`:''}. Grafik kanan menunjukkan hari **${dE[0][0]}** sebagai hari dengan kegiatan terbanyak (${dE[0][1]})${dowMap[5]+dowMap[6]?`, dan terdapat ${dowMap[5]+dowMap[6]} kegiatan-hari pada akhir pekan`:', tanpa kegiatan pada akhir pekan'}.`});
+  blocks.push({t:'h1',text:'Agenda Kegiatan'});
+  blocks.push({t:'table',small:true,head:['No','Tanggal','Waktu','Kegiatan','Kategori','Unit','PIC','Status'],widths:[5,13,9,29,10,10,12,12],
+   rows:d.items.map((a,i)=>[String(i+1),xDateRange(a,lang),cmReportSafe(a.waktu),cmRptActCell(a,lang),cmReportSafe(a.kategori),cmReportSafe(a.unitPemohon),xPics(a).join('\n')||'-',cmRptStatusCell(a.statusNorm,lang)])})}
+ if(d.holidays.length){blocks.push({t:'h1',text:'Hari Libur Nasional dan Cuti Bersama'});
+  blocks.push({t:'table',head:['Tanggal','Keterangan','Jenis','Kegiatan pada hari itu'],widths:[24,40,16,20],
+   rows:d.holidays.map(h=>[xDay(h.date,lang,'dddd, D MMM YYYY'),xHolText(h.item),h.item.type==='collective'?'Cuti bersama':'Libur nasional',{text:String((d.byDay[h.date]||[]).length),align:'center'}])})}
+ return xWrap({lang,signer:o.signer,kicker:'LAPORAN KALENDER KEGIATAN',title:mLab.toUpperCase(),subject:'Agenda PMO & CMO — Modul Transformasi',
+  chips:[`${n} kegiatan`,`${days.length} hari berkegiatan`],scope:xScope(),meta:[['Bulan',mLab],['Jumlah kegiatan',String(n)],['Hari libur',String(d.holidays.length)]],
+  fileName:`Kalender Kegiatan - ${mLab}`,header:`Kalender Kegiatan · ${mLab}`,blocks})}
+async function calendarWord(month){try{toast('Menyiapkan file Word…');const model=await buildCalendarModel(month,{lang:'id',signer:cmRptSigner()});const blob=await cmRptDocx(model);cmRptDownloadBlob(blob,model.fileName+'.docx');toast('Kalender berhasil diekspor ke Word.')}
+ catch(e){console.error(e);toast('Gagal ekspor Word: '+(e.message||e))}}
+function calendarExcel(month){try{if(typeof XLSX==='undefined')throw new Error('Pustaka Excel belum termuat');prepare();
+ const lang='id',d=xCalData(month),mLab=xMonth(d.month,lang),wb=XLSX.utils.book_new(),dn=['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'],plain=s=>String(s||'').replace(/\*\*/g,'');
+ const days=Object.keys(d.byDay),done=d.items.filter(a=>a.statusNorm==='Completed').length;
+ const sum=[[`Kalender Kegiatan ${mLab}`],[CM_RPT_ORG[2]+' — '+CM_RPT_ORG[1]],[],['Indikator','Nilai'],['Jumlah kegiatan',d.items.length],['Hari berkegiatan',days.length],['Kegiatan selesai',done],['Hari libur nasional/cuti bersama',d.holidays.length],['Sumber hari libur',d.holLabel||'-'],[],['Uraian'],[plain(xCalNarr(d,lang))],[],['Cakupan',xScope().join(' • ')]];
+ const ws0=XLSX.utils.aoa_to_sheet(sum);ws0['!cols']=[{wch:38},{wch:90}];XLSX.utils.book_append_sheet(wb,ws0,'Ringkasan');
+ const grid=[[`Kalender ${mLab}`],dn];
+ for(let w=0;w<d.weeks;w++){const keys=[];for(let i=0;i<7;i++){const dayNum=w*7+i-d.firstDow+1;keys.push(dayNum>=1&&dayNum<=d.ms.daysInMonth()?d.ms.date(dayNum).format('YYYY-MM-DD'):null)}
+  grid.push(keys.map(k=>{if(!k)return '';const h=d.holidays.find(x=>x.date===k);return `${dayjs(k).date()}${h?' — '+xHolText(h.item):''}`}));
+  const max=Math.max(0,...keys.map(k=>k?(d.byDay[k]||[]).length:0));
+  for(let r=0;r<max;r++)grid.push(keys.map(k=>{const a=k?(d.byDay[k]||[])[r]:null;return a?`• ${cmReportSafe(a.namaKegiatan)}${cmRptHas(a.waktu)?' ('+a.waktu+')':''}`:''}))}
+ const ws1=XLSX.utils.aoa_to_sheet(grid);ws1['!cols']=dn.map(()=>({wch:34}));XLSX.utils.book_append_sheet(wb,ws1,'Kalender');
+ const ag=d.items.map((a,i)=>({No:i+1,'Tanggal Mulai':a.tglMulai||'','Tanggal Selesai':a.tglSelesai||a.tglMulai||'',Hari:xDay(a.tglMulai,lang,'dddd'),Waktu:a.waktu||'','Nama Kegiatan':a.namaKegiatan||'','Nomor Undangan':cmRptInvNo(a,lang),Kategori:a.kategori||'','Program Terkait':a.programTerkait||'','Unit Pemohon':a.unitPemohon||'',Layanan:a.layanan||'',PIC:xPics(a).join(', '),'Lokasi / Kanal':a.lokasiChannel||'',Status:cmRptStatus(a.statusNorm)}));
+ const ws2=ag.length?XLSX.utils.json_to_sheet(ag):XLSX.utils.aoa_to_sheet([['Tidak ada kegiatan pada bulan ini.']]);
+ ws2['!cols']=[{wch:5},{wch:12},{wch:12},{wch:10},{wch:14},{wch:60},{wch:18},{wch:14},{wch:18},{wch:14},{wch:9},{wch:28},{wch:28},{wch:16}];XLSX.utils.book_append_sheet(wb,ws2,'Agenda');
+ const rk=[['Tanggal','Hari','Jumlah Kegiatan','Daftar Kegiatan','Keterangan Libur','Jenis Libur']];
+ for(let i=1;i<=d.ms.daysInMonth();i++){const k=d.ms.date(i).format('YYYY-MM-DD'),ev=d.byDay[k]||[],h=d.holidays.find(x=>x.date===k);rk.push([k,xDay(k,lang,'dddd'),ev.length,ev.map(a=>cmReportSafe(a.namaKegiatan)).join('; '),h?xHolText(h.item):'',h?(h.item.type==='collective'?'Cuti bersama':'Libur nasional'):''])}
+ const ws3=XLSX.utils.aoa_to_sheet(rk);ws3['!cols']=[{wch:12},{wch:10},{wch:10},{wch:100},{wch:40},{wch:16}];XLSX.utils.book_append_sheet(wb,ws3,'Rekap Harian');
+ XLSX.writeFile(wb,cmRptFileName(`Kalender Kegiatan - ${mLab}`)+'.xlsx');toast('Kalender berhasil diekspor ke Excel.')}
+ catch(e){console.error(e);toast('Gagal ekspor Excel: '+(e.message||e))}}
 if(typeof dayjs!=='undefined'){try{dayjs.locale('id')}catch(e){}}
 if(typeof ACT!=='undefined'){
  ACT.oneReport=el=>openSingle(el.dataset.id);
  ACT.oneReportFilter=()=>openFiltered();
 }
-window.MT_DCM_REPORT={openSingle,openFiltered,mtToAgenda,_buildSingle:(id,o)=>{prepare();const a=state.agendas.find(z=>String(z.id)===String(id));return cmRptBuildSingleModel(a,Object.assign({lang:'id',ai:false,signer:cmRptSigner()},o||{}))},_html:m=>cmRptHtml(m),_docx:m=>cmRptDocx(m),version:'dcm-R61007'};
+window.MT_DCM_REPORT={openSingle,openFiltered,mtToAgenda,_buildSingle:(id,o)=>{prepare();const a=state.agendas.find(z=>String(z.id)===String(id));return cmRptBuildSingleModel(a,Object.assign({lang:'id',ai:false,signer:cmRptSigner()},o||{}))},_html:m=>cmRptHtml(m),_docx:m=>cmRptDocx(m),calendarWord,calendarExcel,_calendarModel:buildCalendarModel,version:'dcm-R61007'};
 })();
