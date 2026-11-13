@@ -64,7 +64,7 @@ test('Aktivitas: A4 surat, kelengkapan surat, nomor notula dan ND penyampaian',(
  assert.doesNotMatch(html,/id="at-no-one-not"/);
  assert.match(html,/const ONE_MODE=\['Offline','Hybrid','Online'\]/);
  assert.match(html,/data-reason/);
- assert.match(html,/\['overview','Overview'\],\['daftar','Daftar Aktivitas'\]/);
+ assert.match(html,/\['ringkasan','Ringkasan'\],\['daftar','Daftar Aktivitas',n\]/);
  assert.match(html,/data-rtefs/);
  assert.match(html,/data-rteindent/);
 });
