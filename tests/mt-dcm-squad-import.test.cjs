@@ -40,7 +40,7 @@ assert(!parsed.entries.some(x=>x.n==='Pegawai Tidak Relevan'),'Unrelated squads 
 
 let M={pic:[]},k={tims:['Tim DCS','Tim DOA','Tim SPP','Tim SSB','Tim CM'],pt:{}},saved=[],contacts=[],saves=0;
 const deps={
- actMaster:()=>M,actMasterSave:x=>{M=x;saves++},kpCfg:()=>k,kpPeople:()=>contacts,
+ actMaster:()=>M,actMasterSave:x=>{M=x;saves++},kpCfg:()=>k,kpPeople:()=>contacts.map(x=>({...x})),
  kpPersonSave:(p)=>{
   if(p._id){
    let i=contacts.findIndex(x=>x._id===p._id);
