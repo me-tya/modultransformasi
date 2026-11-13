@@ -10420,11 +10420,25 @@ function fsDocs(){const out={};FS_ARR.forEach(c=>{out[c]={};const arr=S[c]||[];l
   (c==='log'?arr.slice().reverse():arr).forEach(x=>{if(c==='log'&&!x.id)x.id=uid();if(x._o==null)x._o=++mx;let d=x;if(c==='users'){d=Object.assign({},x);delete d.pw}out[c][fsId(c,x)]=d})});
  FS_MAP.forEach(c=>{out[c]={};Object.entries(S[c]||{}).forEach(([k,v])=>{if(v&&typeof v==='object')out[c][k]=v})});out.config={akses:{v:S.akses},cfg:{v:S.cfg}};return out}
 function fsSchedule(){if(!FB.on||!FB.ready)return;clearTimeout(FB.timer);FB.st='Menyimpan…';setDbBadge();FB.timer=setTimeout(fsFlush,500)}
-async function fsFlush(){const cur=fsDocs(),ops=[],next={};
- for(const c in cur){const prev=FB.last[c]||{};next[c]={};for(const id in cur[c]){const js=stab(cur[c][id]);next[c][id]=js;if(prev[id]!==js)ops.push(['set',c,id,JSON.parse(js)])}if(c!=='log')for(const id in prev)if(!(id in next[c]))ops.push(['del',c,id])}
- if(!ops.length){FB.st='Tersimpan';setDbBadge();if(FB.done){toast(FB.done);FB.done='';busyOff()}return}
- try{for(let i=0;i<ops.length;i+=400){const sp=document.querySelector('.splash span:last-child');if(sp)sp.textContent='Mengunggah ke Firestore… '+Math.min(i+400,ops.length).toLocaleString('id-ID')+' dari '+ops.length.toLocaleString('id-ID')+' dokumen · jangan tutup halaman';if(FB.done)busy('Menyimpan ke Firestore…',`${Math.min(i+400,ops.length).toLocaleString('id-ID')} dari ${ops.length.toLocaleString('id-ID')} perubahan · jangan tutup halaman`,80+i/ops.length*20);const b=FB.db.batch();ops.slice(i,i+400).forEach(([k,c,id,d])=>{const r=FB.db.collection(c).doc(id);k==='set'?b.set(r,d):b.delete(r)});await Promise.race([b.commit(),new Promise((_,rj)=>setTimeout(()=>rj(Object.assign(new Error('Tidak ada respons dari Firebase selama 2 menit. Kemungkinan jaringan (kantor/VPN) memblokir Firestore. Coba jaringan lain, lalu ulangi.'),{code:'timeout'})),120000))])}
-  for(const c in next){FB.last[c]=Object.assign({},c==='log'?FB.last[c]:{},next[c])}FB.st='Tersimpan ke Firestore';FB.err='';if(FB.done){const m=FB.done;FB.done='';busyOff();toast(m+' Tersimpan ke Firestore.')}}
+/* Bersihkan dokumen sebelum dikirim: Firestore menolak array bersarang dan kunci kosong. Array di dalam array → objek berindeks {"0":..,"1":..}. */
+function fsClean(v,inArr){if(Array.isArray(v)){const a=v.map(x=>fsClean(x,true));if(inArr){const o={};a.forEach((x,i)=>o[i]=x);return o}return a}
+ if(v&&typeof v==='object'){const o={};Object.keys(v).forEach(k=>{if(k==='')return;const x=fsClean(v[k],false);if(x!==undefined)o[k]=x});return o}return v}
+const FS_MAX=1000000;
+async function fsFlush(){const cur=fsDocs(),ops=[],next={},skip=[];
+ for(const c in cur){const prev=FB.last[c]||{};next[c]={};for(const id in cur[c]){if(/^__.*__$/.test(id)||!id||id.includes('/'))continue;const cl=fsClean(cur[c][id]),js=stab(cl);next[c][id]=js;if(prev[id]!==js){if(js.length>FS_MAX){skip.push(c+'/'+id+' (ukuran '+Math.round(js.length/1024)+' KB melebihi batas 1 MB)');continue}ops.push(['set',c,id,JSON.parse(js)])}}if(c!=='log')for(const id in prev)if(!(id in next[c]))ops.push(['del',c,id])}
+ const keepLast=fail=>{for(const c in next){const base=c==='log'?Object.assign({},FB.last[c]):{};const nx=Object.assign({},next[c]);fail.forEach(f=>{if(f.c===c){if(FB.last[c]&&f.id in FB.last[c])nx[f.id]=FB.last[c][f.id];else delete nx[f.id]}});FB.last[c]=Object.assign(base,nx)}};
+ const sk=skip.map(x=>{const[c,id]=x.split(' ')[0].split('/');return {c,id}});
+ if(!ops.length){keepLast(sk);FB.st=skip.length?'Sebagian gagal':'Tersimpan';setDbBadge();if(skip.length)toast('Tidak tersimpan ke Firestore: '+skip.join('; '));if(FB.done){toast(FB.done);FB.done='';busyOff()}return}
+ const commit=async L=>{const b=FB.db.batch();L.forEach(([k,c,id,d])=>{const r=FB.db.collection(c).doc(id);k==='set'?b.set(r,d):b.delete(r)});await Promise.race([b.commit(),new Promise((_,rj)=>setTimeout(()=>rj(Object.assign(new Error('Tidak ada respons dari Firebase selama 2 menit. Kemungkinan jaringan (kantor/VPN) memblokir Firestore. Coba jaringan lain, lalu ulangi.'),{code:'timeout'})),120000))])};
+ const fails=[];
+ try{for(let i=0;i<ops.length;i+=400){const sp=document.querySelector('.splash span:last-child');if(sp)sp.textContent='Mengunggah ke Firestore… '+Math.min(i+400,ops.length).toLocaleString('id-ID')+' dari '+ops.length.toLocaleString('id-ID')+' dokumen · jangan tutup halaman';if(FB.done)busy('Menyimpan ke Firestore…',`${Math.min(i+400,ops.length).toLocaleString('id-ID')} dari ${ops.length.toLocaleString('id-ID')} perubahan · jangan tutup halaman`,80+i/ops.length*20);const part=ops.slice(i,i+400);
+   try{await commit(part)}catch(e){if(e&&e.code==='timeout')throw e;
+    /* Satu dokumen bermasalah tidak boleh menggagalkan perubahan lain: ulangi per dokumen. */
+    for(const op of part){try{await commit([op])}catch(e2){if(e2&&e2.code==='timeout')throw e2;fails.push({c:op[1],id:op[2],msg:fbErr(e2)})}}}}
+  keepLast(fails.concat(sk));const bad=fails.map(f=>f.c+'/'+f.id+' — '+f.msg).concat(skip);
+  if(bad.length){FB.st='Sebagian gagal';FB.err=bad.join('; ');console.warn('Firestore: dokumen gagal disimpan',fails,skip);toast('Sebagian besar perubahan tersimpan, tetapi '+bad.length+' dokumen gagal: '+bad.slice(0,2).join('; ')+(bad.length>2?' …':''))}
+  else{FB.st='Tersimpan ke Firestore';FB.err=''}
+  if(FB.done){const m=FB.done;FB.done='';busyOff();toast(m+(bad.length?'':' Tersimpan ke Firestore.'))}}
  catch(e){FB.st='Gagal menyimpan';FB.err=fbErr(e);if(FB.done){FB.done='';busyOff()}toast('Gagal menyimpan ke Firestore: '+FB.err)}setDbBadge()}
 function applyCol(c,docs){FB.last[c]=FB.last[c]||{};let changed=false;
  if(c==='config'){if(docs.akses&&stab(docs.akses)!==FB.last.config.akses){S.akses=docs.akses.v;changed=true}if(docs.cfg&&stab(docs.cfg)!==FB.last.config.cfg){S.cfg=docs.cfg.v;changed=true}}
@@ -11375,7 +11389,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 </style>
 <script src="mt-libur.js?v=20261113-libur1"></script>
 <script src="mt-tim.js?v=20261114-tim6"></script>
-<script src="mt-tim2.js?v=20261114-t2h"></script>
+<script src="mt-tim2.js?v=20261114-t2i"></script>
 <script src="project-selection-flow.js?v=20261111-mt14-filter"></script>
 <script src="project-selection-governance.js?v=20261111-mt13-info"></script>
 <script src="project-selection-workflow-2027.js?v=20261113-mt17-filterpm"></script>

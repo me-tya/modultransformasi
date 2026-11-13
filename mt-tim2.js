@@ -130,7 +130,7 @@ function pubSync(){if(!canEdit()||!FB||!FB.on)return;const pub=pubBuild(),d=docG
 function UNITS_ALL(){try{return UNITS.slice()}catch(e){return []}}
 function pubData(){if(grp()==='pusat'){const d=docGet('pub-tim');return d&&d.pub?d.pub:pubBuild()}return S.pubTim&&S.pubTim.pub?S.pubTim.pub:(docGet('pub-tim')||{}).pub||null}
 function pubPeople(pub){return Object.entries(pub.people||{}).map(([n,x])=>({n,nk:x.nk,j:x.j,t:x.t,tx:x.tx||[],k:!!x.k,hp:x.hp,emailK:x.emailK,u:[],ext:1,pub:x}))}
-const inR=(r,ds)=>{const a=Array.isArray(r)?r[0]:r&&r.a,b=Array.isArray(r)?r[1]:r&&r.b;return !!a&&ds>=a&&ds<=(b||a)};
+const inR=(r,ds)=>{const a=Array.isArray(r)?r[0]:r&&(r.a||r[0]),b=Array.isArray(r)?r[1]:r&&(r.b||r[1]);return !!a&&ds>=a&&ds<=(b||a)};
 function pubCode(p,ds){const x=p.pub;if(!work(ds))return 'l';if((x.off||[]).some(r=>inR(r,ds)))return 'c';if((x.st||[]).some(r=>inR(r,ds)))return 's';const o=(x.ov||{})[ds];if(o)return o;if((x.wfh||[]).includes(dow(ds)))return 'h';return ((PUB&&PUB.wfhd)||[5]).includes(dow(ds))?'h':'o'}
 
 /* ---------- komponen ---------- */
