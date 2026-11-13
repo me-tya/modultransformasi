@@ -7310,10 +7310,10 @@ async function actAttachmentPreview(it){
  suratPreview(it);
 }
 function attListHtml(key){const A=ATT[key];if(!A)return '';if(key==='one-dok'||key==='one-mat')return actPhotoTiles(A,key);if(key==='one-hadir'||key==='one-tte')return actAttachmentRows(A,key);if(A.render)return A.render(A);return A.items.length?A.items.map((i,x)=>`<span class="at-it">${attChips({items:[i]},1)}${i.size?`<em>${attFmtSize(i.size)}</em>`:''}${A.ro?'':`<button type="button" class="at-x" data-atrm="${esc(key)}" data-i="${x}" title="Hapus" aria-label="Hapus ${esc(i.nama||'lampiran')}">✕</button>`}</span>`).join(''):`<span class="s at-empty">Belum ada berkas/tautan.</span>`}
-/* Riwayat surat undangan/ST: satu baris per surat (terbaru di atas) — No · Nomor (klik = pratinjau) · Hal/Pegawai · Tanggal · Unduh · Hapus. Tanpa judul kolom. */
-function actLetterRows(A,key,k,fb){fb=fb||{};const n=A.items.length;if(!n)return '<span class="s at-empty">Belum ada berkas/tautan.</span>';
+/* Riwayat surat undangan/ST: hanya versi sebelumnya (versi terbaru sudah tampil di kepala kartu), terbaru di atas — No · Nomor (klik = pratinjau) · Hal/Pegawai · Tanggal · Unduh · Hapus. Tanpa judul kolom. */
+function actLetterRows(A,key,k,fb){fb=fb||{};const n=A.items.length;if(!n)return '<span class="s at-empty">Belum ada berkas/tautan.</span>';if(n<2)return '<span class="s at-empty">Belum ada versi sebelumnya.</span>';
  const dv=id=>{const e=document.getElementById(id);return e?e.value:null},tgl=t=>/^\d{4}-\d{2}-\d{2}$/.test(t||'')?actTglShort(t):(t||'');
- return '<div class="lt-rows">'+A.items.map((i,x)=>[i,x]).reverse().map(([i,x],r)=>{const latest=x===n-1;
+ return '<div class="lt-rows">'+A.items.map((i,x)=>[i,x]).slice(0,-1).reverse().map(([i,x],r)=>{const latest=x===n-1;
   const no=i.no||(latest?(dv('at-no-'+key)||fb.no||''):'')||(i.t==='l'?'Tautan':(i.nama||'Berkas'));
   const pg=Array.isArray(i.peg)&&i.peg.length?i.peg.join(', '):(latest?String(dv('one-stPeg')??fb.peg??'').split(/;\s*/).filter(Boolean).join(', '):'');
   const ds=k==='st'?pg:(i.hal||(latest?(dv('one-undHal')??fb.hal??''):''));
