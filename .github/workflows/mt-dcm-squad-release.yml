@@ -1,0 +1,48 @@
+name: MT publish DCM Tim CM plus Squad Team import
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/mt-dcm-squad-release.yml']
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Verify exact original full backup
+        run: |
+          git fetch origin backup/261114-MT-01
+          git archive --format=zip --output=/tmp/261114-MT-01.zip origin/backup/261114-MT-01
+          unzip -t /tmp/261114-MT-01.zip | tail -1
+      - name: Check importer and original module regression tests
+        run: |
+          node --check mt-dcm-squad-import.js
+          node --check mt-tim2.js
+          node tests/mt-dcm-squad-import.test.cjs
+          node tests/activity-freeze-guard.test.cjs
+      - name: Invalidate old mt-tim2.js cached script without altering UI
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf8')
+          pat=r'(<script\b[^>]*\bsrc=["\'])(?:\./)?mt-tim2\.js(?:\?v=[^"\']*)?(["\'])'
+          matched=list(re.finditer(pat,s,re.I))
+          if len(matched)!=1:
+            raise RuntimeError(f'Expected exactly one mt-tim2.js script reference, found {len(matched)}')
+          s=re.sub(pat,r'\1mt-tim2.js?v=20261114-squad01\2',s,count=1,flags=re.I)
+          p.write_text(s,encoding='utf8')
+          assert s.count('mt-tim2.js?v=20261114-squad01')==1
+          PY
+          git diff --check
+      - name: Publish targeted cache refresh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "feat(mt): publish curated Dashboard CM Tim CM and Squad Team import"
+          git push origin HEAD:main
