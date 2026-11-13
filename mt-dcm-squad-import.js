@@ -11,6 +11,15 @@ const fold=x=>txt(x).normalize('NFKD').toLowerCase().replace(/[^a-z0-9]/g,'');
 const clean=x=>txt(x).replace(/\s+/g,' ').slice(0,450);
 const nip=x=>txt(x).replace(/\D/g,'').slice(0,20);
 const workEmail=x=>/@kemenkeu\.go\.id$/i.test(txt(x))?txt(x).toLowerCase().slice(0,150):'';
+const CANONICAL_UNITS=['Setjen','Itjen','BPPK','DJA','DJPb','DJPK','DJKN','DJPPR','DJP','DJBC','DJSEF','DJSPSK','BaTii','LNSW'];
+function unitCode(value){
+ const full=clean(value);
+ for(const code of CANONICAL_UNITS.slice().sort((a,b)=>b.length-a.length)){
+  const rx=new RegExp('(^|[^A-Za-z])'+code+'(?![A-Za-z])','i');
+  if(rx.test(full))return code;
+ }
+ return full;
+}
 const ROLES={res:'Tim CM (Resource)',cm:'Tim CM (Squad)',pmo:'PIC PMO Unit',cmo:'PIC CMO Unit',probis:'Pemilik Proses Bisnis',candidate:'Kandidat Pemilik Probis'};
 function classify(c){
  const squad=clean(c.squadTeam||c.squad||''),sheet=clean(c.sheet||'');
@@ -33,6 +42,7 @@ function parseBackup(j){
  if(!j||typeof j!=='object')throw Error('File JSON tidak dikenali.');
  const resources=Array.isArray(j.resources)?j.resources:(Array.isArray(j)?j:[]);
  const contacts=Array.isArray(j.contacts)?j.contacts:[];
+ const photos=j.contactPhotos&&typeof j.contactPhotos==='object'?j.contactPhotos:{};
  if(!resources.length&&!contacts.length)throw Error('Backup tidak memiliki resources Tim CM ataupun contacts Squad Team.');
  if(resources.length+contacts.length>LIMIT)throw Error('Daftar pegawai terlalu besar untuk sekali impor.');
  const entries=[],byMaster=new Map(),byContact=new Map(),excluded={other:0,invalid:0};
@@ -58,10 +68,11 @@ function parseBackup(j){
   const category=classify(c);
   if(!category){excluded.other++;continue}
   if(category.kind==='cm'){addMaster(c,'cm',true);continue}
-  const n=clean(c.nama);const unit=clean(c.unitEselonI||c.unitKerja||c.unit);
+  const n=clean(c.nama);const sourceUnit=clean(c.unitEselonI||c.unitKerja||c.unit),unit=unitCode(sourceUnit);
   if(!n||!unit||unit==='-'){excluded.invalid++;continue}
+  const photo=typeof photos[c.fotoId]==='string'?photos[c.fotoId]:'';
   const v={n,nip:nip(c.nip),kind:category.kind,auto:category.auto,selected:category.auto,
-    unit,peran:[category.peran],labels:[ROLES[category.kind]],
+    unit,sourceUnit,photo,peran:[category.peran],labels:[ROLES[category.kind]],
     squadRole:clean(c.peran),source:c};
   let prior=byContact.get(contactKey(v))||byContact.get('nama:'+fold(n)+'|'+fold(unit));
   if(prior){
@@ -100,7 +111,7 @@ function applySelection(selected,deps){
  chosenMaster.forEach(e=>{
    const original=e.kind==='res'?mapRes(e.source):{
     n:e.n,nip:e.nip,jab:clean(e.source.jabatan),unitAsal:clean(e.source.unitEselonI),
-    peran:'',jenis:'Definitif',status:'WFO',statusKerja:'WFO',wfhDays:[],cuti:[]
+    peran:'',jenis:'Definitif',status:'WFO',statusKerja:'WFO',wfhDays:[],cuti:[],foto:e.photo||''
    };
    if(!clean(original.n)){stats.skipped++;return}
    const ex=matchingPerson(e,M.pic);
@@ -127,15 +138,15 @@ function applySelection(selected,deps){
    const o={
     nama:e.n,nip:e.nip,unit:e.unit,peran:e.peran,
     jabatan:clean(source.jabatan),email:workEmail(source.email||source.emailKemenkeu),
-    hp:clean(source.hp||source.noHp),pangkat:clean(source.pangkat),
-    ket:'Sumber: Squad Team Dashboard CM · '+clean(source.squadTeam).slice(0,165)+
+    hp:clean(source.hp||source.noHp),pangkat:clean(source.pangkat),foto:e.photo||'',
+    ket:'Sumber: Squad Team Dashboard CM · '+clean(source.squadTeam).slice(0,125)+' · Unit sumber: '+clean(e.sourceUnit||e.unit).slice(0,125)+
       (e.kind==='candidate'?' · Pemilik probis (dipilih setelah verifikasi)':'')
    };
    if(prior){
      // Per-role merge; one contact can be both PMO and CMO on the same unit.
      o._id=prior._id;
      o.peran=[...new Set([...(Array.isArray(prior.peran)?prior.peran:[]),...o.peran])];
-     for(const key of ['jabatan','email','hp','pangkat','ket'])if(!o[key]||prior[key])o[key]=prior[key]||o[key];
+     for(const key of ['jabatan','email','hp','pangkat','foto','ket'])if(!o[key]||prior[key])o[key]=prior[key]||o[key];
      o.nama=prior.nama;o.nip=prior.nip||o.nip;
      kpPersonSave(Object.assign({},prior,o));
      stats.contactsUpdated++;
@@ -163,7 +174,7 @@ function buildPreview(parsed,deps,ov){
    return '<tr><td><input type="checkbox" data-dcm-eligible="'+i+'" '+(e.selected?'checked':'')+' aria-label="Impor '+summary(e.n)+'"></td>'+
     '<td><strong>'+summary(e.n)+'</strong>'+(e.nip?'<div class="t-xs t-muted">'+summary(e.nip)+'</div>':'')+'</td>'+
     '<td>'+summary(e.labels.join(', '))+warning+'</td>'+
-    '<td class="t-xs">'+summary(e.unit||'Pusmantap')+'</td>'+
+    '<td class="t-xs">'+summary(e.unit||'Pusmantap')+(e.sourceUnit&&e.sourceUnit!==e.unit?'<small class="t-muted" style="display:block">'+summary(e.sourceUnit)+'</small>':'')+'</td>'+
     '<td class="t-xs">'+(['res','cm'].includes(e.kind)?'Profil Pusmantap · Tim CM':'Kontak unit · '+e.peran.map(x=>({pmo:'PMO',cmo:'CMO',probis:'Pemilik Probis'})[x]).join(' / '))+'</td>'+
     '<td><span class="t-chip '+(old?'t-pm':'t-gr')+'">'+status+'</span></td></tr>';
  }).join('');
@@ -229,5 +240,5 @@ function open(deps){
  };
  return ov;
 }
-root.MT_DCM_SQUAD_IMPORT={open,parseBackup,classify,applySelection,matchingContact,matchingPerson};
+root.MT_DCM_SQUAD_IMPORT={open,parseBackup,classify,unitCode,applySelection,matchingContact,matchingPerson};
 })(window);
