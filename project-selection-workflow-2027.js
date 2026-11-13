@@ -229,12 +229,10 @@ function filter(p){
  const fields=F.map(x=>x.wide&&!/ps27-f-wide/.test(x.html)?x.html.replace('<label','<label class="ps27-f-wide"'):x.html).join('');
  // Simetris: ≤5 unit → satu baris penuh; 6 → 3×2; 7–8 → 4 kolom. Program = 2 unit.
  const units=F.reduce((n,x)=>n+((x.wide||/ps27-f-wide/.test(x.html))?2:1),0),fcols=units<=5?units:units===6?3:4;
- const viewTitle=stage==='usulan'?({bank:'Riwayat Program',detail:'Usulan Program',portfolio:'Buat Dokumen Portofolio'}[sub]||title):
-  stage==='mapping'?({proposal:'Usulan Proyek',history:'Riwayat Proyek',docs:'Buat Dokumen Proyek'}[sub]||title):title;
  const icon='<span class="ps27-filter-ic" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg></span>';
  return '<div class="ps27-filter ps27-filter-panel ps27-filter-contextual mt-std-filter'+(w.filterOpen?' is-open':'')+'" aria-label="Filter Project Selection" role="search">'+
   '<div class="ps27-filter-header" data-ps27="filter" role="button" tabindex="0" aria-expanded="'+!!w.filterOpen+'"><div class="ps27-filter-titlebar">'+icon+
-  '<button type="button" class="ps27-filter-label" data-ps27="filter">'+E(viewTitle)+'</button></div>'+
+  '<button type="button" class="ps27-filter-label" data-ps27="filter">Filter</button></div>'+
   '<div class="ps27-filter-active"><b>FILTER AKTIF</b><span>'+(active.length?active.map(t=>'<em>'+E(t)+'</em>').join(''):'Belum ada — semua data')+'</span>'+
   '<span class="ps27-filter-spacer"></span><button type="button" class="ps27-filter-reset" data-ps27-reset>↺ Atur ulang</button>'+
   '<button type="button" class="ps27-filter-expand" data-ps27="filter" aria-label="Buka atau tutup filter">'+(w.filterOpen?'▴':'▾')+'</button></div></div>'+

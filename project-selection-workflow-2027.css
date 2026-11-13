@@ -377,22 +377,9 @@
 #app .ps27 .ps27-filter-contextual{
  border:1px solid #d7e3f0;border-radius:10px;overflow:hidden;max-width:100%;margin:0
 }
-#app .ps27 .ps27-filter-contextual .ps27-filter-header{
- display:flex;align-items:stretch;background:#163b68!important;min-height:47px;
-}
-#app .ps27 .ps27-filter-contextual .ps27-filter-titlebar{
- flex:0 1 250px;min-width:175px;max-width:340px;background:#163b68!important;padding:5px 12px
-}
-#app .ps27 .ps27-filter-contextual .ps27-filter-label{
- font:800 12px 'Inter',sans-serif;line-height:1.4;color:#fff;white-space:normal
-}
-#app .ps27 .ps27-filter-contextual .ps27-filter-active{background:#163b68!important;color:#d4e2f2}
-#app .ps27 .ps27-filter-contextual .ps27-filter-active>b{color:#e2ebf9}
-#app .ps27 .ps27-filter-contextual .ps27-filter-active>span:nth-child(2){color:#d4e2f2}
-#app .ps27 .ps27-filter-contextual .ps27-filter-active em{
- background:#275783;border:1px solid #5077a0;color:#fff;font-size:11px
-}
-#app .ps27 .ps27-filter-contextual .ps27-filter-expand{border-color:#7a9bbf}
+/* Disamakan dengan filter Project Management: blok kiri gelap berlabel "Filter", area kanan terang. */
+#app .ps27 .ps27-filter-contextual .ps27-filter-titlebar{flex:0 0 165px;min-width:0;max-width:none}
+#app .ps27 .ps27-filter-contextual .ps27-filter-label{font:800 14px 'Inter',sans-serif;white-space:nowrap}
 #app .ps27 .ps27-filter-contextual .ps27-filter-body{
  background:#fff;padding:12px 16px;border-top:1px solid #dce7f3
 }
