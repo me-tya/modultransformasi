@@ -49,3 +49,15 @@ jobs:
             vals=Counter(str(r.get(key,'')).strip() for r in rows)
             print('FIELD',key, 'unique',len(vals),'TOP',vals.most_common(55))
           PY
+
+      - name: Inspect contact editing paths, role normalization and unit codes
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf8')
+          for name in ['kpPersonSave(', "data-act=\"kp", "data-v=\"kp", "function kpPersonForm", "function kpPersonEdit", "function kpModal", "function kpSet", "function kpRender", "function UNITS_ALL", "const UNITS_ALL", "function kpPeople","KP_PERAN","function kpOrgUnit", "function kpAddPerson"]:
+            hits=[m.start() for m in re.finditer(re.escape(name),s)]
+            print('\n###',name,'hits',len(hits))
+            for i in hits[:8]:print(s[max(0,i-380):i+900].replace('\n',' ')[:1280])
+          PY
