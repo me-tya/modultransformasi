@@ -82,6 +82,16 @@ if(!document.getElementById('mt-filter-kit-css')&&document.head){
  /* Panel filter tabel bersama (PMO/CM): grid 6 kolom, lebar field via --sp */
  '#app .flt .fbar.mt-g6{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:10px 12px!important;align-items:end!important}'+
  '#app .flt .fbar[hidden],#app .flt .fbar.mt-g6[hidden],#app .ps27 .mt-std-filter .mt-fgrid[hidden],#app .ps27 .mt-std-filter .ps27-filter-fields[hidden],#app .mt-subt-row[hidden]{display:none!important}'+
+ /* Bilah filter lebih tipis & tidak mendominasi: 34 px, label terang, tombol buka-tutup kecil */
+ '#app #view .flt.pmo-unified{grid-template-columns:96px minmax(0,1fr)!important;grid-template-rows:34px auto!important;background:#F4F8FD!important;border-color:#DCE5F1!important}'+
+ '#app #view .flt.pmo-unified>.lp{height:34px!important;min-height:34px!important;padding:0 10px!important;background:#fff!important;background-image:none!important;color:#143966!important;border-right:1px solid #DCE5F1!important;border-radius:11px 0 0 11px!important}'+
+ '#app #view .flt.pmo-unified.open>.lp{border-radius:11px 0 0 0!important}'+
+ '#app #view .flt.pmo-unified>.lp .gi{width:20px!important;height:20px!important;background:transparent!important;border:0!important;box-shadow:none!important;color:#143966!important}'+
+ '#app #view .flt.pmo-unified>.lp .gi svg{width:15px!important;height:15px!important}'+
+ '#app #view .flt.pmo-unified>.lp .lt{gap:6px!important}#app #view .flt.pmo-unified>.lp .lt b{font-size:12.5px!important;color:#143966!important}'+
+ '#app #view .flt.pmo-unified .ftop{height:34px!important;min-height:34px!important;padding:0 8px 0 12px!important;background:transparent!important;background-image:none!important}'+
+ '#app #view .flt.pmo-unified .ftop .k{font-size:10.5px!important}#app #view .flt.pmo-unified .ftop{font-size:12px!important}'+
+ '#app #view .flt.pmo-unified .fcar{width:24px!important;height:24px!important;flex:0 0 24px!important;font-size:9px!important;box-shadow:none!important}'+
  '#app .flt .fbar.mt-g6>.fg{grid-column:span var(--sp,1)!important;width:auto!important;min-width:0!important;max-width:none!important;flex:none!important}'+
  '#app .flt .fbar.mt-g6>.fg .sel,#app .flt .fbar.mt-g6>.fg select,#app .flt .fbar.mt-g6>.fg input{width:100%!important;min-width:0!important;max-width:none!important}'+
  '#app .flt .fbar.mt-g6 .pseg{display:flex!important;width:100%!important}#app .flt .fbar.mt-g6 .pseg button{flex:1 1 0!important;min-width:0!important;padding-inline:6px!important;white-space:nowrap!important}'+
