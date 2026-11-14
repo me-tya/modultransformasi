@@ -72,8 +72,8 @@ const teamsOf=p=>[p.t].concat(p.tx||[]).filter(Boolean);
 /* Jenis program per tim (kpCfg().prog[tim]={j:'b'|'t'|'c',l:'OA'}): b = PMO program berkelanjutan (unit diatur per unit),
    t = PMO program tematik (anggota otomatis mendampingi unit di kpCfg().tem[tim]), c = CMO (semua program). */
 const progG=t=>{try{return (kpCfg().prog||{})[t]||{}}catch(e){return {}}},nameCMO=t=>/(^|\s)(CM|CMO)(\s|$)|change/i.test(t),
- progR=t=>{const g=progG(t);return g.r||(g.j==='c'?'CMO':g.j?'PMO':nameCMO(t)?'CMO':'PMO')},
- progJ=t=>{const g=progG(t);if(g.j==='c')return 'a';if(g.j)return g.j;return progR(t)==='CMO'?'a':/\b(SSB|SPP)\b/i.test(t)?'t':'b'},progL=t=>progG(t).l||tshort(t),
+ progR=t=>{const g=progG(t);return g.r||(g.j==='c'||nameCMO(t)?'CMO':'PMO')},
+ progJ=t=>{const g=progG(t);if(g.j==='c')return 'a';if(g.j&&!(!g.r&&nameCMO(t)&&g.j==='b'))return g.j;return progR(t)==='CMO'?'a':/\b(SSB|SPP)\b/i.test(t)?'t':'b'},progL=t=>progG(t).l||tshort(t),
  progTag=t=>progR(t)+(progJ(t)==='a'?'':' '+progL(t)),
  temUnits=t=>{if(progJ(t)!=='t')return [];try{return ((kpCfg().tem||{})[t]||[]).slice()}catch(e){return []}},temTeams=u=>{try{const T=kpCfg().tem||{};return Object.keys(T).filter(t=>progJ(t)==='t'&&(T[t]||[]).includes(u))}catch(e){return []}},temOfP=p=>[...new Set(teamsOf(p).flatMap(temUnits))],temRole=t=>progTag(t);
 /* Label peran pendamping di unit u: PMO OA, PMO SSB, CMO, atau gabungan. */
@@ -86,7 +86,7 @@ const rlIn=(p,tm)=>(p.rl&&p.rl[tm])||'Anggota';
 const nk=p=>p.nk||String(p.n||'').split(' ')[0];
 const isTmp=p=>!!p.tmp;
 function build(){const k=kpCfg(),M=actMaster();k.ptx=k.ptx||{};k.str=k.str||{};k.stp=k.stp||{};k.rl=k.rl||{};ALIAS=k.alias||{};
- TEAMS=k.tims.map((n,i)=>{const g=(k.prog||{})[n]||{},pr=g.r||(g.j==='c'?'CMO':g.j?'PMO':'');return {id:n,c:TEAMC[i%TEAMC.length],r:pr||(/(^|\s)(CM|CMO)(\s|$)|change/i.test(n)?'CMO':'PMO')}});
+ TEAMS=k.tims.map((n,i)=>{const g=(k.prog||{})[n]||{},pr=g.r||(g.j==='c'?'CMO':'');return {id:n,c:TEAMC[i%TEAMC.length],r:pr||(/(^|\s)(CM|CMO)(\s|$)|change/i.test(n)?'CMO':'PMO')}});
  let all=[];try{all=T().people()}catch(e){all=[]}
  const off=p=>T().statusOn(p).k==='Nonaktif';
  const ku=(S.users||[]).find(u=>u.role==='KAPUS'&&u.aktif!==false);
