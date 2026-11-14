@@ -22,7 +22,9 @@
   /* 1) Potongan skrinsyut: lingkaran foto berlatar warna (merah/biru) di tengah bidang putih.
         Cari warna latar foto (warna jenuh dominan), ambil batas lingkarannya, lalu bingkai pas ke lingkaran itu. */
   {const bins=new Map();for(let j=0;j<H;j++)for(let i=0;i<W;i++){const p=px(i,j),mx=Math.max(...p),mn=Math.min(...p);if(mx-mn>70){const k=(p[0]>>5)<<6|(p[1]>>5)<<3|(p[2]>>5);const e=bins.get(k)||{n:0,s:[0,0,0]};e.n++;e.s[0]+=p[0];e.s[1]+=p[1];e.s[2]+=p[2];bins.set(k,e)}}
-   const top1=[...bins.values()].sort((a,b)=>b.n-a.n)[0];
+   /* Latar foto = warna paling jenuh & luas (merah/biru); kulit wajah kurang jenuh sehingga tidak terpilih. */
+   const sat=e=>{const c=e.s.map(v=>v/e.n);return (Math.max(...c)-Math.min(...c))/255};
+   const top1=[...bins.values()].filter(e=>e.n>W*H*.02).sort((a,b)=>b.n*sat(b)**3-a.n*sat(a)**3)[0];
    if(top1&&top1.n>W*H*.05){const c=top1.s.map(v=>v/top1.n);let l=W,r=-1,t=H,bt=-1;
     for(let j=0;j<H;j++){let n=0,a=-1,z=-1;for(let i=0;i<W;i++)if(df(px(i,j),c)<90){n++;if(a<0)a=i;z=i}if(n>=2){if(a<l)l=a;if(z>r)r=z;if(j<t)t=j;bt=j}}
     const D=r-l+1;
