@@ -6261,6 +6261,11 @@ function kqSuggestUnit(unitKerja){
   for(const [re,ab] of KQ_ESELON1){if(re.test(u))return ab}
   return '';
 }
+/* Gabungkan jabatan + unit dari Satu Kemenkeu: "Kepala Bagian" + "Bagian Organisasi …" → "Kepala Bagian Organisasi …"; fungsional → "… pada <unit>". */
+function kqJabFull(jab,unit){jab=String(jab||'').replace(/\s+/g,' ').trim();unit=String(unit||'').replace(/\s+/g,' ').trim();if(!unit)return jab;if(!jab)return unit;if(jab.toLowerCase().includes(unit.toLowerCase()))return jab;
+ for(const [t,u] of [['Direktur','Direktorat'],['Sekretaris','Sekretariat'],['Inspektur','Inspektorat'],['Kepala Kantor','Kantor'],['Kepala Pusat','Pusat'],['Kepala Biro','Biro']])if(new RegExp('\\b'+t+'$','i').test(jab)&&new RegExp('^'+u+'\\s','i').test(unit))return jab+' '+unit.slice(u.length+1);
+ const a=jab.split(' '),b=unit.split(' '),lc=x=>x.toLowerCase().replace(/[.,]/g,'');for(let k=Math.min(a.length,b.length);k>0;k--){if(a.slice(-k).map(lc).join(' ')===b.slice(0,k).map(lc).join(' '))return a.concat(b.slice(k)).join(' ')}
+ return /^(kepala|direktur|sekretaris|inspektur|kabag|kabid|kasubbag|kasubbid|kasi|kepala\s)/i.test(jab)?jab+' '+unit:jab+' pada '+unit}
 function kqParseProfile(lines){
   const out={nama:'',nip:'',email:'',hp:'',jabatan:'',unitKerja:'',pangkat:'',_nameLine:null,_nipLine:null,_emailLine:null};
   const T=lines.map(l=>l.text);
@@ -6304,6 +6309,7 @@ function kqParseProfile(lines){
     /* OCR sering membuang angka Romawi "I" setelah "Tk." (mis. "Penelaah Teknis Kebijakan Tk.I"). */
     if(/\bTk\.?$/i.test(out.jabatan))out.jabatan=out.jabatan.replace(/\bTk\.?$/i,'Tk.I');
     out.unitKerja=unit.replace(/\s+/g,' ').replace(/\s+,/g,',').trim();
+    out.jabatanPendek=out.jabatan;out.jabatan=kqJabFull(out.jabatan,out.unitKerja);
   }
   // Pangkat / golongan
   const pktSrc=(hdrPkt>=0?T.slice(hdrPkt,hdrPkt+3):T).join(' \n ');
