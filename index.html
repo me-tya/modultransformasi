@@ -2780,6 +2780,36 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 .cmpk-r .x{flex:1;min-width:0}.cmpk-r b{display:block;font-size:13.5px;color:#13233F}.cmpk-r small{display:block;font-size:12px;color:#66728C;margin-top:2px}.cmpk-r.used{opacity:.6;cursor:default}
 .cmpk-0{display:flex;flex-direction:column;gap:4px;padding:22px;border:1px dashed #CBD3E1;border-radius:12px;text-align:center;color:#66728C}.cmpk-0 b{color:#13233F}
 .code.wlink{cursor:pointer;transition:.12s}.code.wlink:hover{background:#0B2447!important;color:#FDB913!important;border-color:#0B2447!important;text-decoration:none}
+.adps{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;border-radius:999px;padding:5px 12px;background:#EEF1F6;color:#5E6E86;margin-right:6px}.adps-wait{background:#FFF3D6;color:#8A6400}.adps-ok{background:#E7F6EE;color:#15805F}.adps-no{background:#FDECEA;color:#C2362B}
+.skf-list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.skf{border:1px solid #DCE3EF;border-radius:14px;background:#fff;overflow:hidden}.skf[hidden]{display:none}
+.skf summary{list-style:none;display:grid;grid-template-columns:32px 1fr;column-gap:12px;align-items:center;padding:12px 16px;cursor:pointer;background:linear-gradient(90deg,#F4F7FC,#fff)}.skf summary::-webkit-details-marker{display:none}
+.skf summary b{font-size:15px;color:#0B2447}.skf summary small{grid-column:2;font-size:12.5px;color:#66728C}
+.skf-n{grid-row:span 2;width:30px;height:30px;border-radius:50%;background:#0B2447;color:#FDB913;display:grid;place-items:center;font-weight:800}
+.skf[open] summary{border-bottom:1px solid #E9EDF4}
+.skf-steps{list-style:none;counter-reset:st;margin:0;padding:12px 16px 14px 16px;display:flex;flex-direction:column;gap:10px}
+.skf-steps li{counter-increment:st;display:grid;grid-template-columns:30px 1fr;gap:10px;position:relative}
+.skf-steps li:before{content:counter(st);width:26px;height:26px;border-radius:50%;border:2px solid #FDB913;color:#0B2447;font-weight:800;font-size:12px;display:grid;place-items:center;background:#fff;z-index:1}
+.skf-steps li:not(:last-child):after{content:'';position:absolute;left:13px;top:28px;bottom:-12px;width:2px;background:#E9EDF4}
+.skf-steps b{font-size:13.5px;color:#13233F}.skf-steps p{margin:2px 0 6px;font-size:13px;line-height:1.5;color:#3A4763}
+.skqa-fab{position:fixed;right:18px;bottom:52px;z-index:240000;display:flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:9px 16px 9px 9px;background:#0B2447;color:#fff;font:inherit;font-weight:800;font-size:13px;box-shadow:0 8px 24px rgba(11,36,71,.32);cursor:pointer}
+.skqa-fab span{width:28px;height:28px;border-radius:50%;background:#FDB913;color:#0B2447;display:grid;place-items:center;font-size:16px}
+.skqa-fab:hover{background:#17457F}
+.skqa{position:fixed;right:18px;bottom:100px;z-index:260000;width:min(410px,calc(100vw - 24px));height:min(560px,calc(100vh - 140px));background:#fff;border-radius:18px;box-shadow:0 22px 60px rgba(7,23,46,.35);display:flex;flex-direction:column;overflow:hidden;border:1px solid #DCE3EF}
+.skqa[hidden]{display:none}
+.skqa header{display:flex;align-items:center;gap:10px;padding:12px 14px;background:linear-gradient(110deg,#0B2447,#17457F);color:#fff}
+.skqa header b{display:block;font-size:14.5px}.skqa header small{display:block;font-size:11.5px;color:#C9D6EE}.skqa header div{flex:1}
+.skqa-i{width:32px;height:32px;border-radius:10px;background:#FDB913;color:#0B2447;display:grid;place-items:center;font-weight:900;font-size:17px}
+.skqa header button{border:0;background:rgba(255,255,255,.12);color:#fff;width:30px;height:30px;border-radius:9px;font-size:18px;cursor:pointer}
+.skqa-log{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:#F7F9FC}
+.skqa-m p{margin:0 0 6px;font-size:13.5px;line-height:1.5}.skqa-m.me{align-self:flex-end;max-width:85%;background:#0B2447;color:#fff;border-radius:14px 14px 4px 14px;padding:8px 12px}.skqa-m.me p{margin:0}
+.skqa-m.bot{align-self:flex-start;max-width:100%;background:#fff;border:1px solid #E3E8F0;border-radius:14px 14px 14px 4px;padding:10px 12px;color:#13233F}
+.skqa-sug{display:flex;flex-wrap:wrap;gap:6px}.skqa-sug button{border:1px solid #DCE3EF;background:#F4F7FC;border-radius:999px;padding:5px 10px;font:inherit;font-size:12px;font-weight:600;color:#17457F;cursor:pointer}.skqa-sug button:hover{border-color:#17457F}
+.skqa-a{border-top:1px solid #EEF1F6;padding:8px 0 6px}.skqa-a em{display:block;font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#8A97AB}.skqa-a b{display:block;font-size:13.5px;color:#0B2447;margin:2px 0}.skqa-a p{font-size:13px;color:#3A4763}.skqa-a.skqa-first{border-top:0}
+.skqa-go{border:1px solid #E5C66A;background:#FFF8E1;color:#0B2447;border-radius:8px;padding:4px 10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.skqa-lnk{border:0;background:none;color:#17457F;font:inherit;font-weight:700;text-decoration:underline;cursor:pointer;padding:0}
+.skqa-f{display:flex;gap:8px;padding:10px;border-top:1px solid #E3E8F0;background:#fff}.skqa-f input{flex:1;height:40px;border:1px solid #C9D3E3;border-radius:10px;padding:0 12px;font:inherit;font-size:14px}.skqa-f input:focus{outline:0;border-color:#0B2447}.skqa-f button{width:42px;border:0;border-radius:10px;background:#FDB913;color:#0B2447;font-size:16px;cursor:pointer}
+.skqa-ft{border:1px solid #E5C66A;background:#FFF8E1;color:#0B2447;border-radius:9px;padding:5px 12px;font:inherit;font-weight:700;font-size:12px;cursor:pointer;margin-right:10px}
 </style>
 
 <style>
@@ -6905,6 +6935,12 @@ function wbsDetail(w){const M=per().b;const m=modOfItem(w);const B=S.bukti[w.k]|
 /* Item WBS ADP: buktinya isian ADP di aplikasi — otomatis Valid saat status dokumen ADP = Final, tanpa unggah. */
 function adpAutoBukti(mk){try{const m=modOf(mk),w=m&&m.adp;if(!w)return;const B=S.bukti[w.k];if((S.modMeta[mk]||{}).adp==='Final'){if(!w.v&&!(B&&B.st==='Menunggu validasi')){w.v=0;w.rm=0;S.bukti[w.k]={st:'Menunggu validasi',auto:'adp',nama:'Isian ADP di aplikasi',link:'#modul-'+w.k+'-t-adp',file:false,by:ME&&ME.nama,role:ME&&ME.role,tgl:TODAY,aktual:TODAY,note:'Bukti = isian ADP di aplikasi (status Final).',cat:''};log('Bukti ADP diajukan',w.k+' → Menunggu validasi (ADP Final)')}}else if(B&&B.auto==='adp'){w.v=0;w.rm=0;delete S.bukti[w.k];log('Bukti ADP',w.k+' → ditarik (ADP kembali Draft)')}}catch(e){console.error(e)}}
 const canValW=w=>lv('valid').includes('U')||(!!ME&&ME.role==='CMOK'&&!!cmType(w));
+/* Status ADP lewat tombol: Draft → Ajukan ADP → (validasi PMO/CMO Kemenkeu) → Disetujui. */
+function adpSubmitUI(mk){const st=adpSt(mk),m=modOf(mk),w=m&&m.adp,ok=w&&w.v,B=w&&S.bukti[w.k],ed=can('adp','U',mk),n=S.sub.filter(s=>s.modul===mk).length;
+ if(st==='Final')return ok?`<span class="adps adps-ok">✓ ADP disetujui</span>`:B&&B.st==='Ditolak'?`<span class="adps adps-no" title="${esc(B.cat||'')}">✕ Dikembalikan: ${esc(short(B.cat||'perlu perbaikan',40))}</span>${ed?`<button class="btn" data-act="adpunlock" data-m="${mk}">Perbaiki ADP</button>`:''}`:`<span class="adps adps-wait">⏳ Diajukan · menunggu validasi</span>${ed?`<button class="btn" data-act="adpunlock" data-m="${mk}" title="Tarik pengajuan untuk memperbaiki ADP">Tarik pengajuan</button>`:''}`;
+ return `<span class="adps">Draft${st==='Review CMO'?' · Review CMO':''}</span>${ed?`<button class="btn pri" data-act="adpsubmit" data-m="${mk}" ${n?'':'disabled title="Isi minimal satu sub modul dulu"'}>➤ Ajukan ADP</button>`:''}`}
+ACT.adpsubmit=el=>{const mk=el.dataset.m,n=S.sub.filter(s=>s.modul===mk).length;if(!n){toast('Isi minimal satu sub modul sebelum mengajukan ADP.');return}
+ modal('Ajukan ADP '+esc(mk)+'?',`<p style="margin:0 0 8px">ADP berisi <b>${n} sub modul</b> akan diajukan sebagai data dukung item WBS ADP dan masuk antrean validasi <b>PMO / CMO Kemenkeu</b>.</p><p class="s" style="margin:0">Selama menunggu validasi, ADP terkunci. Bila perlu memperbaiki, gunakan <b>Tarik pengajuan</b>.</p>`,'Ajukan',()=>{S.modMeta[mk]=S.modMeta[mk]||{};S.modMeta[mk].adp='Final';log('Ajukan ADP',mk);adpAutoBukti(mk);save();render();toast('ADP diajukan. Menunggu validasi PMO / CMO Kemenkeu.')},{size:'sm'})};
 function adpAutoW(w){try{const m=modOf(w.k);return !!(m&&m.adp===w)}catch(e){return false}}
 function buktiSt(w){const B=S.bukti[w.k];if(w.v)return 'Valid';if(B&&B.st==='Ditolak')return 'Ditolak';if(doneAt(w,12)||(B&&(B.link||B.file)))return 'Menunggu validasi';return 'Belum diunggah'}
 function pBukti(){const P=per();const base=S.wbs.filter(w=>!w.arsip&&yrOf(w)===S.ui.tahun&&(!S.ui.prog||w.prog===S.ui.prog)&&unitMatch(w,curUnit(),umOf())&&inP(w,P));
@@ -10569,7 +10605,7 @@ function tAdopsi(ms){const rows0=ms.map(m=>({id:m.kode,m,idx:idxMod(m.kode),ad:a
    {k:'i',l:'Indeks',r:r=>r.idx==null?'—':`<div class="pg"><div class="bar"><i style="width:${r.idx}%;background:var(--ok)"></i></div><b>${pct(r.idx)}</b></div>`,x:r=>r.idx},{k:'per',l:'Periode adopsi',r:r=>r.ad?esc(r.ad.per):'—'},{k:'pu',l:'Pengguna vs ekspektasi',r:r=>r.ad&&r.ad.p!=null?pct(r.ad.p):'—'},{k:'pt',l:'Transaksi vs ekspektasi',r:r=>r.ad&&r.ad.t!=null?pct(r.ad.t):'—'},{k:'s',l:'Status',r:r=>chipSt(capSt(r.idx)),x:r=>capSt(r.idx)}]})}
 /* --- ADP --- */
 function tAdp(ms,mf,mk){const sub=S.ui.sub.adp||'dampak';
- const stSel=mk?`<label class="s" for="adpst">Status dokumen ADP</label><select class="sel" id="adpst" data-on="adpst" data-m="${mk}" ${can('adp','U',mk)?'':'disabled'}>${opts(['Draft','Review CMO','Final'],adpSt(mk))}</select>`:'';
+ const stSel=mk?adpSubmitUI(mk):'';
  const totalAdp=ms.length;
  const docCounts={Draft:0,'Review CMO':0,Final:0};
  ms.forEach(m=>{const st=adpSt(m.kode);docCounts[st]=(docCounts[st]||0)+1});
@@ -11592,10 +11628,89 @@ function coordination(){
  note('<b>Cara membaca:</b> jalur biru = pengendalian proyek PMO; jalur hijau-teal = pengelolaan adopsi CMO. Panah pada diagram rinci menunjukkan koordinasi antarperan. Penutupan proyek tidak otomatis menutup pendampingan CM.');
 }
 function pmReference(){return typeof window.txFormulaReferenceHtml==='function'?window.txFormulaReferenceHtml():note('Referensi belum termuat. Muat ulang halaman untuk mengambil materi terbaru.',true)}
+/* ===== Alur Aplikasi: alur kerja lintas menu (juga dipakai Tanya Bantuan) ===== */
+var FLOWS=[
+ {id:'wbs-cm',t:'Dari WBS ke menu Change Management',k:'wbs cm modul adp tahap c1 c11 kertas kerja',d:'Bagaimana item WBS masuk ke menu CM.',s:[
+  ['Item WBS di cabang Change Management','Hanya item WBS yang jalurnya memuat "Change Management" yang dihitung sebagai item CM.','pmo-wbs','WBS & progres'],
+  ['Item ADP menjadi modul CM','Setiap item WBS "Analisis Dampak Perubahan" (C1) menjadi satu modul di menu ADP. Kode modul = kode item WBS.','cmo-adp','ADP'],
+  ['Item CM lain ikut ke modulnya','Item tahap C2–C11 (Stakeholder, Komunikasi, Pelatihan, Jaringan, CRA, Implementasi, Monev, Adopsi) menempel ke modul dengan jalur WBS yang sama.'],
+  ['Kode WBS bisa diklik','Di mana pun kode WBS tampil, klik untuk membuka Detail item WBS beserta status bukti dukungnya.']]},
+ {id:'adp',t:'Mengisi dan mengajukan ADP',k:'adp analisis dampak perubahan sub modul as-is to-be poster risiko ajukan validasi final draft tarik pengajuan wizard',d:'Dari mengisi sub modul sampai item WBS ADP divalidasi.',s:[
+  ['Tambah sub modul','Klik + Sub Modul. Isi lewat wizard 4 langkah: Sub modul & perubahan (As-Is → To-Be per poin), Dampak POSTeR, Tingkat risiko, lalu Periksa & simpan.','cmo-adp','ADP'],
+  ['Nilai POSTeR & risiko per poin','Setiap aspek boleh punya beberapa poin; tiap poin dinilai. Tingkat aspek otomatis = poin tertinggi. P = Proses Kerja, O = Organisasi, S = SDM, Te = Teknologi, R = Regulasi.'],
+  ['Ajukan ADP','Setelah semua sub modul terisi, klik ➤ Ajukan ADP. ADP terkunci dan item WBS ADP otomatis diajukan sebagai bukti dukung — tidak perlu unggah file.'],
+  ['Validasi PMO / CMO Kemenkeu','Validator membuka PMO › Bukti Dukung, memeriksa isian ADP lewat tautan, lalu Valid atau Tolak dengan catatan.','pmo-bukti','Bukti Dukung'],
+  ['Perbaikan','Bila ditolak atau perlu revisi, klik Perbaiki ADP / Tarik pengajuan, ubah isian, lalu ajukan lagi.']]},
+ {id:'sh',t:'Stakeholder → Komunikasi & Pelatihan',k:'stakeholder komunikasi pelatihan centang kom pel experience support matriks esm engagement referensi impor manual',d:'Menyusun stakeholder dan rencana pelibatannya.',s:[
+  ['Tambah stakeholder','Di Perencanaan › Stakeholder klik + Stakeholder, lalu pilih: Ambil dari referensi proyek (PM / Project Selection), Isi manual, atau Impor dari Excel.','cmo-rencana','Perencanaan'],
+  ['Nilai experience & support','Lengkapi experience dan support; posisinya tampil di Matriks Experience–Support (Champions, Advocates, Critics, Skeptics).'],
+  ['Centang Kom. / Pel.','Centang stakeholder yang dilibatkan dalam komunikasi dan/atau pelatihan. Tidak wajib — misalnya pimpinan tertinggi boleh tidak dicentang.'],
+  ['Susun engagement plan','Di tab Komunikasi dan Pelatihan, lengkapi rencana untuk stakeholder yang dicentang. Rencana ini menjadi data dukung C3 dan C4.'],
+  ['Pembaruan dari proyek','Stakeholder dari proyek diberi label sumber. Bila data di proyek berubah, muncul "Ada pembaruan di proyek" — pilih Perbarui atau Abaikan.']]},
+ {id:'risk',t:'Risiko proyek → Register Risiko CM',k:'risiko risk register bawa ke cmo risiko cm referensi resistensi',d:'Membawa risiko proyek yang relevan ke CM.',s:[
+  ['Dari PM','Di Risk Register proyek, centang "Risiko CM" agar risiko tersinkron ke modul CMO yang tepat.','pmo-risiko','Risiko & Isu'],
+  ['Dari Register Risiko CM','Di ADP › Register Risiko klik ⇄ Ambil dari referensi proyek. Saringan "Relevan CM" menampilkan risiko resistensi, kesiapan, dan adopsi.','cmo-adp','ADP'],
+  ['Isi mengikuti sumber','Risiko yang dibawa dari proyek tetap mengikuti uraian dan skor sumbernya; jenis risiko CM dapat disesuaikan.']]},
+ {id:'bukti',t:'Bukti dukung WBS & validasi',k:'bukti dukung daduk unggah upload validasi valid tolak capaian realisasi pmo cmo',d:'Dari unggah bukti sampai masuk capaian.',s:[
+  ['Unggah bukti','Di WBS & progres, klik 📎 pada item: isi tanggal selesai aktual dan unggah berkas atau tempel tautan SharePoint.','pmo-wbs','WBS & progres'],
+  ['Menunggu validasi','Bukti masuk antrean PMO › Bukti Dukung. Capaian belum dihitung sampai valid.','pmo-bukti','Bukti Dukung'],
+  ['Validasi','PMO Kemenkeu memvalidasi; untuk item CM, CMO Kemenkeu juga dapat memvalidasi. Lengkapi daftar periksa, lalu Valid atau Tolak dengan catatan.'],
+  ['Item ADP','Item WBS ADP tidak perlu unggah — buktinya isian ADP yang diajukan lewat tombol Ajukan ADP.','cmo-adp','ADP']]},
+ {id:'cr',t:'Change Request',k:'change request cr perubahan baseline wbs jadwal keputusan',d:'Mengubah baseline WBS yang sudah disahkan.',s:[
+  ['Ajukan','Di PMO › Change Request, ajukan perubahan item WBS (jadwal, output, UIC) beserta alasannya.','pmo-cr','Change Request'],
+  ['Keputusan','Pemegang kewenangan memutuskan setuju/tolak.'],
+  ['Baseline diperbarui','Bila disetujui, baseline WBS berubah dan tercatat di riwayat.']]},
+ {id:'ps',t:'Project Selection → Project Management',k:'project selection usulan program pemetaan proyek charter wbs prioritas',d:'Dari usulan program sampai WBS.',s:[
+  ['Usulan program','Lengkapi identitas, business case, manfaat, stakeholder, risiko, dan tata kelola.','project-selection','Project Selection'],
+  ['Pemetaan & prioritas','Petakan proyek dan nilai kriteria prioritas (termasuk POSTeR untuk C6).'],
+  ['Charter & WBS','Susun Dokumen Proyek/charter lalu WBS di Project Management.','pmo-perencanaan','Dokumen Proyek']]},
+ {id:'tim',t:'Tim Pusmantap: onboarding, profil, kehadiran',k:'tim pusmantap onboarding profil pic unit pmo cmo tematik berkelanjutan jenis program pegawai sementara kehadiran cuti wfh',d:'Mengelola tim dan penugasan PMO/CMO Kemenkeu.',s:[
+  ['Onboarding','Seret pegawai ke kolom struktural atau tim. Di header kolom tim klik ✏️ untuk mengatur peran (PMO/CMO) dan cakupan program: semua, berkelanjutan, atau tematik beserta unit Eselon I-nya.','aktivitas','Aktivitas › Tim Pusmantap'],
+  ['Profil','Per individu, Per unit (PMO & CMO Kemenkeu / Unit Eselon I), dan Pegawai sementara.'],
+  ['Kehadiran & cuti','Atur jadwal WFH, catat cuti, dan pantau ketersediaan harian; batas cuti berlaku di musim libur sesuai pengaturan.']]},
+ {id:'cra',t:'Change Readiness Assessment (CRA)',k:'cra survei kesiapan readiness analisis rencana aksi perbandingan',d:'Mengukur kesiapan perubahan.',s:[
+  ['Buat survei','Klik + Buat Survei: konfigurasi, pilih pertanyaan dari bank, aktifkan.','cmo-cra','CRA'],
+  ['Kumpulkan respons','Pantau di Survei Aktif.'],
+  ['Analisis & rencana aksi','Baca skor per dimensi, susun rencana aksi untuk kesenjangan, bandingkan antarperiode.']]}
+];
+function helpFlows(){return intro('Alur kerja','Alur Aplikasi','Langkah demi langkah untuk proses yang melibatkan beberapa menu. Klik tombol untuk langsung membuka menunya.')+
+ '<input class="sk-search" type="search" data-skfilter placeholder="Cari alur, misalnya ADP, bukti dukung, stakeholder..." aria-label="Cari alur"><div class="skf-list">'+FLOWS.map(function(f,i){return '<details class="skf sk-filtered" data-skitem="'+esc((f.t+' '+f.k+' '+f.s.map(function(x){return x[0]+' '+x[1]}).join(' ')).toLowerCase())+'"'+(i?'':' open')+'><summary><span class="skf-n">'+(i+1)+'</span><b>'+f.t+'</b><small>'+f.d+'</small></summary><ol class="skf-steps">'+f.s.map(function(x){return '<li><div><b>'+x[0]+'</b><p>'+x[1]+'</p>'+(x[2]?jump(x[3]||'Buka',x[2]):'')+'</div></li>'}).join('')+'</ol></details>'}).join('')+'</div>'}
+/* ===== Tanya Bantuan: jawaban diambil dari isi Bantuan & Cheatsheet (tanpa AI) ===== */
+var QA=null;
+var QSTOP={yang:1,dan:1,di:1,ke:1,dari:1,untuk:1,apa:1,bagaimana:1,gimana:1,gmn:1,cara:1,saya:1,aku:1,bisa:1,ini:1,itu:1,ada:1,dengan:1,atau:1,kalau:1,klo:1,kok:1,ya:1,ga:1,gak:1,tidak:1,mau:1,ingin:1,harus:1,perlu:1,dong:1,sih:1,nya:1,the:1,is:1,how:1,to:1,mana:1,dimana:1,kapan:1,siapa:1,kenapa:1,mengapa:1,sudah:1,udah:1,udh:1,belum:1,blm:1,jadi:1,pada:1,oleh:1,akan:1,juga:1,jg:1,tsb:1,tersebut:1,menu:0};
+var QSYN={daduk:'bukti dukung',upload:'unggah',approve:'validasi',approval:'validasi',sh:'stakeholder',stakeholders:'stakeholder',pemangku:'stakeholder',kom:'komunikasi',pel:'pelatihan',tna:'pelatihan',jejaring:'jaringan',agen:'jaringan',poster:'poster dampak',dampak:'dampak adp',submit:'ajukan',aju:'ajukan',risk:'risiko',wfh:'wfh kehadiran',cuti:'cuti kehadiran',readiness:'cra kesiapan',kesiapan:'cra kesiapan'};
+function qNorm(t){return String(t||'').toLowerCase().replace(/<[^>]+>/g,' ').replace(/[^a-z0-9à-ÿ\s-]/g,' ').split(/\s+/).filter(Boolean)}
+function qStem(w){return w.replace(/^(meng|meny|mem|men|me|peng|pem|pen|pe|di|ber|ter|ke)(?=[a-z]{4,})/,'').replace(/(kan|an|nya|i)$/,function(m,_,o,str){return str.length>5?'':m})}
+function qTok(t){var out=[];qNorm(t).forEach(function(w){if(QSTOP[w])return;var x=QSYN[w];(x?x.split(' '):[w]).forEach(function(y){out.push(qStem(y))})});return out}
+function qBuild(){if(QA)return QA;var D=[];function add(src,t,b,dest,dl){D.push({src:src,t:t,b:String(b||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim(),dest:dest,dl:dl})}
+ FLOWS.forEach(function(f){add('Alur Aplikasi',f.t,f.d+' '+f.s.map(function(x,i){return (i+1)+'. '+x[0]+': '+x[1]}).join(' '),(f.s.find(function(x){return x[2]})||[])[2],(f.s.find(function(x){return x[2]})||[])[3]);f.s.forEach(function(x){add('Alur · '+f.t,x[0],x[1],x[2],x[3])})});
+ [['Peta Menu PM',menuPM],['Peta Menu CM',menuCM]].forEach(function(g){(g[1]||[]).forEach(function(a){add(g[0],a[0],a[1],a[2],a[0])})});
+ [['Tahapan PM',PM],['Tahapan CM',CM]].forEach(function(g){(g[1]||[]).forEach(function(a){add(g[0],a[0],a[1],a[2],a[3])})});
+ [['Istilah PM',termsPM],['Istilah CM',termsCM]].forEach(function(g){(g[1]||[]).forEach(function(a){add(g[0],a[0],a[1])})});
+ [['Dokumen PM',docPM],['Dokumen CM',docCM]].forEach(function(g){(g[1]||[]).forEach(function(a){add(g[0],a[0],a[1]+(a[2]?' · Penanggung jawab: '+a[2]:'')+(a[3]?' · Waktu: '+a[3]:''),a[4],'Buka')})});
+ try{['pmo','cmo'].forEach(function(kind){cfg.sheet[kind].forEach(function(t){var h='';try{h=t[2]()}catch(e){return}var box=document.createElement('div');box.innerHTML=h;box.querySelectorAll('.sk-card,.sk-step,.sk-term,article,.sk-helpstage,.sk-docrow,tr').forEach(function(el){var head=el.querySelector('strong,b,h3,h4,th');var tt=(head?head.textContent:'').trim();var bb=el.textContent.trim();if(bb.length>25&&bb.length<1500)add('Cheatsheet '+(kind==='pmo'?'PM':'CM')+' · '+t[1],tt||t[1],bb)})})})}catch(e){}
+ var df={};D.forEach(function(d){d.tt=qTok(d.t);d.bt=qTok(d.b);var seen={};d.tt.concat(d.bt).forEach(function(w){if(!seen[w]){seen[w]=1;df[w]=(df[w]||0)+1}})});
+ QA={D:D,df:df,N:D.length};return QA}
+function qAsk(q){var A=qBuild(),T=qTok(q),DEF=/^\s*(apa (itu|arti|maksud|kepanjangan)|arti|definisi|singkatan)/i.test(q);if(!T.length)return [];var res=A.D.map(function(d){var sc=0,hit=0;T.forEach(function(w){var idf=Math.log(1+A.N/(1+(A.df[w]||0)));var inT=d.tt.indexOf(w)>=0,inB=d.bt.indexOf(w)>=0;if(!inT&&!inB){var p=w.length>=4&&(d.tt.concat(d.bt)).some(function(x){return x.indexOf(w)===0||w.indexOf(x)===0&&x.length>=4});if(p){sc+=idf*.5;hit++}return}hit++;sc+=idf*(inT?3:1)});if(/^Alur/.test(d.src))sc*=1.25;if(DEF&&/^Istilah/.test(d.src))sc*=2;return {d:d,sc:sc*(hit/T.length)}}).filter(function(x){return x.sc>0}).sort(function(a,b){return b.sc-a.sc});
+ var out=[],seen={};res.forEach(function(r){var key=r.d.t+'|'+r.d.src;if(seen[key]||out.length>=4)return;seen[key]=1;out.push(r)});return out}
+function qaOpen(){addStyle();var ex=document.getElementById('skqa');if(ex){ex.hidden=!ex.hidden;if(!ex.hidden)ex.querySelector('input').focus();return}
+ var p=document.createElement('section');p.id='skqa';p.className='skqa';p.setAttribute('role','dialog');p.setAttribute('aria-label','Tanya Bantuan');
+ var sug=['Bagaimana mengajukan ADP?','Cara unggah bukti dukung','Apa itu POSTeR?','Stakeholder ke komunikasi','Siapa yang memvalidasi bukti?','Mengatur PMO tematik'];
+ p.innerHTML='<header><span class="skqa-i">?</span><div><b>Tanya Bantuan</b><small>Jawaban diambil dari Bantuan & Cheatsheet</small></div><button type="button" data-qx aria-label="Tutup">×</button></header><div class="skqa-log" aria-live="polite"><div class="skqa-m bot"><p>Halo! Tulis pertanyaan tentang cara memakai aplikasi, misalnya:</p><div class="skqa-sug">'+sug.map(function(x){return '<button type="button" data-qs="'+esc(x)+'">'+esc(x)+'</button>'}).join('')+'</div></div></div><form class="skqa-f"><input type="text" placeholder="Ketik pertanyaan…" aria-label="Pertanyaan"><button type="submit" aria-label="Kirim">➤</button></form>';
+ document.body.appendChild(p);var log=p.querySelector('.skqa-log'),inp=p.querySelector('input');
+ function ask(q){q=String(q||'').trim();if(!q)return;log.insertAdjacentHTML('beforeend','<div class="skqa-m me"><p>'+esc(q)+'</p></div>');var R=qAsk(q);
+  var html=R.length?'<p>Ini yang paling sesuai:</p>'+R.map(function(r,i){var d=r.d,b=d.b.length>320?d.b.slice(0,320).replace(/\s\S*$/,'')+'…':d.b;return '<div class="skqa-a'+(i?'':' skqa-first')+'"><em>'+esc(d.src)+'</em><b>'+esc(d.t)+'</b><p>'+esc(b)+'</p>'+(d.dest?'<button type="button" class="skqa-go" data-qgo="'+esc(d.dest)+'">↗ '+esc(d.dl||'Buka menu')+'</button>':'')+'</div>'}).join(''):'<p>Maaf, belum ketemu jawabannya di Bantuan maupun Cheatsheet. Coba kata kunci lain (misalnya nama menu), atau buka <button type="button" class="skqa-lnk" data-qhelp>Bantuan lengkap</button>.</p>';
+  log.insertAdjacentHTML('beforeend','<div class="skqa-m bot">'+html+'</div>');log.scrollTop=log.scrollHeight}
+ p.querySelector('form').addEventListener('submit',function(e){e.preventDefault();ask(inp.value);inp.value=''});
+ p.addEventListener('click',function(e){if(e.target.closest('[data-qx]')){p.hidden=true;return}var s=e.target.closest('[data-qs]');if(s){ask(s.getAttribute('data-qs'));return}var g=e.target.closest('[data-qgo]');if(g){var dest=g.getAttribute('data-qgo');close();if(typeof window.go==='function')window.go(dest);else location.hash='#'+dest;return}if(e.target.closest('[data-qhelp]')){window.showGuideHome&&window.showGuideHome()}});
+ inp.focus()}
+window.openTanyaBantuan=qaOpen;
+function qaFab(){if(document.getElementById('skqa-fab'))return;var b=document.createElement('button');b.id='skqa-fab';b.type='button';b.className='skqa-fab';b.title='Tanya Bantuan';b.setAttribute('aria-label','Tanya Bantuan');b.innerHTML='<span>?</span><b>Tanya</b>';b.onclick=qaOpen;document.body.appendChild(b)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',qaFab);else qaFab();
 var cfg={
  help:{
- pmo:[['menu','Peta Menu',function(){return helpMenu('pmo')}],['steps','Tahapan Manajemen Proyek',function(){return helpStages('pmo')}],['crflow','Alur Change Request',function(){return pmCR()}],['reports','Laporan per Tahap',function(){return helpReports()}],['terms','Daftar Istilah PM',function(){return helpGloss('pmo')}],['docs','Dokumentasi',function(){return helpDocs('pmo')}]],
- cmo:[['menu','Peta Menu',function(){return helpMenu('cmo')}],['steps','Tahapan Manajemen Perubahan',function(){return helpStages('cmo')}],['terms','Daftar Istilah CM',function(){return helpGloss('cmo')}],['docs','Dokumentasi',function(){return helpDocs('cmo')}]]
+ pmo:[['menu','Peta Menu',function(){return helpMenu('pmo')}],['alur','Alur Aplikasi',helpFlows],['steps','Tahapan Manajemen Proyek',function(){return helpStages('pmo')}],['crflow','Alur Change Request',function(){return pmCR()}],['reports','Laporan per Tahap',function(){return helpReports()}],['terms','Daftar Istilah PM',function(){return helpGloss('pmo')}],['docs','Dokumentasi',function(){return helpDocs('pmo')}]],
+ cmo:[['menu','Peta Menu',function(){return helpMenu('cmo')}],['alur','Alur Aplikasi',helpFlows],['steps','Tahapan Manajemen Perubahan',function(){return helpStages('cmo')}],['terms','Daftar Istilah CM',function(){return helpGloss('cmo')}],['docs','Dokumentasi',function(){return helpDocs('cmo')}]]
  },
  sheet:{
  pmo:[['pmbok','Framework PMBOK',pmFramework],['ref','Referensi',pmReference],['tata','Tata Kelola PM',pmGovernance],['charter','Charter',pmCharter],['wbs','WBS',pmWBS],['cr','Change Request',pmCR],['ko','Alur Koordinasi',coordination]],
@@ -11615,7 +11730,7 @@ function open(mode,kind,selected){
  '<div class="sk-head"><div class="sk-hwrap"><div class="sk-hicon">'+(help?'?':'▤')+'</div><div class="sk-hwords"><div class="sk-overline">'+(help?'PANDUAN PENGGUNA APLIKASI':'REFERENSI TATA KELOLA · RKMK VERSI 6')+'</div><h2>'+(help?'Bantuan':'Cheatsheet')+' '+name+'</h2><p>'+(help?'Temukan menu, ikuti tahapan, pahami istilah, serta lengkapi dokumen kerja.':'Framework, tata kelola, dan alur kerja dalam bentuk visual yang mudah dijelajahi.')+'</p></div><button class="sk-close" type="button" data-skclose aria-label="Tutup">×</button></div></div>'+
  '<nav class="sk-tabbar" role="tablist" aria-label="Tab '+(help?'Bantuan':'Cheatsheet')+'">'+all.map(function(t){return '<button class="sk-tab" type="button" role="tab" data-sktab="'+t[0]+'" aria-selected="'+(t[0]===cur?'true':'false')+'">'+t[1]+'</button>'}).join('')+'</nav>'+
  '<main class="sk-content">'+all.map(function(t){return '<section class="sk-view" role="tabpanel" data-skview="'+t[0]+'"'+(t[0]!==cur?' hidden':'')+'>'+t[2]()+'</section>'}).join('')+'</main>'+
- '<footer class="sk-footer"><span><b>'+(help?'Bantuan = cara menggunakan aplikasi.':'Cheatsheet = framework & tata kelola.')+'</b> '+(help?'Butuh ketentuan kebijakan? Buka Cheatsheet.':'Butuh petunjuk pengisian fitur? Buka Bantuan.')+'</span><span>Modul Transformasi · November 2026</span></footer></section>';
+ '<footer class="sk-footer"><button type="button" class="skqa-ft" onclick="window.openTanyaBantuan&&window.openTanyaBantuan()">💬 Tanya Bantuan</button><span><b>'+(help?'Bantuan = cara menggunakan aplikasi.':'Cheatsheet = framework & tata kelola.')+'</b> '+(help?'Butuh ketentuan kebijakan? Buka Cheatsheet.':'Butuh petunjuk pengisian fitur? Buka Bantuan.')+'</span><span>Modul Transformasi · November 2026</span></footer></section>';
  document.body.appendChild(ov);active=ov;document.addEventListener('keydown',keyHandler);
  if(typeof window.koWire==='function')window.koWire(ov);
  ov.addEventListener('click',function(e){
