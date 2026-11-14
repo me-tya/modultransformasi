@@ -21,6 +21,7 @@
 <style>
 /* Atribut hidden selalu menyembunyikan, walau elemen punya display:flex/grid dari CSS lain (dipakai pencarian Profil Pegawai, form profil, dll.). */
 [hidden]{display:none!important}
+tr[data-rowedit]{cursor:pointer}
 /* Pilih PIC Pusmantap */
 .ppk{display:flex;flex-direction:column;gap:12px;width:100%;align-items:stretch;text-align:left}
 .pp-kap{display:flex;align-items:center;gap:13px;padding:12px 14px;border-radius:14px;border:1.5px solid #EED9A0;background:linear-gradient(100deg,#FFFBF0,#FFF4D9);cursor:pointer;position:relative;transition:.15s}
@@ -6473,7 +6474,7 @@ ACT.oneWa=el=>{const x=(S.oneonone||[]).find(v=>v.id===el.dataset.id);if(!x)retu
 ACT.oneHist=el=>{const x=(S.oneonone||[]).find(v=>v.id===el.dataset.id);if(!x)return;const h=(x.hist||[]).length?x.hist:(S.log||[]).filter(l=>(l.d||'').includes(actName(x))).map(l=>({t:l.t,u:l.u,a:l.a,d:l.d}));
  modal('Riwayat · '+actName(x),h.length?'<div class="tscroll"><table class="lap"><thead><tr><th>Waktu</th><th>Pengguna</th><th>Aksi</th><th>Rincian</th></tr></thead><tbody>'+h.map(r=>'<tr><td class="nw">'+esc(r.t)+'</td><td>'+esc(r.u)+'</td><td>'+esc(r.a)+'</td><td>'+esc(r.d||'')+'</td></tr>').join('')+'</tbody></table></div>':'<p class="s" style="margin:0">Belum ada riwayat tercatat untuk aktivitas ini. Perubahan berikutnya akan dicatat.</p>',null,null,{size:'md'})};
 /* klik baris = ubah aktivitas (kecuali klik tombol/tautan di dalam baris) */
-document.addEventListener('click',e=>{const r=e.target.closest&&e.target.closest('tr[data-rowedit]');if(!r||e.target.closest('a,button,input,select,[data-act],[data-atdl]'))return;const it=(S.oneonone||[]).find(v=>v.id===r.dataset.rowedit);if(!actCanEditRow(it))return;ACT.oneEdit({dataset:{id:r.dataset.rowedit}})});
+document.addEventListener('click',e=>{const r=e.target.closest&&e.target.closest('tr[data-rowedit]');if(!r||e.target.closest('a,button,input,select,[data-act],[data-atdl]'))return;const it=(S.oneonone||[]).find(v=>v.id===r.dataset.rowedit);if(!it)return;if(!actCanEditRow(it)){ACT.calOpen({dataset:{id:it.id}});return}ACT.oneEdit({dataset:{id:r.dataset.rowedit}})});
 ACT.oneTw=el=>{S.ui.oneTw=+el.dataset.v||0;save();render()};
 ACT.oneReset=()=>{['actTahun','actKat','actSt','actPic','actQ','actProg','actUnit','actLay','actFrom','actTo'].forEach(k=>S.ui[k]='');S.ui.oneTw=0;S.ui.actPg=1;save();render()};
 ACT.actClear=()=>{S.ui.actQ='';S.ui.actPg=1;save();render()};
@@ -11495,7 +11496,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 </style>
 <script src="mt-libur.js?v=20261113-libur1"></script>
 <script src="mt-tim.js?v=20261114-tim16"></script>
-<script src="mt-tim2.js?v=20261114-t2t"></script>
+<script src="mt-tim2.js?v=20261114-t2v"></script>
 <script src="mt-foto-frame.js?v=20261114-ff6"></script>
 <script src="project-selection-flow.js?v=20261111-mt14-filter"></script>
 <script src="project-selection-governance.js?v=20261111-mt13-info"></script>
