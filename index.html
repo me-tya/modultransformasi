@@ -5093,9 +5093,9 @@ function actMaster(){const d=oneCfgDocs().find(x=>x.id==='cfg-master'),m=(d&&d.m
  const cm=new Set(['Arifudin Miftakhul Huda','Atitya Pritasari','Kurniawan Jabar Malik','Sarah Khairina','Dina Septiani']),tmp=new Set(['Johan Pandu Asa','Muhammad Nailun Najih']);
  const group=n=>cm.has(n)?'CM':tmp.has(n)?'Sementara':'Pusmantap';
  const roles={'Arifudin Miftakhul Huda':'Supervisor Tim Change Management','Atitya Pritasari':'Ketua Tim Change Management','Johan Pandu Asa':'Secondment','Muhammad Nailun Najih':'Magang Kemnaker'};
- const saved=Array.isArray(m.pic)?m.pic:[],pic=ACT_PIC0.map(n=>{const r=ACT_ROSTER.find(p=>p.n===n)||{},isTemp=tmp.has(n);return Object.assign({n,jab:r.jab||roles[n]||'',pang:r.pang||'',tim:group(n),jenis:isTemp?'Sementara':'Definitif',jenisSementara:n==='Johan Pandu Asa'?'Secondment':n==='Muhammad Nailun Najih'?'Magang Kemnaker':'',peran:roles[n]||'',statusKerja:'Belum diatur',keahlian:'',wfh:''},saved.find(p=>p.n===n)||{})});
+ const saved=Array.isArray(m.pic)?m.pic:[],del=Array.isArray(m.del)?m.del:[],pic=ACT_PIC0.filter(n=>!del.includes(n)||saved.some(p=>p&&p.n===n)).map(n=>{const r=ACT_ROSTER.find(p=>p.n===n)||{},isTemp=tmp.has(n);return Object.assign({n,jab:r.jab||roles[n]||'',pang:r.pang||'',tim:group(n),jenis:isTemp?'Sementara':'Definitif',jenisSementara:n==='Johan Pandu Asa'?'Secondment':n==='Muhammad Nailun Najih'?'Magang Kemnaker':'',peran:roles[n]||'',statusKerja:'Belum diatur',keahlian:'',wfh:''},saved.find(p=>p.n===n)||{})});
  saved.filter(p=>p&&p.n&&!pic.some(a=>a.n===p.n)).forEach(p=>pic.push(Object.assign({jenis:'Definitif',tim:'Pusmantap',statusKerja:'Belum diatur'},p)));
- return {pic,kat,unit:arr(m.unit,ACT_UNIT),pen:m.pen||{nama:'Wawan Juswanto',jab:'Kepala Pusat Manajemen Transformasi dan Perubahan'},ketua:m.ketua||{nama:'Atitya Pritasari',jab:'Ketua Tim Kerja Pengelolaan Manajemen Perubahan'},notulis:m.notulis||'Tim Change Management'}}
+ return {pic,del:del.slice(),kat,unit:arr(m.unit,ACT_UNIT),pen:m.pen||{nama:'Wawan Juswanto',jab:'Kepala Pusat Manajemen Transformasi dan Perubahan'},ketua:m.ketua||{nama:'Atitya Pritasari',jab:'Ketua Tim Kerja Pengelolaan Manajemen Perubahan'},notulis:m.notulis||'Tim Change Management'}}
 /* Singkatan nama PIC di Daftar Aktivitas. Singkatan khusus (Referensi Pegawai → "Singkatan nama") diutamakan.
    Otomatis: nama ≤ 2 kata tidak disingkat; ≥ 3 kata → kata terpanjang jadi inisial. Bila
    ada beberapa kata terpanjang yang sama panjang, yang paling awal tidak disingkat; yang disingkat kata terpanjang berikutnya
@@ -5363,7 +5363,7 @@ function actPicMgr(after){if(!actCanEdit()){toast('Tidak memiliki izin mengelola
  <div class="fld"><label>Mengetahui pada notula (nama)</label><input class="inp" id="pkm-kn" value="${esc(m.ketua.nama)}"></div><div class="fld"><label>Jabatan Mengetahui</label><input class="inp" id="pkm-kj" value="${esc(m.ketua.jab)}"></div><div class="fld wide"><label>Notulis (unit)</label><input class="inp" id="pkm-nt" value="${esc(m.notulis)}"></div></div>`;
  const ov=modal('Kelola PIC dan penandatangan',body,'Simpan',o=>{const pic=[...o.querySelectorAll('#pkm-b tr')].map(r=>{const g=f=>r.querySelector('[data-f="'+f+'"]').value.trim();return Object.assign({},m.pic.find(x=>x.n===g('n'))||{},{n:g('n'),tim:g('tim'),nip:g('nip'),pang:g('pang'),jab:g('jab')})}).filter(p=>p.n);
   const names=pic.map(p=>p.n.toLowerCase());if(names.some((n,i)=>names.indexOf(n)!==i)){toast('Ada nama PIC ganda.');return false}
-  const v=id=>o.querySelector('#'+id).value.trim(),n=Object.assign(actMaster(),{pic,pen:{nama:v('pkm-pn'),jab:v('pkm-pj')},ketua:{nama:v('pkm-kn'),jab:v('pkm-kj')},notulis:v('pkm-nt')});actMasterSave(n);log('Kelola PIC aktivitas',pic.length+' PIC');toast('Daftar PIC tersimpan.');if(after)after();else render()},{size:'wide'});
+  const v=id=>o.querySelector('#'+id).value.trim(),n=Object.assign(actMaster(),{pic,pen:{nama:v('pkm-pn'),jab:v('pkm-pj')},ketua:{nama:v('pkm-kn'),jab:v('pkm-kj')},notulis:v('pkm-nt')});n.del=[...new Set((n.del||[]).concat(ACT_PIC0.filter(x=>!pic.some(p=>p.n===x))))].filter(x=>!pic.some(p=>p.n===x));actMasterSave(n);log('Kelola PIC aktivitas',pic.length+' PIC');toast('Daftar PIC tersimpan.');if(after)after();else render()},{size:'wide'});
  ov.addEventListener('click',e=>{if(e.target.closest('[data-pkadd]')){ov.querySelector('#pkm-b').insertAdjacentHTML('beforeend',row({}));ov.querySelector('#pkm-b tr:last-child input').focus()}const x=e.target.closest('[data-pkx]');if(x)x.closest('tr').remove()});return ov}
 function actListMgr(key,title,after){if(!actCanEdit()){toast('Tidak memiliki izin.');return}const m=actMaster();
  modal(title,`<p class="s" style="margin:0 0 6px">Satu baris satu pilihan.${key==='kat'?' Kategori "'+ONE_KAT+'" selalu ada karena memakai fitur draft undangan.':''}</p><textarea class="inp" id="lm-t" rows="10" style="width:100%">${esc(m[key].join('\n'))}</textarea>`,'Simpan',o=>{const a=[...new Set(o.querySelector('#lm-t').value.split(/\n/).map(s=>s.trim()).filter(Boolean))];if(!a.length){toast('Minimal satu pilihan.');return false}const n=actMaster();n[key]=a;if(key==='kat'&&!a.includes(ONE_KAT))n.kat.unshift(ONE_KAT);actMasterSave(n);if(after)after()},{size:'sm'})}
@@ -11495,7 +11495,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 .mt-cal-di em{font-style:normal;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
 </style>
 <script src="mt-libur.js?v=20261113-libur1"></script>
-<script src="mt-tim.js?v=20261114-tim19"></script>
+<script src="mt-tim.js?v=20261114-tim20"></script>
 <script src="mt-tim2.js?v=20261114-t40"></script>
 <script src="mt-foto-frame.js?v=20261114-ff6"></script>
 <script src="project-selection-flow.js?v=20261111-mt14-filter"></script>
