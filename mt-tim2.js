@@ -243,7 +243,7 @@ function cellPop(p,ds){const c=code(p,ds),o=C().ovr[p.n+'|'+ds];return '<div cla
 /* ================= TAB AGENDA ================= */
 function vAgenda(){const ds=ST.agD||today(),A=agendaOn(ds),L=agFilter(A).filter(a=>!ST.q||(a.j+a.u+a.mode+a.p.map(n=>nk(pn(n))).join(' ')).toLowerCase().includes(ST.q.toLowerCase()));
  const rows=L.map(a=>'<tr class="t-agrow" tabindex="0" title="Buka '+(a.pim?'agenda pimpinan':'aktivitas')+'" '+(a.pim?(canAgpim()?'data-tagp="'+H(a.id)+'"':'data-tag="'+H(a.id)+'" data-tagk="pim"'):'data-tact="'+H(a.id)+'"')+'><td class="t-agj"><b>'+H(a.s)+(a.e?'–'+H(a.e):'')+'</b></td><td><b>'+H(a.j)+'</b> '+(a.kap?'<span class="t-chip t-ke">'+ic('crown','s')+'Pimpinan</span>':'')+'</td><td>'+(a.u?'<span class="t-chip t-pm">'+H(a.u)+'</span>':'—')+'</td><td class="t-sm">'+H(a.mode||'—')+'</td><td><div class="t-pl">'+a.p.map(n=>nkc(n)).join('')+'</div></td><td class="t-xs t-muted">'+H(a.src)+'</td><td class="t-stgo">'+ic('cr','s')+'</td></tr>').join('');
- return '<div class="t-card"><div class="t-head">'+seg()+'</div><div class="t-toolrow"><div class="t-dnav"><button type="button" class="t-ibtn" data-tagd="-1" aria-label="Hari sebelumnya">'+ic('cl')+'</button><b>'+fmt(ds)+'</b><button type="button" class="t-ibtn" data-tagd="1" aria-label="Hari berikutnya">'+ic('cr')+'</button>'+(ds!==today()?'<button type="button" class="t-btn t-sm" data-tagd="0">Hari ini</button>':'')+'</div><div class="t-tools">'+agSel(A)+srch('Cari agenda atau nama…')+(canEdit()?'<button type="button" class="t-btn" data-act="oneAdd" data-date="'+ds+'">'+ic('list','s')+'Tambah aktivitas</button>':'')+(canAgpim()?'<button type="button" class="t-btn t-gold" data-tagp="new">'+ic('plus','s')+'Agenda Pimpinan</button>':'')+'</div></div>'+
+ return '<div class="t-card"><div class="t-head">'+seg()+'</div><div class="t-toolrow"><div class="t-dpick'+(ds!==today()?' t-dp-off':'')+'"><button type="button" class="t-dp-nav" data-tagd="-1" title="Hari sebelumnya" aria-label="Hari sebelumnya">'+ic('cl','s')+'</button><span class="t-dp-cal"><b>'+(+ds.slice(8))+'</b><i>'+BLN[+ds.slice(5,7)-1].slice(0,3)+'</i></span><span class="t-dp-tx"><b>'+H(HR[dow(ds)])+'</b><small>'+(+ds.slice(8))+' '+BLN[+ds.slice(5,7)-1]+' '+ds.slice(0,4)+(ds===today()?' · Hari ini':ds<today()?' · lampau':' · mendatang')+'</small></span><button type="button" class="t-dp-nav" data-tagd="1" title="Hari berikutnya" aria-label="Hari berikutnya">'+ic('cr','s')+'</button>'+(ds!==today()?'<button type="button" class="t-dp-today" data-tagd="0">Hari ini</button>':'')+'</div><div class="t-tools">'+agSel(A)+srch('Cari agenda atau nama…')+(canEdit()?'<button type="button" class="t-btn" data-act="oneAdd" data-date="'+ds+'">'+ic('list','s')+'Tambah aktivitas</button>':'')+(canAgpim()?'<button type="button" class="t-btn t-gold" data-tagp="new">'+ic('plus','s')+'Agenda Pimpinan</button>':'')+'</div></div>'+
   '<div class="t-msg t-inf" style="margin:12px 16px 0">'+ic('sync','s')+'<span>Agenda tim terisi <b>otomatis</b> dari Daftar Aktivitas (tanggal, jam, PIC, Surat Tugas). Hanya <b>agenda Ka. Pusmantap</b> yang diinput di sini oleh Sekretaris.</span></div><div style="padding:12px 16px 16px;overflow:auto"><table class="t-tbl"><thead><tr><th>Jam</th><th>Kegiatan</th><th>Unit</th><th>Tempat</th><th>Peserta Pusmantap</th><th>Sumber</th><th></th></tr></thead><tbody>'+(rows||'<tr><td colspan="7" class="t-empty">Tidak ada agenda</td></tr>')+'</tbody></table></div></div>'}
 
 /* ================= TAB KEHADIRAN ================= */
@@ -735,6 +735,17 @@ const css=`
 .t-seg button.t-on,.t-seg button.t-on:hover{background:var(--t-navy);color:#fff;box-shadow:0 2px 6px rgba(14,42,92,.25)}.t-seg .t-on .t-i{color:var(--t-gold2)}.t-seg .t-gsep{width:1px;background:#CBD4E4;margin:6px 4px;align-self:stretch}
 /* Profil: tab dalam + Per unit */
 .t-pvw{padding:14px 16px 0}
+/* Pemilih tanggal Agenda: titik fokus utama */
+.t-dpick{display:inline-flex;align-items:center;gap:10px;padding:6px 8px;border-radius:14px;border:1px solid #E6D9B4;background:linear-gradient(100deg,#FFFFFF 0%,#FFF9EA 100%);box-shadow:0 2px 10px rgba(201,154,46,.12);position:relative}
+.t-dpick:before{content:'';position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:0 3px 3px 0;background:linear-gradient(180deg,#E9C25A,#C99A2E)}
+.t-dp-nav{all:unset;cursor:pointer;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:#143966;color:#fff;box-shadow:0 3px 8px rgba(20,57,102,.22);transition:.15s;flex:none}
+.t-dp-nav:hover{background:#0E2A5C;transform:translateY(-1px)}.t-dp-nav:focus-visible{outline:2px solid #C99A2E;outline-offset:2px}.t-dp-nav .t-i{width:17px;height:17px;stroke:#fff!important;color:#fff}
+.t-dp-cal{width:42px;height:44px;border-radius:11px;background:#fff;border:1px solid #E6D9B4;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;position:relative;flex:none}
+.t-dp-cal:before{content:'';position:absolute;left:0;right:0;top:0;height:5px;background:#D9AC36}
+.t-dp-cal b{font-size:18px;font-weight:800;line-height:1;color:#143966;margin-top:3px}.t-dp-cal i{font-style:normal;font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#A67B12;margin-top:2px}
+.t-dp-tx{display:flex;flex-direction:column;min-width:150px;line-height:1.2}.t-dp-tx b{font-size:17px;font-weight:800;line-height:1.15;color:#13233F}.t-dp-tx small{font-size:12px;font-weight:700;color:#6B7A90;margin-top:2px;white-space:nowrap}
+.t-dp-off .t-dp-tx small{color:#A67B12}
+.t-dp-today{all:unset;cursor:pointer;white-space:nowrap;font-size:12px;font-weight:800;color:#143966;border:1px solid #DCE3EE;border-radius:999px;padding:6px 12px;background:#fff;margin-right:2px}.t-dp-today:hover{background:#F2F6FD}
 .t-rinfo{position:relative;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#4C5D78;background:#F3F6FB;border:1px solid #E3E8F0;border-radius:999px;padding:4px 11px;cursor:help;outline:none}
 .t-rinfo>.t-i{width:14px;height:14px;color:var(--t-navy)}.t-rinfo:hover,.t-rinfo:focus{border-color:#B9CCEE;color:var(--t-navy)}
 .t-rpop{position:absolute;left:0;top:calc(100% + 8px);z-index:30;width:340px;background:#fff;border:1px solid #DCE3EE;border-radius:12px;box-shadow:0 12px 30px rgba(15,36,71,.16);padding:12px 14px;display:none;flex-direction:column;gap:7px;font-weight:600;color:#13233F;cursor:default}
@@ -766,7 +777,7 @@ const css=`
 .t-pur-w{color:#C0392B;flex:none}
 .t-pur-d{border:1px solid var(--t-line);border-radius:14px;background:#fff;padding:16px 18px;min-width:0}
 .t-pud-h{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid #EEF1F6}
-.t-pud-t{display:flex;gap:12px;align-items:center}.t-pud-t h3{margin:0;font:800 20px/1.2 'Sora',inherit;color:#13233F}
+.t-pud-t{display:flex;gap:12px;align-items:center}.t-pud-t h3{margin:0;font-size:20px;font-weight:800;line-height:1.2;color:#13233F}
 .t-pud-p{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px}.t-pud-p>small{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#8A97AB;margin-right:2px}
 .t-pud-a{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .t-pud-m{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 2px}.t-pud-m span{display:inline-flex;gap:5px;align-items:center;font-size:12px;font-weight:700;color:#A3362A;background:#FFF2F0;border:1px solid #F4CFC9;border-radius:999px;padding:3px 10px}
@@ -983,8 +994,8 @@ const css=`
 .t-hd-l{display:flex;align-items:center;gap:10px;min-width:300px;flex:1 1 0}.t-hd-l>div{min-width:0}.t-hd-sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .t-hd-cal{width:48px;height:50px;border-radius:12px;background:#143966;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none;box-shadow:0 4px 12px rgba(20,57,102,.22);overflow:hidden;position:relative}
 .t-hd-cal:before{content:'';position:absolute;left:0;right:0;top:0;height:5px;background:#E9C25A}
-.t-hd-cal b{font:800 20px/1 'Sora',inherit;margin-top:3px}.t-hd-cal i{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#F3D98B;margin-top:2px}
-.t-hday h2{white-space:nowrap;margin:0;font:800 19px/1.2 'Sora',inherit;color:#13233F;letter-spacing:-.01em}
+.t-hd-cal b{font-size:20px;font-weight:800;line-height:1;margin-top:3px}.t-hd-cal i{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#F3D98B;margin-top:2px}
+.t-hday h2{white-space:nowrap;margin:0;font-size:19px;font-weight:800;line-height:1.2;color:#13233F;letter-spacing:-.01em}
 .t-hd-sub{display:flex;align-items:center;gap:7px;margin-top:4px;font-size:12px;color:#6B7A90;font-weight:600}
 .t-hd-dot{width:7px;height:7px;border-radius:50%;background:#1F9D6B;box-shadow:0 0 0 3px #1F9D6B22}
 .t-hd-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
