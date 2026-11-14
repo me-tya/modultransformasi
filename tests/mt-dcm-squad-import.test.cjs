@@ -85,7 +85,7 @@ const unrelated=api.parseBackup({contacts:[sample.contacts[7]]});
 assert.equal(unrelated.entries.length,0);
 
 const ui=fs.readFileSync('mt-tim2.js','utf8');
-assert(ui.includes('mt-dcm-squad-import.js?v=20261114-01'),'Existing button must load new importer');
+assert(ui.includes('mt-dcm-squad-import.js?v=20261115-imz1'),'Existing button must load new importer');
 assert(ui.includes("if(v==='dcm')impDcm()"),'Existing chooser wiring must remain');
 assert(ui.includes('Tim CM + PIC PMO/CMO/Probis'),'Chooser should explain both source categories');
 // Verify the filter against the actual bundled Dashboard CM Squad Team fixture.
