@@ -745,7 +745,11 @@ const css=`
 .t-dpk-c b{font-size:16px;font-weight:800;line-height:1;margin-top:2px}.t-dpk-c i{font-style:normal;font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-top:2px;opacity:.9}
 .t-dpk-t{font-size:16px;font-weight:800;color:#13233F;white-space:nowrap;min-width:170px}
 .t-dpk-h{all:unset;cursor:pointer;white-space:nowrap;font-size:12px;font-weight:800;color:#143966;border:1px solid #DCE3EE;border-radius:999px;padding:5px 11px;background:#fff;margin-left:4px}.t-dpk-h:hover{background:#F2F6FD}.t-dpk-h:disabled{opacity:.4;cursor:default;pointer-events:none}
-.t-hday .t-dpk{flex:none}.t-hday{min-height:66px;box-sizing:border-box}.t-hday .t-hd-r .t-fsel,.t-hday .t-hd-r .t-search{height:36px;box-sizing:border-box}.t-hday:before{background:var(--dc,#15805F)!important}.t-hday.t-dp-past{--dc:#7A8496}.t-hday.t-dp-fut{--dc:#B07A06}
+.t-hday .t-dpk{flex:none}.t-hday{min-height:66px;box-sizing:border-box}.t-hday{flex-wrap:nowrap;container-type:inline-size}.t-hday>.t-hd-l{flex:0 0 auto;min-width:0}.t-hday>.t-hd-r{flex:1 1 auto;min-width:0;justify-content:flex-end;flex-wrap:nowrap}
+.t-hday .t-hd-r .t-fsel{flex:0 1 230px;min-width:150px;width:auto;overflow:hidden}.t-hday .t-hd-r .t-fsel select{min-width:0;width:100%;text-overflow:ellipsis}.t-hday .t-hd-r .t-fsel>.t-xs{display:none}
+.t-hday .t-hd-r .t-search{flex:0 1 240px;min-width:130px;width:auto}.t-hday .t-hd-r .t-search input{min-width:0;width:100%}
+.t-hday .t-hd-btn,.t-hday .t-hd-all,.t-hday .t-hd-grp{flex:none}
+@media(max-width:1180px){.t-hday{flex-wrap:wrap}.t-hday>.t-hd-r{flex-wrap:wrap}}.t-hday .t-hd-r .t-fsel,.t-hday .t-hd-r .t-search{height:36px;box-sizing:border-box}.t-hday:before{background:var(--dc,#15805F)!important}.t-hday.t-dp-past{--dc:#7A8496}.t-hday.t-dp-fut{--dc:#B07A06}
 /* Pemilih tanggal Agenda: titik fokus utama */
 .t-dpick{--dc:#15805F;--db:#EAF7F0;--dl:#BFE3CF;display:inline-flex;align-items:center;gap:9px;padding:5px 8px;border-radius:13px;border:1px solid var(--dl);background:linear-gradient(100deg,#fff 0%,var(--db) 100%);position:relative;transition:.2s}
 .t-dpick.t-dp-past{--dc:#7A8496;--db:#F1F3F7;--dl:#DCE1E9}.t-dpick.t-dp-fut{--dc:#B07A06;--db:#FFF6DC;--dl:#EED9A0}
