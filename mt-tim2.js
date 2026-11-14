@@ -354,7 +354,7 @@ function vProfil(){const pv=ST.pv||'orang';let inner='';
  if(pv==='unit')inner=vProfilUnit();
  else if(pv==='tmp'){const h=vSementara(),pre='<div class="t-card"><div class="t-head">'+seg()+'</div>';inner=h.startsWith(pre)?h.slice(pre.length).replace(/<\/div>$/,''):h}
  else{try{S.ui.tmView='orang';inner='<div class="t2-old">'+T().page().replace(AKT_HDR(),'').replace(/<div class="tm-vs"[\s\S]*?<\/div>/,'')+'</div>'}catch(e){inner='<p class="t-s" style="padding:18px">Profil belum dapat dimuat.</p>'}}
- return '<div class="t-card"><div class="t-head">'+seg()+'</div><div class="t-pvw">'+tabs+'</div><div class="t-pvb t-pv-'+pv+'">'+inner+'</div></div>'}
+ return '<div class="t-card"><div class="t-head">'+seg()+'</div><div class="t-pvw" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">'+tabs+(canEdit()?'<button type="button" class="t-btn t-sm" data-texportprofiles title="Ekspor profil, foto, penempatan tim, dan kontak PMO/CMO Unit ke JSON untuk Dashboard CM">'+ic('dl','s')+'Ekspor Profil &amp; Foto (JSON)</button>':'')+'</div><div class="t-pvb t-pv-'+pv+'">'+inner+'</div></div>'}
 /* Per unit: daftar unit (kiri) + kartu kontak unit per peran (kanan). */
 /* Per unit: dua sudut pandang — PMO & CMO Kemenkeu (seperti Dashboard CM) atau Unit Eselon I. */
 function vProfilUnit(){const m=ST.pum||S.ui.t2pum||'pic',sw='<div class="t-pum" role="tablist"><button type="button" data-tpum="pic" class="'+(m==='pic'?'t-on':'')+'">PMO & CMO Kemenkeu</button><button type="button" data-tpum="unit" class="'+(m==='unit'?'t-on':'')+'">Unit Eselon I</button></div>';
@@ -546,6 +546,15 @@ function onClick(e){const r=e.target.closest('#t2,#t2-layer');if(!r)return;const
  if(g('.t-cpop')&&!g('[data-tsetc]'))return;
  if((el=g('[data-tclose]'))){ST.dr=null;ST.md=null;rr();return}
  if((el=g('[data-tcmon]'))){const d=el.dataset.tcmon;ST.calY=+d.slice(0,4);ST.calM=+d.slice(5,7)-1;ST.calSel=d;ST.calSc='ALL'}
+ if((el=g('[data-texportprofiles]'))){
+  if(!canEdit()){toastT('Anda tidak memiliki hak akses untuk mengekspor profil.');return}
+  try{
+   if(!window.MT_PROFILE_EXPORT||typeof window.MT_PROFILE_EXPORT.download!=='function')throw Error('Komponen ekspor belum dimuat. Muat ulang halaman.');
+   const result=window.MT_PROFILE_EXPORT.download({docs:S.oneonone||[],master:actMaster(),cfg:kpCfg()});
+   toastT('JSON siap diunduh: '+result.summary.profiles+' profil, '+result.summary.photos+' foto, '+result.summary.unitContacts+' kontak unit.');
+  }catch(err){toastT('Ekspor gagal: '+(err.message||String(err)))}
+  return;
+ }
  if((el=g('[data-tv]'))){setV(el.dataset.tv);return}
  if((el=g('[data-tstf]'))){ST.stF=el.dataset.tstf;ST.pg.stL=0;rr();return}
  if((el=g('[data-tpv]'))){ST.pv=el.dataset.tpv;S.ui.t2pv=ST.pv;rr();return}

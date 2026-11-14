@@ -1,0 +1,51 @@
+name: MT 02 Activate Tim Pusmantap Profile Photo JSON Export
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/mt-profile-export-02.yml']
+permissions:
+  contents: write
+jobs:
+  activate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - name: Confirm full backup exists before activation
+        run: |
+          git fetch origin refs/heads/backup/261114-MT-02:refs/remotes/origin/backup/261114-MT-02
+          git archive --format=zip -o /tmp/261114-MT-02.zip origin/backup/261114-MT-02
+          unzip -t /tmp/261114-MT-02.zip | tail -1
+      - name: Validate export format and unchanged native features
+        run: |
+          node --check mt-profile-export.js
+          node --check mt-tim2.js
+          node tests/mt-profile-export.test.cjs
+          node tests/mt-dcm-squad-import.test.cjs
+          git diff --check
+      - name: Enable export on the existing page with cache refresh
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          before=p.read_text('utf8')
+          needle='<script src="mt-tim2.js?v=20261114-t61"></script>'
+          replacement='<script src="mt-profile-export.js?v=20261114-mt02"></script>\n<script src="mt-tim2.js?v=20261114-t62"></script>'
+          assert before.count(needle)==1, 'Expected original module script exactly once'
+          assert 'mt-profile-export.js?v=' not in before, 'Export already enabled'
+          after=before.replace(needle,replacement,1)
+          assert after.replace(replacement,needle,1)==before, 'Only script inclusion may change'
+          p.write_text(after,'utf8')
+          assert after.index('mt-profile-export.js')<after.index('mt-tim2.js?v=20261114-t62')
+          print('PASS: only adding export script and refreshing native Tim Pusmantap JS version')
+          PY
+      - name: Commit and publish
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --check
+          git commit -m "feat(mt): activate Tim Pusmantap profile and photo JSON export"
+          git push origin HEAD:main

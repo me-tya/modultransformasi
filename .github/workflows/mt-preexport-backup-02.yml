@@ -1,0 +1,25 @@
+name: Backup 261114-MT-02 complete pre-change ZIP
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/mt-preexport-backup-02.yml']
+permissions:
+  contents: read
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Archive full immutable baseline
+        run: |
+          git fetch origin refs/heads/backup/261114-MT-02:refs/remotes/origin/backup/261114-MT-02
+          git archive --format=zip --output=261114-MT-02.zip origin/backup/261114-MT-02
+          unzip -t 261114-MT-02.zip | tail -1
+          test -s 261114-MT-02.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 261114-MT-02
+          path: 261114-MT-02.zip
+          retention-days: 90
