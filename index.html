@@ -2714,6 +2714,20 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 .wzrv dl{display:grid;grid-template-columns:minmax(140px,220px) 1fr;gap:4px 12px;margin:8px 0 0;font-size:12.5px}.wzrv dt{color:#66728C}.wzrv dd{margin:0;color:#13233F;white-space:pre-line}
 .wzok-soft{opacity:.92}
 @media(max-width:760px){.wzcard-b{grid-template-columns:1fr}.wzrv dl{grid-template-columns:1fr}}
+/* Wizard: label dan isian dibedakan tegas; contoh hanya tampil saat kolom difokuskan */
+.wzmd .fgrid{gap:16px 18px}
+.wzmd .fld{gap:0;padding:12px 14px 13px;border:1px solid #E6EBF3;border-radius:12px;background:#FAFBFD;transition:border-color .15s,background .15s,box-shadow .15s}
+.wzmd .fld:focus-within{background:#fff;border-color:#E2C46B;box-shadow:0 0 0 3px rgba(253,185,19,.14)}
+.wzmd .fld>label{display:block;margin:0 0 7px;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#6B7A93}
+.wzmd .fld>label i{color:#C2362B}
+.wzmd .fld input:not([type=checkbox]),.wzmd .fld select,.wzmd .fld textarea{background:#fff;border:1px solid #C9D3E3;border-radius:9px;font-size:14px;color:#0B2447;font-weight:500;height:40px;padding:0 12px}
+.wzmd .fld textarea{height:auto;min-height:74px;padding:10px 12px;line-height:1.5}
+.wzmd .fld input:focus,.wzmd .fld select:focus,.wzmd .fld textarea:focus{outline:0;border-color:#0B2447}
+.wzmd .fld small.fex{display:none;margin-top:7px;color:#8A97AB;font-size:11.5px;font-style:italic}
+.wzmd .fld small.fex:before{content:"💡 Contoh: ";font-style:normal;font-weight:700;color:#A08A4A}
+.wzmd .fld:focus-within small.fex{display:block}
+.wzmd .wzcard .fld{border:0;background:none;padding:0;box-shadow:none}
+.wzmd .wzcard{background:#FAFBFD}.wzmd .wzcard-b{background:#fff}
 </style>
 
 <style>
@@ -3504,7 +3518,7 @@ function wzMount(ov,W,cols,isEdit){const md=ov.querySelector('.md');md.classList
  const go=i=>{if(i>cur){for(let k=cur;k<i;k++){const r=reqOk(k);if(r!==true){go(k);const el=document.getElementById('f_'+r.k);el&&el.focus();toast(`${String(r.l).replace(/<[^>]+>/g,'')} wajib diisi.`);return}}}
   cur=Math.max(0,Math.min(N,i));ov.querySelectorAll('.wzp').forEach(x=>x.hidden=+x.dataset.wz!==cur);ov.querySelectorAll('.wzs li').forEach((li,k)=>{li.classList.toggle('on',k===cur);li.classList.toggle('done',k<cur)});
   if(cur===N){try{review()}catch(e){console.error(e)}}prev.disabled=cur===0;next.style.display=cur===N?'none':'';ok.style.display=(!isEdit&&cur!==N)?'none':'';ok.classList.toggle('wzok-soft',cur!==N);
-  const bd=ov.querySelector('.bd');if(bd)bd.scrollTop=0;const f=ov.querySelector(`.wzp[data-wz="${cur}"] input:not([type=checkbox]),.wzp[data-wz="${cur}"] textarea`);if(f&&cur<N)setTimeout(()=>f.focus(),30)};
+  const bd=ov.querySelector('.bd');if(bd)bd.scrollTop=0;const f=ov.querySelector(`.wzp[data-wz="${cur}"] input:not([type=checkbox]),.wzp[data-wz="${cur}"] textarea`);if(f&&cur<N)setTimeout(()=>{f.focus({preventScroll:true});if(bd)bd.scrollTop=0},30)};
  prev.onclick=()=>go(cur-1);next.onclick=()=>go(cur+1);
  ov.addEventListener('click',e=>{const g=e.target.closest('[data-wzgo]');if(g){go(+g.dataset.wzgo);return}const b=e.target.closest('.wzseg button');if(b){const sel=document.getElementById(b.parentElement.dataset.for);if(sel){sel.value=b.dataset.v;sel.dispatchEvent(new Event('change',{bubbles:true}));sync()}}});
  const sync=()=>ov.querySelectorAll('.wzseg').forEach(sg=>{const sel=document.getElementById(sg.dataset.for);sg.querySelectorAll('button').forEach(b=>b.classList.toggle('on',sel&&String(sel.value)===b.dataset.v))});
