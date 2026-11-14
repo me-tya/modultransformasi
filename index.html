@@ -2824,7 +2824,10 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 #app .flt .ftop .flist{display:flex!important;gap:5px;align-items:center;min-width:0;overflow:hidden;flex:0 1 auto;flex-wrap:nowrap}
 #app .flt .ftop .c0{display:inline-flex!important;align-items:center;white-space:nowrap;background:#fff;border:1px solid #D5DEEA;color:#3A4763;border-radius:999px;padding:2px 10px;font-size:11.5px;font-weight:600}
 #app .flt .ftop .c1{display:inline-flex!important;white-space:nowrap}
-#app .flt.open .ftop .flist{flex-wrap:wrap}
+#app .flt .ftop .flist{flex:1 1 auto!important;flex-wrap:nowrap!important;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent)}
+#app .flt.open .ftop .c0{display:none!important}
+#app .flt .ftop{flex-wrap:nowrap!important;overflow:hidden}
+#app .flt .ftop .rs2,#app .flt .ftop .rsm,#app .flt .fcar{flex:none}
 </style>
 
 <style>
