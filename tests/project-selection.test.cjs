@@ -88,7 +88,7 @@ test('Original SMART 12 criteria, weights sum 55 and full reference rubrics',()=
  assert.deepEqual(names.map(m=>+m[1]),Array.from({length:12},(_,i)=>i+1));
  assert.equal(names.reduce((n,m)=>n+(+m[2]),0),55);
  assert.match(source,/Keselarasan Strategis/);
- assert.match(source,/Tingkat Perubahan \(POSTER\)/);
+ assert.match(source,/Tingkat Perubahan \(POSTeR\)/);
  assert.match(source,/Skala Dampak \(Jumlah Pengguna\)/);
  assert.match(dashboard,/function renderPriority\(\)/);
 });
