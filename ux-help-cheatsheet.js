@@ -154,7 +154,7 @@ var termsPM=[
 ];
 var termsCM=[
 ['CM / CMO','Change Management / Change Management Office.'],['ADP','Analisis Dampak Perubahan; membandingkan kondisi As-Is dan To-Be.'],
-['POSTeR','Proses bisnis, Organisasi, SDM, Teknologi, Regulasi.'],['Stakeholder','Pihak yang terdampak atau dapat memengaruhi perubahan.'],
+['POSTeR','Proses kerja, Organisasi, SDM, Teknologi, Regulasi.'],['Stakeholder','Pihak yang terdampak atau dapat memengaruhi perubahan.'],
 ['Sponsor','Pimpinan yang memberikan arah, dukungan, dan legitimasi perubahan.'],['Jaringan Perubahan','Kumpulan peran pelaksana/pendukung perubahan lintas unit.'],
 ['T-Agent','Agen perubahan; pada aplikasi ini khusus modul program DOA.'],['Change Champion','Penggerak perubahan dari lingkungan pemilik proses bisnis.'],
 ['CRA','Change Readiness Assessment: pengukuran kesiapan perubahan.'],['TNA','Training Needs Analysis: analisis kebutuhan pelatihan.'],

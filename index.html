@@ -2743,6 +2743,17 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 .wzpr-u{color:#3A4763;line-height:1.5}.wzpr-u i{color:#9AA4BA}
 .wzlvc{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:4px 12px;white-space:nowrap}.wzlvc.z{background:#EEF1F6;color:#7D8AA0}.wzlvc.g{background:#E7F6EE;color:#15805F}.wzlvc.w{background:#FFF3D6;color:#8A6400}.wzlvc.b{background:#FDECEA;color:#C2362B}
 @media(max-width:760px){.wzab{grid-template-columns:1fr}.wzab-ar{transform:rotate(90deg);height:28px}.wzpr{grid-template-columns:1fr auto}.wzpr-u{grid-column:1/-1}}
+.abw{grid-column:1/-1;border:1px solid #E6EBF3;border-radius:12px;background:#FAFBFD;padding:12px 14px}
+.abhd,.abr,.wzab2-h,.wzab2-r{display:grid;grid-template-columns:28px minmax(0,1fr) 26px minmax(0,1fr) 30px;gap:8px;align-items:start}
+.abhd b{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#6B7A93;margin-bottom:6px}.abhd b:nth-of-type(2){color:#15805F}
+.abr{margin-bottom:8px}.abn{width:26px;height:26px;border-radius:50%;background:#0B2447;color:#FDB913;display:grid;place-items:center;font-weight:800;font-size:12px;margin-top:6px}
+.abr textarea{width:100%;min-height:58px;border:1px solid #C9D3E3;border-radius:9px;padding:8px 10px;font:inherit;font-size:14px;line-height:1.45;color:#0B2447;background:#fff;resize:vertical}.abr textarea[data-abs="1"]{border-color:#BFE0CE;background:#FBFEFC}.abr textarea:focus{outline:0;border-color:#0B2447;box-shadow:0 0 0 3px rgba(253,185,19,.15)}
+.abar{text-align:center;color:#9AA4BA;font-weight:800;font-size:18px;margin-top:14px}
+.abdel{border:0;background:none;color:#9AA4BA;width:28px;height:28px;border-radius:8px;cursor:pointer;margin-top:6px}.abdel:hover{background:#FDECEA;color:#C2362B}
+.abadd{border:1px dashed #9FB2D6;background:#fff;color:#17457F;border-radius:10px;padding:7px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-left:36px}.abadd:hover{background:#F4F7FC}
+.wzab2{border:1px solid #E9EDF4;border-radius:12px;padding:10px 12px}.wzab2-h small{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#7D8AA0}.wzab2-h small:last-of-type{color:#15805F}
+.wzab2-r{padding:8px 0;border-top:1px solid #EEF1F6;align-items:center}.wzab2-r p{margin:0;font-size:14px;line-height:1.5;color:#13233F;background:#F7F9FC;border-radius:9px;padding:8px 11px}.wzab2-r p.to{background:#F0FAF5}.wzab2-r p i{color:#9AA4BA}.wzab2-r .abn,.wzab2-r .abar{margin-top:0}
+@media(max-width:760px){.abhd{display:none}.abr,.wzab2-r{grid-template-columns:26px 1fr;}.abr .abar,.wzab2-r .abar{display:none}.abr textarea[data-abs="1"],.wzab2-r p.to{grid-column:2}.abdel{grid-column:2;justify-self:end}}
 </style>
 
 <style>
@@ -3095,7 +3106,7 @@ const PMT=[['siklus','Overview','porto'],['program','Detail Program','porto'],['
 const PMG=[['siklus','Overview',0,['siklus']],['program','Detail Program',0,['program']],['plan','Perencanaan',1,['perencanaan','wbsplan','dokplan']],['exec','Pelaksanaan',2,['wbs','narasi','bukti','cr']],['mon','Pemantauan',3,['milestone','risiko','laporan','oneonone']],['close','Penutupan',4,['penutupan']],['eval','Pascaproyek',5,['pascaproyek']],['ref','Referensi',0,['referensi']]];
 const STN=[['set-pengguna','Pengguna','user'],['set-akses','Hak Akses Peran','akses'],['set-sinkron','Aturan Sinkron CM','sinkron'],['set-log','Log Aktivitas','log'],['set-db','Database','user']];
 const LV_UB=['—','Minor','Moderate','Significant'], LV_RS=['—','Rendah','Sedang','Tinggi'];
-const DIMS=[['P','Proses Bisnis','P'],['O','Organisasi','O'],['S','SDM','S'],['T','Teknologi','Te'],['R','Regulasi','R']];
+const DIMS=[['P','Proses Kerja','P'],['O','Organisasi','O'],['S','SDM','S'],['T','Teknologi','Te'],['R','Regulasi','R']];
 const RISK=[['rr','Resistensi'],['ro','Operasional'],['rk','Ketergantungan'],['rl','Lainnya']];
 const KANAL=['T-Bond','T-Forum','T-Course','T-Media','T-Lab','T-Connect','T-KER'];
 const ADKAR=['Awareness','Desire','Knowledge','Ability','Reinforcement'];
@@ -3514,16 +3525,24 @@ function modal(title,body,ok,onOk,o={}){const ov=document.createElement('div');o
  const f=ov.querySelector('input:not([disabled]):not([type=checkbox]),select,textarea');f&&f.focus();return ov}
 function confirmDel(what,fn,o){o=o||{};modal(o.delHead||'Hapus data?',o.delMsg?o.delMsg(what):`<p style="margin:0">Data <b>${esc(what)}</b> akan dihapus dan tercatat di log aktivitas.</p>`,o.delBtn||'Hapus',()=>{fn()},{danger:true,size:'sm'})}
 /* ===== Formulir wizard: satu bagian per langkah (dipakai bila tbl punya opsi wizard) ===== */
+/* As-Is / To-Be berpasangan: disimpan sebagai teks bernomor "1. …\n2. …" (nomor = baris pasangan). */
+function abParse(t){t=String(t||'').trim();if(!t)return {};const L=t.split(/\n+/),o={};let cur=null,any=false;L.forEach(line=>{const m=line.match(/^\s*(\d+)[.)]\s*(.*)$/);if(m){any=true;cur=+m[1];o[cur]=m[2].trim()==='—'?'':m[2]}else if(cur!=null)o[cur]+=(o[cur]?' ':'')+line.trim();else{o[1]=(o[1]?o[1]+' ':'')+line.trim();cur=1}});return o}
+function abRows(a,b){const A=abParse(a),B=abParse(b),n=Math.max(1,...Object.keys(A).map(Number),...Object.keys(B).map(Number));const R=[];for(let i=1;i<=n;i++)R.push([A[i]||'',B[i]||'']);return R}
+function abSer(list){const f=list.map((x,i)=>[i+1,String(x||'').trim()]).filter(x=>x[1]);if(!f.length)return '';if(list.length===1)return f[0][1];return f.map(x=>x[0]+'. '+x[1]).join('\n')}
+function abSer2(K,j){if(!K.length)return '';if(K.length===1)return K[0][j];if(!K.some(p=>p[j]))return '';return K.map((p,i)=>(i+1)+'. '+(p[j]||'—')).join('\n')}
 function wzBuild(w,cols,row){const G=[{t:w.first||'Data utama',items:[]}];cols.forEach(c=>{if(c.t==='sec')G.push({t:String(c.l).replace(/<[^>]+>/g,''),items:[]});else G[G.length-1].items.push(c)});const steps=G.filter(g=>g.items.length);
  const dimAb=k=>{const d=(typeof DIMS!=='undefined'?DIMS:[]).find(x=>x[0]===k);return d?(d[2]||d[0]):''};
  const segOf=c=>{const arr=typeof c.o==='function'?c.o():c.o;return (arr||[]).length&&(arr||[]).length<=5?`<div class="wzseg" data-for="f_${c.k}">${arr.map(x=>{const [v,l]=Array.isArray(x)?x:[x,x];return `<button type="button" data-v="${esc(v)}">${esc(String(l)==='—'||l===''?'Tidak ada':l)}</button>`}).join('')}</div>`:''};
- const body=g=>{let h='';for(let i=0;i<g.items.length;i++){const c=g.items[i],n=g.items[i+1];
+ const abEd=(ca,cb)=>{const R=abRows(row?row[ca.k]:'',row?row[cb.k]:'');return `<div class="abw" data-ab="${ca.k}|${cb.k}"><div class="abhd"><span></span><b>Sebelum · ${esc(String(ca.l).replace(/<[^>]+>/g,''))}</b><span></span><b>Sesudah · ${esc(String(cb.l).replace(/<[^>]+>/g,''))}</b><span></span></div><div class="abl">${R.map((r,i)=>abRow(i,r)).join('')}</div><button type="button" class="abadd" data-abadd>+ Tambah poin</button><div hidden>${field(ca,row)}${field(cb,row)}</div></div>`};
+ const body=g=>{let h='';const ca=g.items.find(c=>c.k==='asis'),cb=g.items.find(c=>c.k==='tobe');for(let i=0;i<g.items.length;i++){const c=g.items[i],n=g.items[i+1];
+   if(ca&&cb&&(c===ca||c===cb)){if(c===ca)h+=abEd(ca,cb);continue}
    if(c.t==='sel'&&n&&n.k===c.k+'k'){const ttl=String(c.l).replace(/\s*—\s*tingkat\s*$/i,''),ab=dimAb(c.k);h+=`<div class="wzcard"><div class="wzcard-h">${ab?`<i>${esc(ab)}</i>`:''}<b>${esc(ttl)}</b></div><div class="wzcard-b"><div class="fld wzlv"><label for="f_${c.k}">Tingkat</label>${field(c,row).replace(/^<div class="fld[^"]*">[\s\S]*?(<select[\s\S]*?<\/select>)[\s\S]*$/,'$1')}${segOf(c)}</div>${field(Object.assign({},n,{l:'Uraian / alasan'}),row)}</div></div>`;i++;continue}
    h+=field(c,row)}return h};
  const html=`<div class="wzw"><ol class="wzs">${steps.map((g,i)=>`<li><button type="button" data-wzgo="${i}"><span>${i+1}</span>${esc(g.t)}</button></li>`).join('')}<li><button type="button" data-wzgo="${steps.length}"><span>✓</span>Periksa & simpan</button></li></ol>`+
   steps.map((g,i)=>`<section class="wzp" data-wz="${i}"${i?' hidden':''}><div class="wz-h"><small>Langkah ${i+1} dari ${steps.length+1}</small><b>${esc(g.t)}</b>${(w.hints||{})[g.t]?`<p>${(w.hints||{})[g.t]}</p>`:''}</div><div class="fgrid">${body(g)}</div></section>`).join('')+
   `<section class="wzp" data-wz="${steps.length}" hidden><div class="wz-h"><small>Langkah ${steps.length+1} dari ${steps.length+1}</small><b>Periksa & simpan</b><p>Cek ringkasan isian. Klik nama langkah untuk kembali memperbaiki.</p></div><div class="wzrev"></div></section></div>`;
  return {html,steps}}
+const abRow=(i,r)=>`<div class="abr"><span class="abn">${i+1}</span><textarea rows="2" data-abs="0" placeholder="Kondisi saat ini…">${esc(r[0])}</textarea><span class="abar" aria-hidden="true">→</span><textarea rows="2" data-abs="1" placeholder="Kondisi setelah perubahan…">${esc(r[1])}</textarea><button type="button" class="abdel" data-abdel title="Hapus poin" aria-label="Hapus poin">✕</button></div>`;
 function wzMount(ov,W,cols,isEdit){const md=ov.querySelector('.md');md.classList.add('wzmd');const ft=ov.querySelector('.ft'),ok=ft.querySelector('[data-ok]');let cur=0;const N=W.steps.length;
  const prev=document.createElement('button');prev.className='btn';prev.type='button';prev.textContent='‹ Sebelumnya';const next=document.createElement('button');next.className='btn pri';next.type='button';next.textContent='Berikutnya ›';
  ft.insertBefore(prev,ok);ft.insertBefore(next,ok);
@@ -3534,7 +3553,7 @@ function wzMount(ov,W,cols,isEdit){const md=ov.querySelector('.md');md.classList
    const asis=it.find(c=>c.k==='asis'),tobe=it.find(c=>c.k==='tobe');
    const singles=it.filter(c=>c!==asis&&c!==tobe&&!(c.t==='sel'&&it.some(n=>n.k===c.k+'k'))&&!it.some(p=>p.t==='sel'&&c.k===p.k+'k'));
    if(singles.length)h+=`<div class="wzrs">${singles.map(c=>`<div><small>${esc(String(c.l).replace(/<[^>]+>/g,''))}</small><b>${esc(val(c)||'—')}</b></div>`).join('')}</div>`;
-   if(asis||tobe)h+=`<div class="wzab"><div class="wzab-c"><small>Sebelum · As-Is</small><p>${esc(asis?val(asis):'')||'<i>Belum diisi</i>'}</p></div><div class="wzab-ar" aria-hidden="true">→</div><div class="wzab-c wzab-to"><small>Sesudah · To-Be</small><p>${esc(tobe?val(tobe):'')||'<i>Belum diisi</i>'}</p></div></div>`;
+   if(asis||tobe){const R=abRows(asis?val(asis):'',tobe?val(tobe):'').filter(r=>r[0]||r[1]);h+=`<div class="wzab2"><div class="wzab2-h"><span></span><small>Sebelum · As-Is</small><span></span><small>Sesudah · To-Be</small></div>${R.length?R.map((r,i)=>`<div class="wzab2-r"><span class="abn">${i+1}</span><p>${r[0]?esc(r[0]):'<i>—</i>'}</p><span class="abar">→</span><p class="to">${r[1]?esc(r[1]):'<i>—</i>'}</p></div>`).join(''):'<p class="s" style="margin:6px 0 0">Belum diisi.</p>'}</div>`}
    const pairs=it.filter(c=>c.t==='sel'&&it.some(n=>n.k===c.k+'k'));
    if(pairs.length)h+=`<div class="wzpt">${pairs.map(c=>{const n=it.find(x=>x.k===c.k+'k'),lv=lvOf(c),ab=dimAb(c.k),ur=val(n);return `<div class="wzpr"><div class="wzpr-a">${ab?`<i>${esc(ab)}</i>`:''}<span>${esc(String(c.l).replace(/\s*—\s*tingkat\s*$/i,'').replace(/^Risiko\s+/,''))}</span></div><div class="wzpr-l"><span class="wzlvc ${lv.cl}">${esc(lv.t)}</span></div><div class="wzpr-u">${ur?esc(ur):'<i>Tanpa uraian</i>'}</div></div>`}).join('')}</div>`;
    return `<div class="wzrv"><div class="wzrv-h"><span class="wzrv-n">${gi+1}</span><b>${esc(g.t)}</b><button type="button" class="wzrv-e" data-wzgo="${gi}">✎ Ubah</button></div>${h||'<p class="s" style="margin:6px 0 0">Belum diisi.</p>'}</div>`}).join('')};
@@ -3546,6 +3565,10 @@ function wzMount(ov,W,cols,isEdit){const md=ov.querySelector('.md');md.classList
  prev.onclick=()=>go(cur-1);next.onclick=()=>go(cur+1);
  ov.addEventListener('click',e=>{const g=e.target.closest('[data-wzgo]');if(g){go(+g.dataset.wzgo);return}const b=e.target.closest('.wzseg button');if(b){const sel=document.getElementById(b.parentElement.dataset.for);if(sel){sel.value=b.dataset.v;sel.dispatchEvent(new Event('change',{bubbles:true}));sync()}}});
  const sync=()=>ov.querySelectorAll('.wzseg').forEach(sg=>{const sel=document.getElementById(sg.dataset.for);sg.querySelectorAll('button').forEach(b=>b.classList.toggle('on',sel&&String(sel.value)===b.dataset.v))});
+ const abSync=w=>{const [ka,kb]=w.dataset.ab.split('|'),rows=[...w.querySelectorAll('.abr')];w.querySelectorAll('.abn').forEach((x,i)=>x.textContent=i+1);const A=rows.map(r=>r.querySelector('[data-abs="0"]').value),B=rows.map(r=>r.querySelector('[data-abs="1"]').value);const K=A.map((x,i)=>[x.trim(),B[i].trim()]).filter(p=>p[0]||p[1]);document.getElementById('f_'+ka).value=abSer2(K,0);document.getElementById('f_'+kb).value=abSer2(K,1);w.querySelectorAll('.abdel').forEach(b=>b.style.visibility=rows.length>1?'':'hidden')};
+ ov.querySelectorAll('.abw').forEach(abSync);
+ ov.addEventListener('input',e=>{const w=e.target.closest('.abw');if(w)abSync(w)});
+ ov.addEventListener('click',e=>{const add=e.target.closest('[data-abadd]');if(add){const w=add.closest('.abw'),l=w.querySelector('.abl');l.insertAdjacentHTML('beforeend',abRow(l.children.length,['','']));abSync(w);l.lastElementChild.querySelector('textarea').focus();return}const del=e.target.closest('[data-abdel]');if(del){const w=del.closest('.abw');del.closest('.abr').remove();abSync(w)}});
  ov.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'){e.preventDefault();if(cur<N)go(cur+1)}});
  sync();go(0)}
 function formModal(id,row){const o=T[id];const cols=o.cols.filter(c=>c.frm!==false&&(row||!c.editOnly)&&(!c.fshow||c.fshow(row)));
@@ -9512,7 +9535,7 @@ const HELP={
  'dashboard':{d:'Ringkasan eksekutif capaian program transformasi untuk pimpinan.',c:['Pilih tahun di bagian atas.','Klik kartu atau grafik untuk membuka rincian di PMO.'],e:[]},
  'cmo-siklus':{d:'Modul CM yang terbentuk dari item ADP di WBS beserta tahapannya.',c:['Klik modul untuk membuka ruang kerjanya.','Isian per modul: ADP → Perencanaan → Implementasi → Monev → Closing.','Pusmantap berperan sebagai pendamping (advisory); isian substansi oleh unit pemilik modul.'],e:[['Contoh modul OA','Modul Perjalanan Dinas · Aplikasi PENA JFKN · Modul PPO']]},
  'cmo-adopsi':{d:'Tingkat adopsi pengguna per modul dari indikator ADP dan data Monev.',c:['Bandingkan target dan realisasi adopsi per modul.'],e:[]},
- 'cmo-adp':{d:'Analisis Dampak Perubahan per modul: as-is, to-be, POSTeR, risiko, indikator keberhasilan.',c:['Isi per sub modul.','Dampak dinilai pada aspek POSTeR: Proses bisnis, Organisasi, SDM, Teknologi (Te), Regulasi.','Tetapkan indikator keberhasilan yang bisa diukur saat Monev.'],e:[['Contoh dampak (PENA JFKN)','Proses: pembinaan dan formasi JF KN dilakukan dalam satu aplikasi. SDM: pejabat fungsional perlu pelatihan penggunaan aplikasi.']]},
+ 'cmo-adp':{d:'Analisis Dampak Perubahan per modul: as-is, to-be, POSTeR, risiko, indikator keberhasilan.',c:['Isi per sub modul.','Dampak dinilai pada aspek POSTeR: Proses kerja, Organisasi, SDM, Teknologi (Te), Regulasi.','Tetapkan indikator keberhasilan yang bisa diukur saat Monev.'],e:[['Contoh dampak (PENA JFKN)','Proses kerja: pembinaan dan formasi JF KN dilakukan dalam satu aplikasi. SDM: pejabat fungsional perlu pelatihan penggunaan aplikasi.']]},
  'cmo-rencana':{d:'Identifikasi stakeholder, rencana komunikasi, pelatihan, dan jejaring perubahan.',c:['Petakan stakeholder pada matriks experience–support.','Setiap kegiatan komunikasi/pelatihan diberi jadwal dan PIC.'],e:[['Contoh kegiatan','Rapat Komitmen Pimpinan Adopsi dan Implementasi PENA JFKN (communication plan)']]},
  'cmo-impl':{d:'Status pelaksanaan kegiatan komunikasi dan pelatihan, disalin dari Perencanaan.',c:['Ubah status menjadi Terlaksana dan isi tanggal serta bukti.'],e:[['Contoh','Training of Master Trainer Aplikasi PENA JFKN · Terlaksana']]},
  'cmo-monev':{d:'Penyesuaian RTL, kertas kerja monev, adopsi, dan keberhasilan CM.',c:['Isi hasil pemantauan per TW.','Tindak lanjut ditulis sebagai rencana aksi berikutnya.'],e:[]},
@@ -9599,8 +9622,8 @@ const FORMEX={
   ['nama','Sub modul',1,'Nama bagian modul yang dianalisis.','Interkoneksi HRIS–SIASN'],
   ['asis','Kondisi As-Is',0,'Cara kerja saat ini, apa adanya.','Pengajuan pemberhentian dan pensiun dilakukan melalui beberapa aplikasi dan surat manual ke BKN.'],
   ['tobe','Kondisi To-Be',0,'Cara kerja setelah perubahan.','Pengajuan ke BKN terintegrasi dalam satu modul HRIS; status usulan dapat dipantau real-time.'],
-  ['P','Proses Bisnis — tingkat',0,'— / Minor / Moderate / Significant.','Significant'],
-  ['Pk','Proses Bisnis — uraian',0,'Jelaskan alasan tingkat dampak.','Alur pengajuan berubah dari manual/semi digital menjadi end-to-end di HRIS.'],
+  ['P','Proses Kerja — tingkat',0,'— / Minor / Moderate / Significant.','Significant'],
+  ['Pk','Proses Kerja — uraian',0,'Jelaskan alasan tingkat dampak.','Alur pengajuan berubah dari manual/semi digital menjadi end-to-end di HRIS.'],
   ['O','Organisasi — tingkat',0,'Dampak pada struktur atau pembagian tugas.','Minor'],
   ['Ok','Organisasi — uraian',0,'Jelaskan alasan.','Penyesuaian peran unit pengelola kepegawaian dalam verifikasi usulan.'],
   ['S','SDM — tingkat',0,'Dampak pada kompetensi atau perilaku pegawai.','Moderate'],
@@ -9997,7 +10020,7 @@ const GUIDE={
  tujuan:'Analisis Dampak Perubahan (ADP) per modul: apa yang berubah, seberapa besar dampaknya, risikonya, dan indikator keberhasilannya.',
  alur:[
   ['Pilih modul dan sub modul','Pilih modul lalu klik + Sub modul.'],
-  ['Tab Dampak','Isi kondisi as-is, to-be, dan tingkat dampak POSTeR (Proses, Organisasi, SDM, Teknologi, Regulasi) beserta risiko.',null,null,'adp'],
+  ['Tab Dampak','Isi kondisi as-is, to-be, dan tingkat dampak POSTeR (Proses kerja, Organisasi, SDM, Teknologi, Regulasi) beserta risiko.',null,null,'adp'],
   ['Tab Poster','Ringkasan dampak dalam satu halaman.'],
   ['Tab Registrasi','Registrasi sub modul dan statusnya.'],
   ['Tab Indikator','Tetapkan indikator keberhasilan dan bobotnya (total 100%).',null,null,'ind'],
@@ -10122,7 +10145,7 @@ const GUIDE_Q={
 'cmo-adopsi':[
  ['Tingkat adopsi (%)','Realisasi penggunaan (pengguna aktif atau transaksi) dibanding ekspektasi.',['Isi data per periode di Monev › tab Adopsi.'],'120 pengguna aktif dari ekspektasi 200 → 60%.','cmo-monev','Buka Monev']],
 'cmo-adp':[
- ['Tingkat dampak POSTeR','Seberapa besar perubahan pada Proses, Organisasi, SDM, Teknologi, dan Regulasi: — (tidak ada), Minor, Moderate, Significant.',['Untuk tiap aspek, tulis as-is, to-be, siapa terdampak, lalu pilih tingkatnya.'],'Teknologi: dari input manual Excel menjadi aplikasi → Significant.'],
+ ['Tingkat dampak POSTeR','Seberapa besar perubahan pada Proses kerja, Organisasi, SDM, Teknologi, dan Regulasi: — (tidak ada), Minor, Moderate, Significant.',['Untuk tiap aspek, tulis as-is, to-be, siapa terdampak, lalu pilih tingkatnya.'],'Teknologi: dari input manual Excel menjadi aplikasi → Significant.'],
  ['Bobot indikator (total 100%)','Indikator keberhasilan CM dan bobotnya; jumlah semua bobot harus 100%.',['Tetapkan baseline, target, dan bobot tiap indikator.'],'Adopsi 50% + kepuasan pengguna 30% + kesiapan 20% = 100%.']],
 'cmo-rencana':[
  ['Experience &amp; Support (matriks ESM)','Penilaian pengalaman dan dukungan tiap stakeholder; posisinya di matriks menentukan strategi pendekatan.',['Isi penilaian di tab Stakeholder; matriks ESM terbentuk otomatis.'],'Support rendah, experience rendah → prioritas komunikasi intensif dan pendampingan.'],
@@ -10178,7 +10201,7 @@ const FLOW_CMO=[
  ['Pemantauan dan Evaluasi','Pantau efektivitas kegiatan dan indikator keberhasilan.','cmo-monev','Monev'],
  ['Evaluasi Pascaimplementasi','Nilai keberlanjutan adopsi paling cepat satu bulan setelah go-live.','cmo-pasca','Evaluasi Pascaimplementasi'],
  ['Penutupan Manajemen Perubahan','Pengalihan pendampingan ke pemilik proses bisnis/operasional.','cmo-closing','Penutupan CM']];
-const GLOSS=[['UIC','Unit Instansi Penanggung jawab: unit yang bertanggung jawab atas item/program.'],['WBS','Work Breakdown Structure: rincian pekerjaan menjadi item yang punya jadwal dan bobot.'],['Charter','Dokumen proyek yang memuat latar belakang, tujuan, ruang lingkup, dan kriteria.'],['ADP','Analisis Dampak Perubahan.'],['POSTeR','Proses bisnis, Organisasi, SDM, Teknologi, Regulasi: lima aspek dampak.'],['CM / CMO','Change Management / Change Management Office.'],['CR','Change Request: pengajuan perubahan item yang sudah baseline.'],['T-Program','Kelompok program transformasi yang dilaporkan.'],['K-Wide','IKU Kementerian yang dikaitkan dengan program transformasi.'],['TW','Triwulan.'],['RTL','Rencana Tindak Lanjut.'],['ADKAR','Awareness, Desire, Knowledge, Ability, Reinforcement: kerangka perubahan perilaku.'],['Valid','Status bukti dukung yang sudah diperiksa dan diterima PMO Kemenkeu.']];
+const GLOSS=[['UIC','Unit Instansi Penanggung jawab: unit yang bertanggung jawab atas item/program.'],['WBS','Work Breakdown Structure: rincian pekerjaan menjadi item yang punya jadwal dan bobot.'],['Charter','Dokumen proyek yang memuat latar belakang, tujuan, ruang lingkup, dan kriteria.'],['ADP','Analisis Dampak Perubahan.'],['POSTeR','Proses kerja, Organisasi, SDM, Teknologi, Regulasi: lima aspek dampak.'],['CM / CMO','Change Management / Change Management Office.'],['CR','Change Request: pengajuan perubahan item yang sudah baseline.'],['T-Program','Kelompok program transformasi yang dilaporkan.'],['K-Wide','IKU Kementerian yang dikaitkan dengan program transformasi.'],['TW','Triwulan.'],['RTL','Rencana Tindak Lanjut.'],['ADKAR','Awareness, Desire, Knowledge, Ability, Reinforcement: kerangka perubahan perilaku.'],['Valid','Status bukti dukung yang sudah diperiksa dan diterima PMO Kemenkeu.']];
 const GROLES=[['Super Admin (SA)','Akses penuh, termasuk Pengaturan.'],['PMO Kemenkeu (PMOK)','Memvalidasi bukti, menelaah CR, mengesahkan charter.'],['CMO Kemenkeu (CMOK)','Mereviu pekerjaan CM seluruh modul.'],['PMO Unit (PMOU)','Mengelola program dan WBS unit Eselon I-nya.'],['CMO Unit (CMOU)','Mengelola CM modul unitnya.'],['Tim CM Proyek (TIM)','Mengisi tahap CM untuk modul yang ditugaskan.']];
 
 /* ===== Mesin Pusat Bantuan ===== */
@@ -11079,7 +11102,7 @@ var termsPM=[
 ];
 var termsCM=[
 ['CM / CMO','Change Management / Change Management Office.'],['ADP','Analisis Dampak Perubahan; membandingkan kondisi As-Is dan To-Be.'],
-['POSTeR','Proses bisnis, Organisasi, SDM, Teknologi, Regulasi.'],['Stakeholder','Pihak yang terdampak atau dapat memengaruhi perubahan.'],
+['POSTeR','Proses kerja, Organisasi, SDM, Teknologi, Regulasi.'],['Stakeholder','Pihak yang terdampak atau dapat memengaruhi perubahan.'],
 ['Sponsor','Pimpinan yang memberikan arah, dukungan, dan legitimasi perubahan.'],['Jaringan Perubahan','Kumpulan peran pelaksana/pendukung perubahan lintas unit.'],
 ['T-Agent','Agen perubahan; pada aplikasi ini khusus modul program DOA.'],['Change Champion','Penggerak perubahan dari lingkungan pemilik proses bisnis.'],
 ['CRA','Change Readiness Assessment: pengukuran kesiapan perubahan.'],['TNA','Training Needs Analysis: analisis kebutuhan pelatihan.'],
