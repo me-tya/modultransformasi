@@ -696,6 +696,19 @@ const css=`
 .t-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--t-line2);flex-wrap:wrap}
 .t-seg{display:inline-flex;background:#E9EDF4;border-radius:11px;padding:3px;gap:2px;flex-wrap:wrap}.t-seg button{border:0;background:none;padding:7px 12px;border-radius:8px;font-weight:600;color:var(--t-ink3);display:flex;gap:6px;align-items:center;transition:.15s}.t-seg button:hover{color:var(--t-navy)}
 .t-seg button.t-on,.t-seg button.t-on:hover{background:var(--t-navy);color:#fff;box-shadow:0 2px 6px rgba(14,42,92,.25)}.t-seg .t-on .t-i{color:var(--t-gold2)}.t-seg .t-gsep{width:1px;background:#CBD4E4;margin:6px 4px;align-self:stretch}
+/* Sub-menu Tim Pusmantap: gaya sama dengan sub-tab Project/Change Management (garis bawah emas), lebar menu rata. */
+#t2 .t-head:has(>.t-seg){padding:12px 16px 0;border-bottom:0}
+#t2 .t-head>.t-seg{display:flex;flex:1 1 100%;width:100%;flex-wrap:nowrap;align-items:stretch;gap:2px;background:transparent;border-radius:0;padding:0;border-bottom:2px solid #DCE3EF}
+#t2 .t-head>.t-seg button{flex:1 1 0;min-width:0;justify-content:center;padding:10px 8px 11px;border-radius:9px 9px 0 0;font-weight:800;font-size:13.5px;color:var(--t-ink3);position:relative;white-space:nowrap;box-shadow:none}
+#t2 .t-head>.t-seg button:hover{background:#F5F8FD;color:var(--t-navy)}
+#t2 .t-head>.t-seg button.t-on,#t2 .t-head>.t-seg button.t-on:hover{background:#fff;color:#0B2447;box-shadow:0 0 0 1px #DCE3EF}
+#t2 .t-head>.t-seg button.t-on:after{content:'';position:absolute;left:0;right:0;bottom:-2px;height:3px;background:#FDB913;border-radius:2px 2px 0 0}
+#t2 .t-head>.t-seg .t-on .t-i{color:#B07A06}
+#t2 .t-head>.t-seg .t-gsep{align-self:center;height:20px;margin:0 2px 8px;flex:none}
+#t2 .t-head:has(>.t-seg){container-type:inline-size}
+@container (max-width:1180px){#t2 .t-head>.t-seg button{font-size:12.5px;padding:10px 4px 11px;gap:5px}}
+@container (max-width:1060px){#t2 .t-head>.t-seg button .t-i{display:none}#t2 .t-head>.t-seg button{white-space:normal;text-align:center;line-height:1.2}}
+@container (max-width:900px){#t2 .t-head>.t-seg{flex-wrap:wrap}#t2 .t-head>.t-seg button{flex:1 1 auto}}
 .t-btn{border:1px solid #CDD6E5;background:#fff;border-radius:9px;padding:7px 12px;font-weight:600;color:var(--t-ink2);display:inline-flex;gap:6px;align-items:center;transition:.15s;white-space:nowrap;text-decoration:none}.t-btn:hover{background:#F6F8FC;border-color:#B5C1D6}.t-btn:disabled{opacity:.5;cursor:not-allowed}
 .t-btn.t-pri{background:var(--t-navy);color:#fff;border-color:var(--t-navy)}.t-btn.t-pri:hover{background:var(--t-navy2)}.t-btn.t-gold{background:var(--t-gold);border-color:var(--t-gold);color:#0B1E44}.t-btn.t-gold:hover{background:var(--t-gold2)}
 .t-btn.t-sm{padding:4px 9px;font-size:12px;border-radius:8px}.t-btn.t-on-dark{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.25);color:#fff}.t-btn.t-on-dark:hover{background:rgba(255,255,255,.16)}
