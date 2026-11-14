@@ -2792,9 +2792,9 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 .skf-steps li:before{content:counter(st);width:26px;height:26px;border-radius:50%;border:2px solid #FDB913;color:#0B2447;font-weight:800;font-size:12px;display:grid;place-items:center;background:#fff;z-index:1}
 .skf-steps li:not(:last-child):after{content:'';position:absolute;left:13px;top:28px;bottom:-12px;width:2px;background:#E9EDF4}
 .skf-steps b{font-size:13.5px;color:#13233F}.skf-steps p{margin:2px 0 6px;font-size:13px;line-height:1.5;color:#3A4763}
-.skqa-fab{position:fixed;right:18px;bottom:52px;z-index:240000;display:flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:9px 16px 9px 9px;background:#0B2447;color:#fff;font:inherit;font-weight:800;font-size:13px;box-shadow:0 8px 24px rgba(11,36,71,.32);cursor:pointer}
-.skqa-fab span{width:28px;height:28px;border-radius:50%;background:#FDB913;color:#0B2447;display:grid;place-items:center;font-size:16px}
-.skqa-fab:hover{background:#17457F}
+.skqa-fab{position:fixed;right:20px;bottom:54px;z-index:240000;width:58px!important;height:58px!important;padding:0!important;display:grid!important;place-items:center;border:0!important;border-radius:17px!important;background:linear-gradient(145deg,#17457F,#0B2447)!important;color:#fff!important;box-shadow:0 10px 26px rgba(11,36,71,.35)!important;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.skqa-fab i{position:absolute;top:7px;right:7px;width:9px;height:9px;border-radius:50%;background:#FDB913;box-shadow:0 0 0 2px #0B2447}
+.skqa-fab:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(11,36,71,.42)!important}
 .skqa{position:fixed;right:18px;bottom:100px;z-index:260000;width:min(410px,calc(100vw - 24px));height:min(560px,calc(100vh - 140px));background:#fff;border-radius:18px;box-shadow:0 22px 60px rgba(7,23,46,.35);display:flex;flex-direction:column;overflow:hidden;border:1px solid #DCE3EF}
 .skqa[hidden]{display:none}
 .skqa header{display:flex;align-items:center;gap:10px;padding:12px 14px;background:linear-gradient(110deg,#0B2447,#17457F);color:#fff}
@@ -11705,7 +11705,7 @@ function qaOpen(){addStyle();var ex=document.getElementById('skqa');if(ex){ex.hi
  p.addEventListener('click',function(e){if(e.target.closest('[data-qx]')){p.hidden=true;return}var s=e.target.closest('[data-qs]');if(s){ask(s.getAttribute('data-qs'));return}var g=e.target.closest('[data-qgo]');if(g){var dest=g.getAttribute('data-qgo');close();if(typeof window.go==='function')window.go(dest);else location.hash='#'+dest;return}if(e.target.closest('[data-qhelp]')){window.showGuideHome&&window.showGuideHome()}});
  inp.focus()}
 window.openTanyaBantuan=qaOpen;
-function qaFab(){if(document.getElementById('skqa-fab'))return;var b=document.createElement('button');b.id='skqa-fab';b.type='button';b.className='skqa-fab';b.title='Tanya Bantuan';b.setAttribute('aria-label','Tanya Bantuan');b.innerHTML='<span>?</span><b>Tanya</b>';b.onclick=qaOpen;document.body.appendChild(b)}
+function qaFab(){if(document.getElementById('skqa-fab'))return;var b=document.createElement('button');b.id='skqa-fab';b.type='button';b.className='skqa-fab';b.title='Tanya Bantuan';b.setAttribute('aria-label','Tanya Bantuan');b.innerHTML='<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H10l-4.5 3.6V17H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="M8 9.5h8M8 12.5h5"/></svg><i aria-hidden="true"></i>';b.onclick=qaOpen;document.body.appendChild(b)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',qaFab);else qaFab();
 var cfg={
  help:{
