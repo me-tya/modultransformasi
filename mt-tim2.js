@@ -126,7 +126,7 @@ function pubBuild(){const people={},units={},t0=today(),t1=addD(t0,45);
  P.forEach(p=>{const off=[];T().cutiEff(p.raw||{}).forEach(c=>{if((c.selesai||c.mulai)>=t0)off.push({a:c.mulai,b:c.selesai||c.mulai})});const r=p.raw;if(r.status==='Cuti'&&r.statusMulai)off.push({a:r.statusMulai,b:r.statusSelesai||'9999-12-31'});
   const ov={};Object.entries(C().ovr).forEach(([k,o])=>{const[n,d]=k.split('|');if(n===p.n&&d>=t0&&d<=t1)ov[d]=o.c});
   const st=(STX[p.n]||[]).filter(x=>x.b>=t0).map(x=>({a:x.a,b:x.b}));
-  people[p.n]={nk:nk(p),j:p.j,t:p.t,tx:p.tx,k:p.k?1:0,hp:p.hp,emailK:p.emailK,wfh:(r.wfhDays||[]).map(Number),off,ov,st}});
+  people[p.n]={nk:nk(p),j:p.j,t:p.t,tx:p.tx,k:p.k?1:0,hp:p.hp,emailK:p.emailK,wfh:[...new Set(C().wfhd.concat(r.wfhDays||[]).map(Number))],off,ov,st}});
  const k=kpCfg(),us=[...new Set([...UNITS_ALL(),...Object.keys(k.asg)])];
  us.forEach(u=>{const pend=(k.asg[u]||[]).filter(n=>people[n]);const kontak=kpPeople().filter(c=>c.unit===u&&(typeof kpOn==='function'?kpOn:()=>true)(c)).map(c=>({nama:c.nama,peran:c.peran||[],jab:c.jabatan||'',email:c.email||'',hp:c.hp||''}));if(pend.length||kontak.length)units[u]={pend,kontak}});
  return {people,units,wfhd:C().wfhd,teams:TEAMS.map(t=>({id:t.id,r:t.r})),kapus:KAP?KAP.n:''}}
