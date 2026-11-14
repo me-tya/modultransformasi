@@ -239,7 +239,7 @@ function cellPop(p,ds){const c=code(p,ds),o=C().ovr[p.n+'|'+ds];return '<div cla
 
 /* ================= TAB AGENDA ================= */
 function vAgenda(){const ds=ST.agD||today(),A=agendaOn(ds),L=agFilter(A).filter(a=>!ST.q||(a.j+a.u+a.mode+a.p.map(n=>nk(pn(n))).join(' ')).toLowerCase().includes(ST.q.toLowerCase()));
- const rows=L.map(a=>'<tr><td><b style="color:var(--t-navy)">'+H(a.s)+(a.e?'–'+H(a.e):'')+'</b></td><td><b>'+H(a.j)+'</b> '+(a.kap?'<span class="t-chip t-ke">'+ic('crown','s')+'Pimpinan</span>':'')+'</td><td>'+(a.u?'<span class="t-chip t-pm">'+H(a.u)+'</span>':'—')+'</td><td class="t-sm">'+H(a.mode||'—')+'</td><td><div class="t-pl">'+a.p.map(n=>nkc(n)).join('')+'</div></td><td class="t-xs t-muted">'+H(a.src)+'</td><td style="text-align:right;white-space:nowrap"><button type="button" class="t-btn t-sm" data-tag="'+H(a.id)+'" data-tagk="'+(a.pim?'pim':'akt')+'">Detail</button>'+(a.pim&&canAgpim()?' <button type="button" class="t-btn t-sm" data-tagp="'+H(a.id)+'">'+ic('edit','s')+'</button>':'')+'</td></tr>').join('');
+ const rows=L.map(a=>'<tr class="t-agrow" tabindex="0" title="Buka '+(a.pim?'agenda pimpinan':'aktivitas')+'" '+(a.pim?(canAgpim()?'data-tagp="'+H(a.id)+'"':'data-tag="'+H(a.id)+'" data-tagk="pim"'):'data-act="calOpen" data-id="'+H(a.id)+'"')+'><td class="t-agj"><b>'+H(a.s)+(a.e?'–'+H(a.e):'')+'</b></td><td><b>'+H(a.j)+'</b> '+(a.kap?'<span class="t-chip t-ke">'+ic('crown','s')+'Pimpinan</span>':'')+'</td><td>'+(a.u?'<span class="t-chip t-pm">'+H(a.u)+'</span>':'—')+'</td><td class="t-sm">'+H(a.mode||'—')+'</td><td><div class="t-pl">'+a.p.map(n=>nkc(n)).join('')+'</div></td><td class="t-xs t-muted">'+H(a.src)+'</td><td class="t-stgo">'+ic('cr','s')+'</td></tr>').join('');
  return '<div class="t-card"><div class="t-head">'+seg()+'</div><div class="t-toolrow"><div class="t-dnav"><button type="button" class="t-ibtn" data-tagd="-1" aria-label="Hari sebelumnya">'+ic('cl')+'</button><b>'+fmt(ds)+'</b><button type="button" class="t-ibtn" data-tagd="1" aria-label="Hari berikutnya">'+ic('cr')+'</button>'+(ds!==today()?'<button type="button" class="t-btn t-sm" data-tagd="0">Hari ini</button>':'')+'</div><div class="t-tools">'+agSel(A)+srch('Cari agenda atau nama…')+(canEdit()?'<button type="button" class="t-btn" data-act="oneAdd" data-date="'+ds+'">'+ic('list','s')+'Tambah aktivitas</button>':'')+(canAgpim()?'<button type="button" class="t-btn t-gold" data-tagp="new">'+ic('plus','s')+'Agenda Pimpinan</button>':'')+'</div></div>'+
   '<div class="t-msg t-inf" style="margin:12px 16px 0">'+ic('sync','s')+'<span>Agenda tim terisi <b>otomatis</b> dari Daftar Aktivitas (tanggal, jam, PIC, Surat Tugas). Hanya <b>agenda Ka. Pusmantap</b> yang diinput di sini oleh Sekretaris.</span></div><div style="padding:12px 16px 16px;overflow:auto"><table class="t-tbl"><thead><tr><th>Jam</th><th>Kegiatan</th><th>Unit</th><th>Tempat</th><th>Peserta Pusmantap</th><th>Sumber</th><th></th></tr></thead><tbody>'+(rows||'<tr><td colspan="7" class="t-empty">Tidak ada agenda</td></tr>')+'</tbody></table></div></div>'}
 
@@ -728,6 +728,8 @@ const css=`
 /* Profil: tab dalam + Per unit */
 .t-pvw{padding:14px 16px 0}
 .t-stf{display:flex;gap:5px;flex-wrap:wrap;padding:10px 14px 4px}.t-stf button{border:1px solid #E3E8F0;background:#fff;border-radius:999px;padding:4px 11px;font-weight:700;font-size:12px;color:#4C5D78;cursor:pointer}.t-stf button em{font-style:normal;opacity:.7}.t-stf button.t-on{background:var(--t-navy);border-color:var(--t-navy);color:#fff}
+.t-agrow{cursor:pointer;transition:background .12s}.t-agrow:hover{background:#F5F8FD}.t-agrow:hover td>b{color:var(--t-navy);text-decoration:underline}.t-agrow:focus-visible{outline:2px solid var(--t-navy);outline-offset:-2px}.t-agrow:hover .t-stgo{color:var(--t-navy)}
+.t-agj{white-space:nowrap;width:1%;padding-right:18px!important}.t-agj b{color:var(--t-navy);font-variant-numeric:tabular-nums}
 .t-strow{cursor:pointer;transition:background .12s}.t-strow:hover{background:#F5F8FD}.t-strow:hover b{color:var(--t-navy);text-decoration:underline}.t-strow:focus-visible{outline:2px solid var(--t-navy);outline-offset:-2px}
 .t-stpic{display:flex;gap:4px;flex-wrap:wrap}.t-stgo{color:#9AA6B8;width:20px}.t-strow:hover .t-stgo{color:var(--t-navy)}
 .t-sttb .t-badge{margin-top:4px;display:inline-block}
@@ -764,14 +766,14 @@ const css=`
 /* Sub-menu Tim Pusmantap: gaya sama dengan sub-tab Project/Change Management (garis bawah emas), lebar menu rata. */
 #t2 .t-head:has(>.t-seg){padding:12px 16px 0;border-bottom:0}
 #t2 .t-head>.t-seg{display:flex;flex:1 1 100%;width:100%;flex-wrap:nowrap;align-items:stretch;gap:2px;background:transparent;border-radius:0;padding:0;border-bottom:2px solid #DCE3EF}
-#t2 .t-head>.t-seg button{flex:1 1 0;min-width:0;justify-content:center;padding:10px 8px 11px;border-radius:9px 9px 0 0;font-weight:800;font-size:13.5px;color:var(--t-ink3);position:relative;white-space:nowrap;box-shadow:none}
+#t2 .t-head>.t-seg button{flex:1 1 0;min-width:0;justify-content:center;padding:6px 8px 7px;border-radius:8px 8px 0 0;font-weight:800;font-size:12px;color:var(--t-ink3);position:relative;white-space:nowrap;box-shadow:none}
 #t2 .t-head>.t-seg button:hover{background:#F5F8FD;color:var(--t-navy)}
 #t2 .t-head>.t-seg button.t-on,#t2 .t-head>.t-seg button.t-on:hover{background:#fff;color:#0B2447;box-shadow:0 0 0 1px #DCE3EF}
 #t2 .t-head>.t-seg button.t-on:after{content:'';position:absolute;left:0;right:0;bottom:-2px;height:3px;background:#FDB913;border-radius:2px 2px 0 0}
 #t2 .t-head>.t-seg .t-on .t-i{color:#B07A06}
-#t2 .t-head>.t-seg .t-gsep{align-self:center;height:20px;margin:0 2px 8px;flex:none}
+#t2 .t-head>.t-seg .t-gsep{align-self:center;height:16px;margin:0 2px 6px;flex:none}
 #t2 .t-head:has(>.t-seg){container-type:inline-size}
-@container (max-width:1180px){#t2 .t-head>.t-seg button{font-size:12.5px;padding:10px 4px 11px;gap:5px}}
+@container (max-width:1180px){#t2 .t-head>.t-seg button{font-size:11.5px;padding:6px 4px 7px;gap:5px}}
 @container (max-width:1060px){#t2 .t-head>.t-seg button .t-i{display:none}#t2 .t-head>.t-seg button{white-space:normal;text-align:center;line-height:1.2}}
 @container (max-width:900px){#t2 .t-head>.t-seg{flex-wrap:wrap}#t2 .t-head>.t-seg button{flex:1 1 auto}}
 .t-btn{border:1px solid #CDD6E5;background:#fff;border-radius:9px;padding:7px 12px;font-weight:600;color:var(--t-ink2);display:inline-flex;gap:6px;align-items:center;transition:.15s;white-space:nowrap;text-decoration:none}.t-btn:hover{background:#F6F8FC;border-color:#B5C1D6}.t-btn:disabled{opacity:.5;cursor:not-allowed}
