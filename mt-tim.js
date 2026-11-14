@@ -37,7 +37,7 @@ const tmRole=s=>/supervisor|spv/i.test(s||'')?'Supervisor':/ketua|katim/i.test(s
 /* Penempatan (satu sumber dengan tab Penempatan Tim): tim utama + peran, tim tambahan + peran, jabatan struktural. */
 function place(p,k){k=k||kpCfg();const t=teamOf(p,k),tx=((k.ptx||{})[p.n]||[]).filter(x=>x&&x!==t&&k.tims.includes(x));
  return {t,r:tmRole(p.peran),tx:tx.map(x=>({t:x,r:((k.rl||{})[p.n]||{})[x]||'Anggota'})),str:TM_STR.filter(x=>(k.str||{})[x[0]]===p.n),stp:Object.keys(TM_STU).filter(id=>((k.stp||{})[id]||[]).includes(p.n))}}
-const tmLab=(t,r)=>{const sh=String(t).replace(/^Tim\s+/i,'');return r==='Ketua'?'Katim '+sh:r==='Supervisor'?'Supervisor '+sh:t+' · Anggota'};
+const tmLab=(t,r)=>{const sh=String(t).replace(/^Tim\s+/i,'');return r==='Ketua'?'Katim '+sh:r==='Supervisor'?'SPV '+sh:t+' · Anggota'};
 /* Hapus pegawai hanya superadmin; superadmin juga diberi tanda kemungkinan data ganda. */
 function tmIsSA(){return typeof ME!=='undefined'&&!!ME&&ME.role==='SA'}
 function tmNameKey(n){return String(n||'').toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).filter(w=>w.length>2)}
