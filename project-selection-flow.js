@@ -12,8 +12,8 @@ const PS_CRITERIA=[
   rubric:['> 365 hari lagi / belum ditetapkan','181 – 365 hari lagi','91 – 180 hari lagi','31 – 90 hari lagi','≤ 30 hari lagi / sudah lewat & belum stabil']},
  {code:'C5',note:'Sumber: asesmen kesiapan organisasi atau CRA · otomatis',g:'UK',name:'Gap Kesiapan Perubahan',en:'Readiness Gap',type:'benefit',w:5,auto:'readiness',desc:'Makin rendah skor kesiapan, makin besar kebutuhan pendampingan. Otomatis dari asesmen kesiapan organisasi oleh Tim CM, atau dari hasil CRA bila unit memintanya.',
   rubric:['Kesiapan ≥ 80% (Ready)','Kesiapan 70 – 79% (Conditional)','Kesiapan 60 – 69%','Kesiapan 50 – 59% (Intervention)','Kesiapan < 50% (Not Ready)']},
- {code:'C6',note:'Rata-rata Likert POSTER (Proses, Organisasi, SDM, Teknologi, Regulasi) · otomatis',g:'UP',name:'Tingkat Perubahan (POSTER)',en:'Change Magnitude (POSTER)',type:'benefit',w:3,auto:'poster',desc:'Besarnya perubahan dari analisis dampak POSTER: Proses kerja, Organisasi, SDM, Teknologi, Regulasi — masing-masing Likert 1–5. Otomatis = rata-rata dibulatkan; bila ada dimensi bernilai 5, C6 minimal 3.',
-  rubric:['Perubahan minor / tampilan (rata-rata POSTER ≈ 1)','Penyesuaian prosedur kecil (rata-rata POSTER ≈ 2)','Perubahan sebagian proses bisnis (rata-rata POSTER ≈ 3)','Perubahan proses + peran / organisasi (rata-rata POSTER ≈ 4)','Transformasi menyeluruh — proses, regulasi, budaya (rata-rata POSTER ≈ 5)']},
+ {code:'C6',note:'Rata-rata Likert POSTeR (Proses, Organisasi, SDM, Teknologi, Regulasi) · otomatis',g:'UP',name:'Tingkat Perubahan (POSTeR)',en:'Change Magnitude (POSTeR)',type:'benefit',w:3,auto:'poster',desc:'Besarnya perubahan dari analisis dampak POSTeR: Proses kerja, Organisasi, SDM, Teknologi, Regulasi — masing-masing Likert 1–5. Otomatis = rata-rata dibulatkan; bila ada dimensi bernilai 5, C6 minimal 3.',
+  rubric:['Perubahan minor / tampilan (rata-rata POSTeR ≈ 1)','Penyesuaian prosedur kecil (rata-rata POSTeR ≈ 2)','Perubahan sebagian proses bisnis (rata-rata POSTeR ≈ 3)','Perubahan proses + peran / organisasi (rata-rata POSTeR ≈ 4)','Transformasi menyeluruh — proses, regulasi, budaya (rata-rata POSTeR ≈ 5)']},
  {code:'C7',note:'Satuan: orang-hari/bulan · kriteria biaya',g:'UP',name:'Kebutuhan Sumber Daya Tim CM',en:'CM Team Effort',type:'cost',w:3,desc:'Beban narasumber/pendampingan Tim CM. Kriteria biaya: makin berat, utility makin kecil.',
   rubric:['< 5 orang-hari/bulan (sangat ringan)','5 – 10 orang-hari/bulan (ringan)','11 – 20 orang-hari/bulan (sedang)','21 – 40 orang-hari/bulan (berat)','> 40 orang-hari/bulan (sangat berat)']},
  {code:'C8',auto:'sdm',note:'Efisiensi waktu/biaya & kualitas layanan · tematik: otomatis dari target pengurangan SDM',g:'BR',name:'Nilai Manfaat (Efisiensi & Layanan)',en:'Benefit Value',type:'benefit',w:6,desc:'Besarnya manfaat yang diharapkan: penghematan waktu/biaya proses, peningkatan kualitas layanan.',
@@ -367,7 +367,7 @@ function smartFormulaPanel(p){
  const all=activeCriteria(p),sum=all.reduce((n,c)=>n+weight(p,c.code),0);
  const steps=[
   ['Normalisasi bobot','<div class="prio-eq">w′<sub>j</sub> = w<sub>j</sub> / Σ w<sub>j</sub></div><p>Bobot 1–7 per kriteria; saat ini Σ W = <b>'+sum+'</b>.</p>'],
-  ['Nilai kriteria','<p>Tiap proyek dinilai 1–5 untuk 12 kriteria. C2, C4, C5, C6, C8 (tematik) dan C12 dapat dihitung otomatis dari data sumber jika tersedia.</p><div class="prio-eq">C6 = round((P + O + S + T + R) / 5)</div><p>Jika ada dimensi POSTER bernilai 5, C6 minimal 3.</p>'],
+  ['Nilai kriteria','<p>Tiap proyek dinilai 1–5 untuk 12 kriteria. C2, C4, C5, C6, C8 (tematik) dan C12 dapat dihitung otomatis dari data sumber jika tersedia.</p><div class="prio-eq">C6 = round((P + O + S + Te + R) / 5)</div><p>Jika ada dimensi POSTeR bernilai 5, C6 minimal 3.</p>'],
   ['Utility','<div class="prio-eq">benefit: u<sub>ij</sub> = (c<sub>ij</sub> − c<sub>min</sub>)/(c<sub>max</sub> − c<sub>min</sub>)</div><div class="prio-eq">biaya: u<sub>ij</sub> = (c<sub>max</sub> − c<sub>ij</sub>)/(c<sub>max</sub> − c<sub>min</sub>)</div><p>Skala nilai 1–5 membuat c<sub>min</sub> = 1 dan c<sub>max</sub> = 5. C7 dan C12 adalah kriteria biaya.</p>'],
   ['Skor akhir & kategori','<div class="prio-eq">S<sub>i</sub> = Σ w′<sub>j</sub> · u<sub>ij</sub> × 100</div><p>P1 Tinggi ≥ 70; P2 Sedang 40–69; P3 Rendah &lt; 40. Proyek dipilih otomatis hanya jika seluruh 12 kriteria lengkap dan skor <b>lebih besar</b> dari ambang program.</p>']
  ];
@@ -392,7 +392,7 @@ function referencePage(p){
   }
  });
  h+='</tbody><tfoot><tr><td colspan="5">Jumlah bobot</td><td>'+w+'</td><td>100%</td></tr></tfoot></table></div></div>';
- h+='<div class="prio-card"><h3>Tabel 2 · Rubrik POSTER (dasar nilai C6)</h3><p class="prio-sub">Perubahan Proses, Organisasi, SDM, Teknologi, dan Regulasi dinilai 1–5. C6 dihitung dari rata-rata; apabila terdapat nilai 5, C6 minimal 3.</p></div>';
+ h+='<div class="prio-card"><h3>Tabel 2 · Rubrik POSTeR (dasar nilai C6)</h3><p class="prio-sub">Perubahan Proses, Organisasi, SDM, Teknologi, dan Regulasi dinilai 1–5. C6 dihitung dari rata-rata; apabila terdapat nilai 5, C6 minimal 3.</p></div>';
  h+='<div class="prio-card"><h3>Tabel 3 · Panduan Implementasi</h3><p>1. Susun program dan calon proyek untuk tahun terpilih.</p><p>2. Aktifkan SMART hanya jika perlu memilih proyek berdasarkan skor.</p><p>3. Tetapkan proyek final, generate rancangan RKMK, kemudian susun WBS pada Project Management.</p><p>4. Monev mengukur adopsi dan manfaat setelah implementasi.</p></div>';
  return '<div class="prio-rlayout'+(u.formula?'':' noformula')+'"><div class="prio-rmain">'+h+'</div>'+(u.formula?smartFormulaPanel(p):'')+'</div>';
 }
@@ -547,7 +547,7 @@ function projectModal(p,id){
   return '<label><b>'+c.code+' · '+esc2(c.name)+'</b><small>'+esc2(c.note||'')+'</small><select data-score="'+c.code+'"><option value="">'+(c.auto?'Gunakan nilai otomatis / belum tersedia':'Belum dinilai')+'</option>'+
   [1,2,3,4,5].map((v,i)=>'<option value="'+v+'"'+(chosen===v?' selected':'')+'>'+v+' · '+esc2(c.rubric[i])+'</option>').join('')+'</select></label>';
  }).join('')+'</div>'+
- '<h4>POSTER (untuk C6 otomatis)</h4><div class="pswf-minigrid">'+[['P','Proses'],['O','Organisasi'],['S','SDM'],['T','Teknologi'],['R','Regulasi']].map(d=>'<label>'+d[1]+' <select data-poster="'+d[0]+'"><option value="">—</option>'+[1,2,3,4,5].map(v=>'<option value="'+v+'"'+(+(x?.poster||{})[d[0]]===v?' selected':'')+'>'+v+'</option>').join('')+'</select></label>').join('')+'</div>'+
+ '<h4>POSTeR (untuk C6 otomatis)</h4><div class="pswf-minigrid">'+[['P','Proses'],['O','Organisasi'],['S','SDM'],['T','Teknologi'],['R','Regulasi']].map(d=>'<label>'+d[1]+' <select data-poster="'+d[0]+'"><option value="">—</option>'+[1,2,3,4,5].map(v=>'<option value="'+v+'"'+(+(x?.poster||{})[d[0]]===v?' selected':'')+'>'+v+'</option>').join('')+'</select></label>').join('')+'</div>'+
  '<h4>Risiko implementasi (untuk C12 otomatis)</h4><div class="pswf-minigrid">'+[['res','Resistensi'],['op','Operasional'],['dep','Ketergantungan']].map(d=>'<label>'+d[1]+' <select data-risk="'+d[0]+'"><option value="">—</option>'+[['1','Rendah'],['2','Sedang'],['3','Tinggi']].map(z=>'<option value="'+z[0]+'"'+(String((x?.risks||{})[d[0]])===z[0]?' selected':'')+'>'+z[1]+'</option>').join('')+'</select></label>').join('')+'</div></details>';
  modal((x?'Ubah':'Tambah')+' Calon Proyek · '+p.nama,body,(box,close)=>{
   if(!val(box,'name')||!val(box,'uic')){toast('Nama Proyek dan UIC wajib diisi.');return}
