@@ -6,33 +6,47 @@
 (function(){
  'use strict';
  const HOST='aset-satu.kemenkeu.go.id';
+ const SEL='img[src*="'+HOST+'"],img.tm-av[src^="data:"],img.kp-ph[src^="data:"],.t-av img[src^="data:"],.t-kph img[src^="data:"]';
  const MEM={},FAIL={},BUSY={};let saveT=0,applyT=0;
- const key=u=>String(u||'').split('/').pop().slice(0,64);
+ const key=u=>{u=String(u||'');if(u.startsWith('data:')){let h=0;for(let i=0;i<u.length;i+=7)h=(h*31+u.charCodeAt(i))|0;return 'd'+u.length.toString(36)+'_'+(h>>>0).toString(36)}return u.split('/').pop().slice(0,64)};
  try{Object.assign(MEM,JSON.parse(localStorage.getItem('MT_FBOX')||'{}'))}catch(e){}
  const store=()=>{try{const k=kpCfg();k.fbox=k.fbox||{};return k.fbox}catch(e){return MEM}};
+ /* Kembalikan bingkai "atas% kanan% bawah% kiri%" (kepala & bahu) atau null.
+    Mendukung dua bentuk: foto persegi berlatar polos (Satu Kemenkeu), dan potongan lingkaran avatar dari
+    skrinsyut (sudut putih + lingkaran berlatar warna) — sudut putih di luar lingkaran diabaikan. */
  function frameOf(img){
-  const W=120,H=Math.max(1,Math.round(img.naturalHeight*W/img.naturalWidth));const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(img,0,0,W,H);
-  const d=x.getImageData(0,0,W,H).data,px=(i,j)=>{const o=(j*W+i)*4;return [d[o],d[o+1],d[o+2]]};
-  const bgs=[px(2,2),px(W-3,2),px(2,Math.min(H-1,20)),px(W-3,Math.min(H-1,20))],bg=[0,1,2].map(k=>bgs.reduce((a,b)=>a+b[k],0)/bgs.length);
-  const fg=(i,j)=>{const p=px(i,j);return Math.abs(p[0]-bg[0])+Math.abs(p[1]-bg[1])+Math.abs(p[2]-bg[2])>90};
+  const IW=img.naturalWidth||img.width,IH=img.naturalHeight||img.height;if(!IW||!IH)return null;
+  const W=120,H=Math.max(1,Math.round(IH*W/IW));const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(img,0,0,W,H);
+  const d=x.getImageData(0,0,W,H).data,px=(i,j)=>{i=Math.max(0,Math.min(W-1,Math.round(i)));j=Math.max(0,Math.min(H-1,Math.round(j)));const o=(j*W+i)*4;return [d[o],d[o+1],d[o+2]]};
+  const white=p=>p[0]>232&&p[1]>232&&p[2]>232,avg=a=>[0,1,2].map(k=>a.reduce((s,b)=>s+b[k],0)/a.length);
+  const corners=[px(1,1),px(W-2,1),px(1,H-2),px(W-2,H-2)];
+  let circ=false,bg;
+  if(corners.every(white)&&Math.abs(W-H)<=W*.08&&!white(px(W/2,H*.12))){circ=true;bg=avg([px(W/2,H*.1),px(W*.32,H*.2),px(W*.68,H*.2)])}
+  else bg=avg([px(2,2),px(W-3,2),px(2,Math.min(H-1,20)),px(W-3,Math.min(H-1,20))]);
+  const R=Math.min(W,H)*.45,inC=(i,j)=>!circ||((i-W/2)**2+(j-H/2)**2<=R*R);
+  const fg=(i,j)=>{if(!inC(i,j))return false;const p=px(i,j);return Math.abs(p[0]-bg[0])+Math.abs(p[1]-bg[1])+Math.abs(p[2]-bg[2])>90};
   let top=-1;for(let j=0;j<H&&top<0;j++){let n=0;for(let i=Math.round(W*.2);i<W*.8;i++)if(fg(i,j))n++;if(n>=Math.max(2,W*.03))top=j}
   if(top<0)return null;
   const band=Math.max(4,Math.round(H*.16)),Ls=[],Rs=[];
   for(let j=top;j<Math.min(H,top+band);j++){let l=-1,r=-1;for(let i=0;i<W;i++)if(fg(i,j)){if(l<0)l=i;r=i}if(l>=0){Ls.push(l);Rs.push(r)}}
   if(!Ls.length)return null;Ls.sort((a,b)=>a-b);Rs.sort((a,b)=>a-b);
   const l=Ls[Math.floor(Ls.length/2)],r=Rs[Math.floor(Rs.length/2)],hw=Math.max(8,r-l),cx=(l+r)/2;
-  let s=Math.min(W,H,hw*2.6),y0=Math.max(0,top-s*.16),x0=Math.min(Math.max(0,cx-s/2),W-s);if(y0+s>H)y0=Math.max(0,H-s);
+  const lim=circ?R*2/Math.SQRT2*1.12:Math.min(W,H);
+  let s=Math.min(lim,hw*2.6),y0=Math.max(0,top-s*.16),x0=Math.min(Math.max(0,cx-s/2),W-s);if(y0+s>H)y0=Math.max(0,H-s);
+  if(s>=Math.min(W,H)*.97)return null;
   const f=v=>(Math.max(0,v)*100).toFixed(1)+'%';
   return [f(y0/H),f(1-(x0+s)/W),f(1-(y0+s)/H),f(x0/W)].join(' ');
  }
  function detect(url){if(BUSY[url]||FAIL[url])return;BUSY[url]=1;const im=new Image();im.crossOrigin='anonymous';im.decoding='async';
-  im.onload=()=>{let b=null;try{b=frameOf(im)}catch(e){FAIL[url]=1}BUSY[url]=0;if(!b){FAIL[url]=1;return}const S2=store();S2[key(url)]=b;MEM[key(url)]=b;schedSave();schedApply()};
+  im.onload=()=>{let b=null;try{b=frameOf(im)}catch(e){FAIL[url]=1}BUSY[url]=0;if(!b){FAIL[url]=1;MEM[key(url)]='-';schedSave();return}const S2=store();if(!url.startsWith('data:'))S2[key(url)]=b;MEM[key(url)]=b;schedSave();schedApply()};
   im.onerror=()=>{BUSY[url]=0;FAIL[url]=1};im.src=url}
  /* Disimpan di cache peramban; ikut tersimpan ke data bersama saat editor menyimpan perubahan berikutnya. */
  function schedSave(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem('MT_FBOX',JSON.stringify(MEM))}catch(e){}},800)}
- function apply(){const S2=store();document.querySelectorAll('img[src*="'+HOST+'"]').forEach(img=>{const b=S2[key(img.src)]||MEM[key(img.src)];if(b){if(img.dataset.fb!==b){img.style.objectViewBox='inset('+b+')';img.style.objectFit='cover';img.style.objectPosition='50% 50%';img.dataset.fb=b}}else detect(img.src)})}
+ function apply(){const S2=store();document.querySelectorAll(SEL).forEach(img=>{const b=S2[key(img.src)]||MEM[key(img.src)];if(b==='-')return;if(b){if(img.dataset.fb!==b){img.style.objectViewBox='inset('+b+')';img.style.objectFit='cover';img.style.objectPosition='50% 50%';img.dataset.fb=b}}else detect(img.src)})}
  function schedApply(){clearTimeout(applyT);applyT=setTimeout(apply,60)}
  window.MT_FOTO_FRAME={apply,detect,frameOf};
+ /* Untuk potongan baru: hasilkan dataURL persegi kepala & bahu dari sebuah canvas/img. */
+ window.MT_FOTO_FRAME.cropTo=function(src,OUT){const b=frameOf(src);if(!b)return null;const v=b.split(' ').map(t=>parseFloat(t)/100),W=src.naturalWidth||src.width,H=src.naturalHeight||src.height;const sx=v[3]*W,sy=v[0]*H,sw=W*(1-v[1]-v[3]),sh=H*(1-v[0]-v[2]);const o=document.createElement('canvas');o.width=o.height=OUT||160;const g=o.getContext('2d');g.imageSmoothingQuality='high';g.drawImage(src,sx,sy,sw,sh,0,0,o.width,o.height);return o};
  const st=document.createElement('style');st.id='mt-foto-frame-css';
  /* Bingkai bawaan bila deteksi belum/tidak bisa: dekatkan ke kepala & bahu. */
  st.textContent='img[src*="'+HOST+'"]:not([data-fb]){object-fit:cover;object-position:50% 30%;object-view-box:inset(16% 18% 18% 18%)}';

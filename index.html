@@ -6274,6 +6274,9 @@ function kqCropAvatar(img,parsed){
     const S=side*.94,sx=ccx,sy=ccy;
     const OUT=160,out=document.createElement('canvas');out.width=out.height=OUT;const o=out.getContext('2d');o.fillStyle='#fff';o.fillRect(0,0,OUT,OUT);o.imageSmoothingQuality='high';
     o.drawImage(img,sx-S/2,sy-S/2,S,S,0,0,OUT,OUT);
+    // Perbesar ke kepala & bahu (foto Satu Kemenkeu menyisakan banyak ruang di atas kepala).
+    try{if(window.MT_FOTO_FRAME&&MT_FOTO_FRAME.cropTo){const m=document.createElement('canvas');m.width=m.height=OUT*2;const g=m.getContext('2d');g.imageSmoothingQuality='high';g.drawImage(img,sx-S/2,sy-S/2,S,S,0,0,OUT*2,OUT*2);
+      const c=MT_FOTO_FRAME.cropTo(m,OUT);if(c)return c.toDataURL('image/jpeg',0.88)}}catch(e){}
     return out.toDataURL('image/jpeg',0.86);
   }catch(e){console.warn('Avatar crop failed',e);return '';}
 }
@@ -11397,7 +11400,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script src="mt-libur.js?v=20261113-libur1"></script>
 <script src="mt-tim.js?v=20261114-tim6"></script>
 <script src="mt-tim2.js?v=20261114-t2k"></script>
-<script src="mt-foto-frame.js?v=20261114-ff1"></script>
+<script src="mt-foto-frame.js?v=20261114-ff2"></script>
 <script src="project-selection-flow.js?v=20261111-mt14-filter"></script>
 <script src="project-selection-governance.js?v=20261111-mt13-info"></script>
 <script src="project-selection-workflow-2027.js?v=20261113-mt17-filterpm"></script>
