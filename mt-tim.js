@@ -92,17 +92,18 @@ function page(){const k=kpCfg(),all=people(),edit=canEdit(),U=S.ui;
  const list=all.filter(inTeam).sort((a,b)=>roleRank(a)-roleRank(b)||a.n.localeCompare(b.n,'id'));
  let sel=U.tmSel&&all.find(p=>p.n===U.tmSel)?U.tmSel:(list[0]||act[0]||{}).n;
  /* Kartu pegawai bergaya Pendampingan Unit: garis & cincin foto berwarna sesuai peran, label peran, NIP, jabatan. */
- const RC={Supervisor:'#6D53C7',Ketua:'#16A37F',Anggota:'#2B5AA8',Struktural:'#B08A1E','Tanpa tim':'#8A97AB',Arsip:'#8A97AB'};
- const roleIn=p=>{if(isOff(p))return 'Arsip';const PL=place(p,k);if(team&&team[0]!=='_'){if(PL.t===team)return PL.r;const x=PL.tx.find(y=>y.t===team);if(x)return x.r}
+ const RC={Kapus:'#8C6B12',Supervisor:'#6D53C7',Ketua:'#16A37F',Anggota:'#2B5AA8',Struktural:'#B08A1E','Tanpa tim':'#8A97AB',Arsip:'#8A97AB'};
+ const isKap=p=>k.str&&k.str.kapus?k.str.kapus===p.n:/^kepala pusat/i.test(p.jab||'');
+ const roleIn=p=>{if(isOff(p))return 'Arsip';if(isKap(p)&&!(team&&team[0]!=='_'))return 'Kapus';const PL=place(p,k);if(team&&team[0]!=='_'){if(PL.t===team)return PL.r;const x=PL.tx.find(y=>y.t===team);if(x)return x.r}
   if(team==='_str'||(!PL.t&&!PL.tx.length&&(PL.str.length||PL.stp.length)))return 'Struktural';return PL.t?PL.r:PL.tx.length?PL.tx[0].r:'Tanpa tim'};
- const roleOrd={Supervisor:0,Ketua:1,Anggota:2,Struktural:3,'Tanpa tim':4,Arsip:5};
+ const roleOrd={Kapus:-1,Supervisor:0,Ketua:1,Anggota:2,Struktural:3,'Tanpa tim':4,Arsip:5};
  const item=p=>{const us=unitsOf(p.n,k),s=statusOn(p),r=roleIn(p),col=RC[r],PL=place(p,k);
-  const tims=(PL.t?[PL.t]:[]).concat(PL.tx.map(x=>x.t)),rl=(r==='Ketua'||r==='Supervisor')?tmLab(team&&team[0]!=='_'?team:PL.t||(PL.tx[0]||{}).t||'',r):(PL.t?String(PL.t).replace(/^Tim\s+/i,'Tim '):r),
-   strs=PL.str.map(x=>x[2]).concat(PL.stp.map(id=>'Pelaksana '+(TM_STR.find(y=>y[0]===id)||['','',''])[2].replace(/^Ka(bid|sub)\s*/,''))),more=Math.max(0,tims.length-1);
+  const tims=(PL.t?[PL.t]:[]).concat(PL.tx.map(x=>x.t)),rl=r==='Kapus'?'Ketua Harian PMO & CMO':(r==='Ketua'||r==='Supervisor')?tmLab(team&&team[0]!=='_'?team:PL.t||(PL.tx[0]||{}).t||'',r):(PL.t?String(PL.t).replace(/^Tim\s+/i,'Tim '):r),
+   strs=r==='Kapus'?[]:PL.str.map(x=>x[2]).concat(PL.stp.map(id=>'Pelaksana '+(TM_STR.find(y=>y[0]===id)||['','',''])[2].replace(/^Ka(bid|sub)\s*/,''))),more=Math.max(0,tims.length-1);
   return '<button type="button" class="tm-p tm-pc2'+(p.n===sel?' on':'')+(isOff(p)?' off':'')+'" style="--rc:'+col+'" data-act="tmSel" data-v="'+H(p.n)+'" data-search="'+H([p.n,p.jab,p._team,us.join(' '),p.keahlian,p.nip].join(' ').toLowerCase())+'"><span class="tm-avw">'+av(p.n,p.foto,'li')+'<i class="tm-sd '+s.k.toLowerCase()+'" title="'+H(STATUS_LAB[s.k]||s.k)+'"></i></span>'+
    '<span class="tm-pb"><span class="tm-pn">'+H(p.n)+'</span><span class="tm-pj" title="'+H([p.jab,p.pang].filter(Boolean).join(' · '))+'">'+H(isOff(p)?'Tidak aktif · '+offReason(p):(p.jab||'Jabatan belum diisi'))+'</span>'+
    '<span class="tm-rcs">'+(isOff(p)?'':'<em class="rl">'+H(rl)+'</em>')+(more?'<em class="mo">+'+more+' tim</em>':'')+strs.map(x=>'<em class="sr">'+H(x)+'</em>').join('')+(p.jenis==='Sementara'?'<em class="tp">'+H(p.jenisSementara||'Sementara')+'</em>':'')+'</span></span>'+stBadge(s)+'</button>'};
- const grouped=()=>{let last='';return list.slice().sort((a,b)=>roleOrd[roleIn(a)]-roleOrd[roleIn(b)]||a.n.localeCompare(b.n,'id')).map(p=>{const r=roleIn(p),h=r!==last?'<div class="tm-gh" style="--rc:'+RC[r]+'">'+H(r==='Ketua'?'Ketua Tim':r)+'</div>':'';last=r;return h+item(p)}).join('')};
+ const grouped=()=>{let last='';return list.slice().sort((a,b)=>roleOrd[roleIn(a)]-roleOrd[roleIn(b)]||a.n.localeCompare(b.n,'id')).map(p=>{const r=roleIn(p),h=r!==last?'<div class="tm-gh" style="--rc:'+RC[r]+'">'+H(r==='Ketua'?'Ketua Tim':r==='Kapus'?'Ketua Pelaksana Harian':r)+'</div>':'';last=r;return h+item(p)}).join('')};
  const left='<aside class="tm-left card"><div class="tm-lh"><b>PMO & CMO KEMENKEU <span>('+act.length+')</span></b>'+(edit?'<button type="button" class="btn sm" data-act="tmAdd">+ Pegawai</button>':'')+'</div><div class="tm-search"><input class="inp" data-tmq placeholder="Cari nama, unit, jabatan, keahlian…" aria-label="Cari PMO & CMO Kemenkeu"></div>'+chips+'<div class="tm-list">'+(list.length?grouped():'<p class="s tm-none">Tidak ada pegawai pada saringan ini.</p>')+'</div><div class="tm-pgr"></div></aside>';setTimeout(tmPaginate,0);
  const p=all.find(x=>x.n===sel);
  return AKT_HDR()+viewSwitch()+kpis+'<div class="tm-page">'+left+'<section class="tm-right card">'+(p?detail(p,k,edit):'<p class="s" style="padding:24px">Belum ada data PMO & CMO Kemenkeu. '+(edit?'Klik <b>+ Pegawai</b>.':'')+'</p>')+'</section></div>'}
@@ -110,7 +111,7 @@ function viewSwitch(){const v=S.ui.tmView||'orang';return '<div class="tm-vs" ro
 function detail(p,k,edit){const PL=place(p,k),us=unitsOf(p.n,k),s=statusOn(p),wa=waUrl(p.hp),people2=kpPeople();
  const upcoming=cutiEff(p).concat(cutiAktual(p)?[cutiAktual(p)]:[]).filter(c=>(c.selesai||c.mulai)>=TODAY).sort((a,b)=>a.mulai.localeCompare(b.mulai));
  const pen=p.penugasan?'<div class="tm-strip-i"><small>Penugasan</small><b>'+H(p.penugasan)+'</b><span>'+(p.penMulai?tgl(p.penMulai):'…')+' – '+(p.penSelesai?tgl(p.penSelesai):'…')+'</span></div>':'';
- const PH=[p.jab,p.pang].filter(Boolean).join(' · ')||'Jabatan belum diisi',mainR=PL.t&&(PL.r==='Ketua'||PL.r==='Supervisor')?tmLab(PL.t,PL.r):'';
+ const PH=[p.jab,p.pang].filter(Boolean).join(' · ')||'Jabatan belum diisi',mainR=(k.str&&k.str.kapus?k.str.kapus===p.n:/^kepala pusat/i.test(p.jab||''))&&!isOff(p)?'KETUA PELAKSANA HARIAN PMO & CMO':PL.t&&(PL.r==='Ketua'||PL.r==='Supervisor')?tmLab(PL.t,PL.r):'';
  const bdg=(mainR?'<span class="bd g">'+H(mainR)+'</span>':'')+PL.str.map(x=>'<span class="bd">'+H(x[2])+'</span>').join('')+(p.jenis==='Sementara'?'<span class="bd tp">'+H(p.jenisSementara||'Sementara')+'</span>':'')+(isOff(p)?'<span class="bd off">TIDAK AKTIF</span>':'<span class="bd ok">AKTIF</span>');
  const acts=(edit?'<button type="button" class="tm-ib" data-act="tmEdit" data-v="'+H(p.n)+'" title="Ubah profil" aria-label="Ubah profil">'+ICON.edit+'</button><button type="button" class="tm-ib gold" data-act="tmUnits" data-v="'+H(p.n)+'" title="Atur unit dampingan ('+us.length+')" aria-label="Atur unit dampingan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16M14 9h5a1 1 0 0 1 1 1v11M3 21h18M8 8h2M8 12h2M8 16h2"/></svg><i>'+us.length+'</i></button>':'')+(tmIsSA()?'<button type="button" class="tm-ib dng" data-act="tmDel" data-v="'+H(p.n)+'" title="Hapus pegawai (khusus superadmin)" aria-label="Hapus pegawai">'+ICON.del+'</button>':'');
  const head='<div class="tm-hero"><span class="tm-hav">'+av(p.n,p.foto,'xl')+'</span><div class="tm-hb"><h2>'+H(p.n)+'</h2><div class="tm-hj">'+H(PH)+(isOff(p)?' · tidak aktif: '+H(offReason(p))+(offSince(p)?' sejak '+H(tgl(offSince(p))):''):'')+'</div><div class="tm-hbd">'+bdg+'</div></div><div class="tm-ha">'+acts+'</div></div>'+
@@ -126,7 +127,7 @@ function detail(p,k,edit){const PL=place(p,k),us=unitsOf(p.n,k),s=statusOn(p),wa
  const strC=PL.str.map(x=>'<span class="pc str">'+H(x[1])+'</span>').concat(PL.stp.map(id=>'<span class="pc str">Pelaksana '+H(TM_STU[id])+'</span>')).join('');
  const prof='<div class="tm-sec"><div class="tm-sech"><b>Penempatan</b>'+(edit?'<button type="button" class="tm-lnk2" data-tv="tempat">Atur di Onboarding →</button>':'')+'</div>'+
   (isOff(p)?'<div class="tm-prow"><small>Status</small><div class="tm-pv"><i class="tm-nil">Tidak aktif (arsip) — tidak ditempatkan. Riwayatnya sebagai PIC tetap ada di Daftar Aktivitas.</i></div></div>':
-  pr('Struktural',strC||none)+pr('Tim utama',PL.t?'<span class="pc main'+(PL.r==='Supervisor'?' spv':PL.r==='Ketua'?' kt':'')+'">'+H(PL.r==='Anggota'?PL.t:tmLab(PL.t,PL.r))+(PL.r==='Anggota'?' <em>Anggota</em>':'')+'</span>':'<i class="tm-nil">Belum ditempatkan</i>')+
+  pr('Struktural',strC||none)+pr('Tim utama',mainR==='KETUA PELAKSANA HARIAN PMO & CMO'&&!PL.t?'<span class="pc main kap">Ketua Pelaksana Harian PMO & CMO Kementerian</span>':PL.t?'<span class="pc main'+(PL.r==='Supervisor'?' spv':PL.r==='Ketua'?' kt':'')+'">'+H(PL.r==='Anggota'?PL.t:tmLab(PL.t,PL.r))+(PL.r==='Anggota'?' <em>Anggota</em>':'')+'</span>':'<i class="tm-nil">Belum ditempatkan</i>')+
   pr('Tim tambahan',PL.tx.length?PL.tx.map(x=>'<span class="pc add">'+H(x.r==='Anggota'?x.t:tmLab(x.t,x.r))+'</span>').join(''):none)+
   pr('Unit dampingan',us.length?'<span class="tm-uls">'+us.map(u=>'<button type="button" data-act="tmDt" data-v="u">'+H(u)+'</button>').join('')+'</span>':none))+'</div>'+
   '<div class="tm-meta"><div><small>Unit asal</small><b>'+H(p.unitAsal||'—')+'</b></div><div><small>Status pegawai</small><b>'+H(p.jenis==='Sementara'?(p.jenisSementara||'Sementara'):'Definitif')+'</b></div></div>'+
@@ -392,7 +393,7 @@ const css=`
 .tm-pv{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
 .tm-pv .pc{display:inline-flex;gap:6px;align-items:center;border-radius:9px;padding:5px 10px;font-size:12.5px;font-weight:700;white-space:nowrap}
 .tm-pv .pc.str{background:#EAF0FA;color:#17457F;white-space:normal}.tm-pv .pc.main{background:#0B2447;color:#fff}.tm-pv .pc.main em{font-style:normal;font-size:10px;font-weight:800;background:rgba(255,255,255,.18);border-radius:5px;padding:1px 6px}
-.tm-pv .pc.main.spv{background:#5B43B5}.tm-pv .pc.main.kt{background:#15805F}.tm-pv .pc.add{background:#fff;border:1px solid #DCE3EE;color:#3A4763}
+.tm-pv .pc.main.spv{background:#5B43B5}.tm-pv .pc.main.kap{background:#8C6B12}.tm-pv .pc.main.kt{background:#15805F}.tm-pv .pc.add{background:#fff;border:1px solid #DCE3EE;color:#3A4763}
 .tm-uls{display:flex;flex-wrap:wrap;gap:6px}.tm-uls button{all:unset;cursor:pointer;font-size:12px;font-weight:700;border-radius:7px;padding:3px 9px;background:#E3F5F4;color:#0E7C7C}.tm-uls button:hover{background:#CDEDEA}
 .tm-nil{font-style:normal;color:#9AA4BA;font-size:12.5px}
 .tm-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.tm-meta>div{background:#F7F9FC;border-radius:10px;padding:9px 13px;min-width:0}
