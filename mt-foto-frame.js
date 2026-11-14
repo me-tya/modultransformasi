@@ -32,7 +32,8 @@
   /* 2) Foto persegi berlatar polos (asli Satu Kemenkeu): cari kepala lalu bingkai kepala & bahu. */
   const corners=[px(1,1),px(W-2,1),px(1,H-2),px(W-2,H-2)];
   let circ=false,bg;
-  if(corners.every(white)&&Math.abs(W-H)<=W*.08&&!white(px(W/2,H*.12))){circ=true;bg=avg([px(W/2,H*.1),px(W*.32,H*.2),px(W*.68,H*.2)])}
+  /* Lingkaran yang sudah memenuhi gambar = sudah dibingkai; jangan diperbesar lagi (mencegah bingkai ganda). */
+  if(corners.every(white)&&Math.abs(W-H)<=W*.08)return null;
   else bg=avg([px(2,2),px(W-3,2),px(2,Math.min(H-1,20)),px(W-3,Math.min(H-1,20))]);
   const R=Math.min(W,H)*.45,inC=(i,j)=>!circ||((i-W/2)**2+(j-H/2)**2<=R*R);
   const fg=(i,j)=>{if(!inC(i,j))return false;const p=px(i,j);return df(p,bg)>90};
