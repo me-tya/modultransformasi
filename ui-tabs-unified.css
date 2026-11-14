@@ -695,8 +695,11 @@ html.mt-ui-embedded :is(.tabs .count-badge,.cm-ap-cnt,.prio-tab-n){
    Berlaku untuk PMO, CMO, Project Selection, dan Aktivitas agar pindah menu tidak terasa bergeser. */
 #app #view :is(.pm-stage-shell,nav.cm-journey,nav.act-tabs){box-sizing:border-box!important;height:50px!important;min-height:50px!important;padding:4px!important;border:1px solid #D9E2EF!important;border-radius:11px!important;background:#F7F9FD!important;background-image:none!important;box-shadow:none!important;gap:4px!important;display:flex!important;align-items:stretch!important;overflow:hidden}
 #app #view :is(.pmo-journey,.ps27-tabs){flex:1 1 auto!important;gap:4px!important}
-#app #view :is(.pmo-journey > a,.ps27-tabs > button,nav.cm-journey > .cm-step,nav.act-tabs > a){flex:1 1 auto!important;min-width:0!important;height:40px!important;border-radius:8px!important;justify-content:center!important;font-size:11.6px!important;font-weight:800!important;white-space:nowrap}
+#app #view :is(.pmo-journey > a,.ps27-tabs > button,nav.cm-journey > .cm-step,nav.act-tabs > a){flex:1 1 auto!important;min-width:0!important;height:40px!important;border-radius:8px!important;justify-content:center!important;font-size:13.5px!important;font-weight:800!important;white-space:nowrap}
 #app #view :is(.pmo-journey > a.on,.ps27-tabs > button.on,nav.cm-journey > .cm-step.on,nav.act-tabs > a.on){background:#143966!important;background-image:none!important;color:#fff!important;box-shadow:none!important}
 #app #view nav.act-tabs > a:not(.on):hover{background:#EEF2F8!important}
 #app #view nav.act-tabs{margin:0 0 6px!important}
 #app #view .cmx>nav.act-tabs{margin:10px 0 12px!important}
+
+/* Menu utama 13.5px; sub-menu (sub-tab) 12px dan lebih tipis. */
+#app .subt.ctabs a{font-size:12px!important;padding:6px 14px 7px!important}
