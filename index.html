@@ -6274,13 +6274,21 @@ function kqCropAvatar(img,parsed){
     const S=side*.94,sx=ccx,sy=ccy;
     const OUT=160,out=document.createElement('canvas');out.width=out.height=OUT;const o=out.getContext('2d');o.fillStyle='#fff';o.fillRect(0,0,OUT,OUT);o.imageSmoothingQuality='high';
     o.drawImage(img,sx-S/2,sy-S/2,S,S,0,0,OUT,OUT);
-    // Perbesar ke kepala & bahu (foto Satu Kemenkeu menyisakan banyak ruang di atas kepala).
-    try{if(window.MT_FOTO_FRAME&&MT_FOTO_FRAME.cropTo){const m=document.createElement('canvas');m.width=m.height=OUT*2;const g=m.getContext('2d');g.imageSmoothingQuality='high';g.drawImage(img,sx-S/2,sy-S/2,S,S,0,0,OUT*2,OUT*2);
-      const c=MT_FOTO_FRAME.cropTo(m,OUT);if(c)return c.toDataURL('image/jpeg',0.88)}}catch(e){}
-    return out.toDataURL('image/jpeg',0.86);
+    // Lingkaran foto Satu Kemenkeu dikelilingi cincin putih: cari lingkaran berlatar merah/biru (piksel sangat jenuh)
+    // lalu potong pas ke lingkaran itu — hasilnya kepala & bahu seperti foto aslinya. Sumber disimpan untuk atur manual.
+    let C={x:sx,y:sy,d:S};
+    try{const N=200,m=document.createElement('canvas');m.width=m.height=N;const g=m.getContext('2d',{willReadFrequently:true});g.drawImage(img,sx-S/2,sy-S/2,S,S,0,0,N,N);const q=g.getImageData(0,0,N,N).data;
+      const isBg=(i)=>{const r=q[i]/255,gg=q[i+1]/255,b=q[i+2]/255,mx=Math.max(r,gg,b),mn=Math.min(r,gg,b);if(mx<.45||(mx-mn)/mx<.65)return false;let h;if(mx===r)h=((gg-b)/(mx-mn)+6)%6;else if(mx===gg)h=(b-r)/(mx-mn)+2;else h=(r-gg)/(mx-mn)+4;h*=60;return h<18||h>330||(h>185&&h<255)};
+      let l=N,r=-1,t=N;for(let y=0;y<N;y++){let a=-1,z=-1,n=0;for(let x=0;x<N;x++)if(isBg((y*N+x)*4)){n++;if(a<0)a=x;z=x}if(n>=3){if(a<l)l=a;if(z>r)r=z;if(y<t)t=y}}
+      const D=r-l+1;if(r>0&&D>N*.3){const k=S/N;C={x:sx-S/2+((l+r)/2)*k,y:sy-S/2+(t+D/2)*k,d:D*.98*k}}}catch(e){}
+    window.kqAvatarSrc={img,x:C.x,y:C.y,d:C.d};
+    return kqAvatarRender(1,0,0);
   }catch(e){console.warn('Avatar crop failed',e);return '';}
 }
 
+/* Gambar ulang avatar dari sumber impor: zoom (1 = lingkaran foto utuh), geser dx/dy (bagian dari diameter). */
+function kqAvatarRender(z,dx,dy){const A=window.kqAvatarSrc;if(!A)return '';const OUT=200,d=A.d/(z||1),o=document.createElement('canvas');o.width=o.height=OUT;const c=o.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,OUT,OUT);c.imageSmoothingQuality='high';
+ c.drawImage(A.img,A.x+(dx||0)*A.d-d/2,A.y+(dy||0)*A.d-d/2,d,d,0,0,OUT,OUT);return o.toDataURL('image/jpeg',0.88)}
 const KQ_SRC='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
 let kqProgress=null,kqWorker=null;
 function kqLoadImage(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(new Error('Gambar tidak dapat dibaca'));i.src=src})}
@@ -11398,9 +11406,9 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 .mt-cal-di em{font-style:normal;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
 </style>
 <script src="mt-libur.js?v=20261113-libur1"></script>
-<script src="mt-tim.js?v=20261114-tim6"></script>
+<script src="mt-tim.js?v=20261114-tim7"></script>
 <script src="mt-tim2.js?v=20261114-t2k"></script>
-<script src="mt-foto-frame.js?v=20261114-ff5"></script>
+<script src="mt-foto-frame.js?v=20261114-ff6"></script>
 <script src="project-selection-flow.js?v=20261111-mt14-filter"></script>
 <script src="project-selection-governance.js?v=20261111-mt13-info"></script>
 <script src="project-selection-workflow-2027.js?v=20261113-mt17-filterpm"></script>
