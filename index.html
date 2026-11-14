@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="dashboard-executive-v2.css?v=20261109-mt06-helpfix2">
 <link rel="stylesheet" href="project-selection-flow.css?v=20261108-6">
 <link rel="stylesheet" href="project-selection-governance.css?v=20261108-1">
-<link rel="stylesheet" href="project-selection-workflow-2027.css?v=20261114-count1">
+<link rel="stylesheet" href="project-selection-workflow-2027.css?v=20261114-nav1">
 <link rel="stylesheet" href="project-selection-program-bank.css?v=20261109-mt09-ui5-r1">
 <link rel="stylesheet" href="program-documents-detail.css?v=20261111-mt04">
 
@@ -17,7 +17,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="wbs-cap-2026-reference.js"></script>
-<script src="cheatsheet-referensi.js?v=20261114-count3"></script>
+<script src="cheatsheet-referensi.js?v=20261114-nav1"></script>
 <style>
 /* Satu Kemenkeu shell: sidebar navy gelap, topbar navy, aksen kuning; isi kartu putih padat */
 :root{
@@ -2333,7 +2333,7 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 .act-tabs{margin:0 0 10px}
 /* Daftar/Kalender dirender di dalam .cmx (block, margin melipat) sedangkan Ringkasan/Tim langsung di #view (flex, gap 6px).
    Samakan jaraknya agar header, tab, dan isi tidak bergeser saat pindah tab. */
-#view .cmx>.act-tabs{margin-top:10px!important;margin-bottom:16px!important}
+/* jarak .cmx>.act-tabs diatur di ui-tabs-unified.css (patokan PMO) */
 .kp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:12px;padding:12px}.kp-grid.c{grid-template-columns:repeat(auto-fill,minmax(290px,1fr))}.kp-grid>*{min-width:0}
 .kp-pc{padding:12px}.kp-ph-row,.kp-top{display:flex;gap:10px;align-items:center;margin-bottom:8px}.kp-top{align-items:flex-start}
 .kp-ph{width:38px;height:38px;border-radius:50%;object-fit:cover;flex:none;border:2px solid #fff;box-shadow:0 0 0 1px var(--line)}.kp-ph.lg{width:54px;height:54px}
@@ -2871,7 +2871,7 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 @media(max-width:700px){#app .adp-state{display:none}}
 @media(max-width:760px){#app .adp-workbar{flex-wrap:wrap}#app .adp-nav{flex-basis:100%}#app .adp-tools{flex-basis:100%;justify-content:flex-end}#app .flt.pmo-unified{grid-template-columns:112px minmax(0,1fr)!important}}
 </style>
-<link id="mt-unified-tabs-styles" rel="stylesheet" href="ui-tabs-unified.css?v=20261114-count3">
+<link id="mt-unified-tabs-styles" rel="stylesheet" href="ui-tabs-unified.css?v=20261114-nav1">
 <div id="root"></div>
 <div class="toast" id="toast" role="status"></div>
 <script type="application/json" id="d0">{"S":[],"W":[],"K":[]}</script>
@@ -11334,7 +11334,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 <script src="charter-planning-report.js?v=20261109-charter-import-v3"></script>
 
-<script src="mt-filter-kit.js?v=20261114-clip1"></script>
+<script src="mt-filter-kit.js?v=20261114-nav1"></script>
 <script src="mt-info-icon.js?v=20261111-mt13-info"></script>
 <style id="mt-cal-modal-css">
 /* Modal Kalender & Hari libur — tingkat atas (modal berada di luar .cmx) */

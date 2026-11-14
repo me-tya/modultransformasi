@@ -14,9 +14,9 @@ test('Semua skrip inline index dapat diparsing',()=>{
  scripts.forEach((s,i)=>assert.doesNotThrow(()=>new vm.Script(s,{filename:'index-inline-'+i+'.js'})));
 });
 test('Stylesheet tab dimuat sebelum render dan versi cache seragam',()=>{
- assert.match(html,/id="mt-unified-tabs-styles" rel="stylesheet" href="ui-tabs-unified\.css\?v=20261114-count3"/);
- assert.match(html,/cheatsheet-referensi\.js\?v=20261114-count3/);
- assert.equal((bridge.match(/ui-tabs-unified\.css\?v=20261114-count3/g)||[]).length,2);
+ assert.match(html,/id="mt-unified-tabs-styles" rel="stylesheet" href="ui-tabs-unified\.css\?v=20261114-nav1"/);
+ assert.match(html,/cheatsheet-referensi\.js\?v=20261114-nav1/);
+ assert.equal((bridge.match(/ui-tabs-unified\.css\?v=20261114-nav1/g)||[]).length,2);
 });
 test('Tab PMO selalu dibungkus dengan baris stabil terlepas dari tab aktif',()=>{
  assert.match(html,/function wbsActionSubline\(cur,\s*sub\)/);
