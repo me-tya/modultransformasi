@@ -2794,7 +2794,7 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 .skf-steps b{font-size:13.5px;color:#13233F}.skf-steps p{margin:2px 0 6px;font-size:13px;line-height:1.5;color:#3A4763}
 .skqa-fab{position:fixed;right:20px;bottom:54px;z-index:240000;width:58px!important;height:58px!important;padding:0!important;display:grid!important;place-items:center;border:0!important;border-radius:17px!important;background:linear-gradient(145deg,#17457F,#0B2447)!important;color:#fff!important;box-shadow:0 10px 26px rgba(11,36,71,.35)!important;cursor:pointer;transition:transform .15s,box-shadow .15s}
 .skqa-fab i{position:absolute;top:7px;right:7px;width:9px;height:9px;border-radius:50%;background:#FDB913;box-shadow:0 0 0 2px #0B2447}
-.skqa-fab:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(11,36,71,.42)!important}
+.skqa-fab{touch-action:none;user-select:none}.skqa-fab.drag{cursor:grabbing;transform:scale(1.06)!important;transition:none}.skqa-fab:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(11,36,71,.42)!important}
 .skqa{position:fixed;right:18px;bottom:100px;z-index:260000;width:min(410px,calc(100vw - 24px));height:min(560px,calc(100vh - 140px));background:#fff;border-radius:18px;box-shadow:0 22px 60px rgba(7,23,46,.35);display:flex;flex-direction:column;overflow:hidden;border:1px solid #DCE3EF}
 .skqa[hidden]{display:none}
 .skqa header{display:flex;align-items:center;gap:10px;padding:12px 14px;background:linear-gradient(110deg,#0B2447,#17457F);color:#fff}
@@ -11693,11 +11693,11 @@ function qBuild(){if(QA)return QA;var D=[];function add(src,t,b,dest,dl){D.push(
  QA={D:D,df:df,N:D.length};return QA}
 function qAsk(q){var A=qBuild(),T=qTok(q),DEF=/^\s*(apa (itu|arti|maksud|kepanjangan)|arti|definisi|singkatan)/i.test(q);if(!T.length)return [];var res=A.D.map(function(d){var sc=0,hit=0;T.forEach(function(w){var idf=Math.log(1+A.N/(1+(A.df[w]||0)));var inT=d.tt.indexOf(w)>=0,inB=d.bt.indexOf(w)>=0;if(!inT&&!inB){var p=w.length>=4&&(d.tt.concat(d.bt)).some(function(x){return x.indexOf(w)===0||w.indexOf(x)===0&&x.length>=4});if(p){sc+=idf*.5;hit++}return}hit++;sc+=idf*(inT?3:1)});if(/^Alur/.test(d.src))sc*=1.25;if(DEF&&/^Istilah/.test(d.src))sc*=2;return {d:d,sc:sc*(hit/T.length)}}).filter(function(x){return x.sc>0}).sort(function(a,b){return b.sc-a.sc});
  var out=[],seen={};res.forEach(function(r){var key=r.d.t+'|'+r.d.src;if(seen[key]||out.length>=4)return;seen[key]=1;out.push(r)});return out}
-function qaOpen(){addStyle();var ex=document.getElementById('skqa');if(ex){ex.hidden=!ex.hidden;if(!ex.hidden)ex.querySelector('input').focus();return}
+function qaOpen(){addStyle();var ex=document.getElementById('skqa');if(ex){ex.hidden=!ex.hidden;if(!ex.hidden){qaPos();ex.querySelector('input').focus()}return}
  var p=document.createElement('section');p.id='skqa';p.className='skqa';p.setAttribute('role','dialog');p.setAttribute('aria-label','Tanya Bantuan');
  var sug=['Bagaimana mengajukan ADP?','Cara unggah bukti dukung','Apa itu POSTeR?','Stakeholder ke komunikasi','Siapa yang memvalidasi bukti?','Mengatur PMO tematik'];
  p.innerHTML='<header><span class="skqa-i">?</span><div><b>Tanya Bantuan</b><small>Jawaban diambil dari Bantuan & Cheatsheet</small></div><button type="button" data-qx aria-label="Tutup">×</button></header><div class="skqa-log" aria-live="polite"><div class="skqa-m bot"><p>Halo! Tulis pertanyaan tentang cara memakai aplikasi, misalnya:</p><div class="skqa-sug">'+sug.map(function(x){return '<button type="button" data-qs="'+esc(x)+'">'+esc(x)+'</button>'}).join('')+'</div></div></div><form class="skqa-f"><input type="text" placeholder="Ketik pertanyaan…" aria-label="Pertanyaan"><button type="submit" aria-label="Kirim">➤</button></form>';
- document.body.appendChild(p);var log=p.querySelector('.skqa-log'),inp=p.querySelector('input');
+ document.body.appendChild(p);qaPos();var log=p.querySelector('.skqa-log'),inp=p.querySelector('input');
  function ask(q){q=String(q||'').trim();if(!q)return;log.insertAdjacentHTML('beforeend','<div class="skqa-m me"><p>'+esc(q)+'</p></div>');var R=qAsk(q);
   var html=R.length?'<p>Ini yang paling sesuai:</p>'+R.map(function(r,i){var d=r.d,b=d.b.length>320?d.b.slice(0,320).replace(/\s\S*$/,'')+'…':d.b;return '<div class="skqa-a'+(i?'':' skqa-first')+'"><em>'+esc(d.src)+'</em><b>'+esc(d.t)+'</b><p>'+esc(b)+'</p>'+(d.dest?'<button type="button" class="skqa-go" data-qgo="'+esc(d.dest)+'">↗ '+esc(d.dl||'Buka menu')+'</button>':'')+'</div>'}).join(''):'<p>Maaf, belum ketemu jawabannya di Bantuan maupun Cheatsheet. Coba kata kunci lain (misalnya nama menu), atau buka <button type="button" class="skqa-lnk" data-qhelp>Bantuan lengkap</button>.</p>';
   log.insertAdjacentHTML('beforeend','<div class="skqa-m bot">'+html+'</div>');log.scrollTop=log.scrollHeight}
@@ -11705,7 +11705,19 @@ function qaOpen(){addStyle();var ex=document.getElementById('skqa');if(ex){ex.hi
  p.addEventListener('click',function(e){if(e.target.closest('[data-qx]')){p.hidden=true;return}var s=e.target.closest('[data-qs]');if(s){ask(s.getAttribute('data-qs'));return}var g=e.target.closest('[data-qgo]');if(g){var dest=g.getAttribute('data-qgo');close();if(typeof window.go==='function')window.go(dest);else location.hash='#'+dest;return}if(e.target.closest('[data-qhelp]')){window.showGuideHome&&window.showGuideHome()}});
  inp.focus()}
 window.openTanyaBantuan=qaOpen;
-function qaFab(){if(document.getElementById('skqa-fab'))return;var b=document.createElement('button');b.id='skqa-fab';b.type='button';b.className='skqa-fab';b.title='Tanya Bantuan';b.setAttribute('aria-label','Tanya Bantuan');b.innerHTML='<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H10l-4.5 3.6V17H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="M8 9.5h8M8 12.5h5"/></svg><i aria-hidden="true"></i>';b.onclick=qaOpen;document.body.appendChild(b)}
+function qaFab(){if(document.getElementById('skqa-fab'))return;var b=document.createElement('button');b.id='skqa-fab';b.type='button';b.className='skqa-fab';b.title='Tanya Bantuan';b.setAttribute('aria-label','Tanya Bantuan');b.innerHTML='<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H10l-4.5 3.6V17H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="M8 9.5h8M8 12.5h5"/></svg><i aria-hidden="true"></i>';document.body.appendChild(b);
+ /* Bisa digeser: posisi disimpan di peramban; klik tanpa geser membuka panel. */
+ var KEYP='mt-qa-fab',W=58;function place(x,y){var vw=window.innerWidth,vh=window.innerHeight;x=Math.max(8,Math.min(vw-W-8,x));y=Math.max(8,Math.min(vh-W-8,y));b.style.left=x+'px';b.style.top=y+'px';b.style.right='auto';b.style.bottom='auto';return [x,y]}
+ try{var sp=JSON.parse(localStorage.getItem(KEYP)||'null');if(sp)place(sp[0]*window.innerWidth,sp[1]*window.innerHeight)}catch(e){}
+ var drag=null,moved=false;
+ b.addEventListener('pointerdown',function(e){var r=b.getBoundingClientRect();drag={dx:e.clientX-r.left,dy:e.clientY-r.top,x0:e.clientX,y0:e.clientY};moved=false;b.setPointerCapture(e.pointerId)});
+ b.addEventListener('pointermove',function(e){if(!drag)return;if(!moved&&Math.hypot(e.clientX-drag.x0,e.clientY-drag.y0)<6)return;moved=true;b.classList.add('drag');place(e.clientX-drag.dx,e.clientY-drag.dy);qaPos()});
+ b.addEventListener('pointerup',function(e){if(!drag)return;drag=null;b.classList.remove('drag');if(moved){var r=b.getBoundingClientRect();try{localStorage.setItem(KEYP,JSON.stringify([r.left/window.innerWidth,r.top/window.innerHeight]))}catch(er){}}else qaOpen()});
+ window.addEventListener('resize',function(){var r=b.getBoundingClientRect();place(r.left,r.top);qaPos()})}
+/* Panel muncul di dekat tombol (di atas/bawah, kiri/kanan menyesuaikan ruang). */
+function qaPos(){var p=document.getElementById('skqa'),b=document.getElementById('skqa-fab');if(!p||!b||p.hidden)return;var r=b.getBoundingClientRect(),vw=window.innerWidth,vh=window.innerHeight,pw=p.offsetWidth,ph=p.offsetHeight;
+ var left=Math.min(vw-pw-8,Math.max(8,r.right-pw)),top=r.top-ph-10;if(top<8)top=Math.min(vh-ph-8,r.bottom+10);if(r.left+r.width/2<vw/2)left=Math.min(vw-pw-8,Math.max(8,r.left));
+ p.style.left=left+'px';p.style.top=Math.max(8,top)+'px';p.style.right='auto';p.style.bottom='auto'}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',qaFab);else qaFab();
 var cfg={
  help:{
