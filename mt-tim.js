@@ -31,7 +31,7 @@ const canEdit=()=>{try{return actCanEdit()}catch(e){return false}};
 
 /* ---------- Model ---------- */
 function teamOf(p,k){k=k||kpCfg();return k.pt[p.n]||(p.tim==='CM'?'Tim CM':'')}
-const TM_STR=[['kapus','Kepala Pusat','Ka. Pusat'],['kabid','Kepala Bidang Program dan Manajemen Pengetahuan','Kabid PMP'],['psk','Kepala Subbidang Program dan Sistem Kerja','Kasubbid PSK'],['tu','Kepala Subbagian Tata Usaha','Kasubbag TU'],['mp','Kepala Subbidang Manajemen Pengetahuan','Kasubbid MP']];
+const TM_STR=[['kapus','Kepala Pusat','Ka. Pusat'],['kabid','Kepala Bidang Program dan Manajemen Pengetahuan','Kabid PMP'],['psk','Kepala Subbidang Program dan Sistem Kerja','Kasub Prosiker'],['tu','Kepala Subbagian Tata Usaha','Kasub TU'],['mp','Kepala Subbidang Manajemen Pengetahuan','Kasub MP']];
 const TM_STU={kabid:'Bidang Program dan Manajemen Pengetahuan',psk:'Subbidang Program dan Sistem Kerja',tu:'Subbagian Tata Usaha',mp:'Subbidang Manajemen Pengetahuan'};
 const tmRole=s=>/supervisor|spv/i.test(s||'')?'Supervisor':/ketua|katim/i.test(s||'')?'Ketua':'Anggota';
 /* Penempatan (satu sumber dengan tab Penempatan Tim): tim utama + peran, tim tambahan + peran, jabatan struktural. */
