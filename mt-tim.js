@@ -37,7 +37,8 @@ const tmRole=s=>/supervisor|spv/i.test(s||'')?'Supervisor':/ketua|katim/i.test(s
 /* Penempatan (satu sumber dengan tab Penempatan Tim): tim utama + peran, tim tambahan + peran, jabatan struktural. */
 function place(p,k){k=k||kpCfg();const t=teamOf(p,k),tx=((k.ptx||{})[p.n]||[]).filter(x=>x&&x!==t&&k.tims.includes(x));
  return {t,r:tmRole(p.peran),tx:tx.map(x=>({t:x,r:((k.rl||{})[p.n]||{})[x]||'Anggota'})),str:TM_STR.filter(x=>(k.str||{})[x[0]]===p.n),stp:Object.keys(TM_STU).filter(id=>((k.stp||{})[id]||[]).includes(p.n))}}
-function placeChips(pl){const rc=r=>r==='Supervisor'?' spv':r==='Ketua'?' kt':'';return (pl.t?'<span class="tm-pl'+rc(pl.r)+'"><b>'+H(pl.t)+'</b> · '+pl.r+' <i>utama</i></span>':'')+pl.tx.map(x=>'<span class="tm-pl'+rc(x.r)+'"><b>'+H(x.t)+'</b> · '+x.r+' <i>tambahan</i></span>').join('')+pl.str.map(x=>'<span class="tm-pl st"><b>'+H(x[1])+'</b> <i>struktural</i></span>').join('')+pl.stp.map(id=>'<span class="tm-pl st"><b>Pelaksana '+H(TM_STU[id])+'</b> <i>struktural</i></span>').join('')}
+const tmLab=(t,r)=>{const sh=String(t).replace(/^Tim\s+/i,'');return r==='Ketua'?'Katim '+sh:r==='Supervisor'?'Supervisor '+sh:t+' · Anggota'};
+function placeChips(pl){const rc=r=>r==='Supervisor'?' spv':r==='Ketua'?' kt':'';return (pl.t?'<span class="tm-pl'+rc(pl.r)+'"><b>'+H(tmLab(pl.t,pl.r))+'</b> <i>utama</i></span>':'')+pl.tx.map(x=>'<span class="tm-pl'+rc(x.r)+'"><b>'+H(tmLab(x.t,x.r))+'</b> <i>tambahan</i></span>').join('')+pl.str.map(x=>'<span class="tm-pl st"><b>'+H(x[1])+'</b> <i>struktural</i></span>').join('')+pl.stp.map(id=>'<span class="tm-pl st"><b>Pelaksana '+H(TM_STU[id])+'</b> <i>struktural</i></span>').join('')}
 function people(){const M=actMaster(),k=kpCfg();const names=[...new Set([...M.pic.map(p=>p.n),...Object.keys(k.pt)])].filter(Boolean);
  return names.map(n=>{const p=Object.assign({n},M.pic.find(x=>x.n===n)||{});p._team=teamOf(p,k);const pl=place(p,k);p._tx=pl.tx.map(x=>x.t);p._str=pl.str.concat(pl.stp.map(id=>[id,'Pelaksana '+TM_STU[id],'Pelaksana '+({kabid:'Bidang PMP',psk:'Subbid PSK',tu:'Subbag TU',mp:'Subbid MP'})[id]]));return p})}
 function unitsOf(n,k){k=k||kpCfg();return Object.keys(k.asg).filter(u=>(k.asg[u]||[]).includes(n)).sort((a,b)=>a.localeCompare(b))}
@@ -82,9 +83,9 @@ function page(){const k=kpCfg(),all=people(),edit=canEdit(),U=S.ui;
   if(team==='_str'||(!PL.t&&!PL.tx.length&&(PL.str.length||PL.stp.length)))return 'Struktural';return PL.t?PL.r:PL.tx.length?PL.tx[0].r:'Tanpa tim'};
  const roleOrd={Supervisor:0,Ketua:1,Anggota:2,Struktural:3,'Tanpa tim':4,Arsip:5};
  const item=p=>{const us=unitsOf(p.n,k),s=statusOn(p),r=roleIn(p),col=RC[r],PL=place(p,k);
-  const tims=[PL.t].concat(PL.tx.map(x=>x.t)).filter(Boolean).map(t=>t.replace(/^Tim\s+/i,'Tim ')),strs=PL.str.map(x=>x[2]).concat(PL.stp.map(id=>'Pelaksana '+TM_STU[id]));
+  const tims=(PL.t?[tmLab(PL.t,PL.r).replace(/ · Anggota$/,'')]:[]).concat(PL.tx.map(x=>tmLab(x.t,x.r).replace(/ · Anggota$/,''))),strs=PL.str.map(x=>x[2]).concat(PL.stp.map(id=>'Pelaksana '+TM_STU[id]));
   return '<button type="button" class="tm-p tm-pc'+(p.n===sel?' on':'')+(isOff(p)?' off':'')+'" style="--rc:'+col+'" data-act="tmSel" data-v="'+H(p.n)+'" data-search="'+H([p.n,p.jab,p._team,us.join(' '),p.keahlian,p.nip].join(' ').toLowerCase())+'">'+av(p.n,p.foto,'rc')+
-   '<span class="tm-pb"><span class="tm-rp">'+H(r==='Ketua'?'Ketua Tim':r)+(p.jenis==='Sementara'?' · '+H(p.jenisSementara||'Sementara'):'')+'</span><span class="tm-pn">'+H(p.n)+'</span>'+
+   '<span class="tm-pb"><span class="tm-rp">'+H((r==='Ketua'||r==='Supervisor')?tmLab(team&&team[0]!=='_'?team:PL.t||(PL.tx[0]||{}).t||'',r):r)+(p.jenis==='Sementara'?' · '+H(p.jenisSementara||'Sementara'):'')+'</span><span class="tm-pn">'+H(p.n)+'</span>'+
    (p.nip?'<span class="tm-nip">NIP&nbsp;&nbsp;'+H(p.nip)+'</span>':'')+([p.jab,p.pang].filter(Boolean).length?'<span class="tm-pj">'+H([p.jab,p.pang].filter(Boolean).join(' · '))+'</span>':'')+
    '<small>'+(isOff(p)?'Tidak aktif · '+H(offReason(p)):H(tims.concat(strs).join(' · ')||'Belum ditempatkan'))+' · '+stBadge(s)+'</small>'+
    (us.length?'<span class="tm-uc">'+us.slice(0,6).map(u=>'<em>'+H(u)+'</em>').join('')+(us.length>6?'<em>+'+(us.length-6)+'</em>':'')+'</span>':'')+'</span></button>'};
