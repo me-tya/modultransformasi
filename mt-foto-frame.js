@@ -18,13 +18,24 @@
   const IW=img.naturalWidth||img.width,IH=img.naturalHeight||img.height;if(!IW||!IH)return null;
   const W=120,H=Math.max(1,Math.round(IH*W/IW));const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(img,0,0,W,H);
   const d=x.getImageData(0,0,W,H).data,px=(i,j)=>{i=Math.max(0,Math.min(W-1,Math.round(i)));j=Math.max(0,Math.min(H-1,Math.round(j)));const o=(j*W+i)*4;return [d[o],d[o+1],d[o+2]]};
-  const white=p=>p[0]>232&&p[1]>232&&p[2]>232,avg=a=>[0,1,2].map(k=>a.reduce((s,b)=>s+b[k],0)/a.length);
+  const white=p=>p[0]>232&&p[1]>232&&p[2]>232,avg=a=>[0,1,2].map(k=>a.reduce((s,b)=>s+b[k],0)/a.length),df=(p,q)=>Math.abs(p[0]-q[0])+Math.abs(p[1]-q[1])+Math.abs(p[2]-q[2]);
+  /* 1) Potongan skrinsyut: lingkaran foto berlatar warna (merah/biru) di tengah bidang putih.
+        Cari warna latar foto (warna jenuh dominan), ambil batas lingkarannya, lalu bingkai pas ke lingkaran itu. */
+  {const bins=new Map();for(let j=0;j<H;j++)for(let i=0;i<W;i++){const p=px(i,j),mx=Math.max(...p),mn=Math.min(...p);if(mx-mn>70){const k=(p[0]>>5)<<6|(p[1]>>5)<<3|(p[2]>>5);const e=bins.get(k)||{n:0,s:[0,0,0]};e.n++;e.s[0]+=p[0];e.s[1]+=p[1];e.s[2]+=p[2];bins.set(k,e)}}
+   const top1=[...bins.values()].sort((a,b)=>b.n-a.n)[0];
+   if(top1&&top1.n>W*H*.05){const c=top1.s.map(v=>v/top1.n);let l=W,r=-1,t=H,bt=-1;
+    for(let j=0;j<H;j++){let n=0,a=-1,z=-1;for(let i=0;i<W;i++)if(df(px(i,j),c)<90){n++;if(a<0)a=i;z=i}if(n>=2){if(a<l)l=a;if(z>r)r=z;if(j<t)t=j;bt=j}}
+    const D=r-l+1;
+    if(r>0&&D<W*.9&&D>W*.25&&(bt-t+1)>D*.4){const cx=(l+r)/2,cy=t+D/2,sd=D*.96;
+     let x0=cx-sd/2,y0=cy-sd/2;const f=v=>(Math.max(0,v)*100).toFixed(1)+'%';
+     return [f(y0/H),f(1-(x0+sd)/W),f(1-(y0+sd)/H),f(x0/W)].join(' ')}}}
+  /* 2) Foto persegi berlatar polos (asli Satu Kemenkeu): cari kepala lalu bingkai kepala & bahu. */
   const corners=[px(1,1),px(W-2,1),px(1,H-2),px(W-2,H-2)];
   let circ=false,bg;
   if(corners.every(white)&&Math.abs(W-H)<=W*.08&&!white(px(W/2,H*.12))){circ=true;bg=avg([px(W/2,H*.1),px(W*.32,H*.2),px(W*.68,H*.2)])}
   else bg=avg([px(2,2),px(W-3,2),px(2,Math.min(H-1,20)),px(W-3,Math.min(H-1,20))]);
   const R=Math.min(W,H)*.45,inC=(i,j)=>!circ||((i-W/2)**2+(j-H/2)**2<=R*R);
-  const fg=(i,j)=>{if(!inC(i,j))return false;const p=px(i,j);return Math.abs(p[0]-bg[0])+Math.abs(p[1]-bg[1])+Math.abs(p[2]-bg[2])>90};
+  const fg=(i,j)=>{if(!inC(i,j))return false;const p=px(i,j);return df(p,bg)>90};
   let top=-1;for(let j=0;j<H&&top<0;j++){let n=0;for(let i=Math.round(W*.2);i<W*.8;i++)if(fg(i,j))n++;if(n>=Math.max(2,W*.03))top=j}
   if(top<0)return null;
   const band=Math.max(4,Math.round(H*.16)),Ls=[],Rs=[];
