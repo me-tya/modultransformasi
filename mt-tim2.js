@@ -52,7 +52,7 @@ const lsKey=k=>'mt-t2:'+((ME&&ME.email)||'anon')+':'+k;
 const lsGet=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(lsKey(k)));return v==null?d:v}catch(e){return d}},lsSet=(k,v)=>{try{localStorage.setItem(lsKey(k),JSON.stringify(v))}catch(e){}};
 
 /* ---------- model ---------- */
-let P=[],KAP=null,TEAMS=[],STX={},AG=[],LOAD={},PUB=null,EX=[],GH=[],ALIAS={},HIST={};
+let STA=[],P=[],KAP=null,TEAMS=[],STX={},AG=[],LOAD={},PUB=null,EX=[],GH=[],ALIAS={},HIST={};
 const STRS=[['kapus','Kepala Pusat'],['kabid','Kepala Bidang Program dan Manajemen Pengetahuan'],['psk','Kepala Subbidang Program dan Sistem Kerja'],['tu','Kepala Subbagian Tata Usaha'],['mp','Kepala Subbidang Manajemen Pengetahuan']];
 const STRSH={kapus:'Ka. Pusat',kabid:'Kabid PMP',psk:'Kasub Prosiker',tu:'Kasub TU',mp:'Kasub MP'};
 const STRU={kabid:'Bidang Program dan Manajemen Pengetahuan',psk:'Subbidang Program dan Sistem Kerja',tu:'Subbagian Tata Usaha',mp:'Subbidang Manajemen Pengetahuan'},STRUS={kabid:'Bidang PMP',psk:'Subbid PSK',tu:'Subbag TU',mp:'Subbid MP'};
@@ -85,9 +85,10 @@ function build(){const k=kpCfg(),M=actMaster();k.ptx=k.ptx||{};k.str=k.str||{};k
  P=all.filter(p=>!off(p)&&String(p.n).toLowerCase()!==kapN).map(mk);
  EX=all.filter(p=>off(p)).map(p=>Object.assign(mk(p),{ex:1,t:'',tx:[],rl:{},k:false,spv:false,str:[],stp:[]}));
  KAP={n:kapP?kapP.n:(ku?ku.nama:'Ka. Pusmantap'),nk:'Ka. Pusmantap',kap:1,t:'',tx:[],u:[],rl:{},str:['kapus'],stp:[],j:'Kepala Pusat Manajemen Transformasi dan Perubahan',foto:kapP&&kapP.foto||'',hp:kapP&&kapP.hp||'',emailK:kapP&&kapP.emailK||'',prof:!!kapP,raw:kapP||{}};
- STX={};AG=[];LOAD={};HIST={};let rows=[];try{rows=actRows()}catch(e){rows=[]}
+ STX={};STA=[];AG=[];LOAD={};HIST={};let rows=[];try{rows=actRows()}catch(e){rows=[]}
  const ym=today().slice(0,7);
  rows.forEach(x=>{const a=String(x.tgl||'').slice(0,10);if(!a)return;const b=String(x.tglSelesai||x.tgl).slice(0,10)||a;const pic=ARR(x.pic).map(al);let st={no:'',items:[]};try{st=attNorm(x.st)}catch(e){}
+  if(st.no||st.items.length)STA.push({a,b,j:actNm(x),no:st.no||'',nf:st.items.length,lok:x.lokasi||'',id:x.id,pic:pic.slice()});
   if(st.no||st.items.length)pic.forEach(n=>{(STX[n]=STX[n]||[]).push({a,b,j:actNm(x),no:st.no||'Surat Tugas',lok:x.lokasi||'',id:x.id})});
   if(a.slice(0,7)===ym||b.slice(0,7)===ym)pic.forEach(n=>LOAD[n]=(LOAD[n]||0)+1);
   pic.forEach(n=>{const h=HIST[n]=HIST[n]||{c:0,last:''};h.c++;if(a>h.last)h.last=a})});
@@ -246,8 +247,10 @@ function vAgenda(){const ds=ST.agD||today(),A=agendaOn(ds),L=agFilter(A).filter(
 const pnl=(t,icn,body,extra,foot)=>'<section class="t-w"><div class="t-wh" style="cursor:default"><span class="t-ico">'+ic(icn)+'</span><h3>'+t+'</h3><span class="t-sp"></span>'+(extra||'')+'</div><div class="t-wb">'+body+'</div>'+(foot?'<div class="t-wf">'+foot+'</div>':'')+'</section>';
 function vHadir(){const r=wRingkasan(),m=wMinggu(),t=today();
  const ovrs=Object.entries(C().ovr).map(([k,o])=>{const[n,ds]=k.split('|');return Object.assign({k,n,ds},o)}).filter(x=>x.c!==defC(x.ds)&&x.ds>=addD(t,-30)).sort((a,b)=>b.ds.localeCompare(a.ds));
- const stL=[];Object.entries(STX).forEach(([n,L])=>L.forEach(x=>{if(x.b>=addD(t,-7))stL.push(Object.assign({n},x))}));stL.sort((a,b)=>a.a.localeCompare(b.a));
- const stT='<table class="t-tbl"><thead><tr><th>Pegawai</th><th>Kegiatan</th><th>Lokasi</th><th>Tanggal</th></tr></thead><tbody>'+(stL.map(x=>'<tr><td>'+nkc(x.n)+'</td><td><b>'+H(x.j)+'</b><div class="t-xs t-muted">'+H(x.no)+'</div></td><td class="t-sm">'+H(x.lok||'—')+'</td><td class="t-sm">'+fmtS(x.a)+(x.b!==x.a?'–'+fmtS(x.b):'')+'</td></tr>').join('')||'<tr><td colspan="4" class="t-empty">Belum ada Surat Tugas</td></tr>')+'</tbody></table>';
+ /* Dinas luar / Surat Tugas: semua kegiatan yang punya surat tugas; klik baris membuka detail aktivitas. */
+ const stF=ST.stF||'next',stAll=STA.slice(),stL=stAll.filter(x=>stF==='all'||(stF==='next'?x.b>=t:x.a.slice(0,7)===t.slice(0,7)||x.b.slice(0,7)===t.slice(0,7))).sort(stF==='next'?(a,b)=>a.a.localeCompare(b.a):(a,b)=>b.a.localeCompare(a.a)),stPg=pager('stL',stL.length,8);
+ const stS=x=>x.a>t?['Akan datang','t-b-h']:x.b<t?['Selesai','t-b-l']:['Berlangsung','t-b-o'];
+ const stT='<div class="t-stf">'+[['next','Berjalan & mendatang',stAll.filter(x=>x.b>=t).length],['month','Bulan ini',stAll.filter(x=>x.a.slice(0,7)===t.slice(0,7)||x.b.slice(0,7)===t.slice(0,7)).length],['all','Semua',stAll.length]].map(o=>'<button type="button" data-tstf="'+o[0]+'" class="'+(stF===o[0]?'t-on':'')+'">'+o[1]+' <em>'+o[2]+'</em></button>').join('')+'</div><table class="t-tbl t-sttb"><thead><tr><th>Kegiatan</th><th>PIC</th><th>Lokasi</th><th>Tanggal</th><th></th></tr></thead><tbody>'+(stL.slice(stPg.from,stPg.to).map(x=>{const z=stS(x);return '<tr class="t-strow" data-act="calOpen" data-id="'+H(x.id)+'" tabindex="0" title="Buka detail aktivitas"><td><b>'+H(x.j)+'</b><div class="t-xs t-muted">'+H(x.no||'Surat Tugas')+(x.nf?' · '+x.nf+' berkas':'')+'</div></td><td><div class="t-stpic">'+(x.pic.map(nkc).join('')||'<span class="t-muted">—</span>')+'</div></td><td class="t-sm">'+H(x.lok||'—')+'</td><td class="t-sm" style="white-space:nowrap">'+fmtS(x.a)+(x.b!==x.a?'–'+fmtS(x.b):'')+'<div><span class="t-badge '+z[1]+'">'+z[0]+'</span></div></td><td class="t-stgo">'+ic('cr','s')+'</td></tr>'}).join('')||'<tr><td colspan="5" class="t-empty">Tidak ada kegiatan dengan Surat Tugas</td></tr>')+'</tbody></table>'+(stPg.html?'<div class="t-wf"><span></span>'+stPg.html+'</div>':'');
  const ovT='<table class="t-tbl"><thead><tr><th>Tanggal</th><th>Pegawai</th><th>Menjadi</th><th>Alasan</th><th></th></tr></thead><tbody>'+(ovrs.map(x=>'<tr><td class="t-sm">'+fmtS(x.ds)+'</td><td>'+nkc(x.n)+'</td><td><span class="t-badge t-b-'+x.c+'">'+SLs[x.c]+'</span></td><td class="t-sm">'+H(x.r||'—')+(x.by?'<div class="t-xs t-muted">oleh '+H(x.by)+'</div>':'')+'</td><td style="text-align:right">'+(canEdit()?'<button type="button" class="t-ibtn" data-tovdel="'+H(x.k)+'" title="Kembalikan ke jadwal" style="display:inline-grid">'+ic('x','s')+'</button>':'')+'</td></tr>').join('')||'<tr><td colspan="5" class="t-empty">Belum ada perubahan</td></tr>')+'</tbody></table>';
  return '<div class="t-card"><div class="t-head">'+seg()+'</div><div class="t-toolrow"><b style="color:var(--t-navy);font-size:15px">Kehadiran</b><div class="t-tools"><span class="t-xs t-muted" style="font-weight:700">JADWAL WFH</span><span class="t-szs">'+[1,2,3,4,5].map(d=>'<button type="button" data-twfhd="'+d+'" class="'+(C().wfhd.includes(d)?'t-on':'')+'" '+(canEdit()?'':'disabled')+'>'+HR[d].slice(0,3)+'</button>').join('')+'</span></div></div>'+r.html+
   '<div style="padding:0 16px 16px"><section class="t-w"><div class="t-wh" style="cursor:default"><span class="t-ico">'+ic('users')+'</span><h3>Ketersediaan mingguan</h3><span class="t-muted t-xs">'+m.sub+'</span><span class="t-sp"></span>'+m.tools+'</div>'+m.pre+'<div class="t-wb">'+m.html+'</div><div class="t-wf">'+m.foot+m.pg+'</div></section></div><div class="t-pane2" style="padding-top:0">'+pnl('Dinas luar / Surat Tugas','brief',stT,'<span class="t-chip t-pm">'+ic('sync','s')+'otomatis dari aktivitas</span>')+pnl('Riwayat perubahan WFO/WFH','swap',ovT,'<span class="t-xs t-muted">'+ovrs.length+' perubahan · 30 hari</span>')+'</div></div>'}
@@ -456,6 +459,7 @@ function onClick(e){const r=e.target.closest('#t2,#t2-layer');if(!r)return;const
  if((el=g('[data-tclose]'))){ST.dr=null;ST.md=null;rr();return}
  if((el=g('[data-tcmon]'))){const d=el.dataset.tcmon;ST.calY=+d.slice(0,4);ST.calM=+d.slice(5,7)-1;ST.calSel=d;ST.calSc='ALL'}
  if((el=g('[data-tv]'))){setV(el.dataset.tv);return}
+ if((el=g('[data-tstf]'))){ST.stF=el.dataset.tstf;ST.pg.stL=0;rr();return}
  if((el=g('[data-tpv]'))){ST.pv=el.dataset.tpv;S.ui.t2pv=ST.pv;rr();return}
  if((el=g('[data-tpu]'))){ST.pu=el.dataset.tpu;rr();return}
  if((el=g('[data-tpuf]'))){ST.puf=el.dataset.tpuf;rr();return}
@@ -723,6 +727,10 @@ const css=`
 .t-seg button.t-on,.t-seg button.t-on:hover{background:var(--t-navy);color:#fff;box-shadow:0 2px 6px rgba(14,42,92,.25)}.t-seg .t-on .t-i{color:var(--t-gold2)}.t-seg .t-gsep{width:1px;background:#CBD4E4;margin:6px 4px;align-self:stretch}
 /* Profil: tab dalam + Per unit */
 .t-pvw{padding:14px 16px 0}
+.t-stf{display:flex;gap:5px;flex-wrap:wrap;padding:10px 14px 4px}.t-stf button{border:1px solid #E3E8F0;background:#fff;border-radius:999px;padding:4px 11px;font-weight:700;font-size:12px;color:#4C5D78;cursor:pointer}.t-stf button em{font-style:normal;opacity:.7}.t-stf button.t-on{background:var(--t-navy);border-color:var(--t-navy);color:#fff}
+.t-strow{cursor:pointer;transition:background .12s}.t-strow:hover{background:#F5F8FD}.t-strow:hover b{color:var(--t-navy);text-decoration:underline}.t-strow:focus-visible{outline:2px solid var(--t-navy);outline-offset:-2px}
+.t-stpic{display:flex;gap:4px;flex-wrap:wrap}.t-stgo{color:#9AA6B8;width:20px}.t-strow:hover .t-stgo{color:var(--t-navy)}
+.t-sttb .t-badge{margin-top:4px;display:inline-block}
 .t-pvs{display:inline-flex;gap:4px;padding:4px;background:#F3F6FB;border:1px solid #E3E8F0;border-radius:12px;flex-wrap:wrap}
 .t-pvs button{border:0;background:transparent;padding:8px 14px;border-radius:9px;font-weight:800;font-size:13px;color:#4C5D78;display:inline-flex;align-items:center;gap:7px;cursor:pointer}
 .t-pvs button:hover{color:var(--t-navy)}.t-pvs button.t-on{background:#fff;color:#0F2346;box-shadow:0 1px 3px rgba(15,36,71,.12),0 0 0 1px #DCE3EE}
