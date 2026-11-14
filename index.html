@@ -2728,6 +2728,21 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 .wzmd .fld:focus-within small.fex{display:block}
 .wzmd .wzcard .fld{border:0;background:none;padding:0;box-shadow:none}
 .wzmd .wzcard{background:#FAFBFD}.wzmd .wzcard-b{background:#fff}
+/* Ringkasan wizard: rapi, mudah dibaca */
+.wzrv{border:1px solid #E3E8F0;border-radius:14px;padding:14px 16px;margin-bottom:12px;background:#fff}
+.wzrv-h{display:flex;align-items:center;gap:10px;margin-bottom:10px}.wzrv-h b{font-size:15px;color:#0B2447;flex:1}
+.wzrv-n{width:26px;height:26px;border-radius:50%;background:#0B2447;color:#FDB913;display:grid;place-items:center;font-weight:800;font-size:12.5px;flex:none}
+.wzrv-e{border:1px solid #DCE3EF!important;background:#fff!important;border-radius:9px;padding:5px 12px!important;text-decoration:none!important;font-size:12.5px!important;color:#17457F!important}
+.wzrv-e:hover{background:#F4F7FC!important}
+.wzrs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:10px}.wzrs>div{background:#F7F9FC;border-radius:10px;padding:9px 12px}.wzrs small,.wzab small{display:block;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#7D8AA0;margin-bottom:3px}.wzrs b{font-size:14px;color:#13233F;font-weight:600}
+.wzab{display:grid;grid-template-columns:1fr 34px 1fr;align-items:stretch}.wzab-c{border-radius:12px;padding:11px 13px;background:#F7F9FC;border:1px solid #E9EDF4}.wzab-c p{margin:0;font-size:14px;line-height:1.55;color:#13233F}.wzab-c i{color:#9AA4BA}.wzab-to{background:#F0FAF5;border-color:#CDEBDB}.wzab-to small{color:#15805F}
+.wzab-ar{display:grid;place-items:center;font-size:20px;color:#9AA4BA;font-weight:700}
+.wzpt{border:1px solid #E9EDF4;border-radius:12px;overflow:hidden}
+.wzpr{display:grid;grid-template-columns:minmax(150px,200px) 128px minmax(0,1fr);gap:14px;align-items:center;padding:10px 14px;border-top:1px solid #EEF1F6;font-size:14px}.wzpr:first-child{border-top:0}.wzpr:nth-child(even){background:#FAFBFD}
+.wzpr-a{display:flex;align-items:center;gap:9px;font-weight:700;color:#13233F}.wzpr-a i{font-style:normal;min-width:28px;height:24px;padding:0 6px;border-radius:7px;background:#0B2447;color:#FDB913;font-weight:800;font-size:12px;display:grid;place-items:center}
+.wzpr-u{color:#3A4763;line-height:1.5}.wzpr-u i{color:#9AA4BA}
+.wzlvc{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:4px 12px;white-space:nowrap}.wzlvc.z{background:#EEF1F6;color:#7D8AA0}.wzlvc.g{background:#E7F6EE;color:#15805F}.wzlvc.w{background:#FFF3D6;color:#8A6400}.wzlvc.b{background:#FDECEA;color:#C2362B}
+@media(max-width:760px){.wzab{grid-template-columns:1fr}.wzab-ar{transform:rotate(90deg);height:28px}.wzpr{grid-template-columns:1fr auto}.wzpr-u{grid-column:1/-1}}
 </style>
 
 <style>
@@ -3513,7 +3528,16 @@ function wzMount(ov,W,cols,isEdit){const md=ov.querySelector('.md');md.classList
  const prev=document.createElement('button');prev.className='btn';prev.type='button';prev.textContent='‹ Sebelumnya';const next=document.createElement('button');next.className='btn pri';next.type='button';next.textContent='Berikutnya ›';
  ft.insertBefore(prev,ok);ft.insertBefore(next,ok);
  const val=c=>{const el=document.getElementById('f_'+c.k);if(!el)return '';if(c.t==='chk')return el.checked?(c.cl||'Ya'):'';if(c.t==='multi')return [...el.querySelectorAll('input:checked')].map(i=>i.parentElement.textContent.trim()).join(', ');if(c.t==='sel'){const op=el.options[el.selectedIndex];return op?op.textContent.trim():''}return el.value.trim()};
- const review=()=>ov.querySelector('.wzrev').innerHTML=W.steps.map((g,i)=>{const L=g.items.map(c=>[String(c.l).replace(/<[^>]+>/g,''),val(c)]).filter(x=>x[1]&&x[1]!=='—');return `<div class="wzrv"><div class="wzrv-h"><b>${i+1}. ${esc(g.t)}</b><button type="button" class="wzrv-e" data-wzgo="${i}">Ubah</button></div>${L.length?`<dl>${L.map(x=>`<dt>${esc(x[0])}</dt><dd>${esc(x[1])}</dd>`).join('')}</dl>`:'<p class="s" style="margin:4px 0 0">Belum diisi.</p>'}</div>`}).join('');
+ const lvOf=c=>{const el=document.getElementById('f_'+c.k);if(!el||!el.options)return {t:val(c),cl:''};const n=el.options.length,k=el.selectedIndex,t=(el.options[k]||{}).textContent||'';const r=n>1?k/(n-1):0;return {t:k<=0||t.trim()==='—'||t.trim()===''?'Tidak ada':t.trim(),cl:k<=0?'z':r<=.34?'g':r<=.67?'w':'b'}};
+ const review=()=>{const dimAb=k=>{const d=(typeof DIMS!=='undefined'?DIMS:[]).find(x=>x[0]===k);return d?(d[2]||d[0]):''};
+  ov.querySelector('.wzrev').innerHTML=W.steps.map((g,gi)=>{const it=g.items,used=new Set();let h='';
+   const asis=it.find(c=>c.k==='asis'),tobe=it.find(c=>c.k==='tobe');
+   const singles=it.filter(c=>c!==asis&&c!==tobe&&!(c.t==='sel'&&it.some(n=>n.k===c.k+'k'))&&!it.some(p=>p.t==='sel'&&c.k===p.k+'k'));
+   if(singles.length)h+=`<div class="wzrs">${singles.map(c=>`<div><small>${esc(String(c.l).replace(/<[^>]+>/g,''))}</small><b>${esc(val(c)||'—')}</b></div>`).join('')}</div>`;
+   if(asis||tobe)h+=`<div class="wzab"><div class="wzab-c"><small>Sebelum · As-Is</small><p>${esc(asis?val(asis):'')||'<i>Belum diisi</i>'}</p></div><div class="wzab-ar" aria-hidden="true">→</div><div class="wzab-c wzab-to"><small>Sesudah · To-Be</small><p>${esc(tobe?val(tobe):'')||'<i>Belum diisi</i>'}</p></div></div>`;
+   const pairs=it.filter(c=>c.t==='sel'&&it.some(n=>n.k===c.k+'k'));
+   if(pairs.length)h+=`<div class="wzpt">${pairs.map(c=>{const n=it.find(x=>x.k===c.k+'k'),lv=lvOf(c),ab=dimAb(c.k),ur=val(n);return `<div class="wzpr"><div class="wzpr-a">${ab?`<i>${esc(ab)}</i>`:''}<span>${esc(String(c.l).replace(/\s*—\s*tingkat\s*$/i,'').replace(/^Risiko\s+/,''))}</span></div><div class="wzpr-l"><span class="wzlvc ${lv.cl}">${esc(lv.t)}</span></div><div class="wzpr-u">${ur?esc(ur):'<i>Tanpa uraian</i>'}</div></div>`}).join('')}</div>`;
+   return `<div class="wzrv"><div class="wzrv-h"><span class="wzrv-n">${gi+1}</span><b>${esc(g.t)}</b><button type="button" class="wzrv-e" data-wzgo="${gi}">✎ Ubah</button></div>${h||'<p class="s" style="margin:6px 0 0">Belum diisi.</p>'}</div>`}).join('')};
  const reqOk=i=>{if(i>=N)return true;for(const c of W.steps[i].items){if(!c.req)continue;const el=document.getElementById('f_'+c.k);if(el&&String(el.value||'').trim()==='')return c}return true};
  const go=i=>{if(i>cur){for(let k=cur;k<i;k++){const r=reqOk(k);if(r!==true){go(k);const el=document.getElementById('f_'+r.k);el&&el.focus();toast(`${String(r.l).replace(/<[^>]+>/g,'')} wajib diisi.`);return}}}
   cur=Math.max(0,Math.min(N,i));ov.querySelectorAll('.wzp').forEach(x=>x.hidden=+x.dataset.wz!==cur);ov.querySelectorAll('.wzs li').forEach((li,k)=>{li.classList.toggle('on',k===cur);li.classList.toggle('done',k<cur)});
