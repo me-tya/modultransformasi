@@ -152,9 +152,9 @@ const srch=ph=>'<label class="t-search">'+ic('search','s')+'<input data-tq place
 const ST={v:'highlight',q:'',pg:{},dr:null,md:null,pop:'',cpop:'',agF:'ALL',agD:'',wkT:'ALL',wkW:0,calY:0,calM:0,calSc:'ALL',calSel:'',calView:'',cuF:'ALL',tmpF:'aktif',uf:'all',edit:false,drag:null,anim:'',sel:'',tf:'ALL'};
 
 /* ---------- kerangka ---------- */
-const SEGS=[['highlight','spark','Highlight'],'|',['agenda','cal','Agenda'],['hadir','bld','Kehadiran'],['cuti','sun','Cuti'],'|',['tempat','kanban','Penempatan Tim'],['profil','idc','Profil Pegawai'],['sementara','hour','Pegawai Sementara'],'|',['unit','org','Pendampingan Unit']];
+const SEGS=[['highlight','spark','Highlight'],'|',['agenda','cal','Agenda'],['hadir','bld','Kehadiran'],['cuti','sun','Cuti'],'|',['tempat','kanban','Onboarding'],['profil','idc','Profil'],'|',['unit','org','PIC Unit']];
 const seg=()=>'<div class="t-seg t-tabs2" role="tablist" aria-label="Tim Pusmantap">'+SEGS.map(x=>x==='|'?'<span class="t-gsep"></span>':'<button type="button" role="tab" aria-selected="'+(ST.v===x[0])+'" data-tv="'+x[0]+'" class="'+(ST.v===x[0]?'t-on':'')+'">'+ic(x[1],'s')+x[2]+'</button>').join('')+'</div>';
-function page(){setTimeout(placePop,0);ST.v=S.ui.t2v||'highlight';if(!ST.calY){const t=today();ST.calY=+t.slice(0,4);ST.calM=+t.slice(5,7)-1;ST.calSel=t}if(!ST.calView)ST.calView=lsGet('calView','today');
+function page(){setTimeout(placePop,0);ST.v=S.ui.t2v||'highlight';if(ST.v==='sementara'){ST.v='profil';ST.pv='tmp'}if(!ST.pv)ST.pv=S.ui.t2pv||'orang';if(!ST.calY){const t=today();ST.calY=+t.slice(0,4);ST.calM=+t.slice(5,7)-1;ST.calSel=t}if(!ST.calView)ST.calView=lsGet('calView','today');
  build();let h='';const g=grp();
  try{if(g==='pusat'){PUB=null;pubSync();
   if(role()==='KAPUS')h+='<div class="t-rob">'+ic('crown')+'Tampilan Ka. Pusmantap: semua data dapat dilihat dan diunduh; perubahan dilakukan PMO/CMO Kemenkeu.</div>';
@@ -220,7 +220,7 @@ function attnItems(){const L=[],t=today();
  P.filter(p=>isTmp(p)&&p.selesai).map(p=>({p,s:days(t,p.selesai)})).filter(x=>x.s>=0&&x.s<=60).sort((a,b)=>a.s-b.s).forEach(x=>L.push('<button type="button" class="t-row" data-tv="sementara">'+av(x.p,'sm')+'<div class="t-x"><div class="t-nm">'+H(nk(x.p))+' <span class="t-chip t-tmp">'+H(x.p.jen)+'</span></div><div class="t-xs t-muted">Berakhir '+fmtM(x.p.selesai)+' · <b style="color:'+(x.s<=30?'var(--t-c)':'#9A6A00')+'">'+x.s+' hari lagi</b></div>'+(x.p.mulai?'<div class="t-tbar"><i style="width:'+Math.min(100,Math.max(0,days(x.p.mulai,t)/Math.max(1,days(x.p.mulai,x.p.selesai))*100))+'%"></i></div>':'')+'</div><span class="t-go t-muted">'+ic('cr')+'</span></button>'));
  const un=P.filter(p=>!p.t);if(un.length)L.push('<button type="button" class="t-row" data-tv="tempat"><span class="t-ico" style="background:#FFF3D6;color:#9A6A00">'+ic('alert','s')+'</span><div class="t-x"><div class="t-nm">'+un.length+' pegawai belum punya tim</div><div class="t-xs t-muted">'+un.map(p=>H(nk(p))).join(', ')+'</div></div><span class="t-go t-muted">'+ic('cr')+'</span></button>');
  const y=+t.slice(0,4),m=+t.slice(5,7)-1,ov=overDays(y,m).concat(overDays(m===11?y+1:y,(m+1)%12));if(ov.length)L.push('<button type="button" class="t-row" data-tv="cuti" data-tcmon="'+ov[0]+'"><span class="t-ico" style="background:var(--t-c-l);color:var(--t-c)">'+ic('sun','s')+'</span><div class="t-x"><div class="t-nm">'+ov.length+' hari cuti melewati batas · perlu ada yang menggeser</div><div class="t-xs t-muted">'+ov.map(fmtS).join(', ')+'</div></div><span class="t-go t-muted">'+ic('cr')+'</span></button>');
- const k=kpCfg();UNITS_ALL().filter(u=>!(k.asg[u]||[]).some(n=>{const p=P.find(x=>x.n===n);return p&&isCMO(p)})).forEach(u=>L.push('<button type="button" class="t-row" data-tunit="'+H(u)+'"><span class="t-ico" style="background:var(--t-v-l);color:var(--t-v)">'+ic('org','s')+'</span><div class="t-x"><div class="t-nm">'+H(u)+' belum punya CMO Kemenkeu</div><div class="t-xs t-muted">Atur di Pendampingan Unit</div></div><span class="t-go t-muted">'+ic('cr')+'</span></button>'));
+ const k=kpCfg();UNITS_ALL().filter(u=>!(k.asg[u]||[]).some(n=>{const p=P.find(x=>x.n===n);return p&&isCMO(p)})).forEach(u=>L.push('<button type="button" class="t-row" data-tunit="'+H(u)+'"><span class="t-ico" style="background:var(--t-v-l);color:var(--t-v)">'+ic('org','s')+'</span><div class="t-x"><div class="t-nm">'+H(u)+' belum punya CMO Kemenkeu</div><div class="t-xs t-muted">Atur di PIC Unit</div></div><span class="t-go t-muted">'+ic('cr')+'</span></button>'));
  return L}
 function wPerhatian(){const L=attnItems(),pg=pager('perhatian',L.length,4);return {sub:L.length+' hal',sum:L.length+' hal perlu perhatian',html:L.slice(pg.from,pg.to).join('')||'<div class="t-empty">Tidak ada</div>',pg:pg.html}}
 /* Urutan jabatan: struktural (Kapus, Kabid, Kasub) lalu jenjang fungsional, lalu pelaksana. */
@@ -305,8 +305,26 @@ function popup(p,tid){const o=(v,a)=>a.map(x=>'<option '+(x[0]===v?'selected':''
   (extra?'<button type="button" class="t-btn t-sm" data-tprm="'+H(tid)+'" data-tpn="'+H(p.n)+'" style="width:100%;margin-top:6px;justify-content:center">Keluarkan dari '+H(tid)+'</button>':'')+'<div style="display:flex;justify-content:space-between;margin-top:8px"><button type="button" class="t-lnk" data-act="tmUnits" data-v="'+H(p.n)+'">Atur unit '+ic('arrow','s')+'</button><button type="button" class="t-lnk" data-topen="'+H(p.n)+'">Profil '+ic('arrow','s')+'</button></div></div>'}
 
 /* ================= TAB PROFIL (halaman master–detail mt-tim.js) ================= */
-function vProfil(){let inner='';try{S.ui.tmView='orang';inner=T().page().replace(AKT_HDR(),'').replace(/<div class="t-tm-vs"[\s\S]*?<\/div>/,'')}catch(e){inner='<p class="t-s" style="padding:18px">Profil belum dapat dimuat.</p>'}
- return '<div class="t-card"><div class="t-head">'+seg()+'</div><div style="padding:14px 16px 16px" class="t2-old">'+inner+'</div></div>'}
+/* Profil: tab Per individu · Per unit · Pegawai sementara. */
+function vProfil(){const pv=ST.pv||'orang';let inner='';
+ const tabs='<div class="t-pvs" role="tablist" aria-label="Tampilan profil">'+[['orang','idc','Per individu Kemenkeu'],['unit','org','Per unit (PMO, CMO, Pemilik Probis)'],['tmp','hour','Pegawai sementara']].map(x=>'<button type="button" role="tab" aria-selected="'+(pv===x[0])+'" data-tpv="'+x[0]+'" class="'+(pv===x[0]?'t-on':'')+'">'+ic(x[1],'s')+x[2]+(x[0]==='tmp'?'<em>'+P.filter(isTmp).length+'</em>':'')+'</button>').join('')+'</div>';
+ if(pv==='unit')inner=vProfilUnit();
+ else if(pv==='tmp'){const h=vSementara(),pre='<div class="t-card"><div class="t-head">'+seg()+'</div>';inner=h.startsWith(pre)?h.slice(pre.length).replace(/<\/div>$/,''):h}
+ else{try{S.ui.tmView='orang';inner='<div class="t2-old">'+T().page().replace(AKT_HDR(),'').replace(/<div class="tm-vs"[\s\S]*?<\/div>/,'')+'</div>'}catch(e){inner='<p class="t-s" style="padding:18px">Profil belum dapat dimuat.</p>'}}
+ return '<div class="t-card"><div class="t-head">'+seg()+'</div><div class="t-pvw">'+tabs+'</div><div class="t-pvb t-pv-'+pv+'">'+inner+'</div></div>'}
+/* Per unit: daftar unit (kiri) + kartu kontak unit per peran (kanan). */
+function vProfilUnit(){const all=unitList().map(u=>Object.assign({u},uScore(u))).sort((a,b)=>a.u.localeCompare(b.u)),f=ST.puf||'all',L=all.filter(x=>f==='all'||(f==='need'?x.sc<5:x.sc===5));
+ if(!ST.pu||!all.some(x=>x.u===ST.pu))ST.pu=(L[0]||all[0]||{}).u||'';const x=all.find(y=>y.u===ST.pu),cs=x?kpPeople().filter(c=>c.unit===x.u):[];
+ const on=typeof kpOn==='function'?kpOn:()=>true,cnt=(a,k)=>a.c[k].length;
+ const row=y=>{const nm=kpPeople().filter(c=>c.unit===y.u).map(c=>c.nama).join(' ');return '<button type="button" class="t-pur'+(y.u===ST.pu?' t-on':'')+'" data-tpu="'+H(y.u)+'" data-s="'+H((y.u+' '+nm).toLowerCase())+'">'+ring(y.sc)+'<span class="t-pur-x"><b>'+H(y.u)+'</b><span class="t-pur-c"><i class="'+(cnt(y,'pmo')?'':'z')+'" style="--c:#2B5AA8">PMO '+cnt(y,'pmo')+'</i><i class="'+(cnt(y,'cmo')?'':'z')+'" style="--c:#6D53C7">CMO '+cnt(y,'cmo')+'</i><i class="'+(cnt(y,'pb')?'':'z')+'" style="--c:#16A37F">Probis '+cnt(y,'pb')+'</i></span></span>'+(y.miss.length?'<span class="t-pur-w" title="'+H(y.miss.join(', '))+'">'+ic('alert','s')+'</span>':'')+'</button>'};
+ const left='<aside class="t-pul"><div class="t-pul-s">'+ic('search','s')+'<input data-tpuq placeholder="Cari unit atau nama kontak…" aria-label="Cari unit"></div><div class="t-pul-f">'+[['all','Semua',all.length],['need','Perlu dilengkapi',all.filter(y=>y.sc<5).length],['ok','Lengkap',all.filter(y=>y.sc===5).length]].map(o=>'<button type="button" data-tpuf="'+o[0]+'" class="'+(f===o[0]?'t-on':'')+'">'+o[1]+' <em>'+o[2]+'</em></button>').join('')+'</div><div class="t-pul-l">'+(L.map(row).join('')||'<div class="t-empty">Tidak ada unit</div>')+'</div></aside>';
+ if(!x)return '<div class="t-pu">'+left+'<section class="t-pur-d"><div class="t-empty" style="padding:40px">Belum ada unit.</div></section></div>';
+ const pd=[...new Set(x.pm.concat(x.cm))],nO=cs.filter(c=>!on(c)).length,edit=canEdit();
+ const grp=(k,lbl,col)=>{const G=kGrid(kSort(cs.filter(c=>(c.peran||[]).includes(k))));return '<div class="t-pug" style="--c:'+col+'"><div class="t-pug-h"><i></i><b>'+lbl+'</b><em>'+G.nA+'</em>'+(G.nO?'<small>+'+G.nO+' riwayat</small>':'')+'</div>'+(G.nA||G.nO?'<div class="t-kgrid">'+G.html+'</div>':'<div class="t-pug-0">Belum ada '+lbl+(edit?' · <button type="button" class="t-lnk" data-tkunew="" data-tku-u="'+H(x.u)+'">tambah</button>':'')+'</div>')+'</div>'};
+ const right='<section class="t-pur-d'+(typeof kpHistCls==='function'?kpHistCls(x.u):'')+'" data-kph="'+H(x.u)+'"><div class="t-pud-h"><div class="t-pud-t">'+ring(x.sc)+'<div><h3>'+H(x.u)+'</h3><div class="t-pud-p"><small>Pendamping Kemenkeu</small>'+(pd.length?pd.map(p=>'<button type="button" class="t-nkc" data-tp="'+H(p.n)+'"><i style="background:'+SC[code(p,today())]+'"></i>'+H(nk(p))+(isCMO(p)&&isPMO(p)?'':isCMO(p)?' · CMO':' · PMO')+'</button>').join(''):'<span class="t-warn">belum ada</span>')+'</div></div></div><div class="t-pud-a">'+(typeof kpHistBtn==='function'?kpHistBtn(x.u,nO):'')+(edit?'<button type="button" class="t-btn t-sm" data-tunitset="'+H(x.u)+'">'+ic('edit','s')+'Atur pendamping</button><button type="button" class="t-btn t-sm" data-tkunew="1" data-tku-u="'+H(x.u)+'">'+ic('ul','s')+'Skrinsyut</button><button type="button" class="t-btn t-sm t-pri" data-tkunew="" data-tku-u="'+H(x.u)+'">'+ic('plus','s')+'Kontak</button>':'')+'</div></div>'+
+  (x.miss.length?'<div class="t-pud-m">'+x.miss.map(m=>'<span>'+ic('alert','s')+'Belum ada '+H(m)+'</span>').join('')+'</div>':'<div class="t-pud-ok">'+ic('check','s')+'Kontak unit lengkap</div>')+
+  grp('pmo','PMO Unit','#2B5AA8')+grp('cmo','CMO Unit','#6D53C7')+grp('probis','Pemilik Proses Bisnis','#16A37F')+'</section>';
+ return '<div class="t-pu">'+left+right+'</div>'}
 
 /* ================= TAB PEGAWAI SEMENTARA ================= */
 function vSementara(){const t=today(),A=P.filter(isTmp),soon=A.filter(p=>p.selesai&&days(t,p.selesai)<=30),L=(ST.tmpF==='soon'?soon:A).slice().sort((a,b)=>String(a.selesai||'9999').localeCompare(String(b.selesai||'9999'))),J=C().jenis;
@@ -427,7 +445,7 @@ function rr(){const se=document.scrollingElement||document.documentElement,ws=[s
  render();anc.forEach(([id,t,l])=>{const e=document.getElementById(id);if(e){e.scrollTop=t;e.scrollLeft=l}});se.scrollTop=ws[0];se.scrollLeft=ws[1];
  const now=[...document.querySelectorAll(sel)];inner.forEach(([c,l,t],i)=>{const e=now[i];if(e&&e.className===c){e.scrollLeft=l;e.scrollTop=t}});placePop()}
 window.addEventListener('scroll',()=>{if(ST.pop)placePop()},true);window.addEventListener('resize',()=>{if(ST.pop)placePop()});
-function setV(v){ST.v=v;S.ui.t2v=v;ST.pop='';ST.cpop='';ST.dr=null;ST.md=null;ST.q='';rr()}
+function setV(v){if(v==='sementara'){v='profil';ST.pv='tmp';S.ui.t2pv='tmp'}ST.v=v;S.ui.t2v=v;ST.pop='';ST.cpop='';ST.dr=null;ST.md=null;ST.q='';rr()}
 function savePic(name,fn){const M=actMaster(),p=M.pic.find(x=>x.n===name);if(!p){toastT('Profil '+name+' belum ada di daftar pegawai. Tambahkan dulu lewat + Pegawai.');return false}fn(p);actMasterSave(M);return true}
 function waText(){const t=today(),cnt=counts(t),ag=agendaOn(t),stL=P.filter(p=>code(p,t)==='s'),cu=P.filter(p=>code(p,t)==='c');
  return '*Tim Pusmantap · '+fmt(t)+'*\nBekerja: '+(cnt.o+cnt.h)+' dari '+P.length+' (WFO '+cnt.o+', WFH '+cnt.h+')\nDinas luar: '+(stL.map(p=>nk(p)).join(', ')||'-')+'\nCuti: '+(cu.map(p=>nk(p)).join(', ')||'-')+'\n\n*Agenda hari ini*\n'+(ag.map(a=>'• '+a.s+(a.e?'–'+a.e:'')+' '+a.j+(a.p.length?' ('+a.p.map(n=>nk(pn(n))).join(', ')+')':'')).join('\n')||'-')}
@@ -438,6 +456,9 @@ function onClick(e){const r=e.target.closest('#t2,#t2-layer');if(!r)return;const
  if((el=g('[data-tclose]'))){ST.dr=null;ST.md=null;rr();return}
  if((el=g('[data-tcmon]'))){const d=el.dataset.tcmon;ST.calY=+d.slice(0,4);ST.calM=+d.slice(5,7)-1;ST.calSel=d;ST.calSc='ALL'}
  if((el=g('[data-tv]'))){setV(el.dataset.tv);return}
+ if((el=g('[data-tpv]'))){ST.pv=el.dataset.tpv;S.ui.t2pv=ST.pv;rr();return}
+ if((el=g('[data-tpu]'))){ST.pu=el.dataset.tpu;rr();return}
+ if((el=g('[data-tpuf]'))){ST.puf=el.dataset.tpuf;rr();return}
  if((el=g('[data-tpg]'))){ST.pg[el.dataset.tpg]=(ST.pg[el.dataset.tpg]||0)+ +el.dataset.d;rr();return}
  if((el=g('[data-tsetc]'))){const[n,ds]=ST.cpop.split('|'),rz=(document.getElementById('t2-ovr-r')||{}).value||'',c=el.dataset.tsetc;CW(cf=>{const k=n+'|'+ds;if(c===defC(ds)&&!rz)delete cf.ovr[k];else cf.ovr[k]={c,r:rz,by:(ME&&ME.nama)||'',at:new Date().toISOString()};Object.keys(cf.ovr).forEach(x=>{if(x.split('|')[1]<addD(today(),-120))delete cf.ovr[x]})});ST.cpop='';toastT(nk(pn(n))+' · '+fmtS(ds)+': '+SL[c]);rr();return}
  if((el=g('[data-tcell]'))){e.stopPropagation();ST.cpop=ST.cpop===el.dataset.tcell?'':el.dataset.tcell;rr();return}
@@ -525,7 +546,7 @@ function onChange(e){const r=e.target.closest('#t2,#t2-layer');if(!r)return;cons
   try{log('Ex-pegawai / nama aktivitas',g+' → '+(v==='__ex'?'ex-pegawai':v))}catch(e){}rr();return}
  if(t.matches('[data-tptx]')){const n=t.dataset.tpn,tm=t.dataset.tptx,k=kpCfg();k.ptx=k.ptx||{};const L=(k.ptx[n]||[]).filter(x=>x!==tm);if(t.checked)L.push(tm);if(L.length)k.ptx[n]=L;else delete k.ptx[n];save();toastT(n+(t.checked?' ditambahkan ke ':' dikeluarkan dari ')+tm);rr();return}}
 let qT=0;
-function onInput(e){const t=e.target;if(!t.matches||!t.matches('#t2 [data-tq]'))return;ST.q=t.value;if(ST.v==='tempat'){document.querySelectorAll('#t2 .t-p[data-tn]').forEach(c=>{c.style.display=(c.dataset.tn+' '+nk(pn(c.dataset.tn))).toLowerCase().includes(ST.q.toLowerCase())?'':'none'});return}clearTimeout(qT);qT=setTimeout(()=>{const pos=t.selectionStart;rr();const n=document.querySelector('#t2 [data-tq]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(er){}}},250)}
+function onInput(e){const t=e.target;if(t.matches&&t.matches('#t2 [data-tpuq]')){const q=t.value.toLowerCase().trim();document.querySelectorAll('#t2 .t-pur[data-s]').forEach(b=>b.style.display=!q||b.dataset.s.includes(q)?'':'none');return}if(!t.matches||!t.matches('#t2 [data-tq]'))return;ST.q=t.value;if(ST.v==='tempat'){document.querySelectorAll('#t2 .t-p[data-tn]').forEach(c=>{c.style.display=(c.dataset.tn+' '+nk(pn(c.dataset.tn))).toLowerCase().includes(ST.q.toLowerCase())?'':'none'});return}clearTimeout(qT);qT=setTimeout(()=>{const pos=t.selectionStart;rr();const n=document.querySelector('#t2 [data-tq]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(er){}}},250)}
 function onKey(e){if(e.key==='Escape'&&(ST.dr||ST.md||ST.pop||ST.cpop)&&document.getElementById('t2')){ST.dr=null;ST.md=null;ST.pop='';ST.cpop='';rr()}
  if(e.key==='Enter'&&e.target.matches&&e.target.matches('#t2 [data-tag][role=button]')){e.target.click()}}
 function onDocClick(e){if((ST.pop||ST.cpop)&&document.getElementById('t2')&&!e.target.closest('.t-pop,.t-cpop,[data-tpop],[data-tcell]')){ST.pop='';ST.cpop='';rr()}}
@@ -700,6 +721,38 @@ const css=`
 .t-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--t-line2);flex-wrap:wrap}
 .t-seg{display:inline-flex;background:#E9EDF4;border-radius:11px;padding:3px;gap:2px;flex-wrap:wrap}.t-seg button{border:0;background:none;padding:7px 12px;border-radius:8px;font-weight:600;color:var(--t-ink3);display:flex;gap:6px;align-items:center;transition:.15s}.t-seg button:hover{color:var(--t-navy)}
 .t-seg button.t-on,.t-seg button.t-on:hover{background:var(--t-navy);color:#fff;box-shadow:0 2px 6px rgba(14,42,92,.25)}.t-seg .t-on .t-i{color:var(--t-gold2)}.t-seg .t-gsep{width:1px;background:#CBD4E4;margin:6px 4px;align-self:stretch}
+/* Profil: tab dalam + Per unit */
+.t-pvw{padding:14px 16px 0}
+.t-pvs{display:inline-flex;gap:4px;padding:4px;background:#F3F6FB;border:1px solid #E3E8F0;border-radius:12px;flex-wrap:wrap}
+.t-pvs button{border:0;background:transparent;padding:8px 14px;border-radius:9px;font-weight:800;font-size:13px;color:#4C5D78;display:inline-flex;align-items:center;gap:7px;cursor:pointer}
+.t-pvs button:hover{color:var(--t-navy)}.t-pvs button.t-on{background:#fff;color:#0F2346;box-shadow:0 1px 3px rgba(15,36,71,.12),0 0 0 1px #DCE3EE}
+.t-pvs em{font-style:normal;font-size:11px;background:#E6EBF3;color:#4C5D78;border-radius:999px;padding:1px 7px}.t-pvs .t-on em{background:#FFF3CC;color:#7A5600}
+.t-pvb{padding:12px 16px 16px}.t-pvb.t-pv-tmp{padding:0}
+.t-pu{display:grid;grid-template-columns:minmax(260px,330px) minmax(0,1fr);gap:14px;align-items:start}
+.t-pul{border:1px solid var(--t-line);border-radius:14px;background:#fff;padding:12px;position:sticky;top:76px;max-height:calc(100vh - 96px);display:flex;flex-direction:column;gap:10px}
+.t-pul-s{display:flex;align-items:center;gap:7px;border:1px solid #DCE3EE;border-radius:10px;padding:0 10px;background:#F7F9FD}.t-pul-s input{border:0;outline:0;background:transparent;height:36px;flex:1;font:inherit;font-weight:600;min-width:0}.t-pul-s:focus-within{border-color:var(--t-navy);background:#fff}
+.t-pul-f{display:flex;gap:5px;flex-wrap:wrap}.t-pul-f button{border:1px solid #E3E8F0;background:#fff;border-radius:999px;padding:4px 10px;font-weight:700;font-size:12px;color:#4C5D78;cursor:pointer}.t-pul-f button em{font-style:normal;opacity:.7}.t-pul-f button.t-on{background:var(--t-navy);border-color:var(--t-navy);color:#fff}
+.t-pul-l{overflow:auto;display:flex;flex-direction:column;gap:6px;margin:0 -4px;padding:2px 4px}
+.t-pur{display:flex;align-items:center;gap:11px;text-align:left;border:1px solid #E6EBF2;border-radius:12px;background:#fff;padding:9px 10px;cursor:pointer;transition:.15s;position:relative}
+.t-pur:hover{border-color:#B9CCEE;background:#F8FAFE}.t-pur.t-on{border-color:var(--t-navy);background:#F2F6FD;box-shadow:inset 3px 0 0 var(--t-gold)}
+.t-pur .t-ring{flex:none;transform:scale(.86)}
+.t-pur-x{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}.t-pur-x b{font-size:13.5px;color:#13233F;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.t-pur-c{display:flex;gap:4px;flex-wrap:wrap}.t-pur-c i{font-style:normal;font-size:10.5px;font-weight:800;border-radius:5px;padding:1px 6px;color:var(--c);background:color-mix(in srgb,var(--c) 12%,#fff)}.t-pur-c i.z{color:#9AA6B8;background:#F1F3F7}
+.t-pur-w{color:#C0392B;flex:none}
+.t-pur-d{border:1px solid var(--t-line);border-radius:14px;background:#fff;padding:16px 18px;min-width:0}
+.t-pud-h{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid #EEF1F6}
+.t-pud-t{display:flex;gap:12px;align-items:center}.t-pud-t h3{margin:0;font:800 20px/1.2 'Sora',inherit;color:#13233F}
+.t-pud-p{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px}.t-pud-p>small{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#8A97AB;margin-right:2px}
+.t-pud-a{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.t-pud-m{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 2px}.t-pud-m span{display:inline-flex;gap:5px;align-items:center;font-size:12px;font-weight:700;color:#A3362A;background:#FFF2F0;border:1px solid #F4CFC9;border-radius:999px;padding:3px 10px}
+.t-pud-ok{display:inline-flex;gap:6px;align-items:center;margin:12px 0 2px;font-size:12px;font-weight:800;color:#15805F;background:#E7F6EE;border-radius:999px;padding:3px 10px}
+.t-pug{margin-top:16px}.t-pug-h{display:flex;align-items:center;gap:8px;margin-bottom:9px}.t-pug-h i{width:10px;height:10px;border-radius:3px;background:var(--c)}.t-pug-h b{font-size:12.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in srgb,var(--c) 80%,#13233F)}
+.t-pug-h em{font-style:normal;font-size:11px;font-weight:800;color:var(--c);background:color-mix(in srgb,var(--c) 12%,#fff);border-radius:999px;padding:1px 8px}.t-pug-h small{font-size:11.5px;color:#8A97AB;font-weight:600}
+.t-pug-h:after{content:'';flex:1;height:1px;background:#EEF1F6}
+.t-pug .t-kgrid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.t-pug-0{border:1.5px dashed #D9E0EA;border-radius:12px;padding:14px;color:#8A97AB;font-size:13px;text-align:center}
+.t-lnk{all:unset;cursor:pointer;color:var(--t-navy);font-weight:800;text-decoration:underline}
+@media(max-width:1000px){.t-pu{grid-template-columns:1fr}.t-pul{position:static;max-height:none}.t-pul-l{max-height:300px}}
 /* Sub-menu Tim Pusmantap: gaya sama dengan sub-tab Project/Change Management (garis bawah emas), lebar menu rata. */
 #t2 .t-head:has(>.t-seg){padding:12px 16px 0;border-bottom:0}
 #t2 .t-head>.t-seg{display:flex;flex:1 1 100%;width:100%;flex-wrap:nowrap;align-items:stretch;gap:2px;background:transparent;border-radius:0;padding:0;border-bottom:2px solid #DCE3EF}
