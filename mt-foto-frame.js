@@ -6,7 +6,8 @@
 (function(){
  'use strict';
  const HOST='aset-satu.kemenkeu.go.id';
- const SEL='img[src*="'+HOST+'"],img.tm-av[src^="data:"],img.kp-ph[src^="data:"],.t-av img[src^="data:"],.t-kph img[src^="data:"]';
+ /* Hanya foto tautan Satu Kemenkeu; foto hasil impor skrinsyut sudah dipotong saat impor (tidak dibingkai ulang). */
+ const SEL='img[src*="'+HOST+'"]';
  const MEM={},FAIL={},BUSY={};let saveT=0,applyT=0;
  const key=u=>{u=String(u||'');if(u.startsWith('data:')){let h=0;for(let i=0;i<u.length;i+=7)h=(h*31+u.charCodeAt(i))|0;return 'd'+u.length.toString(36)+'_'+(h>>>0).toString(36)}return u.split('/').pop().slice(0,64)};
  try{Object.assign(MEM,JSON.parse(localStorage.getItem('MT_FBOX')||'{}'))}catch(e){}
