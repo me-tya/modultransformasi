@@ -1,0 +1,30 @@
+/* ===== Tabel Daftar Item WBS: ringkas saat ruang sempit =====
+   Mengikuti lebar area tabel (container query), bukan lebar layar, sehingga bekerja saat side menu terbuka
+   atau zoom/skala tampilan Windows 125–150%. Tidak ada kolom yang hilang informasinya:
+   - UIC Pendukung pindah ke bawah UIC Utama (baris kecil "+ …"),
+   - TW pindah ke bawah chip Status,
+   - tombol ⇪ di kolom aksi disembunyikan bila tombol Unggah sudah ada di kolom Bukti dukung, aksi ditumpuk vertikal. */
+.tscroll:has(>table th[data-t="wbs"]){container-type:inline-size;container-name:wbs}
+table:has(th[data-t="wbs"]) .wbs-in-pd,table:has(th[data-t="wbs"]) .wbs-in-tw{display:none}
+table:has(th[data-t="wbs"]) tr:has(.bkup) .ract [data-act="bkup"]{display:none}
+
+@container wbs (max-width:1180px){
+ table:has(th[data-t="wbs"]){width:100%!important;min-width:0!important}
+ table:has(th[data-t="wbs"]) :is(th[data-k="d"],td[data-l="UIC Pendukung"],th[data-k="_tw"],td[data-l="TW"]){display:none!important}
+ table:has(th[data-t="wbs"]) .wbs-in-pd{display:block;margin-top:3px;color:var(--ink-3,#66728C)}
+ table:has(th[data-t="wbs"]) .wbs-in-tw{display:inline-flex;margin-top:4px}
+ table:has(th[data-t="wbs"]) td[data-l="Status"] .tv{display:flex;flex-direction:column;align-items:flex-start;gap:0}
+ table:has(th[data-t="wbs"]) :is(th,td){padding-left:8px!important;padding-right:8px!important}
+ table:has(th[data-t="wbs"]) td[data-l="Deliverable"]{min-width:200px}
+ table:has(th[data-t="wbs"]) td[data-l="Jadwal"]{white-space:normal;min-width:118px}
+ table:has(th[data-t="wbs"]) td[data-l="Jadwal"] .gantt{max-width:130px}
+ table:has(th[data-t="wbs"]) td[data-l="Bukti dukung"] .tv{display:flex;flex-direction:column;align-items:flex-start;gap:5px}
+ table:has(th[data-t="wbs"]) td[data-l="Bukti dukung"] .chip{white-space:nowrap}
+ table:has(th[data-t="wbs"]) :is(td[data-l="Bobot"],th[data-k="w"]){width:58px!important;white-space:nowrap}
+ table:has(th[data-t="wbs"]) th[data-k="deliv"]{width:34%}
+ table:has(th[data-t="wbs"]) td.tact .ract{flex-direction:column;gap:4px}
+}
+@container wbs (max-width:900px){
+ table:has(th[data-t="wbs"]) td[data-l="Deliverable"]{min-width:170px}
+ table:has(th[data-t="wbs"]) td[data-l="UIC Utama"]{max-width:130px}
+}
