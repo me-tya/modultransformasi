@@ -155,3 +155,9 @@
 @media(max-width:700px){.one-vt2 span{display:none}}
 /* Ponsel: header halaman boleh tumbuh agar tombol aksi tidak tertimpa tab. */
 @media(max-width:600px){html body #app .vh{height:auto!important;max-height:none!important}}
+/* Aksi 1-on-1 pindah ke toolbar papan (sebaris dengan saringan) */
+.one-tb .one-hd{margin-left:auto;gap:8px}
+.one-tb .one-hd .btn{height:36px}
+.one-tb .one-hd .one-ib,.one-tb .one-hd .wbs-kebab{width:36px;height:36px}
+.one-tb .one-vt2{height:36px;box-sizing:border-box;align-items:center}
+@media(max-width:700px){.one-tb .one-hd{margin-left:0;width:100%}.one-tb .one-hd .btn.pri{margin-left:auto}}

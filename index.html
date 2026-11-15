@@ -4879,6 +4879,7 @@ function wbsActionSubline(cur,sub){
  const bar=cur==='wbsplan'||cur==='wbs'?wbsQuickActions(cur==='wbsplan'):'';
  if(!sub)return bar?'<div class="mt-pmo-subtab-band mt-actions-only">'+bar+'</div>':'';
  /* Narasi T-Program tidak memakai tbl(): Cari ditambahkan langsung di kanan subtab untuk menyaring daftar program. */
+ if(cur==='oneonone'&&typeof MT_TABSEARCH==='function')return '<div class="mt-pmo-subtab-band mt-subt-row">'+sub+MT_TABSEARCH('pmo-one',S.ui.oneQ||'','Cari program, tema, unit, PIC…')+'</div>';
  if(cur==='narasi'&&typeof MT_TABSEARCH==='function')return '<div class="mt-pmo-subtab-band mt-subt-row">'+sub+MT_TABSEARCH('pmo-narasi',S.ui.narq||'','Cari kode atau nama program…')+'</div>';
  return '<div class="mt-pmo-subtab-band">'+sub+bar+'</div>';
 }
@@ -6725,7 +6726,8 @@ function oneCard(x,editable,canDel){const r=oneRel(x),link=/^https?:/i.test(x.lo
 function pOneOnOne(){const editable=lv('wbs').includes('U')||lv('wbs').includes('C'),canDel=lv('wbs').includes('D'),kem=ONE_KEMENKEU();
  const view=editable&&S.ui.oneView==='tabel'?'tabel':'kartu';
  const base=getOneOnOne().filter(isOne),all=base.filter(x=>x.tgl),tw=+S.ui.oneTw||0,scope=S.ui.oneScope||(kem?'all':'mine');
- const inTw=all.filter(x=>!tw||oneTwOf(x)===tw),mineL=inTw.filter(x=>ME&&oneForUnit(x,ME.unit)),rows=scope==='mine'&&!kem?mineL:inTw;
+ const q=String(S.ui.oneQ||'').trim().toLowerCase(),hit=x=>!q||[x.program,x.tema,x.uic,x.spv,x.katim,x.anggota,x.lokasi,x.mode,x.tgl&&fmtD(x.tgl),x.jam].join(' ').toLowerCase().includes(q);
+ const inTw=all.filter(x=>(!tw||oneTwOf(x)===tw)&&hit(x)),mineL=inTw.filter(x=>ME&&oneForUnit(x,ME.unit)),rows=scope==='mine'&&!kem?mineL:inTw;
  const by=(a,b)=>String(a.tgl+a.jam).localeCompare(String(b.tgl+b.jam));
  const today=rows.filter(x=>x.tgl===TODAY).sort(by),next=rows.filter(x=>x.tgl>TODAY).sort(by),done=rows.filter(x=>x.tgl&&x.tgl<TODAY).sort((a,b)=>-by(a,b));
  const nx=base.filter(x=>x.tgl&&x.tgl>=TODAY&&(kem||scope==='all'||(ME&&oneForUnit(x,ME.unit)))).sort(by)[0];
@@ -6736,20 +6738,20 @@ function pOneOnOne(){const editable=lv('wbs').includes('U')||lv('wbs').includes(
   (editable?mi('oneImp','<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/>','Impor undangan','Tanpa template: dari berkas Word/PDF')+mi('oneCopyTw','<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>','Salin ke TW berikutnya','Buat jadwal triwulan baru dari TW ini'):'')+
   mi('oneExport','<path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/>','Ekspor Excel','Daftar sesi sesuai saringan')+'</div></details>';
  const info='<button type="button" class="btn one-ib" data-act="oneInfo" aria-label="Alur Jadwal 1-on-1" title="Alur Jadwal 1-on-1">'+I('<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',18)+'</button>';
- const acts='<div class="one-hd">'+info+more+(editable?'<button class="btn pri" data-act="oneDraft">+ Undangan 1-on-1</button>':'')+'</div>';
  /* Toolbar tunggal: saringan unit & TW di kiri, pengalih tampilan selalu di kanan. */
- const cnt=t=>all.filter(x=>oneTwOf(x)===t&&(scope!=='mine'||kem||(ME&&oneForUnit(x,ME.unit)))).length;
+ const cnt=t=>all.filter(x=>oneTwOf(x)===t&&hit(x)&&(scope!=='mine'||kem||(ME&&oneForUnit(x,ME.unit)))).length;
  const vt=editable?'<div class="one-vt2" role="group" aria-label="Tampilan"><button type="button" data-act="oneView" data-v="kartu" class="'+(view==='kartu'?'on':'')+'" aria-pressed="'+(view==='kartu')+'" title="Tampilan kartu">'+I('<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',15)+'<span>Kartu</span></button><button type="button" data-act="oneView" data-v="tabel" class="'+(view==='tabel'?'on':'')+'" aria-pressed="'+(view==='tabel')+'" title="Tampilan tabel">'+I('<path d="M3 6h18M3 12h18M3 18h18"/>',15)+'<span>Tabel</span></button></div>':'';
+ const acts='<div class="one-hd">'+info+vt+more+(editable?'<button class="btn pri" data-act="oneDraft">+ Undangan 1-on-1</button>':'')+'</div>';
  const tb='<div class="one-tb"><div class="one-flt" role="toolbar" aria-label="Saring sesi">'+(!kem?'<button type="button" data-act="oneScope" data-v="mine" class="'+(scope==='mine'?'on':'')+'">Untuk unit saya <b>'+mineL.length+'</b></button><button type="button" data-act="oneScope" data-v="all" class="'+(scope==='all'?'on':'')+'">Semua <b>'+inTw.length+'</b></button><span class="one-sep"></span>':'')+
-  '<button type="button" data-act="oneTw" data-v="0" class="'+(!tw?'on':'')+'">Semua TW</button>'+[1,2,3,4].map(t=>'<button type="button" data-act="oneTw" data-v="'+t+'" class="'+(tw===t?'on':'')+'">TW '+ONE_RM[t]+' <b>'+cnt(t)+'</b></button>').join('')+'</div>'+vt+'</div>';
+  '<button type="button" data-act="oneTw" data-v="0" class="'+(!tw?'on':'')+'">Semua TW</button>'+[1,2,3,4].map(t=>'<button type="button" data-act="oneTw" data-v="'+t+'" class="'+(tw===t?'on':'')+'">TW '+ONE_RM[t]+' <b>'+cnt(t)+'</b></button>').join('')+'</div>'+acts+'</div>';
  const hero=nx?'<div class="one-hero"><span class="one-hero-i" aria-hidden="true">'+I('<path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',22)+'</span><div><small>Sesi berikutnya'+(!kem&&scope==='mine'?' untuk unit Anda':'')+'</small><b>'+esc(nx.program)+'</b><span>'+fmtD(nx.tgl)+(nx.jam?' · '+esc(nx.jam):'')+' · '+esc(oneRel(nx)[0])+'</span></div>'+(/^https?:/i.test(nx.lokasi||'')?'<a class="btn pri" href="'+esc(nx.lokasi)+'" target="_blank" rel="noopener">Gabung</a>':'')+'</div>':'';
  const M=S.ui.oneMore||{};
  const sec=(t,L,cls,open)=>L.length?'<section class="one-sec '+cls+'"><h3>'+t+' <span>'+L.length+'</span></h3><div class="one-grid">'+L.slice(0,open?999:6).map(x=>oneCard(x,editable,canDel)).join('')+'</div>'+(!open&&L.length>6?'<button type="button" class="btn sm one-more" data-act="oneMore" data-v="'+cls+'">Tampilkan '+(L.length-6)+' lainnya</button>':'')+'</section>':'';
- const empty=!rows.length?'<div class="one-empty"><b>'+(scope==='mine'&&!kem?'Belum ada sesi 1-on-1 untuk unit Anda':'Belum ada sesi 1-on-1')+(tw?' pada TW '+ONE_RM[tw]:'')+'</b><span>'+(editable?'Jadwal tercipta otomatis saat menyimpan + Undangan 1-on-1 (template), atau lewat menu ⋮ › Impor undangan.':'Undangan akan muncul di sini dan di notifikasi begitu PMO/CMO Kemenkeu menjadwalkannya.')+'</span></div>':'';
+ const empty=!rows.length?'<div class="one-empty"><b>'+(q?'Tidak ada sesi yang cocok dengan “'+esc(S.ui.oneQ)+'”':scope==='mine'&&!kem?'Belum ada sesi 1-on-1 untuk unit Anda':'Belum ada sesi 1-on-1')+(tw?' pada TW '+ONE_RM[tw]:'')+'</b><span>'+(editable?'Jadwal tercipta otomatis saat menyimpan + Undangan 1-on-1 (template), atau lewat menu ⋮ › Impor undangan.':'Undangan akan muncul di sini dan di notifikasi begitu PMO/CMO Kemenkeu menjadwalkannya.')+'</span></div>':'';
  const body=view==='tabel'?(rows.length?oneTableHtml(rows.slice().sort((a,b)=>String((a.tgl||'9999')+a.jam).localeCompare(String((b.tgl||'9999')+b.jam))),tw,editable,canDel):empty):
   empty+sec('Hari ini',today,'today',1)+sec('Akan datang',next,'next',M.next)+sec('Selesai',done,'done',M.done);
- return vh('1','pmo','Jadwal 1-on-1','Pengumuman jadwal pembahasan progres T-Program untuk PMO/CMO Unit, unit pemilik proses bisnis, dan unit teknis. Undangan dibuat PMO/CMO Kemenkeu; nomor dan tanggal surat diproses di Nadine.',acts)+pmoTabs('oneonone')+
-  '<div class="card one-board'+(view==='tabel'?' one-board-t':'')+'">'+tb+(view==='kartu'?hero:'')+body+'</div>'}
+ return vh('1','pmo','Jadwal 1-on-1','Pengumuman jadwal pembahasan progres T-Program untuk PMO/CMO Unit, unit pemilik proses bisnis, dan unit teknis. Undangan dibuat PMO/CMO Kemenkeu; nomor dan tanggal surat diproses di Nadine.')+pmoTabs('oneonone')+
+  '<div class="card one-board'+(view==='tabel'?' one-board-t':'')+'">'+tb+(view==='kartu'&&!q?hero:'')+body+'</div>'}
 ACT.oneView=el=>{S.ui.oneView=el.dataset.v;save();render()};
 ACT.oneScope=el=>{S.ui.oneScope=el.dataset.v;save();render()};
 ACT.oneMore=el=>{S.ui.oneMore=Object.assign({},S.ui.oneMore,{[el.dataset.v]:1});save();render()};
@@ -9682,6 +9684,7 @@ function pNarasi(){const y=S.ui.tahun;const tw=+S.ui.ntw||curTwDone()||1;const P
   <div class="card"><div class="ch"><h3>Pratinjau slide</h3><span class="r row" style="gap:8px;align-items:center"><span class="s">format Laporan Narasi T-Program</span><button class="btn sm" data-act="narexp" data-all="0">⇩ Unduh slide ini ▾</button></span></div><div class="pad" id="narprev">${narSlideHTML(p,tw,d)}</div></div></div>`:'<div class="card empty">Pilih program.</div>'}</div>`}
 ACT.narp=el=>{S.ui.narp=el.dataset.v;NARD=null;save();render()};
 (window.MT_TABSEARCH_SET=window.MT_TABSEARCH_SET||{})['pmo-narasi']=v=>{S.ui.narq=v};
+window.MT_TABSEARCH_SET['pmo-one']=v=>{S.ui.oneQ=v};
 document.addEventListener('input',e=>{const k=e.target.dataset&&e.target.dataset.narf;if(!k||!NARD)return;e.stopPropagation();if(k==='iku'){NARD.d.iku=NARD.d.iku||['','','',''];NARD.d.iku[+e.target.dataset.i]=e.target.value.trim().replace(',','.')}else NARD.d[k]=['pj','per'].includes(k)?e.target.value:e.target.value.split('\n').map(x=>x.trim()).filter(Boolean);const y=S.ui.tahun,tw=+S.ui.ntw||curTwDone()||1;const p=S.programs.find(x=>x.akr===S.ui.narp);const pv=document.getElementById('narprev');if(pv&&p)pv.innerHTML=narSlideHTML(p,tw,NARD.d)},true);
 ACT.narsave=el=>{const y=S.ui.tahun,tw=+S.ui.ntw||curTwDone()||1;const p=progVis().find(x=>x.akr===S.ui.narp);if(!p||!NARD||!narCan(p))return;p.nar=p.nar||{};p.nar[y]=p.nar[y]||{};
  const d=Object.assign({},NARD.d,{st:el.dataset.fin?'Final':'Draf',by:chBy(),at:TODAY});if(el.dataset.fin&&!['isu','tdk','rek'].every(k=>(d[k]||[]).length)){toast('Lengkapi isu, tindakan, dan rekomendasi sebelum final.');return}
@@ -12111,7 +12114,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script src="mt-profile-export.js?v=20261114-mt02"></script>
 <script src="mt-tim2.js?v=20261115-t77"></script>
 <link rel="stylesheet" href="mt-tim-highlight.css?v=20261115-h4">
-<link rel="stylesheet" href="mt-pemantauan.css?v=20261116-p7">
+<link rel="stylesheet" href="mt-pemantauan.css?v=20261116-p8">
 <link rel="stylesheet" href="mt-brand.css?v=20261115-b2">
 <link rel="stylesheet" href="mt-act-matriks.css?v=20261115-m2">
 <link rel="stylesheet" href="mt-wbs-compact.css?v=20261116-w4">
