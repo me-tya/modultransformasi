@@ -711,3 +711,10 @@ html.mt-ui-embedded :is(.tabs .count-badge,.cm-ap-cnt,.prio-tab-n){
 #app #view nav.act-tabs > a.on > svg{color:#E3C76A!important}
 #app #view nav.act-tabs > a .act-tc{opacity:1!important;display:inline-block;margin-left:2px;padding:1px 8px;border-radius:999px;font-size:11.5px;font-weight:800;line-height:17px;background:#FFF3D1;color:#8A5E00}
 #app #view nav.act-tabs > a.on .act-tc{background:#E3C76A;color:#0F2346}
+/* Bar filter (PMO/CMO/Dashboard): latar krem + garis emas seperti Agenda Hari Ini (opsi B, 15 Nov 2026).
+   Label navy di kiri tetap; chip nilai filter putih bergaris krem. */
+#app .flt,#app .flt.pmo-unified,#app .flt.cm-unified{background:#FFF9E9!important;border-color:#E7C97A!important}
+#app .flt .ftop,#app .flt .rp,#app .flt .fbar{background:#FFF9E9!important}
+#app .flt .ftop .c0{background:#fff!important;border-color:#EADFC0!important}
+#app .flt .ftop .rsm{background:#fff!important;border-color:#EADFC0!important}
+#app .flt.pmo-unified .ftop .rs2m,#app .flt .ftop .rs2m{background:#F0E3BC!important}
