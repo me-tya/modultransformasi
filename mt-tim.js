@@ -354,7 +354,7 @@ const css=`
 .tm-p.tm-pc2.on{background:#EEF3FB;color:inherit}
 .tm-p.tm-pc2.on:before{content:'';position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:3px;background:#0F2346}
 .tm-avw{position:relative;flex:none;display:inline-flex}
-.tm-av.li{width:56px;height:56px;font-size:16px;border:2px solid #fff;box-shadow:0 0 0 2px var(--rc)}
+.tm-av.li{width:58px;height:58px;font-size:17px;border:2.5px solid var(--rc);box-shadow:none;padding:0;background-clip:border-box}
 .tm-sd{position:absolute;right:0;bottom:0;width:14px;height:14px;border-radius:50%;border:2px solid #fff;background:#15805F}
 .tm-sd.wfh{background:#2F6FCE}.tm-sd.cuti{background:#D99A0B}.tm-sd.libur{background:#C2362B}.tm-sd.nonaktif{background:#9AA4BA}
 .tm-pc2 .tm-pn{font-size:13.5px;font-weight:800;color:#12275A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
