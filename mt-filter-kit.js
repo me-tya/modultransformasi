@@ -37,6 +37,10 @@ function placeTblSearch(){
   var inp=g.tables[0].querySelector('.tsearch input[data-q]');if(!inp)return;
   var lab=document.createElement('label');lab.className='mt-tabsearch mt-tabsearch-tbl';lab.innerHTML=ICON;
   lab.appendChild(inp);g.tables[0].querySelector('.tsearch').classList.add('mt-moved');
+  /* Bila di antara subtab dan tabel ada baris chip Program (.pchips, mis. WBS & progres), Cari dan tombol aksi
+     (+ Item WBS, menu ⋮) ditaruh di kanan baris chip itu; baris subtab jadi penuh untuk tab saja. */
+  var pc=null,n=g.nav.parentNode.nextElementSibling;for(var j=0;j<4&&n&&!pc;j++){if(n.classList&&n.classList.contains('pchips'))pc=n;else if(n.querySelector&&n.querySelector('.pchips')&&!n.contains(g.tables[0]))pc=n.querySelector('.pchips');n=n.nextElementSibling}
+  if(pc){var tools=document.createElement('div');tools.className='pc-tools';tools.appendChild(lab);var bar=g.nav.parentNode.querySelector('.wbs-actionbar');if(bar)tools.appendChild(bar);pc.appendChild(tools);pc.classList.add('pc-has-tools');g.nav.parentNode.classList.add('mt-subt-full');return}
   if(g.nav.nextSibling)g.nav.parentNode.insertBefore(lab,g.nav.nextSibling);else g.nav.parentNode.appendChild(lab);
   g.nav.parentNode.classList.add('mt-subt-row');
  });

@@ -28,3 +28,16 @@ table:has(th[data-t="wbs"]) tr:has(.bkup) .ract [data-act="bkup"]{display:none}
  table:has(th[data-t="wbs"]) td[data-l="Deliverable"]{min-width:170px}
  table:has(th[data-t="wbs"]) td[data-l="UIC Utama"]{max-width:130px}
 }
+
+/* ===== WBS & progres: Cari + aksi pindah ke baris chip Program; subtab penuh sama lebar; menu ⋮ ===== */
+#app .mt-pmo-subtab-band.mt-subt-full>.subt{flex:1 1 auto!important;width:100%!important}
+#app .mt-pmo-subtab-band.mt-subt-full>.subt>a{flex:1 1 0!important;justify-content:center!important}
+#app .pchips.pc-has-tools{overflow:visible;flex-wrap:wrap;row-gap:8px}
+#app .pchips .pc-tools{margin-left:auto;display:flex;align-items:center;gap:8px;flex:0 1 auto;min-width:0}
+#app .pchips .pc-tools>.mt-tabsearch{flex:0 1 280px!important;width:280px!important;min-width:170px!important;max-width:100%;margin:0!important;height:36px;box-sizing:border-box;display:flex!important;align-items:center;overflow:hidden}
+#app .pchips .pc-tools>.mt-tabsearch input{flex:1 1 auto!important;width:auto!important;min-width:0!important}
+#app .pchips .pc-tools>.wbs-actionbar{margin:0;flex-wrap:nowrap}
+#app .pchips .pc-tools .wbs-actionbar>.btn{height:36px!important}
+#app .wbs-more>summary.wbs-kebab{width:36px;height:36px!important;padding:0!important;justify-content:center;color:var(--navy,#0B1F45)}
+#app .wbs-more>summary.wbs-kebab:hover,#app .wbs-more[open]>summary.wbs-kebab{background:#EEF3FB;border-color:#95aac6}
+@media(max-width:1000px){#app .pchips .pc-tools{margin-left:0;width:100%}#app .pchips .pc-tools>.mt-tabsearch{flex:1 1 auto}}
