@@ -40,6 +40,9 @@ function placeTblSearch(){
   /* Bila di antara subtab dan tabel ada baris chip Program (.pchips, mis. WBS & progres), Cari dan tombol aksi
      (+ Item WBS, menu ⋮) ditaruh di kanan baris chip itu; baris subtab jadi penuh untuk tab saja. */
   var pc=null,n=g.nav.parentNode.nextElementSibling;for(var j=0;j<4&&n&&!pc;j++){if(n.classList&&n.classList.contains('pchips'))pc=n;else if(n.querySelector&&n.querySelector('.pchips')&&!n.contains(g.tables[0]))pc=n.querySelector('.pchips');n=n.nextElementSibling}
+  /* Tanpa baris chip: Cari + aksi (+ Item WBS, ⋮) masuk ke kepala tabel, di kanan Urutkan/Excel. */
+  var band=g.nav.parentNode,bar0=band.querySelector('.wbs-actionbar'),tb=g.tables[0].querySelector('.tbar');
+  if(!pc&&bar0&&tb){var t2=document.createElement('div');t2.className='pc-tools tb-tools';t2.appendChild(lab);t2.appendChild(bar0);tb.appendChild(t2);tb.classList.add('tb-has-tools');band.classList.add('mt-subt-full');return}
   if(pc){var tools=document.createElement('div');tools.className='pc-tools';tools.appendChild(lab);var bar=g.nav.parentNode.querySelector('.wbs-actionbar');if(bar)tools.appendChild(bar);pc.appendChild(tools);pc.classList.add('pc-has-tools');g.nav.parentNode.classList.add('mt-subt-full');return}
   if(g.nav.nextSibling)g.nav.parentNode.insertBefore(lab,g.nav.nextSibling);else g.nav.parentNode.appendChild(lab);
   g.nav.parentNode.classList.add('mt-subt-row');

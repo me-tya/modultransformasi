@@ -3453,9 +3453,9 @@ function applyKK(force){if(!ADPKK.length||(S.kk===2&&!force))return 0;const used
  S.kk=2;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}return {upd,add}}
 const SING0={CORE:'DCS',OA:'DOA',SD:'SDK',SP:'SPP',SSB:'SSB',TKD:'TKD'};
 const psing=p=>p?(p.sing||SING0[p.akr]||p.akr):'';
-function pChips(){const u=curUnit(),um=umOf(),y=S.ui.tahun;const base=S.wbs.filter(w=>!w.arsip&&(VIEW==='pmo-wbsplan'&&S.ui.planYear!=='year'||yrOf(w)===y)&&unitMatch(w,u,um));const ps=progVis();const cur=S.ui.prog||'';
- const chip=(v,lab,n,title)=>`<button class="pc${cur===v?' on':''}" data-act="pchip" data-v="${esc(v)}" title="${esc(title)}" aria-pressed="${cur===v}"><b>${esc(lab)}</b><span>${n}</span></button>`;
- return `<div class="pchips" role="group" aria-label="Program"><span class="t">Program</span>${chip('','Semua',base.length,'Semua program')}${ps.map(p=>chip(p.akr,psing(p),base.filter(w=>w.prog===p.akr).length,p.kode+' · '+p.nama)).join('')}${(()=>{const c=cur&&lv('charter')!=='-'&&chCur(cur);return c?`<span class="pcch">${chLab(c)}${c.st==='Disahkan'?'<span class="chip c-info">🔒 Baseline WBS</span>':''}<a href="#pmo-charter" data-act="chopen" data-p="${cur}">Lihat charter ›</a></span>`:cur&&lv('charter')!=='-'?`<span class="pcch"><span class="chip c-gray">Charter belum dibuat</span><a href="#pmo-charter" data-act="chopen" data-p="${cur}">Buka ›</a></span>`:''})()}</div>`}
+/* Chip program dihapus (sudah ada pilihan Program di panel Filter). Yang tersisa: info charter bila satu program dipilih. */
+function pChips(){const cur=S.ui.prog||'';if(!cur||lv('charter')==='-')return '';const c=chCur(cur),p=S.programs.find(x=>x.akr===cur);
+ return `<div class="pchar"><b>${esc(p?psing(p):cur)}</b>${c?`<span class="pcch">${chLab(c)}${c.st==='Disahkan'?'<span class="chip c-info">🔒 Baseline WBS</span>':''}<a href="#pmo-charter" data-act="chopen" data-p="${cur}">Lihat charter ›</a></span>`:`<span class="pcch"><span class="chip c-gray">Charter belum dibuat</span><a href="#pmo-charter" data-act="chopen" data-p="${cur}">Buka ›</a></span>`}</div>`}
 const TPL_SUB='Sub Modul ADP',TPL_IND='Indikator CM';
 const lvTxt=(L,v)=>v?L[v]:'';
 function lvParse(L,x){x=String(x??'').trim();if(!x)return 0;const n=+x;if(n>=0&&n<=3&&x!=='')return Math.round(n);const i=L.findIndex(t=>t.toLowerCase()===x.toLowerCase());if(i>0)return i;const al={minor:1,rendah:1,low:1,moderate:2,sedang:2,medium:2,significant:3,signifikan:3,tinggi:3,high:3};return al[x.toLowerCase()]||0}
@@ -11880,7 +11880,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 <script src="charter-planning-report.js?v=20261109-charter-import-v3"></script>
 
-<script src="mt-filter-kit.js?v=20261115-pc1"></script>
+<script src="mt-filter-kit.js?v=20261115-pc2"></script>
 <script src="mt-info-icon.js?v=20261111-mt13-info"></script>
 <style id="mt-cal-modal-css">
 /* Modal Kalender & Hari libur — tingkat atas (modal berada di luar .cmx) */
@@ -11942,7 +11942,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script src="mt-profile-export.js?v=20261114-mt02"></script>
 <script src="mt-tim2.js?v=20261115-t77"></script>
 <link rel="stylesheet" href="mt-tim-highlight.css?v=20261115-h4">
-<link rel="stylesheet" href="mt-wbs-compact.css?v=20261115-w2">
+<link rel="stylesheet" href="mt-wbs-compact.css?v=20261115-w3">
 <script src="mt-foto-frame.js?v=20261114-ff6"></script>
 <script src="project-selection-flow.js?v=20261111-mt14-filter"></script>
 <script src="project-selection-governance.js?v=20261111-mt13-info"></script>
