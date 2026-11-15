@@ -2272,8 +2272,8 @@ table.act-tbl{width:100%;min-width:1120px;table-layout:fixed;border-collapse:col
   margin-top:12px;padding-top:12px;border-top:1px solid var(--border-soft);
 }
 .filter-bar-body.hidden{display:none;}
-.filter-bar-body.act-fgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;align-items:center}
-.act-fgrid:not(.hidden){display:grid}.act-fgrid select.filter-select{width:100%;min-width:0;height:36px;padding:0 10px}
+.filter-bar-body.act-fgrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;align-items:center}
+.act-fgrid:not(.hidden){display:grid}.act-fgrid.hidden{display:none}.act-fgrid select.filter-select{width:100%;min-width:0;height:36px;padding:0 10px}
 .act-fgrid select.filter-select.on,.act-per.on{border-color:#D6AD3A;background-color:#FFF9E9;color:#12275A;font-weight:600}
 .act-per{grid-column:span 2;display:flex;align-items:center;gap:8px;height:36px;padding:0 4px 0 10px;border:1px solid var(--border);border-radius:9px;background:var(--bg);min-width:0}
 .act-per small{font-size:11.5px;font-weight:700;color:#A87308;white-space:nowrap}.act-per input.filter-date{flex:1 1 0;min-width:0;border:0;background:transparent;padding:0 4px;height:32px;color:inherit;font-weight:inherit}
