@@ -30,22 +30,24 @@ function modeOf(v,lok,link){const t=str(v).trim().toLowerCase();
  if(/^(offline|luring|tatap muka|onsite)$/.test(t))return 'offline';if(/^(online|daring|virtual)$/.test(t))return 'online';if(/^(hybrid|hibrid|campuran|blended)$/.test(t))return 'hybrid';
  const fisik=str(lok).trim()&&!isUrl(lok),dar=str(link).trim()||isUrl(lok);return fisik&&dar?'hybrid':dar?'online':fisik?'offline':''}
 function jamOf(a){const s=str(a.jamMulai).slice(0,5),e=str(a.jamSelesai).slice(0,5);return s&&e?s+' - '+e:tidy(a.waktu)}
-const normJam=v=>tidy(v).replace(/\s*[-–—]\s*/g,' - ').replace(/\./g,':');
+const normJam=v=>tidy(v).replace(/\s*(WIB|WITA|WIT)\.?$/i,'').replace(/\s*[-–—]\s*/g,' - ').replace(/\./g,':').trim();
 /* kunci berkas: DCM refId|url; MT sourceRefId|externalRefId|link. Berkas MT yang belum terkirim/terlalu besar tidak ikut sidik. */
-function dcmFileKeys(a,field,urlField){const k=arr(a[field]).map(m=>typeof m==='string'?(isUrl(m)?m:''):str(m&&(m.refId||m.url||m.link))).filter(Boolean);if(urlField&&isUrl(a[urlField]))k.push(str(a[urlField]).trim());return [...new Set(k)].sort()}
+function dcmFileKeys(a,field,urlField){const k=arr(a[field]).map(m=>typeof m==='string'?(isUrl(m)?m:''):str(m&&(m.refId||m.storagePath||m.id||m.url||m.link))).filter(Boolean);if(urlField&&isUrl(a[urlField]))k.push(str(a[urlField]).trim());return [...new Set(k)].sort()}
 function mtFileKeys(att){const k=(att&&Array.isArray(att.items)?att.items:[]).map(m=>m.t==='l'?str(m.link).trim():str(m.sourceRefId||m.externalRefId)).filter(Boolean);return [...new Set(k)].sort()}
+const notPrev=a=>arr(a.notula).map(z=>z&&z.searchPreview||'').filter(Boolean).join('\n\n');
+const notD=a=>str(a.notulaTeks)||notPrev(a);
 const URLF={und:'undanganUrl',st:'suratTugasUrl',materi:'materi'};
 /* Bentuk bersama (kanonik) — harus identik untuk DCM & MT bila datanya sama. */
 function canonD(a){const lok=a.meetingLocation||a.lokasiChannel||'',link=a.meetingLink||(isUrl(lok)?lok:'');
  const o={nama:tidy(a.namaKegiatan),tgl:str(a.tglMulai).slice(0,10),tglS:str(a.tglSelesai).slice(0,10)||str(a.tglMulai).slice(0,10),jam:normJam(jamOf(a)),kat:tidy(a.kategori),
   lay:/^(ya|yes|y|true|1)$/i.test(str(a.layanan).trim())?'Ya':'Tidak',unit:tidy(a.unitPemohon).replace(/^-$/,''),prog:tidy(a.programTerkait),tujuan:tidy(a.tujuanOutput),catatan:tidy(a.catatan),
-  peserta:tidy(a.pesertaTarget),narsum:tidy(a.unitAsalNarsum),pic:picList(a.picTimCM).join(', '),lokasi:tidy(lok),link:tidy(link),mode:modeOf(a.meetingMode,lok,link),
-  st:dcmStatus(a.status),undNo:tidy(a.undangan),stNo:tidy(a.suratTugas),notulaTeks:tidy(a.notulaTeks),ringkas:tidy(a.ringkasanHasil),tl:tidy(a.tindakLanjut),f:{}};
+  peserta:tidy(a.pesertaTarget),narsum:tidy(a.unitAsalNarsum),pic:picList(a.picTimCM).slice().sort().join(', '),lokasi:tidy(lok),link:tidy(link),mode:modeOf(a.meetingMode,lok,link),
+  st:dcmStatus(a.status),undNo:tidy(a.undangan),stNo:tidy(a.suratTugas),notulaTeks:tidy(notD(a)),ringkas:tidy(a.ringkasanHasil),tl:tidy(a.tindakLanjut),f:{}};
  FIELDS.forEach(([k,f])=>o.f[k]=dcmFileKeys(a,f,URLF[k]));return o}
 function canonM(x){const und=x.und||{},st=x.st||{};
  const o={nama:tidy(x.nama),tgl:str(x.tgl).slice(0,10),tglS:str(x.tglSelesai).slice(0,10)||str(x.tgl).slice(0,10),jam:normJam(x.jam),kat:tidy(x.kat),
   lay:x.layanan==='Ya'?'Ya':'Tidak',unit:tidy(x.unitP),prog:tidy(x.program),tujuan:tidy(x.tujuan),catatan:tidy(x.catatan),
-  peserta:tidy(x.peserta),narsum:tidy(x.narsum),pic:picList(x.pic).join(', '),lokasi:tidy(x.lokasi),link:tidy(x.link),mode:modeOf(x.mode,x.lokasi,x.link),
+  peserta:tidy(x.peserta),narsum:tidy(x.narsum),pic:picList(x.pic).slice().sort().join(', '),lokasi:tidy(x.lokasi),link:tidy(x.link),mode:modeOf(x.mode,x.lokasi,x.link),
   st:MT2DCM_ST[x.stat]?x.stat:'',undNo:tidy(und.no),stNo:tidy(st.no),notulaTeks:tidy(x.notulaTeks),ringkas:tidy(x.ringkas),tl:tidy(x.tl),f:{}};
  FIELDS.forEach(([k])=>o.f[k]=mtFileKeys(x[k]));return o}
 const MODE_MT={offline:'Offline',online:'Online',hybrid:'Hybrid'};
@@ -54,12 +56,12 @@ function applyToMt(x,a){const c=canonD(a);
  x.cmDashboardId=a.id;x.keAkt=true;x.nama=c.nama;x.tgl=c.tgl;x.tglSelesai=c.tglS;x.jam=c.jam;x.kat=c.kat||'Rapat Koordinasi';x.layanan=c.lay;
  x.tahun=+c.tgl.slice(0,4)||x.tahun;x.tw=c.tgl?Math.ceil((+c.tgl.slice(5,7)||1)/3):(x.tw||1);x.no=Number(a.no)||x.no||0;
  x.unitP=c.unit;x.program=c.prog;x.tujuan=c.tujuan;x.catatan=c.catatan;x.peserta=c.peserta;x.narsum=c.narsum;x.pic=picList(a.picTimCM);
- x.lokasi=c.lokasi;x.link=c.link;x.mode=MODE_MT[c.mode]||x.mode||'';x.stat=c.st;x.notulaTeks=str(a.notulaTeks);x.ringkas=c.ringkas;x.tl=c.tl;
+ x.lokasi=c.lokasi;x.link=c.link;x.mode=MODE_MT[c.mode]||x.mode||'';x.stat=c.st;x.notulaTeks=notD(a);x.ringkas=c.ringkas;x.tl=c.tl;
  FIELDS.forEach(([k,f])=>{const old=x[k]&&Array.isArray(x[k].items)?x[k].items:[];const byKey=new Map();old.forEach(m=>{const key=m.t==='l'?str(m.link).trim():str(m.sourceRefId||m.externalRefId);if(key)byKey.set(key,m)});
   const items=[];const seen=new Set();
   const push=(key,mk)=>{if(!key||seen.has(key))return;seen.add(key);items.push(byKey.get(key)||mk())};
   arr(a[f]).forEach(m=>{if(typeof m==='string'){if(isUrl(m))push(m.trim(),()=>({t:'l',link:m.trim(),nama:''}));return}
-   const url=str(m&&(m.url||m.link)).trim(),ref=str(m&&m.refId),name=str(m&&(m.name||m.fileName||m.nama));
+   const url=str(m&&(m.url||m.link)).trim(),ref=str(m&&(m.refId||m.storagePath||m.id)),name=str(m&&(m.name||m.fileName||m.nama));
    if(ref)push(ref,()=>({t:'n',nama:name||'Berkas dari Dashboard CM',externalRefId:ref,unresolved:true}));else if(isUrl(url))push(url,()=>({t:'l',link:url,nama:name}))});
   if(URLF[k]&&isUrl(a[URLF[k]]))push(str(a[URLF[k]]).trim(),()=>({t:'l',link:str(a[URLF[k]]).trim(),nama:k==='und'?'Surat undangan':k==='st'?'Surat tugas':'Materi kegiatan'}));
   /* berkas MT yang belum pernah terkirim ke DCM tetap dipertahankan */
@@ -72,11 +74,11 @@ function applyToDcm(a0,x,meta){const a=Object.assign({},a0||{});const c=canonM(x
  a.id=str(a.id||x.cmDashboardId||('MT-'+x.id));a.namaKegiatan=c.nama;a.tglMulai=c.tgl;a.tglSelesai=c.tglS;
  const m=c.jam.match(/^(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})$/);a.jamMulai=m?m[1].padStart(5,'0'):'';a.jamSelesai=m?m[2].padStart(5,'0'):'';a.waktu=c.jam;
  a.kategori=c.kat;a.layanan=c.lay==='Ya'?'Yes':'No';a.unitPemohon=c.unit;a.programTerkait=c.prog;a.tujuanOutput=c.tujuan;a.catatan=c.catatan;
- a.pesertaTarget=c.peserta;a.unitAsalNarsum=c.narsum;a.picTimCM=c.pic;a.meetingLocation=isUrl(c.lokasi)?'':c.lokasi;a.lokasiChannel=a0&&a0.lokasiChannel===c.lokasi?a0.lokasiChannel:c.lokasi;
+ a.pesertaTarget=c.peserta;a.unitAsalNarsum=c.narsum;a.picTimCM=picList(x.pic).join(', ');a.meetingLocation=isUrl(c.lokasi)?'':c.lokasi;a.lokasiChannel=a0&&a0.lokasiChannel===c.lokasi?a0.lokasiChannel:c.lokasi;
  a.meetingLink=c.link;a.meetingMode=c.mode||str(a.meetingMode);
  const keep=dcmStatus(a0&&a0.status);a.status=c.st?MT2DCM_ST[c.st]:(keep?'':str(a0&&a0.status));
- a.undangan=c.undNo;a.suratTugas=c.stNo;a.notulaTeks=str(x.notulaTeks);a.ringkasanHasil=c.ringkas;a.tindakLanjut=c.tl;
- FIELDS.forEach(([k,f])=>{const oldList=arr(a0&&a0[f]);const byKey=new Map();oldList.forEach(o=>{const key=typeof o==='string'?o.trim():str(o&&(o.refId||o.url||o.link));if(key)byKey.set(key,o)});
+ a.undangan=c.undNo;a.suratTugas=c.stNo;a.notulaTeks=a0&&!str(a0.notulaTeks)&&tidy(x.notulaTeks)===tidy(notPrev(a0))?'':str(x.notulaTeks);a.ringkasanHasil=c.ringkas;a.tindakLanjut=c.tl;
+ FIELDS.forEach(([k,f])=>{const oldList=arr(a0&&a0[f]);const byKey=new Map();oldList.forEach(o=>{const key=typeof o==='string'?o.trim():str(o&&(o.refId||o.storagePath||o.id||o.url||o.link));if(key)byKey.set(key,o)});
   const urlF=URLF[k],urlV=urlF&&a0&&isUrl(a0[urlF])?str(a0[urlF]).trim():'';const list=[];let urlKept=false;
   (x[k]&&Array.isArray(x[k].items)?x[k].items:[]).forEach(it=>{
    if(it.t==='l'){const u=str(it.link).trim();if(!u)return;if(u===urlV){urlKept=true;return}list.push(byKey.get(u)||{url:u,name:str(it.nama)||'Tautan'});return}

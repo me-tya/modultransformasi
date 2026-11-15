@@ -45,3 +45,8 @@ test('Keputusan arah sinkron',()=>{const a=base();const x=M.applyToMt({id:'x'},a
 
 test('Hanya aktivitas yang dikirim ke DCM',()=>{assert.ok(M.pushable({id:'a',kat:'FGD'}));assert.ok(M.pushable({id:'a',kat:'1-on-1 T-Program',keAkt:true}));
  assert.ok(!M.pushable({id:'a',kat:'1-on-1 T-Program'}));assert.ok(!M.pushable({id:'cfg-x',kind:'cfg'}));assert.ok(!M.pushable({id:'pub-tim',kat:'FGD'}))});
+
+test('Zona waktu, urutan PIC, kunci berkas id, dan pratinjau notula tidak dianggap beda',()=>{const a=base();a.notula=JSON.stringify([{id:'NOT-1',name:'Notula.pdf',searchPreview:'Isi notula'}]);a.notulaTeks='';
+ const x=M.applyToMt({id:'x'},a);assert.strictEqual(x.notulaTeks,'Isi notula');assert.strictEqual(x.notula.items[0].externalRefId,'NOT-1');
+ x.jam='09:00 - 12:00 WIB';x.pic=['Atitya Pritasari','K. Jabar Malik'];assert.strictEqual(M.hash(M.canonM(x)),M.hash(M.canonD(a)));
+ x.tl='baru';const a2=M.applyToDcm(a,x,{});assert.strictEqual(a2.notulaTeks,'','pratinjau tidak ditulis ke notulaTeks DCM');assert.strictEqual(JSON.parse(a2.notula)[0].id,'NOT-1');assert.strictEqual(a2.picTimCM,'Atitya Pritasari, K. Jabar Malik')});
