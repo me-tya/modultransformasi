@@ -4856,6 +4856,8 @@ function wbsQuickActions(plan){
 function wbsActionSubline(cur,sub){
  const bar=cur==='wbsplan'||cur==='wbs'?wbsQuickActions(cur==='wbsplan'):'';
  if(!sub)return bar?'<div class="mt-pmo-subtab-band mt-actions-only">'+bar+'</div>':'';
+ /* Narasi T-Program tidak memakai tbl(): Cari ditambahkan langsung di kanan subtab untuk menyaring daftar program. */
+ if(cur==='narasi'&&typeof MT_TABSEARCH==='function')return '<div class="mt-pmo-subtab-band mt-subt-row">'+sub+MT_TABSEARCH('pmo-narasi',S.ui.narq||'','Cari kode atau nama program…')+'</div>';
  return '<div class="mt-pmo-subtab-band">'+sub+bar+'</div>';
 }
 function pmoTopActions(cur){
@@ -9576,11 +9578,12 @@ function pNarasi(){const y=S.ui.tahun;const tw=+S.ui.ntw||curTwDone()||1;const P
  const n0=p?narGet(p,y,tw):null;const can=p&&narCan(p);
  if(p&&(!NARD||NARD.k!==ak+y+tw))NARD={k:ak+y+tw,d:JSON.parse(JSON.stringify(n0||{isu:[],tdk:[],akar:[],rek:[],pj:p.uic,per:tw<4?`Q${tw+1} ${y}`:`Q1 ${y+1}`}))};
  const d=NARD&&NARD.d;const done=PV.filter(x=>(narGet(x,y,tw)||{}).st==='Final').length;
- const list=PV.map(x=>{const r=narGet(x,y,tw);return `<button class="nli${x.akr===ak?' on':''}" data-act="narp" data-v="${x.akr}"><span class="code">${esc(x.kode)}</span><span><b>${esc(x.nama)}</b><small>${r?(r.st==='Final'?'✓ Final':'Draf'):'Belum diisi'}</small></span></button>`}).join('');
+ const nq=String(S.ui.narq||'').trim().toLowerCase(),PL=nq?PV.filter(x=>(x.kode+' '+x.nama+' '+(x.akr||'')+' '+(typeof psing==='function'?psing(x):'')).toLowerCase().includes(nq)):PV;
+ const list=PL.map(x=>{const r=narGet(x,y,tw);return `<button class="nli${x.akr===ak?' on':''}" data-act="narp" data-v="${x.akr}"><span class="code">${esc(x.kode)}</span><span><b>${esc(x.nama)}</b><small>${r?(r.st==='Final'?'✓ Final':'Draf'):'Belum diisi'}</small></span></button>`}).join('');
  const ta=(k,lab,h)=>`<label class="nfl">${lab}<textarea class="inp" rows="${h||5}" data-narf="${k}" ${can?'':'readonly'} placeholder="Satu butir per baris">${esc((d[k]||[]).join('\n'))}</textarea></label>`;
  return vh('N','pmo','Laporan Narasi TW','Narasi capaian program per triwulan untuk forum pimpinan, otomatis menjadi PowerPoint.',`<button class="btn" data-act="narexp" data-all="0">⇩ Program ini ▾</button><button class="btn pri" data-act="narexp" data-all="1">⇩ Laporan TW ${tw} ▾</button>`)+pmoTabs('narasi')+
  `
- <div class="nwrap"><nav class="card nlist" aria-label="Program">${list||'<span class="s pad">Tidak ada program.</span>'}</nav>
+ <div class="nwrap"><nav class="card nlist" aria-label="Program">${list||`<span class="s pad">${nq?'Tidak ada program yang cocok dengan “'+esc(S.ui.narq)+'”.':'Tidak ada program.'}</span>`}</nav>
  ${p?`<div class="nmain"><div class="card"><div class="ch"><span class="code">${esc(p.kode)}</span><h3>${esc(p.nama)} · TW ${tw} ${y}</h3><span class="r row" style="gap:6px"><button class="btn sm exb" data-act="chex" data-k="nar">💡 Lihat contoh pengisian</button>${n0?`<span class="chip ${n0.st==='Final'?'c-ok':'c-warn'}">${n0.st==='Final'?'Final':'Draf'}</span>`:'<span class="chip c-gray">Belum diisi</span>'}${can&&tw>1&&narGet(p,y,tw-1)?`<button class="btn sm" data-act="narcopy">↺ Salin dari TW ${tw-1}</button>`:''}</span></div>
   <div class="pad nform"><div class="nik2"><span class="nik-h" style="flex-basis:100%"><b>Realisasi IKU (%)</b>${IC('Terisi otomatis dari WBS (realisasi tervalidasi ÷ target kumulatif). Isi kolom bila ingin memakai angka lain.')}</span>${narIku(p,tw).map((x,i)=>`<label class="nikc">TW ${i+1}<input class="inp" inputmode="decimal" data-narf="iku" data-i="${i}" value="${esc(((d.iku||[])[i])??'')}" placeholder="${x==null?'—':String(x)}" ${can&&i<tw?'':'disabled'}></label>`).join('')}</div>
   <div class="ngrid">${ta('isu','Isu utama & implikasi',6)}${ta('tdk',`Tindakan yang telah dilaksanakan di TW ${ROM[tw]}`,6)}</div><div class="ngrid">${ta('akar','Akar masalah',4)}${ta('rek','Rekomendasi rencana aksi',4)}</div>
@@ -9588,6 +9591,7 @@ function pNarasi(){const y=S.ui.tahun;const tw=+S.ui.ntw||curTwDone()||1;const P
   ${can?`<div class="row" style="justify-content:flex-end;gap:8px"><span class="s">${n0&&n0.at?'Terakhir disimpan '+esc(n0.by||'')+' · '+fmtD(n0.at):''}</span><button class="btn" data-act="narsave">💾 Simpan draf</button><button class="btn pri" data-act="narsave" data-fin="1">✓ Simpan sebagai final</button></div>`:'<p class="s" style="margin:0">Hanya dapat dibaca.</p>'}</div></div>
   <div class="card"><div class="ch"><h3>Pratinjau slide</h3><span class="r row" style="gap:8px;align-items:center"><span class="s">format Laporan Narasi T-Program</span><button class="btn sm" data-act="narexp" data-all="0">⇩ Unduh slide ini ▾</button></span></div><div class="pad" id="narprev">${narSlideHTML(p,tw,d)}</div></div></div>`:'<div class="card empty">Pilih program.</div>'}</div>`}
 ACT.narp=el=>{S.ui.narp=el.dataset.v;NARD=null;save();render()};
+(window.MT_TABSEARCH_SET=window.MT_TABSEARCH_SET||{})['pmo-narasi']=v=>{S.ui.narq=v};
 document.addEventListener('input',e=>{const k=e.target.dataset&&e.target.dataset.narf;if(!k||!NARD)return;e.stopPropagation();if(k==='iku'){NARD.d.iku=NARD.d.iku||['','','',''];NARD.d.iku[+e.target.dataset.i]=e.target.value.trim().replace(',','.')}else NARD.d[k]=['pj','per'].includes(k)?e.target.value:e.target.value.split('\n').map(x=>x.trim()).filter(Boolean);const y=S.ui.tahun,tw=+S.ui.ntw||curTwDone()||1;const p=S.programs.find(x=>x.akr===S.ui.narp);const pv=document.getElementById('narprev');if(pv&&p)pv.innerHTML=narSlideHTML(p,tw,NARD.d)},true);
 ACT.narsave=el=>{const y=S.ui.tahun,tw=+S.ui.ntw||curTwDone()||1;const p=progVis().find(x=>x.akr===S.ui.narp);if(!p||!NARD||!narCan(p))return;p.nar=p.nar||{};p.nar[y]=p.nar[y]||{};
  const d=Object.assign({},NARD.d,{st:el.dataset.fin?'Final':'Draf',by:chBy(),at:TODAY});if(el.dataset.fin&&!['isu','tdk','rek'].every(k=>(d[k]||[]).length)){toast('Lengkapi isu, tindakan, dan rekomendasi sebelum final.');return}
@@ -11880,7 +11884,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 <script src="charter-planning-report.js?v=20261109-charter-import-v3"></script>
 
-<script src="mt-filter-kit.js?v=20261115-pc2"></script>
+<script src="mt-filter-kit.js?v=20261115-pc3"></script>
 <script src="mt-info-icon.js?v=20261111-mt13-info"></script>
 <style id="mt-cal-modal-css">
 /* Modal Kalender & Hari libur — tingkat atas (modal berada di luar .cmx) */

@@ -16,7 +16,8 @@ Aturan ini berlaku untuk seluruh area Modul Transformasi (acuan pertama: Project
 - Diletakkan di kanan baris tab tampilan, bukan di dalam panel Filter.
 - Hanya mencari teks pada tabel tab tersebut; tab tanpa tabel (pembuat dokumen, formulir) tidak diberi Cari.
 - Di tablet/ponsel turun ke baris sendiri di bawah tab.
-- Pengecualian WBS & progres: Cari beserta tombol aksi (+ Item WBS, menu ⋮) ditaruh di kanan kepala tabel *Daftar Item WBS*, dan subtab dibuat penuh sama lebar. Chip Program tidak dipakai (pilihan Program ada di panel Filter); bila satu program dipilih, tampil strip info charter.
+- WBS & progres: Cari tetap di kanan baris subtab (sama dengan tab lain); tombol aksi (+ Item WBS, menu ⋮) di kanan kepala tabel *Daftar Item WBS*. Chip Program tidak dipakai (pilihan Program ada di panel Filter); bila satu program dipilih, tampil strip info charter.
+- Narasi T-Program (tanpa tabel): Cari di kanan subtab menyaring daftar program (kode/nama).
 
 **Ikon Informasi** (`mt-info-icon.js`, `MT_INFO_ICON`)
 - Deskripsi di bawah judul bagian dibungkus ikon ⓘ di samping judul; tampil saat hover, fokus, atau klik/tap.
