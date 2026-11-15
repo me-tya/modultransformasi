@@ -1,0 +1,112 @@
+/* ===== Tim PMO & CMO · Highlight v2 =====
+   Lapisan tampilan di atas gaya bawaan mt-tim2.js (semua selektor dibatasi #t2 agar tidak bocor ke halaman lain).
+   Isi: bar tanggal, kotak widget, agenda bergaya linimasa dengan peserta dikelompokkan per tim,
+   chip filter tim, kartu "Tim hari ini", batang batas cuti per tim, dan empty state. */
+
+/* ---------- bar tanggal ---------- */
+#t2 .t-hday{background:#fff;border:1px solid #E3E8F1;box-shadow:0 1px 2px rgba(14,42,92,.04);border-radius:16px;padding:12px 14px 12px 18px}
+#t2 .t-hday:before{width:5px}
+#t2 .t-hday .t-dpk-t{font-size:17px;letter-spacing:-.01em}
+
+/* ---------- kotak widget ---------- */
+#t2 .t-wgrid{gap:16px}
+#t2 .t-w{border-color:#E3E8F1;border-radius:16px;box-shadow:0 1px 2px rgba(14,42,92,.04),0 6px 18px -10px rgba(14,42,92,.14);transition:box-shadow .2s}
+#t2 .t-w:hover{box-shadow:0 1px 2px rgba(14,42,92,.05),0 10px 26px -12px rgba(14,42,92,.22)}
+#t2 .t-wh{background:#fff;border-bottom-color:#EEF1F6;border-radius:16px 16px 0 0;padding:12px 16px;min-height:56px;box-sizing:border-box}
+#t2 .t-w.t-colp .t-wh{border-radius:16px}
+#t2 .t-wh .t-ico{background:var(--t-navy-l);border:0;color:var(--t-navy2);width:32px;height:32px;border-radius:10px}
+#t2 .t-wh h3{font-size:14.5px;font-weight:800;letter-spacing:-.005em}
+#t2 .t-wh .t-grip{opacity:0;transition:opacity .15s}
+#t2 .t-w:hover .t-wh .t-grip,#t2 .t-wh .t-grip:focus-visible{opacity:1}
+#t2 .t-wf{border-radius:0 0 16px 16px;background:#FAFBFD;border-top-color:#EEF1F6}
+
+/* empty state: mengisi tinggi kotak dan berada di tengah, bukan pita abu di atas */
+#t2 .t-wb>.t-empty:only-child{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:none;padding:26px 16px;color:var(--t-ink3);font-weight:600}
+#t2 .t-wb>.t-empty:only-child:before{content:'';width:40px;height:40px;border-radius:12px;background:var(--t-o-l) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23178A4C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/20px no-repeat}
+
+/* ---------- chip filter agenda per tim ---------- */
+#t2 .t-agf{display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid #EEF1F6;overflow-x:auto;scrollbar-width:thin}
+#t2 .t-agf button{all:unset;cursor:pointer;flex:none;display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 6px 0 11px;border-radius:999px;border:1px solid #DCE3EE;background:#fff;font-size:12.5px;font-weight:700;color:var(--t-ink2);transition:background .15s,border-color .15s,color .15s}
+#t2 .t-agf button i{width:8px;height:8px;border-radius:50%;background:var(--tc)}
+#t2 .t-agf button b{min-width:20px;height:20px;padding:0 6px;box-sizing:border-box;border-radius:999px;background:#EEF2F8;color:var(--t-ink2);font-size:11px;font-weight:800;display:grid;place-items:center}
+#t2 .t-agf button:hover{border-color:var(--tc,var(--t-navy3));background:#F7F9FD}
+#t2 .t-agf button:focus-visible{outline:2px solid var(--t-gold);outline-offset:2px}
+#t2 .t-agf button.t-on{background:var(--t-navy);border-color:var(--t-navy);color:#fff}
+#t2 .t-agf button.t-on i{box-shadow:0 0 0 2px #fff}
+#t2 .t-agf button.t-on b{background:var(--t-gold2);color:var(--t-navy)}
+#t2 .t-agf button.t-z:not(.t-on){color:var(--t-ink4);border-style:dashed}
+#t2 .t-agf button.t-z:not(.t-on) i{opacity:.45}
+
+/* ---------- agenda: linimasa ---------- */
+#t2 .t-ag{grid-template-columns:62px 16px minmax(0,1fr) auto;gap:0 12px;padding:14px 16px 14px 13px;border-left-width:3px;border-bottom-color:#F0F2F7;align-items:stretch}
+#t2 .t-ag .t-tm{font-size:14px;font-weight:800;color:var(--t-navy);padding-top:1px}
+#t2 .t-ag .t-tm small{font-size:11.5px;margin-top:2px}
+#t2 .t-ag .t-tm em{display:inline-block;margin-top:6px;font-style:normal;font-size:10.5px;font-weight:800;color:var(--t-ink3);background:#F1F4F9;border-radius:6px;padding:1px 6px}
+#t2 .t-tln{position:relative;display:block}
+#t2 .t-tln:before{content:'';position:absolute;left:50%;top:-14px;bottom:-14px;width:2px;margin-left:-1px;background:#E3E8F1}
+#t2 .t-ag:first-child .t-tln:before{top:10px}
+#t2 .t-ag:last-child .t-tln:before{bottom:calc(100% - 10px)}
+#t2 .t-ag:only-child .t-tln:before{display:none}
+#t2 .t-tln i{position:absolute;left:50%;top:4px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:#fff;border:3px solid var(--t-navy3);box-sizing:border-box}
+#t2 .t-ag.t-done .t-tln i{border-color:#C3CAD7;background:#C3CAD7}
+#t2 .t-ag.t-now .t-tln i{border-color:var(--t-gold);background:var(--t-gold);box-shadow:0 0 0 4px rgba(201,164,67,.22);animation:t2pulse 1.8s ease-out infinite}
+#t2 .t-ag.t-agk .t-tln i{border-color:var(--t-gold)}
+@keyframes t2pulse{0%{box-shadow:0 0 0 0 rgba(201,164,67,.45)}100%{box-shadow:0 0 0 9px rgba(201,164,67,0)}}
+#t2 .t-agb{min-width:0}
+#t2 .t-ag .t-ttl{font-size:14px;line-height:1.4;gap:6px}
+#t2 .t-ag .t-agt{color:var(--t-ink)}
+#t2 .t-ag.t-done .t-agt{color:var(--t-ink3)}
+#t2 .t-ag .t-meta{margin:4px 0 9px;font-size:12.5px}
+#t2 .t-ag .t-meta span{display:inline-flex;align-items:center;gap:5px}
+#t2 .t-ag .t-go{align-self:center;color:#B7C0CF;transition:transform .15s,color .15s}
+#t2 .t-ag:hover .t-go{color:var(--t-navy);transform:translateX(2px)}
+#t2 .t-ag:focus-visible{outline:2px solid var(--t-gold);outline-offset:-2px}
+#t2 .t-ag.t-now{background:linear-gradient(90deg,#FBF6E6,#FFFDF7 60%)}
+#t2 .t-chip.t-live{display:inline-flex;align-items:center;gap:5px;background:#FFF3D1;color:#8C6B12;border:1px solid #F0D98F}
+#t2 .t-chip.t-live b{width:6px;height:6px;border-radius:50%;background:#D49B00;animation:t2blink 1.2s ease-in-out infinite}
+@keyframes t2blink{50%{opacity:.25}}
+
+/* peserta per tim */
+#t2 .t-pplg{display:flex;flex-wrap:wrap;gap:6px 8px}
+#t2 .t-tg{display:inline-flex;flex-wrap:wrap;max-width:100%;box-sizing:border-box;align-items:center;gap:4px;padding:3px;border-radius:12px;background:color-mix(in srgb,var(--tc) 7%,#fff);border:1px solid color-mix(in srgb,var(--tc) 22%,#fff)}
+#t2 .t-tgl{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 8px;border-radius:9px;background:var(--tc);color:#fff;font-size:11.5px;font-weight:800;white-space:nowrap;letter-spacing:.01em}
+#t2 .t-tgl i{font-style:normal;font-size:9.5px;font-weight:800;letter-spacing:.06em;padding:1px 5px;border-radius:5px;background:rgba(255,255,255,.22)}
+#t2 .t-tg .t-nkc{height:24px;box-sizing:border-box;border-color:transparent;background:#fff;box-shadow:0 0 0 1px rgba(14,42,92,.06);font-weight:700;color:var(--t-ink)}
+#t2 .t-tg .t-nkc:hover{box-shadow:0 0 0 1px var(--tc)}
+
+/* ---------- kartu "Tim hari ini" (dalam Ringkasan kehadiran) ---------- */
+#t2 .t-tms{margin:4px 16px 14px;padding-top:14px;border-top:1px dashed #E3E8F1}
+#t2 .t-tms-h{display:flex;align-items:baseline;gap:10px;margin:0 2px 10px}
+#t2 .t-tms-h b{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--t-ink2)}
+#t2 .t-tms-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+#t2 .t-tmc{all:unset;cursor:pointer;box-sizing:border-box;display:flex;flex-direction:column;gap:7px;padding:12px 13px 11px 15px;border-radius:13px;border:1px solid #E3E8F1;background:#fff;position:relative;overflow:hidden;transition:border-color .15s,box-shadow .15s,transform .15s}
+#t2 .t-tmc:before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--tc)}
+#t2 .t-tmc:hover{border-color:color-mix(in srgb,var(--tc) 45%,#fff);box-shadow:0 8px 20px -12px color-mix(in srgb,var(--tc) 60%,transparent);transform:translateY(-1px)}
+#t2 .t-tmc:focus-visible{outline:2px solid var(--t-gold);outline-offset:2px}
+#t2 .t-tmc.t-on{border-color:var(--tc);background:color-mix(in srgb,var(--tc) 6%,#fff)}
+#t2 .t-tmc-t{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#t2 .t-tmc-t b{font-size:14px;font-weight:800;color:var(--t-ink)}
+#t2 .t-tmc-t em{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.07em;color:var(--tc);background:color-mix(in srgb,var(--tc) 12%,#fff);padding:2px 7px;border-radius:6px}
+#t2 .t-tmc-k{font-size:12px;color:var(--t-ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#t2 .t-tmc-b{display:flex;height:6px;border-radius:99px;overflow:hidden;background:#EEF1F6}
+#t2 .t-tmc-b i{display:block;height:100%}
+#t2 .t-tmc-n{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--t-ink3)}
+#t2 .t-tmc-n span{display:inline-flex;align-items:center;gap:4px}
+#t2 .t-tmc-n b{color:var(--t-ink);font-weight:800}
+
+/* ---------- Kalender cuti: batas per tim satu baris (label | batang | angka) ---------- */
+#t2 .t-w .t-brow{display:grid;grid-template-columns:92px minmax(0,1fr) auto;gap:12px;align-items:center;margin:0;padding:6px 0;font-size:12px;border-bottom:1px dashed #EEF1F6}
+#t2 .t-w .t-brow:last-child{border-bottom:0}
+#t2 .t-w .t-brow .t-pres{height:8px;border-radius:99px}
+
+/* ---------- responsif ---------- */
+@media(max-width:760px){
+ #t2 .t-ag{grid-template-columns:52px 12px minmax(0,1fr);gap:0 10px;padding:12px 12px 12px 10px}
+ #t2 .t-ag .t-tm small{white-space:nowrap;font-size:10.5px}
+ #t2 .t-ag .t-tm em{white-space:nowrap;font-size:9.5px;padding:1px 4px}
+ #t2 .t-ag .t-go{display:none}
+ #t2 .t-tms-g{grid-template-columns:1fr 1fr}
+ #t2 .t-w .t-brow{grid-template-columns:70px minmax(0,1fr);row-gap:2px}
+ #t2 .t-w .t-brow>span{grid-column:2}
+}
+@media (prefers-reduced-motion:reduce){#t2 .t-ag.t-now .t-tln i,#t2 .t-chip.t-live b{animation:none}}
