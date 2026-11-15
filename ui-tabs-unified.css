@@ -726,3 +726,17 @@ html.mt-ui-embedded :is(.tabs .count-badge,.cm-ap-cnt,.prio-tab-n){
 #app #view nav.ptabs.pmo-journey{overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:thin}
 #app #view nav.ptabs.pmo-journey > a{flex:1 1 0!important;min-width:max-content!important;justify-content:center!important}
 @media(max-width:1400px){#app #view nav.ptabs.pmo-journey > a{padding-inline:4px!important;gap:5px!important}}
+/* SEMUA bar tab/menu Modul Transformasi: item sama lebar mengisi baris, isi rata tengah;
+   bila tidak muat, bar bisa digeser horizontal (tidak terpotong/terhimpit). 15 Nov 2026. */
+#app #view :is(.ptabs,.ps27-tabs,.ps27-kwide-tabs,.subt,.ov-tabs,.porto-view-tabs,.ws-tabs,.hp-tabs,.chtabs,.cra-tabs,.wz-sub,.sk-tabbar,.ctabs,.tp-tabs,.t-tabs2,.pswf-tabs,.psbank-subtabs,.psbank-mapping-tabs,.psbank-proj-editor-tabs,.ps-tabbar,.prio-subtabs,.cm-journey,.act-tabs):not([hidden]){
+ flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:thin}
+#app #view :is(.ptabs,.ps27-tabs,.ps27-kwide-tabs,.subt,.ov-tabs,.porto-view-tabs,.ws-tabs,.hp-tabs,.chtabs,.cra-tabs,.wz-sub,.sk-tabbar,.ctabs,.tp-tabs,.t-tabs2,.pswf-tabs,.psbank-subtabs,.psbank-mapping-tabs,.psbank-proj-editor-tabs,.ps-tabbar,.prio-subtabs,.cm-journey,.act-tabs)
+ > :is(a,button,[role=tab],.porto-view-tab,.ws-tab,.cra-tab,.sk-tab,.cm-step){
+ flex:1 1 0!important;min-width:max-content!important;max-width:none!important;justify-content:center!important;text-align:center}
+/* Tab di dalam jendela pop-up */
+.ov :is(.tm-dtabs,.psbank-dialogtabs,.subt,.ctabs,.chtabs,.ptabs) > :is(a,button,[role=tab]){flex:1 1 0!important;min-width:max-content!important;justify-content:center!important}
+.ov :is(.tm-dtabs,.psbank-dialogtabs,.subt,.ctabs,.chtabs,.ptabs){overflow-x:auto!important;flex-wrap:nowrap!important}
+#app #view nav.ptabs.pmo-journey > :is(a,button),#app #view nav.ptabs.pmo-journey.ps27-tabs > button{flex:1 1 0!important;min-width:max-content!important;justify-content:center!important}
+/* Bar tab yang lebarnya mengikuti isi (tidak penuh): tiap tab selebar tab terpanjang */
+#app #view :is(.psbank-subtabs,.psbank-mapping-tabs,.psbank-proj-editor-tabs,.ps27-minitabs,.prio-subtabs,.ws-tabs){display:inline-grid!important;grid-auto-flow:column!important;grid-auto-columns:1fr!important}
+.ov :is(.psbank-dialogtabs,.tm-dtabs){display:inline-grid!important;grid-auto-flow:column!important;grid-auto-columns:1fr!important}
