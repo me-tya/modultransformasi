@@ -128,7 +128,7 @@ function detail(p,k,edit){const PL=place(p,k),us=unitsOf(p.n,k),s=statusOn(p),wa
  const strC=PL.str.map(x=>'<span class="pc str">'+H(x[1])+'</span>').concat(PL.stp.map(id=>'<span class="pc str">Pelaksana '+H(TM_STU[id])+'</span>')).join('');
  const prof='<div class="tm-sec"><div class="tm-sech"><b>Penempatan</b>'+(edit?'<button type="button" class="tm-lnk2" data-tv="tempat">Atur di Onboarding →</button>':'')+'</div>'+
   (isOff(p)?'<div class="tm-prow"><small>Status</small><div class="tm-pv"><i class="tm-nil">Tidak aktif (arsip) — tidak ditempatkan. Riwayatnya sebagai PIC tetap ada di Daftar Aktivitas.</i></div></div>':
-  pr('Struktural',strC||none)+pr('Tim utama',mainR==='KEPALA PUSAT'&&!PL.t?'<span class="pc main kap">Kepala Pusat · semua tim</span>':PL.t?'<span class="pc main'+(PL.r==='Supervisor'?' spv':PL.r==='Ketua'?' kt':'')+'">'+H(PL.r==='Anggota'?PL.t:tmLab(PL.t,PL.r))+(PL.r==='Anggota'?' <em>Anggota</em>':'')+'</span>':'<i class="tm-nil">Belum ditempatkan</i>')+
+  pr('Struktural',strC||none)+pr('Tim utama',mainR==='KEPALA PUSAT'&&!PL.t?'<span class="pc pmain kap">Kepala Pusat · semua tim</span>':PL.t?'<span class="pc pmain'+(PL.r==='Supervisor'?' spv':PL.r==='Ketua'?' kt':'')+'">'+H(PL.r==='Anggota'?PL.t:tmLab(PL.t,PL.r))+(PL.r==='Anggota'?' <em>Anggota</em>':'')+'</span>':'<i class="tm-nil">Belum ditempatkan</i>')+
   pr('Tim tambahan',PL.tx.length?PL.tx.map(x=>'<span class="pc add">'+H(x.r==='Anggota'?x.t:tmLab(x.t,x.r))+'</span>').join(''):none)+
   pr('Unit dampingan',us.length?'<span class="tm-uls">'+us.map(u=>'<button type="button" data-act="tmDt" data-v="u">'+H(u)+'</button>').join('')+'</span>':none))+'</div>'+
   '<div class="tm-meta"><div><small>Unit asal</small><b>'+H(p.unitAsal||'—')+'</b></div><div><small>Status pegawai</small><b>'+H(p.jenis==='Sementara'?(p.jenisSementara||'Sementara'):'Definitif')+'</b></div></div>'+
@@ -402,8 +402,8 @@ const css=`
 .tm-prow>small{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#9AA4BA}
 .tm-pv{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
 .tm-pv .pc{display:inline-flex;gap:6px;align-items:center;border-radius:9px;padding:5px 10px;font-size:12.5px;font-weight:700;white-space:nowrap}
-.tm-pv .pc.str{background:#EAF0FA;color:#17457F;white-space:normal}.tm-pv .pc.main{background:#0B2447;color:#fff}.tm-pv .pc.main em{font-style:normal;font-size:10px;font-weight:800;background:rgba(255,255,255,.18);border-radius:5px;padding:1px 6px}
-.tm-pv .pc.main.spv{background:#5B43B5}.tm-pv .pc.main.kap{background:#8C6B12}.tm-pv .pc.main.kt{background:#15805F}.tm-pv .pc.add{background:#fff;border:1px solid #DCE3EE;color:#3A4763}
+.tm-pv .pc.str{background:#EAF0FA;color:#17457F;white-space:normal}.tm-pv .pc.pmain{background:#0B2447;color:#fff}.tm-pv .pc.pmain em{font-style:normal;font-size:10px;font-weight:800;background:rgba(255,255,255,.18);border-radius:5px;padding:1px 6px}
+.tm-pv .pc.pmain.spv{background:#5B43B5}.tm-pv .pc.pmain.kap{background:#8C6B12}.tm-pv .pc.pmain.kt{background:#15805F}.tm-pv .pc.add{background:#fff;border:1px solid #DCE3EE;color:#3A4763}
 .tm-uls{display:flex;flex-wrap:wrap;gap:6px}.tm-uls button{all:unset;cursor:pointer;font-size:12px;font-weight:700;border-radius:7px;padding:3px 9px;background:#E3F5F4;color:#0E7C7C}.tm-uls button:hover{background:#CDEDEA}
 .tm-nil{font-style:normal;color:#9AA4BA;font-size:12.5px}
 .tm-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.tm-meta>div{background:#F7F9FC;border-radius:10px;padding:9px 13px;min-width:0}
