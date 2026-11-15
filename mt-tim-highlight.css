@@ -116,5 +116,8 @@
 #t2 .t-card>.t-hday:first-child,#t2 .t-card>.t-editbar:first-child{margin-top:16px}
 #t2 .t-pvw>.t-subt{flex:1 1 auto;min-width:0;margin:0!important}
 #t2 .t-subt>button .t-i{width:15px;height:15px}
-#t2 .t-pvw{flex-wrap:nowrap!important;align-items:flex-end!important;margin:14px 16px 0}
-#t2 .t-pvw>.t-btn{flex:none;margin-bottom:8px}
+#t2 .t-pvw{flex-wrap:nowrap!important;align-items:flex-end!important;margin:0!important;padding:8px 16px 0!important}
+#t2 .t-pvw>.t-btn{flex:none;margin-bottom:5px}
+#app #t2 .t-pvw>.t-subt{margin:0!important}
+#t2 .t-pvb{padding-top:10px!important}
+#t2 .t-pvb>:first-child{margin-top:0!important}
