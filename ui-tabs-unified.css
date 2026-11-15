@@ -718,3 +718,7 @@ html.mt-ui-embedded :is(.tabs .count-badge,.cm-ap-cnt,.prio-tab-n){
 #app .flt .ftop .c0{background:#fff!important;border-color:#EADFC0!important}
 #app .flt .ftop .rsm{background:#fff!important;border-color:#EADFC0!important}
 #app .flt.pmo-unified .ftop .rs2m,#app .flt .ftop .rs2m{background:#F0E3BC!important}
+/* Filter terisi: penanda halus — garis tepi emas tipis saja (tanpa titik, tanpa garis tebal/bayangan). */
+#app .flt .sel.act,#app .flt.fx2 .fbar select.act,#app .flt .fbar select.act{
+ background-image:none!important;background-color:#fff!important;padding-left:12px!important;
+ border:1px solid #D9B85A!important;box-shadow:none!important;color:#0B2447!important;font-weight:600!important}
