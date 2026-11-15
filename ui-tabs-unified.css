@@ -722,3 +722,7 @@ html.mt-ui-embedded :is(.tabs .count-badge,.cm-ap-cnt,.prio-tab-n){
 #app .flt .sel.act,#app .flt.fx2 .fbar select.act,#app .flt .fbar select.act{
  background-image:none!important;background-color:#fff!important;padding-left:12px!important;
  border:1px solid #D9B85A!important;box-shadow:none!important;color:#0B2447!important;font-weight:600!important}
+/* Tab tahapan PMO (Overview … Referensi): lebar sama rata, isi rata tengah; bila tidak muat, geser horizontal. */
+#app #view nav.ptabs.pmo-journey{overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:thin}
+#app #view nav.ptabs.pmo-journey > a{flex:1 1 0!important;min-width:max-content!important;justify-content:center!important}
+@media(max-width:1400px){#app #view nav.ptabs.pmo-journey > a{padding-inline:4px!important;gap:5px!important}}
