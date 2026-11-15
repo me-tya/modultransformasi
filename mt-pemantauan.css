@@ -202,3 +202,29 @@
 .one-card.one-past h4{color:#4A5670}
 @media (prefers-reduced-motion:reduce){.one-card{transition:none}.one-card:hover{transform:none}}
 @media(max-width:700px){.one-grid{grid-template-columns:1fr}}
+
+/* ===== Kartu 1-on-1 ringkas (tidak memanjang) ===== */
+.one-grid{grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
+.one-card{gap:8px;padding:14px 14px 11px}
+.one-head{gap:12px}
+.one-card h4{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.one-tema{-webkit-line-clamp:1}
+.one-card-top{min-height:20px}
+.one-meta{gap:3px 12px;font-size:12px;padding-left:64px}
+.one-meta>span{min-width:0}
+.one-pic{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#66728C}.one-pic svg{margin:0}
+.one-docs{padding-left:64px}
+.one-foot2{display:flex;align-items:center;gap:8px;padding-top:9px;border-top:1px solid #EEF1F6;margin-top:auto}
+.one-foot2 .one-units{flex:1;min-width:0;flex-wrap:nowrap;overflow:hidden;mask-image:linear-gradient(90deg,#000 85%,transparent)}
+.one-foot2 .one-u{flex:none}
+.one-foot2 .one-acts{border:0;padding:0;margin:0 0 0 auto;flex:none;gap:4px;flex-wrap:nowrap}
+.one-foot2 .one-acts .btn.sm{height:30px;padding:0 10px}
+.one-foot2 .one-acts .btn[data-act="oneIcs"]{width:30px;padding:0;justify-content:center}
+.one-foot2 .one-acts .btn[data-act="oneIcs"] span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.one-foot2 .one-adm{margin-left:2px;gap:4px}
+.one-foot2 .one-adm .pm-ws-icon{width:30px;height:30px}
+@media(max-width:700px){.one-meta,.one-docs{padding-left:0}}
+.one-head-r .one-units{margin-top:4px;flex-wrap:wrap}
+.one-foot2 .one-pic{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.one-foot2 .one-pic svg{vertical-align:-3px;margin-right:5px}
+.one-foot2:not(:has(.one-pic)) .one-acts{margin-left:auto}
