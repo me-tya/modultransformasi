@@ -104,9 +104,10 @@ function page(){const k=kpCfg(),all=people(),edit=canEdit(),U=S.ui;
    '<span class="tm-pb"><span class="tm-pn">'+H(p.n)+'</span><span class="tm-pj" title="'+H([p.jab,p.pang].filter(Boolean).join(' · '))+'">'+H(isOff(p)?'Tidak aktif · '+offReason(p):(p.jab||'Jabatan belum diisi'))+'</span>'+
    '<span class="tm-rcs">'+(isOff(p)?'':'<em class="rl">'+H(rl)+'</em>')+(more?'<em class="mo">+'+more+' tim</em>':'')+strs.map(x=>'<em class="sr">'+H(x)+'</em>').join('')+(p.jenis==='Sementara'?'<em class="tp">'+H(p.jenisSementara||'Sementara')+'</em>':'')+'</span></span>'+stBadge(s)+'</button>'};
  const grouped=()=>{let last='';return list.slice().sort((a,b)=>roleOrd[roleIn(a)]-roleOrd[roleIn(b)]||a.n.localeCompare(b.n,'id')).map(p=>{const r=roleIn(p),h=r!==last?'<div class="tm-gh" style="--rc:'+RC[r]+'">'+H(r==='Ketua'?'Ketua Tim':r==='Kapus'?'Kepala Pusat':r)+'</div>':'';last=r;return h+item(p)}).join('')};
- const left='<aside class="tm-left card"><div class="tm-lh"><b>PMO & CMO KEMENKEU <span>('+act.length+')</span></b>'+(edit?'<button type="button" class="btn sm" data-act="tmAdd">+ Pegawai</button>':'')+'</div><div class="tm-search"><input class="inp" data-tmq placeholder="Cari nama, unit, jabatan, keahlian…" aria-label="Cari PMO & CMO Kemenkeu"></div>'+chips+'<div class="tm-list">'+(list.length?grouped():'<p class="s tm-none">Tidak ada pegawai pada saringan ini.</p>')+'</div><div class="tm-pgr"></div></aside>';setTimeout(tmPaginate,0);
+ const bar='<div class="tm-bar"><b class="tm-bt">PMO & CMO KEMENKEU <span>('+act.length+')</span></b>'+chips+'<label class="tm-search tm-bq"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input class="inp" data-tmq placeholder="Cari nama, unit, jabatan, keahlian…" aria-label="Cari PMO & CMO Kemenkeu"></label>'+(edit?'<button type="button" class="tm-badd" data-act="tmAdd">+ Pegawai</button>':'')+'</div>';
+ const left='<aside class="tm-left card"><div class="tm-list">'+(list.length?grouped():'<p class="s tm-none">Tidak ada pegawai pada saringan ini.</p>')+'</div><div class="tm-pgr"></div></aside>';setTimeout(tmPaginate,0);
  const p=all.find(x=>x.n===sel);
- return AKT_HDR()+viewSwitch()+kpis+'<div class="tm-page">'+left+'<section class="tm-right card">'+(p?detail(p,k,edit):'<p class="s" style="padding:24px">Belum ada data PMO & CMO Kemenkeu. '+(edit?'Klik <b>+ Pegawai</b>.':'')+'</p>')+'</section></div>'}
+ return AKT_HDR()+viewSwitch()+kpis+bar+'<div class="tm-page">'+left+'<section class="tm-right card">'+(p?detail(p,k,edit):'<p class="s" style="padding:24px">Belum ada data PMO & CMO Kemenkeu. '+(edit?'Klik <b>+ Pegawai</b>.':'')+'</p>')+'</section></div>'}
 function viewSwitch(){const v=S.ui.tmView||'orang';return '<div class="tm-vs" role="tablist" aria-label="Tampilan tim"><button type="button" class="'+(v==='orang'?'on':'')+'" data-act="tmView" data-v="orang">Per individu Kemenkeu</button><button type="button" class="'+(v==='unit'?'on':'')+'" data-act="tmView" data-v="unit">Per unit (kontak PMO, CMO, Pemilik Proses Bisnis)</button></div>'}
 function detail(p,k,edit){const PL=place(p,k),us=unitsOf(p.n,k),s=statusOn(p),wa=waUrl(p.hp),people2=kpPeople();
  const upcoming=cutiEff(p).concat(cutiAktual(p)?[cutiAktual(p)]:[]).filter(c=>(c.selesai||c.mulai)>=TODAY).sort((a,b)=>a.mulai.localeCompare(b.mulai));
@@ -491,6 +492,16 @@ const css=`
 .tm-form .tm-adjh{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#17457F;text-align:left}
 .tm-form .tm-adjok{justify-self:end;margin-top:2px}
 .tm-hero .tm-ha{align-self:center!important}
+.tm-bar{display:grid;grid-template-columns:auto minmax(220px,360px) minmax(0,1fr) auto;gap:10px;align-items:center;margin:14px 0 12px}
+.tm-bar .tm-bt{font-size:13px;font-weight:800;letter-spacing:.07em;color:#12275A;padding:0 6px 0 4px;white-space:nowrap}.tm-bar .tm-bt span{color:#8A97AB}
+.tm-bar .tm-tsel{margin:0!important;display:flex;gap:8px;min-width:0}.tm-bar .tm-tsl{flex:1;min-width:0;height:44px!important;background:#fff!important}
+.tm-bar .tm-tadd{height:44px;padding:0 14px;white-space:nowrap}
+.tm-bq{position:relative;display:block;min-width:0;margin:0}.tm-bq svg{position:absolute;left:13px;top:50%;width:16px;height:16px;margin-top:-8px;color:#8A97AB;pointer-events:none}
+.tm-bar .tm-bq .inp{height:44px!important;padding-left:38px!important;font-size:13px!important;border:1px solid #DCE3EE;border-radius:12px;background:#fff!important;width:100%}
+.tm-bar .tm-bq .inp:focus{outline:none;border-color:#9DB6E6;box-shadow:0 0 0 3px rgba(23,69,127,.10)}
+.tm-badd{height:44px;padding:0 16px;border:1px solid #DCE3EE;border-radius:12px;background:#fff;font:inherit;font-size:13px;font-weight:700;color:#0B2447;cursor:pointer;white-space:nowrap}.tm-badd:hover{border-color:#9DB6E6;background:#F5F8FD}
+.tm-left .tm-list{margin-top:4px}
+@media(max-width:1100px){.tm-bar{grid-template-columns:1fr auto}.tm-bar .tm-bt{grid-column:1/-1}.tm-bar .tm-bq{grid-column:1/2}}
 @media(max-width:760px){.tm-hero{flex-wrap:wrap}.tm-prow{grid-template-columns:1fr;gap:4px}.tm-meta{grid-template-columns:1fr}}
 @media(max-width:1000px){.tm-page{grid-template-columns:1fr}.tm-left{position:static;max-height:none}.tm-kpis{grid-template-columns:repeat(2,1fr)}.tm-prof{grid-template-columns:repeat(2,1fr)}.tm-crow{grid-template-columns:1fr 1fr}}
 `;
