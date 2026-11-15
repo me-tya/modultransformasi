@@ -194,7 +194,7 @@ a{color:var(--blue)}
 .ptabs a:hover:not(.on){background:#EEF3FB;color:var(--navy)}
 .ptabs a+a:before{content:"";position:absolute;left:-3px;top:12px;bottom:12px;width:1px;background:#E3E8F1}
 .ptabs a.on:before,.ptabs a.on+a:before{display:none}
-.ptabs a{flex:1 0 auto;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 12px;border-radius:10px;font-weight:700;font-size:12px;color:var(--ink-3);text-decoration:none;white-space:nowrap;position:relative}
+.ptabs a{flex:1 0 0;min-width:max-content;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 12px;border-radius:10px;font-weight:700;font-size:12px;color:var(--ink-3);text-decoration:none;white-space:nowrap;position:relative}
 .ptabs a b{font-size:11px;font-family:var(--mono);background:var(--line-2);color:var(--ink-3);border-radius:10px;padding:0 6px}
 .ptabs a.on{background:linear-gradient(135deg,#0B1F45,#17457F);color:#fff;box-shadow:0 6px 14px rgba(11,31,69,.22)}
 
@@ -3082,7 +3082,7 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 @media(max-width:700px){#app .adp-state{display:none}}
 @media(max-width:760px){#app .adp-workbar{flex-wrap:wrap}#app .adp-nav{flex-basis:100%}#app .adp-tools{flex-basis:100%;justify-content:flex-end}#app .flt.pmo-unified{grid-template-columns:112px minmax(0,1fr)!important}}
 </style>
-<link id="mt-unified-tabs-styles" rel="stylesheet" href="ui-tabs-unified.css?v=20261114-nav2">
+<link id="mt-unified-tabs-styles" rel="stylesheet" href="ui-tabs-unified.css?v=20261115-eq1">
 <div id="root"></div>
 <div class="toast" id="toast" role="status"></div>
 <script type="application/json" id="d0">{"S":[],"W":[],"K":[]}</script>

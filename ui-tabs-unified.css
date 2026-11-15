@@ -703,3 +703,6 @@ html.mt-ui-embedded :is(.tabs .count-badge,.cm-ap-cnt,.prio-tab-n){
 
 /* Menu utama 13.5px; sub-menu (sub-tab) 12px dan lebih tipis. */
 #app .subt.ctabs a{font-size:12px!important;padding:6px 14px 7px!important}
+/* Tab utama Aktivitas & CM: lebar sama rata, melebar bila tab sedikit; bila tidak muat, geser horizontal (seperti menu utama Dashboard CM). */
+#app #view :is(nav.cm-journey,nav.act-tabs){overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:thin}
+#app #view :is(nav.cm-journey > .cm-step,nav.act-tabs > a){flex:1 1 0!important;min-width:max-content!important}
