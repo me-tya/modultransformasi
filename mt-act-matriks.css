@@ -37,36 +37,39 @@
 .amx-in-n b{color:#fff;font-size:20px}
 .amx-in em{font-style:normal;font-size:12px;color:#66728C}.amx-in-n em{color:rgba(255,255,255,.8)}
 /* tabel */
-.amx-wrap{margin:12px 16px 0;border:1px solid #E3E8F1;border-radius:12px;overflow:auto;max-height:calc(100vh - 230px);overscroll-behavior:contain}
+.amx-wrap{margin:12px 16px 0;border:1px solid #E3E8F1;border-radius:12px;overflow-x:auto;overflow-y:visible}
 .amx{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px;font-variant-numeric:tabular-nums}
 .amx td,.amx tbody th,.amx tfoot th{vertical-align:middle}
-.amx th,.amx td{border-right:1px solid #EEF1F6;border-bottom:1px solid #EEF1F6;padding:0;text-align:center;height:36px;min-width:64px}
-.amx thead th{position:sticky;top:0;z-index:2;background:#F6F8FC;height:auto;padding:0}
-.amx thead th button{all:unset;cursor:pointer;display:block;padding:10px 8px;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#3A4763;max-width:140px;margin:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.amx th,.amx td{border-right:1px solid #EEF1F6;border-bottom:1px solid #EEF1F6;padding:0;text-align:center;height:34px;min-width:50px}
+.amx thead th{z-index:2;background:#F6F8FC;height:auto;padding:0}
+.amx thead th button{all:unset;cursor:pointer;display:block;padding:9px 4px;font-size:10.5px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;color:#3A4763;max-width:72px;margin:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .amx thead th button:hover{color:#0B1F45;text-decoration:underline}
-.amx .amx-corner{left:0;z-index:4;text-align:left;padding:8px 12px;min-width:170px;background:#EEF2F8}
+.amx .amx-corner{position:sticky;left:0;z-index:4;text-align:left;padding:8px 10px;min-width:118px;width:118px;background:#EEF2F8}
+.amx .amx-corner span,.amx .amx-corner i{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .amx .amx-corner span{display:block;font-size:11px;font-weight:800;color:#0B1F45;text-transform:uppercase;letter-spacing:.04em}
 .amx .amx-corner i{display:block;font-style:normal;font-size:10.5px;color:#66728C;font-weight:600}
-.amx .amx-rh{position:sticky;left:0;z-index:1;background:#fff;text-align:left;vertical-align:middle;text-transform:none!important;letter-spacing:normal!important;font-size:12.5px!important;min-width:170px;max-width:220px;box-shadow:1px 0 0 #E3E8F1}
-.amx .amx-rh button{all:unset;cursor:pointer;display:block;padding:8px 12px;font-weight:700;color:#13213D;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.amx .amx-rh{position:sticky;left:0;z-index:1;background:#fff;text-align:left;vertical-align:middle;text-transform:none!important;letter-spacing:normal!important;font-size:12.5px!important;min-width:118px;width:118px;max-width:140px;box-shadow:1px 0 0 #E3E8F1}
+.amx .amx-rh button{all:unset;cursor:pointer;display:block;padding:7px 10px;font-weight:700;color:#13213D;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}
 .amx .amx-rh button:hover{color:#17457F;text-decoration:underline}
 .amx td.amx-v{background:var(--bg,#fff);color:var(--fg,#13213D);transition:filter .12s}
-.amx td.amx-v button{all:unset;cursor:pointer;display:block;width:100%;height:36px;line-height:36px;font-weight:800}
+.amx td.amx-v button{all:unset;cursor:pointer;display:block;width:100%;height:34px;line-height:34px;font-weight:800}
 .amx td.amx-v button:hover{box-shadow:inset 0 0 0 2px #FDB913}
 .amx td.amx-0{background:#fff}
 .amx .amx-hl:not(.amx-v){background:#FFF8E3}
 .amx td.amx-v.amx-hl{filter:brightness(.96)}
 .amx td.amx-0.amx-hl{background:#FFFBEF}
-.amx .amx-tc{background:#F6F8FC;font-weight:800;color:#0B1F45;min-width:92px}
+.amx .amx-tc{background:#F6F8FC;font-weight:800;color:#0B1F45}
+.amx tr>.amx-tc:last-child{min-width:74px}
+.amx tfoot .amx-tc:not(:last-child) button{padding:0 4px}
 .amx thead .amx-tc{position:sticky;right:0;z-index:3;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:#3A4763;padding:10px 8px}
 .amx tbody .amx-tc{position:sticky;right:0;box-shadow:-1px 0 0 #E3E8F1}
-.amx .amx-tc button{all:unset;cursor:pointer;display:flex;align-items:center;justify-content:flex-end;gap:7px;width:100%;box-sizing:border-box;padding:0 10px;height:36px}
+.amx .amx-tc button{all:unset;cursor:pointer;display:flex;align-items:center;justify-content:flex-end;gap:6px;width:100%;box-sizing:border-box;padding:0 8px;height:34px}
 .amx .amx-tc button:hover b,.amx tfoot .amx-tc button:hover{color:#17457F;text-decoration:underline}
-.amx-bar{flex:1;height:5px;border-radius:99px;background:#E3E8F1;overflow:hidden;max-width:48px}.amx-bar i{display:block;height:100%;background:#17457F}
-.amx tfoot th,.amx tfoot td{position:sticky;bottom:0;z-index:2;background:#EEF2F8;border-top:1px solid #DCE3EF}
-.amx tfoot .amx-rh{z-index:3;background:#EEF2F8}.amx tfoot .amx-rh{padding:0 12px;font-weight:800;color:#0B1F45}
+.amx-bar{flex:1;height:5px;border-radius:99px;background:#E3E8F1;overflow:hidden;max-width:32px}.amx-bar i{display:block;height:100%;background:#17457F}
+.amx tfoot th,.amx tfoot td{z-index:2;background:#EEF2F8;border-top:1px solid #DCE3EF}
+.amx tfoot .amx-rh{z-index:3;background:#EEF2F8}.amx tfoot .amx-rh{padding:0 10px;font-weight:800;color:#0B1F45}
 .amx tfoot .amx-tc button{justify-content:center}
-.amx tfoot .amx-gt{right:0;z-index:4;background:#0B1F45;color:#FDB913;font-size:14px}
+.amx tfoot .amx-gt{position:sticky;right:0;z-index:4;background:#0B1F45;color:#FDB913;font-size:14px}
 .amx-foot{margin:8px 16px 14px;font-size:12px;color:#7A869E}
 .amx-empty{display:flex;flex-direction:column;align-items:center;gap:6px;padding:40px 16px;color:#66728C}.amx-empty b{color:#0B1F45;font-size:15px}
 /* drill-down */
