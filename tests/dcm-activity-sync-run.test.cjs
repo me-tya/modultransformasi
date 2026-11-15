@@ -30,8 +30,8 @@ test('ubah di DCM → MT ikut; ubah di MT → DCM ikut',async()=>{
 test('hapus di DCM → terhapus di MT; hapus di MT → terhapus di DCM',async()=>{
  const T=setup([ag('A1'),ag('A2')],[]);await T.M.run();
  T.store.delete('A1');T.load();await T.M.run();assert.ok(!T.mt().some(x=>x.cmDashboardId==='A1'));
- T.ctx.S.oneonone=T.mt().filter(x=>x.cmDashboardId!=='A2');T.ctx.S.cfg.dcmTomb=['A2'];await T.M.run();
- assert.ok(!T.store.has('A2'));assert.ok(!T.ctx.S.cfg.dcmTomb,'tombstone dibersihkan')});
+ T.ctx.S.oneonone=T.mt().filter(x=>x.cmDashboardId!=='A2');T.ctx.S.oneonone.push({id:'cfg-dcm-tomb',kind:'cfg',ids:['A2']});await T.M.run();
+ assert.ok(!T.store.has('A2'));assert.strictEqual(T.mt().find(x=>x.id==='cfg-dcm-tomb').ids.length,0,'tombstone dibersihkan')});
 
 test('pengaman: penghapusan massal dijeda sampai dikonfirmasi',async()=>{
  const rows=Array.from({length:8},(_,i)=>ag('B'+i));const T=setup(rows,[]);await T.M.run();assert.strictEqual(T.mt().length,8);

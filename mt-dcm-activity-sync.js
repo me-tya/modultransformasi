@@ -18,6 +18,8 @@ const str=v=>v==null?'':String(v);
 const tidy=v=>str(v).replace(/\r\n/g,'\n').trim();
 const picList=v=>(Array.isArray(v)?v:str(v).split(/[,;\n]+/)).map(p=>str(p).trim()).filter(Boolean);
 const isUrl=v=>/^https?:\/\//i.test(str(v).trim());
+const TOMB='cfg-dcm-tomb';
+const tombDoc=()=>{const L=S.oneonone||(S.oneonone=[]);let t=L.find(x=>x.id===TOMB);if(!t){t={id:TOMB,kind:'cfg',ids:[]};L.push(t)}return t};
 const docId=id=>str(id).replace(/\//g,'_').slice(0,700);
 function hash(o){const s=JSON.stringify(o);let h=2166136261>>>0;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)>>>0}return h.toString(36)+':'+s.length}
 function dcmStatus(raw){const s=str(raw).toLowerCase();
@@ -138,7 +140,7 @@ async function pullFiles(){if(st.pulling)return;st.pulling=true;let n=0;
 async function run(){if(st.busy){st.dirty=true;return}if(!st.loaded||!canRun()||!isOn())return;st.busy=true;st.dirty=false;
  const s0={toMt:0,toDcm:0,newMt:0,newDcm:0,del:0};let changed=false;
  try{const mt=S.oneonone||(S.oneonone=[]);const byD=new Map();mt.forEach(x=>{if(x.cmDashboardId)byD.set(str(x.cmDashboardId),x)});
-  const tomb=new Set(((S.cfg||{}).dcmTomb)||[]);const at=new Date().toISOString(),by=me();
+  const tomb=new Set((((S.oneonone||[]).find(x=>x.id===TOMB)||{}).ids)||[]);const at=new Date().toISOString(),by=me();
   /* 1) rencanakan */
   const plan=[];
   st.dcm.forEach(a=>{const x=byD.get(str(a.id))||mt.find(z=>z.id==='cm-import-'+str(a.id).replace(/[^a-zA-Z0-9_-]/g,''));
@@ -162,7 +164,7 @@ async function run(){if(st.busy){st.dirty=true;return}if(!st.loaded||!canRun()||
     x.cmSync={d:hash(canonD(a)),m:hash(canonM(x)),at};changed=true;isNew?s0.newDcm++:s0.toDcm++;continue}
    if(p.k==='delMt'){const i=mt.indexOf(p.x);if(i>-1){mt.splice(i,1);changed=true;s0.del++}continue}
    if(p.k==='delDcm'){await delDcm(p.a.id);s0.del++}}
-  if(tomb.size){S.cfg.dcmTomb=[...tomb].filter(id=>dIds.has(id)&&!plan.some(p=>p.k==='delDcm'&&str(p.a.id)===id));if(!S.cfg.dcmTomb.length)delete S.cfg.dcmTomb;changed=true}
+  if(tomb.size){const t=tombDoc();t.ids=[...tomb].filter(id=>dIds.has(id)&&!plan.some(p=>p.k==='delDcm'&&str(p.a.id)===id));changed=true}
   Object.keys(s0).forEach(k=>st.stats[k]+=s0[k]);st.last=new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});st.err='';
   const moved=s0.toMt+s0.toDcm+s0.newMt+s0.newDcm+s0.del;if(moved)console.info('[Sinkron DCM]',s0);
  }catch(e){st.err='Sinkron gagal: '+(e&&e.message||e);console.warn('[Sinkron DCM]',e)}
@@ -174,7 +176,7 @@ function hook(){
  if(typeof window.remoteRender==='function'&&!window.remoteRender.__dcm){const o=window.remoteRender;const w=function(){if(st.loaded&&!st.busy)kick();return o.apply(this,arguments)};w.__dcm=1;window.remoteRender=w;try{remoteRender=w}catch(e){}}
  if(typeof window.render==='function'&&!window.render.__dcm){const o=window.render;const w=function(){const r=o.apply(this,arguments);try{badge()}catch(e){}return r};w.__dcm=1;window.render=w;try{render=w}catch(e){}}
  if(typeof ACT!=='undefined'&&ACT.oneDel&&!ACT.oneDel.__dcm){const o=ACT.oneDel;ACT.oneDel=function(el){const x=(S.oneonone||[]).find(v=>v.id===el.dataset.id);const dId=x&&x.cmDashboardId;const r=o.apply(this,arguments);
-   if(dId){const t=setInterval(()=>{if(!(S.oneonone||[]).some(v=>v.cmDashboardId===dId)){clearInterval(t);S.cfg=S.cfg||{};S.cfg.dcmTomb=[...new Set([...(S.cfg.dcmTomb||[]),str(dId)])];save()}},400);setTimeout(()=>clearInterval(t),60000)}return r};ACT.oneDel.__dcm=1}}
+   if(dId){const t=setInterval(()=>{if(!(S.oneonone||[]).some(v=>v.cmDashboardId===dId)){clearInterval(t);const t=tombDoc();t.ids=[...new Set([...(t.ids||[]),str(dId)])];save()}},400);setTimeout(()=>clearInterval(t),60000)}return r};ACT.oneDel.__dcm=1}}
 function panel(){const s=status(),on=isOn();const t=st.stats;
  const body=`<div class="dcs"><p class="dcs-st ${s.k}"><b>Status:</b> ${esc(s.t)}</p>
   <p class="s" style="margin:0 0 10px">Aktivitas yang ditambah, diubah, atau dihapus di Dashboard CM otomatis masuk ke Modul Transformasi, dan sebaliknya. Bila diubah di kedua tempat bersamaan, perubahan terbaru yang dipakai (seri: Dashboard CM). Sinkron berjalan selama halaman Modul Transformasi ini terbuka.</p>
