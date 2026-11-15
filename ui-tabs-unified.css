@@ -710,4 +710,4 @@ html.mt-ui-embedded :is(.tabs .count-badge,.cm-ap-cnt,.prio-tab-n){
 #app #view nav.act-tabs > a > svg{color:#B07C0C!important;stroke:currentColor}
 #app #view nav.act-tabs > a.on > svg{color:#E3C76A!important}
 #app #view nav.act-tabs > a .act-tc{opacity:1!important;display:inline-block;margin-left:2px;padding:1px 8px;border-radius:999px;font-size:11.5px;font-weight:800;line-height:17px;background:#FFF3D1;color:#8A5E00}
-#app #view nav.act-tabs > a.on .act-tc{background:rgba(227,199,106,.18);color:#E3C76A}
+#app #view nav.act-tabs > a.on .act-tc{background:#E3C76A;color:#0F2346}
