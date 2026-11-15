@@ -83,7 +83,7 @@ if(!document.getElementById('mt-filter-kit-css')&&document.head){
  '#app .flt .fbar.mt-g6{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:10px 12px!important;align-items:end!important}'+
  '#app .flt .fbar[hidden],#app .flt .fbar.mt-g6[hidden],#app .ps27 .mt-std-filter .mt-fgrid[hidden],#app .ps27 .mt-std-filter .ps27-filter-fields[hidden],#app .mt-subt-row[hidden]{display:none!important}'+
  /* Bilah filter lebih tipis & tidak mendominasi: 34 px, label terang, tombol buka-tutup kecil */
- '#app #view .flt.pmo-unified{grid-template-columns:max-content minmax(0,1fr)!important;grid-template-rows:34px auto!important;background:#EDF1F7!important;border-color:#D5DEEA!important}'+
+ '#app #view .flt.pmo-unified{grid-template-columns:max-content minmax(0,1fr)!important;grid-template-rows:34px auto!important;background:#FFF9E9!important;border-color:#E7C97A!important}'+
  '#app #view .flt.pmo-unified>.lp{height:34px!important;min-height:34px!important;padding:0 10px!important;background:linear-gradient(135deg,#0B2447,#17457F)!important;color:#fff!important;border-right:0!important;border-radius:11px 0 0 11px!important;width:auto!important;min-width:0!important;padding:0 14px!important}'+
  '#app #view .flt.pmo-unified.open>.lp{border-radius:11px 0 0 0!important}'+
  '#app #view .flt.pmo-unified>.lp .gi{width:20px!important;height:20px!important;background:transparent!important;border:0!important;box-shadow:none!important;color:#FDB913!important}'+
