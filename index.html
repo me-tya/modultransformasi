@@ -5544,7 +5544,7 @@ const actCanDelRow=x=>actGrp()==='pusat'?actCanEditRow(x)&&lv('wbs').includes('D
 const actOwnNew=()=>{const g=actGrp(),by=(ME&&ME.email)||'';return g==='unit'?{grp:'unit',unit:ME.unit,by}:g==='tim'?{grp:'tim',unit:ME.unit||'',mods:actMyMods().slice(),by}:{grp:'pusat',by}};
 /* Pilih PIC: Ka. Pusmantap terpisah (masuk Agenda Pimpinan), lalu pilih tim, lalu PIC per tim (Tim CM teratas; pegawai sementara ikut timnya). */
 function actPicPick(cur,done){const m=actMaster(),k=kpCfg(),sel=new Set(cur),pt=k.pt||{},ptx=k.ptx||{},rl=k.rl||{};
- const kapN=(k.str||{}).kapus||'',isOffP=p=>p.status==='Nonaktif'||p.st==='Nonaktif';
+ const kapN=(k.str||{}).kapus||'',isOffP=p=>{try{if(window.MT_TIM&&MT_TIM.statusOn)return MT_TIM.statusOn(p).k==='Nonaktif'}catch(e){}return p.status==='Nonaktif'||p.st==='Nonaktif'||p.statusKerja==='Nonaktif'};
  const tims=(k.tims||[]).slice().sort((a,b)=>(/(^|\s)CM$/i.test(b)?1:0)-(/(^|\s)CM$/i.test(a)?1:0));
  const PAL=['#6D53C7','#2B5AA8','#0E8A7A','#D9772B','#C2477A','#3C8D2F','#8A5CC2','#1C7FA6'],col=t=>PAL[Math.max(0,tims.indexOf(t))%PAL.length];
  const teamsOf=n=>[pt[n]].concat(Array.isArray(ptx[n])?ptx[n]:[]).filter(t=>t&&tims.includes(t));
@@ -11902,7 +11902,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 .mt-cal-di em{font-style:normal;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
 </style>
 <script src="mt-libur.js?v=20261113-libur1"></script>
-<script src="mt-tim.js?v=20261115-tim41"></script>
+<script src="mt-tim.js?v=20261115-tim42"></script>
 <script src="mt-profile-export.js?v=20261114-mt02"></script>
 <script src="mt-tim2.js?v=20261115-t70"></script>
 <script src="mt-foto-frame.js?v=20261114-ff6"></script>
