@@ -161,3 +161,44 @@
 .one-tb .one-hd .one-ib,.one-tb .one-hd .wbs-kebab{width:36px;height:36px}
 .one-tb .one-vt2{height:36px;box-sizing:border-box;align-items:center}
 @media(max-width:700px){.one-tb .one-hd{margin-left:0;width:100%}.one-tb .one-hd .btn.pri{margin-left:auto}}
+
+/* ===== Kartu 1-on-1: identitas warna per UE I ===== */
+.one-grid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.one-card{--uc:#17457F;gap:9px;padding:16px 16px 12px;border:1px solid #E3E8F1;border-radius:16px;
+ background:linear-gradient(180deg,color-mix(in srgb,var(--uc) 6%,#fff) 0,#fff 96px);box-shadow:0 1px 2px rgba(11,31,69,.04);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.one-card:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--uc) 35%,#E3E8F1);box-shadow:0 16px 30px -20px color-mix(in srgb,var(--uc) 70%,#0B1F45)}
+.one-card:focus-within{border-color:color-mix(in srgb,var(--uc) 45%,#E3E8F1)}
+.one-card{overflow:hidden}
+.one-band{position:absolute;left:0;right:0;top:0;height:5px;pointer-events:none}
+
+.one-head{display:flex;gap:12px;align-items:flex-start}
+.one-head-r{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.one-date{flex:none;width:52px;border-radius:12px;padding:5px 0 6px;display:flex;flex-direction:column;align-items:center;line-height:1;
+ background:#fff;border:1px solid color-mix(in srgb,var(--uc) 22%,#fff);box-shadow:0 2px 6px -3px color-mix(in srgb,var(--uc) 45%,transparent)}
+.one-date small{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in srgb,var(--uc) 75%,#5F6B85)}
+.one-date small:first-child{align-self:stretch;text-align:center;margin:-5px 0 4px;padding:4px 0 3px;border-radius:11px 11px 0 0;background:var(--uc);color:#fff}
+.one-date b{font-size:22px;font-weight:800;color:#0B1F45;margin:1px 0 2px;font-variant-numeric:tabular-nums}
+.one-date-x b{color:#9AA5BA;margin:8px 0}
+.one-card h4{font-size:15px;line-height:1.3;margin:2px 0 0;color:#0B1F45}
+.one-tema{font-size:12.5px;line-height:1.45;color:#5F6B85;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.one-meta{flex-direction:row;flex-wrap:wrap;gap:4px 14px;font-size:12.3px;color:#3A4763}
+.one-meta svg{color:var(--uc)}
+.one-units{gap:5px}
+.one-u{--c:#5F6B85;display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;padding:3px 9px 3px 7px;border-radius:999px;
+ background:color-mix(in srgb,var(--c) 10%,#fff);color:color-mix(in srgb,var(--c) 82%,#000);border:1px solid color-mix(in srgb,var(--c) 22%,#fff)}
+.one-u i{width:7px;height:7px;border-radius:50%;background:var(--c);flex:none}
+.one-u.on{background:var(--c);color:#fff;border-color:var(--c);box-shadow:0 0 0 2px #fff,0 0 0 3.5px #FDB913}.one-u.on i{background:#FDB913}
+.one-u.all{background:#0B1F45;color:#fff;border-color:#0B1F45}.one-u.all i{background:conic-gradient(#C2501A,#9A6200,#4F7F18,#0F7F74,#0A76A8,#3A4CC0,#6D4AC2,#B0336B,#C2501A)}
+.one-pic{display:flex;align-items:flex-start;gap:6px;font-size:11.8px;color:#66728C}.one-pic svg{flex:none;margin-top:1px;color:#9AA5BA}.one-pic b{color:#3A4763;font-weight:700}
+.one-acts{border-top:1px solid #EEF1F6;padding-top:10px;margin-top:auto}
+.one-acts .btn.pri{background:var(--uc)!important;border-color:var(--uc)!important;color:#fff!important}
+.one-mine-b{background:#FFF4D1;color:#7A5300}
+/* status */
+.one-card.one-tg-today{border:1.5px solid #E9B53A;box-shadow:0 0 0 4px rgba(253,185,19,.14);background:linear-gradient(180deg,#FFF8E3 0,#fff 110px)}
+.one-card.one-mine:not(.one-tg-today){border-color:color-mix(in srgb,var(--uc) 30%,#E3E8F1)}
+.one-card.one-past{background:#FBFCFE}
+.one-card.one-past .one-band,.one-card.one-past .one-date small:first-child{filter:saturate(.35) opacity(.75)}
+.one-card.one-past .one-u{filter:saturate(.45)}
+.one-card.one-past h4{color:#4A5670}
+@media (prefers-reduced-motion:reduce){.one-card{transition:none}.one-card:hover{transform:none}}
+@media(max-width:700px){.one-grid{grid-template-columns:1fr}}
