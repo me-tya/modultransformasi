@@ -50,3 +50,6 @@ test('Zona waktu, urutan PIC, kunci berkas id, dan pratinjau notula tidak diangg
  const x=M.applyToMt({id:'x'},a);assert.strictEqual(x.notulaTeks,'Isi notula');assert.strictEqual(x.notula.items[0].externalRefId,'NOT-1');
  x.jam='09:00 - 12:00 WIB';x.pic=['Atitya Pritasari','K. Jabar Malik'];assert.strictEqual(M.hash(M.canonM(x)),M.hash(M.canonD(a)));
  x.tl='baru';const a2=M.applyToDcm(a,x,{});assert.strictEqual(a2.notulaTeks,'','pratinjau tidak ditulis ke notulaTeks DCM');assert.strictEqual(JSON.parse(a2.notula)[0].id,'NOT-1');assert.strictEqual(a2.picTimCM,'Atitya Pritasari, K. Jabar Malik')});
+
+test('Mode kosong di DCM mengosongkan mode MT (tidak tersisa "Hybrid" lama)',()=>{const a=base();a.meetingMode='';a.meetingLocation='';const x=M.applyToMt({id:'x',mode:'Hybrid'},a);
+ assert.strictEqual(x.mode,'');assert.strictEqual(M.hash(M.canonM(x)),M.hash(M.canonD(a)))});

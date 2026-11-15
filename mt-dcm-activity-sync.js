@@ -56,7 +56,7 @@ function applyToMt(x,a){const c=canonD(a);
  x.cmDashboardId=a.id;x.keAkt=true;x.nama=c.nama;x.tgl=c.tgl;x.tglSelesai=c.tglS;x.jam=c.jam;x.kat=c.kat||'Rapat Koordinasi';x.layanan=c.lay;
  x.tahun=+c.tgl.slice(0,4)||x.tahun;x.tw=c.tgl?Math.ceil((+c.tgl.slice(5,7)||1)/3):(x.tw||1);x.no=Number(a.no)||x.no||0;
  x.unitP=c.unit;x.program=c.prog;x.tujuan=c.tujuan;x.catatan=c.catatan;x.peserta=c.peserta;x.narsum=c.narsum;x.pic=picList(a.picTimCM);
- x.lokasi=c.lokasi;x.link=c.link;x.mode=MODE_MT[c.mode]||x.mode||'';x.stat=c.st;x.notulaTeks=notD(a);x.ringkas=c.ringkas;x.tl=c.tl;
+ x.lokasi=c.lokasi;x.link=c.link;x.mode=MODE_MT[c.mode]||'';x.stat=c.st;x.notulaTeks=notD(a);x.ringkas=c.ringkas;x.tl=c.tl;
  FIELDS.forEach(([k,f])=>{const old=x[k]&&Array.isArray(x[k].items)?x[k].items:[];const byKey=new Map();old.forEach(m=>{const key=m.t==='l'?str(m.link).trim():str(m.sourceRefId||m.externalRefId);if(key)byKey.set(key,m)});
   const items=[];const seen=new Set();
   const push=(key,mk)=>{if(!key||seen.has(key))return;seen.add(key);items.push(byKey.get(key)||mk())};
