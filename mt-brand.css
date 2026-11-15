@@ -5,3 +5,13 @@ html body #app header.top>.mt-brand{order:1;flex:1 1 auto;min-width:0;display:fl
 .mt-brand-h{margin:0;font-size:16px;line-height:1.2;font-weight:800;color:#fff;letter-spacing:-.005em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mt-brand-t>.crumb{flex:none;font-size:12px;line-height:1.3}
 @media(max-width:760px){.mt-brand-mark{width:30px;height:30px}.mt-brand-mark svg{width:30px;height:30px}.mt-brand-h{font-size:14px}.mt-brand-t>.crumb{display:none}}
+
+/* Tombol Cheatsheet di judul halaman: gaya dimuat sejak awal (sebelumnya baru ada setelah cheatsheet pertama kali dibuka,
+   sehingga di kepala modul CMO yang gelap tampil sebagai kotak putih tanpa teks). */
+.txcs-entry{display:inline-flex;align-items:center;gap:5px;border:1px solid #d8ab42;border-radius:9px;padding:5px 9px;font-size:11px;font-weight:800;white-space:nowrap;line-height:1.35;color:#15365a;background:#fff9e9;vertical-align:middle;cursor:pointer;margin-left:10px;font-family:inherit}
+.txcs-entry::before{content:"▤";font-size:14px;color:#b9780d}
+.txcs-entry:hover,.txcs-entry:focus-visible{border-color:#e7aa23;background:#fdb913;outline:0}
+.mhead .txcs-entry{color:#fff;background:rgba(255,255,255,.1);border-color:rgba(253,185,19,.65)}
+.mhead .txcs-entry::before{color:#FDB913}
+.mhead .txcs-entry:hover,.mhead .txcs-entry:focus-visible{background:#FDB913;color:#0B1F45;border-color:#FDB913}
+.mhead .txcs-entry:hover::before{color:#0B1F45}

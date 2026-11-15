@@ -4361,6 +4361,9 @@ window.mtP0Navigate=function(target,section){
   return;
  }
 
+ /* Tab Aktivitas & Tim PMO & CMO dari Peta Menu Bantuan. */
+ if(scope==='act'&&target==='aktivitas'){S.ui.actTab=tab||'daftar';save();if(location.hash==='#aktivitas'){VIEW='aktivitas';render()}else go('aktivitas');return}
+ if(scope==='t2'&&target==='tim'){S.ui.t2v=tab||'highlight';save();if(location.hash==='#tim'){VIEW='tim';render()}else go('tim');return}
  if(scope==='workspace'){
   const valid=['ringkasan','jadwal','risiko','stakeholder','issue','decision'];
   if(!valid.includes(tab))return;
@@ -4591,7 +4594,7 @@ function fltBar(o={}){const P=per();const open=S.ui.fopen===1;const pv=progVis()
 ACT.ftog=()=>{S.ui.fopen=S.ui.fopen===1?0:1;save();window.FCAR_ANIM=1;try{render()}finally{window.FCAR_ANIM=0}};
 ACT.freset=()=>{S.ui.prog='';S.ui.unit='';S.ui.pr='all';S.ui.umode='up';S.ui.umodeL='';S.ui.wcm='';S.ui.wth='';S.ui.wst='';S.ui.lvn=10;S.ui.lvm='sd';S.ui.portoF={};S.ui.wbsProject='';S.ui.planYear='all';S.ui.seg='';S.ui.crseg='';S.ui.mseg='all';S.ui.rf='';S.ui.rstatus='';S.ui.rrisk='';Object.keys(PG).forEach(x=>PG[x]=0);save();render()};
 const twSel=()=>S.ui.tw||(S.ui.tw===0?0:4);
-function unitMatch(it,u,mode){if(!u)return true;mode=mode||'ue';if(mode==='ue')return it.ue.includes(u);const U=unitsOf(uicU(it)).includes(u),P=unitsOf(it.d).includes(u);return mode==='u'?U:mode==='p'?P:U||P}
+function unitMatch(it,u,mode){if(!u)return true;mode=mode||'ue';if(mode==='ue')return (it.ue||[]).includes(u);const U=unitsOf(uicU(it)).includes(u),P=unitsOf(it.d).includes(u);return mode==='u'?U:mode==='p'?P:U||P}
 function wbsFilt(o={}){const y=S.ui.tahun,pr=S.ui.prog,u=curUnit();return S.wbs.filter(w=>!w.arsip&&yrOf(w)===y&&(!pr||w.prog===pr)&&unitMatch(w,u,o.mode))}
 
 /* ======================== BERANDA ======================== */
@@ -4730,14 +4733,14 @@ function dxAttn(items){const n=dxTw(),M=n*3,G=dxModules(items);const mods=[].con
  ${box('Bukti menunggu validasi PMO','c-info',wait.length,'',list(wait,'Tidak ada bukti yang menunggu validasi.'))}
  ${box('Risiko tinggi terbuka','c-bad',risk.length,'Skor kemungkinan × dampak ≥ 15.',risk.length?`<div class="dx-al">${risk.slice(0,8).map(r=>`<div class="dx-ai"><b>${esc(r.title)}</b><span class="s">${esc(rptScopeLab(r.scope)||'')} · PIC ${esc(r.owner||'—')} · ${r.due?fmtD(r.due):'tanpa tenggat'}</span></div>`).join('')}</div>`:'<p class="s dx-empty">Tidak ada risiko tinggi terbuka.</p>')}</div>`}
 /* ---- Ringkasan: buat baris & bar bisa diklik ---- */
-ACT.dxUnit=el=>{const u=el.dataset.v,P=per(),items=dxItems().filter(w=>w.ue.includes(u)&&inP(w,P));const body=`<p class="s" style="margin:0 0 8px">${items.length} item jatuh tempo pada ${esc(P.lab)} untuk ${esc(u)}.</p>`+dxItemRows(items.sort((a,b)=>String(a.f).localeCompare(String(b.f))),P.b);modal(`<span class="exh">${esc(u)} · ${esc(P.lab)}</span>`,body,null,null,{cancel:'Tutup',size:'wide'})};
+ACT.dxUnit=el=>{const u=el.dataset.v,P=per(),items=dxItems().filter(w=>(w.ue||[]).includes(u)&&inP(w,P));const body=`<p class="s" style="margin:0 0 8px">${items.length} item jatuh tempo pada ${esc(P.lab)} untuk ${esc(u)}.</p>`+dxItemRows(items.sort((a,b)=>String(a.f).localeCompare(String(b.f))),P.b);modal(`<span class="exh">${esc(u)} · ${esc(P.lab)}</span>`,body,null,null,{cancel:'Tutup',size:'wide'})};
 ACT.dxDue=()=>{const P=per(),items=dxItems().filter(w=>inP(w,P)&&w.w&&!doneAt(w,P.b));modal(`<span class="exh">Item belum selesai · ${esc(P.lab)}</span>`,dxItemRows(items.sort((a,b)=>String(a.f).localeCompare(String(b.f))),P.b),null,null,{cancel:'Tutup',size:'wide'})};
 function viewDash(){const P=per();const items=wbsFilt({mode:'ue'});
  const progs=progVis().filter(p=>!S.ui.prog||p.akr===S.ui.prog);const tot=sumP(items,P);
  const dueItems=items.filter(w=>inP(w,P)&&w.w);const done=dueItems.filter(w=>doneAt(w,P.b)).length;
  const ms=mods().filter(m=>(!S.ui.prog||m.prog===S.ui.prog)&&(!curUnit()||m.uicUnits.includes(curUnit())));const idx=ms.map(m=>idxMod(m.kode)).filter(x=>x!=null);const ad=ms.map(m=>adoptMod(m.kode)).filter(x=>x&&x.p!=null);
  const im=implRows(s=>ms.some(m=>m.kode===s.modul));
- const unitRows=UNITS.filter(u=>!curUnit()||u===curUnit()).map(u=>{const it=items.filter(w=>w.ue.includes(u));const s=sumP(it,P);const mu=ms.filter(m=>m.uicUnits.includes(u));const ix=mu.map(m=>idxMod(m.kode)).filter(x=>x!=null);const iu=implRows(x=>mu.some(m=>m.kode===x.modul));
+ const unitRows=UNITS.filter(u=>!curUnit()||u===curUnit()).map(u=>{const it=items.filter(w=>(w.ue||[]).includes(u));const s=sumP(it,P);const mu=ms.filter(m=>m.uicUnits.includes(u));const ix=mu.map(m=>idxMod(m.kode)).filter(x=>x!=null);const iu=implRows(x=>mu.some(m=>m.kode===x.modul));
   return {u,n:it.filter(w=>inP(w,P)).length,...s,mod:mu.length,keg:iu.length?`${iu.filter(x=>x.status==='Terlaksana').length}/${iu.length}`:'—',idx:ix.length?ix.reduce((a,b)=>a+b,0)/ix.length:null}}).filter(r=>r.n||r.mod||r.a);
  const twv=[1,2,3,4].map(n=>sumP(items,perTW(n)));const mx=Math.max(1,...twv.map(x=>Math.max(x.t,x.r)));
  const cap=(r,t)=>t?r/t*100:null;const capChip=v=>v==null?'—':`<span class="chip ${v>=100?'c-ok':v>=90?'c-warn':'c-bad'}">${pct(v)}</span>`;
@@ -6937,7 +6940,7 @@ ACT.expkomp=()=>xlsxSave(wbsRows().map(kompRow),`WBS_Kompilasi_${TODAY}.xlsx`,'K
 function kompRow(w){const o={Code:w.k};const lv=[`Program Transformasi Kemenkeu ${yrOf(w)||S.ui.tahun}`,...w.p];for(let i=0;i<10;i++)o['Lv '+(i+1)]=lv[Math.min(i,lv.length-1)];
  Object.assign(o,{Start:w.s,Finish:w.f,'Triwulan Finish':w.f?'TW '+twOfDate(w.f):'','UIC Utama':w.u,'UIC Pendukung':w.d,'Jenis Dokumen Pendukung':w.j});
  MON.forEach((m,i)=>{o[['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][i]]=!!(w.s&&w.f&&+w.s.slice(5,7)<=i+1&&+w.f.slice(5,7)>=i+1)});
- UNITS.forEach(u=>o[u]=w.ue.includes(u)?'Ya':'');['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].forEach((m,i)=>o['Target '+m]=tgtAt(w,i+1));['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].forEach((m,i)=>o['Real '+m]=bit(w,i+1)?w.w:0);o['Status Validasi']=w.v?'Sudah':'';o['Jenis CM (aplikasi)']=cmType(w);return o}
+ UNITS.forEach(u=>o[u]=(w.ue||[]).includes(u)?'Ya':'');['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].forEach((m,i)=>o['Target '+m]=tgtAt(w,i+1));['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].forEach((m,i)=>o['Real '+m]=bit(w,i+1)?w.w:0);o['Status Validasi']=w.v?'Sudah':'';o['Jenis CM (aplikasi)']=cmType(w);return o}
 const MM3=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const xd=x=>x instanceof Date?new Date(x.getTime()-x.getTimezoneOffset()*6e4).toISOString().slice(0,10):(typeof x==='number'&&Number.isFinite(x)&&x>20000&&x<80000?new Date(Math.round((x-25569)*864e5)).toISOString().slice(0,10):(/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(x)?x.split('/').reverse().map(s=>s.padStart(2,'0')).join('-'):String(x||'').slice(0,10)));
 const isD=x=>/^\d{4}-\d\d-\d\d$/.test(x)&&x>'1950';
@@ -6982,7 +6985,7 @@ const ICO={p:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke
 function wdPeople(w){const U=splitUic(uicU(w)),P=splitUic(w.d);return `<div class="wc c1"><div class="wh"><i>${ICO.p}</i><b>Penanggung jawab</b></div><div class="wb">
  <div><div class="lb">UIC Utama</div>${U.map(x=>upill(x,1)).join('')||'—'}${hasPdmp(w)?'<span class="chip c-gold">Pendamping CM: Pusmantap (advisory)</span>':''}</div>
  <div><div class="lb">UIC Pendukung</div>${P.map(x=>upill(x,0)).join('')||'<span class="s">—</span>'}</div>
- <div><div class="lb">Cakupan UE I</div><div class="uec">${w.ue.map(u=>`<span>${esc(u)}</span>`).join('')||'—'}</div></div></div></div>`}
+ <div><div class="lb">Cakupan UE I</div><div class="uec">${(w.ue||[]).map(u=>`<span>${esc(u)}</span>`).join('')||'—'}</div></div></div></div>`}
 function wdTime(w,pg){const s=w.s,f=w.f,a=aktOf(w)||(realMonth(w)?`${yrOf(w)}-${String(realMonth(w)).padStart(2,'0')}-01`:'');const D=x=>new Date(x).getTime();let bar='';
  if(s&&f){const tot=Math.max(1,(D(f)-D(s))/864e5+1);const ref=a||TODAY;const el=Math.max(0,Math.min(tot,(D(ref)-D(s))/864e5+1));const pct=el/tot*100;const late=!a&&TODAY>f;const nowP=Math.max(0,Math.min(100,(D(TODAY)-D(s))/(D(f)-D(s)||1)*100));
   const info=a?`Selesai ${aktOf(w)?fmtD(aktOf(w)):MON[realMonth(w)-1]+' '+yrOf(w)}`:late?`<b style="color:var(--bad)">Lewat ${Math.round((D(TODAY)-D(f))/864e5)} hari</b>`:TODAY<s?`Mulai ${Math.round((D(s)-D(TODAY))/864e5)} hari lagi`:`Sisa <b>${Math.round((D(f)-D(TODAY))/864e5)}</b> hari dari ${Math.round(tot)} hari`;
@@ -7207,7 +7210,7 @@ function crApply(c){
 /* --- Laporan TW --- */
 function lapData(){const y=S.ui.tahun,lu=lockU();const items=pmoScopedWbs(false);
  const prog=S.programs.filter(p=>items.some(w=>w.prog===p.akr)).map(p=>{const it=items.filter(w=>w.prog===p.akr);return {p,tw:[1,2,3,4].map(t=>sumTR(it,t*3)),a:sumTR(it,12).a}});
- const ue=UNITS.filter(u=>!lu||u===lu).map(u=>{const it=items.filter(w=>w.ue.includes(u));return {u,tw:[1,2,3,4].map(t=>sumTR(it,t*3)),a:sumTR(it,12).a}});return {prog,ue,items}}
+ const ue=UNITS.filter(u=>!lu||u===lu).map(u=>{const it=items.filter(w=>(w.ue||[]).includes(u));return {u,tw:[1,2,3,4].map(t=>sumTR(it,t*3)),a:sumTR(it,12).a}});return {prog,ue,items}}
 function pLaporan(){const L=lapData();const tw=+S.ui.ltw||3,sel=capSel();
  const shared=(kind,key,items)=>[1,2,3,4].map(q=>capVal(kind,key,items,q));
  const c=(r,t,q)=>capPct(r,t,q);
@@ -7216,7 +7219,7 @@ function pLaporan(){const L=lapData();const tw=+S.ui.ltw||3,sel=capSel();
  return vh('L','pmo','Laporan Triwulan','Capaian T-Program, per UE I, dan output IKU K-Wide per triwulan.',`<a class="btn" href="http://s.kemenkeu.go.id/LaporanNarasiTProgram2026" target="_blank" rel="noopener">Arsip narasi ›</a><a class="btn" href="#pmo-narasi">Laporan narasi TW (PPT) ›</a><button class="btn pri" data-act="lapexp">Export Excel</button>`)+pmoTabs('laporan')+
  `
  <div class="card"><div class="ch"><h3>Capaian T-Program</h3></div>${tb([...L.prog.map(x=>({l:x.p.nama,tw:shared(sel.sc==='unit'?'combo':'prog',sel.sc==='unit'?sel.u+'|'+x.p.akr:x.p.akr,L.items.filter(w=>w.prog===x.p.akr))})),tot],'T-Program')}</div>
- <div class="card"><div class="ch"><h3>Capaian per UE I</h3><span class="r s">berdasarkan kolom cakupan UE I</span></div>${tb(L.ue.map(x=>({l:x.u,tw:shared(sel.pk?'combo':'ue',sel.pk?x.u+'|'+sel.pk:x.u,L.items.filter(w=>w.ue.includes(x.u)))})),'UE I')}</div>`+
+ <div class="card"><div class="ch"><h3>Capaian per UE I</h3><span class="r s">berdasarkan kolom cakupan UE I</span></div>${tb(L.ue.map(x=>({l:x.u,tw:shared(sel.pk?'combo':'ue',sel.pk?x.u+'|'+sel.pk:x.u,L.items.filter(w=>(w.ue||[]).includes(x.u)))})),'UE I')}</div>`+
  tbl('kw',{ent:'output IKU',title:'Output IKU K-Wide per TW',add:true,edit:true,del:true,list:()=>S.kwide,rows:()=>S.kwide,canAdd:()=>lv('lap').includes('C'),canEdit:()=>lv('lap').includes('U'),canDel:()=>lv('lap').includes('D'),label:x=>x.prog,
   foot:all=>[1,2,3,4].map(t=>{const r=all.filter(x=>x.tw===t);return `<span>TW${t}: ${r.reduce((a,x)=>a+(+x.r||0),0)}/${r.reduce((a,x)=>a+(+x.t||0),0)}</span>`}).join(''),
   cols:[{k:'tw',l:'TW',t:'sel',o:[[1,'TW 1'],[2,'TW 2'],[3,'TW 3'],[4,'TW 4']],r:x=>'TW '+x.tw},{k:'prog',l:'Program Transformasi',req:true},{k:'out',l:'Target output',t:'ta',w:1,r:x=>`<span style="white-space:pre-line">${esc(x.out)}</span>`},{k:'t',l:'Jumlah target',t:'num',num:1},{k:'r',l:'Jumlah realisasi',t:'num',num:1,r:x=>x.r===''||x.r==null?'—':x.r}],onSave:x=>{x.tw=+x.tw}})}
@@ -7230,7 +7233,7 @@ function exportLaporan(){const L=lapData(),sel=capSel();
  });return x};
  const programs=L.prog.map(x=>row(x.p.nama,values(sel.sc==='unit'?'combo':'prog',sel.sc==='unit'?sel.u+'|'+x.p.akr:x.p.akr,L.items.filter(w=>w.prog===x.p.akr))));
  programs.push(row('Total',values(sel.kind,sel.key,L.items)));
- const units=L.ue.map(x=>row(x.u,values(sel.pk?'combo':'ue',sel.pk?x.u+'|'+sel.pk:x.u,L.items.filter(w=>w.ue.includes(x.u)))));
+ const units=L.ue.map(x=>row(x.u,values(sel.pk?'combo':'ue',sel.pk?x.u+'|'+sel.pk:x.u,L.items.filter(w=>(w.ue||[]).includes(x.u)))));
  xlsxSave([{sheet:'Capaian T-Program',rows:programs},{sheet:'Capaian per UE1',rows:units},{sheet:'Capaian K-Wide',rows:S.kwide.map(x=>({TW:x.tw,Program:x.prog,'Target Output':x.out,'Jumlah Target':x.t,'Jumlah Realisasi':x.r}))}],`Laporan_TW_${S.ui.tahun}.xlsx`);
 }
 
@@ -7451,7 +7454,7 @@ function capSnap(y,tw){const k=y+'-'+tw,stored=((S.cfg||{}).capSnap||{})[k]||nul
  return stored&&stored.how==='revised'?stored:(excel||stored)}
 const capClosed=(tw,y)=>capDeadline(y==null?+S.ui.tahun:+y,tw)<TODAY;
 function capScope(){const u=curUnit();return u&&S.ui.capScope!=='kem'?'unit':'kem'}
-function capItems(sc,unit){const u=unit||curUnit();return pmoAllWbs().filter(w=>(!S.ui.prog||w.prog===S.ui.prog)&&(sc!=='unit'||!u||w.ue.includes(u)))}
+function capItems(sc,unit){const u=unit||curUnit();return pmoAllWbs().filter(w=>(!S.ui.prog||w.prog===S.ui.prog)&&(sc!=='unit'||!u||(w.ue||[]).includes(u)))}
 /* Referensi workbook 2026: total T-Program memasukkan TKD di TW I tetapi mengeluarkannya mulai TW II.
    Ini ketentuan lingkup laporan 2026 (baris Total Excel), bukan aturan generik untuk semua program Selesai.
    Tahun berikutnya semua program dihitung kecuali pengecualian eksplisit di cfg.capReportingExclusions. */
@@ -7561,7 +7564,7 @@ document.addEventListener('change',e=>{
 
 function capLockBuild(y,tw,how){const all=S.wbs.filter(w=>!w.arsip&&yrOf(w)===y),L=v=>[v.t,v.r,v.a,v.ct==null?null:Math.round(v.ct*100)/100,v.on,v.nT,v.nOn,v.nE];
  const o={cut:capDeadline(y,tw),at:new Date().toISOString().slice(0,16).replace('T',' '),by:how==='auto'?'Sistem (otomatis)':(ME?ME.email:'-'),how:how||'manual',n:all.length,tot:L(capLiveTot(all,tw,y)),prog:{},ue:{},combo:{}};
- S.programs.forEach(p=>{const it=all.filter(w=>w.prog===p.akr);if(it.length)o.prog[p.akr]=L(capLive(it,tw))});UNITS.forEach(u=>{const it=all.filter(w=>w.ue.includes(u));if(it.length)o.ue[u]=L(capLive(it,tw));S.programs.forEach(p=>{const ip=it.filter(w=>w.prog===p.akr);if(ip.length)o.combo[u+'|'+p.akr]=L(capLive(ip,tw))})});return o}
+ S.programs.forEach(p=>{const it=all.filter(w=>w.prog===p.akr);if(it.length)o.prog[p.akr]=L(capLive(it,tw))});UNITS.forEach(u=>{const it=all.filter(w=>(w.ue||[]).includes(u));if(it.length)o.ue[u]=L(capLive(it,tw));S.programs.forEach(p=>{const ip=it.filter(w=>w.prog===p.akr);if(ip.length)o.combo[u+'|'+p.akr]=L(capLive(ip,tw))})});return o}
 /* Kunci otomatis: dijalankan saat PMO Kemenkeu/Superadmin membuka aplikasi setelah batas pengisian TW lewat. */
 function capAutoLock(){try{if(!ME||lockU()||!lv('lap').includes('U'))return;if(FB.on&&!FB.ready)return;const y=+TODAY.slice(0,4);let ch=0;
  [y-1,y].forEach(yy=>[1,2,3,4].forEach(tw=>{const dl=capDeadline(yy,tw);if(dl>=TODAY||dl<CAP_AUTO_FROM||capSnap(yy,tw))return;if(!S.wbs.some(w=>!w.arsip&&yrOf(w)===yy))return;
@@ -7612,10 +7615,10 @@ function capBreakdown(quarters,num){
 }
 function capMatrix(kindTab,num){capAutoLock();const {sc,u,pk}=capSel(),quarterChoice=per().pr,cd=Math.max(1,Math.min(4,/^[1-4]$/.test(quarterChoice)?+quarterChoice:(curTwDone()||1))),all=pmoAllWbs().filter(w=>!pk||w.prog===pk);
  let ent=[];
- if(kindTab==='prog'){const base=sc==='unit'?all.filter(w=>w.ue.includes(u)):all;
+ if(kindTab==='prog'){const base=sc==='unit'?all.filter(w=>(w.ue||[]).includes(u)):all;
   ent=S.programs.filter(p=>base.some(w=>w.prog===p.akr)).map(p=>{const it=base.filter(w=>w.prog===p.akr);return {name:p.nama,tw:[1,2,3,4].map(t=>sc==='unit'?capVal('combo',u+'|'+p.akr,it,t):capVal('prog',p.akr,it,t))}});
   if(!pk)ent.push({name:'Total'+(sc==='unit'?' '+u:''),tot:1,tw:[1,2,3,4].map(t=>sc==='unit'?capVal('ue',u,base,t):capVal('tot','',base,t))})}
- else{const us=sc==='unit'?[u]:UNITS;ent=us.map(x=>{const it=all.filter(w=>w.ue.includes(x));return {name:x,me:x===u,tw:[1,2,3,4].map(t=>pk?capVal('combo',x+'|'+pk,it,t):capVal('ue',x,it,t))}}).filter(e=>e.tw.some(v=>v.t||v.r))}
+ else{const us=sc==='unit'?[u]:UNITS;ent=us.map(x=>{const it=all.filter(w=>(w.ue||[]).includes(x));return {name:x,me:x===u,tw:[1,2,3,4].map(t=>pk?capVal('combo',x+'|'+pk,it,t):capVal('ue',x,it,t))}}).filter(e=>e.tw.some(v=>v.t||v.r))}
  const cell=(v,t)=>`<td class="num" title="Capaian sebelum batas: ${capRaw(v.r,v.t)} · batas TW ${ROM[t]} ${capMax(t)}%"><b>${t>cd+1?'—':capPct(v.r,v.t,t)}</b><span class="sm">${v.src==='missing'?'Belum tersedia':num(v.r)+' / '+num(v.t)}</span>${v.src==='lock'?'<span class="src">🔒 rekap TW</span>':''}</td>`;
  const title=kindTab==='prog'?'Rincian Capaian per T-Program':'Capaian per Unit Eselon I';
  return `<div class="card ov-matrix"><div class="ch"><h3>${title}</h3>${capCtl()}</div><div class="tscroll"><table class="lap"><thead><tr><th>${kindTab==='prog'?'T-Program':'UE I'}</th>${[1,2,3,4].map(t=>`<th class="num">TW ${ROM[t]}</th>`).join('')}<th class="num">Target tahunan</th><th class="num">Capaian tahunan s.d. TW ${ROM[cd]}</th></tr></thead><tbody>${ent.map(e=>{const v=e.tw[cd-1];return `<tr${e.tot?' style="background:#F4F7FC"':''}><td><b>${esc(e.name)}</b>${e.me&&sc!=='unit'?' <span class="chip c-info">unit saya</span>':''}</td>${e.tw.map((x,i)=>cell(x,i+1)).join('')}<td class="num">${num(v.a)}</td><td class="num"><b>${v.ct==null?'—':pct(v.ct)}</b></td></tr>`}).join('')}</tbody></table></div><p class="cap-note">Sel TW: realisasi periode ÷ target kumulatif periode. TW yang sudah ditutup memakai rekap laporan atau snapshot cut-off; TW berjalan dihitung dari WBS saat ini. Jika arsip kombinasi filter lama tidak tersedia, angka tidak ditampilkan.</p></div>`}
@@ -10093,7 +10096,7 @@ const GUIDE={
   ['Lanjut ke WBS','Charter disahkan → susun WBS dari rencana kerja.','pmo-wbsplan','Buka WBS']],
  btn:[['+ Buat / Buka','Membuka wizard charter.','Wizard (pop-up)'],['Import Charter (PPTX)','Mengisi charter dari berkas PowerPoint.','Pop-up impor'],['Ajukan ke PMO Pusat','Mengirim charter untuk disahkan.','Status berubah'],['Pilih versi','Berganti antarversi charter (per tahun).','Halaman yang sama'],['💡 Contoh pengisian','Melihat contoh isian lengkap untuk langkah yang dibuka.','Pop-up contoh']],
  x:['asis','tobe','cs','id','isi','kp','mf','rk','ms'],
- tips:['Perhatikan nama kriteria penyelesaian: harus sama dengan nama kelompok WBS agar progres penutupan terhubung otomatis.']},
+ tips:['Perhatikan nama kriteria penyelesaian: harus sama dengan nama kelompok WBS agar progres penutupan terhubung otomatis.','Di Linimasa, kolom Mulai/Selesai berformat YYYY-MM: ketik (mis. 202607 → 2026-07) atau klik ikon kalender untuk memilih bulan. Selesai tidak boleh sebelum Mulai.']},
 
 'pmo-wbsplan':{
  tujuan:'Menyusun WBS (rencana kerja rinci) untuk tahun berjalan: unduh template, isi, impor, atau tambah item satu per satu.',
@@ -10111,13 +10114,13 @@ const GUIDE={
 'pmo-wbs':{
  tujuan:'Memantau pelaksanaan WBS: status tiap item, realisasi bulanan, dan bukti dukungnya.',
  alur:[
-  ['Saring','Pilih Program, Unit, Level, Periode, atau cari kode item.'],
-  ['Lihat status','Status item: Selesai, Dalam proses, Terlambat, atau Belum mulai (dihitung dari tanggal dan validasi).'],
-  ['Unggah bukti dukung','Pada item yang selesai klik ⇪ lalu isi tanggal selesai dan tautan dokumen.',null,null,'bukti_up'],
+  ['Saring','Pilih Program, Unit, Level, dan Periode di panel Filter; ketik kode/deliverable/UIC di kolom Cari di kanan baris tab.'],
+  ['Lihat status','Status item: Selesai, Berjalan, Terlambat, atau Terjadwal (dihitung dari tanggal dan validasi). TW tampil di bawah status bila layar sempit.'],
+  ['Unggah bukti dukung','Pada kolom Bukti dukung klik Unggah, lalu isi tanggal selesai aktual dan berkas/tautan SharePoint.',null,null,'bukti_up'],
   ['Menunggu validasi','Status item menjadi Menunggu validasi. PMO Kemenkeu memeriksa dokumen.'],
   ['Hasil','Valid → capaian item 100 dan masuk ke realisasi. Ditolak → capaian 0 sampai bukti diperbaiki.'],
   ['Perlu mengubah jadwal?','Ajukan Change Request.','pmo-cr','Buka Change Request']],
- btn:[['⇪ Unggah bukti','Membuka formulir bukti dukung.','Pop-up unggah'],['✔ Validasi','Hanya PMO Kemenkeu: memeriksa dan memvalidasi bukti.','Pop-up validasi'],['Filter','Menyaring item.','Halaman yang sama'],['Export','Mengunduh tabel.','Unduhan']],
+ btn:[['Unggah','Membuka formulir bukti dukung item.','Pop-up unggah'],['+ Item WBS','Menambah satu item WBS (sesuai hak akses).','Formulir'],['⋮','Aksi lain: Export Kompilasi, Ajukan Change Request, Laporan, Jadwal 1-on-1.','Menu'],['⇅ Excel','Template, impor, dan ekspor tabel.','Unduhan'],['✔ Validasi','Hanya PMO Kemenkeu, di tab Bukti Dukung.','Bukti Dukung','pmo-bukti']],
  isi:['bukti_up','validasi'],
  tips:['Ini satu-satunya halaman untuk mengunggah bukti dukung. Halaman lain hanya untuk melihat dan mengunduh.','Tidak ada lagi tombol Tandai 100%. Capaian 100 muncul hanya setelah bukti divalidasi.']},
 
@@ -10179,7 +10182,8 @@ const GUIDE={
 
 'aktivitas':{
  tujuan:'Mencatat seluruh kegiatan Tim PMO dan CMO (1-on-1 T-Program, forum, rapat koordinasi, pendampingan) lengkap dengan PIC, notulen, dokumentasi, dan notula.',
- alur:[['Tambah aktivitas','Klik + Aktivitas, atau Import Undangan untuk mengisi dari surat undangan (PDF/Word). Isi 4 tahap: Info Utama, Perencanaan (status dan PIC), Pelaksanaan (materi dan notulen), Hasil & Luaran.'],['Siapkan surat','Pada Info Utama, unggah surat undangan. Klik nomor undangan untuk melihat dan mencetaknya. Gunakan Konsep undangan atau Konsep ST; bagian kuning perlu disesuaikan sebelum diunggah ke Nadine.'],['Bagikan penugasan','Ikon WhatsApp pada daftar menyalin teks penugasan (hari, waktu, agenda, lokasi, share screen, notula, dokumentasi, konsumsi) lalu membuka WhatsApp.'],['Generate notula','Setelah notulen dan hasil terisi, klik Generate Notula (di tahap Hasil & Luaran atau ikon notula pada daftar) lalu unduh Word.']],
+ alur:[['Tambah aktivitas','Klik + Aktivitas, atau Import Undangan untuk mengisi dari surat undangan (PDF/Word). Isi 4 tahap: Info Utama, Perencanaan (status dan PIC), Pelaksanaan (materi dan notulen), Hasil & Luaran.'],['Siapkan surat','Pada Info Utama, unggah surat undangan. Klik nomor undangan untuk melihat dan mencetaknya. Gunakan Konsep undangan atau Konsep ST; bagian kuning perlu disesuaikan sebelum diunggah ke Nadine.'],['Bagikan penugasan','Ikon WhatsApp pada daftar menyalin teks penugasan (hari, waktu, agenda, lokasi, share screen, notula, dokumentasi, konsumsi) lalu membuka WhatsApp.'],['Generate notula','Setelah notulen dan hasil terisi, klik Generate Notula (di tahap Hasil & Luaran atau ikon notula pada daftar) lalu unduh Word.'],['Analisis di tab Matriks','Bandingkan kategori aktivitas dengan Unit Pengusul atau Program Terkait; pilih Tahun/TW, klik angka untuk melihat aktivitas sumbernya, ⇄ Tukar sumbu, dan ⇩ Excel.']],
+ tab:[['Ringkasan','Kartu angka dan grafik tren/status aktivitas.'],['Daftar Aktivitas','Tabel kegiatan: tambah, ubah, WhatsApp penugasan, laporan, notula.'],['Kalender','Kalender bulanan beserta hari libur.'],['Matriks','Sebaran kategori × unit pengusul/program, dengan insight dan drill-down.']],
  tips:['Rapat 1-on-1 T-Program ikut tampil di sini bila Info Utama › Kegiatan dicentang Tambahkan ke Aktivitas.','Pilih PIC dari daftar Tim PMO/CMO; lengkapi NIP, pangkat, dan jabatan lewat Kelola PIC agar tabel Surat Tugas terisi.','Judul (H) pada editor notulen menjadi butir bernomor di notula, daftar di bawahnya menjadi a, b, c.']},
 
 'pmo-penutupan':{
@@ -10403,6 +10407,29 @@ const hpGo=(g,l,sub)=>g&&HP_OK(g)?`<button class="hp-go" data-hgo="${esc(g)}"${s
 
 GUIDE['cmo-pasca']={tujuan:'Mengisi hasil evaluasi pascaimplementasi perubahan paling cepat satu bulan setelah sistem baru diimplementasikan.',alur:[['Pilih modul','Pilih modul pada filter CMO.'],['Catat waktu implementasi dan evaluasi','Masukkan tanggal go-live dan pelaksanaan evaluasi.'],['Nilai hasil perubahan','Isi keberlanjutan adopsi, perilaku kerja baru, isu/resistensi, serta kesiapan kanal resmi.'],['Simpan dan tindak lanjuti','Dokumentasikan rekomendasi dan tandai Selesai setelah penilaian tuntas.'],['Lanjut ke Penutupan CM','Gunakan hasil evaluasi sebagai dasar serah terima pendampingan ke operasional.','cmo-closing','Ke Penutupan']]};
 GUIDE['pmo-pascaproyek']={tujuan:'Mencatat hasil evaluasi manfaat proyek paling cepat tiga bulan setelah penutupan proyek.',alur:[['Tambah Hasil Evaluasi','Pilih program dan tuliskan proyek atau modul yang dievaluasi.'],['Isi tanggal','Catat tanggal penutupan proyek dan pelaksanaan evaluasi.'],['Nilai manfaat','Lengkapi efisiensi biaya, proses bisnis, dan pemenuhan layanan.'],['Simpan hasil','Catat hasil, rekomendasi tindak lanjut, dan status evaluasi.']]};
+GUIDE['tim']={tujuan:'Mengelola Tim PMO & CMO Kemenkeu (Pusmantap): siapa bertugas apa, kehadiran, cuti, penempatan tim, profil, dan pendampingan unit.',
+ alur:[['Highlight','Mulai di sini setiap hari: Daftar Agenda (peserta dikelompokkan per tim), Ringkasan kehadiran dan kartu Tim hari ini, Di luar kantor, Kalender cuti, Perlu perhatian, Ketersediaan minggu ini. Geser tanggal dengan ‹ ›; atur kotak lewat ikon tata letak.'],
+  ['Agenda','Agenda otomatis dari Daftar Aktivitas ditambah agenda Ka. Pusmantap (diisi Sekretaris). Tambah lewat + Aktivitas atau + Agenda Pimpinan.','aktivitas','Buka Aktivitas'],
+  ['Kehadiran','Jadwal WFH (default Jumat) dan perubahan WFO/WFH per orang per hari; klik sel untuk mengubah.'],
+  ['Cuti','Rencana cuti dan batas maksimal % yang cuti per hari (seluruh Pusmantap dan/atau per tim, khusus musim libur).'],
+  ['Onboarding','Penempatan pegawai ke tim (tim utama + tim tambahan), peran Supervisor/Ketua/Anggota, jabatan struktural, dan pegawai sementara.'],
+  ['Profil','Profil Individu, Pegawai sementara (masa tugas), dan Pendampingan Unit (PMO/CMO Unit & pemilik probis per unit).']],
+ tab:[['Highlight','Ringkasan harian yang bisa diatur per pengguna.'],['Agenda','Daftar agenda per tanggal.'],['Kehadiran','WFO/WFH dan dinas luar.'],['Cuti','Kalender dan aturan batas cuti.'],['Onboarding','Penempatan tim.'],['Profil','Profil, pegawai sementara, pendampingan unit.']],
+ tips:['Klik kartu tim di Ringkasan kehadiran untuk menyaring Daftar Agenda per tim.','Dinas luar (ST) terisi otomatis dari aktivitas yang memiliki surat tugas.','Pegawai yang belum punya tim tampil di Perlu perhatian dan pada label "Lainnya" di agenda.']};
+GUIDE['cmo-jaringan']={tujuan:'Mengaktifkan Jaringan Perubahan (T-Agent) per modul: dasar penetapan (KEP), kebutuhan, penetapan, dan pelatihan T-Agent per unit.',
+ alur:[['Unggah kertas kerja jejaring','Opsional: tempel tautan SharePoint/OneDrive atau unggah berkas Excel analisis kebutuhan jaringan.'],
+  ['Isi aktivasi jaringan','Nomor dan tanggal KEP, status aktivasi, serta dokumen KEP.'],
+  ['Catat T-Agent per unit','Klik + Unit, isi kebutuhan, jumlah ditetapkan, dan terlatih. Kartu Kebutuhan/Ditetapkan/Terlatih terhitung otomatis.']],
+ tips:['Gunakan hasil analisis kebutuhan jaringan dari tab Perencanaan sebagai acuan jumlah T-Agent.','Jaringan yang sudah aktif menjadi saluran utama komunikasi dan pelatihan di tab Pelaksanaan.']};
+GUIDE['cmo-cra']={tujuan:'Change Readiness Assessment (CRA): menilai kesiapan unit/pengguna sebelum implementasi dan menyusun rencana aksi. CRA bersifat opsional, dijalankan bila unit memintanya.',
+ alur:[['Siapkan instrumen','Pilih atau sesuaikan bank pertanyaan CRA (Included/Excluded) untuk modul.'],['Kumpulkan respons','Bagikan kuesioner dan catat hasilnya.'],['Analisis','Lihat skor kesiapan per dimensi dan unit.'],['Rencana aksi','Susun tindak lanjut untuk dimensi yang lemah dan pantau di Pelaksanaan/Monev.','modul-t-pelaksanaan']],
+ tips:['Tandai pertanyaan yang tidak relevan sebagai Excluded agar skor tidak terdistorsi.']};
+GUIDE['cmo-pelaksanaan']={tujuan:'Memantau status implementasi rencana komunikasi dan pelatihan yang disusun di tab Perencanaan.',
+ alur:[['Lihat status','Kartu menunjukkan jumlah kegiatan Belum dijadwalkan, Terjadwal, Disiapkan, Berjalan, dan Terlaksana.'],['Perbarui status','Klik baris kegiatan untuk memperbarui tanggal, status, dan bukti pelaksanaan.'],['Kegiatan baru?','Tambahkan dulu di tab Perencanaan (rencana komunikasi/pelatihan) agar muncul di sini.']],
+ tips:['Kegiatan yang tercatat di Aktivitas dengan modul yang sama dapat dipakai sebagai bukti pelaksanaan.']};
+GUIDE['pmo-dokplan']={tujuan:'Membuat kompilasi Dokumen Perencanaan (tujuh substansi Dokumen Proyek) untuk beberapa program sekaligus, lalu mengunduhnya sebagai Word.',
+ alur:[['Pilih program','Centang program yang akan digabungkan (Kosongkan untuk mulai dari awal).'],['Pilih substansi','Centang substansi 1–7: As-is, To-be, Perbandingan, Charter, Kriteria, Manfaat, Linimasa.'],['Periksa pratinjau','Pratinjau Word di kanan langsung mengikuti pilihan.'],['Unduh','Klik ⇩ Unduh DOCX.']],
+ tips:['Kompilasi tidak mengubah Dokumen Proyek sumber; ubah isinya di Dokumen Proyek.']};
 function hpGuideOf(v){
  let g=GUIDE[v];
  if(!g&&/^modul-/.test(v)){const tb=v.split('-t-')[1]||'siklus';g=GUIDE['cmo-'+tb]}
@@ -10841,13 +10868,14 @@ function viewUsers(){const ed=lv('user');
    {k:'aktif',l:'Status',t:'chk',cl:'Aktif',def:true,r:u=>chipSt(u.aktif?'Aktif':'Nonaktif'),x:u=>u.aktif?'Aktif':'Nonaktif'}]})+
  `<div style="display:flex;gap:8px;justify-content:flex-end">${ME.role==='SA'?'<button class="btn dng" data-act="reset">Pulihkan data awal</button>':''}</div>`}
 ACT.reset=()=>FB.on?toast('Tidak tersedia pada mode Firestore.'):modal('Pulihkan data awal?','<p style="margin:0">Seluruh perubahan di peramban ini diganti data awal (WBS Kompilasi + kertas kerja CM). Anda akan keluar.</p>','Pulihkan',()=>{S=seed();numberIds();MODC=null;WIDX=null;save();ME=null;setSess(null);location.hash='';render()},{danger:true,size:'sm'});
-function viewAkses(){const ed=lv('akses').includes('U');
+/* Peran KETUA, KAPUS, SEKPIM memakai hak akses tetap (lihat lv()), tidak punya baris di S.akses: tidak ditampilkan di matriks agar halaman tidak galat. */
+function viewAkses(){const ed=lv('akses').includes('U');const RC=ROLES.filter(r=>S.akses[r.id]),FIX={KETUA:'Tetap: memutuskan CR (Keputusan CR = RU, Change Request = R).',KAPUS:'Tetap: melihat seluruh data, tanpa mengubah.',SEKPIM:'Tetap: agenda Ka. Pusmantap & ketersediaan tim.'};
  return vh('A','adm','Hak Akses Peran','Matriks hak akses per fitur. R = lihat, U = ubah (untuk keputusan CR dan validasi: menyetujui), C = tambah, D = hapus/arsip. Cakupan menentukan data mana yang boleh diubah.')+
- `<div class="card"><div class="ch"><h3>Matriks Hak Akses</h3><span class="r s">${ed?'Ubah langsung di sel; tersimpan otomatis':'Hanya Superadmin yang dapat mengubah'}</span></div><div class="tscroll"><table class="mx"><thead><tr><th>Fitur</th>${ROLES.map(r=>`<th style="white-space:normal;min-width:110px">${r.nama}</th>`).join('')}</tr></thead><tbody>
- <tr><td><b>Cakupan data</b><span class="sm">Semua · Unit (UIC Utama) · Modul ditugaskan</span></td>${ROLES.map(r=>`<td><select aria-label="Cakupan ${r.nama}" data-on="scope" data-r="${r.id}" ${ed&&r.id!=='SA'?'':'disabled'}>${opts(SCOPES,S.akses[r.id].scope)}</select></td>`).join('')}</tr>
- ${FEAT.map(([k,l])=>`<tr><td>${l}</td>${ROLES.map(r=>{const v=S.akses[r.id].f[k]||'-';return `<td><select aria-label="${l} ${r.nama}" data-on="akses" data-r="${r.id}" data-f="${k}" ${ed&&r.id!=='SA'?'':'disabled'} style="color:${v==='-'?'var(--ink-4)':v==='R'?'var(--info)':'var(--ok)'}">${opts(LEVELS,v)}</select></td>`}).join('')}</tr>`).join('')}</tbody></table></div>
+ `<div class="card"><div class="ch"><h3>Matriks Hak Akses</h3><span class="r s">${ed?'Ubah langsung di sel; tersimpan otomatis':'Hanya Superadmin yang dapat mengubah'}</span></div><div class="tscroll"><table class="mx"><thead><tr><th>Fitur</th>${RC.map(r=>`<th style="white-space:normal;min-width:110px">${r.nama}</th>`).join('')}</tr></thead><tbody>
+ <tr><td><b>Cakupan data</b><span class="sm">Semua · Unit (UIC Utama) · Modul ditugaskan</span></td>${RC.map(r=>`<td><select aria-label="Cakupan ${r.nama}" data-on="scope" data-r="${r.id}" ${ed&&r.id!=='SA'?'':'disabled'}>${opts(SCOPES,S.akses[r.id].scope)}</select></td>`).join('')}</tr>
+ ${FEAT.map(([k,l])=>`<tr><td>${l}</td>${RC.map(r=>{const v=S.akses[r.id].f[k]||'-';return `<td><select aria-label="${l} ${r.nama}" data-on="akses" data-r="${r.id}" data-f="${k}" ${ed&&r.id!=='SA'?'':'disabled'} style="color:${v==='-'?'var(--ink-4)':v==='R'?'var(--info)':'var(--ok)'}">${opts(LEVELS,v)}</select></td>`}).join('')}</tr>`).join('')}</tbody></table></div>
  <div class="tfoot"><span>Aturan: membaca tidak dibatasi cakupan (ADP dapat dibaca utuh oleh semua peran CMO); ubah/tambah/hapus mengikuti cakupan. CMO Kementerian (Pusmantap) bersifat pendampingan: membaca, memberi catatan reviu, dan mengusulkan item.</span></div></div>
- <div class="card"><div class="ch"><h3>Deskripsi Peran</h3></div><div class="tscroll"><table><thead><tr><th>Peran</th><th>Tugas</th><th>Cakupan</th><th class="num">Pengguna</th></tr></thead><tbody>${ROLES.map(r=>`<tr><td><b>${r.nama}</b></td><td class="w">${r.desk}</td><td>${S.akses[r.id].scope}<span class="sm">${SCOPE_DESK[S.akses[r.id].scope]}</span></td><td class="num">${S.users.filter(u=>u.role===r.id).length}</td></tr>`).join('')}</tbody></table></div></div>`}
+ <div class="card"><div class="ch"><h3>Deskripsi Peran</h3></div><div class="tscroll"><table><thead><tr><th>Peran</th><th>Tugas</th><th>Cakupan</th><th class="num">Pengguna</th></tr></thead><tbody>${ROLES.map(r=>`<tr><td><b>${r.nama}</b></td><td class="w">${r.desk}</td><td>${S.akses[r.id]?`${S.akses[r.id].scope}<span class="sm">${SCOPE_DESK[S.akses[r.id].scope]}</span>`:`<span class="sm">${FIX[r.id]||'Hak akses tetap (diatur sistem)'}</span>`}</td><td class="num">${S.users.filter(u=>u.role===r.id).length}</td></tr>`).join('')}</tbody></table></div></div>`}
 function viewSinkron(){const B=buildMods();const ed=lv('sinkron').includes('U');const all=S.wbs.filter(w=>!w.arsip&&cmType(w));const by=s=>all.filter(w=>cmType(w)===s).length;
  return vh('S','adm','Aturan Sinkron CM & Master Data','Menentukan item WBS yang masuk CMO dan pemetaan tahapnya. CMO tidak mengubah struktur WBS; penambahan item lewat usulan yang diputuskan PMO.')+
  `<div class="g2"><div class="card"><div class="ch"><h3>Kriteria modul CM</h3></div><div class="pad" style="display:flex;flex-direction:column;gap:8px;font-size:12.5px">
@@ -11275,16 +11303,18 @@ var PM=[
 var menuPM=[
 ['Project Selection','Portofolio, program, risiko, manfaat, stakeholder, dan seleksi proyek','project-selection'],['Overview','Capaian dan ringkasan kinerja','pmo-siklus'],['Detail Program','Proyek, progres, risiko, stakeholder, isu, dan keputusan','pmo-program'],
 ['Dokumen Proyek','As-Is, To-Be, Charter, persetujuan','pmo-perencanaan'],['Buat Dokumen Perencanaan','Kompilasi 7 dokumen proyek, preview dan ekspor','pmo-dokplan'],['WBS Perencanaan','Penyusunan aktivitas dan bobot','pmo-wbsplan'],
-['WBS & Progres','Pelaksanaan, target, realisasi','pmo-wbs'],['Bukti Dukung','Unggah dan validasi bukti','pmo-bukti'],['Change Request','Pengendalian perubahan baseline','pmo-cr'],
+['WBS & Progres','Pelaksanaan, target, realisasi, dan unggah bukti dukung','pmo-wbs'],['Bukti Dukung','Antrean validasi bukti oleh PMO Kemenkeu','pmo-bukti'],['Change Request','Pengendalian perubahan baseline','pmo-cr'],
 ['Milestone','Tonggak waktu proyek','pmo-milestone'],['Risiko & Isu','Risiko dan tindak lanjut','pmo-risiko'],['Capaian Triwulanan','Laporan kinerja periodik','pmo-laporan'],
 ['Narasi T-Program','Uraian pelaksanaan per program','pmo-narasi'],['Jadwal 1-on-1','Rencana pertemuan koordinasi','pmo-oneonone'],
-['Penutupan','Kriteria dan dokumen penyelesaian','pmo-penutupan'],['Pascaproyek','Evaluasi manfaat proyek','pmo-pascaproyek'],['Referensi Kode','Kamus data dan standar kode','pmo-referensi']
+['Penutupan','Kriteria dan dokumen penyelesaian','pmo-penutupan'],['Pascaproyek','Evaluasi manfaat proyek','pmo-pascaproyek'],['Referensi Kode','Kamus data dan standar kode','pmo-referensi'],
+['Aktivitas','Kegiatan PMO & CMO: daftar, kalender, ringkasan, dan matriks','aktivitas'],['Tim PMO & CMO','Highlight harian, agenda, kehadiran, cuti, penempatan tim, profil','tim'],
 ];
 var menuCM=[
 ['Analisis Dampak (ADP)','As-Is, To-Be, POSTeR, risiko','cmo-adp'],['Perencanaan','Stakeholder, komunikasi, pelatihan','cmo-rencana'],
 ['Jaringan Perubahan','Peran jaringan dan penugasan','cmo-jaringan'],['CRA','Kesiapan dan rencana aksi','cmo-cra'],
 ['Pelaksanaan','Realisasi komunikasi dan pelatihan','cmo-pelaksanaan'],['Monev','Monitoring indikator dan tindak lanjut','cmo-monev'],
-['Evaluasi Pascaimplementasi','Keberlanjutan adopsi dan kanal resmi','cmo-pasca'],['Penutupan CM','Serah terima dan pengakhiran transisi','cmo-closing']
+['Evaluasi Pascaimplementasi','Keberlanjutan adopsi dan kanal resmi','cmo-pasca'],['Penutupan CM','Serah terima dan pengakhiran transisi','cmo-closing'],
+['Aktivitas','Kegiatan PMO & CMO: daftar, kalender, ringkasan, dan matriks','aktivitas'],['Tim PMO & CMO','Highlight harian, agenda, kehadiran, cuti, penempatan tim, profil','tim'],
 ];
 var termsPM=[
 ['PMO','Project Management Office: fungsi koordinasi dan pengendalian proyek transformasi.'],['UIC','Unit in Charge: penanggung jawab kegiatan atau item pekerjaan.'],
@@ -11391,6 +11421,8 @@ function helpStages(kind){
 }
 /* Peta menu: gunakan tab yang memang tersedia di aplikasi; menu tunggal tidak diberi tab semu. */
 var skDeepTabsPM={
+ 'aktivitas':[['Ringkasan','aktivitas','act:ringkasan'],['Daftar Aktivitas','aktivitas','act:daftar'],['Kalender','aktivitas','act:kalender'],['Matriks','aktivitas','act:matriks']],
+ 'tim':[['Highlight','tim','t2:highlight'],['Agenda','tim','t2:agenda'],['Kehadiran','tim','t2:hadir'],['Cuti','tim','t2:cuti'],['Onboarding','tim','t2:tempat'],['Profil','tim','t2:profil']],
  'pmo-siklus':[
   ['Per Triwulan','pmo-siklus','overview:tw'],
   ['K-Wide','pmo-siklus','overview:kwide'],
@@ -11427,6 +11459,8 @@ var skDeepTabsPM={
   ['Pengajuan & Telaah','pmo-penutupan','closure:aju']]
 };
 var skDeepTabsCM={
+ 'aktivitas':[['Ringkasan','aktivitas','act:ringkasan'],['Daftar Aktivitas','aktivitas','act:daftar'],['Kalender','aktivitas','act:kalender'],['Matriks','aktivitas','act:matriks']],
+ 'tim':[['Highlight','tim','t2:highlight'],['Agenda','tim','t2:agenda'],['Kehadiran','tim','t2:hadir'],['Cuti','tim','t2:cuti'],['Onboarding','tim','t2:tempat'],['Profil','tim','t2:profil']],
  'cmo-adp':[
   ['Daftar Dampak','cmo-adp','adp:dampak'],
   ['Peta POSTeR & Risiko','cmo-adp','adp:poster'],
@@ -11460,13 +11494,15 @@ function helpMenu(kind){
   ['Pelaksanaan Proyek','Progres pekerjaan, bukti dan pengendalian perubahan','⚙',['pmo-wbs','pmo-bukti','pmo-cr','pmo-narasi']],
   ['Pemantauan & Pengendalian','Milestone, risiko, pelaporan dan koordinasi','◷',['pmo-milestone','pmo-risiko','pmo-laporan','pmo-oneonone']],
   ['Penutupan & Evaluasi','Kriteria penyelesaian dan pengukuran manfaat','✓',['pmo-penutupan','pmo-pascaproyek']],
-  ['Referensi','Standar kode dan referensi pengelolaan program','⌘',['pmo-referensi']]
+  ['Referensi','Standar kode dan referensi pengelolaan program','⌘',['pmo-referensi']],
+  ['Kerja Tim PMO & CMO','Kegiatan, agenda, kehadiran, dan penempatan tim','◉',['aktivitas','tim']]
  ]:[
   ['01 · Perencanaan Perubahan','Analisis dampak, pemangku kepentingan dan kesiapan','◎',['cmo-adp','cmo-rencana','cmo-jaringan','cmo-cra']],
   ['02 · Pelaksanaan Perubahan','Realisasi intervensi dan penguatan kesiapan','➤',['cmo-pelaksanaan']],
   ['03 · Pemantauan dan Evaluasi','Evaluasi aktivitas, adopsi dan capaian indikator','▤',['cmo-monev']],
   ['04 · Evaluasi Pascaimplementasi','Keberlanjutan adopsi dan kanal operasional','◷',['cmo-pasca']],
-  ['05 · Penutupan Manajemen Perubahan','Serah terima dan alih kepemilikan perubahan','✓',['cmo-closing']]
+  ['05 · Penutupan Manajemen Perubahan','Serah terima dan alih kepemilikan perubahan','✓',['cmo-closing']],
+  ['Kerja Tim PMO & CMO','Kegiatan, agenda, kehadiran, dan penempatan tim','◉',['aktivitas','tim']]
  ];
  var byDest={};items.forEach(function(x){byDest[x[2]]=x});
  var totalTabs=Object.keys(deep).reduce(function(n,k){return n+deep[k].length},0);
@@ -11682,6 +11718,8 @@ function pmWBS(){return intro('Work Breakdown Structure','Dari Strategi ke Paket
  'PROGRAM TRANSFORMASI · Tujuan dan manfaat','PROYEK / MODUL · Lingkup dan target','TAHAP / WORKSTREAM · Kelompok pekerjaan','ITEM WBS · Aktivitas / deliverable / PIC','PERIODE & BOBOT · Target, realisasi, bukti'
  ].map(function(x,i){return (i?'<div class="sk-treearrow">↓</div>':'')+'<div class="sk-treenode">'+x+'</div>'}).join('')+'</div>'+
  '<div class="sk-sectiontitle">Pengendalian pekerjaan</div>'+cards([['Rencana','Uraikan target, tanggal, bobot, serta dependensi antaritem agar baseline dapat dipantau.'],['Pelaksanaan','Pemilik pekerjaan memutakhirkan progres dan melampirkan bukti; PMO menilai capaian.']])+
+ '<div class="sk-sectiontitle">Alur bukti dukung → capaian</div>'+cards([['1 · Unggah','UIC/PMO Unit mengunggah berkas atau tautan SharePoint di WBS & progres (tombol Unggah), beserta tanggal selesai aktual.'],['2 · Menunggu validasi','Item masuk antrean Bukti Dukung PMO Kemenkeu. Capaian belum dihitung.'],['3 · Valid','PMO Kemenkeu memeriksa daftar periksa (nama berkas, jenis dokumen, periode, pengesahan). Capaian item = 100 dan masuk realisasi.'],['3 · Ditolak','Catatan wajib diisi; capaian kembali 0 sampai UIC mengunggah ulang.']])+
+ '<div class="sk-buttons" style="margin-top:12px">'+jump('Unggah bukti (WBS & progres)','pmo-wbs')+jump('Antrean validasi','pmo-bukti')+'</div>'+
  '<div class="sk-buttons" style="margin-top:12px">'+jump('Susun WBS','pmo-wbsplan')+jump('Progres & Bukti','pmo-wbs')+jump('Laporan Capaian','pmo-laporan')+'</div>';
 }
 function pmCR(){
@@ -11870,7 +11908,11 @@ window.showHelp=function(v,title){
  if(page==='project-selection'&&window.MT_PROJECT_SELECTION)return window.MT_PROJECT_SELECTION.open('help');
  var kind=helpArea(page);
  if(kind==='dashboard')return originalContextGuide('dashboard',title||'Executive Dashboard');
- if(kind==='pmo'||kind==='cmo')return open('help',kind,'menu');
+ /* Tombol ? di judul halaman membuka bantuan halaman itu (Ringkasan, Alur, Tab, Tombol, Contoh isian) bila tersedia;
+    Peta Menu PMO/CMO tetap bisa dibuka dari tombol "Pusat Bantuan (semua menu)" di dalamnya atau ikon 📖 di header. */
+ var tb=page.indexOf('-t-')>0?page.split('-t-')[1]:'';
+ var hasOwn=(typeof GUIDE!=='undefined'&&(GUIDE[page]||(tb&&GUIDE['cmo-'+tb])||(page==='pmo-charter'&&GUIDE['pmo-perencanaan'])))||(typeof helpOf==='function'&&helpOf(page));
+ if((kind==='pmo'||kind==='cmo')&&!hasOwn)return open('help',kind,'menu');
  return originalContextGuide(page,title);
 };
 window.skHelpCheatsheetVersion='20261108-project-selection-bank-v7';
@@ -11947,7 +11989,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script src="mt-profile-export.js?v=20261114-mt02"></script>
 <script src="mt-tim2.js?v=20261115-t77"></script>
 <link rel="stylesheet" href="mt-tim-highlight.css?v=20261115-h4">
-<link rel="stylesheet" href="mt-brand.css?v=20261115-b1">
+<link rel="stylesheet" href="mt-brand.css?v=20261115-b2">
 <link rel="stylesheet" href="mt-act-matriks.css?v=20261115-m2">
 <link rel="stylesheet" href="mt-wbs-compact.css?v=20261115-w3">
 <script src="mt-foto-frame.js?v=20261114-ff6"></script>
