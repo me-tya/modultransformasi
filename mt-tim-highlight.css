@@ -108,3 +108,13 @@
 }
 @media (prefers-reduced-motion:reduce){#t2 .t-ag.t-now .t-tln i,#t2 .t-chip.t-live b{animation:none}}
 @media(max-width:760px){#t2 .t-ag .t-tm,#t2 .t-ag .t-tm small{font-size:12.5px}}
+
+/* ---------- tab utama & sub-tab: gaya standar MT ---------- */
+#t2 .t-head:empty{display:none}
+#t2>.t-ptabs{margin:0 0 12px}
+#t2>.t-ptabs a .t-i{width:16px;height:16px}
+#t2 .t-card>.t-hday:first-child,#t2 .t-card>.t-editbar:first-child{margin-top:16px}
+#t2 .t-pvw>.t-subt{flex:1 1 auto;min-width:0;margin:0!important}
+#t2 .t-subt>button .t-i{width:15px;height:15px}
+#t2 .t-pvw{flex-wrap:nowrap!important;align-items:flex-end!important;margin:14px 16px 0}
+#t2 .t-pvw>.t-btn{flex:none;margin-bottom:8px}

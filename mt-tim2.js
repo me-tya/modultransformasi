@@ -178,19 +178,22 @@ const ST={v:'highlight',q:'',pg:{},dr:null,md:null,pop:'',cpop:'',agF:'ALL',agD:
 
 /* ---------- kerangka ---------- */
 const SEGS=[['highlight','spark','Highlight'],'|',['agenda','cal','Agenda'],['hadir','bld','Kehadiran'],['cuti','sun','Cuti'],'|',['tempat','kanban','Onboarding'],['profil','idc','Profil']];
-const seg=()=>'<div class="t-seg t-tabs2" role="tablist" aria-label="Tim Pusmantap">'+SEGS.map(x=>x==='|'?'<span class="t-gsep"></span>':'<button type="button" role="tab" aria-selected="'+(ST.v===x[0])+'" data-tv="'+x[0]+'" class="'+(ST.v===x[0]?'t-on':'')+'">'+ic(x[1],'s')+x[2]+'</button>').join('')+'</div>';
+/* Menu tab utama memakai gaya standar MT (.ptabs: kartu putih, tab aktif navy) dan diletakkan di atas kartu, sama seperti menu Aktivitas.
+   seg() dibiarkan kosong agar tampilan lama yang memanggilnya tidak menggandakan bar tab. */
+const navTabs=()=>'<nav class="ptabs act-tabs t-ptabs" aria-label="Tab Tim PMO &amp; CMO">'+SEGS.filter(x=>x!=='|').map(x=>'<a href="#tim" data-tv="'+x[0]+'" class="'+(ST.v===x[0]?'on':'')+'"'+(ST.v===x[0]?' aria-current="page"':'')+'>'+ic(x[1],'s')+x[2]+'</a>').join('')+'</nav>';
+const seg=()=>'';
 function page(){setTimeout(placePop,0);ST.v=S.ui.t2v||'highlight';if(ST.v==='sementara'){ST.v='profil';ST.pv='tmp'}if(ST.v==='unit'){ST.v='profil';ST.pv='unit'}if(!ST.pv)ST.pv=S.ui.t2pv||'orang';if(!ST.calY){const t=today();ST.calY=+t.slice(0,4);ST.calM=+t.slice(5,7)-1;ST.calSel=t}if(!ST.calView)ST.calView=lsGet('calView','today');
  build();let h='';const g=grp();
  try{if(g==='pusat'){PUB=null;pubSync();
   if(role()==='KAPUS')h+='<div class="t-rob">'+ic('crown')+'Tampilan Ka. Pusmantap: semua data dapat dilihat dan diunduh; perubahan dilakukan PMO/CMO Kemenkeu.</div>';
   if(role()==='SEKPIM')h+='<div class="t-rob">'+ic('cal')+'Tampilan Sekretaris Ka. Pusmantap: dapat menambah dan mengubah agenda pimpinan serta melihat ketersediaan tim.</div>';
-  h+=({highlight:vHighlight,agenda:vAgenda,hadir:vHadir,cuti:vCuti,tempat:vTempat,profil:vProfil,sementara:vSementara,unit:vUnit}[ST.v]||vHighlight)()}
+  h+=navTabs()+({highlight:vHighlight,agenda:vAgenda,hadir:vHadir,cuti:vCuti,tempat:vTempat,profil:vProfil,sementara:vSementara,unit:vUnit}[ST.v]||vHighlight)()}
  else{PUB=pubData();if(PUB){P=pubPeople(PUB);TEAMS=(PUB.teams||[]).map((t,i)=>({id:t.id,r:t.r,c:TEAMC[i%TEAMC.length]}))}
   h+=g==='unit'?(ST.v==='tim'?vUnitTim():vPendamping()):vLain()}}catch(e){console.error(e);h+='<div class="t-card" style="padding:18px">Gagal memuat halaman tim: '+H(e.message)+'</div>'}
  return AKT_HDR()+'<div class="t2" id="t2">'+h+'</div><div class="t2" id="t2-layer">'+(ST.dr?drawer():ST.md?modalT():'')+popLayer()+'</div>'}
 
 /* ================= HIGHLIGHT ================= */
-const WDEF={ringkasan:{t:'Ringkasan kehadiran',d:'Hadir WFO/WFH, dinas luar, cuti, rapat',ic:'chart',sp:12,tab:'hadir'},agenda:{t:'Agenda hari ini',d:'Dari Daftar Aktivitas; filter Ka. Pusmantap / per tim',ic:'cal',sp:6,tab:'agenda'},luar:{t:'Di luar kantor',d:'Surat tugas & cuti hari ini + cadangan',ic:'pin',sp:6,tab:'hadir'},cuti:{t:'Kalender cuti',d:'Batas cuti per hari, semua atau per tim',ic:'sun',sp:6,tab:'cuti'},perhatian:{t:'Perlu perhatian',d:'Pegawai sementara berakhir, tanpa tim, cuti melewati batas',ic:'flag',sp:6,tab:''},minggu:{t:'Ketersediaan minggu ini',d:'WFO/WFH/ST/Cuti per orang; jadwal WFH',ic:'users',sp:12,tab:'hadir'}};
+const WDEF={ringkasan:{t:'Ringkasan kehadiran',d:'Hadir WFO/WFH, dinas luar, cuti, rapat',ic:'chart',sp:12,tab:'hadir'},agenda:{t:'Daftar Agenda',d:'Dari Daftar Aktivitas; filter Ka. Pusmantap / per tim',ic:'cal',sp:6,tab:'agenda'},luar:{t:'Di luar kantor',d:'Surat tugas & cuti hari ini + cadangan',ic:'pin',sp:6,tab:'hadir'},cuti:{t:'Kalender cuti',d:'Batas cuti per hari, semua atau per tim',ic:'sun',sp:6,tab:'cuti'},perhatian:{t:'Perlu perhatian',d:'Pegawai sementara berakhir, tanpa tim, cuti melewati batas',ic:'flag',sp:6,tab:''},minggu:{t:'Ketersediaan minggu ini',d:'WFO/WFH/ST/Cuti per orang; jadwal WFH',ic:'users',sp:12,tab:'hadir'}};
 const SPANS=[4,6,8,12],SPL={4:'⅓',6:'½',8:'⅔',12:'Penuh'};
 const hl=()=>{const v=lsGet('hl',null);return Array.isArray(v)&&v.length?v.filter(k=>WDEF[k]):['agenda']};
 const hlSet=v=>lsSet('hl',v);
@@ -363,7 +366,7 @@ function popup(p,tid){const o=(v,a)=>a.map(x=>'<option '+(x[0]===v?'selected':''
 /* ================= TAB PROFIL (halaman master–detail mt-tim.js) ================= */
 /* Profil: tab Profil Individu · Pegawai sementara · Pendampingan Unit. */
 function vProfil(){const pv=ST.pv||'orang';let inner='';
- const tabs='<div class="t-pvs" role="tablist" aria-label="Tampilan profil">'+[['orang','idc','Profil Individu'],['tmp','hour','Pegawai sementara'],['unit','org','Pendampingan Unit']].map(x=>'<button type="button" role="tab" aria-selected="'+(pv===x[0])+'" data-tpv="'+x[0]+'" class="'+(pv===x[0]?'t-on':'')+'">'+ic(x[1],'s')+x[2]+(x[0]==='tmp'?'<em>'+P.filter(isTmp).length+'</em>':'')+'</button>').join('')+'</div>';
+ const tabs='<div class="subt ctabs t-subt" role="tablist" aria-label="Tampilan profil">'+[['orang','idc','Profil Individu'],['tmp','hour','Pegawai sementara'],['unit','org','Pendampingan Unit']].map(x=>'<button type="button" role="tab" aria-selected="'+(pv===x[0])+'" data-tpv="'+x[0]+'" class="'+(pv===x[0]?'on':'')+'">'+ic(x[1],'s')+x[2]+(x[0]==='tmp'?'<span class="sb">'+P.filter(isTmp).length+'</span>':'')+'</button>').join('')+'</div>';
  if(pv==='unit')inner=vProfilUnit();
  else if(pv==='tmp'){const h=vSementara(),pre='<div class="t-card"><div class="t-head">'+seg()+'</div>';inner=h.startsWith(pre)?h.slice(pre.length).replace(/<\/div>$/,''):h}
  else{try{S.ui.tmView='orang';inner='<div class="t2-old">'+T().page().replace(AKT_HDR(),'').replace(/<div class="tm-vs"[\s\S]*?<\/div>/,'')+'</div>'}catch(e){inner='<p class="t-s" style="padding:18px">Profil belum dapat dimuat.</p>'}}
@@ -577,7 +580,7 @@ function onClick(e){const r=e.target.closest('#t2,#t2-layer');if(!r)return;const
   }catch(err){toastT('Ekspor gagal: '+(err.message||String(err)))}
   return;
  }
- if((el=g('[data-tv]'))){setV(el.dataset.tv);return}
+ if((el=g('[data-tv]'))){if(el.tagName==='A')e.preventDefault();setV(el.dataset.tv);return}
  if((el=g('[data-tstf]'))){ST.stF=el.dataset.tstf;ST.pg.stL=0;rr();return}
  if((el=g('[data-tpv]'))){ST.pv=el.dataset.tpv;S.ui.t2pv=ST.pv;rr();return}
  if((el=g('[data-tpu]'))){ST.pu=el.dataset.tpu;rr();return}
