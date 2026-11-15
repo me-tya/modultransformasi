@@ -47,16 +47,64 @@ const RULES={
  ms:[['y','Tahun'],['t','Milestone'],['g','Kelompok WBS']],
  kp:[['m','Milestone'],['k','Kriteria Penyelesaian (per baris)']],
  mf:[['m','Manfaat'],['asp','Aspek'],['pen','Penerima'],['ind','Indikator'],['mek','Pengukuran'],['base','Baseline'],['tgt','Target'],['wkt','Target Tercapai']],
- rk:[['t','Tindakan'],['s','Mulai (YYYY-MM)'],['e','Selesai (YYYY-MM)'],['u','UIC Utama'],['pd','UIC Pendukung']]
+ rk:[['t','Tindakan'],['s','Mulai'],['e','Selesai'],['u','UIC Utama'],['pd','UIC Pendukung']]
 };
+/* Linimasa (rk): Mulai/Selesai = kolom bulan YYYY-MM yang bisa diketik (hanya angka & pemisah, tanda "-" otomatis)
+   dan tombol kalender untuk memilih bulan. Ketikan 2026-07, 202607, 07/2026, 7-2026 dirapikan menjadi 2026-07.
+   Nilai lama yang tidak berformat YYYY-MM tetap ditampilkan (ditandai kuning) agar tidak hilang saat disimpan. */
+const MONTH_PROP=(shape,k)=>String(shape).split('.').pop()==='rk'&&(k==='s'||k==='e');
+const YM=v=>/^\d{4}-(0[1-9]|1[0-2])$/.test(String(v||'').trim());
+const BLN_S=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],BLN_L=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const ymLabel=v=>YM(v)?BLN_L[+v.slice(5)-1]+' '+v.slice(0,4):'';
+function ymParse(v){v=String(v||'').trim();if(!v)return '';let m;
+ if((m=v.match(/^(\d{4})\s*[-\/.\s]?\s*(\d{1,2})$/)))return +m[2]>=1&&+m[2]<=12?m[1]+'-'+String(+m[2]).padStart(2,'0'):null;
+ if((m=v.match(/^(\d{1,2})\s*[-\/.\s]\s*(\d{4})$/)))return +m[1]>=1&&+m[1]<=12?m[2]+'-'+String(+m[1]).padStart(2,'0'):null;
+ return null}
+const CAL_SVG='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>';
+function monthField(l,k,v,o){const ro=!active||!active.edit,val=String(v||'').trim(),legacy=val&&!YM(val);
+ return '<label class="mt-ym-l"><span>'+E(l)+'</span><span class="mt-ym'+(legacy?' mt-ym-x':'')+(ro?' mt-ym-ro':'')+'"><input type="text" class="mt-doc-month" data-mt-prop="'+k+'" value="'+E(val)+'" placeholder="YYYY-MM" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="'+(legacy?200:7)+'" title="'+E(legacy?'Format lama, ubah ke YYYY-MM (mis. 2026-07)':ymLabel(val)||'Ketik YYYY-MM atau pilih dari kalender')+'" '+(ro?'readonly':'')+'>'+
+  (ro?'':'<button type="button" class="mt-ym-btn" data-mt-ym-open title="Pilih bulan" aria-label="Pilih bulan '+E(l)+'">'+CAL_SVG+'</button>')+'</span></label>'}
+function ymRowCheck(row){if(!row)return;const s=row.querySelector('input.mt-doc-month[data-mt-prop="s"]'),e=row.querySelector('input.mt-doc-month[data-mt-prop="e"]');
+ [s,e].forEach(x=>{if(!x)return;const v=x.value.trim(),bad=v&&!YM(v);x.closest('.mt-ym').classList.toggle('mt-ym-bad',!!bad&&!x.closest('.mt-ym').classList.contains('mt-ym-x'));x.title=bad?'Format YYYY-MM, mis. 2026-07':ymLabel(v)||'Ketik YYYY-MM atau pilih dari kalender'});
+ if(s&&e&&YM(s.value)&&YM(e.value)&&e.value<s.value){e.closest('.mt-ym').classList.add('mt-ym-bad');e.title='Selesai tidak boleh sebelum Mulai ('+ymLabel(s.value)+')'}}
+/* Popover kalender bulan (satu untuk semua kolom). */
+let YMP=null;
+function ymClose(){if(YMP){YMP.el.remove();YMP=null}}
+function ymOpen(input){ymClose();const row=input.closest('[data-mt-array-row]'),isE=input.dataset.mtProp==='e',sv=row&&row.querySelector('input.mt-doc-month[data-mt-prop="s"]')?.value,min=isE&&YM(sv)?sv:'';
+ const cur=YM(input.value)?input.value:'',now=new Date(),nowYM=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+ const el=document.createElement('div');el.className='mt-ymp';el.setAttribute('role','dialog');el.setAttribute('aria-label','Pilih bulan');document.body.appendChild(el);
+ YMP={el,input,y:+(cur||min||nowYM).slice(0,4),min,cur,nowYM};ymDraw();
+ const r=input.closest('.mt-ym').getBoundingClientRect(),w=264,h=el.offsetHeight;let top=r.bottom+6,left=Math.min(r.left,innerWidth-w-8);if(top+h>innerHeight-8)top=Math.max(8,r.top-h-6);
+ el.style.top=top+'px';el.style.left=Math.max(8,left)+'px';(el.querySelector('.mt-ymp-m.on')||el.querySelector('.mt-ymp-m:not([disabled])'))?.focus()}
+function ymDraw(){const {el,y,min,cur,nowYM}=YMP;
+ el.innerHTML='<div class="mt-ymp-h"><button type="button" data-mt-ymp-y="-1" aria-label="Tahun sebelumnya">‹</button><b>'+y+'</b><button type="button" data-mt-ymp-y="1" aria-label="Tahun berikutnya">›</button></div><div class="mt-ymp-g">'+
+  BLN_S.map((b,i)=>{const v=y+'-'+String(i+1).padStart(2,'0'),dis=min&&v<min;return '<button type="button" class="mt-ymp-m'+(v===cur?' on':'')+(v===nowYM?' now':'')+'" data-mt-ymp-v="'+v+'"'+(dis?' disabled':'')+' title="'+BLN_L[i]+' '+y+'">'+b+'</button>'}).join('')+
+  '</div><div class="mt-ymp-f"><button type="button" data-mt-ymp-v="'+nowYM+'"'+(min&&nowYM<min?' disabled':'')+'>Bulan ini</button><button type="button" data-mt-ymp-v="">Kosongkan</button></div>'}
+function ymSet(v){const {input}=YMP;input.value=v;input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));ymRowCheck(input.closest('[data-mt-array-row]'));ymClose();input.focus()}
+document.addEventListener('click',ev=>{
+ const op=ev.target.closest?.('[data-mt-ym-open]');if(op){ev.preventDefault();ev.stopPropagation();const inp=op.parentElement.querySelector('input');if(YMP&&YMP.input===inp)ymClose();else ymOpen(inp);return}
+ if(!YMP)return;if(!YMP.el.contains(ev.target)){ymClose();return}
+ ev.stopPropagation();const yb=ev.target.closest('[data-mt-ymp-y]');if(yb){YMP.y+=+yb.dataset.mtYmpY;ymDraw();YMP.el.querySelector('[data-mt-ymp-y="'+yb.dataset.mtYmpY+'"]').focus();return}
+ const mb=ev.target.closest('[data-mt-ymp-v]');if(mb&&!mb.disabled)ymSet(mb.dataset.mtYmpV)},true);
+document.addEventListener('keydown',ev=>{if(!YMP)return;if(ev.key==='Escape'){ev.stopPropagation();const i=YMP.input;ymClose();i.focus();return}
+ const b=ev.target.closest?.('.mt-ymp-m');if(b&&/^Arrow/.test(ev.key)){ev.preventDefault();const L=[...YMP.el.querySelectorAll('.mt-ymp-m')],ix=L.indexOf(b),d={ArrowLeft:-1,ArrowRight:1,ArrowUp:-4,ArrowDown:4}[ev.key];const n=L[ix+d];if(n)n.focus()}},true);
+addEventListener('resize',ymClose);addEventListener('scroll',e=>{if(YMP&&!YMP.el.contains(e.target))ymClose()},true);
+/* Ketik: hanya angka & pemisah; "-" otomatis setelah 4 digit tahun. Keluar kolom: dirapikan ke YYYY-MM. */
+document.addEventListener('input',ev=>{const x=ev.target;if(!x.matches?.('input.mt-doc-month')||x.closest('.mt-ym-x'))return;
+ let v=x.value.replace(/[^\d\-\/. ]/g,'');if(/^\d{5,6}$/.test(v)&&!/^\d{1,2}[\/.\- ]/.test(v))v=v.slice(0,4)+'-'+v.slice(4);
+ if(ev.inputType==='insertText'&&/^\d{4}$/.test(v))v+='-';if(v!==x.value)x.value=v;x.closest('.mt-ym').classList.remove('mt-ym-bad')},true);
+document.addEventListener('focusout',ev=>{const x=ev.target;if(!x.matches?.('input.mt-doc-month')||x.readOnly)return;const w=x.closest('.mt-ym');
+ if(w.classList.contains('mt-ym-x')){const n=ymParse(x.value);if(n){x.value=n;x.maxLength=7;w.classList.remove('mt-ym-x')}}
+ else{const n=ymParse(x.value);if(n)x.value=n;else if(n==='')x.value=''}
+ ymRowCheck(x.closest('[data-mt-array-row]'))},true);
 function rows(title,key,data,shape){
  const list=Array.isArray(data)?data:[],cols=RULES[shape||key]||[];
  return '<section class="mt-doc-rows" data-mt-listgroup="'+key+'"><div class="mt-doc-rowhead"><b>'+E(title)+'</b>'+
  (active&&active.edit?'<button type="button" data-mt-doc="add" data-mt-which="'+key+'">+ Tambah baris</button>':'')+'</div>'+
  (list.length?list:[{}]).map((o,i)=>'<div class="mt-doc-entry" data-mt-array-row>'+
  '<strong>'+String(i+1)+'</strong><div class="mt-doc-entrygrid">'+cols.map(([k,l])=>
- '<label><span>'+E(l)+'</span><textarea rows="2" data-mt-prop="'+k+'" '+(!active||!active.edit?'readonly':'')+'>'+
- E(Array.isArray(o?.[k])?o[k].join('\n'):o?.[k]||'')+'</textarea></label>').join('')+'</div>'+
+ (MONTH_PROP(shape||key,k)?monthField(l,k,o?.[k],o):'<label><span>'+E(l)+'</span><textarea rows="2" data-mt-prop="'+k+'" '+(!active||!active.edit?'readonly':'')+'>'+
+ E(Array.isArray(o?.[k])?o[k].join('\n'):o?.[k]||'')+'</textarea></label>')).join('')+'</div>'+
  (active&&active.edit?'<button class="mt-doc-remove" type="button" data-mt-doc="remove" title="Hapus baris">×</button>':'')+'</div>').join('')+'</section>';
 }
 function form(){
@@ -399,7 +447,7 @@ document.addEventListener('click',ev=>{
  }
 },true);
 document.addEventListener('change',ev=>{
- const file=ev.target.closest('[data-mt-import-file]');
+  const file=ev.target.closest('[data-mt-import-file]');
  if(file&&active?.host?.contains(file)){ev.stopImmediatePropagation();const f=file.files?.[0];file.value='';if(f)importFile(f)}
 },true);
 document.addEventListener('keydown',ev=>{
@@ -528,6 +576,29 @@ const css=document.createElement('style');css.textContent=`
 .mt-doc-field,.mt-doc-entrygrid label{display:flex;flex-direction:column;gap:5px;min-width:0;font-size:11px;font-weight:800;color:#234e77}
 .mt-doc-field textarea,.mt-doc-entrygrid textarea{width:100%;box-sizing:border-box;resize:vertical;border:1px solid #cbdbea;border-radius:8px;padding:9px 11px;min-height:39px;font:12px/1.5 inherit;color:#153250;background:#fff}
 .mt-doc-field textarea[readonly],.mt-doc-entrygrid textarea[readonly]{background:#f8fafc;cursor:default}
+.mt-ym{display:flex;align-items:stretch;height:39px;border:1px solid #cbdbea;border-radius:8px;background:#fff;overflow:hidden;transition:border-color .15s,box-shadow .15s}
+.mt-ym:focus-within{border-color:#E9C25A;box-shadow:0 0 0 2px rgba(253,185,19,.35)}
+.mt-ym input.mt-doc-month{flex:1;min-width:0;border:0;outline:0;background:transparent;padding:0 4px 0 11px;font:700 12.5px/1 inherit;letter-spacing:.02em;color:#153250;font-variant-numeric:tabular-nums}
+.mt-ym input.mt-doc-month::placeholder{color:#A6B3C6;font-weight:600}
+.mt-ym-btn{flex:none;width:38px;border:0;border-left:1px solid #E3EAF3;background:#F6F9FD;color:#17457F;display:grid;place-items:center;cursor:pointer;transition:background .15s,color .15s}
+.mt-ym-btn:hover,.mt-ym-btn:focus-visible{background:#0B1F45;color:#FDB913;outline:0}
+.mt-ym.mt-ym-ro{background:#f8fafc}.mt-ym.mt-ym-ro input{cursor:default}
+.mt-ym.mt-ym-x{border-color:#E9C25A;background:#FFFBEF}
+.mt-ym.mt-ym-bad{border-color:#D33A3A;box-shadow:0 0 0 2px rgba(211,58,58,.15)}
+.mt-ymp{position:fixed;z-index:100000;width:264px;box-sizing:border-box;background:#fff;border:1px solid #DCE3EF;border-radius:14px;box-shadow:0 18px 40px rgba(11,31,69,.22);padding:10px;font-family:inherit}
+.mt-ymp-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.mt-ymp-h b{font-size:14px;color:#0B1F45}
+.mt-ymp-h button{width:30px;height:30px;border-radius:8px;border:1px solid #DCE3EF;background:#fff;color:#17457F;font-size:17px;line-height:1;cursor:pointer}
+.mt-ymp-h button:hover,.mt-ymp-h button:focus-visible{background:#EEF3FB;outline:0}
+.mt-ymp-g{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.mt-ymp-m{height:34px;border-radius:8px;border:1px solid transparent;background:#F6F8FC;color:#153250;font:700 12px inherit;cursor:pointer}
+.mt-ymp-m:hover:not([disabled]),.mt-ymp-m:focus-visible{background:#EAF0FA;border-color:#C9D6EA;outline:0}
+.mt-ymp-m.now{border-color:#E9C25A}
+.mt-ymp-m.on{background:#0B1F45;color:#fff;border-color:#0B1F45}
+.mt-ymp-m[disabled]{opacity:.35;cursor:not-allowed}
+.mt-ymp-f{display:flex;justify-content:space-between;margin-top:9px;padding-top:8px;border-top:1px solid #EEF1F6}
+.mt-ymp-f button{border:0;background:none;color:#17457F;font:700 12px inherit;cursor:pointer;padding:4px 6px;border-radius:6px}
+.mt-ymp-f button:hover:not([disabled]){background:#EEF3FB}.mt-ymp-f button[disabled]{opacity:.4;cursor:not-allowed}
 .mt-doc-rows{border:1px solid #d4e0ed;border-radius:10px;padding:10px 12px;margin-top:10px;background:#f4f7fb}
 .mt-doc-rowhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;color:#123c65;font-size:12px}
 .mt-doc-rowhead button,.mt-doc-copy button{background:#fef6dd;color:#0a3963;border:1px solid #e9bf52;border-radius:7px;padding:7px 10px;cursor:pointer}
