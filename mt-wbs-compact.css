@@ -52,3 +52,15 @@ table:has(th[data-t="wbs"]) tr:has(.bkup) .ract [data-act="bkup"]{display:none}
 #app .pchar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;border:1px solid #E1E7F0;border-radius:10px;padding:8px 12px;margin:0 0 10px}
 #app .pchar>b{color:var(--navy,#0B1F45);font-size:13px}
 @media(max-width:1000px){#app .tbar .tb-tools{margin-left:0;width:100%}#app .tbar .tb-tools>.mt-tabsearch{flex:1 1 auto!important;width:auto!important}}
+
+/* ===== Bukti dukung di WBS & progres ===== */
+.wbs-vchip{display:inline-flex!important;align-items:center;gap:6px;height:36px!important;border-color:#CDD6E5!important;color:#0B1F45!important;font-weight:800!important;white-space:nowrap}
+.wbs-vchip b{min-width:20px;height:20px;padding:0 6px;box-sizing:border-box;border-radius:999px;background:#EEF2F8;color:#3A4763;font-size:11px;display:grid;place-items:center}
+.wbs-vchip.has b{background:#FDB913;color:#0B1F45}
+.wbs-vchip.on{background:#0B1F45!important;border-color:#0B1F45!important;color:#fff!important}
+.bk-acts{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px;align-items:center}
+.bk-acts .bkup,.bk-acts .bkval{height:28px;padding:0 9px;border-radius:8px;font:800 12px inherit;cursor:pointer;white-space:nowrap}
+.bk-acts .bkval{border:1px solid #1F9D63;background:#E6F6EE;color:#157A4C}
+.bk-acts .bkval:hover{background:#1F9D63;color:#fff}
+.bk-acts .bkview{text-decoration:none;font-size:14px}
+.bk-cat{display:block;color:#C62D2D!important;margin-top:3px}
