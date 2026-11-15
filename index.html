@@ -6916,10 +6916,10 @@ function pWbs(){const P=per(),M=P.b,tw=P.tw;const rows=wbsRows();const yearlyRow
   foot:all=>{const x=sumP(all,P);return `<span>Σ target periode ${rp(x.t)} · realisasi ${rp(x.r)} poin</span>`},
   cols:[{k:'k',l:'Kode',req:true,ro:false,r:w=>`<span class="code">${esc(w.k)}</span>`},
    {k:'deliv',l:'Deliverable',frm:false,w:1,sk:w=>deliv(w),r:w=>`<b>${esc(deliv(w))}</b><span class="sm" title="${esc(w.p.join(' › '))}">Lv ${lvOf(w)} · ${esc(short((w.p.length>3?w.p.slice(2,-1):w.p.slice(1,-1)).join(' › ')||w.p[0],90))}</span>`},
-   {k:'u',l:'UIC Utama',sk:w=>uicU(w),r:w=>`${esc(short(uicU(w),36))}${hasPdmp(w)?'<span class="sm">Pendamping CM: Pusmantap</span>':''}`},{k:'d',l:'UIC Pendukung',r:w=>`<span class="sm" style="color:var(--ink-2)" title="${esc(w.d)}">${esc(short(w.d,40)||'—')}</span>`},
+   {k:'u',l:'UIC Utama',sk:w=>uicU(w),r:w=>`${esc(short(uicU(w),36))}${hasPdmp(w)?'<span class="sm">Pendamping CM: Pusmantap</span>':''}${w.d&&w.d!=='0'?`<span class="sm wbs-in-pd" title="${esc(w.d)}">+ ${esc(short(w.d,40))}</span>`:''}`},{k:'d',l:'UIC Pendukung',r:w=>`<span class="sm" style="color:var(--ink-2)" title="${esc(w.d)}">${esc(short(w.d,40)||'—')}</span>`},
    {k:'jadwal',l:'Jadwal',frm:false,sk:w=>w.f,r:w=>`${fmtD(w.s)} – ${fmtD(w.f)}${ganttCell(w)}`},
    {k:'w',l:'Bobot',t:'num',num:1,sk:w=>+w.w||0,r:w=>rp(w.w)},{k:'_tw',l:'TW',frm:false,sk:w=>w.tm||+String(w.f||'').slice(5,7)||99,r:w=>{const t=w.tm?Math.ceil(w.tm/3):twOfDate(w.f);return t?`<span class="chip c-info" title="Triwulan target (bulan ${w.tm?MON[w.tm-1]:'tenggat'})">TW ${t}</span>`:'<span class="s">—</span>'},x:w=>{const t=w.tm?Math.ceil(w.tm/3):twOfDate(w.f);return t?'TW '+t:''}},
-   {k:'_s',l:'Status',frm:false,r:w=>chipSt(stP(w,P)),x:w=>stP(w,P)},{k:'_v',l:'Bukti dukung',frm:false,r:w=>{const b=buktiSt(w);const can=BK_HERE()&&canW('bukti','U',bkUnits(w),w)&&!w.v&&!adpAutoW(w);return `${chipSt(b)}${can&&(b==='Belum diunggah'||b==='Ditolak'||b==='Menunggu validasi')?`<button class="bkup" data-act="msbukti" data-k="${w.k}" title="Unggah atau ganti bukti dukung">⇪ ${b==='Menunggu validasi'?'Ganti':'Unggah'}</button>`:''}`},x:w=>buktiSt(w)},
+   {k:'_s',l:'Status',frm:false,r:w=>{const t=w.tm?Math.ceil(w.tm/3):twOfDate(w.f);return chipSt(stP(w,P))+(t?`<span class="chip c-info wbs-in-tw">TW ${t}</span>`:'')},x:w=>stP(w,P)},{k:'_v',l:'Bukti dukung',frm:false,r:w=>{const b=buktiSt(w);const can=BK_HERE()&&canW('bukti','U',bkUnits(w),w)&&!w.v&&!adpAutoW(w);return `${chipSt(b)}${can&&(b==='Belum diunggah'||b==='Ditolak'||b==='Menunggu validasi')?`<button class="bkup" data-act="msbukti" data-k="${w.k}" title="Unggah atau ganti bukti dukung">⇪ ${b==='Menunggu validasi'?'Ganti':'Unggah'}</button>`:''}`},x:w=>buktiSt(w)},
    {t:'sec',l:'Struktur & jadwal'},{k:'prog',l:'Program',t:'sel',o:()=>S.programs.map(p=>[p.akr,p.kode+' · '+p.nama]),tbl:false,def:()=>S.ui.prog||'CORE'},{k:'pth',l:'Jalur Lv 2 – deliverable (pisahkan dengan " > ")',t:'ta',tbl:false,req:true,hint:'Contoh: Digitalisasi Office Automation > … > Deliverable'},
    {k:'s',l:'Mulai',t:'date',tbl:false},{k:'f',l:'Selesai',t:'date',tbl:false},{k:'j',l:'Jenis dokumen pendukung',tbl:false},{k:'tm',l:'Bulan target (poin masuk target)',t:'sel',o:[[0,'—'],...MON.map((m,i)=>[i+1,m])],tbl:false},
    {k:'ue',l:'Cakupan UE I',t:'multi',o:UNITS,tbl:false},{k:'cm',l:'Jenis item CM',t:'sel',o:[['','Otomatis (aturan sinkron)'],['Bukan','Bukan item CM'],'ADP','Perencanaan','Implementasi','Monev'],tbl:false,hint:'ADP membentuk 1 modul CM'},{k:'v',l:'Status validasi',t:'sel',o:[[0,'Belum'],[1,'Sudah']],tbl:false}],
@@ -11942,6 +11942,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script src="mt-profile-export.js?v=20261114-mt02"></script>
 <script src="mt-tim2.js?v=20261115-t77"></script>
 <link rel="stylesheet" href="mt-tim-highlight.css?v=20261115-h4">
+<link rel="stylesheet" href="mt-wbs-compact.css?v=20261115-w1">
 <script src="mt-foto-frame.js?v=20261114-ff6"></script>
 <script src="project-selection-flow.js?v=20261111-mt14-filter"></script>
 <script src="project-selection-governance.js?v=20261111-mt13-info"></script>
