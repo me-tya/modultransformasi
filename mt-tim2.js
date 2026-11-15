@@ -358,9 +358,9 @@ function vProfil(){const pv=ST.pv||'orang';let inner='';
 /* Per unit: daftar unit (kiri) + kartu kontak unit per peran (kanan). */
 /* Per unit: dua sudut pandang — PMO & CMO Kemenkeu (seperti Dashboard CM) atau Unit Eselon I. */
 function vProfilUnit(){const m=ST.pum||S.ui.t2pum||'pic',tm=ST.put&&TEAMS.some(x=>x.id===ST.put)?ST.put:'';ST.put=tm;
- const sw='<div class="t-lihat" role="radiogroup" aria-label="Lihat dari"><span>Lihat dari</span>'+[['pic','PMO & CMO Kemenkeu'],['unit','PMO & CMO Unit']].map(o=>'<button type="button" role="radio" aria-checked="'+(m===o[0])+'" data-tpum="'+o[0]+'" class="'+(m===o[0]?'t-on':'')+'"><i></i>'+o[1]+'</button>').join('')+'</div>';
- const ts='<label class="t-putim"><span>Tim</span><select data-tput aria-label="Saring per tim"><option value="">Semua tim</option>'+TEAMS.map(x=>'<option value="'+H(x.id)+'"'+(x.id===tm?' selected':'')+'>'+H(x.id)+'</option>').join('')+'</select></label>';
- const q='<label class="t-pubq">'+ic('search','s')+'<input data-tpuq placeholder="'+(m==='pic'?'Cari nama, NIP, atau unit…':'Cari unit atau nama kontak…')+'" aria-label="Cari"></label>';
+ const sw='<div class="t-fg t-fg-pri" role="radiogroup" aria-label="Lihat dari"><span class="t-fa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Lihat dari</span><span class="t-fi t-frad">'+[['pic','PMO & CMO Kemenkeu'],['unit','PMO & CMO Unit']].map(o=>'<label data-tpum="'+o[0]+'"><input type="radio" name="t2-pum" value="'+o[0]+'"'+(m===o[0]?' checked':'')+'>'+o[1]+'</label>').join('')+'</span></div>';
+ const ts='<label class="t-fg"><span class="t-fa">Tim</span><select class="t-fi" data-tput aria-label="Saring per tim"><option value="">Semua tim</option>'+TEAMS.map(x=>'<option value="'+H(x.id)+'"'+(x.id===tm?' selected':'')+'>'+H(x.id)+'</option>').join('')+'</select></label>';
+ const q='<label class="t-fg"><span class="t-fa t-fa-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></span><input class="t-fi" data-tpuq placeholder="'+(m==='pic'?'Cari nama, NIP, atau unit…':'Cari unit atau nama kontak…')+'" aria-label="Cari"></label>';
  const h=(m==='pic'?vProfilPic():vProfilUnitE()).replace(/<div class="t-pul-s">[\s\S]*?<\/div>/,'');
  return '<div class="t-pubar">'+sw+ts+q+'</div>'+h}
 const puTeamUnit=u=>{const t=ST.put;if(!t)return true;try{if(progsAt(u).includes(t))return true}catch(e){}const k=kpCfg();return (k.asg[u]||[]).some(n=>{const p=P.find(x=>x.n===n);return p&&teamsOf(p).includes(t)})};
@@ -1313,7 +1313,7 @@ const css=`
 .upf-p>em{font-style:normal;font-size:10px;font-weight:800;border-radius:5px;padding:1px 6px;flex:none}.upf-p>em.spv{background:#EFEBFB;color:#5B43B5}.upf-p>em.kt{background:#E7F6EE;color:#15805F}
 .upf-ck{position:absolute;right:9px;top:50%;margin-top:-9px;width:18px;height:18px;border-radius:50%;border:1.5px solid #CBD5E3;background:#fff}
 .upf-p.on .upf-ck{background:var(--cc);border-color:var(--cc)}.upf-p.on .upf-ck:after{content:'';position:absolute;left:5px;top:2px;width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
-.t-pubar{display:grid;grid-template-columns:auto minmax(0,.8fr) minmax(0,1.4fr);gap:12px;align-items:center;margin:4px 0 14px}
+.t-pubar{display:grid;grid-template-columns:auto minmax(0,.75fr) minmax(0,1.4fr);gap:12px;align-items:center;margin:4px 0 14px}
 .t-pubar .t-pum-bar{height:50px;padding:4px;border-radius:12px;background:#EDF2F8;border-color:#DCE3EE}.t-pubar .t-pum-bar button{font-size:13.5px;border-radius:9px}
 .t-putim{display:flex;align-items:center;gap:12px;height:50px;padding:0 14px;border:1px solid #DCE3EE;border-radius:12px;background:#fff;min-width:0;cursor:pointer}
 .t-putim span{font-size:13px;font-weight:800;color:#4C5D78}.t-putim select{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:13.5px;font-weight:700;color:#13233F;cursor:pointer;height:100%}
@@ -1331,6 +1331,19 @@ const css=`
 .t-lihat button.t-on{background:#0B2447;color:#fff}.t-lihat button.t-on i{border-color:#FDB913;background:#0B2447}.t-lihat button.t-on i:after{content:'';position:absolute;inset:2px;border-radius:50%;background:#FDB913}
 .t-lihat button:focus-visible{outline:2px solid #0B2447!important;outline-offset:2px}
 @media(max-width:1000px){.t-pubar .t-lihat{grid-column:1/-1}}
+.t-fg{display:flex;align-items:stretch;height:38px;border:1px solid #D6DFEC;border-radius:10px;background:#fff;overflow:hidden;min-width:0;margin:0;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.t-fg:focus-within{border-color:#17457F;box-shadow:0 0 0 3px rgba(23,69,127,.12)}
+.t-fg.t-fg-pri{border-color:#FDB913}.t-fg.t-fg-pri:focus-within{box-shadow:0 0 0 3px rgba(253,185,19,.25)}
+.t-fa{display:flex;align-items:center;gap:7px;padding:0 13px;background:#0B2447;color:#FDB913;font-size:13px;font-weight:800;white-space:nowrap;flex:none}
+.t-fa svg{width:15px;height:15px}.t-fa-ic{padding:0 12px}.t-fa-ic svg{width:16px;height:16px}
+.t-fi{flex:1;min-width:0;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;font:inherit;font-size:13.5px;color:#13233F;height:100%;padding:0 14px;margin:0}
+select.t-fi{font-weight:700;cursor:pointer;padding-right:10px}input.t-fi{font-weight:500;cursor:text}input.t-fi::placeholder{color:#9AA4BA}
+.t-frad{display:flex;align-items:center;gap:22px}
+.t-frad label{display:inline-flex;align-items:center;gap:8px;font-weight:600;color:#3A4763;cursor:pointer;white-space:nowrap;margin:0}
+.t-frad label:has(input:checked){color:#0B2447;font-weight:800}
+.t-frad input{width:16px;height:16px;margin:0;accent-color:#0B2447;cursor:pointer}
+.t2 .t-frad input:focus-visible{outline:2px solid #0B2447!important;outline-offset:2px}
+@media(max-width:1000px){.t-pubar .t-fg-pri{grid-column:1/-1}}
 `;
 const st=document.createElement('style');st.id='mt-t2-css';st.textContent=css;document.head.appendChild(st);
 window.MT_T2={page,pubBuild,mapRes,musimOf:ds=>musimOf(ds),ghGuess:g=>ghGuess(g),checkDay:(ds,c)=>checkDay(ds,c),_ST:ST};
