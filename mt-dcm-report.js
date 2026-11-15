@@ -1360,19 +1360,24 @@ async function cmGenerateSingleActivityDocx(a,opt){
   if(!a){toast(uiText('Activity data was not found.','Data activity tidak ditemukan.'),'error');return false;}
   const prefs=cmRptPrefs();
   if(!opt){cmRptSingleSetup(a);return true;}
-  cmRptPreviewModal(`${uiText('Activity Report','Laporan Kegiatan')} — ${cmReportSafe(a.namaKegiatan).slice(0,80)}`,o=>cmRptBuildSingleModel(a,{lang:o.lang,ai:o.ai,signer:o.signer||cmRptSigner()}),{lang:opt.lang||prefs.lang||'id',ai:!!opt.ai,docType:'LKG'});
+  cmRptPreviewModal(`${uiText('Activity Report','Laporan Kegiatan')} — ${cmReportSafe(a.namaKegiatan).slice(0,80)}`,o=>Promise.resolve(cmRptBuildSingleModel(a,{lang:o.lang,ai:o.ai,signer:o.signer||cmRptSigner()})).then(m=>mtSingleFilter(m,opt.sinc||prefs.sinc)),{lang:opt.lang||prefs.lang||'id',ai:!!opt.ai,docType:'LKG'});
   return true;
 }
+/* MT: pilihan substansi Laporan Kegiatan (centang "Sertakan"), seperti Laporan Monev. Bab yang tidak dicentang
+   dihapus dari model (h1 beserta isinya sampai h1 berikutnya), sehingga pratinjau & Word sama. */
+const MT_SINC=[['summary','Ringkasan kegiatan',['Ringkasan Kegiatan','Activity Summary']],['detail','Detail kegiatan',['Detail Kegiatan','Activity Details']],['result','Hasil & analisis',['Hasil dan Analisis Kegiatan','Results and Analysis']],['issue','Kendala & tindak lanjut',['Identifikasi Kendala','Issue Identification','Tindak Lanjut','Follow-up Actions']],['visual','Grafik & gambaran visual',['Gambaran Visual','Visual Overview']],['docs','Dokumen, notula & checklist EO',['Dokumen dan Notula','Documents and Minutes','Checklist EO / Event Organizer','EO Checklist']],['gallery','Dokumentasi foto',['Dokumentasi Foto','Photo Documentation']],['conclusion','Kesimpulan monev',['Kesimpulan Monev','M&E Conclusion']]];
+function mtSingleFilter(model,inc){if(!model||!Array.isArray(model.blocks)||!inc)return model;const off=new Set();MT_SINC.forEach(([k,,titles])=>{if(inc[k]===false)titles.forEach(t=>off.add(t))});if(!off.size)return model;
+ const out=[];let skip=false;for(const b of model.blocks){if(b&&b.t==='h1')skip=off.has(String(b.text||''));if(!skip)out.push(b)}model.blocks=out;return model}
 function cmRptSingleSetup(a){
   const prefs=cmRptPrefs(),aiOk=cmRptAiAvailable(),host=document.createElement('div');host.className='mtdcm modal-overlay cm-report-modal';
   host.innerHTML=`<div class="modal-box"><div class="modal-head"><div><h2>${uiText('Generate Activity Report','Generate Laporan Kegiatan')}</h2><p>${escapeHtml(cmReportSafe(a.namaKegiatan))} · ${escapeHtml(fmtDate(a.tglMulai))}</p></div><button class="modal-close" data-close>&times;</button></div>
-  <div class="modal-body">${cmRptTteFieldsHtml(cmRptSigner())}
+  <div class="modal-body"><div style="margin-bottom:14px"><b>${uiText('Include','Sertakan')}</b><div class="cm-report-checks">${MT_SINC.map(([k,l])=>`<label><input type="checkbox" data-sinc="${k}" ${(prefs.sinc||{})[k]===false?'':'checked'}> ${escapeHtml(l)}</label>`).join('')}</div></div>${cmRptTteFieldsHtml(cmRptSigner())}
   <label class="cm-rpt2-ai ${aiOk?'':'disabled'}"><input type="checkbox" id="cmRptSAi" ${prefs.ai&&aiOk?'checked':''} ${aiOk?'':'disabled'}><span><b>✦ ${uiText('AI-assisted analysis','Analisis berbasis AI')}</b><small>${aiOk?uiText('Adds AI analysis of achievements, issues, follow-ups and recommendations.','Menambahkan analisis AI: capaian, kendala, tindak lanjut, dan rekomendasi.'):uiText('Configure the AI Worker in AI Settings to enable.','Konfigurasikan AI Worker di AI Settings untuk mengaktifkan.')}</small></span></label>
   <div class="cm-rpt2-grid"><label>${uiText('Language','Bahasa')}<select id="cmRptSLang"><option value="id" ${prefs.lang!=='en'?'selected':''}>Bahasa Indonesia</option><option value="en" ${prefs.lang==='en'?'selected':''}>English</option></select></label></div></div>
   <div class="modal-foot"><button class="btn btn-outline" data-close>${uiText('Cancel','Batal')}</button><button class="btn btn-gold" id="cmRptSGo">${uiText('Preview Report','Preview Laporan')}</button></div></div>`;
   document.body.appendChild(host);
   host.querySelectorAll('[data-close]').forEach(x=>x.onclick=()=>host.remove());
-  host.querySelector('#cmRptSGo').onclick=()=>{cmRptTteRead(host);const lang=host.querySelector('#cmRptSLang').value,ai=!!host.querySelector('#cmRptSAi')?.checked;cmRptSavePrefs({...prefs,lang,ai});host.remove();cmGenerateSingleActivityDocx(a,{lang,ai});};
+  host.querySelector('#cmRptSGo').onclick=()=>{const sinc={};host.querySelectorAll('[data-sinc]').forEach(x=>sinc[x.dataset.sinc]=x.checked);if(!Object.values(sinc).some(Boolean)){toast(uiText('Select at least one section.','Pilih sekurangnya satu bagian laporan.'),'info');return}cmRptTteRead(host);const lang=host.querySelector('#cmRptSLang').value,ai=!!host.querySelector('#cmRptSAi')?.checked;cmRptSavePrefs({...prefs,lang,ai,sinc});host.remove();cmGenerateSingleActivityDocx(a,{lang,ai,sinc});};
 }
 function cmInvitationInfo(raw){
   const no=String(raw??'').trim().replace(/\s+/g,' ');
