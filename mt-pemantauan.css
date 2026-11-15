@@ -61,3 +61,14 @@
 .ref-note a{color:var(--ac2);font-weight:800}
 @media(max-width:900px){.ref-acc-h{grid-template-columns:auto minmax(0,1fr) auto}.ref-acc-chips{grid-column:2/4;justify-content:flex-start}}
 @media(prefers-reduced-motion:reduce){.ref-acc-cv,.ov-q.ov-click,.ov-link,.ms-kpis .ms-k{transition:none}}
+
+/* ===== ⓘ tahap penutupan/evaluasi ===== */
+.ph-info{flex:none;width:22px;height:22px;border-radius:50%;border:1.5px solid #17457F;background:#fff;color:#17457F;font:italic 800 12px/1 Georgia,serif;cursor:pointer;display:inline-grid;place-items:center;margin-left:8px;vertical-align:middle;transition:background .15s,color .15s}
+.ph-info:hover,.ph-info:focus-visible{background:#17457F;color:#FDB913;outline:0}
+.vh-heading{display:flex;align-items:center}
+.ph-strip{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;margin:0 0 12px;border-radius:12px;background:#F4F7FC;border:1px solid #DCE5F2;font-size:12.5px;color:#3A4763}
+.ph-strip>b{color:#0B1F45;font-size:13.5px}.ph-strip>.ph-info{margin-left:0}
+.ph-strip>span{flex:1 1 220px;color:#66728C}
+.ph-strip .txcs-entry{margin-left:0}
+.ph-tbl td{vertical-align:top;font-size:12.5px}
+.ph-tbl tr.ph-cur td{background:#FFF8E3}.ph-tbl tr.ph-cur td:first-child{box-shadow:inset 4px 0 0 #FDB913}
