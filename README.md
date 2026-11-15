@@ -14,6 +14,7 @@ Aturan ini berlaku untuk seluruh area Modul Transformasi (acuan pertama: Project
 
 **Kolom Cari** (`MT_TABSEARCH`)
 - Diletakkan di kanan baris tab tampilan, bukan di dalam panel Filter.
+- Proporsi: baris tab mengisi sisa ruang (tab sama lebar), Cari selebar `clamp(260px, 32%, 420px)` agar placeholder terbaca utuh.
 - Hanya mencari teks pada tabel tab tersebut; tab tanpa tabel (pembuat dokumen, formulir) tidak diberi Cari.
 - Di tablet/ponsel turun ke baris sendiri di bawah tab.
 - WBS & progres: Cari tetap di kanan baris subtab (sama dengan tab lain); tombol aksi (+ Item WBS, menu ⋮) di kanan kepala tabel *Daftar Item WBS*. Chip Program tidak dipakai (pilihan Program ada di panel Filter); bila satu program dipilih, tampil strip info charter.
