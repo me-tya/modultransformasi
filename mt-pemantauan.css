@@ -273,3 +273,7 @@
 .one-table td:nth-child(9){min-width:0}.one-table td:nth-child(10){min-width:130px}
 .one-table td:nth-child(7){min-width:120px}.one-table td:nth-child(8){min-width:140px}.one-table td:nth-child(5){min-width:90px}
 .one-table .one-act{width:auto}.one-table .one-act .pm-act2{display:inline-flex;gap:4px}
+/* Jenis undangan di bilah atas draft (selalu terlihat) */
+.od-jb{background:#FFF8E3!important;border-color:#F0D58A!important}
+.od-jb button{font-weight:800}
+.od-jb button.on{background:#0B1F45!important;color:#FDB913!important}
