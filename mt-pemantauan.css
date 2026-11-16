@@ -269,3 +269,7 @@
 .kpr .p-t td.od-ra{white-space:nowrap}
 .kpr .od-slot{border:1px solid #C9D1E0;background:#fff;border-radius:6px;width:24px;height:24px;cursor:pointer;color:#17457F;margin-right:4px;font-size:13px;line-height:1}
 .kpr .od-slot:hover{background:#EEF3FB;border-color:#17457F}
+.one-table th.one-ag,.one-table td.one-ag{min-width:230px}.one-table td:nth-child(3),.one-table th:nth-child(3){width:96px;min-width:0}.one-table td.one-ag,.one-table th.one-ag{width:32%}
+.one-table td:nth-child(9){min-width:0}.one-table td:nth-child(10){min-width:130px}
+.one-table td:nth-child(7){min-width:120px}.one-table td:nth-child(8){min-width:140px}.one-table td:nth-child(5){min-width:90px}
+.one-table .one-act{width:auto}.one-table .one-act .pm-act2{display:inline-flex;gap:4px}
