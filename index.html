@@ -4485,6 +4485,7 @@ ACT.chok=el=>{const c=S.charters.find(x=>x.id===el.dataset.id);if(!c)return;moda
 ACT.chver=el=>{const c=S.charters.find(x=>x.id===el.dataset.id);if(!c)return;const n=JSON.parse(JSON.stringify(c));Object.assign(n,{id:uid(),ver:Math.max(...chList(c.prog).map(x=>x.ver))+1,tahun:S.ui.tahun,st:'Draft',log:[{st:'Draft',by:chBy(),at:TODAY}],doc:{link:''}});S.charters.push(n);log('Versi baru charter',c.prog+' v'+n.ver);save();CHD=null;S.ui.ched=n.id;S.ui.chws=el.dataset.s!=null?Math.max(0,CHW.findIndex(x=>x[0]===el.dataset.s)):0;S.ui.chsv='';chOpen(c.prog,n.id);toast(`Versi v${n.ver} dibuat sebagai Draft. Versi lama tetap berlaku sampai versi baru disahkan.`)};
 ACT.chdel=el=>{const c=S.charters.find(x=>x.id===el.dataset.id);if(!c||c.st!=='Draft')return;modal('Hapus draft charter',`<p style="margin:0">Draft charter <b>${esc(chJudul(c))}</b> v${c.ver} akan dihapus permanen.</p>`,'Hapus',()=>{S.charters=S.charters.filter(x=>x!==c);log('Hapus draft charter',c.prog+' v'+c.ver);if(S.ui.ched===c.id){S.ui.ched='';CHD=null}S.ui.chv='';save();render()},{okCls:'dng'})};
 ACT.pchipgo=el=>{S.ui.prog=el.dataset.v||'';save()};
+ACT.wbsArsip=el=>{S.ui.wbsArsip=!!el.checked;PG.wbs=0;save();render()};
 ACT.wbsprojclear=()=>{S.ui.wbsProject='';save();render()};
 ACT.pgfold=(el,e)=>{if(e&&e.target.closest('a,button,input,label,select')&&e.target!==el)return;const k=el.dataset.v;S.ui.pgCollapse=S.ui.pgCollapse||{};S.ui.pgCollapse[k]=!S.ui.pgCollapse[k];save();render()};
 ACT.chexp=el=>{const c=S.charters.find(x=>x.id===el.dataset.id);if(!c)return;const X=S.ui.chx||(S.ui.chx={kop:1,prog:0,ttd:0});
@@ -7043,7 +7044,7 @@ ACT.oneExport=()=>xlsxSave(actRows().map(x=>({
 
 /* --- WBS --- */
 function wbsRows(){const P=per(),M=P.b;const u=curUnit(),um=umOf();const lvm=S.ui.lvm||'sd',lvn=S.ui.lvn||10;const wth=S.ui.wth||'',wst=S.ui.wst||'';
- return S.wbs.filter(w=>!w.arsip&&(VIEW==='pmo-wbsplan'&&S.ui.planYear!=='year'||yrOf(w)===S.ui.tahun)&&(!S.ui.prog||w.prog===S.ui.prog)&&unitMatch(w,u,um)&&(VIEW==='pmo-wbsplan'&&S.ui.planYear!=='year'||inP(w,P))
+ return S.wbs.filter(w=>(!w.arsip||(VIEW==='pmo-wbs'&&S.ui.wbsArsip))&&(VIEW==='pmo-wbsplan'&&S.ui.planYear!=='year'||yrOf(w)===S.ui.tahun)&&(!S.ui.prog||w.prog===S.ui.prog)&&unitMatch(w,u,um)&&(VIEW==='pmo-wbsplan'&&S.ui.planYear!=='year'||inP(w,P))
   &&(lvm==='sd'?lvOf(w)<=lvn:lvOf(w)===lvn)&&(!wth||tahapMatch(w,wth))&&(!wst||stP(w,P)===wst)&&(VIEW!=='pmo-wbs'||!S.ui.wbk||buktiSt(w)===S.ui.wbk)&&(VIEW!=='pmo-wbs'||!S.ui.wbsProject||String(w.p[2]||w.p[1]||'(tanpa kelompok)')===S.ui.wbsProject))}
 function ganttCell(w){const y=yrOf(w)||S.ui.tahun;const d0=new Date(y,0,1),d1=new Date(y,11,31);const pos=d=>{if(!d)return null;const x=new Date(d+'T00:00:00');return Math.max(0,Math.min(1,(x-d0)/(d1-d0)))};const a=pos(w.s)??pos(w.f),b=pos(w.f)??a;if(a==null)return '';
  const st=stOf(w,12);const col=st==='Selesai'?'var(--ok)':st==='Terlambat'?'var(--bad)':st==='Berjalan'?'var(--blue)':'#9FB2CF';const t=pos(TODAY);return `<div class="gantt" title="${fmtD(w.s)} – ${fmtD(w.f)}"><i style="left:${a*100}%;width:${Math.max(2,(b-a)*100)}%;background:${col}"></i>${String(y)===TODAY.slice(0,4)?`<em style="left:${t*100}%"></em>`:''}</div>`}
@@ -7082,7 +7083,7 @@ ACT.psWbsStart=el=>{
  const fld=document.getElementById('f_pth');if(fld)fld.focus();
 };
 
-function pWbs(){const P=per(),M=P.b,tw=P.tw;const rows=wbsRows();const yearlyRows=VIEW==='pmo-wbsplan'&&S.ui.planYear!=='year'?rows.filter(w=>yrOf(w)===S.ui.tahun):rows;const s0=sumP(yearlyRows,P);const s={t:s0.t,r:s0.r};const stc=st=>yearlyRows.filter(w=>stP(w,P)===st).length;
+function pWbs(){const P=per(),M=P.b,tw=P.tw;const rowsA=wbsRows(),rows=rowsA.filter(w=>!w.arsip);const yearlyRows=VIEW==='pmo-wbsplan'&&S.ui.planYear!=='year'?rows.filter(w=>yrOf(w)===S.ui.tahun):rows;const s0=sumP(yearlyRows,P);const s={t:s0.t,r:s0.r};const stc=st=>yearlyRows.filter(w=>stP(w,P)===st).length;
  const pr=S.ui.prog?progOf(S.ui.prog):null;
  const plan=VIEW==='pmo-wbsplan';
  return vh('W','pmo',plan?'WBS':'WBS & Progres',plan?'Pecah rencana kerja hingga level paling detail, impor dari Excel, lalu jadikan baseline.':'Struktur, jadwal, progres, dan bukti dukung item WBS per program.','')+pmoTabs('wbs')+(plan?`<div class="note i"><span><b>Susun WBS.</b> Impor sheet Kompilasi atau sheet program, atau tambah item manual. Bobot, target bulanan, triwulan, dan cakupan UE I dihitung otomatis dari Start–Finish. Setelah charter disahkan, WBS menjadi baseline dan perubahan berikutnya lewat Change Request. Update progres bulanan dilakukan di <a href="#pmo-wbs">Pelaksanaan › WBS &amp; progres</a>.</span></div>`:'')+
@@ -7094,17 +7095,17 @@ function pWbs(){const P=per(),M=P.b,tw=P.tw;const rows=wbsRows();const yearlyRow
  <div class="kpi"><div class="l">Status per ${fmtD([P.d2,TODAY].sort()[0])}</div><div class="d" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">${chipSt('Selesai')} ${stc('Selesai')} ${chipSt('Berjalan')} ${stc('Berjalan')} ${chipSt('Terlambat')} ${stc('Terlambat')} ${chipSt('Terjadwal')} ${stc('Terjadwal')}</div></div></div>`+
  tbl('wbs',{ent:'item WBS',title:'Daftar Item WBS',add:true,edit:true,del:true,wide:true,noAddBtn:1,imp:false,tpl:()=>ACT.tplwbs(),imp2:f=>{const i=document.createElement('input');i.type='file';i.hidden=true;i.dataset.on='impwbs';document.body.appendChild(i);const dt=new DataTransfer();dt.items.add(f);i.files=dt.files;i.dispatchEvent(new Event('change',{bubbles:true}));i.remove()},canImp:()=>lv('wbs').includes('C'),canAdd:()=>false,ph:'Cari kode, deliverable, induk, UIC…  (tekan /)',
   sx:w=>w.k+' '+w.p.join(' ')+' '+w.u+' '+w.d+' '+w.j,list:()=>S.wbs,rows:()=>wbsRows(),label:w=>w.k,open:w=>wbsDetail(w),sortDef:{k:'k',d:'asc'},
-  tools:`<label class="s" style="display:flex;align-items:center;gap:6px;white-space:nowrap">Urutkan <select class="wsort" data-wsort="wbs" aria-label="Urutkan">${opts([['','Urutan data asli'],['k:asc','Kode naik (CORE-1, CORE-2, …)'],['k:desc','Kode turun'],['deliv:asc','Deliverable A–Z'],['jadwal:asc','Tanggal selesai terdekat'],['jadwal:desc','Tanggal selesai terjauh'],['w:desc','Bobot terbesar'],['_tw:asc','Triwulan TW 1 → TW 4'],['_s:asc','Status'],['u:asc','UIC Utama A–Z']],sortVal('wbs'))}</select></label>`,
-  canEdit:w=>lv('wbs').includes('C')&&canW('wbs','U',uicU(w),w),canDel:w=>lv('wbs').includes('D')&&canW('wbs','D',uicU(w),w),onDel:w=>{w.arsip=true},
-  rowAct:w=>`${BK_HERE()&&!w.v&&canW('bukti','U',bkUnits(w),w)?`<button title="Unggah bukti dukung" data-act="bkup" data-k="${w.k}">⇪</button>`:''}`,
+  tools:`<label class="s" style="display:flex;align-items:center;gap:6px;white-space:nowrap">Urutkan <select class="wsort" data-wsort="wbs" aria-label="Urutkan">${opts([['','Urutan data asli'],['k:asc','Kode naik (CORE-1, CORE-2, …)'],['k:desc','Kode turun'],['deliv:asc','Deliverable A–Z'],['jadwal:asc','Tanggal selesai terdekat'],['jadwal:desc','Tanggal selesai terjauh'],['w:desc','Bobot terbesar'],['_tw:asc','Triwulan TW 1 → TW 4'],['_s:asc','Status'],['u:asc','UIC Utama A–Z']],sortVal('wbs'))}</select></label>${plan?'':(()=>{const n=S.wbs.filter(w=>w.arsip&&yrOf(w)===S.ui.tahun&&(!S.ui.prog||w.prog===S.ui.prog)).length;return `<label class="wbs-arsip-tg" title="Item yang dihapus lewat Change Request diarsipkan, bukan dihapus"><input type="checkbox" data-act="wbsArsip"${S.ui.wbsArsip?' checked':''}> Tampilkan arsip WBS <b>${n}</b></label>`})()}`,
+  canEdit:w=>!w.arsip&&lv('wbs').includes('C')&&canW('wbs','U',uicU(w),w),/* Item WBS ber-baseline (Pelaksanaan) tidak dapat dihapus: penghapusan hanya lewat Change Request 'Hapus/arsip item' dan item diarsipkan, bukan dihapus. */canDel:w=>plan&&!w.arsip&&lv('wbs').includes('D')&&canW('wbs','D',uicU(w),w),onDel:w=>{w.arsip=true},
+  rowAct:w=>w.arsip?'':`${BK_HERE()&&!w.v&&canW('bukti','U',bkUnits(w),w)?`<button title="Unggah bukti dukung" data-act="bkup" data-k="${w.k}">⇪</button>`:''}`,
   exp:rows=>xlsxSave(rows.map(kompRow),`WBS_Kompilasi_${TODAY}.xlsx`,'Kompilasi'),
   foot:all=>{const x=sumP(all,P);return `<span>Σ target periode ${rp(x.t)} · realisasi ${rp(x.r)} poin</span>`},
   cols:[{k:'k',l:'Kode',req:true,ro:false,r:w=>`<span class="code">${esc(w.k)}</span>`},
-   {k:'deliv',l:'Deliverable',frm:false,w:1,sk:w=>deliv(w),r:w=>`<b>${esc(deliv(w))}</b><span class="sm" title="${esc(w.p.join(' › '))}">Lv ${lvOf(w)} · ${esc(short((w.p.length>3?w.p.slice(2,-1):w.p.slice(1,-1)).join(' › ')||w.p[0],90))}</span>`},
+   {k:'deliv',l:'Deliverable',frm:false,w:1,sk:w=>deliv(w),r:w=>`<b>${esc(deliv(w))}</b>${w.arsip?`<span class="chip c-gray wbs-arsip-b" title="Diarsipkan${w.arsipCR?' lewat '+esc(w.arsipCR):''}${w.arsipAt?' · '+fmtD(w.arsipAt):''}">Diarsipkan${w.arsipCR?' · '+esc(w.arsipCR):''}</span>`:''}<span class="sm" title="${esc(w.p.join(' › '))}">Lv ${lvOf(w)} · ${esc(short((w.p.length>3?w.p.slice(2,-1):w.p.slice(1,-1)).join(' › ')||w.p[0],90))}</span>`},
    {k:'u',l:'UIC Utama',sk:w=>uicU(w),r:w=>`${esc(short(uicU(w),36))}${hasPdmp(w)?'<span class="sm">Pendamping CM: Pusmantap</span>':''}${w.d&&w.d!=='0'?`<span class="sm wbs-in-pd" title="${esc(w.d)}">+ ${esc(short(w.d,40))}</span>`:''}`},{k:'d',l:'UIC Pendukung',r:w=>`<span class="sm" style="color:var(--ink-2)" title="${esc(w.d)}">${esc(short(w.d,40)||'—')}</span>`},
    {k:'jadwal',l:'Jadwal',frm:false,sk:w=>w.f,r:w=>`${fmtD(w.s)} – ${fmtD(w.f)}${ganttCell(w)}`},
    {k:'w',l:'Bobot',t:'num',num:1,sk:w=>+w.w||0,r:w=>rp(w.w)},{k:'_tw',l:'TW',frm:false,sk:w=>w.tm||+String(w.f||'').slice(5,7)||99,r:w=>{const t=w.tm?Math.ceil(w.tm/3):twOfDate(w.f);return t?`<span class="chip c-info" title="Triwulan target (bulan ${w.tm?MON[w.tm-1]:'tenggat'})">TW ${t}</span>`:'<span class="s">—</span>'},x:w=>{const t=w.tm?Math.ceil(w.tm/3):twOfDate(w.f);return t?'TW '+t:''}},
-   {k:'_s',l:'Status',frm:false,r:w=>{const t=w.tm?Math.ceil(w.tm/3):twOfDate(w.f);return chipSt(stP(w,P))+(t?`<span class="chip c-info wbs-in-tw">TW ${t}</span>`:'')},x:w=>stP(w,P)},{k:'_v',l:'Bukti dukung',frm:false,r:w=>{const b=buktiSt(w);const can=BK_HERE()&&canW('bukti','U',bkUnits(w),w)&&!w.v&&!adpAutoW(w);const B=S.bukti[w.k]||{},cat=b==='Ditolak'&&B.cat?`<span class="sm bk-cat" title="Catatan penolakan">✕ ${esc(short(B.cat,60))}</span>`:'';
+   {k:'_s',l:'Status',frm:false,r:w=>{if(w.arsip)return '<span class="chip c-gray">Diarsipkan</span>';const t=w.tm?Math.ceil(w.tm/3):twOfDate(w.f);return chipSt(stP(w,P))+(t?`<span class="chip c-info wbs-in-tw">TW ${t}</span>`:'')},x:w=>stP(w,P)},{k:'_v',l:'Bukti dukung',frm:false,r:w=>{if(w.arsip)return chipSt(buktiSt(w));const b=buktiSt(w);const can=BK_HERE()&&canW('bukti','U',bkUnits(w),w)&&!w.v&&!adpAutoW(w);const B=S.bukti[w.k]||{},cat=b==='Ditolak'&&B.cat?`<span class="sm bk-cat" title="Catatan penolakan">✕ ${esc(short(B.cat,60))}</span>`:'';
     /* Unggah: pengguna yang berwenang atas unit item. Validasi (✔): hanya PMO Kemenkeu & CMO Kemenkeu (canValW). */
     return `${chipSt(b)}${cat}<span class="bk-acts">${attHas(bkAtt(B))?`<a class="bkview" href="${esc((bkAtt(B).items[0]||{}).link||B.link||'#')}" target="_blank" rel="noopener" title="Lihat bukti dukung">👁</a>`:''}${can&&(b==='Belum diunggah'||b==='Ditolak'||b==='Menunggu validasi')?`<button class="bkup" data-act="msbukti" data-k="${w.k}" title="Unggah atau ganti bukti dukung">⇪ ${b==='Menunggu validasi'?'Ganti':'Unggah'}</button>`:''}${canValW(w)&&b==='Menunggu validasi'?`<button class="bkval" data-act="bkval" data-k="${w.k}" title="Validasi bukti dukung">✔ Validasi</button>`:''}</span>`},x:w=>buktiSt(w)},
    {t:'sec',l:'Struktur & jadwal'},{k:'prog',l:'Program',t:'sel',o:()=>S.programs.map(p=>[p.akr,p.kode+' · '+p.nama]),tbl:false,def:()=>S.ui.prog||'CORE'},{k:'pth',l:'Jalur Lv 2 – deliverable (pisahkan dengan " > ")',t:'ta',tbl:false,req:true,hint:'Contoh: Digitalisasi Office Automation > … > Deliverable'},
@@ -7388,7 +7389,7 @@ function crApply(c){
  }else if(c.jenis==='Tambah item'){
   const pre=it.prog,n=Math.max(0,...S.wbs.filter(w=>w.prog===pre).map(w=>+w.k.split('-')[1]||0))+1,k=pre+'-'+n;
   S.wbs.push({id:k,k,prog:pre,p:[...it.p.slice(0,-1),c.nilai],s:c.tglM||'',f:c.tglS||'',u:it.u,d:it.d,j:'',w:0,tm:c.tglS?+c.tglS.slice(5,7):0,rm:0,ue:[...it.ue],v:0,cm:c.cmBaru||'Bukan',arsip:false});c.nilai=c.nilai+' → '+k;WIDX=null
- }else if(c.jenis==='Hapus/arsip item')it.arsip=true;
+ }else if(c.jenis==='Hapus/arsip item'){it.arsip=true;it.arsipCR=c.kode||'';it.arsipAt=TODAY}
  return true
 }
 
@@ -12222,7 +12223,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <link rel="stylesheet" href="mt-pemantauan.css?v=20261116-p17">
 <link rel="stylesheet" href="mt-brand.css?v=20261115-b2">
 <link rel="stylesheet" href="mt-act-matriks.css?v=20261115-m2">
-<link rel="stylesheet" href="mt-wbs-compact.css?v=20261116-w4">
+<link rel="stylesheet" href="mt-wbs-compact.css?v=20261116-w5">
 <script src="mt-foto-frame.js?v=20261114-ff6"></script>
 <script src="project-selection-flow.js?v=20261111-mt14-filter"></script>
 <script src="project-selection-governance.js?v=20261111-mt13-info"></script>

@@ -64,3 +64,10 @@ table:has(th[data-t="wbs"]) tr:has(.bkup) .ract [data-act="bkup"]{display:none}
 .bk-acts .bkval:hover{background:#1F9D63;color:#fff}
 .bk-acts .bkview{text-decoration:none;font-size:14px}
 .bk-cat{display:block;color:#C62D2D!important;margin-top:3px}
+/* Arsip WBS (hasil CR Hapus/arsip item) */
+.wbs-arsip-tg{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:#3A4763;white-space:nowrap;cursor:pointer;padding:0 4px}
+.wbs-arsip-tg b{min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:999px;background:#EEF2F8;font-size:10.5px;display:inline-grid;place-items:center}
+.wbs-arsip-tg input{accent-color:#17457F;margin:0}
+tr:has(.wbs-arsip-b)>td{background:#F7F8FB!important;color:#7A869E}
+tr:has(.wbs-arsip-b) b{color:#5F6B85;text-decoration:line-through;text-decoration-color:rgba(95,107,133,.5)}
+.wbs-arsip-b{margin-left:6px;vertical-align:1px}
