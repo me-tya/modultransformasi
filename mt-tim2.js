@@ -84,6 +84,20 @@ const isCMO=p=>teamsOf(p).some(t=>team(t).r==='CMO');
 const isPMO=p=>teamsOf(p).some(t=>team(t).r==='PMO');
 const pn=n=>{n=al(n);return n==='KAPUS'||(KAP&&n===KAP.n)?KAP:(P.find(x=>x.n===n)||EX.find(x=>x.n===n)||{n,nk:String(n).split(' ')[0],t:'',tx:[],u:[],raw:{},ext:1,rl:{},str:[],stp:[]})};
 const offR=r=>{try{return T().offReason(r)}catch(e){return r.catatanStatus||'Tidak aktif'}};
+/* Nama PIC dari Dashboard CM kadang disingkat (K. Jabar Malik, J. Pandu Asa).
+ * Hubungkan ke profil hanya bila kecocokannya unik; tidak mengarang penugasan. */
+function resolveActivityPic(name){
+ const raw=String(name||'').trim(),saved=al(raw),clean=x=>String(x||'').normalize('NFKC').toLocaleLowerCase('id-ID').replace(/[^\\p{L}\\p{N}]+/gu,' ').trim().replace(/\\s+/g,' ');
+ const val=clean(saved),people=P.concat(EX);if(!val)return saved;
+ const exact=people.filter(p=>clean(p.n)===val||clean(p.nk)===val);
+ if(exact.length===1)return exact[0].n;
+ const words=val.split(' '),matches=people.filter(p=>{
+  const full=clean(p.n).split(' ');if(words.length<2||full.length!==words.length)return false;
+  return words.every((w,i)=>w.length===1?full[i].startsWith(w):full[i]===w);
+ });
+ return matches.length===1?matches[0].n:saved;
+}
+
 const rlIn=(p,tm)=>(p.rl&&p.rl[tm])||'Anggota';
 const nk=p=>p.nk||String(p.n||'').split(' ')[0];
 const isTmp=p=>!!p.tmp;
@@ -101,10 +115,10 @@ function build(){const k=kpCfg(),M=actMaster();k.ptx=k.ptx||{};k.str=k.str||{};k
  KAP={n:kapP?kapP.n:(ku?ku.nama:'Ka. Pusmantap'),nk:'Ka. Pusmantap',kap:1,t:'',tx:[],u:[],rl:{},str:['kapus'],stp:[],j:'Kepala Pusat Manajemen Transformasi dan Perubahan',foto:kapP&&kapP.foto||'',hp:kapP&&kapP.hp||'',emailK:kapP&&kapP.emailK||'',prof:!!kapP,raw:kapP||{}};
  STX={};STA=[];AG=[];LOAD={};HIST={};let rows=[];try{rows=actRows()}catch(e){rows=[]}
  const ym=today().slice(0,7);
- rows.forEach(x=>{const a=String(x.tgl||'').slice(0,10);if(!a)return;const b=String(x.tglSelesai||x.tgl).slice(0,10)||a;const pic=ARR(x.pic).map(al);let st={no:'',items:[]};try{st=attNorm(x.st)}catch(e){}
+ rows.forEach(x=>{const a=String(x.tgl||'').slice(0,10);if(!a)return;const b=String(x.tglSelesai||x.tgl).slice(0,10)||a;const pic=ARR(x.pic).map(resolveActivityPic);let st={no:'',items:[]};try{st=attNorm(x.st)}catch(e){}
   if(st.no||st.items.length)STA.push({a,b,j:actNm(x),no:st.no||'',nf:st.items.length,lok:x.lokasi||'',id:x.id,pic:pic.slice()});
   if(st.no||st.items.length)pic.forEach(n=>{(STX[n]=STX[n]||[]).push({a,b,j:actNm(x),no:st.no||'Surat Tugas',lok:x.lokasi||'',id:x.id})});
-  if(a.slice(0,7)===ym||b.slice(0,7)===ym)pic.forEach(n=>LOAD[n]=(LOAD[n]||0)+1);
+  if(a<=ym+'-31'&&b>=ym+'-01')pic.forEach(n=>LOAD[n]=(LOAD[n]||0)+1);
   pic.forEach(n=>{const h=HIST[n]=HIST[n]||{c:0,last:''};h.c++;if(a>h.last)h.last=a})});
  const known=new Set(all.map(p=>p.n.toLowerCase()).concat([String(KAP.n).toLowerCase(),'kapus']));
  GH=Object.keys(HIST).filter(n=>!known.has(n.toLowerCase())).map(n=>({n,c:HIST[n].c,last:HIST[n].last})).sort((a,b)=>b.last.localeCompare(a.last));
@@ -112,7 +126,7 @@ function build(){const k=kpCfg(),M=actMaster();k.ptx=k.ptx||{};k.str=k.str||{};k
 function actNm(x){try{return actName(x)}catch(e){return x.nama||x.tema||'Kegiatan'}}
 function parseJam(j){const m=String(j||'').match(/(\d{1,2})[:.](\d{2})(?:\s*[-–]\s*(\d{1,2})[:.](\d{2}))?/);if(!m)return {s:'',e:''};const s=m[1].padStart(2,'0')+'.'+m[2],e=m[3]?m[3].padStart(2,'0')+'.'+m[4]:'';return {s,e}}
 function agendaOn(ds){const out=[];(window.__t2rows||[]).forEach(x=>{const a=String(x.tgl||'').slice(0,10),b=String(x.tglSelesai||x.tgl||'').slice(0,10)||a;if(!a||ds<a||ds>b)return;const j=parseJam(x.jam);let und=0;try{und=attNorm(x.und).items.length}catch(e){}
-  out.push({id:x.id,s:j.s||'—',e:j.e,j:actNm(x),u:x.unitP||'',mode:[x.mode==='Online'?'Daring':x.mode==='Offline'?'Luring':x.mode,x.lokasi].filter(Boolean).join(' · '),v:/online|daring/i.test(x.mode||''),p:ARR(x.pic).map(al).map(n=>KAP&&n===KAP.n?'KAPUS':n),src:'Daftar Aktivitas',und,st:!!(STX&&0)});const o=out[out.length-1];if(o.p.includes('KAPUS'))o.kap=1});
+  out.push({id:x.id,s:j.s||'—',e:j.e,j:actNm(x),u:x.unitP||'',mode:[x.mode==='Online'?'Daring':x.mode==='Offline'?'Luring':x.mode,x.lokasi].filter(Boolean).join(' · '),v:/online|daring/i.test(x.mode||''),p:ARR(x.pic).map(resolveActivityPic).map(n=>KAP&&n===KAP.n?'KAPUS':n),src:'Daftar Aktivitas',und,st:!!(STX&&0)});const o=out[out.length-1];if(o.p.includes('KAPUS'))o.kap=1});
  agpimAll().filter(a=>a.tgl===ds).forEach(a=>out.push({id:a.id,s:a.mulai||'—',e:a.selesai||'',j:a.nama,u:a.unit||'',mode:[a.mode,a.lokasi].filter(Boolean).join(' · '),v:/daring|online/i.test(a.mode||''),p:['KAPUS'].concat(ARR(a.pend)),src:'Agenda pimpinan',kap:1,pim:1}));
  return out.sort((x,y)=>String(x.s).localeCompare(String(y.s)))}
 const stOn=(n,ds)=>(STX[n]||[]).find(x=>ds>=x.a&&ds<=x.b);
@@ -277,8 +291,21 @@ function wMinggu(){const W=weekDays(ST.wkW),t=today(),srt=ST.wkS||'tim',byTim=(a
  return {sub:fmtS(W[0])+'–'+fmtS(W[4]),sum:'Hari ini '+P.filter(p=>code(p,t)==='o').length+' WFO dari '+P.length,tools:'<span class="t-xs t-muted" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="t-badge t-b-o">WFO</span><span class="t-badge t-b-h">WFH</span><span class="t-badge t-b-s">ST</span><span class="t-badge t-b-c">Cuti</span><span style="display:inline-flex;gap:4px;align-items:center"><i style="width:7px;height:7px;border-radius:50%;background:var(--t-gold);display:inline-block"></i>diubah</span><span style="display:inline-flex;gap:4px;align-items:center" title="Jumlah agenda pegawai hari itu dari Aktivitas; klik sel untuk melihat daftarnya"><span style="background:var(--t-navy,#0B1F45);color:#fff;border-radius:7px;font-size:9.5px;font-weight:700;padding:0 5px;line-height:15px">1</span>= agenda</span></span>',
   pre:'<div class="t-fch"><span class="t-dnav" style="margin-right:6px"><button type="button" class="t-ibtn" data-twk="-1" aria-label="Minggu sebelumnya">'+ic('cl','s')+'</button><button type="button" class="t-ibtn" data-twk="1" aria-label="Minggu berikutnya">'+ic('cr','s')+'</button></span><button type="button" data-twt="ALL" class="'+(ST.wkT==='ALL'?'t-on':'')+'">Semua</button>'+TEAMS.map(x=>'<button type="button" data-twt="'+H(x.id)+'" class="'+(ST.wkT===x.id?'t-on':'')+'">'+H(x.id)+'</button>').join('')+'<button type="button" data-twt="-" class="'+(ST.wkT==='-'?'t-on':'')+'">Tanpa tim</button><label class="t-fsel t-wks">'+ic('sliders','s')+'<span class="t-xs">Urutkan</span><select data-twks aria-label="Urutkan pegawai">'+[['tim','Tim'],['jab','Jabatan'],['nama','Nama']].map(o=>'<option value="'+o[0]+'"'+(srt===o[0]?' selected':'')+'>'+o[1]+'</option>').join('')+'</select></label></div>',
   html:'<div class="t-wkw"><table class="t-wk"><thead><tr><th>Pegawai</th><th>Tim</th>'+W.map(ds=>'<th class="t-dc '+(ds===t?'t-td':'')+'" title="'+H(fmt(ds)+(defC(ds)==='h'?' · jadwal WFH':'')+(ds===t?' · hari ini':''))+'">'+HR[dow(ds)].slice(0,3)+', '+(+ds.slice(8))+' '+BLN[+ds.slice(5,7)-1].slice(0,3)+'</th>').join('')+'<th style="text-align:left">Beban bulan ini</th></tr></thead><tbody>'+
-  rows.slice(pg.from,pg.to).map(p=>{const l=LOAD[p.n]||0;return '<tr><td><button type="button" class="t-who2" data-tp="'+H(p.n)+'">'+av(p,'sm',false)+'<span><b>'+H(nk(p))+'</b>'+(p.k?' <span class="t-chip t-ke">Katim'+(p.t?' '+H(tshort(p.t)):'')+'</span>':'')+(isTmp(p)?' <span class="t-chip t-tmp">'+H(p.jen)+'</span>':'')+'<small>'+H(p.n)+'</small></span></button></td><td>'+(p.t?tchip(p):'<span class="t-chip t-gr">—</span>')+'</td>'+W.map(ds=>{const c=code(p,ds),m=mtg(p,ds),o=ovr(p,ds),k=p.n+'|'+ds,ed=canEdit()&&(c==='o'||c==='h'),ck=ed||(m&&c!=='c'&&c!=='l');return '<td class="'+(ds===t?'t-td':'')+'" style="position:relative"><button type="button" class="t-cell t-'+c+' '+(ck?'t-ed':'')+' '+(o?'t-ovr':'')+'" '+(ck?'data-tcell="'+H(k)+'" aria-haspopup="dialog" aria-expanded="'+(ST.cpop===k)+'"':'tabindex="-1"')+' title="'+H(SL[c]+(o&&o.r?' · '+o.r:'')+(m?' · '+m+' agenda':'')+(ck?' · klik untuk '+(ed?'ubah'+(m?' / lihat agenda':''):'lihat agenda'):''))+'">'+SLs[c]+(m&&c!=='c'&&c!=='l'?'<span class="t-m">'+m+'</span>':'')+'</button>'+(ST.cpop===k?cellPop(p,ds):'')+'</td>'}).join('')+'<td><div class="t-load" title="'+l+' kegiatan bulan ini"><i><b style="width:'+Math.min(100,l/mx*100)+'%;background:'+(l>=mx*0.85?'var(--t-c)':l>=mx*0.55?'#D99A00':'var(--t-o)')+'"></b></i><span class="t-xs">'+l+'</span></div></td></tr>'}).join('')+(rows.length?'':'<tr><td colspan="8" class="t-empty">Tidak ada pegawai</td></tr>')+'</tbody><tfoot><tr><td>Hadir di kantor (semua)</td><td></td>'+office.map((n,i)=>'<td class="'+(W[i]===t?'t-td':'')+'">'+n+'/'+P.length+'</td>').join('')+'<td></td></tr></tfoot></table></div>',
+  rows.slice(pg.from,pg.to).map(p=>{const l=LOAD[p.n]||0;return '<tr><td><button type="button" class="t-who2" data-tp="'+H(p.n)+'">'+av(p,'sm',false)+'<span><b>'+H(nk(p))+'</b>'+(p.k?' <span class="t-chip t-ke">Katim'+(p.t?' '+H(tshort(p.t)):'')+'</span>':'')+(isTmp(p)?' <span class="t-chip t-tmp">'+H(p.jen)+'</span>':'')+'<small>'+H(p.n)+'</small></span></button></td><td>'+(p.t?tchip(p):'<span class="t-chip t-gr">—</span>')+'</td>'+W.map(ds=>{const c=code(p,ds),m=mtg(p,ds),o=ovr(p,ds),k=p.n+'|'+ds,ed=canEdit()&&(c==='o'||c==='h'),ck=ed||(m&&c!=='c'&&c!=='l');return '<td class="'+(ds===t?'t-td':'')+'" style="position:relative"><button type="button" class="t-cell t-'+c+' '+(ck?'t-ed':'')+' '+(o?'t-ovr':'')+'" '+(ck?'data-tcell="'+H(k)+'" aria-haspopup="dialog" aria-expanded="'+(ST.cpop===k)+'"':'tabindex="-1"')+' title="'+H(SL[c]+(o&&o.r?' · '+o.r:'')+(m?' · '+m+' agenda':'')+(ck?' · klik untuk '+(ed?'ubah'+(m?' / lihat agenda':''):'lihat agenda'):''))+'">'+SLs[c]+(m&&c!=='c'&&c!=='l'?'<span class="t-m t-meet-link" data-tmeet="'+H(p.n)+'" data-tmeet-date="'+H(ds)+'" title="Buka '+m+' aktivitas" role="link" tabindex="0">'+m+'</span>':'')+'</button>'+(ST.cpop===k?cellPop(p,ds):'')+'</td>'}).join('')+'<td><div class="t-load" title="'+l+' kegiatan bulan ini"><i><b style="width:'+Math.min(100,l/mx*100)+'%;background:'+(l>=mx*0.85?'var(--t-c)':l>=mx*0.55?'#D99A00':'var(--t-o)')+'"></b></i><span class="t-xs">'+l+'</span></div></td></tr>'}).join('')+(rows.length?'':'<tr><td colspan="8" class="t-empty">Tidak ada pegawai</td></tr>')+'</tbody><tfoot><tr><td>Hadir di kantor (semua)</td><td></td>'+office.map((n,i)=>'<td class="'+(W[i]===t?'t-td':'')+'">'+n+'/'+P.length+'</td>').join('')+'<td></td></tr></tfoot></table></div>',
   pg:pg.html,foot:'<span style="display:flex;gap:5px;align-items:center">'+ic('info','s')+'Jadwal WFH '+C().wfhd.map(d=>HR[d]).join(', ')+'. Klik sel untuk mengubah WFO/WFH. Angka = jumlah agenda hari itu dari Aktivitas; klik sel untuk melihat daftarnya.</span>'}}
+function weeklyActivities(name,day){return agendaOn(day).filter(a=>a.p.includes(name)||name==='KAPUS'&&a.p.includes('KAPUS'))}
+function weeklyOpen(id,pim){
+ if(pim){ST.dr={k:'ag',v:id,ds:today()};rr();return}
+ if(typeof ACT!=='undefined'&&typeof ACT.calOpen==='function')ACT.calOpen({dataset:{id}});
+ else toastT('Detail aktivitas belum tersedia.');
+}
+function weeklyOpenMeet(name,day){
+ const list=weeklyActivities(name,day);if(!list.length)return toastT('Tidak ada aktivitas untuk tanggal ini.');
+ if(list.length===1)return weeklyOpen(list[0].id,list[0].pim);
+ const ov=modal('Aktivitas '+H(nk(pn(name)))+' · '+H(fmt(day)),
+  '<div style="display:grid;gap:8px">'+list.map(a=>'<button type="button" class="t-row" data-meet-open="'+H(a.id)+'" data-pim="'+(a.pim?'1':'0')+'" style="text-align:left"><b style="min-width:56px">'+H(a.s)+'</b><span style="flex:1">'+H(a.j)+'</span>'+ic('cr','s')+'</button>').join('')+'</div>',null,null,{cancel:'Tutup',size:'md'});
+ ov.addEventListener('click',e=>{const b=e.target.closest('[data-meet-open]');if(!b)return;e.preventDefault();e.stopPropagation();ov.remove();weeklyOpen(b.dataset.meetOpen,b.dataset.pim==='1')});
+}
 function cellPop(p,ds){const c=code(p,ds),o=C().ovr[p.n+'|'+ds],ed=canEdit()&&(c==='o'||c==='h'),A=agendaOn(ds).filter(a=>a.p.includes(p.kap?'KAPUS':p.n));
  const opts=ed?[['o','WFO · hadir di kantor','var(--t-o)'],['h','WFH','var(--t-h)']].map(x=>'<button type="button" class="t-opt '+(c===x[0]?'t-on':'')+'" data-tsetc="'+x[0]+'"><i style="background:'+x[2]+'"></i><span style="flex:1;text-align:left">'+x[1]+(defC(ds)===x[0]?' <span class="t-muted t-xs">(jadwal)</span>':'')+'</span>'+(c===x[0]?ic('check','s'):'')+'</button>').join('')+'<input id="t2-ovr-r" placeholder="Alasan, mis. diminta hadir rapat luring" value="'+H(o?o.r:'')+'"><div class="t-xs t-muted" style="margin:6px 4px 0">Cuti lewat Rencana cuti; ST otomatis dari aktivitas.</div>':'';
  /* Daftar agenda pegawai pada hari itu (angka pada sel = jumlahnya). Klik untuk membuka detail. */
@@ -594,7 +621,8 @@ function onClick(e){const r=e.target.closest('#t2,#t2-layer');if(!r)return;const
  if((el=g('[data-tpuf]'))){ST.puf=el.dataset.tpuf;rr();return}
  if((el=g('[data-tpg]'))){ST.pg[el.dataset.tpg]=(ST.pg[el.dataset.tpg]||0)+ +el.dataset.d;rr();return}
  if((el=g('[data-tsetc]'))){const[n,ds]=ST.cpop.split('|'),rz=(document.getElementById('t2-ovr-r')||{}).value||'',c=el.dataset.tsetc;CW(cf=>{const k=n+'|'+ds;if(c===defC(ds)&&!rz)delete cf.ovr[k];else cf.ovr[k]={c,r:rz,by:(ME&&ME.nama)||'',at:new Date().toISOString()};Object.keys(cf.ovr).forEach(x=>{if(x.split('|')[1]<addD(today(),-120))delete cf.ovr[x]})});ST.cpop='';toastT(nk(pn(n))+' · '+fmtS(ds)+': '+SL[c]);rr();return}
- if((el=g('[data-tcell]'))){e.stopPropagation();ST.cpop=ST.cpop===el.dataset.tcell?'':el.dataset.tcell;rr();return}
+ if((el=g('[data-tmeet]'))){e.preventDefault();e.stopPropagation();weeklyOpenMeet(el.dataset.tmeet,el.dataset.tmeetDate);return}
+  if((el=g('[data-tcell]'))){e.stopPropagation();ST.cpop=ST.cpop===el.dataset.tcell?'':el.dataset.tcell;rr();return}
  if((el=g('[data-tpop]'))){ST.pop=ST.pop===el.dataset.tpop?'':el.dataset.tpop;rr();return}
  if((el=g('[data-tprm]'))){const n=el.dataset.tpn,t=el.dataset.tprm;const k=kpCfg();k.ptx=k.ptx||{};k.ptx[n]=(k.ptx[n]||[]).filter(x=>x!==t);if(!k.ptx[n].length)delete k.ptx[n];ST.pop='';save();toastT(n+' dikeluarkan dari '+t);rr();return}
  if((el=g('[data-tghmap]'))){const k=kpCfg();k.alias=k.alias||{};k.alias[el.dataset.tghmap]=el.dataset.to;save();toastT('"'+el.dataset.tghmap+'" kini terhubung ke '+el.dataset.to+'.');try{log('Petakan nama aktivitas',el.dataset.tghmap+' → '+el.dataset.to)}catch(e){}rr();return}
@@ -723,7 +751,8 @@ function onChange(e){const r=e.target.closest('#t2,#t2-layer');if(!r)return;cons
 let qT=0;
 function onInput(e){const t=e.target;if(t.matches&&t.matches('#t2 [data-tpuq]')){const q=t.value.toLowerCase().trim();document.querySelectorAll('#t2 .t-pur[data-s],#t2 .t-pir[data-s]').forEach(b=>b.style.display=!q||b.dataset.s.includes(q)?'':'none');return}if(!t.matches||!t.matches('#t2 [data-tq]'))return;ST.q=t.value;if(ST.v==='tempat'){document.querySelectorAll('#t2 .t-p[data-tn]').forEach(c=>{c.style.display=(c.dataset.tn+' '+nk(pn(c.dataset.tn))).toLowerCase().includes(ST.q.toLowerCase())?'':'none'});return}clearTimeout(qT);qT=setTimeout(()=>{const pos=t.selectionStart;rr();const n=document.querySelector('#t2 [data-tq]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(er){}}},250)}
 function onKey(e){if(e.key==='Escape'&&(ST.dr||ST.md||ST.pop||ST.cpop)&&document.getElementById('t2')){ST.dr=null;ST.md=null;ST.pop='';ST.cpop='';rr()}
- if(e.key==='Enter'&&e.target.matches&&e.target.matches('#t2 [data-tag][role=button]')){e.target.click()}}
+ if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('#t2 [data-tmeet]')){e.preventDefault();e.target.click();return}
+  if(e.key==='Enter'&&e.target.matches&&e.target.matches('#t2 [data-tag][role=button]')){e.target.click()}}
 function onDocClick(e){if((ST.pop||ST.cpop)&&document.getElementById('t2')&&!e.target.closest('.t-pop,.t-cpop,[data-tpop],[data-tcell]')){ST.pop='';ST.cpop='';rr()}}
 /* seret: kotak Highlight (grip), blok tata letak, kartu penempatan (HTML5 DnD) */
 let DR=null;
@@ -1378,6 +1407,8 @@ select.t-fi{font-weight:700;cursor:pointer;padding-right:10px}input.t-fi{font-we
 #t2 .t-pu .t-kph{width:58px!important;height:58px!important;font-size:17px;box-shadow:none!important;border:2.5px solid var(--kc)}
 #t2 .t-pu .t-kph img{inset:0}
 #t2 .t-pu .t-av img[src^="data:"],#t2 .t-pu .t-kph img[src^="data:"]{object-view-box:inset(10%)}
+#t2 .t-meet-link{cursor:pointer;box-shadow:0 0 0 1px transparent;transition:box-shadow .12s,transform .12s}#t2 .t-meet-link:hover{box-shadow:0 0 0 2px #D9AD32;transform:scale(1.08)}#t2 .t-meet-link:focus-visible{outline:2px solid #D9AD32;outline-offset:2px}
+
 /* Kartu kontak PMO/CMO Unit & Pemilik Probis: jabatan, email, WA memakai lebar penuh kartu (di bawah foto) */
 #t2 .t-kc{display:grid!important;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto;column-gap:14px;row-gap:0;align-items:center;align-content:start}
 #t2 .t-kc>.t-kph{grid-row:1}
