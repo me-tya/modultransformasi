@@ -18,11 +18,11 @@ test('Dasar Surat dan Metode: struktur sama dengan referensi DashboardCM, Hal & 
  assert.match(html,/data-slpv/);
  assert.match(html,/x\.undStatus/);
 });
-test('Nomor undangan pada Daftar Aktivitas membuka pratinjau berkas terbaru (unduh dari pratinjau); status free text ditampilkan',()=>{
- assert.match(html,/data-act="oneUndPv"/);
- assert.doesNotMatch(html,/class="inv-[nd]" data-act="oneUnd"/);
+test('Nomor undangan pada Daftar Aktivitas mengunduh berkas terbaru, sementara ikon mata khusus pratinjau',()=>{
+ assert.match(html,/data-act="oneUnd"/);assert.match(html,/data-act="oneUndPv"/);
+ assert.match(html,/function actLetterDownload\(m\)/);assert.match(html,/data-sldl/);
  assert.match(html,/data-pvdl/);
- assert.match(html,/it\[it\.length-1\]/);
+ assert.match(html,/actLetterDownload\(it\[it\.length-1\]\)/);
  assert.match(html,/inv-badge pending/);
  assert.match(html,/into\.undStatus=V\('undStatus'\)/);
 });
@@ -43,4 +43,14 @@ test('Laporan kegiatan, filter dan kompilasi memakai modal dan pratinjau fungsio
  assert.match(css,/\.mt-ar-ttegrid/);
  assert.match(css,/\.mt-ar-gallery/);
  assert.match(css,/\.mt-ar-feedback-btn/);
+});
+
+test('Info Utama: Dasar Surat dan Metode tetap menampilkan deskripsi, semua aksi surat berupa ikon',()=>{
+ assert.match(html,/act-method-section act-method2/);
+ assert.match(html,/act-letter-section/);
+ assert.match(html,/class="sl-b sl-icon" data-slk="link"/);
+ assert.match(html,/class="sl-b sl-icon" data-slk="file"/);
+ assert.match(html,/class="sl-b sl-icon" data-slk="tog"/);
+ assert.match(html,/class="sl-pending-input"|sl-pending-input/);
+ assert.ok(html.includes('d&&/(?:act-letter-section|act-method-section)/.test'));
 });
