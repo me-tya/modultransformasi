@@ -87,7 +87,7 @@ const offR=r=>{try{return T().offReason(r)}catch(e){return r.catatanStatus||'Tid
 /* Nama PIC dari Dashboard CM kadang disingkat (K. Jabar Malik, J. Pandu Asa).
  * Hubungkan ke profil hanya bila kecocokannya unik; tidak mengarang penugasan. */
 function resolveActivityPic(name){
- const raw=String(name||'').trim(),saved=al(raw),clean=x=>String(x||'').normalize('NFKC').toLocaleLowerCase('id-ID').replace(/[^\\p{L}\\p{N}]+/gu,' ').trim().replace(/\\s+/g,' ');
+ const raw=String(name||'').trim(),saved=al(raw),clean=x=>String(x||'').normalize('NFKC').toLocaleLowerCase('id-ID').replace(/[^\p{L}\p{N}]+/gu,' ').trim().replace(/\s+/g,' ');
  const val=clean(saved),people=P.concat(EX);if(!val)return saved;
  const exact=people.filter(p=>clean(p.n)===val||clean(p.nk)===val);
  if(exact.length===1)return exact[0].n;
