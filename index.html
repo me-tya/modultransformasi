@@ -5105,10 +5105,15 @@ function opBody(B){const q=oneNorm(OD.pick.q||''),all=opNames().filter(n=>!q||on
   foot:`<button type="button" class="btn sm" data-odb="pickall">Pilih semua yang belum ada (${todo.length})</button><button type="button" class="btn sm" data-odb="pickclr">Kosongkan</button><button type="button" class="btn sm pri" data-odb="pickadd"${sel.size?'':' disabled'}>Tambah ${sel.size||''} program</button>`}}
 function opPanel(B){const b=opBody(B);return `<div class="od-pick"><div class="op-h"><b>Pilih program untuk TW ${ONE_RM[OD.tw]}</b><input data-od="pq" type="search" placeholder="Cari program…" value="${esc(OD.pick.q||'')}" aria-label="Cari program"><button type="button" class="btn sm" data-odb="pickclose">Tutup</button></div><div class="op-l">${b.list}</div><div class="op-o"><input data-od="po" placeholder="Program lain (ketik nama)…" aria-label="Nama program lain"><button type="button" class="btn sm" data-odb="pickother">Tambah</button></div><div class="op-f">${b.foot}</div></div>`}
 /* Sesi per unit: satu sesi membahas seluruh T-Program milik unit tersebut. */
-const oneUnitProgs=u=>S.programs.filter(p=>!p.psDraft&&unitsOf(p.uic).includes(u)).map(p=>p.nama);
+/* Program terkait unit: dari unit terkait pada jadwal 1-on-1 per program yang pernah dibuat, ditambah UIC utama/pendukung di data program. */
+function oneUnitProgs(u){const out=[],add=n=>{n=String(n||'').trim();if(n.length>2&&/[A-Za-z]{3}/.test(n)&&!out.some(o=>oneSame(o,n)))out.push(n)};
+ (S.oneonone||[]).filter(x=>x.kind!=='cfg'&&isOne(x)&&x.sasaran!=='unit'&&oneSel(x.uic).has(u)).sort((a,b)=>(b.tahun*10+oneTwOf(b))-(a.tahun*10+oneTwOf(a))).forEach(x=>add(x.program));
+ ONEONONE_2026.filter(x=>oneSel(x.uic).has(u)).forEach(x=>add(x.program));
+ S.programs.filter(p=>!p.psDraft&&unitsOf((p.uic||'')+', '+(p.pend||'')).includes(u)).forEach(p=>add(p.nama));return out}
 function upPanel(B){const sel=OD.upick.sel,has=u=>B.rows.some(r=>r.sasaran==='unit'&&r.uic===u);
  return `<div class="od-pick od-upick"><div class="op-h"><b>Sesi per unit · TW ${ONE_RM[OD.tw]}</b><span class="s">Satu sesi per unit untuk membahas semua T-Program unit tersebut.</span><button type="button" class="btn sm" data-odb="upclose">Tutup</button></div>
- <div class="op-l op-units">${UNITS.map(u=>{const n=oneUnitProgs(u).length,h=has(u);return `<label class="op-r${h?' has':''}" style="--c:${oneUc(u)}"><input type="checkbox" data-upk="${u}"${h?' checked disabled':sel.has(u)?' checked':''}><span><b>${u}</b><small>${n} program</small></span>${h?'<em>sudah ada</em>':''}</label>`}).join('')}</div>
+ ${(()=>{const free=UNITS.filter(u=>!has(u)),all=free.length&&free.every(u=>sel.has(u));return `<label class="op-all"><input type="checkbox" data-upk="*"${all?' checked':''}${free.length?'':' disabled'}><b>Pilih semua unit</b><small>${free.length} unit belum ada di lampiran</small></label>`})()}
+ <div class="op-l op-units">${UNITS.map(u=>{const L=oneUnitProgs(u),h=has(u);return `<label class="op-r${h?' has':''}" style="--c:${oneUc(u)}" title="${esc(L.join(' · ')||'Belum ada program terkait')}"><input type="checkbox" data-upk="${u}"${h?' checked disabled':sel.has(u)?' checked':''}><span><b>${u}</b><small>${L.length} program</small></span>${h?'<em>sudah ada</em>':''}</label>`}).join('')}</div>
  <div class="op-f"><button type="button" class="btn sm" data-odb="upclr">Kosongkan</button><button type="button" class="btn sm pri" data-odb="upadd"${sel.size?'':' disabled'}>Tambah ${sel.size||''} sesi unit</button></div></div>`}
 function oneDraftAddUnit(B,u){const L=oneUnitProgs(u),prev=(S.oneonone||[]).filter(x=>x.kind!=='cfg'&&x.sasaran==='unit'&&x.uic===u).sort((a,b)=>(b.tahun*10+oneTwOf(b))-(a.tahun*10+oneTwOf(a)))[0];
  const r=Object.assign({id:uid(),tahun:OD.tahun,tw:OD.tw,no:B.rows.length+1,tgl:'',jam:'',sasaran:'unit',link:'',program:L.join('; ')||('T-Program '+u),tema:'Pembahasan progres seluruh T-Program '+u,uic:u,spv:'',katim:'',anggota:'',lokasi:'',mode:'Hybrid',cek:true,j1:'',j2:''},prev?{spv:prev.spv,katim:prev.katim,anggota:prev.anggota,mode:prev.mode||'Hybrid'}:{});
@@ -5216,7 +5221,7 @@ function oneDraftOpen(tw){if(!lv('wbs').includes('U')&&!lv('wbs').includes('C'))
   if(b.dataset.odb==='prev')oneDraftPrev(ov);
   if(b.dataset.odb==='deftuj'){C.tujuan=ONE_TUJUAN.slice();C.conf.tujuan=true;B.dirty=true;oneRender(ov)}
   if(b.dataset.odb==='imptuj')docPick(async f=>{try{const l=await docText(f),t=oneTujuanFrom(l);if(t.length<2){toast('Daftar tujuan tidak ditemukan pada berkas.');return}C.tujuan=t;C.conf.tujuan=true;B.dirty=true;oneRender(ov);toast(t.length+' tujuan diimpor.')}catch(er){toast('Gagal membaca berkas: '+er.message)}})});
- const onch=e=>{if(!OD)return;const uk=e.target.closest('[data-upk]');if(uk){if(e.type==='change'&&!uk.disabled){uk.checked?OD.upick.sel.add(uk.dataset.upk):OD.upick.sel.delete(uk.dataset.upk);const a=ov.querySelector('[data-odb="upadd"]');if(a){a.disabled=!OD.upick.sel.size;a.textContent='Tambah '+(OD.upick.sel.size||'')+' sesi unit'}}return}const ck=e.target.closest('[data-opk]');if(ck){if(!ck.disabled){ck.checked?OD.pick.sel.add(ck.dataset.opk):OD.pick.sel.delete(ck.dataset.opk);opRef(ov)}return}
+ const onch=e=>{if(!OD)return;const uk=e.target.closest('[data-upk]');if(uk){if(e.type==='change'&&!uk.disabled){if(uk.dataset.upk==='*'){const Bx=OD.by[OD.tw];UNITS.filter(u=>!Bx.rows.some(r=>r.sasaran==='unit'&&r.uic===u)).forEach(u=>uk.checked?OD.upick.sel.add(u):OD.upick.sel.delete(u));ov.querySelectorAll('[data-upk]:not([data-upk="*"]):not(:disabled)').forEach(c=>c.checked=OD.upick.sel.has(c.dataset.upk))}else{uk.checked?OD.upick.sel.add(uk.dataset.upk):OD.upick.sel.delete(uk.dataset.upk);const al=ov.querySelector('[data-upk="*"]');if(al){const fr=[...ov.querySelectorAll('[data-upk]:not([data-upk="*"]):not(:disabled)')];al.checked=fr.length&&fr.every(c=>c.checked)}}const a=ov.querySelector('[data-odb="upadd"]');if(a){a.disabled=!OD.upick.sel.size;a.textContent='Tambah '+(OD.upick.sel.size||'')+' sesi unit'}}return}const ck=e.target.closest('[data-opk]');if(ck){if(!ck.disabled){ck.checked?OD.pick.sel.add(ck.dataset.opk):OD.pick.sel.delete(ck.dataset.opk);opRef(ov)}return}
   const el=e.target.closest('[data-od]');if(el&&(el.dataset.od==='pq')){OD.pick.q=el.value;opRef(ov);return}if(el&&el.dataset.od==='po')return;if(el){const B=OD.by[OD.tw],C=B.cfg,k=el.dataset.od;B.dirty=true;
    if(k==='p'){C.p=C.p||{};C.p[el.dataset.k]=el.innerText.replace(/\s*\n+\s*/g,' ');return}
    if(k==='rapat'){C.rapat=el.value.trim()?el.value:null;C.conf.rapat=!!el.value.trim()}
@@ -12214,7 +12219,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script src="mt-profile-export.js?v=20261114-mt02"></script>
 <script src="mt-tim2.js?v=20261115-t77"></script>
 <link rel="stylesheet" href="mt-tim-highlight.css?v=20261115-h4">
-<link rel="stylesheet" href="mt-pemantauan.css?v=20261116-p15">
+<link rel="stylesheet" href="mt-pemantauan.css?v=20261116-p16">
 <link rel="stylesheet" href="mt-brand.css?v=20261115-b2">
 <link rel="stylesheet" href="mt-act-matriks.css?v=20261115-m2">
 <link rel="stylesheet" href="mt-wbs-compact.css?v=20261116-w4">
