@@ -5185,9 +5185,15 @@ function oneDraftOpen(tw){if(!lv('wbs').includes('U')&&!lv('wbs').includes('C'))
   const t=e.target.closest('.od-tw button');if(t){oneLoad(+t.dataset.v);oneRender(ov);return}
   const B=OD.by[OD.tw],C=B.cfg;const ok=e.target.closest('.od-ok');
   if(ok){const k=ok.dataset.cek;if(k==='tujuan'||k==='tw'||k==='rapat'||k==='tempat'||k==='link'){C.conf[k]=true;B.dirty=true}oneRef(ov);return}
-  const jb=e.target.closest('[data-odj]');if(jb){const k=jb.dataset.odj;if(C.jenis===k)return;const oth=B.rows.filter(r=>(r.sasaran==='unit')!==(k==='unit'));
-   const go=()=>{oth.forEach(r=>{if(S.oneonone.some(v=>v.id===r.id))B.del.push(r.id)});B.rows=B.rows.filter(r=>!oth.includes(r));C.jenis=k;B.dirty=true;OD.pick&&(OD.pick.open=false);OD.upick&&(OD.upick.open=false);oneRender(ov)};
-   if(oth.length)confirmDel(oth.length+' sesi '+(C.jenis==='unit'?'per unit':'per program')+' di Lampiran II (jenis undangan diganti ke '+(k==='unit'?'per unit':'per program')+')',go);else go();return}
+  const jb=e.target.closest('[data-odj]');if(jb){const k=jb.dataset.odj;if(C.jenis===k)return;const toU=k==='unit',oth=B.rows.filter(r=>(r.sasaran==='unit')!==toU),lab=toU?'per unit':'per program',lab0=toU?'per program':'per unit';
+   /* Ganti jenis tidak menghapus sesi: baris diubah ke format baru (id/aktivitas tetap). Per unit → per program dipecah per program yang dibahas. */
+   const go=()=>{const out=[];B.rows.forEach(r=>{if((r.sasaran==='unit')===toU){out.push(r);return}
+     if(toU){out.push(Object.assign(r,{sasaran:'unit',program:r.program||'',tema:r.tema||''}));return}
+     const L=oneProgList(r);if(L.length<=1){out.push(Object.assign(r,{sasaran:'',program:L[0]||r.program||''}));return}
+     L.forEach((p,i)=>{const c=i?Object.assign(oneClone(r),{id:uid(),notula:null,und:null,materi:null,dok:null,st:null,ringkas:'',tl:''}):r;Object.assign(c,{sasaran:'',program:p});const pg=S.programs.find(v=>oneSame(v.nama,p));if(pg&&pg.uic)c.uic=oneUicCanon(pg.uic);out.push(c)})});
+    B.rows=out;C.jenis=k;B.dirty=true;OD.pick&&(OD.pick.open=false);OD.upick&&(OD.upick.open=false);if(oth.length)log('Ubah jenis undangan 1-on-1','TW '+ONE_RM[OD.tw]+' '+OD.tahun+' · '+oth.length+' sesi '+lab0+' → '+lab);oneRender(ov);if(oth.length)toast(oth.length+' sesi diubah ke format '+lab+'. Periksa kolom Agenda dan Unit.')};
+   if(!oth.length){go();return}
+   modal('Ubah jenis undangan?','<div class="od-cf"><span class="od-cf-i" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4-4 4"/><path d="M3 11V9a2 2 0 0 1 2-2h16"/><path d="M7 21l-4-4 4-4"/><path d="M21 13v2a2 2 0 0 1-2 2H3"/></svg></span><p>Data <b>'+oth.length+' sesi '+lab0+'</b> di Lampiran II (jenis undangan diganti ke <b>'+lab+'</b>) akan <b>diubah</b> dan tercatat di log aktivitas.</p></div><p class="od-cf-n">'+(toU?'Setiap sesi menjadi sesi unit dengan unit dari UIC Utama dan agenda dari nama programnya.':'Sesi unit yang membahas beberapa program dipecah menjadi satu sesi per program dengan tanggal dan waktu yang sama.')+' Tanggal, waktu, mode, dan lokasi tetap.</p>','Ubah ke '+lab,()=>{go();return true},{size:'sm',cancel:'Batal'});return}
   const sl=e.target.closest('[data-ods]');if(sl){const i=B.rows.findIndex(v=>v.id===sl.dataset.ods);if(i<0)return;const c=oneClone(B.rows[i]);
    Object.assign(c,{id:uid(),tgl:'',jam:'',j1:'',j2:'',cek:true,notula:null,und:null,materi:null,dok:null,st:null,stat:'',ringkas:'',tl:'',alasan:'',pic:[]});B.rows.splice(i+1,0,c);B.dirty=true;oneRender(ov);
    const tr=ov.querySelector('tr[data-r="'+c.id+'"]');if(tr){tr.scrollIntoView({block:'nearest'});const t=tr.querySelector('[data-f="tgl"]');t&&t.focus()}toast('Slot baru ditambahkan — isi tanggal dan jamnya. Tiap slot tersimpan sebagai aktivitas tersendiri.');return}
@@ -12208,7 +12214,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script src="mt-profile-export.js?v=20261114-mt02"></script>
 <script src="mt-tim2.js?v=20261115-t77"></script>
 <link rel="stylesheet" href="mt-tim-highlight.css?v=20261115-h4">
-<link rel="stylesheet" href="mt-pemantauan.css?v=20261116-p14">
+<link rel="stylesheet" href="mt-pemantauan.css?v=20261116-p15">
 <link rel="stylesheet" href="mt-brand.css?v=20261115-b2">
 <link rel="stylesheet" href="mt-act-matriks.css?v=20261115-m2">
 <link rel="stylesheet" href="mt-wbs-compact.css?v=20261116-w4">
