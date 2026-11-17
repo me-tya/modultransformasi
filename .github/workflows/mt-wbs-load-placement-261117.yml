@@ -1,0 +1,50 @@
+name: Fix actual Modul Transformasi WBS asset loading
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/mt-wbs-load-placement-261117.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Move shared WBS tags from document preview template into actual HTML head
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from html.parser import HTMLParser
+          p=Path('index.html');s=p.read_text(encoding='utf8')
+          asset='<link rel="stylesheet" href="activity-wbs.css?v=261117"><script src="activity-wbs.js?v=261117"></script>'
+          if s.count(asset)!=1:raise RuntimeError('WBS asset tag not unique: '+str(s.count(asset)))
+          old=s.index(asset)
+          s=s.replace(asset,'',1)
+          class Head(HTMLParser):
+            def __init__(self):super().__init__();self.pos=None
+            def handle_endtag(self,name):
+              if name=='head' and self.pos is None:self.pos=self.getpos()
+          h=Head();h.feed(s)
+          if h.pos is None:raise RuntimeError('Browser HTML head closing tag not found')
+          line,col=h.pos
+          lines=s.splitlines(keepends=True)
+          idx=sum(map(len,lines[:line-1]))+col
+          if s[idx:idx+7].lower()!='</head>':raise RuntimeError('Unexpected actual head marker '+repr(s[idx:idx+40]))
+          s=s[:idx]+asset+'\n'+s[idx:]
+          print('Moved WBS tag from',old,'to actual document head',idx)
+          p.write_text(s,encoding='utf8')
+          assert s.count(asset)==1
+          PY
+          git diff --check
+      - name: Publish safe fix with no force push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "fix(mt): load WBS classifier in actual application head"
+          git pull --rebase origin main
+          git push origin HEAD:main
