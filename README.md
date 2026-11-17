@@ -62,7 +62,7 @@ Modul `mt-jaringan-sk.js` (`window.MT_JARINGAN_SK.attach({S,ME,mods,save,toast,m
 | Kirim ke legal drafting | Pemilik probis (koordinator bila tematik) | Aktif setelah semua unit mengirim. |
 | Permohonan LD | Pemilik probis / CMO | Impor ND permohonan ke Setban; nomor, hal, dan tanggal terisi otomatis dari ND (bisa dikoreksi manual). |
 | Proses LD | Pemilik probis / CMO | Impor ND penyampaian hasil LD dari Setban (nomor, hal, tanggal otomatis) dan isi tautan SharePoint hasil LD. |
-| Penyampaian | Pemilik probis / CMO | Penyampaian SK melalui Nadine ke Kaban (nomor, tanggal, hal ND Nadine). |
+| Penyampaian | Pemilik probis / CMO | Import **konsep SK Tim** (belum bernomor) dan **nota pengantar** Nadine ke Kaban (perihal, penandatangan, pengirim, nomor, tanggal; terisi otomatis dari nota). |
 | Penetapan | — | Menunggu TTE Kaban; setelah ditetapkan isi nomor & tanggal KEP. |
 
 Peran lihat saja: KAPUS, KETUA, SEKPIM. Setiap aksi dicatat di **Riwayat** (waktu, aktor, peran, aksi).
@@ -72,4 +72,4 @@ Peran lihat saja: KAPUS, KETUA, SEKPIM. Setiap aksi dicatat di **Riwayat** (wakt
 - **Excel per unit**: sheet `Isian` (ID Slot, No, Komponen, Kedudukan, Jenis Isian, NIP, Nama, Jabatan, Satuan Kerja) + `Petunjuk`.
 - **Rekap Excel** (CMO): sheet `Susunan` dan `Unit`.
 
-Setiap naskah dinas yang dicatat (ND permohonan LD, ND hasil LD, ND Nadine, KEP) menyimpan **nomor, tanggal, dan hal/tentang**.
+Setiap naskah dinas yang dicatat (ND permohonan LD, ND hasil LD, nota pengantar Nadine, KEP) menyimpan **nomor, tanggal, dan hal/tentang**.
