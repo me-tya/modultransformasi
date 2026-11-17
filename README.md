@@ -46,3 +46,28 @@ Panel Filter CM memakai grid 6 kolom (`.fbar.mt-g6`, fungsi `fGrid` di index.htm
 - **Filter kolom tabel (otomatis per tab)**: kolom pilihan (`t:'sel'`) pada tabel yang sedang tampil, selain Modul, ditambah kolom turunan pada `CF_EXTRA` (Register Risiko: Jenis risiko & Tingkat; Keberhasilan CM: Status; Monev Pelaksanaan: Status implementasi; Pelaksanaan: Status). Pilihan diambil dari nilai yang ada di tabel. State: `S.ui.cf[idTabel][kolom]`; diterapkan di `tRows` sebelum pencarian teks.
 - **Cari**: bila satu baris subtab hanya membawahi satu tabel, kolom Cari tabel dipindah ke kanan baris subtab (`MT_PLACE_TBL_SEARCH`). Tab tanpa subtab (Jaringan, Pelaksanaan, Evaluasi Pasca, Penutupan) tetap memakai Cari di header tabel.
 - Atur ulang mengosongkan filter cakupan, filter kolom, dan Cari pada tabel yang tampil.
+
+## CMO › Jaringan Perubahan: SK Tim (Tim Lainnya)
+
+Modul `mt-jaringan-sk.js` (`window.MT_JARINGAN_SK.attach({S,ME,mods,save,toast,mk})`) menggantikan tampilan lama tab Jaringan (data `S.jj` tetap tersimpan, tidak ditampilkan). Data disimpan di `S.modMeta.__JJSK__ = {version, sk:[...]}` sehingga ikut tersinkron lewat jalur `modMeta` (Firestore/localStorage). Tampil di `#cmo-jaringan` (semua SK Tim) dan `#modul-<kode>-t-jaringan` (langsung ke SK Tim modul tersebut).
+
+### Alur dan status
+`rancang` → `isian` (pengisian unit) → legal drafting (`Draft` → `Permohonan LD` → `Proses LD` → `Penyampaian`) → `Penetapan`. Tidak ada tahap reviu CMO; setelah semua isian masuk, koordinator langsung mengirim ke legal drafting.
+
+| Tahap | Pelaku | Aturan |
+|---|---|---|
+| Rancang | CMO Kemenkeu (SA, CMOK, PMOK) | Nama tim, komponen (Ketua 1, Wakil Ketua I/II, PMO/CMO Kemenkeu, PMO/CMO Unit, Komunikasi & Pelatihan, dst.), unit Eselon I dan **kuota tetap** per unit per komponen, **kedudukan per slot dipilih CMO**, tugas & tanggung jawab (template default), penandatangan, reminder otomatis, **satu deadline per SK Tim**, pemilik probis (bisa lebih dari satu untuk program tematik: Koordinator, Unit 1, Unit 2, ...). Klik **Generate** membuat slot isian. |
+| Pengisian unit | CMO/PMO unit (CMOU, PMOU) sesuai unitnya | Mengisi No, Nama/Jabatan, Satker per slot sesuai kuota; tidak bisa menambah slot atau mengubah kedudukan. Bisa lewat form atau **Template Excel per unit** → **Impor Excel** (dicocokkan dengan kolom `ID Slot`, ada pratinjau sebelum diterapkan). Lewat deadline tetap boleh kirim, ditandai *terlambat*. Unit yang sudah kirim bisa dibuka lagi oleh CMO Kemenkeu. |
+| Reminder | Sistem | Jadwal default H-7, H-3, H-1, Hari H, H+1, H+2, H+3; hanya ke unit yang belum mengirim; CMO juga bisa "Ingatkan" manual. Papan peringkat urutan unit pengirim. |
+| Kirim ke legal drafting | Pemilik probis (koordinator bila tematik) | Aktif setelah semua unit mengirim. |
+| Permohonan LD | Pemilik probis / CMO | Unggah ND permohonan ke Setban. |
+| Proses LD | Pemilik probis / CMO | Isi tautan SharePoint draf hasil LD. |
+| Penyampaian | Pemilik probis / CMO | Penyampaian SK melalui Nadine ke Kaban (nomor/tanggal Nadine). |
+| Penetapan | — | Menunggu TTE Kaban; setelah ditetapkan isi nomor & tanggal KEP. |
+
+Peran lihat saja: KAPUS, KETUA, SEKPIM. Setiap aksi dicatat di **Riwayat** (waktu, aktor, peran, aksi).
+
+### Unduhan
+- **Word**: mengisi template KEP Squad Team Modul Mekanisme Kerja (base64 di modul) — diktum, lampiran A (pimpinan), B (dikelompokkan per Eselon I), C (unit), penandatangan, tembusan.
+- **Excel per unit**: sheet `Isian` (ID Slot, No, Komponen, Kedudukan, Jenis Isian, NIP, Nama, Jabatan, Satuan Kerja) + `Petunjuk`.
+- **Rekap Excel** (CMO): sheet `Susunan` dan `Unit`.
