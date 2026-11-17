@@ -3178,7 +3178,7 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 
 </style>
 <script src="cra-native.js?v=20261114-bar1"></script>
-<script src="mt-jaringan-sk.js?v=20261117-jj11"></script>
+<script src="mt-jaringan-sk.js?v=20261117-jj12"></script>
 <script src="pengelola-native.js?v=20261110-pegawai1"></script>
 <!-- Project Selection now uses native flow, not the Dashboard CM iframe/login. -->
 <script>
@@ -3203,7 +3203,7 @@ const LEVELS=['-','R','RU','CRU','CRUD'];
 const SCOPES=['Semua','Unit','Modul'];
 const SCOPE_DESK={Semua:'seluruh data',Unit:'data yang unitnya UIC Utama',Modul:'modul yang ditugaskan'};
 const UNREAD_SCOPED=['dash','porto','wbs','mil','risk','cr','crok','bukti','valid','lap','ref','adopsi','adp','reviu','usul','user','akses','sinkron','log'];
-const CMT=[['adp','ADP'],['rencana','Perencanaan'],['jaringan','Jaringan Perubahan'],['cra','CRA'],['pelaksanaan','Pelaksanaan'],['monev','Monev'],['pasca','Evaluasi Pasca'],['closing','Penutupan CM']];
+const CMT=[['adp','ADP'],['rencana','Perencanaan'],['jaringan','Jaringan Pengelola Proyek dan Perubahan'],['cra','CRA'],['pelaksanaan','Pelaksanaan'],['monev','Monev'],['pasca','Evaluasi Pasca'],['closing','Penutupan CM']];
 const PMT=[['siklus','Overview','porto'],['program','Detail Program','porto'],['perencanaan','Dokumen Proyek','charter'],['wbsplan','WBS','wbs'],['dokplan','Buat Dokumen Perencanaan','charter'],['wbs','WBS & progres','wbs'],['bukti','Bukti Dukung','bukti'],['cr','Change Request','cr'],['milestone','Milestone','mil'],['risiko','Risiko & Isu','risk'],['laporan','Capaian TW','lap'],['narasi','Narasi T-Program','lap'],['oneonone','Jadwal 1-on-1','wbs'],['penutupan','Penutupan','porto'],['pascaproyek','Pascaproyek','porto'],['referensi','Referensi Kode','ref']];
 /* kelompok tab PMO mengikuti alur Draft KEP Kepala BaTii: perencanaan → pelaksanaan → pemantauan → penutupan */
 const PMG=[['siklus','Overview',0,['siklus']],['program','Detail Program',0,['program']],['plan','Perencanaan',1,['perencanaan','wbsplan','dokplan']],['exec','Pelaksanaan',2,['wbs','narasi','cr']],['mon','Pemantauan',3,['milestone','risiko','laporan','oneonone']],['close','Penutupan',4,['penutupan']],['eval','Pascaproyek',5,['pascaproyek']],['ref','Referensi',0,['referensi']]];
@@ -10899,7 +10899,7 @@ function viewCmo(tab,mk){
  };
  const cmHeaders={
   adp:['1','Analisis Dampak Perubahan'],rencana:['2','Perencanaan Perubahan'],
-  jaringan:['3','Jaringan Perubahan'],cra:['4','Asesmen Kesiapan Perubahan'],
+  jaringan:['3','Jaringan Pengelola Proyek dan Perubahan'],cra:['4','Asesmen Kesiapan Perubahan'],
   pelaksanaan:['5','Pelaksanaan Perubahan'],monev:['6','Monitoring dan Evaluasi'],
   pasca:['7','Evaluasi Pascaperubahan'],closing:['8','Penutupan Perubahan']
  };

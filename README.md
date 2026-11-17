@@ -47,7 +47,7 @@ Panel Filter CM memakai grid 6 kolom (`.fbar.mt-g6`, fungsi `fGrid` di index.htm
 - **Cari**: bila satu baris subtab hanya membawahi satu tabel, kolom Cari tabel dipindah ke kanan baris subtab (`MT_PLACE_TBL_SEARCH`). Tab tanpa subtab (Jaringan, Pelaksanaan, Evaluasi Pasca, Penutupan) tetap memakai Cari di header tabel.
 - Atur ulang mengosongkan filter cakupan, filter kolom, dan Cari pada tabel yang tampil.
 
-## CMO › Jaringan Perubahan: SK Tim (Tim Lainnya)
+## CMO › Jaringan Pengelola Proyek dan Perubahan: SK Tim (Tim Lainnya)
 
 Modul `mt-jaringan-sk.js` (`window.MT_JARINGAN_SK.attach({S,ME,mods,save,toast,mk})`) menggantikan tampilan lama tab Jaringan (data `S.jj` tetap tersimpan, tidak ditampilkan). Data disimpan di `S.modMeta.__JJSK__ = {version, sk:[...]}` sehingga ikut tersinkron lewat jalur `modMeta` (Firestore/localStorage). Tampil di `#cmo-jaringan` (semua SK Tim) dan `#modul-<kode>-t-jaringan` (langsung ke SK Tim modul tersebut).
 
@@ -60,9 +60,9 @@ Modul `mt-jaringan-sk.js` (`window.MT_JARINGAN_SK.attach({S,ME,mods,save,toast,m
 | Pengisian unit | CMO/PMO unit (CMOU, PMOU) sesuai unitnya | Mengisi No, Nama/Jabatan, Satker per slot sesuai kuota; tidak bisa menambah slot atau mengubah kedudukan. Bisa lewat form atau **Template Excel per unit** → **Impor Excel** (dicocokkan dengan kolom `ID Slot`, ada pratinjau sebelum diterapkan). Lewat deadline tetap boleh kirim, ditandai *terlambat*. Unit yang sudah kirim bisa dibuka lagi oleh CMO Kemenkeu. |
 | Reminder | Sistem | Jadwal default H-7, H-3, H-1, Hari H, H+1, H+2, H+3; hanya ke unit yang belum mengirim; CMO juga bisa "Ingatkan" manual. Papan peringkat urutan unit pengirim. |
 | Kirim ke legal drafting | Pemilik probis (koordinator bila tematik) | Aktif setelah semua unit mengirim. |
-| Permohonan LD | Pemilik probis / CMO | Unggah ND permohonan ke Setban. |
-| Proses LD | Pemilik probis / CMO | Isi tautan SharePoint draf hasil LD. |
-| Penyampaian | Pemilik probis / CMO | Penyampaian SK melalui Nadine ke Kaban (nomor/tanggal Nadine). |
+| Permohonan LD | Pemilik probis / CMO | Impor ND permohonan ke Setban; nomor, hal, dan tanggal terisi otomatis dari ND (bisa dikoreksi manual). |
+| Proses LD | Pemilik probis / CMO | Impor ND penyampaian hasil LD dari Setban (nomor, hal, tanggal otomatis) dan isi tautan SharePoint hasil LD. |
+| Penyampaian | Pemilik probis / CMO | Penyampaian SK melalui Nadine ke Kaban (nomor, tanggal, hal ND Nadine). |
 | Penetapan | — | Menunggu TTE Kaban; setelah ditetapkan isi nomor & tanggal KEP. |
 
 Peran lihat saja: KAPUS, KETUA, SEKPIM. Setiap aksi dicatat di **Riwayat** (waktu, aktor, peran, aksi).
@@ -71,3 +71,5 @@ Peran lihat saja: KAPUS, KETUA, SEKPIM. Setiap aksi dicatat di **Riwayat** (wakt
 - **Word**: mengisi template KEP Squad Team Modul Mekanisme Kerja (base64 di modul) — diktum, lampiran A (pimpinan), B (dikelompokkan per Eselon I), C (unit), penandatangan, tembusan.
 - **Excel per unit**: sheet `Isian` (ID Slot, No, Komponen, Kedudukan, Jenis Isian, NIP, Nama, Jabatan, Satuan Kerja) + `Petunjuk`.
 - **Rekap Excel** (CMO): sheet `Susunan` dan `Unit`.
+
+Setiap naskah dinas yang dicatat (ND permohonan LD, ND hasil LD, ND Nadine, KEP) menyimpan **nomor, tanggal, dan hal/tentang**.
