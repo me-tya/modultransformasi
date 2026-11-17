@@ -10,17 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Print exact HTML head and WBS loaders
+      - name: Verify ACT initialization order and WBS exporter scope
         run: |
           python3 - <<'PY'
-          from pathlib import Path
-          import re
-          s=Path('index.html').read_text(encoding='utf8')
-          for term in ['<head>','</head>','<body','</body>','activity-wbs.js','activity-wbs.css','activity-wbs-mt.js','function pAktDaftar','WBS']:
-            ms=list(re.finditer(re.escape(term),s,re.I))
-            print('TERM',term,'TOTAL',len(ms))
-            for m in ms[:9]:
-              i=m.start()
-              print('LINE',s.count('\n',0,i)+1,'CONTEXT',repr(s[max(0,i-90):i+120].replace('\n',' ')))
-          print('TOP',repr(s[:1200]))
+          import pathlib,re
+          s=pathlib.Path('index.html').read_text(encoding='utf8')
+          for pat in [r'(?m)\b(?:const|let|var)\s+ACT\s*=',r'window\.ACT\s*=',r'\bACT\s*=\s*\{',r'ACT\.actWbsIku\s*=',r'function pAktDaftar\(',r'\bconst\s+ACT\s*:',r'\bACT\.oneAdd\s*=']:
+            ms=list(re.finditer(pat,s));print('PATTERN',pat,'COUNT',len(ms))
+            for m in ms[:7]:print('LINE',s.count('\n',0,m.start())+1,repr(s[m.start()-80:m.start()+150].replace('\n',' ')))
           PY
