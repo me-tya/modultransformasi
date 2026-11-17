@@ -10,12 +10,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Read MT wizard anchors
+      - name: Print exact HTML head and WBS loaders
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          lines=Path('index.html').read_text(encoding='utf8').splitlines()
-          for a,b in [(5687,5706),(5740,5780),(5800,5820),(5830,5842),(5906,5928),(6200,6208),(6258,6275)]:
-            print('###',a,b)
-            for k in range(a,b+1):print(str(k)+': '+lines[k-1][:1300])
+          import re
+          s=Path('index.html').read_text(encoding='utf8')
+          for term in ['<head>','</head>','<body','</body>','activity-wbs.js','activity-wbs.css','activity-wbs-mt.js','function pAktDaftar','WBS']:
+            ms=list(re.finditer(re.escape(term),s,re.I))
+            print('TERM',term,'TOTAL',len(ms))
+            for m in ms[:9]:
+              i=m.start()
+              print('LINE',s.count('\n',0,i)+1,'CONTEXT',repr(s[max(0,i-90):i+120].replace('\n',' ')))
+          print('TOP',repr(s[:1200]))
           PY
