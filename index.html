@@ -3178,7 +3178,7 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 
 </style>
 <script src="cra-native.js?v=20261114-bar1"></script>
-<script src="mt-jaringan-sk.js?v=20261117-jj14"></script>
+<script src="mt-jaringan-sk.js?v=20261117-jj16"></script>
 <script src="pengelola-native.js?v=20261110-pegawai1"></script>
 <!-- Project Selection now uses native flow, not the Dashboard CM iframe/login. -->
 <script>
@@ -3889,7 +3889,7 @@ function render(){try{if(typeof actStampAll==='function')actStampAll()}catch(e){
  else if(VIEW==='aktivitas')h=pAktivitas();else if(VIEW==='tim')h=typeof pAktTim==='function'?pAktTim():AKT_HDR()+'<p class="s">Memuat…</p>';else if(VIEW.startsWith('pmo-'))h=viewPmo(VIEW.slice(4));else if(VIEW.startsWith('cmo-'))h=viewCmo(VIEW.slice(4),null);
  else if(VIEW==='set-pengguna')h=viewUsers();else if(VIEW==='set-akses')h=viewAkses();else if(VIEW==='set-sinkron')h=viewSinkron();else if(VIEW==='set-db')h=viewDb();else if(VIEW==='set-log')h=viewLog();
  if(VIEW.startsWith('set-'))h=h.replace('<!--vh-->',setTabs());
- v.innerHTML=h;if(VIEW==='project-selection'&&window.MT_PROJECT_SELECTION)window.MT_PROJECT_SELECTION.mount();window.CM_CRA_NAV=()=>cmoTabs('cra',null);if((VIEW==='cmo-jaringan'||/^modul-.+-t-jaringan$/.test(VIEW))&&window.MT_JARINGAN_SK&&document.getElementById('cm-jjsk-workspace')){const jm=VIEW.match(/^modul-(.+)-t-jaringan$/);window.MT_JARINGAN_SK.attach({S,ME,mods,save,toast,mk:jm?decodeURIComponent(jm[1]):null});return;}if(VIEW==='cra'&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}if(VIEW==='pengelola'&&window.PENGELOLA_NATIVE){window.PENGELOLA_NATIVE.attach({S,ME,save,toast});return;}if((VIEW==='cmo-cra'||/^modul-.+-t-cra$/.test(VIEW))&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}try{foldNotes(v);bindCompactGuides(v);mtCompactWorkbars(v)}catch(e){console.warn('Panduan ringkas:',e)}try{scrollActiveCompactNav(v)}catch(e){}
+ v.innerHTML=h;if(VIEW==='project-selection'&&window.MT_PROJECT_SELECTION)window.MT_PROJECT_SELECTION.mount();window.CM_CRA_NAV=()=>cmoTabs('cra',null);if((VIEW==='cmo-jaringan'||/^modul-.+-t-jaringan$/.test(VIEW))&&window.MT_JARINGAN_SK&&document.getElementById('cm-jjsk-workspace')){const jm=VIEW.match(/^modul-(.+)-t-jaringan$/);window.MT_JARINGAN_SK.attach(jjCtx(jm?decodeURIComponent(jm[1]):null));return;}if(VIEW==='cra'&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}if(VIEW==='pengelola'&&window.PENGELOLA_NATIVE){window.PENGELOLA_NATIVE.attach({S,ME,save,toast});return;}if((VIEW==='cmo-cra'||/^modul-.+-t-cra$/.test(VIEW))&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}try{foldNotes(v);bindCompactGuides(v);mtCompactWorkbars(v)}catch(e){console.warn('Panduan ringkas:',e)}try{scrollActiveCompactNav(v)}catch(e){}
 }
 const yearsOpt=()=>{const ys=new Set([2025,2026,2027,2028,2029,S.ui.tahun]);S.wbs.forEach(w=>{const y=yrOf(w);if(y>=2020)ys.add(y)});(S.programs||[]).forEach(p=>{if(p.psYear)ys.add(+p.psYear)});return [...ys].sort((a,b)=>a-b)};
 function foldNotes(v){
@@ -10625,7 +10625,7 @@ GUIDE['tim']={tujuan:'Mengelola Tim PMO & CMO Kemenkeu (Pusmantap): siapa bertug
   ['Profil','Profil Individu, Pegawai sementara (masa tugas), dan Pendampingan Unit (PMO/CMO Unit & pemilik probis per unit).']],
  tab:[['Highlight','Ringkasan harian yang bisa diatur per pengguna.'],['Agenda','Daftar agenda per tanggal.'],['Kehadiran','WFO/WFH dan dinas luar.'],['Cuti','Kalender dan aturan batas cuti.'],['Onboarding','Penempatan tim.'],['Profil','Profil, pegawai sementara, pendampingan unit.']],
  tips:['Klik kartu tim di Ringkasan kehadiran untuk menyaring Daftar Agenda per tim.','Dinas luar (ST) terisi otomatis dari aktivitas yang memiliki surat tugas.','Pegawai yang belum punya tim tampil di Perlu perhatian dan pada label "Lainnya" di agenda.']};
-GUIDE['cmo-jaringan']={tujuan:'Membentuk Tim Lainnya (SK Tim jaringan perubahan) per modul: CMO Kemenkeu merancang struktur, kuota, kedudukan, tugas, dan penandatangan; unit mengisi nama/jabatan sesuai kuota; lalu legal drafting dan penetapan oleh Kepala Badan.',
+GUIDE['cmo-jaringan']={tujuan:'Membentuk Tim Lainnya (SK Tim jaringan perubahan) untuk setiap modul WBS yang memiliki kegiatan Analisis Kebutuhan Jejaring Perubahan: CMO Kemenkeu merancang struktur, kuota, kedudukan, tugas, dan penandatangan; unit mengisi nama/jabatan sesuai kuota; lalu legal drafting dan penetapan oleh Kepala Badan.',
  alur:[['Rancang tim (CMO Kemenkeu)','Isi identitas & pemilik probis (koordinator untuk program tematik), reminder otomatis, pimpinan, kuota per unit beserta kedudukan tiap slot, tugas, dan penandatangan. Klik Generate.'],
   ['Isi slot unit','Unit pengisi melengkapi No, Nama/Jabatan sesuai kuota (langsung di form atau lewat template Excel unit), lalu Kirim isian. Lewat deadline tetap bisa dikirim, ditandai terlambat.'],
   ['Kirim untuk legal drafting','Koordinator pemilik probis mengirim setelah semua unit lengkap. CMO Kemenkeu mencatat ND permohonan LD ke Setban, tautan SharePoint hasil LD, ND penyampaian Nadine, lalu nomor & tanggal KEP setelah TTE Kaban.']],
@@ -10885,12 +10885,17 @@ function cmoFlt(f,tab){const open=S.ui.fopen===1;const u=cU(),r=S.ui.crole||'';c
 ACT.cfreset=()=>{S.ui.cunit='';S.ui.crole='';S.ui.mod='';S.ui.cpr='';S.ui.cprog='';S.ui.cth='';(window.TVIEW||[]).forEach(id=>{if(S.ui.cf)delete S.ui.cf[id];Q[id]=''});Object.keys(PG).forEach(x=>PG[x]=0);save();render()};
 function modFilter(f){const ms=visMods(f).filter(cmoMatch);return `<select class="sel${S.ui.mod?' act':''}" id="c-mo" data-on="mod" aria-label="Pilih modul"><option value="">Semua modul (${ms.length})</option>${ms.map(m=>`<option value="${m.kode}" ${S.ui.mod===m.kode?'selected':''}>${m.kode} · ${esc(m.nama)}</option>`).join('')}</select>`}
 function tJaringan(ms,mf,mk){const prev=S.ui.sub.rencana;S.ui.sub.rencana='jj';try{const out=tRencana(ms,mf,mk);const prefix='<div class="card">'+subNav('rencana',[['sh','Stakeholder'],['esm','Matriks Experience–Support'],['kom','Komunikasi'],['pel','Pelatihan']],'sh')+'</div>';return out.startsWith(prefix)?out.slice(prefix.length):out;}finally{S.ui.sub.rencana=prev;}}
+/* Jaringan: daftar = modul (item ADP) yang punya item WBS kegiatan C5 "Analisis Kebutuhan Jejaring/Jaringan Perubahan" pada cakupan filter CMO. */
+function jjMods(mk){const ms=mk?[modOf(mk)].filter(Boolean):visMods('rencana').filter(cmoMatch).filter(m=>!S.ui.mod||m.kode===S.ui.mod);
+ return ms.map(m=>{const c5=m.items.filter(w=>!w.arsip&&tahapOf(w).some(t=>t.kode==='C5'));if(!c5.length)return null;return {kode:m.kode,nama:m.nama,program:m.aplikasi||progLabel(m.prog),uic:m.uicUnits||[],wk:c5.map(w=>w.k),deadline:c5.map(w=>w.f).filter(Boolean).sort()[0]||''}}).filter(Boolean)}
+function jjCtx(mk){return {S,ME,mods,save,toast,mk,jjMods:()=>jjMods(mk),cf:()=>((S.ui.cf||{}).jjsk)||{},scoped:()=>!!(S.ui.mod||S.ui.cprog||S.ui.cunit||S.ui.cth)}}
+window.jjCtx=jjCtx;
 function viewCmo(tab,mk){
  const f=tab==='jaringan'?'rencana':tab==='pelaksanaan'?'impl':tab==='cra'?'adp':tab==='pasca'?'monev':tab;
  const descriptions={
  adp:'Analisis Dampak Perubahan (ADP) — As-Is, To-Be, POSTeR, risiko, dan indikator keberhasilan.',
  rencana:'Perencanaan perubahan — stakeholder, matriks experience–support, komunikasi, dan pelatihan.',
- jaringan:'Pembentukan tim jaringan perubahan (Tim Lainnya): rancang struktur & kuota, isian unit, legal drafting, dan penetapan SK Tim.',
+ jaringan:'Pembentukan tim jaringan perubahan (Tim Lainnya) untuk setiap modul WBS yang memiliki kegiatan Analisis Kebutuhan Jejaring Perubahan: rancang struktur & kuota, isian unit, legal drafting, dan penetapan SK Tim.',
  cra:'Asesmen kesiapan perubahan: bank pertanyaan berbasis peran, survei, analitik, action plan, dan perbandingan pengukuran.',
  pelaksanaan:'Realisasi kegiatan komunikasi dan pelatihan berdasarkan perencanaan perubahan.',
  monev:'Pemantauan berkala strategi komunikasi, pelatihan, dan indikator keberhasilan perubahan.',
@@ -10906,7 +10911,7 @@ function viewCmo(tab,mk){
  const cmHeading=cmHeaders[tab]||['C','Change Management'];
  const head=mk?modHead(mk):vh(cmHeading[0],'cmo',cmHeading[1],descriptions[tab]||'Pengelolaan perubahan transformasi digital.','');
  const tabs=cmoTabs(tab,mk);
- if(tab==='jaringan'&&window.MT_JARINGAN_SK)return head+tabs+'<div id="cm-jjsk-workspace" class="cm-jjsk-workspace" aria-label="Ruang kerja SK Tim jaringan perubahan"></div>';
+ if(tab==='jaringan'&&window.MT_JARINGAN_SK){if(!mk){try{T.jjsk=window.MT_JARINGAN_SK.table(jjCtx(null));(window.TVIEW||(window.TVIEW=[])).push('jjsk')}catch(e){console.warn(e)}}return head+tabs+(mk?'':cmoFlt(f,tab))+'<div id="cm-jjsk-workspace" class="cm-jjsk-workspace" aria-label="Ruang kerja SK Tim jaringan perubahan"></div>'}
  if(tab==='cra')return head+tabs+'<div id="cm-cra-workspace" class="cm-cra-workspace" aria-label="Ruang kerja asesmen kesiapan perubahan"></div>';
  const ms=mk?[modOf(mk)].filter(Boolean):visMods(f).filter(cmoMatch).filter(m=>!S.ui.mod||m.kode===S.ui.mod);
  const mf=s=>ms.some(m=>m.kode===s.modul);
@@ -11499,6 +11504,18 @@ styles += "\n/* Peta Menu v3: rapat, simetris, responsif; kartu tanpa tab tetap 
 ".sk-overlay .sk-p0-minihead{display:flex;justify-content:space-between;gap:5px;align-items:center;font-size:9px;font-weight:850;letter-spacing:.02em;text-transform:uppercase;color:#687b93;background:#f6f9fd;border-top:1px solid #e8edf4;padding:7px 10px 3px}\n"+
 ".sk-overlay .sk-p0-minihead b{font-size:9px;background:#e9f0f8;padding:2px 6px;border-radius:8px;color:#214b76}\n"+
 ".sk-overlay .sk-p0-minilinks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding:6px 8px 9px;background:#f9fbfe}\n"+
+".sk-overlay .sk-feat{margin-top:6px;border:1px solid #e6dcc0;border-radius:9px;background:#fffdf6}\n"+
+".sk-overlay .sk-feat>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:6px 9px;cursor:pointer;font-size:10.5px;font-weight:800;color:#7a5a10}\n"+
+".sk-overlay .sk-feat>summary::-webkit-details-marker{display:none}\n"+
+".sk-overlay .sk-feat>summary span::before{content:'▸ '}\n"+
+".sk-overlay .sk-feat[open]>summary span::before{content:'▾ '}\n"+
+".sk-overlay .sk-feat>summary b{background:#f6dc85;color:#5b4500;border-radius:999px;padding:1px 7px;font-size:10px}\n"+
+".sk-overlay .sk-featG{padding:2px 9px 8px}\n"+
+".sk-overlay .sk-featH{display:block;font-size:9.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#8a6a1e;margin:4px 0}\n"+
+".sk-overlay .sk-featL{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:5px}\n"+
+".sk-overlay .sk-featB{display:flex;justify-content:space-between;align-items:center;gap:5px;border:1px solid #efe2bd;border-radius:7px;background:#fff;color:#4d3a08;font-weight:700;font-size:10px;line-height:1.3;text-align:left;padding:6px 7px;cursor:pointer}\n"+
+".sk-overlay .sk-featB:hover,.sk-overlay .sk-featB:focus-visible{background:#fff6d6;border-color:#f2b705}\n"+
+".sk-overlay .sk-featB.hit{background:#fff6d6;border-color:#f2b705;box-shadow:0 0 0 2px #f6dc8566}\n"+
 ".sk-overlay .sk-p0-minitab{min-width:0;display:flex;justify-content:space-between;align-items:center;gap:5px;border:1px solid #d6e3f3;border-radius:7px;background:#fff;color:#174472;font-weight:750;font-size:10px;line-height:1.3;text-align:left;padding:6px 7px;cursor:pointer;overflow-wrap:anywhere}\n"+
 ".sk-overlay .sk-p0-minitab>span:last-child{flex:none;color:#bc8324}\n"+
 ".sk-overlay .sk-p0-minitab:hover,.sk-overlay .sk-p0-minitab:focus-visible{background:#fef1cf!important;border-color:#e6b44e!important;color:#143c67!important}\n"+
@@ -11527,7 +11544,7 @@ function jump(label,target){
 }
 function detail(title,body,open){return '<details class="sk-detail"'+(open?' open':'')+'><summary>'+title+'</summary><div class="sk-detailBody">'+body+'</div></details>'}
 var CM=[
-['Perencanaan Perubahan','Menyusun tujuh analisis dan strategi berdasarkan dampak, pemangku kepentingan serta kesiapan.','cmo-adp','ADP','cmo-rencana','Perencanaan','cmo-jaringan','Jaringan Perubahan','cmo-cra','CRA'],
+['Perencanaan Perubahan','Menyusun tujuh analisis dan strategi berdasarkan dampak, pemangku kepentingan serta kesiapan.','cmo-adp','ADP','cmo-rencana','Perencanaan','cmo-jaringan','Jaringan Pengelola Proyek dan Perubahan','cmo-cra','CRA'],
 ['Pelaksanaan Perubahan','Mengaktifkan jaringan, memperkuat kesiapan, melaksanakan komunikasi dan pelatihan.','cmo-pelaksanaan','Pelaksanaan'],
 ['Pemantauan dan Evaluasi','Memantau komunikasi, pelatihan, indikator keberhasilan, serta tindak lanjut secara berkala.','cmo-monev','Monev'],
 ['Evaluasi Pascaimplementasi','Paling cepat satu bulan sejak implementasi; nilai adopsi, perilaku kerja, isu, dan kanal layanan.','cmo-pasca','Evaluasi Pascaimplementasi'],
@@ -11552,7 +11569,7 @@ var menuPM=[
 ];
 var menuCM=[
 ['Analisis Dampak (ADP)','As-Is, To-Be, POSTeR, risiko','cmo-adp'],['Perencanaan','Stakeholder, komunikasi, pelatihan','cmo-rencana'],
-['Jaringan Perubahan','Peran jaringan dan penugasan','cmo-jaringan'],['CRA','Kesiapan dan rencana aksi','cmo-cra'],
+['Jaringan Pengelola Proyek dan Perubahan','SK Tim jaringan per modul WBS jejaring: rancang, isian unit, legal drafting, penetapan','cmo-jaringan'],['CRA','Kesiapan dan rencana aksi','cmo-cra'],
 ['Pelaksanaan','Realisasi komunikasi dan pelatihan','cmo-pelaksanaan'],['Monev','Monitoring indikator dan tindak lanjut','cmo-monev'],
 ['Evaluasi Pascaimplementasi','Keberlanjutan adopsi dan kanal resmi','cmo-pasca'],['Penutupan CM','Serah terima dan pengakhiran transisi','cmo-closing'],
 ['Aktivitas','Kegiatan PMO & CMO: daftar, kalender, ringkasan, dan matriks','aktivitas'],['Tim PMO & CMO','Highlight harian, agenda, kehadiran, cuti, penempatan tim, profil','tim'],
@@ -11725,6 +11742,60 @@ var skDeepTabsCM={
   ['Adopsi','cmo-monev','monev:ado'],
   ['Keberhasilan CM','cmo-monev','monev:kcm']]
 };
+/* Fitur per menu (Peta Menu › "Fitur di menu ini"): [kelompok,[[label, subtab, aksi]]].
+   aksi: add:ID = tombol + pada tabel ID · xls:ID = menu Excel tabel ID · act:NAMA = tombol data-act · txt:TEKS = tombol berlabel TEKS · jj:AKSI = modul SK Tim jaringan · tab = buka tab saja. */
+var SKFEAT={
+ 'project-selection':[['Usulan Program',[['Riwayat program','ps:usulan','txt:Riwayat Program'],['Daftar usulan program','ps:usulan','txt:Usulan Program'],['Buat dokumen portofolio','ps:usulan','txt:Buat Dokumen Portofolio']]],
+  ['Pemetaan Proyek',[['Riwayat proyek','ps:mapping','txt:Riwayat Proyek'],['Usulan proyek','ps:mapping','txt:Usulan Proyek'],['Buat dokumen proyek','ps:mapping','txt:Buat Dokumen Proyek']]],
+  ['Prioritasi',[['Penilaian & peringkat','ps:prioritasi','txt:Penilaian & Peringkat'],['Kriteria & bobot','ps:prioritasi','txt:Kriteria & Bobot'],['Simpan snapshot penilaian','ps:prioritasi','txt:Simpan Snapshot Penilaian']]],
+  ['Penetapan & RKMK',[['Catat penetapan K-Wide','ps:penetapan','txt:Catat Penetapan K-Wide'],['Unduh draft RKMK (Word)','ps:rkmk','txt:Unduh Draft Word']]]],
+ 'pmo-siklus':[['Overview',[['Atur kartu favorit','overview:tw','act:favEdit'],['Import capaian K-Wide','overview:kwide','act:kwImp']]]],
+ 'pmo-program':[['Workspace program',[['Template data dukung','workspace:ringkasan','act:ddTpl'],['Pratinjau dokumen program','workspace:ringkasan','act:pmProgramDoc']]]],
+ 'pmo-perencanaan':[['Dokumen proyek',[['Buat dokumen perencanaan','','act:chnew'],['Lihat detail dokumen','','act:chopen']]]],
+ 'pmo-dokplan':[['Kompilasi dokumen',[['Unduh kompilasi dokumen','','txt:Unduh']]]],
+ 'pmo-wbsplan':[['WBS perencanaan',[['Tambah item WBS','','add:wbs'],['Template WBS','','act:tplwbs'],['Laporan perencanaan proyek','','act:pgRep']]]],
+ 'pmo-wbs':[['WBS & progres',[['Validasi bukti dukung','','act:wbsVal'],['Ajukan change request','','act:crnew'],['Impor/ekspor Excel WBS','','xls:wbs'],['Laporan pelaksanaan proyek','','act:pgRep']]]],
+ 'pmo-cr':[['Change request',[['Ajukan change request','','act:crnew'],['Impor/ekspor Excel','','xls:cr']]]],
+ 'pmo-milestone':[['Milestone',[['Impor/ekspor Excel milestone','','xls:ms']]]],
+ 'pmo-risiko':[['Risiko & isu',[['Tambah risiko / isu','','add:risk'],['Impor/ekspor Excel','','xls:risk']]]],
+ 'pmo-laporan':[['Capaian triwulanan',[['Tambah capaian','lap:tprog','add:kw'],['Ekspor Excel laporan','lap:tprog','act:lapexp']]]],
+ 'pmo-narasi':[['Narasi T-Program',[['Lihat contoh pengisian','','act:chex'],['Salin dari triwulan lalu','','act:narcopy'],['Unduh narasi','','act:narexp']]]],
+ 'pmo-oneonone':[['Jadwal 1-on-1',[['Buat undangan 1-on-1','','act:oneDraft'],['Impor undangan 1-on-1','','act:oneImp'],['Salin dari triwulan lalu','','act:oneCopyTw'],['Ekspor jadwal','','act:oneExport'],['Alur jadwal 1-on-1','','act:oneInfo']]]],
+ 'pmo-penutupan':[['Penutupan proyek',[['Launching modul','closure:siap','act:tpLaunch']]]],
+ 'pmo-pascaproyek':[['Pascaproyek',[['Tambah hasil evaluasi','','add:projectEval'],['Impor/ekspor Excel','','xls:projectEval']]]],
+ 'pmo-referensi':[['Referensi kode',[['Impor/ekspor master kode','','xls:kode']]]],
+ 'aktivitas':[['Daftar aktivitas',[['Tambah aktivitas','act:daftar','act:oneAdd'],['Import undangan','act:daftar','act:oneUndImp'],['Buat draft undangan','act:daftar','act:oneDraft'],['Salin dari triwulan lalu','act:daftar','act:oneCopyTw'],['Data & backup','act:daftar','act:actDbk']]],
+  ['Kalender',[['Ekspor kalender','act:kalender','act:calExport'],['Impor libur SKB / SE','act:kalender','act:liburImport'],['Kelola libur','act:kalender','act:liburMgr']]]],
+ 'tim':[['Onboarding & profil',[['Tambah tim','t2:tempat','act:kpTimAdd'],['Tambah pegawai','t2:tempat','act:tmAdd'],['Impor pegawai','t2:tempat','txt:Impor pegawai']]],
+  ['Kehadiran & cuti',[['Sinkron Dashboard CM','t2:hadir','act:actDcmSync'],['Rencana cuti','t2:cuti','txt:Rencana cuti'],['Aturan batas cuti','t2:cuti','txt:Aturan batas']]],
+  ['Highlight',[['Salin ringkasan untuk WhatsApp','t2:highlight','txt:Salin ringkasan untuk WhatsApp']]]],
+ 'cmo-adp':[['Daftar dampak',[['Tambah sub modul (wizard ADP)','adp:dampak','add:adp'],['Ajukan ADP','adp:dampak','act:adpsubmit']]],
+  ['Risiko & indikator',[['Tambah risiko CM','adp:reg','add:reg'],['Ambil risiko dari proyek','adp:reg','act:cmrefpick'],['Tambah indikator keberhasilan','adp:ind','add:ind']]]],
+ 'cmo-rencana':[['Stakeholder',[['Tambah stakeholder','rencana:sh','add:sh'],['Impor/ekspor Excel stakeholder','rencana:sh','xls:sh']]],
+  ['Komunikasi & pelatihan',[['Rencana komunikasi','rencana:kom','tab'],['Rencana pelatihan','rencana:pel','tab']]]],
+ 'cmo-jaringan':[['SK Tim',[['Rancang SK Tim','','jj:new'],['Muat contoh SK Tim Mekanisme Kerja','','jj:seed'],['Isi slot unit saya','','jj:fill']]],
+  ['Legal drafting & penetapan',[['Buka SK Tim di legal drafting','','jj:ld'],['Buka SK Tim di penetapan','','jj:sk'],['Tampilkan panduan langkah','','jj:guide']]]],
+ 'cmo-cra':[['Survei',[['Buat survei','cra:create','tab'],['Survei aktif','cra:active','tab']]],['Analisis',[['Analisis kesiapan','cra:analytics','tab'],['Rencana aksi','cra:actions','tab'],['Perbandingan pengukuran','cra:compare','tab']]]],
+ 'cmo-pelaksanaan':[['Pelaksanaan',[['Impor/ekspor Excel realisasi','','xls:impl']]]],
+ 'cmo-monev':[['Monev',[['Tambah catatan monev','monev:pan','add:pan'],['Tambah periode adopsi','monev:ado','add:ado'],['Impor/ekspor Excel pelaksanaan','monev:lak','xls:lak']]]],
+ 'cmo-pasca':[['Evaluasi pascaimplementasi',[['Tambah evaluasi perubahan','','add:pasca'],['Impor/ekspor Excel','','xls:pasca']]]],
+ 'cmo-closing':[['Penutupan CM',[['Tambah area transfer kepemilikan','','add:tr'],['Impor/ekspor Excel','','xls:tr']]]]
+};
+function skRunFeat(dest,sub,how){
+ if(typeof window.mtP0Navigate==='function')window.mtP0Navigate(dest,sub||'');else location.hash='#'+dest;
+ var kind=String(how||'tab').split(':')[0],arg=String(how||'').slice(kind.length+1),t0=Date.now();if(kind==='tab')return;
+ var q=function(v){return String(v).replace(/"/g,'\\"')};
+ (function tick(){var el=null,root=document.getElementById('view')||document;
+  if(kind==='jj'){if(window.MT_JARINGAN_SK&&document.querySelector('#cm-jjsk-workspace .jjsk')){window.MT_JARINGAN_SK.run(arg);return}}
+  else if(kind==='txt'){el=Array.prototype.find.call(root.querySelectorAll('button,a,[role=tab]'),function(b){return b.offsetParent&&(b.innerText||'').replace(/\s+/g,' ').trim().indexOf(arg)>=0})}
+  else{var sel=kind==='add'?'[data-act="add"][data-t="'+q(arg)+'"]':kind==='xls'?'[data-act="tdata"][data-t="'+q(arg)+'"]':'[data-act="'+q(arg)+'"]';el=Array.prototype.find.call(root.querySelectorAll(sel),function(b){return b.offsetParent})}
+  if(el){try{el.scrollIntoView({block:'center'})}catch(e){}el.click();return}
+  if(Date.now()-t0<4500)return setTimeout(tick,150);
+  var msg='Fitur ini belum tampil di halaman Anda. Periksa hak akses, atau pilih program/modul terlebih dulu.';if(typeof window.toast==='function')window.toast(msg);else if(typeof toast==='function')toast(msg)})()}
+window.skRunFeat=skRunFeat;
+function skFeatHtml(dest){var F=SKFEAT[dest]||[];var n=F.reduce(function(a,g){return a+g[1].length},0);if(!n)return '';
+ return '<details class="sk-feat"><summary><span>Fitur di menu ini</span><b>'+n+'</b></summary>'+F.map(function(g){return '<div class="sk-featG"><span class="sk-featH">'+esc(g[0])+'</span><div class="sk-featL">'+g[1].map(function(f){return '<button type="button" class="sk-featB" data-skfeat="'+esc(f[2])+'" data-skd="'+esc(dest)+'" data-sks="'+esc(f[1])+'" title="Jalankan: '+esc(f[0])+'"><span>'+esc(f[0])+'</span><span aria-hidden="true">'+(f[2]==='tab'?'↗':'▸')+'</span></button>'}).join('')+'</div></div>'}).join('')+'</details>'}
+function skFeatText(dest){return (SKFEAT[dest]||[]).map(function(g){return g[0]+' '+g[1].map(function(f){return f[0]}).join(' ')}).join(' ')}
 function helpMenu(kind){
  var items=kind==='pmo'?menuPM:menuCM;
  var deep=kind==='pmo'?skDeepTabsPM:skDeepTabsCM;
@@ -11746,24 +11817,24 @@ function helpMenu(kind){
   ['Kerja Tim PMO & CMO','Kegiatan, agenda, kehadiran, dan penempatan tim','◉',['aktivitas','tim']]
  ];
  var byDest={};items.forEach(function(x){byDest[x[2]]=x});
- var totalTabs=Object.keys(deep).reduce(function(n,k){return n+deep[k].length},0);
+ var totalTabs=Object.keys(deep).reduce(function(n,k){return n+deep[k].length},0),totalFeat=items.reduce(function(n,x){return n+(SKFEAT[x[2]]||[]).reduce(function(a,g){return a+g[1].length},0)},0);
  var sections=groups.map(function(g,i){
   var tiles=g[3].map(function(dest){
    var a=byDest[dest];if(!a)return '';
    var tabs=deep[dest]||[];
    var links=tabs.length?'<div class="sk-p0-minihead"><span>Tab / halaman di dalam menu</span><b>'+tabs.length+'</b></div>'+
     '<div class="sk-p0-minilinks">'+tabs.map(function(t){return '<button type="button" class="sk-p0-minitab" data-skdeep="'+esc(t[1])+'" data-sksub="'+esc(t[2])+'" title="Buka '+esc(t[0])+'" aria-label="Buka tab '+esc(t[0])+' pada '+esc(a[0])+'"><span>'+esc(t[0])+'</span><span aria-hidden="true">↗</span></button>'}).join('')+'</div>':'';
-   return '<article class="sk-p0-wrap sk-filtered" data-skitem="'+esc((a[0]+' '+a[1]+' '+g[0]+' '+tabs.map(function(t){return t[0]}).join(' ')).toLowerCase())+'">'+
+   return '<article class="sk-p0-wrap sk-filtered" data-skitem="'+esc((a[0]+' '+a[1]+' '+g[0]+' '+tabs.map(function(t){return t[0]}).join(' ')+' '+skFeatText(dest)).toLowerCase())+'">'+
     '<button type="button" class="sk-menuTile" data-skgo="'+esc(dest)+'" title="Buka menu '+esc(a[0])+'" aria-label="Buka menu '+esc(a[0])+'">'+
     '<span class="sk-menuTileIcon" aria-hidden="true">'+esc(g[2])+'</span>'+
     '<span class="sk-menuTileContent"><strong>'+esc(a[0])+'</strong><small>'+esc(a[1])+'</small></span>'+
-    '<span class="sk-menuTileArrow" aria-hidden="true">↗</span></button>'+links+'</article>';
+    '<span class="sk-menuTileArrow" aria-hidden="true">↗</span></button>'+links+skFeatHtml(dest)+'</article>';
   }).join('');
   return '<section class="sk-menuSection" data-skgroup><div class="sk-menuSectionHead"><span class="sk-menuSectionNo">'+('0'+(i+1)).slice(-2)+'</span><div><h4>'+esc(g[0])+'</h4><p>'+esc(g[1])+'</p></div><span class="sk-menuSectionCount">'+g[3].length+' menu</span></div><div class="sk-menuTiles">'+tiles+'</div></section>';
  }).join('');
  return intro('Peta navigasi hingga tab','Peta Menu '+(kind==='pmo'?'Project Management':'Change Management'),
-  'Klik judul kartu untuk membuka menu, atau langsung pilih tab di dalamnya. Setiap tautan mengikuti hak akses pengguna.')+
-  '<div class="sk-menutop"><div class="sk-menuSearch"><span aria-hidden="true">⌕</span><input class="sk-search" type="search" data-skfilter placeholder="Cari menu, tab, fungsi atau fase..." aria-label="Cari menu dan tab"></div><div class="sk-menuSearchHint">'+items.length+' menu · '+totalTabs+' pintasan tab</div></div>'+
+  'Klik judul kartu untuk membuka menu, pilih tab di dalamnya, atau buka "Fitur di menu ini" untuk langsung menjalankan fitur (misalnya Rancang SK Tim). Setiap tautan mengikuti hak akses pengguna.')+
+  '<div class="sk-menutop"><div class="sk-menuSearch"><span aria-hidden="true">⌕</span><input class="sk-search" type="search" data-skfilter placeholder="Cari menu, tab, fitur atau fase, mis. rancang SK Tim..." aria-label="Cari menu dan tab"></div><div class="sk-menuSearchHint">'+items.length+' menu · '+totalTabs+' pintasan tab · '+totalFeat+' fitur</div></div>'+
   '<div class="sk-menuSections">'+sections+'</div>';
 }
 var skGlossRoutesPM={
@@ -12037,6 +12108,14 @@ var FLOWS=[
   ['Onboarding','Seret pegawai ke kolom struktural atau tim. Di header kolom tim klik ✏️ untuk mengatur peran (PMO/CMO) dan cakupan program: semua, berkelanjutan, atau tematik beserta unit Eselon I-nya.','tim','Tim PMO & CMO'],
   ['Profil','Profil Individu, Pegawai sementara, dan Pendampingan Unit (lihat dari PMO & CMO Kemenkeu atau PMO & CMO Unit).'],
   ['Kehadiran & cuti','Atur jadwal WFH, catat cuti, dan pantau ketersediaan harian; batas cuti berlaku di musim libur sesuai pengaturan.']]},
+ {id:'jjsk',t:'Penetapan SK Tim jaringan (Tim Lainnya)',k:'jaringan jejaring sk tim tim lainnya rancang kuota slot isian unit legal drafting ld setban nadine nota pengantar konsep penetapan kep tte kaban analisis kebutuhan jejaring c5',d:'Dari modul WBS jejaring sampai SK Tim ditetapkan Kepala Badan.',s:[
+  ['Modul masuk daftar Jaringan','Setiap modul WBS yang memiliki kegiatan Analisis Kebutuhan Jejaring Perubahan (tahap C5) otomatis tampil di Jaringan dengan status Belum dirancang. Saring lewat panel Filter: Pemilik probis, Unit mengirim, Deadline isian, Posisi alur.','cmo-jaringan','Jaringan'],
+  ['Rancang SK Tim (PMO/CMO Kemenkeu)','Klik + Rancang pada modul: pilih koordinator dan unit pemilik probis terkait, template, pimpinan tim, komponen & kuota per unit, kedudukan tiap slot, tugas, penandatangan, deadline, dan reminder. Lalu Generate & kirim ke unit.','cmo-jaringan','Rancang SK Tim'],
+  ['Unit mengisi slot','PMO/CMO unit hanya melihat slot unitnya: isi jabatan atau NIP, atau pakai Template/Impor Excel, lalu Kirim isian. Lewat deadline tetap bisa kirim (ditandai terlambat); reminder otomatis ke unit yang belum mengirim.'],
+  ['Koordinator kirim ke legal drafting','Setelah semua unit mengirim, koordinator pemilik probis klik Kirim untuk legal drafting. Draft SK (Word sesuai format KEP) tersusun otomatis; periksa lewat Pratinjau.'],
+  ['Permohonan & proses LD','Impor ND permohonan ke Setban (nomor, hal, tanggal terisi otomatis), lalu impor ND penyampaian hasil LD dari Setban dan tautan SharePoint hasil LD.'],
+  ['Penyampaian ke Kepala Badan','Impor konsep SK Tim (belum bernomor) dan nota pengantar dari Nadine: perihal, penandatangan, pengirim, nomor, tanggal.'],
+  ['Penetapan','Setelah TTE Kepala Badan, catat nomor, tanggal, dan tentang KEP. SK Tim berstatus Ditetapkan dan jaringan aktif.','cmo-jaringan','Jaringan']]},
  {id:'cra',t:'Change Readiness Assessment (CRA)',k:'cra survei kesiapan readiness analisis rencana aksi perbandingan',d:'Mengukur kesiapan perubahan.',s:[
   ['Buat survei','Klik + Buat Survei: konfigurasi, pilih pertanyaan dari bank, aktifkan.','cmo-cra','CRA'],
   ['Kumpulkan respons','Pantau di Survei Aktif.'],
@@ -12047,13 +12126,13 @@ function helpFlows(){return intro('Alur kerja','Alur Aplikasi','Langkah demi lan
 /* ===== Tanya Bantuan: jawaban diambil dari isi Bantuan & Cheatsheet (tanpa AI) ===== */
 var QA=null;
 var QSTOP={yang:1,dan:1,di:1,ke:1,dari:1,untuk:1,apa:1,bagaimana:1,gimana:1,gmn:1,cara:1,saya:1,aku:1,bisa:1,ini:1,itu:1,ada:1,dengan:1,atau:1,kalau:1,klo:1,kok:1,ya:1,ga:1,gak:1,tidak:1,mau:1,ingin:1,harus:1,perlu:1,dong:1,sih:1,nya:1,the:1,is:1,how:1,to:1,mana:1,dimana:1,kapan:1,siapa:1,kenapa:1,mengapa:1,sudah:1,udah:1,udh:1,belum:1,blm:1,jadi:1,pada:1,oleh:1,akan:1,juga:1,jg:1,tsb:1,tersebut:1,menu:0};
-var QSYN={daduk:'bukti dukung',upload:'unggah',approve:'validasi',approval:'validasi',sh:'stakeholder',stakeholders:'stakeholder',pemangku:'stakeholder',kom:'komunikasi',pel:'pelatihan',tna:'pelatihan',jejaring:'jaringan',agen:'jaringan',poster:'poster dampak',dampak:'dampak adp',submit:'ajukan',aju:'ajukan',risk:'risiko',wfh:'wfh kehadiran',cuti:'cuti kehadiran',readiness:'cra kesiapan',kesiapan:'cra kesiapan'};
+var QSYN={sk:'sk tim jaringan',kep:'kep penetapan sk',ld:'legal drafting',nadine:'nadine nota pengantar',daduk:'bukti dukung',upload:'unggah',approve:'validasi',approval:'validasi',sh:'stakeholder',stakeholders:'stakeholder',pemangku:'stakeholder',kom:'komunikasi',pel:'pelatihan',tna:'pelatihan',jejaring:'jaringan',agen:'jaringan',poster:'poster dampak',dampak:'dampak adp',submit:'ajukan',aju:'ajukan',risk:'risiko',wfh:'wfh kehadiran',cuti:'cuti kehadiran',readiness:'cra kesiapan',kesiapan:'cra kesiapan'};
 function qNorm(t){return String(t||'').toLowerCase().replace(/<[^>]+>/g,' ').replace(/[^a-z0-9à-ÿ\s-]/g,' ').split(/\s+/).filter(Boolean)}
 function qStem(w){return w.replace(/^(meng|meny|mem|men|me|peng|pem|pen|pe|di|ber|ter|ke)(?=[a-z]{4,})/,'').replace(/(kan|an|nya|i)$/,function(m,_,o,str){return str.length>5?'':m})}
 function qTok(t){var out=[];qNorm(t).forEach(function(w){if(QSTOP[w])return;var x=QSYN[w];(x?x.split(' '):[w]).forEach(function(y){out.push(qStem(y))})});return out}
 function qBuild(){if(QA)return QA;var D=[];function add(src,t,b,dest,dl){D.push({src:src,t:t,b:String(b||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim(),dest:dest,dl:dl})}
  FLOWS.forEach(function(f){add('Alur Aplikasi',f.t,f.d+' '+f.s.map(function(x,i){return (i+1)+'. '+x[0]+': '+x[1]}).join(' '),(f.s.find(function(x){return x[2]})||[])[2],(f.s.find(function(x){return x[2]})||[])[3]);f.s.forEach(function(x){add('Alur · '+f.t,x[0],x[1],x[2],x[3])})});
- [['Peta Menu PM',menuPM],['Peta Menu CM',menuCM]].forEach(function(g){(g[1]||[]).forEach(function(a){add(g[0],a[0],a[1],a[2],a[0])})});
+ [['Peta Menu PM',menuPM],['Peta Menu CM',menuCM]].forEach(function(g){(g[1]||[]).forEach(function(a){add(g[0],a[0],a[1],a[2],a[0]);(SKFEAT[a[2]]||[]).forEach(function(fg){fg[1].forEach(function(f){add('Fitur · '+a[0],f[0],f[0]+' di menu '+a[0]+' ('+fg[0]+')',a[2],a[0])})})})});
  [['Tahapan PM',PM],['Tahapan CM',CM]].forEach(function(g){(g[1]||[]).forEach(function(a){add(g[0],a[0],a[1],a[2],a[3])})});
  [['Istilah PM',termsPM],['Istilah CM',termsCM]].forEach(function(g){(g[1]||[]).forEach(function(a){add(g[0],a[0],a[1])})});
  [['Dokumen PM',docPM],['Dokumen CM',docCM]].forEach(function(g){(g[1]||[]).forEach(function(a){add(g[0],a[0],a[1]+(a[2]?' · Penanggung jawab: '+a[2]:'')+(a[3]?' · Waktu: '+a[3]:''),a[4],'Buka')})});
@@ -12118,10 +12197,11 @@ function open(mode,kind,selected){
   if(e.target===ov||e.target.closest('[data-skclose]')){close();return}
   var tab=e.target.closest('[data-sktab]');if(tab){var k=tab.getAttribute('data-sktab');ov.querySelectorAll('[data-sktab]').forEach(function(b){b.setAttribute('aria-selected',String(b.getAttribute('data-sktab')===k))});ov.querySelectorAll('[data-skview]').forEach(function(v){v.hidden=v.getAttribute('data-skview')!==k});ov.querySelector('.sk-content').scrollTop=0;return}
   var stage=e.target.closest('[data-skstage]');if(stage){var root=stage.closest('.sk-view');var section=root&&root.querySelector('[data-skphasedetail="'+stage.dataset.skstage+'"]');if(section){root.querySelectorAll('.sk-phaseDetail').forEach(function(el){el.classList.remove('is-highlight')});section.classList.add('is-highlight');section.scrollIntoView({block:'start',behavior:'smooth'})}return}
+  var ft=e.target.closest('[data-skfeat]');if(ft){var fd=ft.getAttribute('data-skd'),fs=ft.getAttribute('data-sks'),fh=ft.getAttribute('data-skfeat');close();setTimeout(function(){skRunFeat(fd,fs,fh)},30);return}
   var deep=e.target.closest('[data-skdeep]');if(deep){var d=deep.getAttribute('data-skdeep'),sub=deep.getAttribute('data-sksub');close();if(typeof window.mtP0Navigate==='function')window.mtP0Navigate(d,sub);else location.hash='#'+d;return}
    var goto=e.target.closest('[data-skgo]');if(goto){var dest=goto.getAttribute('data-skgo');close();if(typeof window.go==='function')window.go(dest);else location.hash='#'+dest;return}
  });
- ov.addEventListener('input',function(e){var filter=e.target.closest('[data-skfilter]');if(!filter)return;var pane=filter.closest('.sk-view'),term=filter.value.trim().toLowerCase();pane.querySelectorAll('[data-skitem]').forEach(function(card){card.hidden=!!term&&!card.dataset.skitem.includes(term)});pane.querySelectorAll('[data-skgroup]').forEach(function(group){group.hidden=!Array.from(group.querySelectorAll('[data-skitem]')).some(function(card){return !card.hidden})})});
+ ov.addEventListener('input',function(e){var filter=e.target.closest('[data-skfilter]');if(!filter)return;var pane=filter.closest('.sk-view'),term=filter.value.trim().toLowerCase();pane.querySelectorAll('[data-skitem]').forEach(function(card){card.hidden=!!term&&!card.dataset.skitem.includes(term);var fd=card.querySelector('.sk-feat');if(fd){var hit=!!term&&Array.prototype.some.call(fd.querySelectorAll('.sk-featB,.sk-featH'),function(b){return b.textContent.toLowerCase().indexOf(term)>=0});fd.open=hit;fd.querySelectorAll('.sk-featB').forEach(function(b){b.classList.toggle('hit',!!term&&b.textContent.toLowerCase().indexOf(term)>=0)})}});pane.querySelectorAll('[data-skgroup]').forEach(function(group){group.hidden=!Array.from(group.querySelectorAll('[data-skitem]')).some(function(card){return !card.hidden})})});
  ov.querySelector('.sk-close').focus();return ov
 }
 function currentKind(){try{return typeof VIEW==='string'&&VIEW.indexOf('pmo-')===0?'pmo':'cmo'}catch(e){return 'cmo'}}

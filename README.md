@@ -49,7 +49,9 @@ Panel Filter CM memakai grid 6 kolom (`.fbar.mt-g6`, fungsi `fGrid` di index.htm
 
 ## CMO › Jaringan Pengelola Proyek dan Perubahan: SK Tim (Tim Lainnya)
 
-Modul `mt-jaringan-sk.js` (`window.MT_JARINGAN_SK.attach({S,ME,mods,save,toast,mk})`) menggantikan tampilan lama tab Jaringan (data `S.jj` tetap tersimpan, tidak ditampilkan). Data disimpan di `S.modMeta.__JJSK__ = {version, sk:[...]}` sehingga ikut tersinkron lewat jalur `modMeta` (Firestore/localStorage). Tampil di `#cmo-jaringan` (semua SK Tim) dan `#modul-<kode>-t-jaringan` (langsung ke SK Tim modul tersebut).
+Modul `mt-jaringan-sk.js` (`window.MT_JARINGAN_SK.attach({S,ME,mods,save,toast,mk})`) menggantikan tampilan lama tab Jaringan (data `S.jj` tetap tersimpan, tidak ditampilkan). Data disimpan di `S.modMeta.__JJSK__ = {version, sk:[...]}` sehingga ikut tersinkron lewat jalur `modMeta` (Firestore/localStorage). Tampil di `#cmo-jaringan` dan `#modul-<kode>-t-jaringan`.
+
+**Daftar**: semua modul (item ADP) yang memiliki item WBS kegiatan *Analisis Kebutuhan Jejaring/Jaringan Perubahan* (tahap C5, `jjMods()` di index.html) pada cakupan filter CMO; modul tanpa SK Tim tampil berstatus *Belum dirancang* dengan tombol + Rancang. **Filter** memakai panel standar CM (`cmoFlt`) + filter kolom tabel semu `T.jjsk`: Pemilik probis, Unit mengirim, Deadline isian, Posisi alur (`S.ui.cf.jjsk`). **Contoh data**: bila belum ada SK Tim, PMO/CMO Kemenkeu ditawari popup untuk memuat contoh SK Tim Modul Mekanisme Kerja (OA-84); bisa juga dari Bantuan › Peta Menu › Fitur.
 
 ### Alur dan status
 `rancang` → `isian` (pengisian unit) → legal drafting (`Draft` → `Permohonan LD` → `Proses LD` → `Penyampaian`) → `Penetapan`. Tidak ada tahap reviu CMO; setelah semua isian masuk, koordinator langsung mengirim ke legal drafting.
@@ -73,3 +75,7 @@ Peran lihat saja: KAPUS, KETUA, SEKPIM. Setiap aksi dicatat di **Riwayat** (wakt
 - **Rekap Excel** (CMO): sheet `Susunan` dan `Unit`.
 
 Setiap naskah dinas yang dicatat (ND permohonan LD, ND hasil LD, nota pengantar Nadine, KEP) menyimpan **nomor, tanggal, dan hal/tentang**.
+
+### Bantuan › Peta Menu › Fitur
+
+Setiap kartu menu di Peta Menu (PM & CM) punya bagian lipat **Fitur di menu ini** (`SKFEAT` di index.html), dikelompokkan per tab. Klik fitur → aplikasi membuka menu/tab lalu menjalankan tombolnya (`skRunFeat`): `add:ID`, `xls:ID`, `act:NAMA`, `txt:LABEL`, `jj:AKSI` (modul SK Tim: new, seed, fill, ld, sk, guide), atau `tab`. Pencarian Peta Menu juga mencari nama fitur dan membuka kelompoknya. Fitur ikut terindeks di Tanya Bantuan. Alur Aplikasi memuat alur **Penetapan SK Tim jaringan (Tim Lainnya)**.

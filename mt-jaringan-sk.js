@@ -389,20 +389,34 @@ function renderBell(){const n=notifs();$("#bellN").textContent=n.length||"";$("#
  $("#notif").querySelectorAll(".ni").forEach(el=>el.onclick=()=>{openDetail(n[+el.dataset.i].u.id);$("#notif").classList.add("hide")})}
 
 /* ===================== DAFTAR ===================== */
-function renderList(){const v=visible();const c=f=>v.filter(f).length;
- const kp=isCMO()?[["SK Tim",v.length,"var(--navy)"],["Dirancang",c(u=>u.status==="rancang"),"#9aa7b6"],["Pengisian unit",c(pengisian),"var(--info)"],["Legal drafting / penetapan",c(u=>u.status==="setuju"),"var(--gold)"],["Ditetapkan",c(u=>u.status==="sk"),"var(--ok)"]]
+/* ---- daftar: semua modul WBS yang punya kegiatan "Analisis Kebutuhan Jejaring Perubahan" (C5) + SK Tim yang ada ---- */
+const HASCTX=()=>typeof ctx!=="undefined"&&ctx&&typeof ctx.jjMods==="function";
+function listRows(){const v=visible();if(!HASCTX())return v.map(u=>({u}));
+ const M=ctx.jjMods()||[],all=new Set((ctx.mods?ctx.mods():[]).map(m=>m.kode)),scoped=!!(ctx.scoped&&ctx.scoped());
+ const out=M.map(m=>{const u=v.find(x=>x.kode===m.kode);return u?{u,m}:(isCMO()||isViewer()||(m.uic||[]).includes(ctx.ME&&ctx.ME.unit))?{ph:true,m}:null}).filter(Boolean);
+ v.forEach(u=>{if(out.some(r=>r.u===u))return;if(!all.has(u.kode)&&!scoped)out.push({u})});return out}
+const DL=u=>!u?"—":!u.deadline?"Belum ditetapkan":u.status==="rancang"?"Belum dibuka":pengisian(u)?(daysTo(u.deadline)<0?"Lewat deadline":"Sebelum deadline"):"Pengisian selesai";
+function rowVals(r){const u=r.u;if(!u)return{own:(r.m.uic||[]).join(", ")||"—",kirim:"Belum dirancang",dl:"—",alur:"Belum dirancang"};
+ const p=prog(u);return{own:owners(u).map(o=>sh(o.unit)).join(", "),kirim:u.status==="rancang"?"Belum dibuka":p.d===p.t?"Semua unit mengirim":p.d?"Sebagian unit mengirim":"Belum ada yang mengirim",dl:DL(u),alur:alurLabel(u)}}
+function renderList(){const R0=listRows(),v=R0.filter(r=>r.u).map(r=>r.u);const c=f=>v.filter(f).length,nPh=R0.filter(r=>r.ph).length;
+ const kp=isCMO()?[["Modul jejaring",R0.length,"var(--navy)"],["Belum dirancang",nPh,"#c2410c"],["Dirancang",c(u=>u.status==="rancang"),"#9aa7b6"],["Pengisian unit",c(pengisian),"var(--info)"],["Legal drafting / penetapan",c(u=>u.status==="setuju"),"var(--gold)"],["Ditetapkan",c(u=>u.status==="sk"),"var(--ok)"]]
   :[["SK Tim terkait",v.length,"var(--navy)"],["Perlu diisi",c(u=>myTask(u)&&pengisian(u)&&myTask(u).status!=="terkirim"),"var(--warn)"],["Sudah dikirim",c(u=>myTask(u)?.status==="terkirim"),"var(--ok)"],["Milik unit saya",c(isOwner),"var(--info)"],["Ditetapkan",c(u=>u.status==="sk"),"var(--ok)"]];
- $("#kpis").innerHTML=kp.map(([l,n,col])=>`<div class="kpi" style="--c:${col}"><b>${n}</b><span>${l}</span></div>`).join("");
+ $("#kpis").style.gridTemplateColumns=`repeat(${kp.length},minmax(0,1fr))`;$("#kpis").innerHTML=kp.map(([l,n,col])=>`<div class="kpi" style="--c:${col}"><b>${n}</b><span>${l}</span></div>`).join("");
  const mine=v.filter(u=>myTask(u)&&pengisian(u));
  $("#myTasks").innerHTML=!isCMO()&&mine.length?`<div class="mt-h"><b>Tugas isian ${esc(sh(myUnit()))}</b></div><div class="mt">${mine.map(u=>{const t=myTask(u),S=mySlots(u),f=S.filter(slotFilled).length,dn=daysTo(u.deadline);return`<div class="mtc ${t.status==="terkirim"?"done":dn<0?"over":""}"><div class="pk-t"><span class="code">${esc(u.kode)}</span>${t.status==="terkirim"?'<span class="dl ok">Terkirim</span>':dn<0?`<span class="dl over">Lewat ${-dn} hari</span>`:`<span class="dl ${dn<=3?"soon":""}">H-${dn}</span>`}</div><b>${esc(u.modul)}</b><span class="note">${f}/${S.length} slot terisi · deadline ${fmtD(u.deadline)}</span><div class="bar"><i style="width:${S.length?f/S.length*100:0}%"></i></div><div class="pk-b"><span></span><button class="btn sm ${t.status==="terkirim"?"":"gold"}" data-open="${u.id}">${t.status==="terkirim"?"Lihat":"Isi sekarang"} ➜</button></div></div>`}).join("")}</div>`:"";
- const q=$("#q").value.toLowerCase(),fs=$("#fStat").value;
- const rows=v.filter(u=>(!fs||alurLabel(u)===fs)&&(!q||JSON.stringify([u.kode,u.modul,u.owner,u.slots.map(s=>s.nama+s.jab)]).toLowerCase().includes(q)));
- $("#tbU").innerHTML=rows.map(u=>{const p=prog(u),pend=p.t-p.d,dn=daysTo(u.deadline);
-  return`<tr class="row" data-id="${u.id}"><td><span class="code">${esc(u.kode)}</span><div style="font-weight:700;margin-top:3px">${esc(u.modul)}</div><div class="note">${esc(u.program)}</div></td><td>${owners(u).length>1?`${owners(u).map(o=>`<div><b>${esc(sh(o.unit))}</b> <span class="note">${o.peran}</span></div>`).join("")}`:esc(sh(u.owner))}${u.jenisProgram==="Tematik"?'<div><span class="pill s-reviu">Tematik</span></div>':""}</td>
+ const qe=$("#q"),q=qe?qe.value.toLowerCase():"",fse=$("#fStat"),fs=fse?fse.value:"",CF=HASCTX()&&ctx.cf?ctx.cf():{};
+ const rows=R0.filter(r=>{const V=rowVals(r);if(fs&&V.alur!==fs)return false;for(const k in CF)if(CF[k]&&V[k]!==CF[k])return false;
+  if(!q)return true;const u=r.u;return JSON.stringify(u?[u.kode,u.modul,u.owner,u.program,u.slots.map(s=>s.nama+s.jab)]:[r.m.kode,r.m.nama,r.m.program,r.m.uic,r.m.wk]).toLowerCase().includes(q)});
+ $("#tbU").innerHTML=rows.map(r=>{const u=r.u;
+  if(!u){const m=r.m;return`<tr class="row jjph" data-ph="${esc(m.kode)}"><td><span class="code">${esc(m.kode)}</span><div style="font-weight:700;margin-top:3px">${esc(m.nama)}</div><div class="note">${esc(m.program||"")}${m.wk&&m.wk.length?` · WBS jejaring ${m.wk.map(esc).join(", ")}`:""}</div></td><td>${esc((m.uic||[]).join(", ")||"—")}</td><td><span class="note">—</span></td><td><span class="note">${m.deadline?`WBS ${dmy(m.deadline)}`:"—"}</span></td><td><span class="pill s-perbaikan">Belum dirancang</span>${isCMO()?`<div style="margin-top:6px"><button class="btn sm gold" data-mkn="${esc(m.kode)}">＋ Rancang</button></div>`:""}</td><td style="color:var(--mut)">›</td></tr>`}
+  const p=prog(u),pend=p.t-p.d,dn=daysTo(u.deadline);
+  return`<tr class="row" data-id="${u.id}"><td><span class="code">${esc(u.kode)}</span><div style="font-weight:700;margin-top:3px">${esc(u.modul)}</div><div class="note">${esc(u.program)}${r.m&&r.m.wk&&r.m.wk.length?` · WBS jejaring ${r.m.wk.map(esc).join(", ")}`:""}</div></td><td>${owners(u).length>1?`${owners(u).map(o=>`<div><b>${esc(sh(o.unit))}</b> <span class="note">${o.peran}</span></div>`).join("")}`:esc(sh(u.owner))}${u.jenisProgram==="Tematik"?'<div><span class="pill s-reviu">Tematik</span></div>':""}</td>
    <td>${u.status==="rancang"?`<span class="note">${totalSlots(u)} slot dirancang</span>`:`<div class="pg"><div class="bar"><i style="width:${p.pct}%;background:${p.d===p.t?"var(--ok)":"var(--gold)"}"></i></div><b>${p.d}/${p.t}</b></div>`}</td>
-   <td><b>${dmy(u.deadline)}</b>${pengisian(u)&&pend?`<div>${dn<0?`<span class="dl over">Lewat ${-dn} hari</span>`:`<span class="dl ${dn<=3?"soon":""}">H-${dn}</span>`}</div>`:""}</td><td>${alurPill(u)}</td><td style="color:var(--mut)">›</td></tr>`}).join("")||`<tr><td colspan="6" class="empty">Tidak ada SK Tim.</td></tr>`;
- ROOT.querySelectorAll("#tbU tr.row").forEach(tr=>tr.onclick=()=>openDetail(tr.dataset.id));ROOT.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>openDetail(b.dataset.open));
- const fsel=$("#fStat"),fv=fsel.value;fsel.innerHTML=`<option value="">Semua posisi alur</option>`+[...ALUR,"SK Ditetapkan"].map(x=>`<option ${x===fv?"selected":""}>${x}</option>`).join("")}
+   <td><b>${dmy(u.deadline)}</b>${pengisian(u)&&pend?`<div>${dn<0?`<span class="dl over">Lewat ${-dn} hari</span>`:`<span class="dl ${dn<=3?"soon":""}">H-${dn}</span>`}</div>`:""}</td><td>${alurPill(u)}</td><td style="color:var(--mut)">›</td></tr>`}).join("")||`<tr><td colspan="6" class="empty">${HASCTX()?"Tidak ada modul WBS dengan kegiatan Analisis Kebutuhan Jejaring Perubahan pada cakupan filter ini.":"Tidak ada SK Tim."}</td></tr>`;
+ ROOT.querySelectorAll("#tbU tr.row:not(.jjph)").forEach(tr=>tr.onclick=()=>openDetail(tr.dataset.id));ROOT.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>openDetail(b.dataset.open));
+ ROOT.querySelectorAll("#tbU tr.jjph").forEach(tr=>tr.onclick=e=>{if(isCMO())newFor(tr.dataset.ph);else toast("SK Tim modul ini belum dirancang CMO Kemenkeu.")});
+ if(fse){const fv=fse.value;fse.innerHTML=`<option value="">Semua posisi alur</option>`+[...ALUR,"SK Ditetapkan"].map(x=>`<option ${x===fv?"selected":""}>${x}</option>`).join("")}}
+function newFor(kode){const b=$("#btnNew");if(!b)return;b.click();setTimeout(()=>{const s=$("#nMod");if(s&&kode&&[...s.options].some(o=>o.value===kode)){s.value=kode;s.dispatchEvent(new Event("change"))}},30)}
 
 /* ===================== DETAIL ===================== */
 /* ---------- DETAIL: 2 lapis (kepala ringkas + bilah alur sebagai menu) ---------- */
@@ -773,14 +787,13 @@ function openM(t,b){$("#mdlT").textContent=t;$("#mdlB").innerHTML=b;$("#mdl").cl
 function closeM(){const m=$("#mdl");if(!m)return;m.classList.remove("on");m.querySelector(".modal").classList.remove("wide","xwide")}
 window.__jjCloseM=closeM;
 function render(){if(!ROOT||!ROOT.isConnected)return;$("#view-list").classList.toggle("hide",view!=="list");$("#view-detail").classList.toggle("hide",view!=="detail");
- $("#btnNew").classList.toggle("hide",!isCMO());$("#btnSeed").classList.toggle("hide",!(isCMO()&&!DB.length));
+ $("#btnNew").classList.toggle("hide",!isCMO());
  renderBell();if(view==="list")renderList();else renderDetail()}
 const SHELL=`<div class="jjsk">
  <section id="view-list">
   <div class="kpis" id="kpis" style="margin-bottom:12px"></div>
   <div id="myTasks"></div>
-  <div class="listbar"><h3>SK Tim per Modul</h3><i class="i" data-t="CMO Kemenkeu merancang tim (struktur, kuota, kedudukan, tugas, penandatangan, reminder) → generate → unit pengisi mengisi slot sesuai kuota → koordinator pemilik probis mengirim → legal drafting (Draft, Permohonan LD ke Setban, Proses LD) → penetapan (penyampaian via Nadine, TTE Kepala Badan).">i</i><div class="sp" style="flex:1"></div><button class="bell" id="bell" title="Notifikasi">🔔<span id="bellN" class="hide"></span></button><label class="search" style="margin:0">⌕<input id="q" placeholder="Cari modul, unit, nama…"></label></div>
-  <div class="filter" style="margin-bottom:10px"><span class="lbl">⚲ Filter</span><select id="fStat"></select><div class="sp"></div><button class="btn hide" id="btnSeed">Muat data contoh</button><button class="btn gold" id="btnNew">＋ Rancang SK Tim</button></div>
+  <div class="listbar"><h3>SK Tim per Modul WBS Jejaring</h3><i class="i" data-t="Daftar memuat semua modul WBS yang memiliki kegiatan Analisis Kebutuhan Jejaring Perubahan. CMO Kemenkeu merancang tim (struktur, kuota, kedudukan, tugas, penandatangan, reminder) → generate → unit pengisi mengisi slot sesuai kuota → koordinator pemilik probis mengirim → legal drafting (Draft, Permohonan LD ke Setban, Proses LD) → penetapan (penyampaian via Nadine, TTE Kepala Badan).">i</i><div class="sp" style="flex:1"></div><button class="bell" id="bell" title="Notifikasi">🔔<span id="bellN" class="hide"></span></button><label class="search" style="margin:0">⌕<input id="q" placeholder="Cari modul, kode WBS, unit, nama…"></label><button class="btn gold" id="btnNew">＋ Rancang SK Tim</button></div>
   <div class="card"><table class="t"><thead><tr><th>Modul</th><th style="width:150px">Pemilik Probis</th><th style="width:190px">Unit Mengirim</th><th style="width:140px">Deadline Isian</th><th style="width:150px">Posisi Alur</th><th style="width:24px"></th></tr></thead><tbody id="tbU"></tbody></table></div>
  </section>
  <section id="view-detail" class="hide"></section>
@@ -790,11 +803,11 @@ const SHELL=`<div class="jjsk">
  <input type="file" id="fileX" accept=".xlsx,.xls" class="hide">
 </div>`;
 function bindShell(){
- ["#q","#fStat"].forEach(s=>$(s).addEventListener("input",renderList));
+ ["#q"].forEach(s=>$(s).addEventListener("input",renderList));
  $("#bell").onclick=e=>{e.stopPropagation();$("#notif").classList.toggle("hide")};
  if(!window.__jjDocClick){window.__jjDocClick=1;document.addEventListener("click",e=>{if(ROOT&&ROOT.isConnected&&!e.target.closest(".jjsk #notif")&&!e.target.closest(".jjsk #bell")){const n=ROOT.querySelector("#notif");if(n)n.classList.add("hide")}})}
  $("#mdl").onclick=e=>{if(e.target.id==="mdl")closeM()};
- $("#btnSeed").onclick=()=>{seed();STORE().sk=DB;migrate();save();render();toast("Data contoh dimuat")};
+
  $("#btnNew").onclick=()=>{const ML=(ctx.mods?ctx.mods():[]).filter(m=>!DB.some(u=>u.kode===m.kode));
   openM("Rancang SK Tim baru",`<div class="grid" style="grid-template-columns:1fr 1fr">
    <div class="f c2"><label>Modul (dari WBS)</label><select id="nMod"><option value="">— pilih modul —</option>${ML.map(m=>`<option value="${esc(m.kode)}">${esc(m.kode)} · ${esc(m.nama)}</option>`).join("")}<option value="__manual">Isi manual…</option></select></div>
@@ -805,7 +818,7 @@ function bindShell(){
    <div class="f"><label>Mulai dari</label><select id="nT"><option value="mk">Template SK Tim</option><option value="rk">Template ringkas</option><option value="0">Kosong (hanya Ketua)</option></select></div>
    </div>
    <div style="text-align:right"><button class="btn pri" id="nOk">Buat & mulai rancang</button></div>`);
-  $("#nMod").onchange=()=>{const m=ML.find(x=>x.kode===$("#nMod").value);if(!m)return;$("#nK").value=m.kode;$("#nM").value=m.nama||"";$("#nP").value=m.aplikasi||m.prog||"";const ow=(m.uicUnits||[])[0];if(ow&&FULL[ow])$("#nO").value=FULL[ow];relUpd()};
+  $("#nMod").onchange=()=>{const m=ML.find(x=>x.kode===$("#nMod").value);if(!m)return;$("#nK").value=m.kode;$("#nM").value=m.nama||"";$("#nP").value=m.aplikasi||m.prog||"";const ow=(m.uicUnits||[])[0];const fo=ES1.includes(ow)?ow:FULL[ow];if(fo)$("#nO").value=fo;relUpd()};
   const relUpd=()=>{const o=$("#nO").value;document.querySelectorAll("#nRel .cs").forEach(l=>{const c=l.querySelector("input");if(l.dataset.u===o){c.checked=false;l.style.display="none"}else l.style.display="";l.classList.toggle("on",c.checked)})};$("#nO").onchange=relUpd;document.querySelectorAll("#nRel input").forEach(c=>c.onchange=relUpd);relUpd();
   const relOwners=o=>{const rel=[...document.querySelectorAll("#nRel input:checked")].map(c=>c.value).filter(x=>x!==o);return rel.length?[{unit:o,peran:"Koordinator"}].concat(rel.map((x,i)=>({unit:x,peran:"Unit "+(i+1)}))):[{unit:o,peran:"Koordinator"}]};
   
@@ -816,9 +829,19 @@ let ctx=null,ROOT=null;const KEY="__JJSK__";
 const STORE=()=>{const S=ctx.S;S.modMeta=S.modMeta||{};const v=S.modMeta[KEY]=S.modMeta[KEY]||{sk:[],version:1};v.sk=v.sk||[];return v};
 function toast(m){const t=$("#toast");if(!t){ctx&&ctx.toast&&ctx.toast(m);return}t.textContent=m;t.classList.add("on");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("on"),3200)}
 function style(){if(document.getElementById("jjsk-style"))return;const el=document.createElement("style");el.id="jjsk-style";el.textContent=JJSK_CSS;document.head.appendChild(el)}
-window.MT_JARINGAN_SK={attach(c){ctx=c;style();let root=document.getElementById("cm-jjsk-workspace");if(!root)return;ROOT=root;DB=STORE().sk;migrate();
+function seedOne(){seed();DB=DB.filter(u=>u.kode==="OA-84");STORE().sk=DB;migrate();save();view="list";selId=null;render();toast("Contoh SK Tim Mekanisme Kerja dimuat")}
+function seedAsk(force){if(!isCMO())return;let dis=false;try{dis=localStorage.getItem("jjsk_seed_dismiss")==="1"}catch(e){}if(!force&&(DB.length||dis))return;
+ if(DB.some(u=>u.kode==="OA-84")){toast("Contoh SK Tim Mekanisme Kerja sudah ada");return}
+ openM("Mulai dengan contoh?",`<p style="margin:0 0 10px">Belum ada SK Tim. Muat <b>contoh SK Tim Modul Mekanisme Kerja (OA-84)</b> untuk melihat alur lengkap dari rancang sampai legal drafting? Contoh bisa dihapus kapan saja.</p><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" id="sdNo">Nanti saja</button><button class="btn pri" id="sdOk">Muat contoh Mekanisme Kerja</button></div>`);
+ $("#sdNo").onclick=()=>{try{localStorage.setItem("jjsk_seed_dismiss","1")}catch(e){}closeM()};$("#sdOk").onclick=()=>{closeM();seedOne()}}
+function jjTable(c){ctx=c;DB=STORE().sk;migrate();return{cols:[{k:"own",l:"Pemilik probis",t:"sel",o:1,x:r=>r.own},{k:"kirim",l:"Unit mengirim",t:"sel",o:1,x:r=>r.kirim},{k:"dl",l:"Deadline isian",t:"sel",o:1,x:r=>r.dl},{k:"alur",l:"Posisi alur",t:"sel",o:1,x:r=>r.alur}],rows:()=>listRows().map(rowVals),list:()=>[]}}
+window.MT_JARINGAN_SK={table:jjTable,run(a){if(!ROOT)return false;clearTimeout(window.__jjSeedT);if(a==="new"){view="list";selId=null;render();if(isCMO())$("#btnNew").click();else toast("Rancang SK Tim hanya untuk PMO/CMO Kemenkeu");return true}
+  if(a==="seed"){seedAsk(true);return true}if(a==="guide"){view="list";render();setGuide(false);return true}
+  if(a==="fill"){const u=visible().find(x=>myTask(x)&&pengisian(x)&&myTask(x).status!=="terkirim");if(u)openDetail(u.id,"isianSaya");else toast("Tidak ada isian unit yang menunggu");return true}
+  if(a==="ld"||a==="sk"){const u=visible().find(x=>a==="ld"?x.status==="setuju"&&TAHAP_IDX(ensureSK(x).tahap)<=2:x.status==="setuju"&&TAHAP_IDX(ensureSK(x).tahap)>2);if(u)openDetail(u.id,a);else toast(a==="ld"?"Belum ada SK Tim di tahap legal drafting":"Belum ada SK Tim di tahap penetapan");return true}
+  return false},attach(c){ctx=c;style();let root=document.getElementById("cm-jjsk-workspace");if(!root)return;ROOT=root;DB=STORE().sk;migrate();
   if(ctx.mk&&view==="detail"&&!DB.some(u=>u.id===selId&&u.kode===ctx.mk)){view="list";selId=null}
-  root.innerHTML=SHELL;bindShell();if(ctx.mk&&view==="list"){const u=DB.find(x=>x.kode===ctx.mk);if(u&&visible().includes(u)){selId=u.id;view="detail";dTab=defTab(u)}}render()},
- version:"jjsk-v11"};
+  root.innerHTML=SHELL;bindShell();if(ctx.mk&&view==="list"){const u=DB.find(x=>x.kode===ctx.mk);if(u&&visible().includes(u)){selId=u.id;view="detail";dTab=defTab(u)}}render();clearTimeout(window.__jjSeedT);if(view==="list"&&!ctx.mk)window.__jjSeedT=setTimeout(()=>seedAsk(false),300)},
+ version:"jjsk-v12"};
 
 })();
