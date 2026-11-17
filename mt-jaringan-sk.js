@@ -466,7 +466,7 @@ function stepStruktur(u,ed){const ro=ed?"":"disabled",remEd=isCMO()&&(ed||pengis
    <div class="f"><label>Jenis program</label><select data-m="jenisProgram" ${ro}>${["Berkelanjutan","Tematik"].map(x=>`<option ${x===u.jenisProgram?"selected":""}>${x}</option>`).join("")}</select></div>
    <div class="f"><label>Masa kerja mulai</label><input type="date" data-m="mulai" value="${u.mulai}" ${ro}></div><div class="f"><label>Selesai</label><input type="date" data-m="selesai" value="${u.selesai}" ${ro}></div>
    <div class="f"><label>Deadline isian unit</label><input type="date" data-m="deadline" value="${u.deadline}" ${isCMO()&&(ed||pengisian(u))?"":"disabled"}></div></div>
-   <div class="owners"><div class="blk-h" style="margin:12px 0 6px"><h4>Pemilik proses bisnis</h4><i class="i" data-t="Program tematik biasanya melibatkan beberapa unit: satu Koordinator dan unit lain (Unit 1, Unit 2, …). Semua pemilik probis ikut mengisi; Koordinator yang mengajukan hasil pengisian ke CMO Kemenkeu.">i</i><div class="sp"></div>${ed?`<button class="lnk" data-r="addOwner">＋ Pemilik probis</button>`:""}</div>
+   <div class="owners"><div class="blk-h" style="margin:12px 0 6px"><h4>Unit pemilik probis</h4><i class="i" data-t="Program tematik biasanya melibatkan beberapa unit: satu Koordinator dan unit lain (Unit 1, Unit 2, …). Semua pemilik probis ikut mengisi; Koordinator yang mengirim hasil isian ke legal drafting.">i</i><div class="sp"></div>${ed?`<button class="lnk" data-r="addOwner">＋ Unit probis terkait</button>`:""}</div>
     ${owners(u).map((o,i)=>`<div class="owr"><select data-ow="${i}" ${ro}>${ES1.map(x=>`<option value="${esc(x)}" ${x===o.unit?"selected":""}>${esc(sh(x))} — ${esc(x)}</option>`).join("")}</select><select data-op="${i}" ${ro}>${(owners(u).length>1?["Koordinator","Unit 1","Unit 2","Unit 3","Unit 4"]:["Pemilik"]).map(x=>`<option ${x===o.peran?"selected":""}>${x}</option>`).join("")}</select>${ed&&owners(u).length>1?`<button class="btn ghost sm" data-owdel="${i}">✕</button>`:""}</div>`).join("")}</div>
    ${ed&&u.status==="rancang"?`<div class="tplbar"><span class="note">Mulai dari template:</span><button class="btn sm" data-r="tplMK">KEP Mekanisme Kerja</button><button class="btn sm" data-r="tplRingkas">Ringkas (CMO + probis)</button><button class="btn sm" data-r="tplCopy">Salin dari SK lain…</button></div>`:""}</div>
 <!--SPLIT-->  <div class="wsec" id="remSec"><div class="blk-h"><h4>Reminder otomatis</h4><i class="i" data-t="Pengingat dikirim otomatis hanya ke unit yang belum mengirim isian. Tetap bisa diubah setelah generate.">i</i><div class="sp"></div><label class="sw"><input type="checkbox" data-rm="on" ${u.reminder.on?"checked":""} ${remEd?"":"disabled"}> Aktif</label></div>
@@ -707,13 +707,17 @@ function bindShell(){
    <div class="f c2"><label>Modul (dari WBS)</label><select id="nMod"><option value="">— pilih modul —</option>${ML.map(m=>`<option value="${esc(m.kode)}">${esc(m.kode)} · ${esc(m.nama)}</option>`).join("")}<option value="__manual">Isi manual…</option></select></div>
    <div class="f"><label>Kode modul</label><input id="nK" placeholder="mis. OA-90"></div><div class="f"><label>Program</label><input id="nP" placeholder="mis. Digitalisasi Office Automation"></div>
    <div class="f c2"><label>Nama modul / submodul</label><input id="nM"></div>
-   <div class="f"><label>Pemilik proses bisnis (koordinator)</label><select id="nO">${ES1.map(x=>`<option value="${esc(x)}">${esc(sh(x))}</option>`).join("")}</select></div>
+   <div class="f c2"><label>Unit pemilik probis — Koordinator</label><select id="nO">${ES1.map(x=>`<option value="${esc(x)}">${esc(sh(x))} — ${esc(x)}</option>`).join("")}</select><small style="opacity:.7;margin-top:4px;display:block">Koordinator ikut mengisi dan mengirim hasil isian ke legal drafting.</small></div>
+   <div class="f c2"><label>Unit pemilik probis terkait <span style="font-weight:400;opacity:.7">· opsional, untuk program tematik (jadi Unit 1, Unit 2, …)</span></label><div class="chipsel" id="nRel">${ES1.map(x=>`<label class="cs" data-u="${esc(x)}"><input type="checkbox" value="${esc(x)}">${esc(sh(x))}</label>`).join("")}</div></div>
    <div class="f"><label>Mulai dari</label><select id="nT"><option value="mk">Template KEP Mekanisme Kerja</option><option value="rk">Template ringkas</option><option value="0">Kosong (hanya Ketua)</option></select></div>
-   <div class="f c2"><label class="sw" style="color:var(--ink)"><input type="checkbox" id="nTm"> Program tematik — beberapa unit pemilik probis</label></div></div>
+   </div>
    <div style="text-align:right"><button class="btn pri" id="nOk">Buat & mulai rancang</button></div>`);
-  $("#nMod").onchange=()=>{const m=ML.find(x=>x.kode===$("#nMod").value);if(!m)return;$("#nK").value=m.kode;$("#nM").value=m.nama||"";$("#nP").value=m.aplikasi||m.prog||"";const ow=(m.uicUnits||[])[0];if(ow&&FULL[ow])$("#nO").value=FULL[ow]};
+  $("#nMod").onchange=()=>{const m=ML.find(x=>x.kode===$("#nMod").value);if(!m)return;$("#nK").value=m.kode;$("#nM").value=m.nama||"";$("#nP").value=m.aplikasi||m.prog||"";const ow=(m.uicUnits||[])[0];if(ow&&FULL[ow])$("#nO").value=FULL[ow];relUpd()};
+  const relUpd=()=>{const o=$("#nO").value;document.querySelectorAll("#nRel .cs").forEach(l=>{const c=l.querySelector("input");if(l.dataset.u===o){c.checked=false;l.style.display="none"}else l.style.display="";l.classList.toggle("on",c.checked)})};$("#nO").onchange=relUpd;document.querySelectorAll("#nRel input").forEach(c=>c.onchange=relUpd);relUpd();
+  const relOwners=o=>{const rel=[...document.querySelectorAll("#nRel input:checked")].map(c=>c.value).filter(x=>x!==o);return rel.length?[{unit:o,peran:"Koordinator"}].concat(rel.map((x,i)=>({unit:x,peran:"Unit "+(i+1)}))):[{unit:o,peran:"Pemilik"}]};
+  
   $("#nOk").onclick=()=>{const k=$("#nK").value.trim(),m=$("#nM").value.trim(),p=$("#nP").value.trim()||"—",o=$("#nO").value,tp=$("#nT").value;if(!k||!m){toast("Isi kode dan nama modul");return}const md=m.split("›")[0].trim();
-   const u=newSK({kode:k,modul:m,program:p,owner:o,owners:[{unit:o,peran:$("#nTm").checked?"Koordinator":"Pemilik"}],jenisProgram:$("#nTm").checked?"Tematik":"Berkelanjutan",nama:`Tim Manajemen Perubahan Implementasi ${md} pada Program Transformasi ${p} Tahun ${new Date().getFullYear()}`,komp:tp==="mk"?presetMekKerja():tp==="rk"?presetRingkas(o):[presetMekKerja()[0]]});
+   const u=newSK({kode:k,modul:m,program:p,owner:o,owners:relOwners(o),jenisProgram:relOwners(o).length>1?"Tematik":"Berkelanjutan",nama:`Tim Manajemen Perubahan Implementasi ${md} pada Program Transformasi ${p} Tahun ${new Date().getFullYear()}`,komp:tp==="mk"?presetMekKerja():tp==="rk"?presetRingkas(o):[presetMekKerja()[0]]});
    addLog(u,"Rancangan SK Tim dibuat.");DB.unshift(u);save();closeM();openDetail(u.id,"rancang")}}}
 let ctx=null,ROOT=null;const KEY="__JJSK__";
 const STORE=()=>{const S=ctx.S;S.modMeta=S.modMeta||{};const v=S.modMeta[KEY]=S.modMeta[KEY]||{sk:[],version:1};v.sk=v.sk||[];return v};
@@ -722,6 +726,6 @@ function style(){if(document.getElementById("jjsk-style"))return;const el=docume
 window.MT_JARINGAN_SK={attach(c){ctx=c;style();let root=document.getElementById("cm-jjsk-workspace");if(!root)return;ROOT=root;DB=STORE().sk;migrate();
   if(ctx.mk&&view==="detail"&&!DB.some(u=>u.id===selId&&u.kode===ctx.mk)){view="list";selId=null}
   root.innerHTML=SHELL;bindShell();if(ctx.mk&&view==="list"){const u=DB.find(x=>x.kode===ctx.mk);if(u&&visible().includes(u)){selId=u.id;view="detail";dTab=defTab(u)}}render()},
- version:"jjsk-v10"};
+ version:"jjsk-v11"};
 
 })();
