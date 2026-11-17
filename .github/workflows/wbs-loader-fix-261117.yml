@@ -1,0 +1,43 @@
+name: Fix MT WBS loader in outer application
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/wbs-loader-fix-261117.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Relocate loader and validate
+        run: |
+          set -e
+          python3 scripts/fix-wbs-loader-261117.py
+          node --check activity-wbs.js
+          git diff --check
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf8')
+          assert s.index('activity-wbs.js?v=261117')<2000
+          assert s.count('activity-wbs.js?v=261117')==1
+          assert 'ActivityWBS.formHTML(item)' in s
+          assert 'ACT.actWbsIku=' in s
+          print('MT script loaded by top-level HTML (not document export)')
+          PY
+      - name: Commit safely
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "fix(mt): load PM CM WBS on main page instead of generated Word"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            git rebase origin/main
+            if git push origin HEAD:main; then exit 0; fi
+            sleep 2
+          done
+          exit 1
