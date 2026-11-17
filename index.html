@@ -3178,6 +3178,7 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 
 </style>
 <script src="cra-native.js?v=20261114-bar1"></script>
+<script src="mt-jaringan-sk.js?v=20261117-jj13"></script>
 <script src="pengelola-native.js?v=20261110-pegawai1"></script>
 <!-- Project Selection now uses native flow, not the Dashboard CM iframe/login. -->
 <script>
@@ -3202,7 +3203,7 @@ const LEVELS=['-','R','RU','CRU','CRUD'];
 const SCOPES=['Semua','Unit','Modul'];
 const SCOPE_DESK={Semua:'seluruh data',Unit:'data yang unitnya UIC Utama',Modul:'modul yang ditugaskan'};
 const UNREAD_SCOPED=['dash','porto','wbs','mil','risk','cr','crok','bukti','valid','lap','ref','adopsi','adp','reviu','usul','user','akses','sinkron','log'];
-const CMT=[['adp','ADP'],['rencana','Perencanaan'],['jaringan','Jaringan Perubahan'],['cra','CRA'],['pelaksanaan','Pelaksanaan'],['monev','Monev'],['pasca','Evaluasi Pasca'],['closing','Penutupan CM']];
+const CMT=[['adp','ADP'],['rencana','Perencanaan'],['jaringan','Jaringan Pengelola Proyek dan Perubahan'],['cra','CRA'],['pelaksanaan','Pelaksanaan'],['monev','Monev'],['pasca','Evaluasi Pasca'],['closing','Penutupan CM']];
 const PMT=[['siklus','Overview','porto'],['program','Detail Program','porto'],['perencanaan','Dokumen Proyek','charter'],['wbsplan','WBS','wbs'],['dokplan','Buat Dokumen Perencanaan','charter'],['wbs','WBS & progres','wbs'],['bukti','Bukti Dukung','bukti'],['cr','Change Request','cr'],['milestone','Milestone','mil'],['risiko','Risiko & Isu','risk'],['laporan','Capaian TW','lap'],['narasi','Narasi T-Program','lap'],['oneonone','Jadwal 1-on-1','wbs'],['penutupan','Penutupan','porto'],['pascaproyek','Pascaproyek','porto'],['referensi','Referensi Kode','ref']];
 /* kelompok tab PMO mengikuti alur Draft KEP Kepala BaTii: perencanaan → pelaksanaan → pemantauan → penutupan */
 const PMG=[['siklus','Overview',0,['siklus']],['program','Detail Program',0,['program']],['plan','Perencanaan',1,['perencanaan','wbsplan','dokplan']],['exec','Pelaksanaan',2,['wbs','narasi','cr']],['mon','Pemantauan',3,['milestone','risiko','laporan','oneonone']],['close','Penutupan',4,['penutupan']],['eval','Pascaproyek',5,['pascaproyek']],['ref','Referensi',0,['referensi']]];
@@ -3888,7 +3889,7 @@ function render(){try{if(typeof actStampAll==='function')actStampAll()}catch(e){
  else if(VIEW==='aktivitas')h=pAktivitas();else if(VIEW==='tim')h=typeof pAktTim==='function'?pAktTim():AKT_HDR()+'<p class="s">Memuat…</p>';else if(VIEW.startsWith('pmo-'))h=viewPmo(VIEW.slice(4));else if(VIEW.startsWith('cmo-'))h=viewCmo(VIEW.slice(4),null);
  else if(VIEW==='set-pengguna')h=viewUsers();else if(VIEW==='set-akses')h=viewAkses();else if(VIEW==='set-sinkron')h=viewSinkron();else if(VIEW==='set-db')h=viewDb();else if(VIEW==='set-log')h=viewLog();
  if(VIEW.startsWith('set-'))h=h.replace('<!--vh-->',setTabs());
- v.innerHTML=h;if(VIEW==='project-selection'&&window.MT_PROJECT_SELECTION)window.MT_PROJECT_SELECTION.mount();window.CM_CRA_NAV=()=>cmoTabs('cra',null);if(VIEW==='cra'&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}if(VIEW==='pengelola'&&window.PENGELOLA_NATIVE){window.PENGELOLA_NATIVE.attach({S,ME,save,toast});return;}if((VIEW==='cmo-cra'||/^modul-.+-t-cra$/.test(VIEW))&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}try{foldNotes(v);bindCompactGuides(v);mtCompactWorkbars(v)}catch(e){console.warn('Panduan ringkas:',e)}try{scrollActiveCompactNav(v)}catch(e){}
+ v.innerHTML=h;if(VIEW==='project-selection'&&window.MT_PROJECT_SELECTION)window.MT_PROJECT_SELECTION.mount();window.CM_CRA_NAV=()=>cmoTabs('cra',null);if((VIEW==='cmo-jaringan'||/^modul-.+-t-jaringan$/.test(VIEW))&&window.MT_JARINGAN_SK&&document.getElementById('cm-jjsk-workspace')){const jm=VIEW.match(/^modul-(.+)-t-jaringan$/);window.MT_JARINGAN_SK.attach({S,ME,mods,save,toast,mk:jm?decodeURIComponent(jm[1]):null});return;}if(VIEW==='cra'&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}if(VIEW==='pengelola'&&window.PENGELOLA_NATIVE){window.PENGELOLA_NATIVE.attach({S,ME,save,toast});return;}if((VIEW==='cmo-cra'||/^modul-.+-t-cra$/.test(VIEW))&&window.CRA_NATIVE){window.CRA_NATIVE.attach({S,ME,mods,save,toast});return;}try{foldNotes(v);bindCompactGuides(v);mtCompactWorkbars(v)}catch(e){console.warn('Panduan ringkas:',e)}try{scrollActiveCompactNav(v)}catch(e){}
 }
 const yearsOpt=()=>{const ys=new Set([2025,2026,2027,2028,2029,S.ui.tahun]);S.wbs.forEach(w=>{const y=yrOf(w);if(y>=2020)ys.add(y)});(S.programs||[]).forEach(p=>{if(p.psYear)ys.add(+p.psYear)});return [...ys].sort((a,b)=>a-b)};
 function foldNotes(v){
@@ -10624,11 +10625,11 @@ GUIDE['tim']={tujuan:'Mengelola Tim PMO & CMO Kemenkeu (Pusmantap): siapa bertug
   ['Profil','Profil Individu, Pegawai sementara (masa tugas), dan Pendampingan Unit (PMO/CMO Unit & pemilik probis per unit).']],
  tab:[['Highlight','Ringkasan harian yang bisa diatur per pengguna.'],['Agenda','Daftar agenda per tanggal.'],['Kehadiran','WFO/WFH dan dinas luar.'],['Cuti','Kalender dan aturan batas cuti.'],['Onboarding','Penempatan tim.'],['Profil','Profil, pegawai sementara, pendampingan unit.']],
  tips:['Klik kartu tim di Ringkasan kehadiran untuk menyaring Daftar Agenda per tim.','Dinas luar (ST) terisi otomatis dari aktivitas yang memiliki surat tugas.','Pegawai yang belum punya tim tampil di Perlu perhatian dan pada label "Lainnya" di agenda.']};
-GUIDE['cmo-jaringan']={tujuan:'Mengaktifkan Jaringan Perubahan (T-Agent) per modul: dasar penetapan (KEP), kebutuhan, penetapan, dan pelatihan T-Agent per unit.',
- alur:[['Unggah kertas kerja jejaring','Opsional: tempel tautan SharePoint/OneDrive atau unggah berkas Excel analisis kebutuhan jaringan.'],
-  ['Isi aktivasi jaringan','Nomor dan tanggal KEP, status aktivasi, serta dokumen KEP.'],
-  ['Catat T-Agent per unit','Klik + Unit, isi kebutuhan, jumlah ditetapkan, dan terlatih. Kartu Kebutuhan/Ditetapkan/Terlatih terhitung otomatis.']],
- tips:['Gunakan hasil analisis kebutuhan jaringan dari tab Perencanaan sebagai acuan jumlah T-Agent.','Jaringan yang sudah aktif menjadi saluran utama komunikasi dan pelatihan di tab Pelaksanaan.']};
+GUIDE['cmo-jaringan']={tujuan:'Membentuk Tim Lainnya (SK Tim jaringan perubahan) per modul: CMO Kemenkeu merancang struktur, kuota, kedudukan, tugas, dan penandatangan; unit mengisi nama/jabatan sesuai kuota; lalu legal drafting dan penetapan oleh Kepala Badan.',
+ alur:[['Rancang tim (CMO Kemenkeu)','Isi identitas & pemilik probis (koordinator untuk program tematik), reminder otomatis, pimpinan, kuota per unit beserta kedudukan tiap slot, tugas, dan penandatangan. Klik Generate.'],
+  ['Isi slot unit','Unit pengisi melengkapi No, Nama/Jabatan sesuai kuota (langsung di form atau lewat template Excel unit), lalu Kirim isian. Lewat deadline tetap bisa dikirim, ditandai terlambat.'],
+  ['Kirim untuk legal drafting','Koordinator pemilik probis mengirim setelah semua unit lengkap. CMO Kemenkeu mencatat ND permohonan LD ke Setban, tautan SharePoint hasil LD, ND penyampaian Nadine, lalu nomor & tanggal KEP setelah TTE Kaban.']],
+ tips:['Word Draft SK memakai cetakan KEP Tim Mekanisme Kerja; nomor & tanggal tetap [@NomorND]/[@TanggalND] untuk Nadine.','Rekap Excel berisi seluruh slot dan status kirim per unit.']};
 GUIDE['cmo-cra']={tujuan:'Change Readiness Assessment (CRA): menilai kesiapan unit/pengguna sebelum implementasi dan menyusun rencana aksi. CRA bersifat opsional, dijalankan bila unit memintanya.',
  alur:[['Siapkan instrumen','Pilih atau sesuaikan bank pertanyaan CRA (Included/Excluded) untuk modul.'],['Kumpulkan respons','Bagikan kuesioner dan catat hasilnya.'],['Analisis','Lihat skor kesiapan per dimensi dan unit.'],['Rencana aksi','Susun tindak lanjut untuk dimensi yang lemah dan pantau di Pelaksanaan/Monev.','modul-t-pelaksanaan']],
  tips:['Tandai pertanyaan yang tidak relevan sebagai Excluded agar skor tidak terdistorsi.']};
@@ -10857,7 +10858,7 @@ const capSt=c=>c==null?'Belum diukur':c>=100?'Tercapai':c>=80?'Mendekati':'Di ba
 function idxMod(mk){const is=S.ind.filter(i=>i.modul===mk);let w=0,s=0;is.forEach(i=>{const c=capOf(i);if(c!=null){w+=+i.bobot||0;s+=c*(+i.bobot||0)}});return w?s/w:null}
 function adoptMod(mk){const a=S.adopsi.filter(x=>x.modul===mk);if(!a.length)return null;const l=a[a.length-1];return {per:l.per,p:l.tu?l.au/l.tu*100:null,t:l.tt?l.at/l.tt*100:null}}
 const adpSt=mk=>(S.modMeta[mk]||{}).adp||'Draft';
-const CM_TAB_HELP={adp:'Identifikasi perubahan As-Is dan To-Be, dampak POSTeR, risiko, serta indikator keberhasilan.',rencana:'Petakan pemangku kepentingan dan susun strategi komunikasi serta pelatihan perubahan.',jaringan:'Kelola peran sponsor, Change Champion, T-Agent, penugasan, dan aktivasi jaringan perubahan.',cra:'Ukur kesiapan pengguna melalui survei, analisis respons, dan rencana tindak lanjut.',pelaksanaan:'Pantau realisasi komunikasi dan pelatihan serta bukti pelaksanaannya.',monev:'Pantau komunikasi, pelatihan, tindak lanjut, serta indikator keberhasilan secara berkala.',pasca:'Evaluasi keberlanjutan adopsi paling cepat satu bulan setelah implementasi, sebagai dasar penutupan CM.',closing:'Tutup pendampingan transisi setelah evaluasi, kesiapan kanal layanan resmi, dan pengalihan tanggung jawab operasional.'};
+const CM_TAB_HELP={adp:'Identifikasi perubahan As-Is dan To-Be, dampak POSTeR, risiko, serta indikator keberhasilan.',rencana:'Petakan pemangku kepentingan dan susun strategi komunikasi serta pelatihan perubahan.',jaringan:'Rancang SK Tim (struktur, kuota, kedudukan), isian unit sesuai kuota, legal drafting, dan penetapan.',cra:'Ukur kesiapan pengguna melalui survei, analisis respons, dan rencana tindak lanjut.',pelaksanaan:'Pantau realisasi komunikasi dan pelatihan serta bukti pelaksanaannya.',monev:'Pantau komunikasi, pelatihan, tindak lanjut, serta indikator keberhasilan secara berkala.',pasca:'Evaluasi keberlanjutan adopsi paling cepat satu bulan setelah implementasi, sebagai dasar penutupan CM.',closing:'Tutup pendampingan transisi setelah evaluasi, kesiapan kanal layanan resmi, dan pengalihan tanggung jawab operasional.'};
 function cmoTabs(tab,mk){return `<nav class="cm-journey" aria-label="Menu Change Management">${CMT.map(([k,l],i)=>{const href=mk?`#modul-${mk}-t-${k}`:`#cmo-${k}`;const tip=CM_TAB_HELP[k]||l;const shortLabel=({jaringan:'Jaringan',closing:'Penutupan'})[k]||l;return `<a href="${href}" class="cm-step ${k===tab?'on':''}" ${k===tab?'aria-current="page"':''} title="${esc(tip)}" aria-label="${esc(l+': '+tip)}"><span class="cm-step-number">${i+1}</span><span class="cm-step-label">${shortLabel}</span></a>`}).join('')}</nav>`}
 const modRel=(m,u)=>!u?'':m.uicUnits.includes(u)?'u':unitsOf(m.pend).includes(u)?'p':'';
 const cU=()=>lockU()||S.ui.cunit||'';
@@ -10889,7 +10890,7 @@ function viewCmo(tab,mk){
  const descriptions={
  adp:'Analisis Dampak Perubahan (ADP) — As-Is, To-Be, POSTeR, risiko, dan indikator keberhasilan.',
  rencana:'Perencanaan perubahan — stakeholder, matriks experience–support, komunikasi, dan pelatihan.',
- jaringan:'Pembentukan dan aktivasi jaringan perubahan, KEP penugasan, serta kesiapan T-Agent per unit.',
+ jaringan:'Pembentukan tim jaringan perubahan (Tim Lainnya): rancang struktur & kuota, isian unit, legal drafting, dan penetapan SK Tim.',
  cra:'Asesmen kesiapan perubahan: bank pertanyaan berbasis peran, survei, analitik, action plan, dan perbandingan pengukuran.',
  pelaksanaan:'Realisasi kegiatan komunikasi dan pelatihan berdasarkan perencanaan perubahan.',
  monev:'Pemantauan berkala strategi komunikasi, pelatihan, dan indikator keberhasilan perubahan.',
@@ -10898,13 +10899,14 @@ function viewCmo(tab,mk){
  };
  const cmHeaders={
   adp:['1','Analisis Dampak Perubahan'],rencana:['2','Perencanaan Perubahan'],
-  jaringan:['3','Jaringan Perubahan'],cra:['4','Asesmen Kesiapan Perubahan'],
+  jaringan:['3','Jaringan Pengelola Proyek dan Perubahan'],cra:['4','Asesmen Kesiapan Perubahan'],
   pelaksanaan:['5','Pelaksanaan Perubahan'],monev:['6','Monitoring dan Evaluasi'],
   pasca:['7','Evaluasi Pascaperubahan'],closing:['8','Penutupan Perubahan']
  };
  const cmHeading=cmHeaders[tab]||['C','Change Management'];
  const head=mk?modHead(mk):vh(cmHeading[0],'cmo',cmHeading[1],descriptions[tab]||'Pengelolaan perubahan transformasi digital.','');
  const tabs=cmoTabs(tab,mk);
+ if(tab==='jaringan'&&window.MT_JARINGAN_SK)return head+tabs+'<div id="cm-jjsk-workspace" class="cm-jjsk-workspace" aria-label="Ruang kerja SK Tim jaringan perubahan"></div>';
  if(tab==='cra')return head+tabs+'<div id="cm-cra-workspace" class="cm-cra-workspace" aria-label="Ruang kerja asesmen kesiapan perubahan"></div>';
  const ms=mk?[modOf(mk)].filter(Boolean):visMods(f).filter(cmoMatch).filter(m=>!S.ui.mod||m.kode===S.ui.mod);
  const mf=s=>ms.some(m=>m.kode===s.modul);
