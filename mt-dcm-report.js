@@ -1523,7 +1523,7 @@ function mtToAgenda(x){
  let nama='';try{nama=typeof actName==='function'?actName(x):x.nama}catch(e){nama=x.nama||''}
  let kat='';try{kat=typeof actKatOf==='function'?actKatOf(x):x.kat}catch(e){kat=x.kat||''}
  return {
-  id:String(x.id),no:x.no||'',namaKegiatan:nama||'',kategori:kat||'',
+  id:String(x.id),no:x.no||'',namaKegiatan:nama||'',kategori:kat||'',wbsGroup:x.wbsGroup||'',wbsLevel4:x.wbsLevel4||'',wbsLevel5:x.wbsLevel5||'',
   tglMulai:String(x.tgl||'').slice(0,10),tglSelesai:String(x.tglSelesai||x.tgl||'').slice(0,10),
   waktu:jam,jamMulai:jm?jm[1].replace('.',':'):'',jamSelesai:jm?jm[2].replace('.',':'):'',
   layanan:x.layanan||'',unitPemohon:x.unitP||'',programTerkait:x.program||'',picTimCM:ARR(x.pic).join(', '),
@@ -1545,12 +1545,12 @@ function mtFilterState(){
  const u=S.ui||{},tw=+u.oneTw||0;let from=u.actFrom||'',to=u.actTo||'';
  if(tw&&!from&&!to){const y=+(u.actTahun||S.ui.tahun||new Date().getFullYear()),m1=(tw-1)*3+1,m3=m1+2,last=new Date(y,m3,0).getDate();from=`${y}-${String(m1).padStart(2,'0')}-01`;to=`${y}-${String(m3).padStart(2,'0')}-${last}`}
  const v=x=>x?String(x):'ALL';
- return {kategori:v(u.actKat),program:v(u.actProg),status:v(u.actSt),pic:v(u.actPic),unit:v(u.actUnit),layanan:v(u.actLay),tahun:v(u.actTahun),unitType:'ALL',dateFrom:from,dateTo:to,search:u.actQ||''};
+ return {kategori:v(u.actKat),program:v(u.actProg),status:v(u.actSt),pic:v(u.actPic),unit:v(u.actUnit),layanan:v(u.actLay),tahun:v(u.actTahun),unitType:'ALL',wbsGroup:v(u.actWbsGroup),wbsLevel4:v(u.actWbsLevel4),wbsLevel5:v(u.actWbsLevel5),dateFrom:from,dateTo:to,search:u.actQ||''};
 }
 function mtFilteredRows(){
  const all=(typeof actRows==='function'?actRows():[]),u=S.ui||{},tw=+u.oneTw||0,kat=u.actKat||'',sf=u.actSt||'',pf=u.actPic||'',q=String(u.actQ||'').toLowerCase();
  const strip=v=>String(v||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
- return all.filter(x=>(!u.actTahun||String(x.tahun)===String(u.actTahun))&&(!tw||oneTwOf(x)===tw)&&(!kat||actKatOf(x)===kat)&&(!sf||actSt(x)[0].split(' · ')[0]===sf)&&(!pf||ARR(x.pic).includes(pf))&&(!u.actProg||x.program===u.actProg)&&(!u.actUnit||x.unitP===u.actUnit)&&(!u.actLay||x.layanan===u.actLay)&&(!u.actFrom||(x.tglSelesai||x.tgl||'')>=u.actFrom)&&(!u.actTo||(x.tgl||'9999')<=u.actTo)&&(!q||[actName(x),x.program,x.tema,x.uic,x.kat,x.unitP,ARR(x.pic).join(' '),x.lokasi,x.link,x.tujuan,x.narsum,x.peserta,x.ringkas,x.tl,x.undStatus,strip(x.notulaTeks)].join(' ').toLowerCase().includes(q)));
+ return all.filter(x=>(!u.actTahun||String(x.tahun)===String(u.actTahun))&&(!tw||oneTwOf(x)===tw)&&(!kat||actKatOf(x)===kat)&&(!sf||actSt(x)[0].split(' · ')[0]===sf)&&(!pf||ARR(x.pic).includes(pf))&&(!u.actProg||x.program===u.actProg)&&(!u.actUnit||x.unitP===u.actUnit)&&(!u.actLay||x.layanan===u.actLay)&&(!u.actFrom||(x.tglSelesai||x.tgl||'')>=u.actFrom)&&(!u.actTo||(x.tgl||'9999')<=u.actTo)&&(!q||[actName(x),x.program,x.tema,x.uic,x.kat,x.unitP,ARR(x.pic).join(' '),x.lokasi,x.link,x.tujuan,x.narsum,x.peserta,x.ringkas,x.tl,x.undStatus,strip(x.notulaTeks)].join(' ').toLowerCase().includes(q))&&(!window.ActivityWBS||window.ActivityWBS.mtMatch(x,u)));
 }
 function prepare(){MTREF.clear();state.agendas=mtAllAgendas();state.filters=mtFilterState();}
 function libsReady(){const miss=[];if(typeof dayjs==='undefined')miss.push('dayjs');if(typeof JSZip==='undefined')miss.push('JSZip');if(typeof Chart==='undefined')miss.push('Chart.js');if(typeof QRCode==='undefined')miss.push('QRCode');return miss}
