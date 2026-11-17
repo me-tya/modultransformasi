@@ -10,14 +10,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Print integration source ranges
+      - name: Read activity insert anchors
         run: |
           python3 - <<'PY'
           from pathlib import Path
           lines=Path('index.html').read_text(encoding='utf8').splitlines()
-          for rng in '5640:5735,5845:5910,6193:6257,6290:6320'.split(','):
+          for rng in '5740:5844,5920:5940,6208:6222,6258:6275'.split(','):
             a,b=map(int,rng.split(':'))
-            print('\n### INDEX',a,b)
+            print('\n###',a,b)
             for k in range(a,b+1):
-              if k<=len(lines):print(f'{k}: '+lines[k-1][:1250])
+              if k<=len(lines):print(str(k)+': '+lines[k-1][:1600])
           PY
