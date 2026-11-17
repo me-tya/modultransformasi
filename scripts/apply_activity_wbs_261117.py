@@ -12,9 +12,9 @@ def change(old,new,label):
     if n!=1:
         raise RuntimeError(f'{label}: expected one anchor, found {n}')
     s=s.replace(old,new,1)
-change('</head>',
+s=s.replace('</head>',
        '<link rel="stylesheet" href="activity-wbs.css">\n<script defer src="activity-wbs.js"></script>\n<script defer src="activity-wbs-mt.js"></script>\n</head>',
-       'load shared WBS')
+       1)
 change('    <div class="sw-g2" data-one><div class="fld"><label for="one-tw">Triwulan</label>',
        '    '+chr(36)+'{window.ActivityWBS.formHTML(item)}\n    <div class="sw-g2" data-one><div class="fld"><label for="one-tw">Triwulan</label>',
        'put classification after program in existing wizard')
