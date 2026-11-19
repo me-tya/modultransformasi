@@ -1,0 +1,61 @@
+/* 261119-MT-04 — Aktivitas: semua filter di panel atas, grid proporsional.
+   Triwulan + PM/CM + WBS L4/L5 tidak membuat panel filter kedua. */
+.cmx .card.filter-bar{padding:10px 12px!important;margin-bottom:10px!important}
+.cmx .card.filter-bar .filter-bar-row1{display:flex;flex-wrap:nowrap;align-items:center;gap:8px}
+.cmx .card.filter-bar .filter-bar-row1 .search-wrap{flex:1 1 auto;min-width:0;width:auto;max-width:none}
+.cmx .card.filter-bar .filter-bar-row1 input[data-actf="actQ"]{height:36px}
+.cmx .card.filter-bar .filter-bar-row1 .btn-filter-toggle{
+  height:36px!important;min-height:36px!important;padding:0 11px!important;
+  align-items:center;margin:0;box-sizing:border-box;flex:0 0 auto
+}
+.cmx .card.filter-bar [data-act="actFOpen"]{order:1}
+.cmx .card.filter-bar [data-act="actDbk"]{order:2}
+.cmx .filter-bar-body.act-fgrid:not(.hidden){
+  display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  align-items:center;gap:7px!important;margin-top:8px!important;padding-top:8px!important
+}
+.cmx .act-fgrid select.filter-select{
+  width:100%!important;min-width:0!important;max-width:100%!important;
+  box-sizing:border-box;height:36px!important;padding:0 26px 0 9px;
+  text-overflow:ellipsis;overflow:hidden;font:500 12px Inter,Arial,sans-serif
+}
+.cmx .act-fgrid [data-actf="actTahun"],
+.cmx .act-fgrid [data-actf="oneTw"],
+.cmx .act-fgrid [data-actf="actLay"],
+.cmx .act-fgrid [data-actf="actSt"],
+.cmx .act-fgrid [data-actf="actWbsGroup"]{grid-column:span 1}
+.cmx .act-fgrid [data-actf="actKat"],
+.cmx .act-fgrid [data-actf="actProg"],
+.cmx .act-fgrid [data-actf="actUnit"],
+.cmx .act-fgrid [data-actf="actPic"],
+.cmx .act-fgrid [data-actf="actWbsL4"]{grid-column:span 2}
+.cmx .act-fgrid [data-actf="actWbsL5"]{grid-column:span 3}
+.cmx .act-fgrid .act-per,.cmx .act-fgrid .act-fact{grid-column:span 3}
+.cmx .act-fgrid .act-per{height:36px;padding-left:9px}
+.cmx .act-fgrid .act-fact{flex-wrap:nowrap;justify-content:flex-end;gap:6px}
+.cmx .act-fgrid .act-fact button{height:36px;padding:0 10px}
+.cmx .ch.act-ch{display:flex;align-items:center;gap:7px}
+.cmx .ch.act-ch h3{flex:1 1 auto;min-width:0}
+.cmx .ch.act-ch .act-iku-head{
+  flex:0 0 auto;display:inline-flex;justify-content:center;align-items:center;
+  height:34px;padding:0 11px;border:1px solid #173A74;
+  border-radius:8px;background:#173A74;color:#fff;cursor:pointer;
+  white-space:nowrap;font:700 11.5px Inter,Arial,sans-serif
+}
+.cmx .ch.act-ch .act-iku-head:hover,.cmx .ch.act-ch .act-iku-head:focus-visible{
+ background:#254C89;border-color:#254C89;outline-offset:2px
+}
+@media(max-width:1080px){
+ .cmx .filter-bar-body.act-fgrid:not(.hidden){grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .cmx .act-fgrid select.filter-select,.cmx .act-fgrid [data-actf]{grid-column:span 1!important}
+ .cmx .act-fgrid .act-per,.cmx .act-fgrid .act-fact{grid-column:1/-1!important}
+ .cmx .card.filter-bar .filter-bar-row1{flex-wrap:wrap}
+ .cmx .card.filter-bar .filter-bar-row1 .search-wrap{flex:1 1 100%}
+ .cmx .act-fgrid .act-fact{flex-wrap:wrap}
+}
+@media(max-width:640px){
+ .cmx .filter-bar-body.act-fgrid:not(.hidden){grid-template-columns:1fr!important}
+ .cmx .card.filter-bar .filter-bar-row1 .btn-filter-toggle{flex:1 1 auto}
+ .cmx .ch.act-ch{flex-wrap:wrap}
+ .cmx .ch.act-ch .act-iku-head{margin-left:auto}
+}
