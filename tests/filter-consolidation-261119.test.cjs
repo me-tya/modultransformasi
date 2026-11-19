@@ -1,0 +1,27 @@
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const html=fs.readFileSync('index.html','utf8');
+const css=fs.readFileSync('mt-filter-consolidated-261119.css','utf8');
+test('Activity filters, including PM/CM and WBS, all stay in top filter bar',()=>{
+ assert.match(html,/const fbar='<div class="card filter-bar"/);
+ for(const key of ['oneTw','actWbsGroup','actWbsL4','actWbsL5'])
+  assert.match(html,new RegExp('data-actf="'+key+'"'));
+ assert.match(html,/fbar\+today\+'<div class="card">/);
+});
+test('Export CSV IKU appears once in activity table heading, not among filters',()=>{
+ assert.equal((html.match(/data-act="actWbsIku"/g)||[]).length,1);
+ assert.match(html,/class="act-iku-head" data-act="actWbsIku"/);
+ assert.doesNotMatch(html,/class="act-repb" data-act="actWbsIku"/);
+});
+test('existing Reset clears WBS along with search and other filters',()=>{
+ assert.match(html,/data-act="oneReset"/);
+ assert.match(html,/if\(e\.target\?\.closest\?\.\('\[data-act="oneReset"\]'\)\)Object\.assign\(S\.ui,\{actWbsGroup:'',actWbsL4:'',actWbsL5:''\}\)/);
+});
+test('Six-column proportional desktop WBS layout, compact and responsive',()=>{
+ assert.match(css,/repeat\(6,minmax\(0,1fr\)\)/);
+ assert.match(css,/\[data-actf="actWbsL4"\]\{grid-column:span 2\}/);
+ assert.match(css,/\[data-actf="actWbsL5"\]\{grid-column:span 3\}/);
+ assert.match(css,/@media\(max-width:640px\)/);
+ assert.match(html,/mt-filter-consolidated-261119\.css/);
+});
