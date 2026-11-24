@@ -51,10 +51,24 @@ function sugOf(r){const t=(String(r.cara||'')+' '+r.jenis).toLowerCase();
  return {fok:'Awareness',met:METODE[0],sum:'Hasil T-Survey pasca kegiatan'}}
 function evRec(ref){return P().find(x=>x.jenisCatatan==='EVAL-KEG'&&x.ref===ref)}
 function stAuto(e){const h=num(e.hasil),t=num(e.tgt);if(h==null||t==null)return e.stM||'';const ra=num(e.ambRA);const lo=ra==null?t-15:ra;return h>=t?'On Track':h>=lo?'Required Action':'Off Track'}
-function evRows(mf){return implRows(mf).filter(r=>['Berjalan','Terlaksana'].includes(r.status)).map(r=>{const e=evRec(r.id)||{},s=sugOf(r);
- const o=Object.assign({},r,{fok:s.fok,met:s.met,sum:s.sum,jang:'',capai:r.hadir||'',ik:'',tgt:'',ambRA:'',hasil:'',stM:'',tem:'',sar:'',tl:'',pj:'',tenggat:'',stTl:'',tamb:false},e,{id:r.id,modul:r.modul,_e:!!e.id});o.st=stAuto(o);return o})}
+const RK=['fok','met','sum','ik','tgt','ambRA'],RF={fok:'mfok',met:'mmet',sum:'msum',ik:'mik',tgt:'mtgt',ambRA:'mamb'};
+const shOf=id=>S.sh.find(x=>x.id===id);
+function planR(r){const sh=shOf(r.sid)||{},pre=r.ccT==='P'?'p_':'k_',o={};RK.forEach(k=>{const v=sh[pre+RF[k]];if(v!==undefined&&v!=='')o[k]=v});if(!o.ik&&pre==='p_'&&sh.p_ind)o.ik=sh.p_ind;return o}
+function evRows(mf){return implRows(mf).filter(r=>['Berjalan','Terlaksana'].includes(r.status)).map(r=>{const e=evRec(r.id)||{},s=sugOf(r),pl=planR(r);
+ const o=Object.assign({},r,{fok:s.fok,met:s.met,sum:s.sum,jang:'',capai:r.hadir||'',ik:'',tgt:'',ambRA:'',hasil:'',stM:'',tem:'',sar:'',tl:'',pj:'',tenggat:'',stTl:'',tamb:false},e,pl,{id:r.id,modul:r.modul,_e:!!e.id,_pl:Object.keys(pl).length>=3});o.st=stAuto(o);return o})}
 function evSave(row){let e=evRec(row.id);if(!e){e={id:uid(),jenisCatatan:'EVAL-KEG',ref:row.id,modul:row.modul};P().push(e)}
- ['keg','fok','ik','met','sum','tgt','ambRA','jang','capai','hasil','stM','tem','sar','tl','pj','tenggat','stTl','tamb'].forEach(k=>{if(row[k]!==undefined)e[k]=row[k]});e.keg=row.keg;e.kode=row.kode;e.st=stAuto(e);e.upd=TODAY}
+ /* Rancangan Monev disimpan pada rencana (Perencanaan) agar satu sumber; hasil evaluasi disimpan pada catatan evaluasi. */
+ const sh=shOf(row.sid),pre=row.ccT==='P'?'p_':'k_';if(sh)RK.forEach(k=>{if(row[k]!==undefined&&String(row[k]??'')!==String(sh[pre+RF[k]]??'')){sh[pre+RF[k]]=row[k];sh.mRevDate=TODAY}});
+ ['jang','capai','hasil','stM','tem','sar','tl','pj','tenggat','stTl','tamb'].forEach(k=>{if(row[k]!==undefined)e[k]=row[k]});RK.forEach(k=>{e[k]=row[k]});e.keg=row.keg;e.kode=row.kode;e.st=stAuto(e);e.upd=TODAY}
+/* Kolom rancangan Monev untuk form Perencanaan (kolom AK–AN KK CM) */
+function rancCols(K){const pre=K?'k_':'p_';return [{k:pre+'s_m',l:'Rancangan Monev',t:'sec'},
+ {k:pre+'mfok',l:'Fokus Monev (ADKAR)',t:'sel',o:[''].concat(ADKAR),tbl:false,info:'Kolom AK. Kosong = saran otomatis sesuai kanal (T-Media → Awareness, T-Forum/T-Lab → Desire, T-Course/pelatihan → Ability).'},
+ {k:pre+'mmet',l:'Metode Monev',t:'sel',o:[''].concat(METODE),tbl:false,info:'Kolom AM. Pilihan sesuai Bab V c.3.'},
+ {k:pre+'msum',l:'Sumber data Monev',tbl:false,info:'Kolom AN, mis. hasil T-Survey, datalog adopsi sistem.'},
+ {k:pre+'mik',l:'Indikator kinerja Monev',t:'ta',tbl:false,info:'Kolom AL. Terukur, mis. ≥80% peserta memahami tujuan perubahan.'+(K?'':' Kosong = memakai Indikator keberhasilan pelatihan.')},
+ {k:pre+'mtgt',l:'Target (%)',t:'num',tbl:false,info:'Hasil ≥ target → On Track.'},
+ {k:pre+'mamb',l:'Batas bawah Required Action (%)',t:'num',tbl:false,info:'Di bawah angka ini → Off Track. Kosong = target − 15 (Bab V c.4: ambang ditetapkan di kertas kerja).'},
+ {k:'_mon',l:'Monev',frm:false,info:'Rancangan Monev lengkap bila fokus, indikator, dan target terisi. Rancangan dipakai otomatis di Monev › Evaluasi.',r:s=>{const ok=s[pre+'mfok']&&(s[pre+'mik']||(!K&&s.p_ind))&&s[pre+'mtgt']!==undefined&&s[pre+'mtgt']!=='';return ok?'<span class="chip c-ok">Lengkap</span>':'<span class="chip c-gray">Belum</span>'},x:s=>s[pre+'mfok']&&s[pre+'mtgt']?'Lengkap':'Belum'}]}
 const cak=r=>{const a=num(r.capai),b=num(r.jang);return a!=null&&b?Math.round(a/b*100)+'%':''};
 
 function monev(ms,mf,mk){
@@ -87,8 +101,8 @@ function monev(ms,mf,mk){
    validate:d=>{const st=stAuto(d);if(st&&st!=='On Track'&&!String(d.tl||'').trim()){toast('Status '+st+': isi tindak lanjut.');return false}},
    onSave:r=>evSave(r),
    cols:[{k:'kode',l:'Kode',frm:false,sk:r=>r.kode||'',r:r=>MTCC.chip(r.modul,r.cc,MTCC.started(r.status)?'-1':''),x:r=>r.kode},...(mk?[]:[{k:'modul',l:'Modul',frm:false,r:r=>'<span class="code">'+E(r.modul)+'</span>'}]),
-    {k:'keg',l:'Kegiatan',ro:true,w:1,r:r=>'<b>'+E(r.keg)+'</b><span class="sm">'+E(r.fok)+' · '+E(String(r.met||'').replace(/ \(.*/,''))+(r._e?'':' · <i>saran otomatis</i>')+'</span>'},
-    {k:'s1',l:'Rancangan Monev',t:'sec'},
+    {k:'keg',l:'Kegiatan',ro:true,w:1,r:r=>'<b>'+E(r.keg)+'</b><span class="sm">'+E(r.fok)+' · '+E(String(r.met||'').replace(/ \(.*/,''))+(r._pl?'':' · <i>saran otomatis</i>')+'</span>'},
+    {k:'s1',l:'Rancangan Monev (dari Perencanaan)',t:'sec'},
     {k:'fok',l:'Fokus Monev (ADKAR)',t:'sel',o:ADKAR,tbl:false,info:'Kolom AK. Aspek ADKAR utama yang dimonitor.'},
     {k:'met',l:'Metode Monev',t:'sel',o:METODE,tbl:false,info:'Kolom AM. Pilihan mengikuti Bab V c.3.'},
     {k:'sum',l:'Sumber data',tbl:false,info:'Kolom AN, mis. hasil T-Survey, datalog adopsi sistem.'},
@@ -245,7 +259,7 @@ window.MTMV_closingSummary=mk=>{if(!mk)return '';const s=syarat(mk);const isu=P(
   '4. Pihak penerima tanggung jawab: '+([...new Set(s.tr.map(t=>t.kpd).filter(Boolean))].join(', ')||'-'),
   '5. Tindak lanjut yang disepakati: '+(s.tr.map(t=>t.mek).filter(Boolean).join('; ')||'-')].join('\n')};
 
-window.MTMV={monev,pasca,closing,devOf,planYM,stAuto,syarat,titikOf};
+window.MTMV={monev,pasca,closing,devOf,planYM,stAuto,syarat,titikOf,rancCols};
 /* ---------- Bantuan, Guide & contoh isian ---------- */
 try{
  const ex=(t,tj,f)=>({title:t,tujuan:tj,f});
