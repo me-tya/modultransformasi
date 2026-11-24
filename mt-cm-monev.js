@@ -263,7 +263,7 @@ window.MTMV={monev,pasca,closing,devOf,planYM,stAuto,syarat,titikOf,rancCols};
 
 /* ---------- Cari & sorot (matriks) / cari & saring (tabel non-standar) ---------- */
 window.MV_HL=(id,ph)=>'<div class="mvhl"><span>🔍</span><input type="search" data-hl="'+id+'" placeholder="'+E(ph||'Cari & sorot…')+'" aria-label="'+E(ph||'Cari')+'"></div>';
-if(!window.__mvHlBound){window.__mvHlBound=1;document.addEventListener('input',e=>{const i=e.target;if(!i||!i.matches)return;
+if(!window.__mvHlBound&&typeof document!=="undefined"){window.__mvHlBound=1;document.addEventListener('input',e=>{const i=e.target;if(!i||!i.matches)return;
  if(i.matches('input[data-hl]')){const box=document.getElementById(i.dataset.hl);if(!box)return;const q=i.value.toLowerCase().trim();box.classList.toggle('hl-on',!!q);
   box.querySelectorAll('[data-hlt]').forEach(el=>{const hit=!!q&&el.dataset.hlt.toLowerCase().includes(q);el.classList.toggle('hl-hit',hit);el.classList.toggle('hl-dim',!!q&&!hit)});return}
  if(i.matches('input[data-hlf]')){const box=i.closest('section,.card')||document;const q=i.value.toLowerCase().trim();box.querySelectorAll('tbody tr').forEach(tr=>{tr.style.display=!q||tr.textContent.toLowerCase().includes(q)?'':'none'})}},true)}
