@@ -59,3 +59,7 @@
  .cmx .ch.act-ch{flex-wrap:wrap}
  .cmx .ch.act-ch .act-iku-head{margin-left:auto}
 }
+/* 2026-11-24b: filter IKU (pusat) → Komponen 2 + Tahapan 2 + IKU 2 */
+.cmx .act-fgrid [data-actf="actIku"]{grid-column:span 2}
+.cmx .act-fgrid:has([data-actf="actIku"]) [data-actf="actWbsL4"],
+.cmx .act-fgrid:has([data-actf="actIku"]) [data-actf="actWbsL5"]{grid-column:span 2}

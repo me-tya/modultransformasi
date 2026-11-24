@@ -18,7 +18,7 @@ test('Export IPR replaces CSV IKU and appears once in activity table heading, no
 });
 test('existing Reset clears WBS along with search and other filters',()=>{
  assert.match(html,/data-act="oneReset"/);
- assert.match(html,/if\(e\.target\?\.closest\?\.\('\[data-act="oneReset"\]'\)\)Object\.assign\(S\.ui,\{actWbsGroup:'',actWbsL4:'',actWbsL5:''\}\)/);
+ assert.match(html,/if\(e\.target\?\.closest\?\.\('\[data-act="oneReset"\]'\)\)Object\.assign\(S\.ui,\{actWbsGroup:'',actWbsL4:'',actWbsL5:'',actIku:''\}\)/);
 });
 test('Six-column proportional desktop WBS layout, compact and responsive',()=>{
  assert.match(css,/repeat\(6,minmax\(0,1fr\)\)/);

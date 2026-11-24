@@ -185,5 +185,9 @@ ACT.ikuDel=el=>delIku(el.dataset.k);
 ACT.ikuImport=()=>importIku();
 ACT.iprExport=()=>iprExport();
 function badge(x){const r=refsOf(x);return r.length?'<span class="iku-mini">'+r.map(k=>'<span title="'+E(label(k,yearOfItem(x))||'IKU '+k)+'">IKU '+E(k)+'</span>').join('')+'</span>':''}
-window.MTIKU={badge,DOC,SEED,ref,years,writeRef,fieldHTML,readForm,setForm,wireForm,drawChips,page,parsePaste,parseSheet,iprData,buildXlsx,refsOf,canEdit,isPusat};
+/* Pilihan filter IKU di Daftar Aktivitas: referensi tahun terpilih (atau tahun berjalan) + kode yang sudah dipakai aktivitas. */
+function filterOptions(year,rows){const ys=year?[String(year)]:[yNow()],seen=new Map();ys.forEach(y=>ref(y).forEach(r=>seen.set(r.kode,r.kode+' · '+r.nama)));
+ (rows||[]).forEach(x=>{if(year&&yearOfItem(x)!==String(year))return;refsOf(x).forEach(k=>{if(!seen.has(k))seen.set(k,k+(label(k,yearOfItem(x))?' · '+label(k,yearOfItem(x)):''))})});
+ return [...seen.entries()].sort((a,b)=>a[0].localeCompare(b[0],'id',{numeric:true}))}
+window.MTIKU={badge,filterOptions,DOC,SEED,ref,years,writeRef,fieldHTML,readForm,setForm,wireForm,drawChips,page,parsePaste,parseSheet,iprData,buildXlsx,refsOf,canEdit,isPusat};
 })();
