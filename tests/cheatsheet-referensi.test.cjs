@@ -27,7 +27,7 @@ function material(){
 test('Tab Referensi tersedia di Cheatsheet PMO dan CMO pada aplikasi utama',()=>{
  assert.match(index,/src="cheatsheet-referensi\.js/);
  assert.match(index,/pmo:\[\['pmbok','Framework PMBOK',pmFramework\],\['ref','Referensi',pmReference\]/);
- assert.match(index,/cmo:\[\['framework','Framework',cmFramework\],\['ref','Referensi',pmReference\]/);
+ assert.match(index,/cmo:\[\['framework','Framework',cmFramework\],(?:\['tahap','Alur per Tahap',cmStages\],)?\['ref','Referensi',pmReference\]/);
 });
 
 test('Referensi memuat glosarium pengertian, tujuan, cara kerja dan contoh rumus Excel',()=>{

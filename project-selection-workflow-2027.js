@@ -9,7 +9,7 @@ const clone=x=>JSON.parse(JSON.stringify(x));
 const uid=k=>(k||'ps')+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);
 const can=p=>!!ME&&['SA','PMOK','PMOU'].includes(ME.role)&&(!p||ME.role!=='PMOU'||!p.uic||p.uic===ME.unit);
 const yr=()=>+S.ui.psSelectedYear||+S.ui.tahun||2026;
-const state=()=>{const u=I.state();const map={portfolio:'usulan',program:'usulan',projects:'mapping',criteria:'prioritasi',monev:'prioritasi',reference:'prioritasi'};if(map[u.tab])u.tab=map[u.tab];if(u.tab==='penetapan')u.tab='penetapan-program';if(!['usulan','mapping','prioritasi','charter','penetapan-program','rkmk'].includes(u.tab))u.tab='usulan';return u};
+const state=()=>{const u=I.state();const map={portfolio:'usulan',program:'usulan',projects:'mapping',criteria:'prioritasi',reference:'prioritasi'};if(map[u.tab])u.tab=map[u.tab];if(u.tab==='penetapan')u.tab='penetapan-program';if(!['usulan','mapping','prioritasi','charter','penetapan-program','rkmk'].includes(u.tab))u.tab='usulan';return u};
 const list=()=>I.programs();
 const current=()=>I.pickedProgram();
 const ws=()=>{S.ui.ps27=S.ui.ps27||{sourceYear:2026,selected:[],search:'',sub:'identity',filterOpen:false};return S.ui.ps27};
@@ -277,15 +277,15 @@ function mapping(p){
 }
 function prioritasi(p){
  if(!p)return '<div class="ps27-card ps27-empty">Pilih program untuk mengurutkan prioritas proyeknya.</div>';
- const sub=ws().prioritySub||'ranking',readOnly=I.readonly(p);
+ const sub=(ws().prioritySub==='monev'?'ranking':ws().prioritySub)||'ranking',readOnly=I.readonly(p);
  const mode='<label class="ps27-smart-toggle"><input type="checkbox" id="pswf-prioritize" '+(p.psPrioritize?'checked':'')+' '+(readOnly?'disabled':'')+'><span>Gunakan prioritisasi SMART</span></label>';
  const threshold=p.psPrioritize?'<label class="ps27-smart-threshold">Ambang skor &gt; <input type="number" id="pswf-threshold" min="0" max="99" value="'+E(p.psThreshold??80)+'" '+(readOnly?'disabled':'')+' aria-label="Ambang skor SMART"> %</label>':'';
  const tip='<button class="ps27-smart-info" type="button" data-pswf="smart-info" title="Aturan pemilihan: 12 kriteria lengkap dan skor absolut lebih besar dari ambang" aria-label="Informasi aturan seleksi otomatis SMART">i</button>';
  return '<div class="ps27-priority-head"><nav class="ps27-minitabs" role="tablist" aria-label="Tab Prioritasi">'+
- [['ranking','Penilaian & Peringkat','Menilai dan mengurutkan proyek; skor adalah bahan pertimbangan, bukan penetapan.'],['criteria','Kriteria & Bobot','Atur kriteria dan bobot prioritas; perubahan bobot memengaruhi hasil penilaian.'],['monev','Monev & Manfaat','Pantau indikator dan manfaat yang tercatat, bukan realisasi WBS.'],['reference','Referensi & Formula','Pelajari referensi, perhitungan, dan batas penggunaan skor.']].map(x=>
+ [['ranking','Penilaian & Peringkat','Menilai dan mengurutkan proyek; skor adalah bahan pertimbangan, bukan penetapan.'],['criteria','Kriteria & Bobot','Atur kriteria dan bobot prioritas; perubahan bobot memengaruhi hasil penilaian.'],['reference','Referensi & Formula','Pelajari referensi, perhitungan, dan batas penggunaan skor.']].map(x=>
  '<button role="tab" type="button" data-ps27-sub="'+x[0]+'" title="'+E(x[2])+'" aria-label="'+E(x[1]+'. '+x[2])+'" aria-selected="'+(sub===x[0])+'" class="'+(sub===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+'</nav>'+(sub==='ranking'?(typeof MT_TABSEARCH==='function'?MT_TABSEARCH:()=>'')('ps-prioritasi',localFilter().search,'Cari proyek, UIC atau kategori...'):'')+
  '<div class="ps27-smart-actions">'+mode+threshold+tip+'</div></div>'+
- (sub==='reference'?I.referencePage(p):sub==='criteria'?I.criteriaPage(p):sub==='monev'?I.monevPage(p):I.projectsPage(p));
+ (sub==='reference'?I.referencePage(p):sub==='criteria'?I.criteriaPage(p):I.projectsPage(p));
 }
 function charter(p){
  if(!p)return '<div class="ps27-card ps27-empty">Pilih program untuk menampilkan Charter Program.</div>';
@@ -421,7 +421,8 @@ function navigate(target){
  if(actual==='mapping'&&window.MT_PS_SCOPE){
   window.MT_PS_SCOPE.bank().mappingTab=['proposal','usulan-proyek','results','hasil'].includes(sub)?'proposal':['docs','dokumen'].includes(sub)?'docs':'history';
  }
- if(actual==='prioritasi'&&['ranking','criteria','monev','reference'].includes(sub)){
+ if(actual==='prioritasi'&&sub==='monev'){location.hash='#pmo-pascaproyek';return}
+ if(actual==='prioritasi'&&['ranking','criteria','reference'].includes(sub)){
   ws().prioritySub=sub;
   if(sub==='reference'&&!ws().referenceVisited){I.state().formula=true;I.state().params=true;ws().referenceVisited=true}
  }
@@ -592,7 +593,7 @@ function helpPage(tab){
   const deep=[
    [['Riwayat Program','usulan:bank'],['Usulan Program · Kelola & Unggah / Unduh','usulan:detail'],['Dokumen Portofolio','usulan:portfolio'],['Identitas','usulan:detail:identity'],['Business Case','usulan:detail:case'],['Manfaat','usulan:detail:benefits'],['Stakeholder','usulan:detail:stakeholders'],['Risiko','usulan:detail:risks'],['Tata Kelola','usulan:detail:governance'],['Buat Dokumen Program','usulan:detail:docs']],
    [['Riwayat Proyek','mapping:history'],['Usulan Proyek (accordion per program)','mapping:proposal'],['Buat Dokumen Proyek','mapping:docs']],
-   [['Penilaian & Peringkat','prioritasi:ranking'],['Kriteria & Bobot','prioritasi:criteria'],['Monev & Manfaat','prioritasi:monev'],['Referensi & Formula','prioritasi:reference']],
+   [['Penilaian & Peringkat','prioritasi:ranking'],['Kriteria & Bobot','prioritasi:criteria'],['Referensi & Formula','prioritasi:reference']],
    [['As-is','charter:asis'],['To-be','charter:tobe'],['Perbandingan','charter:cs'],['Charter','charter:ch'],['Kriteria','charter:kp'],['Manfaat','charter:mf'],['Linimasa','charter:rk']],
    [['Kontrak K-Wide dan Cakupan Proyek','penetapan-program']],
    [['Narasi & Reviu','rkmk']]
@@ -839,7 +840,7 @@ function sheetPage(tab){
   '</div>'+
   '<div class="ps27-sheet-grid ps27-sheet-grid2">'+
    ps27SheetCard('RKMK','Rancangan dan reviu narasi','Draft RKMK merupakan keluaran kerja yang disusun dari data program/charter untuk dikonfirmasi, bukan dokumen yang otomatis definitif.',ps27SheetJump('Buka Draft RKMK','rkmk'))+
-   ps27SheetCard('PM/CM','Pemisahan evaluasi dan monitoring','Monev progres WBS, evaluasi manfaat pascaproyek, dan monev adopsi pengguna berada pada proses yang berbeda.',ps27SheetJump('Buka Prioritasi','prioritasi'))+
+   ps27SheetCard('PM/CM','Pemisahan evaluasi dan monitoring','Project Selection hanya menetapkan target manfaat (Usulan › Manfaat). Realisasi manfaat dievaluasi di PM › Pascaproyek; indikator adopsi di CM › ADP › Indikator dan Monev.',ps27SheetJump('Buka Prioritasi','prioritasi'))+
   '</div>'+
   ps27SheetNote('Ketelitian sumber','Materi di halaman ini merangkum konsep dan perilaku aplikasi. Pengaturan yang memerlukan landasan hukum/keputusan resmi harus diperiksa pada dokumen sumber yang berlaku; Cheatsheet tidak menggantikannya.','gold')+'</div>';
  }

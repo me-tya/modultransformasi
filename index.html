@@ -4908,6 +4908,7 @@ function pEval(){
  S.projectDecisions=S.projectDecisions||[];
  return vh('E','pmo','Pascaproyek','Penilaian kebermanfaatan proyek paling cepat 3 bulan setelah proyek ditutup; berbeda dari evaluasi adopsi dan penutupan CM.')+pmoTabs('pascaproyek')+
  '<div class="note i"><span><b>Ketentuan draft KMK:</b> PMO Kemenkeu mengoordinasikan evaluasi pascaproyek paling cepat <b>3 bulan setelah penutupan proyek</b>. Fokus penilaian meliputi efisiensi biaya, perbaikan proses bisnis, dan pemenuhan layanan. Dokumentasikan temuan serta rekomendasi tindak lanjut. Penutupan CM dikelola secara terpisah.</span></div>'+
+ (window.MTMF?MTMF.NAV():'')+(window.MTMF&&MTMF.view()==='manfaat'?MTMF.realisasi():window.MTMF&&MTMF.view()==='porto'?MTMF.portofolio():
  tbl('projectEval',{ent:'evaluasi pascaproyek',title:'Register Evaluasi Manfaat Proyek',add:true,edit:true,del:true,wide:true,addLabel:'Hasil Evaluasi',list:()=>S.projectDecisions,rows:()=>S.projectDecisions.filter(x=>x.jenisCatatan==='EVAL-PASCAPROYEK'),onSave:x=>{x.jenisCatatan='EVAL-PASCAPROYEK'},
  canAdd:()=>['SA','PMOK','PMOU'].includes(ME.role),canEdit:()=>['SA','PMOK','PMOU'].includes(ME.role),canDel:()=>['SA','PMOK'].includes(ME.role),label:x=>x.proyek||x.program,
  cols:[{k:'program',l:'Program',t:'sel',o:()=>progVis().map(p=>[p.akr,p.nama]),req:true},
@@ -4915,7 +4916,7 @@ function pEval(){
  {k:'tglEval',l:'Tanggal evaluasi',t:'date'},{k:'biaya',l:'Efisiensi biaya',t:'ta',w:1},
  {k:'proses',l:'Efisiensi proses bisnis',t:'ta',w:1},{k:'layanan',l:'Pemenuhan layanan',t:'ta',w:1},
  {k:'hasil',l:'Hasil dan manfaat',t:'ta',w:1},{k:'rtl',l:'Rekomendasi tindak lanjut',t:'ta',w:1},
- {k:'st',l:'Status evaluasi',t:'sel',o:['Direncanakan','Berjalan','Selesai'],r:x=>chipSt(x.st||'Direncanakan')}]});
+ {k:'st',l:'Status evaluasi',t:'sel',o:['Direncanakan','Berjalan','Selesai'],r:x=>chipSt(x.st||'Direncanakan')}]}));
 }
 function viewPmo(tab){const f={charter:pCharter,siklus:pOverview,portofolio:pPorto,program:pProgram,perencanaan:pPerencanaan,wbsplan:pWbs,dokplan:()=>window.MT_PMO_PLAN?.page()||'<div class="note w">Fitur dokumen perencanaan belum termuat.</div>',wbs:pWbs,oneonone:pOneOnOne,milestone:pMilestone,risiko:pRisiko,cr:pCr,bukti:pBukti,laporan:pLaporan,narasi:pNarasi,penutupan:pPenutupan,pascaproyek:pEval,referensi:pRef}[tab];return f?f():''}
 /* --- Portofolio --- */
@@ -10637,7 +10638,7 @@ const HP_OK=g=>{try{return !g||/^modul-/.test(g)||allowedViews().includes(g)}cat
 const hpGo=(g,l,sub)=>g&&HP_OK(g)?`<button class="hp-go" data-hgo="${esc(g)}"${sub?` data-hsub="${esc(sub)}"`:''}><span>${esc(l||'Buka')}</span><i aria-hidden="true">›</i></button>`:'';
 
 GUIDE['cmo-pasca']={tujuan:'Mengisi hasil evaluasi pascaimplementasi perubahan paling cepat satu bulan setelah sistem baru diimplementasikan.',alur:[['Pilih modul','Pilih modul pada filter CMO.'],['Catat waktu implementasi dan evaluasi','Masukkan tanggal go-live dan pelaksanaan evaluasi.'],['Nilai hasil perubahan','Isi keberlanjutan adopsi, perilaku kerja baru, isu/resistensi, serta kesiapan kanal resmi.'],['Simpan dan tindak lanjuti','Dokumentasikan rekomendasi dan tandai Selesai setelah penilaian tuntas.'],['Lanjut ke Penutupan CM','Gunakan hasil evaluasi sebagai dasar serah terima pendampingan ke operasional.','cmo-closing','Ke Penutupan']]};
-GUIDE['pmo-pascaproyek']={tujuan:'Mencatat hasil evaluasi manfaat proyek paling cepat tiga bulan setelah penutupan proyek.',alur:[['Tambah Hasil Evaluasi','Pilih program dan tuliskan proyek atau modul yang dievaluasi.'],['Isi tanggal','Catat tanggal penutupan proyek dan pelaksanaan evaluasi.'],['Nilai manfaat','Lengkapi efisiensi biaya, proses bisnis, dan pemenuhan layanan.'],['Simpan hasil','Catat hasil, rekomendasi tindak lanjut, dan status evaluasi.']]};
+GUIDE['pmo-pascaproyek']={tujuan:'Mencatat hasil evaluasi manfaat proyek paling cepat tiga bulan setelah penutupan proyek.',alur:[['Tambah Hasil Evaluasi','Pilih program dan tuliskan proyek atau modul yang dievaluasi.'],['Isi tanggal','Catat tanggal penutupan proyek dan pelaksanaan evaluasi.'],['Nilai manfaat','Lengkapi efisiensi biaya, proses bisnis, dan pemenuhan layanan.'],['Simpan hasil','Catat hasil, rekomendasi tindak lanjut, dan status evaluasi.'],['Realisasi Manfaat','Isi realisasi atas target manfaat yang ditetapkan di Usulan Program › Manfaat; capaian dan status dihitung otomatis.'],['Portofolio Adopsi × Manfaat','Bandingkan indeks adopsi (Monev CM) dan indeks manfaat per program untuk menentukan tindak lanjut.']]};
 GUIDE['cmo-pasca']=GUIDE['cmo-pasca']||{tujuan:'Evaluasi Pascaimplementasi Perubahan: paling cepat 1 bulan sejak implementasi sistem baru, CMO Kemenkeu bersama CMO Unit, pemilik proses bisnis, dan unit teknis menilai keberlanjutan adopsi, perilaku kerja baru, efektivitas penanganan isu dan resistensi, serta kesiapan peralihan pendampingan ke layanan operasional reguler.',
  alur:[['Tambah evaluasi','Klik + Evaluasi Perubahan dan isi aspek, temuan, status, dan tindak lanjut.'],['Selesaikan','Evaluasi berstatus Selesai menjadi dasar Penutupan CM.','modul-t-closing']]};
 ['pmo-penutupan','pmo-pascaproyek','cmo-pasca','cmo-closing'].forEach(k=>{const g=GUIDE[k];if(!g)return;const x=PHASE4.find(p=>p[0]===k);g.tips=(g.tips||[]).concat(['Beda empat tahap akhir: Penutupan Proyek (PMO, saat target proyek selesai) → Evaluasi Pascaimplementasi (CMO, ≥1 bulan setelah implementasi) → Penutupan CM (CMO, BAST serah terima) → Evaluasi Pascaproyek (PMO, ≥3 bulan setelah penutupan, menilai manfaat). Halaman ini: '+x[1]+' — '+x[4]+'. Klik ⓘ di judul untuk tabel perbandingan.'])});
@@ -11027,7 +11028,7 @@ function tAdp(ms,mf,mk){const sub=S.ui.sub.adp||'dampak';
    cols:[{k:'_cc',l:'Kode',sk:x=>MTCC.rCode(x.s.modul,x.id),r:x=>MTCC.chip(x.s.modul,MTCC.rCode(x.s.modul,x.id)),x:x=>MTCC.full(x.s.modul,MTCC.rCode(x.s.modul,x.id))},{k:'m',l:'Modul',r:x=>`<span class="code">${x.s.modul}</span><span class="sm">${esc(short(modLabel(x.s.modul),30))}</span>`,x:x=>x.s.modul},{k:'sm',l:'Sub modul',w:1,r:x=>x.pmo?`<span class="chip c-info">dari ${x.pmo.sumber==='Project Selection'?'Project Selection':'PMO'}</span> <span class="s">tingkat modul · ${esc(x.pmo.rid)}</span>`:(x.s.cc?MTCC.chip(x.s.modul,x.s.cc)+' ':'')+esc(x.s.nama),x:x=>x.pmo?'(dari PMO '+x.pmo.rid+')':x.s.nama},{k:'j',l:'Jenis risiko',r:x=>x.r[1],x:x=>x.r[1]},{k:'l',l:'Tingkat',sk:x=>x.lv,r:x=>x.lv?`<span class="chip ${x.lv>=3?'c-bad':x.lv===2?'c-warn':'c-ok'}">${LV_RS[x.lv]}</span>`:'<span class="chip c-gray" title="Uraian dari KK CM tanpa tingkat; isi tingkat lewat ✎">Belum dinilai</span>',x:x=>x.lv?LV_RS[x.lv]:'Belum dinilai'},{k:'u',l:'Uraian',w:1,r:x=>x.pmo?`${esc(x.pmo.uraian)}<span class="sm">Pemilik ${esc(x.pmo.pemilik||'—')} · ${esc(x.pmo.st||'')}${x.pmo.mit?' · mitigasi: '+esc(short(x.pmo.mit,60)):''}</span>`:`<span style="white-space:pre-line">${esc(x.s[x.r[0]+'k']||'—')}</span>`,x:x=>x.pmo?x.pmo.uraian:x.s[x.r[0]+'k']}]}));
  }else{const tot=ms.map(m=>{const b=S.ind.filter(i=>i.modul===m.kode).reduce((a,i)=>a+(+i.bobot||0),0);return b&&b!==100?`<span class="chip c-warn">${m.kode}: total bobot ${b}%</span>`:''}).join(' ');
   out+=`<div class="note i"><b>Terduplikasi ke Monev</b><span>Indikator yang ditetapkan di sini otomatis muncul di Monev › Keberhasilan CM untuk diisi realisasinya. ${tot}</span></div>`+tbl('ind',{ent:'indikator',title:'Indikator Keberhasilan CM',imp:false,tpl:()=>adpTpl(),imp2:f=>adpImport(f),canImp:()=>lv('adp').includes('C')||lv('adp').includes('U'),add:true,edit:true,del:true,addLabel:'Indikator',list:()=>S.ind,rows:()=>S.ind.filter(mf),canAdd:()=>can('adp','C',mk),canEdit:i=>can('adp','U',i.modul),canDel:i=>can('adp','D',i.modul),label:i=>i.nama,onSave:i=>{if(mk)i.modul=mk},
-   cols:[{k:'_cc',l:'Kode',frm:false,sk:i=>i.cc||'',r:i=>MTCC.chip(i.modul,i.cc),x:i=>MTCC.full(i.modul,i.cc)},...(mk?[]:[modCol('adp')]),{k:'nama',l:'Indikator keberhasilan',req:true,w:1},{k:'baseline',l:'Baseline'},{k:'tg',l:'Target',t:'num',req:true,r:i=>`<b>${i.arah==='↓'?'≤':'≥'} ${esc(i.tg)}</b>`},{k:'sat',l:'Satuan'},{k:'arah',l:'Arah',t:'sel',o:[['↑','↑ makin besar makin baik'],['↓','↓ makin kecil makin baik']]},{k:'metode',l:'Metode / alat ukur'},{k:'waktu',l:'Waktu pengukuran'},{k:'pic',l:'PIC'},{k:'bobot',l:'Bobot (%)',t:'num',req:true,num:1}]})}
+   cols:[{k:'_cc',l:'Kode',frm:false,sk:i=>i.cc||'',r:i=>MTCC.chip(i.modul,i.cc),x:i=>MTCC.full(i.modul,i.cc)},...(mk?[]:[modCol('adp')]),{k:'nama',l:'Indikator keberhasilan',req:true,w:1},{k:'baseline',l:'Baseline'},{k:'tg',l:'Target',t:'num',req:true,r:i=>`<b>${i.arah==='↓'?'≤':'≥'} ${esc(i.tg)}</b>`},{k:'sat',l:'Satuan'},{k:'arah',l:'Arah',t:'sel',o:[['↑','↑ makin besar makin baik'],['↓','↓ makin kecil makin baik']]},{k:'metode',l:'Metode / alat ukur'},{k:'waktu',l:'Waktu pengukuran'},{k:'pic',l:'PIC'},{k:'bobot',l:'Bobot (%)',t:'num',req:true,num:1}]})+(window.MTMF?MTMF.migrPanel(mk):'')}
  return out}
 /* --- Perencanaan --- */
 function tRencana(ms,mf,mk){const sub=S.ui.sub.rencana||'sh';let out=`<div class="card">${subNav('rencana',[['sh','Stakeholder'],['esm','Matriks Experience–Support'],['kom','Komunikasi'],['pel','Pelatihan']],'sh')}</div>`;
@@ -11593,7 +11594,7 @@ var menuPM=[
 ['WBS & Progres','Pelaksanaan, target, realisasi, unggah & validasi bukti dukung (chip Perlu validasi)','pmo-wbs'],['Change Request','Pengendalian perubahan baseline','pmo-cr'],
 ['Milestone','Tonggak waktu proyek','pmo-milestone'],['Risiko & Isu','Risiko dan tindak lanjut','pmo-risiko'],['Capaian Triwulanan','Laporan kinerja periodik','pmo-laporan'],
 ['Narasi T-Program','Uraian pelaksanaan per program','pmo-narasi'],['Jadwal 1-on-1','Rencana pertemuan koordinasi','pmo-oneonone'],
-['Penutupan','Kriteria dan dokumen penyelesaian','pmo-penutupan'],['Pascaproyek','Evaluasi manfaat proyek','pmo-pascaproyek'],['Referensi Kode','Kamus data dan standar kode','pmo-referensi'],
+['Penutupan','Kriteria dan dokumen penyelesaian','pmo-penutupan'],['Pascaproyek','Evaluasi, realisasi manfaat, dan matriks adopsi × manfaat','pmo-pascaproyek'],['Referensi Kode','Kamus data dan standar kode','pmo-referensi'],
 ['Aktivitas','Kegiatan PMO & CMO: daftar, kalender, ringkasan, dan matriks','aktivitas'],['Tim PMO & CMO','Highlight harian, agenda, kehadiran, cuti, penempatan tim, profil','tim'],
 ];
 var menuCM=[
@@ -12407,9 +12408,9 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <link rel="stylesheet" href="mt-act-matriks.css?v=20261115-m2">
 <link rel="stylesheet" href="mt-wbs-compact.css?v=20261116-w5">
 <script src="mt-foto-frame.js?v=20261114-ff6"></script>
-<script src="project-selection-flow.js?v=20261111-mt14-filter"></script>
+<script src="project-selection-flow.js?v=20261125-mf1"></script>
 <script src="project-selection-governance.js?v=20261111-mt13-info"></script>
-<script src="project-selection-workflow-2027.js?v=20261113-mt17-filterpm"></script>
+<script src="project-selection-workflow-2027.js?v=20261125-mf1"></script>
 <script src="project-selection-scope-map.js?v=20261111-mt14-filter"></script>
 <script src="project-selection-documents.js?v=20261111-mt13-info"></script>
 <script src="project-selection-program-bank.js?v=20261111-ghost1"></script>
@@ -12427,7 +12428,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script src="mt-activity-reports.js?v=20261124-iku3"></script>
 <link rel="stylesheet" href="mt-iku-ipr.css?v=20261124-ipr1"><script src="mt-iku-ipr.js?v=20261124-ipr3"></script>
 <link rel="stylesheet" href="mt-cm-monev.css?v=20261125-mv4"><script src="mt-cm-monev.js?v=20261125-mv5"></script>
-<script src="mt-cm-paket.js?v=20261125-pk2"></script><script src="mt-inplace.js?v=20261125-ip2"></script><script src="mt-cm-revisi.js?v=20261125-rv1"></script>
+<script src="mt-cm-paket.js?v=20261125-pk2"></script><script src="mt-inplace.js?v=20261125-ip2"></script><script src="mt-cm-revisi.js?v=20261125-rv1"></script><script src="mt-manfaat.js?v=20261125-mf1"></script>
 <!-- Mesin laporan Aktivitas (port DashboardCM): pustaka yang sama dengan DashboardCM -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>

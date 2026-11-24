@@ -106,7 +106,7 @@ function top(p){
  '<button type="button" class="btn btn-outline btn-sm prio-btn-light" data-pswf="excel">⇩ Excel</button>'+
  '<button type="button" class="btn btn-outline btn-sm prio-btn-light" data-pswf="report">▤ Laporan</button></div></div>';
  }
- const tabs=[['portfolio','◫ Portofolio',num],['program','▤ Program',null],['projects','☑ Seleksi Proyek',ct],['criteria','⚖ Kriteria & Bobot',12],['monev','📈 Monev & Manfaat',p?rowsFor(p).reduce((n,x)=>n+x.indicators.length+x.benefits.length,0):0],['reference','📘 Referensi & Formula',null]];
+ const tabs=[['portfolio','◫ Portofolio',num],['program','▤ Program',null],['projects','☑ Seleksi Proyek',ct],['criteria','⚖ Kriteria & Bobot',12],['reference','📘 Referensi & Formula',null]];
  h+='<nav class="pswf-tabs" role="tablist" aria-label="Tab Project Selection">'+tabs.map(q=>'<button type="button" role="tab" aria-selected="'+(u.tab===q[0])+'" class="'+(u.tab===q[0]?'on':'')+'" data-pswf-tab="'+q[0]+'">'+q[1]+(q[2]==null?'':' <em>'+q[2]+'</em>')+'</button>').join('')+'</nav>';
  return h;
 }
