@@ -216,7 +216,7 @@ function mtRiskWorkspace(view){
    var p=k==='after'?x:b;return !!p&&String(p.k)+'-'+String(p.d)===v;
   }
   if(k==='level')return active.includes(r)&&byLevel(r,v);
-  if(k==='stage')return visible.includes(r)&&stage(r)===v;
+  if(k==='stage')return v==='active'?active.includes(r):visible.includes(r)&&stage(r)===v;
   if(k==='movement')return active.includes(r)&&movement(r)===v;
   return true;
  }
@@ -250,14 +250,14 @@ function mtRiskWorkspace(view){
   var html='<section class="mt-risk-matrix"><div class="mt-risk-matrix-title"><b>'+label+'</b><small>'+records.length+' risiko terpetakan</small></div><div class="mt-risk-map"><span class="mt-risk-axis-y">Kemungkinan</span><div class="mt-risk-grid">';
   for(var k=5;k>=1;k--){html+='<span class="mt-risk-axis">'+k+'</span>';for(var d=1;d<=5;d++){
    var n=records.filter(function(r){var p=kind==='after'?mtRiskResidual(r):mtRiskInitial(r);return p&&+p.k===k&&+p.d===d}).length;
-   var key=kind+':'+k+'-'+d,level=k*d>=15?'high':k*d>=8?'med':'low',unknown=kind==='after'&&!records.length;
-   html+='<button type="button" class="mt-risk-cell '+level+(n?'':' zero')+(filter===key?' on':'')+'" data-mtr-filter="'+key+'" aria-pressed="'+(filter===key)+'" title="Kemungkinan '+k+' × dampak '+d+' = '+k*d+'; '+(unknown?'belum ada penilaian residual':n+' risiko')+'"><b>'+(unknown?'—':n)+'</b><small'+(score?'':' hidden')+'>Skor '+k*d+'</small></button>';
+   var key=kind+':'+k+'-'+d,level=k*d>=15?'high':k*d>=8?'med':'low',unknown=(kind==='after'||kind==='before')&&!records.length;
+   html+='<button type="button" class="mt-risk-cell '+level+(n?'':' zero')+(filter===key?' on':'')+'" data-mtr-filter="'+key+'" aria-pressed="'+(filter===key)+'" title="Kemungkinan '+k+' × dampak '+d+' = '+k*d+'; '+(unknown?'belum ada pasangan penilaian':n+' risiko')+'"><b>'+(unknown?'—':n)+'</b><small'+(score?'':' hidden')+'>Skor '+k*d+'</small></button>';
   }}
   html+='<span></span>'+[1,2,3,4,5].map(function(d){return '<span class="mt-risk-axis">'+d+'</span>'}).join('')+'</div></div><div class="mt-risk-axis-x">Dampak</div></section>';return html;
  }
  var stageLabels=[['Belum dimulai','notstarted','neutral'],['Dalam mitigasi','progress','blue'],['Lewat tenggat','late','high'],['Terkendali','controlled','low'],['Belum tercatat','unknown','neutral']];
  if(issue){
-  summary.innerHTML='<div class="mt-risk-summary-head"><b>Ringkasan Isu</b><small>'+visible.length+' isu dalam cakupan filter</small></div><div class="mt-risk-metrics mt-risk-issue-metrics">'+metric('Isu aktif',active.length,'blue','',null)+metric('Ditutup',visible.filter(function(r){return stage(r)==='closed'}).length,'low','stage:closed')+metric('Lewat tenggat',active.filter(function(r){return stage(r)==='late'}).length,'high','stage:late')+metric('Dalam penanganan',active.filter(function(r){return stage(r)==='progress'}).length,'blue','stage:progress')+metric('Belum tercatat',active.filter(function(r){return stage(r)==='unknown'}).length,'neutral','stage:unknown')+'</div>';
+  summary.innerHTML='<div class="mt-risk-summary-head"><b>Ringkasan Isu</b><small>'+visible.length+' isu dalam cakupan filter</small></div><div class="mt-risk-metrics mt-risk-issue-metrics">'+metric('Isu aktif',active.length,'blue','stage:active',null)+metric('Ditutup',visible.filter(function(r){return stage(r)==='closed'}).length,'low','stage:closed')+metric('Lewat tenggat',active.filter(function(r){return stage(r)==='late'}).length,'high','stage:late')+metric('Dalam penanganan',active.filter(function(r){return stage(r)==='progress'}).length,'blue','stage:progress')+metric('Belum tercatat',active.filter(function(r){return stage(r)==='unknown'}).length,'neutral','stage:unknown')+'</div>';
  }else{
   var high=valid.filter(function(r){return byLevel(r,'Tinggi')}).length,med=valid.filter(function(r){return byLevel(r,'Sedang')}).length,low=valid.filter(function(r){return byLevel(r,'Rendah')}).length;
   var pctH=valid.length?(high/valid.length*100).toLocaleString('id-ID',{maximumFractionDigits:1}):'0';
