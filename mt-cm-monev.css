@@ -41,3 +41,9 @@
 .cmpk-c span{width:16px;height:16px;border-radius:50%;display:inline-grid;place-items:center;color:#fff;font-size:10px;flex:none}
 .cmpk-c span.y{background:#0f7b6c}.cmpk-c span.n{background:#b3261e}
 @media(max-width:900px){.cmpk-grid{grid-template-columns:1fr}.cmpk-strip .btn{margin-left:0}}
+/* Cari & sorot */
+.mvhl{display:flex;align-items:center;gap:6px;max-width:460px;margin:0 0 10px;border:1px solid #cfd8e3;border-radius:9px;background:#fff;padding:5px 10px}
+.mvhl input{border:0;outline:0;font:inherit;flex:1;background:transparent;min-width:0}
+.hl-on .hl-dim{opacity:.25;filter:grayscale(.6)}
+.hl-on .hl-hit{outline:2px solid #f2b705;outline-offset:1px;box-shadow:0 0 0 4px rgba(242,183,5,.25)}
+tr.hl-hit td{background:#fff8e1!important}
