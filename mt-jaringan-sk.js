@@ -500,7 +500,7 @@ function printSkDocx(u,host){const w=window.open("","_blank");if(!w){toast("Pop-
 let lastGuide="",coachSeen=new Set(),GUIDE_OFF=false;try{GUIDE_OFF=localStorage.getItem("jjsk_guide_off")==="1"}catch(e){}
 function coachClear(){ROOT.querySelectorAll(".coach").forEach(c=>c.remove());ROOT.querySelectorAll(".hl-now").forEach(e=>e.classList.remove("hl-now"))}
 function coachPlace(c,el){const r=el.getBoundingClientRect(),w=c.offsetWidth,h=c.offsetHeight;let top=r.bottom+10,left=Math.min(Math.max(12,r.left),window.innerWidth-w-12),up=false;if(top+h>window.innerHeight-8){top=r.top-h-10;up=true}c.style.top=top+"px";c.style.left=left+"px";c.classList.toggle("up",up);const ar=c.querySelector(".c-ar");if(ar)ar.style.left=Math.min(Math.max(14,r.left+Math.min(r.width,60)/2-left),w-24)+"px"}
-if(!window.__coachBound){window.__coachBound=1;const rp=()=>{const c=ROOT.querySelector(".coach"),el=ROOT.querySelector(".hl-now");if(c&&el){if(!el.isConnected){c.remove();return}coachPlace(c,el)}};addEventListener("scroll",rp,true);addEventListener("resize",rp)}
+if(!window.__coachBound){window.__coachBound=1;const rp=()=>{if(!ROOT)return;const c=ROOT.querySelector(".coach"),el=ROOT.querySelector(".hl-now");if(c&&el){if(!el.isConnected){c.remove();return}coachPlace(c,el)}};addEventListener("scroll",rp,true);addEventListener("resize",rp)}
 function setGuide(off){GUIDE_OFF=off;try{localStorage.setItem("jjsk_guide_off",off?"1":"0")}catch(e){}coachSeen.clear();lastGuide="";renderDetail()}
 function guideBar(B,title,steps,key){coachClear();const old=B.querySelector(".guide");if(old)old.remove();
  if(!steps.length)return;const ci=steps.findIndex(s=>!s.done&&!s.opt);
