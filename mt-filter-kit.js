@@ -124,3 +124,110 @@ if(!document.getElementById('mt-filter-kit-css')&&document.head){
  document.head.appendChild(s);
 }
 })();
+
+
+/* 261125-MT-02 — Shared icon-only action system.
+ * Keeps existing action handlers, titles, SVG semantics and navigation dimensions.
+ * Styles generated tables, cards, toolbars and dialogs, including subsequent renders.
+ */
+(function mtActionIconStandard(){
+ 'use strict';
+ if(document.getElementById('mt-action-icon-standard-v1'))return;
+ const css=document.createElement('style');
+ css.id='mt-action-icon-standard-v1';
+ css.textContent=`
+html :is(#app,#root,body) .mt-action-icon.mt-action-icon[data-mt-tone]{
+ --mt-ic-fg:#315e91;--mt-ic-bg:#f2f6fb;--mt-ic-border:#c8daed;--mt-ic-hover:#e5effa;--mt-ic-hover-border:#94b4d6;
+ box-sizing:border-box!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ width:32px!important;min-width:32px!important;max-width:32px!important;height:32px!important;min-height:32px!important;max-height:32px!important;
+ flex:0 0 32px!important;padding:0!important;border:1px solid var(--mt-ic-border)!important;border-radius:9px!important;
+ background:var(--mt-ic-bg)!important;color:var(--mt-ic-fg)!important;line-height:1!important;font-size:15px!important;
+ box-shadow:0 1px 2px rgba(16,45,83,.045)!important;transform:none!important;filter:none!important;
+ transition:background-color .14s ease,border-color .14s ease,color .14s ease,box-shadow .14s ease!important;vertical-align:middle;
+}
+html :is(#app,#root,body) .mt-action-icon.mt-action-icon[data-mt-tone="teal"]{--mt-ic-fg:#087f72;--mt-ic-bg:#eff9f6;--mt-ic-border:#b2dfd3;--mt-ic-hover:#e0f3ed;--mt-ic-hover-border:#80c7b6}
+html :is(#app,#root,body) .mt-action-icon.mt-action-icon[data-mt-tone="amber"]{--mt-ic-fg:#b87509;--mt-ic-bg:#fff9ed;--mt-ic-border:#f0d19a;--mt-ic-hover:#fff0d4;--mt-ic-hover-border:#e7b963}
+html :is(#app,#root,body) .mt-action-icon.mt-action-icon[data-mt-tone="indigo"]{--mt-ic-fg:#565bc8;--mt-ic-bg:#f3f2ff;--mt-ic-border:#d2d0fc;--mt-ic-hover:#e8e6ff;--mt-ic-hover-border:#a9a5f1}
+html :is(#app,#root,body) .mt-action-icon.mt-action-icon[data-mt-tone="red"]{--mt-ic-fg:#dc4148;--mt-ic-bg:#fff3f3;--mt-ic-border:#f4bfc2;--mt-ic-hover:#ffe5e6;--mt-ic-hover-border:#e99ca1}
+html :is(#app,#root,body) .mt-action-icon.mt-action-icon[data-mt-tone="slate"]{--mt-ic-fg:#506784;--mt-ic-bg:#f2f5f9;--mt-ic-border:#d2dce8;--mt-ic-hover:#e5ecf5;--mt-ic-hover-border:#a8bdd5}
+html :is(#app,#root,body) .mt-action-icon.mt-action-icon[data-mt-tone]:is(:hover,:focus-visible,[aria-pressed="true"]):not(:disabled):not([aria-disabled="true"]){
+ background:var(--mt-ic-hover)!important;border-color:var(--mt-ic-hover-border)!important;color:var(--mt-ic-fg)!important;transform:none!important;filter:none!important;
+}
+html :is(#app,#root,body) .mt-action-icon.mt-action-icon[data-mt-tone]:focus-visible{outline:2px solid var(--mt-ic-fg)!important;outline-offset:2px}
+html :is(#app,#root,body) .mt-action-icon.mt-action-icon[data-mt-tone]:is(:disabled,[aria-disabled="true"]){opacity:.42!important;cursor:not-allowed!important;box-shadow:none!important}
+html :is(#app,#root,body) .mt-action-icon.mt-action-icon[data-mt-tone]>svg{width:16px!important;height:16px!important;min-width:16px!important;min-height:16px!important;flex:none!important;display:block;pointer-events:none}
+html :is(#app,#root,body) .ract:has(>.mt-action-icon){gap:4px;flex-wrap:wrap;align-items:center}
+@media(prefers-reduced-motion:reduce){html :is(#app,#root,body) .mt-action-icon[data-mt-tone]{transition:none!important}}
+`;
+ document.head.appendChild(css);
+ const nodes='button,a[href],summary,[role="button"]';
+ const known='.psbank-action-icon,.pdocs-action-icon,.icon-btn,.pm-ws-icon,.mt-edit-icon,.sl-icon,.sw-cp,.activity-link-copy,.inv-n,.wbs-kebab,.ract>button,.t-ibtn,.act-attachment-remove,.abdel,.od-x,.od-slot';
+ const glyphs={
+  edit:'<path d="M12 20h9M16.8 3.8a2.2 2.2 0 0 1 3.1 3.1L9 17.8l-4.5 1 1-4.5z"/>',
+  delete:'<path d="M3 6h18M8 6V4h8v2M6 6l1 15h10l1-15M10 10v7m4-7v7"/>',
+  upload:'<path d="M12 16V4m0 0-4 4m4-4 4 4M4 15v5h16v-5"/>',
+  download:'<path d="M12 3v12m-4-4 4 4 4-4M4 16v5h16v-5"/>',
+  view:'<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.5"/>',
+  copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
+  close:'<path d="m6 6 12 12M18 6 6 18"/>',
+  link:'<path d="M10 13a4 4 0 0 0 6 .5l3-3a4 4 0 1 0-5.7-5.7l-1.5 1.5M14 11a4 4 0 0 0-6-.5l-3 3a4 4 0 1 0 5.7 5.7l1.5-1.5"/>',
+  more:'<circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>',
+  add:'<path d="M12 5v14M5 12h14"/>'
+ };
+ const glyphMap=new Map([['✎','edit'],['✏','edit'],['✏️','edit'],['🗑','delete'],['🗑️','delete'],['⇪','upload'],['⇧','upload'],['⬆','upload'],['⬆️','upload'],['⇩','download'],['⬇','download'],['⬇️','download'],['↓','download'],['👁','view'],['👁️','view'],['⧉','copy'],['✕','close'],['×','close'],['🔗','link'],['⋮','more'],['+','add']]);
+ const toneByKind={edit:'amber',delete:'red',upload:'indigo',download:'indigo',view:'blue',copy:'blue',close:'slate',link:'teal',more:'slate',add:'teal'};
+ function plain(el){
+  let out='';
+  for(const n of el.childNodes){
+   if(n.nodeType===3)out+=n.textContent;
+   else if(n.nodeType===1&&!n.matches('svg,i[aria-hidden="true"],.sr-only,.visually-hidden,[hidden]')&&!n.querySelector('svg'))out+=n.textContent;
+  }
+  return out.trim();
+ }
+ function tone(el,label,kind){
+  const c=el.classList;
+  if(c.contains('delete')||c.contains('ib-del')||c.contains('one-del')||c.contains('d')||el.matches('[data-act="del"],[data-bank-delete],[data-atrm]'))return 'red';
+  if(c.contains('edit')||c.contains('ib-edit')||c.contains('mt-edit-icon')||el.matches('[data-act="edit"],[data-bank-edit-doc]'))return 'amber';
+  if(c.contains('upload')||c.contains('download')||el.matches('[data-bank-upload],[data-atdl]'))return 'indigo';
+  if(c.contains('map')||c.contains('add')||c.contains('whatsapp-share')||el.matches('[data-bank-map],[data-bank-add]'))return 'teal';
+  if(/^(hapus (?:filter|pencarian)|reset|tutup|batal|ciutkan|sembunyikan|sebelumnya|berikutnya|bulan sebelumnya|bulan berikutnya|minggu sebelumnya|minggu berikutnya|aksi lainnya|lainnya|pengaturan|aturan)/i.test(label))return 'slate';
+  if(/^(hapus|delete|remove|arsipkan|buang)|hanya .*bisa dihapus/i.test(label))return 'red';
+  if(/^(ubah|edit|revisi|sunting|koreksi|ganti)/i.test(label))return 'amber';
+  if(/^(unggah|upload|unduh|download|impor|import|ekspor|export|cetak|print)/i.test(label))return 'indigo';
+  if(/^(peta|mapping|petakan|hubung|tautkan|tambah|add|validasi|setujui|verifikasi|bagikan|share|kirim)/i.test(label))return 'teal';
+  if(/^(lihat|buka|pratinjau|preview|detail|dokumen|salin|copy|duplikat|riwayat|laporan)/i.test(label))return 'blue';
+  return toneByKind[kind]||'slate';
+ }
+ function styleOne(el){
+  if(!el||!el.matches||!el.matches(nodes)||el.classList.contains('mt-action-icon'))return;
+  if(el.closest('.top,.t-dh2,.pm-stage-shell,.ptabs,.subt,[role="tablist"],.flt,.fbar,.tfoot,.t-pager,.t-mnav,.t-dnav')||el.matches('[role="tab"],[data-pg],[data-tpg],.t-acc,.search-clear-btn,.fx,.ui-info-control,.ui-help-aligned,.hq,.hlp,.ui-note-link,[role="switch"],[aria-haspopup="dialog"].ui-info-control'))return;
+  const label=(el.getAttribute('aria-label')||el.getAttribute('title')||'').trim(),txt=plain(el),kind=glyphMap.get(txt);
+  const svg=!!el.querySelector('svg');
+  if(!kind&&txt)return; // never resize text-bearing buttons or count chips
+  if(!svg&&!kind&&!el.matches(known))return;
+  if(!label&&!el.matches(known))return;
+  if(!svg&&!kind)return; // avoid guessing how a CSS-only icon is rendered
+  if(el.matches('a')&&!label&&!el.matches(known))return;
+  if(el.getAttribute('aria-expanded')!==null&&!el.matches('.wbs-kebab,.icon-btn,.psbank-action-icon'))return;
+  const k=tone(el,label,kind);
+  if(kind&&!svg&&el.childElementCount===0){
+   const icon=kind==='close'&&k==='red'?'delete':kind;
+   if(glyphs[icon])el.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+glyphs[icon]+'</svg>';
+  }
+  if(!el.hasAttribute('aria-label')&&label)el.setAttribute('aria-label',label);
+  el.setAttribute('data-mt-tone',k);el.classList.add('mt-action-icon');
+ }
+ function scan(root){
+  if(!root||root.nodeType!==1)return;
+  styleOne(root);
+  root.querySelectorAll(nodes).forEach(styleOne);
+ }
+ function init(){
+  scan(document.body);
+  const observer=new MutationObserver(records=>{
+   for(const r of records){for(const n of r.addedNodes){if(n.nodeType===1)scan(n)}if(r.target.nodeType===1&&r.target.matches(nodes))styleOne(r.target)}
+  });
+  observer.observe(document.body,{childList:true,subtree:true});
+ }
+ if(document.body)init();else document.addEventListener('DOMContentLoaded',init,{once:true});
+})();
