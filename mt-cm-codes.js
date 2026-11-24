@@ -48,13 +48,13 @@
  function chip(mk,c,suffix){if(!c)return '<span class="cc-none" title="Kode dibuat otomatis saat data dibuka oleh pengelola CM">—</span>';const t=full(mk,c)+(suffix||'');return '<span class="cc-code '+cls(c)+'" title="Kode CM '+E(t)+'">'+E(t)+'</span>'}
  const rCode=(mk,key)=>((S.modMeta[mk]||{}).rc||{})[key]||'';
  /* Kode WBS rujukan per jenis: ADP | S | K | P | KI | PI */
- const PAT={S:['Perencanaan',/pemangku kepentingan|stakeholder/i],K:['Perencanaan',/komunikasi/i],P:['Perencanaan',/pelatihan|training|kompetensi/i],KI:['Implementasi',/komunikasi|sosialisasi|awareness|kampanye|publikasi/i],PI:['Implementasi',/pelatihan|training|bimtek|t-course/i]};
+ const PAT={S:['Perencanaan',/pemangku kepentingan|stakeholder/i],K:['Perencanaan',/komunikasi/i],P:['Perencanaan',/pelatihan|training|kompetensi/i],KI:['Implementasi',/komunikasi|sosialisasi|awareness|kampanye|publikasi/i],PI:['Implementasi',/pelatihan|training|bimtek|t-course/i],J:['*',/jaringan|agen perubahan|t-agent|change agent/i],CRA:['*',/kesiapan|readiness|cra\b/i],M:['Monev',/monitoring|evaluasi|monev|pemantauan/i]};
  function wbsFor(mk,kind){
   let m;try{m=modOf(mk)}catch(e){m=null}if(!m)return null;
   if(kind==='ADP')return m.adp||null;
-  const p=PAT[kind];if(!p)return null;const L=(m.st&&m.st[p[0]])||[];if(!L.length)return null;
+  const p=PAT[kind];if(!p)return null;const L=p[0]==='*'?[].concat(...Object.values(m.st||{})):((m.st&&m.st[p[0]])||[]);if(!L.length)return null;
   const yr=(S.ui&&S.ui.tahun)||0;const txt=w=>(w.p||[]).slice(-3).join(' ');
-  const hit=L.filter(w=>p[1].test(txt(w)));const pool=hit.length?hit:(kind==='S'||kind==='K'||kind==='P'?[]:L);
+  const hit=L.filter(w=>p[1].test(txt(w)));const pool=hit.length?hit:(['S','K','P','J','CRA'].includes(kind)?[]:L);
   return pool.find(w=>yrOf(w)===yr)||pool[0]||null;
  }
  function wbsCell(mk,kind){const w=wbsFor(mk,kind);if(!w)return '<span class="cc-nowbs">⚠ belum ada item WBS tahap ini</span>';return '<span class="code">'+E(w.k)+'</span><span class="sm">'+E(short(deliv(w),48))+'</span>'}

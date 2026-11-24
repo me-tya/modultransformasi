@@ -18,7 +18,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="wbs-cap-2026-reference.js"></script>
-<link rel="stylesheet" href="mt-cm-codes.css?v=20261124-cc1"><script src="mt-cm-codes.js?v=20261124-cc1"></script>
+<link rel="stylesheet" href="mt-cm-codes.css?v=20261124-cc1"><script src="mt-cm-codes.js?v=20261125-cc2"></script>
 <script src="cheatsheet-referensi.js?v=20261114-nav2"></script>
 <style>
 /* Atribut hidden selalu menyembunyikan, walau elemen punya display:flex/grid dari CSS lain (dipakai pencarian Profil Pegawai, form profil, dll.). */
@@ -7257,7 +7257,7 @@ function pBukti(){const P=per();const base=S.wbs.filter(w=>!w.arsip&&yrOf(w)===S
    {k:'st',l:'Status',r:w=>chipSt(buktiSt(w)),x:w=>buktiSt(w)},{k:'c',l:'Catatan',r:w=>esc((S.bukti[w.k]||{}).cat||'')}]})}
 ACT.bkup=el=>buktiUpload(wbsBy(el.dataset.k));
 ACT.wbsVal=()=>{S.ui.wbk=S.ui.wbk==='Menunggu validasi'?'':'Menunggu validasi';Object.keys(PG).forEach(x=>PG[x]=0);save();render()};
-ACT.bkval=el=>{const w=wbsBy(el.dataset.k);const B=S.bukti[w.k]||{};modal(`Validasi bukti dukung <span class="code">${w.k}</span>`,`<p style="margin:0 0 8px"><b>${esc(deliv(w))}</b><br><span class="s">Jenis dokumen: ${esc(w.j)}</span></p>${B.auto==='adp'?`<div class="note i" style="margin:0 0 8px"><span>Bukti berupa <b>isian ADP di aplikasi</b> (status Final). <a href="#modul-${esc(w.k)}-t-adp" target="_blank" rel="noopener">Periksa isian ADP di tab baru ›</a></span></div>`:''}${attHas(bkAtt(B))?`<div class="at-inl" style="margin:0 0 8px">${attChips(bkAtt(B))}</div>`:''}
+ACT.bkval=el=>{const w=wbsBy(el.dataset.k);const B=S.bukti[w.k]||{};modal(`Validasi bukti dukung <span class="code">${w.k}</span>`,`<p style="margin:0 0 8px"><b>${esc(deliv(w))}</b><br><span class="s">Jenis dokumen: ${esc(w.j)}</span></p>${B.auto==='adp'?`<div class="note i" style="margin:0 0 8px"><span>Bukti berupa <b>isian ADP di aplikasi</b> (status Final). <a href="#modul-${esc(w.k)}-t-adp" target="_blank" rel="noopener">Periksa isian ADP di tab baru ›</a></span></div>`:String(B.auto||'').startsWith('cm-')?`<div class="note i" style="margin:0 0 8px"><span>Bukti berupa <b>${esc(B.nama||'isian kertas kerja CM di aplikasi')}</b>, diajukan ${fmtD(B.aktual)}. Bila valid, realisasi dihitung pada bulan pengajuan. <a href="${esc(B.link||'#')}" target="_blank" rel="noopener">Periksa isian di tab baru ›</a></span></div>`:''}${attHas(bkAtt(B))?`<div class="at-inl" style="margin:0 0 8px">${attChips(bkAtt(B))}</div>`:''}
  <div class="fld"><label>Daftar periksa</label><div class="multi">${['Nama berkas sesuai kode WBS','Jenis dokumen sesuai','Periode sesuai','Sudah disahkan/ditandatangani'].map(x=>`<label><input type="checkbox" class="vchk"> ${x}</label>`).join('')}</div></div><div class="fld" style="margin-top:8px"><label for="vcat">Catatan untuk UIC</label><textarea id="vcat">${esc(B.cat||'')}</textarea></div>`,'Valid',()=>{
   if([...document.querySelectorAll('.vchk')].some(c=>!c.checked)){toast('Lengkapi daftar periksa sebelum menandai Valid.');return false}w.v=1;if(B.aktual)setAktual(w,B.aktual);else if(!doneAt(w,12))markDone(w);S.bukti[w.k]=Object.assign(B,{st:'Valid',cat:$('#vcat').value,val:ME.nama,tglVal:TODAY});log('Validasi bukti',w.k+' → Valid');save();toast('Bukti dukung valid; realisasi masuk capaian.');render()},
  {extra:'<button class="btn dng" data-mx="tolak">Tolak</button>',onExtra:k=>{const c=$('#vcat').value.trim();if(!c){toast('Catatan wajib diisi saat menolak.');return false}w.v=0;w.rm=0;S.bukti[w.k]=Object.assign(B,{st:'Ditolak',cat:c});log('Validasi bukti',w.k+' → Ditolak');save();toast('Bukti dukung ditolak; capaian kembali 0 dan pengunggah diberi catatan.');render()}})};
@@ -10935,15 +10935,15 @@ function viewCmo(tab,mk){
  const cmHeading=cmHeaders[tab]||['C','Change Management'];
  const head=mk?modHead(mk):vh(cmHeading[0],'cmo',cmHeading[1],descriptions[tab]||'Pengelolaan perubahan transformasi digital.','');
  const tabs=cmoTabs(tab,mk);
- if(tab==='jaringan'&&window.MT_JARINGAN_SK){if(!mk){try{T.jjsk=window.MT_JARINGAN_SK.table(jjCtx(null));(window.TVIEW||(window.TVIEW=[])).push('jjsk')}catch(e){console.warn(e)}}return head+tabs+(mk?'':cmoFlt(f,tab))+'<div id="cm-jjsk-workspace" class="cm-jjsk-workspace" aria-label="Ruang kerja SK Tim jaringan perubahan"></div>'}
- if(tab==='cra')return head+tabs+'<div id="cm-cra-workspace" class="cm-cra-workspace" aria-label="Ruang kerja asesmen kesiapan perubahan"></div>';
+ if(tab==='jaringan'&&window.MT_JARINGAN_SK){if(!mk){try{T.jjsk=window.MT_JARINGAN_SK.table(jjCtx(null));(window.TVIEW||(window.TVIEW=[])).push('jjsk')}catch(e){console.warn(e)}}return head+tabs+(mk&&window.MTPK?MTPK.strip(mk,tab):'')+(mk?'':cmoFlt(f,tab))+'<div id="cm-jjsk-workspace" class="cm-jjsk-workspace" aria-label="Ruang kerja SK Tim jaringan perubahan"></div>'}
+ if(tab==='cra')return head+tabs+(mk&&window.MTPK?MTPK.strip(mk,tab):'')+'<div id="cm-cra-workspace" class="cm-cra-workspace" aria-label="Ruang kerja asesmen kesiapan perubahan"></div>';
  const ms=mk?[modOf(mk)].filter(Boolean):visMods(f).filter(cmoMatch).filter(m=>!S.ui.mod||m.kode===S.ui.mod);
  const mf=s=>ms.some(m=>m.kode===s.modul);
  let body='';
  if(lv(f)==='-')body='<div class="card empty">Peran Anda tidak memiliki akses ke tab ini.</div>';
  else if(!ms.length)body='<div class="card empty">Belum ada modul dalam cakupan akses Anda.</div>';
  else body=({adp:tAdp,rencana:tRencana,jaringan:tJaringan,pelaksanaan:tImpl,monev:tMonev,pasca:tPasca,closing:tClosing}[tab]||(()=>''))(ms,mf,mk);
- return head+tabs+(mk?'':cmoFlt(f,tab))+body;
+ return head+tabs+(mk&&window.MTPK?MTPK.strip(mk,tab):'')+(mk?'':cmoFlt(f,tab))+body;
 }
 function modHead(mk){const m=modOf(mk);if(!m)return `<div class="card empty">Modul ${esc(mk)} tidak ditemukan (item ADP mungkin diarsipkan).</div>`;const sm=S.sub.filter(s=>s.modul===mk);
  return `<div class="vh"><a href="#cmo-siklus" class="btn sm">‹ Semua modul</a></div><div class="mhead"><div class="pic cmo" style="width:44px;height:44px;border-radius:11px;display:grid;place-items:center;color:#fff;font-weight:800">M</div>
@@ -12362,7 +12362,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script src="mt-dcm-activity-sync.js?v=20261124-iku1"></script>
 <script src="mt-activity-reports.js?v=20261124-iku3"></script>
 <link rel="stylesheet" href="mt-iku-ipr.css?v=20261124-ipr1"><script src="mt-iku-ipr.js?v=20261124-ipr3"></script>
-<link rel="stylesheet" href="mt-cm-monev.css?v=20261125-mv1"><script src="mt-cm-monev.js?v=20261125-mv2"></script>
+<link rel="stylesheet" href="mt-cm-monev.css?v=20261125-mv2"><script src="mt-cm-monev.js?v=20261125-mv2"></script>
+<script src="mt-cm-paket.js?v=20261125-pk1"></script>
 <!-- Mesin laporan Aktivitas (port DashboardCM): pustaka yang sama dengan DashboardCM -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
