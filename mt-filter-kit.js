@@ -199,7 +199,12 @@ html :is(#app,#root,body) .ract:has(>.mt-action-icon){gap:4px;flex-wrap:wrap;ali
   return toneByKind[kind]||'slate';
  }
  function styleOne(el){
-  if(!el||!el.matches||!el.matches(nodes)||el.classList.contains('mt-action-icon'))return;
+  if(!el||!el.matches||!el.matches(nodes))return;
+  // Tanya Bantuan is a floating help widget, not an action icon. Preserve its native appearance.
+  if(el.closest('#skqa-fab,.skqa-fab,#skqa,.skqa,.skqa-ft')||[el.getAttribute('aria-label'),el.getAttribute('title')].some(v=>/^tanya bantuan$/i.test((v||'').trim()))){
+   el.classList.remove('mt-action-icon');el.removeAttribute('data-mt-tone');return;
+  }
+  if(el.classList.contains('mt-action-icon'))return;
   if(el.closest('.top,.t-dh2,.pm-stage-shell,.ptabs,.subt,[role="tablist"],.flt,.fbar,.tfoot,.t-pager,.t-mnav,.t-dnav')||el.matches('[role="tab"],[data-pg],[data-tpg],.t-acc,.search-clear-btn,.fx,.ui-info-control,.ui-help-aligned,.hq,.hlp,.ui-note-link,[role="switch"],[aria-haspopup="dialog"].ui-info-control'))return;
   const label=(el.getAttribute('aria-label')||el.getAttribute('title')||'').trim(),txt=plain(el),kind=glyphMap.get(txt);
   const svg=!!el.querySelector('svg');
