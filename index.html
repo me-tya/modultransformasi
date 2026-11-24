@@ -7231,7 +7231,7 @@ function wbsDetail(w){const M=per().b;const m=modOfItem(w);const B=S.bukti[w.k]|
  <div class="wd-sec">Target vs realisasi bulanan (poin)</div>
  <div class="tscroll"><table class="wd-mt"><thead><tr><th></th>${MON.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody><tr><td>Target</td>${MON.map((x,i)=>{const t=tgtAt(w,i+1);return `<td class="${t?'t':''}${i+1===M?' cur':''}">${t||''}</td>`}).join('')}</tr><tr><td>Real</td>${MON.map((x,i)=>{const r=bit(w,i+1),t=tgtAt(w,i+1);const miss=!r&&t&&i+1<=Math.min(M,REP());return `<td class="${r?'r':miss?'m':''}${i+1===M?' cur':''}">${r?w.w:miss?'0':''}</td>`}).join('')}</tr></tbody></table></div>
  <div class="s" style="margin-top:6px;display:flex;gap:12px;flex-wrap:wrap"><span><span class="chip c-info">biru</span> target</span><span><span class="chip c-ok">hijau</span> sudah terealisasi</span><span><span class="chip c-bad">merah</span> target lewat, belum terealisasi</span><span>garis kuning = akhir periode filter</span></div>`,
- null,null,{size:'wide',cancel:'Tutup',extra:`${ed?'<button class="btn" data-mx="edit">Ubah</button>':''}${canW('bukti','U',bkUnits(w),w)?(BK_HERE()?'<button class="btn" data-mx="bukti">Bukti dukung</button>':'<button class="btn" data-mx="bukti">Unggah di WBS &amp; progres ›</button>'):''}${lv('cr').includes('C')&&canW('cr','C',w.u,w)?'<button class="btn pri" data-mx="cr">Change Request</button>':''}`,
+ null,null,{size:'wide',cancel:'Tutup',extra:`${ed?'<button class="btn" data-mx="edit">Ubah</button>':''}${canW('bukti','U',bkUnits(w),w)?'<button class="btn pri" data-mx="bukti">⇪ Bukti dukung</button>':''}${lv('cr').includes('C')&&canW('cr','C',w.u,w)?'<button class="btn pri" data-mx="cr">Change Request</button>':''}`,
   onExtra:(k)=>{if(k==='edit')formModal('wbs',w);if(k==='bukti')buktiUpload(w);if(k==='cr')crNew(w.k)}})}
 
 /* --- Bukti dukung --- */
@@ -7353,7 +7353,7 @@ function crNew(item){notulaReset('cr');const its=S.wbs.filter(w=>!w.arsip&&canW(
   const it=wbsBy($('#c-i').value.trim().toUpperCase());if(!it){toast('Kode WBS tidak ditemukan.');return false}if(!its.includes(it)){toast('Item ini di luar cakupan unit Anda (bukan UIC Utama).');return false}
   const c=draft();if(!c)return false;const nt=notulaCollect('cr',null);if(nt===false)return false;c.dasar=nt;notulaReset('cr');c.alasan=$('#c-a').value.trim();c.efektif=$('#c-e').value;if(!c.alasan){toast('Alasan wajib diisi.');return false}
   c.id=uid();c.kode='CR-'+String(S.ui.tahun).slice(-2)+'-'+String(S.crs.length+1).padStart(3,'0');c.st='Diajukan';c.pengaju=ME.nama;c.unit=ME.unit;c.owner=ME.email;c.prog=(wbsBy(c.item)||{}).prog||'';c.tgl=TODAY;c.cat='';c.pic=crRecipient('PMOK');c.hist=[{st:'Diajukan',by:ME.email,to:c.pic||'PMOK',at:new Date().toISOString(),note:'Diajukan untuk telaah'}];
-  S.crs.push(c);log('Ajukan CR',c.kode+' '+c.item+' · '+crChanges(c));save();toast(`${c.kode} diajukan · dampak ${crDampak(c)}.`);if(VIEW!=='pmo-cr')go('pmo-cr');else render()},{size:'wide'});
+  S.crs.push(c);log('Ajukan CR',c.kode+' '+c.item+' · '+crChanges(c));save();toast(`${c.kode} diajukan · dampak ${crDampak(c)}. Pantau di Project Management › Change Request.`);render()},{size:'wide'});
  let last=null;
  function draft(silent){const it=wbsBy($('#c-i').value.trim().toUpperCase());if(!it)return null;const j=$('#c-j').value;const c={jenis:j,item:it.k,ch:{},nilai:'',cmBaru:'',tglM:'',tglS:''};
   if(j==='Ubah item'){CRF.forEach(([k,,t])=>{const el=ov.querySelector('#cf-'+k);if(!el)return;let n=el.value.trim(),o=crGet(it,k);if(t==='num'){n=n===''?'':+n;o=+o}if(String(n)!==String(o))c.ch[k]=[o,n]});
@@ -7535,8 +7535,8 @@ ACT.kwMap=el=>{
 };
 ACT.kwBukti=el=>bkGo(wbsBy(el.dataset.k));
 /* ===== K-Wide v3: capaian (sumber K-Wide) + kelengkapan bukti WBS (hanya lihat/unduh) ===== */
-const BK_HERE=()=>VIEW==='pmo-wbs';
-function bkGo(w){if(!w)return;document.querySelectorAll('.ov,.kw-wrap').forEach(o=>o.remove());
+const BK_HERE=()=>true; /* 2026-11-25: unggah bukti dukung bisa dari menu mana pun (jendela di tempat) */
+function bkGo(w){if(!w)return;if(BK_HERE()){buktiUpload(w);return}document.querySelectorAll('.ov,.kw-wrap').forEach(o=>o.remove());
  if(S.ui.prjScope){S.ui.prjScope='';S.ui.prjSearch=''}
  Q.wbs=w.k;PG.wbs=0;if(S.ui.prog&&S.ui.prog!==w.prog)S.ui.prog=w.prog;const y=yrOf(w);if(y&&S.ui.tahun!==y)S.ui.tahun=y;save();
  if(VIEW==='pmo-wbs')render();else go('pmo-wbs');
@@ -7637,7 +7637,7 @@ ACT.kwOpen=el=>{const e=kwEv(+el.dataset.index),x=e.row;kwClose();
   '<div class="kw-kpi"><div><span class="l">CAPAIAN (SUMBER K-WIDE)</span>'+kwCapCell(x)+'<small>Target '+x[2]+' · realisasi '+(x[3]==null?'belum tersedia':x[3])+'</small></div><div><span class="l">KELENGKAPAN BUKTI WBS</span><span class="kw-cap"><b>'+(e.n?e.c.Valid+'/'+e.n:'—')+'</b><span class="chip '+(lengkap?'c-ok':e.n?'c-warn':'c-gray')+'">'+(lengkap?'Lengkap':e.n?'Belum lengkap':'Belum ditautkan')+'</span></span><small>'+(e.n?(e.n-e.c.Valid)+' item belum valid':'Item WBS belum ditautkan')+'</small></div></div>'+
   '<div class="kw-lst"><div class="kw-lh">Item WBS terkait ('+e.n+')'+(e.n?'<button type="button" class="btn sm" data-act="kwXls" data-index="'+e.index+'">⬇ Daftar bukti (Excel)</button>':'')+'</div>'+
   (items.length?items.map(it).join(''):'<div class="kw-empty">Belum ada item WBS yang ditautkan ke output ini.'+(lv('valid').includes('U')?' Gunakan tombol <b>Ubah item WBS terkait</b> di bawah.':' PMO Kemenkeu akan menautkannya.')+'</div>')+'</div>'+
-  (e.n&&!lengkap?'<div class="kw-pf"><p><b>Perlu mengunggah bukti?</b> Bukti dukung hanya diunggah di Pelaksanaan › WBS &amp; progres.'+(first?' Item <b>'+esc(first.k)+'</b> akan langsung ditampilkan di sana.':'')+'</p><button type="button" class="btn sm kw-go" data-act="bkgo" data-k="'+esc(first?first.k:'')+'">Unggah di WBS &amp; progres ›</button></div>':'')+
+  (e.n&&!lengkap?'<div class="kw-pf"><p><b>Perlu mengunggah bukti?</b> Klik kode WBS atau tombol ⇪ pada item; unggah langsung di sini tanpa pindah menu.</p><button type="button" class="btn sm kw-go" data-act="bkgo" data-k="'+esc(first?first.k:'')+'">⇪ Unggah bukti '+esc(first?first.k:'')+'</button></div>':'')+
   (lv('valid').includes('U')?'<div class="kw-adm"><span class="chip c-gray">Khusus PMO Kemenkeu</span><button type="button" class="btn sm kw-lite" data-act="kwMap" data-index="'+e.index+'">✎ Ubah item WBS terkait</button></div>':'')+
   '</aside>';
  document.body.appendChild(wrap);
@@ -8724,7 +8724,7 @@ function projectWorkspace(){
  const jView=S.ui.prjJV==='tbl'?'tbl':'lin';
  const jTools='<div class="ws-jtools">'+search(pJ.count,'kode, output, atau UIC')+'<div class="ws-seg" role="group" aria-label="Tampilan"><button type="button" data-act="prjJV" data-v="lin" class="'+(jView==='lin'?'on':'')+'">Linimasa</button><button type="button" data-act="prjJV" data-v="tbl" class="'+(jView==='tbl'?'on':'')+'">Tabel</button></div></div>';
  const firstOpen=jSorted.find(w=>buktiSt(w)!=='Valid'&&canW('bukti','U',bkUnits(w),w));
- const upBar=firstOpen?'<div class="ws-upbar">'+wsIco('upload',15)+'<span>Perlu mengunggah atau mengganti bukti? Unggah dilakukan di <b>Pelaksanaan › WBS &amp; progres</b>.</span><button type="button" class="btn sm gold" data-act="bkgo" data-k="'+esc(firstOpen.k)+'">Buka WBS &amp; progres ›</button></div>':'';
+ const upBar=firstOpen?'<div class="ws-upbar">'+wsIco('upload',15)+'<span>Perlu mengunggah atau mengganti bukti? Klik kode WBS pada daftar, lalu <b>⇪ Bukti dukung</b> — tidak perlu pindah menu.</span><button type="button" class="btn sm gold" data-act="bkgo" data-k="'+esc(firstOpen.k)+'">⇪ Unggah bukti '+esc(firstOpen.k)+'</button></div>':'';
  const jItem=w=>{const st=stOf(w,12),bs=buktiSt(w),B=S.bukti[w.k]||{};
   return '<li class="ws-jd ws-ms '+jTone(w)+'">'+tile(w)+'<div class="ws-ms-body">'+wbsCode(w)+'<p>'+esc(deliv(w))+'</p><small>'+esc(uicU(w)||'—')+(when(w)?' · '+esc(when(w)):'')+'</small></div>'+
   '<div class="ws-ev-st"><span class="ws-ev-lbl">Pelaksanaan</span>'+chipSt(st)+'</div><div class="ws-ev-st"><span class="ws-ev-lbl">Bukti</span>'+chipSt(bs)+'</div><div class="ws-ev-act">'+docBtns(w)+'</div>'+
@@ -9022,11 +9022,11 @@ function kpBuktiSt(w){return buktiSt(w)}
 function tpCloseAll(){document.querySelectorAll('.ov,.kw-wrap').forEach(o=>o.remove())}
 function tpGoWbs(p,q){tpCloseAll();S.ui.prog=p.akr;Q.wbs=q||'';PG.wbs=0;save();if(VIEW==='pmo-wbs')render();else go('pmo-wbs');setTimeout(()=>toast(q?'WBS & progres disaring: '+q:'WBS & progres disaring ke program '+p.kode),350)}
 function tpGoBukti(p,q){tpCloseAll();S.ui.prog=p.akr;S.ui.bseg='Menunggu validasi';Q.bukti=q||'';save();if(VIEW==='pmo-bukti')render();else go('pmo-bukti');setTimeout(()=>toast('Antrean bukti “Menunggu validasi” untuk '+p.kode),350)}
-ACT.tpBkVal=el=>{const w=wbsBy(el.dataset.k);if(!w)return;tpGoBukti(progOf(w.prog)||{akr:w.prog,kode:w.prog},w.k)};
+ACT.tpBkVal=el=>{const w=wbsBy(el.dataset.k);if(!w)return;if(canValW(w)){ACT.bkval({dataset:{k:w.k}});return}wbsDetail(w)}; /* validasi di tempat */
 function kpPop(p,r,i,reopen){const ch=chCur(p.akr);if(!ch||!(ch.kp||[])[i])return;const k=ch.kp[i],it=kpItems(p,k),x=kpProg(p,k),can=chCan('U',p);
  const ord={'Belum diunggah':0,'Ditolak':1,'Menunggu validasi':2,'Valid':3};const rows=it.slice().sort((a,b)=>ord[buktiSt(a)]-ord[buktiSt(b)]||String(a.f).localeCompare(String(b.f)));
  const cnt=s=>it.filter(w=>buktiSt(w)===s).length;
- const act=w=>{const s=buktiSt(w);return s==='Valid'?'<span class="s">—</span>':s==='Menunggu validasi'?`<button type="button" class="btn sm" data-act="tpBkVal" data-k="${esc(w.k)}">Validasi ›</button>`:`<button type="button" class="btn sm" data-act="bkgo" data-k="${esc(w.k)}">Unggah bukti ›</button>`};
+ const act=w=>{const s=buktiSt(w);return s==='Valid'?'<span class="s">—</span>':s==='Menunggu validasi'?`<button type="button" class="btn sm" data-act="tpBkVal" data-k="${esc(w.k)}">Validasi ›</button>`:`<button type="button" class="btn sm" data-act="bkgo" data-k="${esc(w.k)}">⇪ Unggah bukti</button>`};
  const how=!it.length?`<div class="note w" style="margin:0 0 10px"><span><b>Belum ada item WBS yang tertaut.</b> Sistem tidak menemukan kelompok WBS (Lv 4/Lv 5) yang namanya mirip kriteria ini, jadi progresnya belum bisa dihitung.${can?' Klik <b>Atur item WBS tertaut</b> lalu centang kelompok WBS yang menjadi bukti kriteria ini.':' Minta PMO pemilik charter menautkannya.'}</span></div>`:
   `<div class="note i" style="margin:0 0 10px"><span>${k.wbs&&k.wbs.length?`<b>Ditautkan manual</b> ke ${k.wbs.length} kelompok WBS.`:'<b>Ditautkan otomatis</b>: item WBS yang nama kelompok Lv 4/Lv 5-nya mirip nama kriteria ini.'} Kriteria terpenuhi (100%) bila <b>semua</b> item di bawah sudah <b>Valid</b>. Saat ini ${x.pg}% (dihitung dari bobot hari kerja).</span></div>`;
  const body=`<p style="margin:0 0 4px"><b>${esc(k.m)}</b></p>${(k.k||[]).map(t=>`<div class="s">• ${esc(t)}</div>`).join('')}<div style="height:10px"></div>${how}
@@ -12426,8 +12426,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script src="mt-dcm-activity-sync.js?v=20261124-iku1"></script>
 <script src="mt-activity-reports.js?v=20261124-iku3"></script>
 <link rel="stylesheet" href="mt-iku-ipr.css?v=20261124-ipr1"><script src="mt-iku-ipr.js?v=20261124-ipr3"></script>
-<link rel="stylesheet" href="mt-cm-monev.css?v=20261125-mv3"><script src="mt-cm-monev.js?v=20261125-mv5"></script>
-<script src="mt-cm-paket.js?v=20261125-pk2"></script><script src="mt-cm-revisi.js?v=20261125-rv1"></script>
+<link rel="stylesheet" href="mt-cm-monev.css?v=20261125-mv4"><script src="mt-cm-monev.js?v=20261125-mv5"></script>
+<script src="mt-cm-paket.js?v=20261125-pk2"></script><script src="mt-inplace.js?v=20261125-ip2"></script><script src="mt-cm-revisi.js?v=20261125-rv1"></script>
 <!-- Mesin laporan Aktivitas (port DashboardCM): pustaka yang sama dengan DashboardCM -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
