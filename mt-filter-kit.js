@@ -323,6 +323,94 @@ function mtRiskWorkspace(view){
  summary.addEventListener('change',function(e){if(e.target.matches('[data-mtr-score]'))pref('mtRiskScore',e.target.checked)});
  table.addEventListener('click',function(e){var b=e.target.closest('[data-mt-risk-review]');if(!b)return;e.preventDefault();e.stopPropagation();var r=visible.find(function(x){return x.id===b.dataset.mtRiskReview});if(r)mtRiskReview(r,!canW('risk','U',r.pemilik))});
 }
+/* 261125-MT-15 — Pascaproyek: closure queue and isolated example. */
+var mtPPDemo=true;
+var mtPPStage='';
+function mtPPDate(v){return /^\d{4}-\d{2}-\d{2}$/.test(String(v||''))&&Number.isFinite(Date.parse(v))?v:''}
+function mtPPThreeMonths(v){
+ if(!mtPPDate(v))return '';
+ var a=v.split('-').map(Number),y=a[0]+Math.floor((a[1]+2)/12),m=(a[1]+2)%12+1,d=Math.min(a[2],new Date(Date.UTC(y,m,0)).getUTCDate());
+ return String(y).padStart(4,'0')+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+}
+function mtPPData(){
+ var pv=progVis().filter(function(p){return !S.ui.prog||p.akr===S.ui.prog}),keys=new Set(pv.map(function(p){return p.akr})),yr=+S.ui.tahun;
+ var evals=(S.projectDecisions||[]).filter(function(r){return r.jenisCatatan==='EVAL-PASCAPROYEK'&&keys.has(r.program)&&(!r.tglEval||+String(r.tglEval).slice(0,4)===yr)});
+ var queue=[];
+ pv.forEach(function(p){Object.entries(p.closing||{}).forEach(function(z){
+  var c=z[1];if(!c||c.st!=='Ditutup')return;
+  var labels=projectLabels(z[0]),name=labels[2]||labels[1];if(!name)return;
+  var h=(Array.isArray(c.hist)?c.hist:[]).filter(function(x){return x.st==='Ditutup'}).slice(-1)[0];
+  var closed=mtPPDate(String(h?.at||'').slice(0,10)),due=mtPPThreeMonths(closed);
+  var linked=evals.find(function(r){return r.program===p.akr&&(r.mtPPClosingKey===z[0]||String(r.proyek||'').trim().toLowerCase()===String(name).trim().toLowerCase())});
+  if(due&&+due.slice(0,4)>yr&&!linked&&closed&&+closed.slice(0,4)>yr)return;
+  var st=linked?(linked.st||'Direncanakan'):!due?'Tanggal belum tercatat':due>TODAY?'Masa observasi':'Siap dievaluasi';
+  queue.push({p:p,key:z[0],name:name,parent:labels[2]?labels[1]:'',closed:closed,due:due,st:st,linked:linked});
+ })});
+ queue.sort(function(a,b){return (a.due||'9999').localeCompare(b.due||'9999')});
+ return {evals:evals,queue:queue};
+}
+function mtPPWorkspace(view){
+ if(!view||view.querySelector('.mt-pp-workspace')||!window.MTMF)return;
+ var tab=MTMF.view(),nav=view.querySelector('.mf-nav')||view.querySelector('.mt-pmo-subtab-band');
+ var anchor=tab==='eval'?view.querySelector('#tw-projectEval'):tab==='manfaat'?view.querySelector('#tw-ppManfaat'):view.querySelector('.g21');
+ if(!anchor)return;
+ var model=mtPPData(),evals=model.evals,queue=model.queue,o=tab==='eval'?T.projectEval:null;
+ if(o){
+  o.rows=function(){return evals.filter(function(r){return !mtPPStage||r.st===mtPPStage})};
+  o.empty='Belum ada hasil evaluasi resmi sesuai filter. Gunakan antrean proyek atau + Hasil Evaluasi untuk memulai.';
+  // Retain native actions and all form fields; show longer text on demand, with full text preserved.
+  o.cols.forEach(function(c){if(['biaya','proses','layanan','hasil','rtl'].includes(c.k)){c.r=function(r){var v=String(r[c.k]||'');return v?'<span title="'+esc(v)+'">'+esc(v.length>75?v.slice(0,72)+'…':v)+'</span>':'—'}}});
+  var oldValid=o.validate;
+  o.validate=function(d,r){
+   if(oldValid&&oldValid(d,r)===false)return false;
+   var due=mtPPThreeMonths(d.tglTutup);
+   if(due&&d.tglEval&&d.tglEval<due){toast('Tanggal evaluasi paling cepat '+fmtD(due)+' (3 bulan setelah penutupan).');return false}
+   if(d.st==='Selesai'&&(!d.tglTutup||!d.tglEval)){toast('Lengkapi tanggal penutupan dan evaluasi sebelum menyatakan selesai.');return false}
+  };
+  var head=anchor.querySelector('.tbar');if(head){
+   var acts=Array.from(head.querySelectorAll('button[data-act="add"],button[data-act="tdata"]'));
+   var right=document.createElement('div');right.className='mt-pp-actions';acts.forEach(function(b){right.appendChild(b)});head.appendChild(right);
+  }
+  redrawT('projectEval');
+ }
+ var workspace=document.createElement('section');workspace.className='mt-pp-workspace';
+ var metric=function(label,value,sub,tone,key){return '<button type="button" class="mt-pp-kpi '+tone+(key&&mtPPStage===key?' on':'')+'"'+(key?' data-pp-stage="'+esc(key)+'"':' disabled')+'><span>'+esc(label)+'</span><b>'+esc(value)+'</b><small>'+esc(sub)+'</small></button>'};
+ var head='<div class="mt-pp-top"><div><b>'+(tab==='eval'?'Pemantauan evaluasi pascaproyek':tab==='manfaat'?'Realisasi manfaat proyek':'Hubungan adopsi dan manfaat')+'</b><small>'+(tab==='eval'?'Evaluasi paling cepat 3 bulan setelah penutupan proyek.':tab==='manfaat'?'Bandingkan baseline, target dan realisasi yang didukung bukti.':'Indeks adopsi CM dan manfaat adalah dua ukuran yang berbeda.')+'</small></div><label class="mt-pp-demo-toggle"><input type="checkbox" data-pp-demo '+(mtPPDemo?'checked':'')+'> Tampilkan contoh e-Perjadin</label></div>';
+ if(tab==='eval'){
+  var plan=evals.filter(function(r){return r.st==='Direncanakan'}).length,doing=evals.filter(function(r){return r.st==='Berjalan'}).length,done=evals.filter(function(r){return r.st==='Selesai'}).length;
+  head+='<div class="mt-pp-kpis">'+metric('Proyek ditutup',queue.length,'Dalam cakupan program','navy')+metric('Siap dievaluasi',queue.filter(function(x){return x.st==='Siap dievaluasi'}).length,'Sudah melewati 3 bulan','teal')+metric('Direncanakan',plan,'Evaluasi terdaftar','neutral','Direncanakan')+metric('Berjalan',doing,'Evaluasi dalam proses','amber','Berjalan')+metric('Selesai',done,'Hasil evaluasi resmi','teal','Selesai')+'</div>';
+  head+='<div class="mt-pp-card"><div class="mt-pp-cardhead"><b>Antrean evaluasi dari Penutupan Proyek</b><small>'+queue.length+' proyek · hanya status Ditutup</small></div><div class="tscroll"><table class="lap mt-pp-queue"><thead><tr><th>Program / Proyek</th><th>Tanggal ditutup</th><th>Evaluasi paling awal</th><th>Status</th><th>Aksi</th></tr></thead><tbody>'+
+  (queue.length?queue.map(function(x,i){return '<tr><td><span class="code">'+esc(x.p.akr)+'</span> <b>'+esc(x.name)+'</b>'+(x.parent?'<small>'+esc(x.parent)+'</small>':'')+'</td><td>'+fmtD(x.closed)+'</td><td>'+fmtD(x.due)+'</td><td>'+chipSt(x.st)+'</td><td>'+(!x.linked&&o&&o.canAdd()&&tpCanEdit(x.p)?'<button type="button" class="btn sm" data-pp-prepare="'+i+'">Siapkan evaluasi</button>':x.linked?'<span class="s">Sudah terdaftar</span>':'—')+'</td></tr>'}).join(''):'<tr><td colspan="5" class="mt-pp-empty">Belum ada proyek berstatus Ditutup yang terbaca pada cakupan ini. Catat penutupan resmi terlebih dahulu agar antrean muncul otomatis.</td></tr>')+'</tbody></table></div></div>';
+ }
+ var demo='<div class="mt-pp-demo mt-pp-card" '+(mtPPDemo?'':'hidden')+'><div class="mt-pp-cardhead"><div><span class="mt-pp-badge">SIMULASI · BUKAN DATA RESMI</span><b>e-Perjadin · Digitalisasi Office Automation</b></div><button type="button" class="btn sm" data-pp-detail>Lihat contoh evaluasi</button></div>';
+ if(tab==='eval')demo+='<div class="mt-pp-demo-grid"><div><small>Penutupan (asumsi)</small><b>31/08/2026</b></div><div><small>Evaluasi paling awal</small><b>30/11/2026</b></div><div><small>Status contoh</small><b>Persiapan evaluasi</b></div><div><small>Fokus</small><b>Efisiensi · Layanan · Keberlanjutan</b></div></div><p>Contoh agenda: sepakati indikator, kumpulkan data operasional dan survei pengguna, verifikasi realisasi manfaat, lalu susun rekomendasi. Tanggal aktual penutupan harus mengikuti dokumen resmi.</p>';
+ if(tab==='manfaat')demo+='<div class="tscroll"><table class="lap mt-pp-benefit"><thead><tr><th>Indikator contoh</th><th>Baseline</th><th>Target</th><th>Realisasi simulasi</th><th>Capaian contoh</th></tr></thead><tbody><tr><td>Waktu proses pengajuan perjalanan dinas</td><td>3 hari</td><td>1 hari</td><td>1,2 hari</td><td>83,3%</td></tr><tr><td>Biaya administrasi per pengajuan</td><td>Rp50.000</td><td>Rp25.000</td><td>Rp28.000</td><td>89,3%</td></tr><tr><td>Pengajuan selesai sesuai SLA</td><td>70%</td><td>90%</td><td>92%</td><td>102,2%</td></tr></tbody></table></div><p>Rumus contoh mengikuti register: target ÷ realisasi untuk indikator turun; realisasi ÷ target untuk indikator naik. Angka simulasi tidak masuk indeks resmi.</p>';
+ if(tab==='porto')demo+='<div class="mt-pp-demo-grid"><div><small>Indeks adopsi (contoh)</small><b>85%</b></div><div><small>Indeks manfaat (contoh)</small><b>92%</b></div><div><small>Kuadran contoh</small><b>Adopsi tinggi · Manfaat tinggi</b></div><div><small>Rekomendasi</small><b>Pertahankan dan monitor</b></div></div><p>Contoh interpretasi berdasarkan ambang 80% di matriks aplikasi. Indeks adopsi harus bersumber dari Monev CM; indeks manfaat dari realisasi terverifikasi.</p>';
+ demo+='</div>';
+ workspace.innerHTML=head+demo;anchor.before(workspace);
+ workspace.addEventListener('change',function(e){if(e.target.matches('[data-pp-demo]')){mtPPDemo=e.target.checked;workspace.querySelector('.mt-pp-demo').hidden=!mtPPDemo}});
+ workspace.addEventListener('click',function(e){var b=e.target.closest('[data-pp-stage],[data-pp-prepare],[data-pp-detail]');if(!b)return;e.preventDefault();e.stopPropagation();
+  if(b.hasAttribute('data-pp-stage')){mtPPStage=mtPPStage===b.dataset.ppStage?'':b.dataset.ppStage;PG.projectEval=0;render();return}
+  if(b.hasAttribute('data-pp-prepare')){
+   var x=queue[+b.dataset.ppPrepare];if(!x||!o||!o.canAdd()||!tpCanEdit(x.p))return;
+   formModal('projectEval',null);
+   var fields={program:x.p.akr,proyek:x.name,tglTutup:x.closed,tglEval:x.due,st:'Direncanakan'};
+   Object.entries(fields).forEach(function(z){var el=document.getElementById('f_'+z[0]);if(el)el.value=z[1]||''});
+   return;
+  }
+  modal('Contoh evaluasi pascaproyek · e-Perjadin','<p><b>SIMULASI — tidak disimpan sebagai hasil evaluasi resmi.</b></p><p>Asumsi penutupan 31 Agustus 2026. Evaluasi paling cepat 30 November 2026. Status: persiapan.</p><div class="tscroll"><table class="lap"><thead><tr><th>Aspek</th><th>Contoh isian</th><th>Bukti yang diperlukan</th></tr></thead><tbody><tr><td>Efisiensi biaya</td><td>Biaya administrasi Rp50.000 → Rp28.000 per pengajuan (simulasi).</td><td>Rekap biaya sebelum/sesudah dan metode perhitungan.</td></tr><tr><td>Proses bisnis</td><td>Waktu pengajuan 3 hari → 1,2 hari (simulasi).</td><td>Log transaksi dan sampling waktu layanan.</td></tr><tr><td>Pemenuhan layanan</td><td>92% pengajuan selesai sesuai SLA (simulasi).</td><td>Dashboard SLA dan hasil survei pengguna.</td></tr><tr><td>Hasil / manfaat</td><td>Proses lebih ringkas; potensi penghematan biaya dan waktu.</td><td>Validasi pemilik proses bisnis.</td></tr><tr><td>Tindak lanjut</td><td>Pantau complaint handling, integrasi dan keberlanjutan pemanfaatan.</td><td>PIC, tenggat, dan bukti tindak lanjut.</td></tr></tbody></table></div>','',null,{size:'wide',cancel:'Tutup'});
+ });
+ // Align action labels and compact table presentation without altering data.
+ anchor.classList.add('mt-pp-native');
+ if(tab==='porto'&&nav){
+  var band=nav.querySelector('.subt')?nav:nav.parentElement;
+  if(band&&!band.querySelector('.mt-tabsearch')){
+   var lab=document.createElement('label');lab.className='mt-tabsearch mt-pp-porto-search';lab.innerHTML=ICON;
+   var inp=document.createElement('input');inp.type='search';inp.placeholder='Cari program…';inp.setAttribute('aria-label','Cari program');lab.appendChild(inp);band.appendChild(lab);band.classList.add('mt-subt-row');
+   inp.addEventListener('input',function(){var q=inp.value.trim().toLowerCase();anchor.querySelectorAll('tbody tr').forEach(function(r){r.hidden=!r.textContent.toLowerCase().includes(q)})});
+  }
+ }
+}
 function placeTblSearch(){
  var view=document.getElementById('view');if(!view)return;
  if(typeof VIEW!=='undefined'&&VIEW==='pmo-risiko'){mtRiskWorkspace(view);return;}
@@ -374,6 +462,7 @@ function placeTblSearch(){
   if(g.nav.nextSibling)g.nav.parentNode.insertBefore(lab,g.nav.nextSibling);else g.nav.parentNode.appendChild(lab);
   g.nav.parentNode.classList.add('mt-subt-row');
  });
+ if(typeof VIEW!=='undefined'&&VIEW==='pmo-pascaproyek')mtPPWorkspace(view);
 }
 window.MT_PLACE_TBL_SEARCH=placeTblSearch;
 if(typeof window.render==='function'&&!window.render.__mtWrapped){
@@ -591,3 +680,5 @@ html :is(#app,#root,body) .ract:has(>.mt-action-icon){gap:4px;flex-wrap:wrap;ali
 (function(){var st=document.createElement('style');st.id='mt-risk-register-proportions';st.textContent="\n@media(min-width:761px){\n #app .mt-risk-workspace #tw-risk .tcard{min-width:1120px}\n #app .mt-risk-workspace #tw-risk .tcard thead th:nth-child(1){width:48px}\n #app .mt-risk-workspace #tw-risk .tcard thead th:nth-child(3){width:65px}\n #app .mt-risk-workspace #tw-risk .tcard thead th:nth-child(4){width:84px}\n #app .mt-risk-workspace #tw-risk .tcard thead th:nth-child(5){width:82px}\n #app .mt-risk-workspace #tw-risk .tcard thead th:nth-child(6){width:72px}\n #app .mt-risk-workspace #tw-risk .tcard thead th:nth-child(7){width:78px}\n #app .mt-risk-workspace #tw-risk .tcard thead th:nth-child(8){width:83px}\n #app .mt-risk-workspace #tw-risk:not(.mt-risk-issue-table) .tcard thead th:nth-child(9){width:82px}\n #app .mt-risk-workspace #tw-risk:not(.mt-risk-issue-table) .tcard thead th:nth-child(10),\n #app .mt-risk-workspace #tw-risk.mt-risk-issue-table .tcard thead th:nth-child(9){width:98px}\n}\n";document.head.appendChild(st)})();
 
 (function(){var st=document.createElement('style');st.id='mt-project-risk-icons-compact';st.textContent="\n/* 261125-MT-14 — one compact icon size for project and risk register rows. */\nhtml #app :is(.pm-project-table .pm-act2,#tw-risk .ract) .mt-action-icon.mt-action-icon[data-mt-tone]{\n width:30px!important;min-width:30px!important;max-width:30px!important;\n height:30px!important;min-height:30px!important;max-height:30px!important;\n flex:0 0 30px!important;border-radius:8px!important;padding:0!important;\n}\nhtml #app :is(.pm-project-table .pm-act2,#tw-risk .ract) .mt-action-icon.mt-action-icon[data-mt-tone]>svg{\n width:15px!important;height:15px!important;min-width:15px!important;min-height:15px!important;\n}\nhtml #app .pm-project-table .pm-act2{gap:4px!important;align-items:center;white-space:nowrap}\nhtml #app .pm-project-table .pm-act2 .pm-ws-icon{opacity:1}\nhtml #app .pm-project-table .pm-act2 .pm-ws-icon:after{display:none!important}\nhtml #app .pm-project-table .pm-act2 .pm-ws-icon[disabled]{opacity:.42!important}\nhtml #app .pm-project-table.dpk :is(th,td).pm-ws-action{width:112px!important;min-width:112px!important;max-width:112px!important;padding-left:5px!important;padding-right:5px!important;box-sizing:border-box}\nhtml #app #tw-risk .ract{gap:4px!important;flex-wrap:nowrap;align-items:center}\n@media(min-width:761px){\n #app .mt-risk-workspace #tw-risk .tcard thead th:last-child{width:144px}\n #app .mt-risk-workspace #tw-risk.mt-risk-issue-table .tcard thead th:last-child{width:110px}\n}\n";document.head.appendChild(st)})();
+
+(function(){var st=document.createElement('style');st.id='mt-pp-workspace-style';st.textContent="\n/* 261125-MT-15 — compact post-project evaluation workspace */\n#app .mt-pp-workspace{display:flex;flex-direction:column;gap:8px;margin:0 0 10px;min-width:0}\n#app .mt-pp-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:7px 10px;background:#fff;border:1px solid #dce5ef;border-radius:9px}\n#app .mt-pp-top b,#app .mt-pp-cardhead b{display:block;font-size:13px;color:#173a66}\n#app .mt-pp-top small,#app .mt-pp-cardhead small{display:block;font-size:11px;color:#62748b;margin-top:2px}\n#app .mt-pp-demo-toggle{font-size:12px;display:flex;align-items:center;gap:6px;color:#526781;white-space:nowrap}\n#app .mt-pp-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}\n#app .mt-pp-kpi{display:flex;flex-direction:column;gap:4px;text-align:left;padding:8px 11px;border:1px solid #dce5ef;background:#fff;border-radius:9px;min-width:0;color:#173a66;font:inherit}\n#app .mt-pp-kpi:disabled{opacity:1;cursor:default}#app .mt-pp-kpi:not(:disabled){cursor:pointer}#app .mt-pp-kpi:not(:disabled):hover{border-color:#91a7c1}\n#app .mt-pp-kpi.on{outline:2px solid #173a66;outline-offset:-2px}\n#app .mt-pp-kpi span{font-size:11.5px;font-weight:700}#app .mt-pp-kpi b{font-size:23px;line-height:1.1}#app .mt-pp-kpi small{font-size:10.5px;color:#62748b;line-height:1.2}\n#app .mt-pp-kpi.navy{background:#14355d;color:#fff;border-color:#14355d}#app .mt-pp-kpi.navy small{color:#c6d7ec}#app .mt-pp-kpi.teal b{color:#087f72}#app .mt-pp-kpi.amber b{color:#a66b0a}\n#app .mt-pp-card{border:1px solid #dce5ef;background:#fff;border-radius:9px;overflow:hidden}\n#app .mt-pp-cardhead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 10px;border-bottom:1px solid #e5ebf3}\n#app .mt-pp-cardhead .btn{font-size:11.5px;min-height:30px}\n#app .mt-pp-card .lap{width:100%;min-width:640px}#app .mt-pp-card .lap th{font-size:11px;background:#f1f5fa}#app .mt-pp-card .lap td,#app .mt-pp-card .lap th{padding:7px 10px;vertical-align:middle}#app .mt-pp-card .lap td{font-size:12px}#app .mt-pp-card .lap td small{display:block;color:#62748b;font-size:11px;margin-top:3px}\n#app .mt-pp-empty{color:#62748b;text-align:center}\n#app .mt-pp-demo{border-color:#ead7a6;background:#fffcf4}#app .mt-pp-demo[hidden]{display:none!important}\n#app .mt-pp-demo .mt-pp-cardhead{border-bottom-color:#efe4c6}\n#app .mt-pp-badge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.2px;color:#946005;background:#fff0c7;padding:3px 6px;border-radius:4px;margin-bottom:3px}\n#app .mt-pp-demo-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:8px 10px}\n#app .mt-pp-demo-grid>div{padding-left:8px;border-left:2px solid #e4c77d;min-width:0}\n#app .mt-pp-demo-grid small{display:block;font-size:11px;color:#62748b;margin-bottom:3px}#app .mt-pp-demo-grid b{font-size:12px;color:#173a66}\n#app .mt-pp-demo p{margin:0;padding:6px 10px 8px;font-size:11.5px;line-height:1.4;color:#536781}\n#app .mt-pp-actions{display:flex;align-items:center;gap:6px;margin-left:auto}\n#app .mt-pp-native .tbar{min-height:44px;padding:6px 10px;gap:7px}#app .mt-pp-native .tbar .btn{min-height:34px}\n#app .mt-pp-native .tcard td,#app .mt-pp-native .tcard th{padding:7px 8px;vertical-align:middle}\n#app .mt-pp-native .empty{padding:18px 10px}\n#app .mt-pp-native tr[hidden]{display:none!important}\n@media(max-width:800px){#app .mt-pp-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}#app .mt-pp-demo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}\n";document.head.appendChild(st)})();
