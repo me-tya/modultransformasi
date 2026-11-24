@@ -11,11 +11,12 @@ test('Notula memakai lima level: 1., a., 1), a), i. pada Word dan pratinjau',()=
   assert.match(html,/Math\.min\(lv,4\)/);
   for(const style of ['counter(list-item,lower-alpha) \". \"','counter(list-item,decimal) \") \"','counter(list-item,lower-alpha) \") \"','counter(list-item,lower-roman) \". \"'])assert.ok(html.includes(style),style);
 });
-test('Hasil & Luaran memisahkan dokumentasi, hadir, notula TTE dan hasil',()=>{
+test('Kesimpulan Rapat memisahkan dokumentasi, hadir, notula TTE dan kesimpulan',()=>{
   assert.match(html,/sec\(1,'Dokumentasi'/);
   assert.match(html,/sec\(2,'Daftar Hadir'/);
   assert.match(html,/sec\(3,'Notula TTE'/);
-  assert.match(html,/sec\(4,'Hasil & tindak lanjut'/);
+  assert.match(html,/sec\(4,'Kesimpulan'/);
+  for(const key of ["ta('ringkas','Ringkasan'","ta('kendala','Kendala'","ta('tl','Tindak lanjut"])assert.ok(html.includes(key),key);
   for(const key of ["'hadir','one-hadir'","'notulaTte','one-tte'","at('hadir')","at('notulaTte')","filled('hadir')","filled('notulaTte')"])assert.ok(html.includes(key),key);
   assert.match(html,/if\(k==='notulaTte'\)opt\.accept='\.pdf'/);
 });

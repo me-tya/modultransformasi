@@ -22,13 +22,13 @@
 .cmx .act-fgrid [data-actf="actTahun"],
 .cmx .act-fgrid [data-actf="oneTw"],
 .cmx .act-fgrid [data-actf="actLay"],
-.cmx .act-fgrid [data-actf="actSt"],
-.cmx .act-fgrid [data-actf="actWbsGroup"]{grid-column:span 1}
+.cmx .act-fgrid [data-actf="actSt"]{grid-column:span 1}
 .cmx .act-fgrid [data-actf="actKat"],
 .cmx .act-fgrid [data-actf="actProg"],
 .cmx .act-fgrid [data-actf="actUnit"],
-.cmx .act-fgrid [data-actf="actPic"],
-.cmx .act-fgrid [data-actf="actWbsL4"]{grid-column:span 2}
+.cmx .act-fgrid [data-actf="actPic"]{grid-column:span 2}
+/* 2026-11-24: filter PM/CM dihapus → Komponen WBS + Tahapan WBS mengisi satu baris (3+3) */
+.cmx .act-fgrid [data-actf="actWbsL4"]{grid-column:span 3}
 .cmx .act-fgrid [data-actf="actWbsL5"]{grid-column:span 3}
 .cmx .act-fgrid .act-per,.cmx .act-fgrid .act-fact{grid-column:span 3}
 .cmx .act-fgrid .act-per{height:36px;padding-left:9px}

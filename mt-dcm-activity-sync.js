@@ -37,26 +37,29 @@ function mtFileKeys(att){const k=(att&&Array.isArray(att.items)?att.items:[]).ma
 const notPrev=a=>arr(a.notula).map(z=>z&&z.searchPreview||'').filter(Boolean).join('\n\n');
 const notD=a=>str(a.notulaTeks)||notPrev(a);
 const URLF={und:'undanganUrl',st:'suratTugasUrl',materi:'materi'};
+/* Field tambahan 2026-11-24 (Kendala, IKU terkait): hanya masuk sidik bila terisi, agar sidik aktivitas lama tidak berubah. */
+const ikuList=v=>[...new Set(arr(v).map(k=>str(k).replace(/\s+/g,'')).filter(Boolean))].sort();
+function extra(o,kendala,iku){const k=tidy(kendala),l=ikuList(iku);if(k)o.kendala=k;if(l.length)o.iku=l.join(',');return o}
 /* Bentuk bersama (kanonik) — harus identik untuk DCM & MT bila datanya sama. */
 function canonD(a){const lok=a.meetingLocation||a.lokasiChannel||'',link=a.meetingLink||(isUrl(lok)?lok:'');
  const o={nama:tidy(a.namaKegiatan),tgl:str(a.tglMulai).slice(0,10),tglS:str(a.tglSelesai).slice(0,10)||str(a.tglMulai).slice(0,10),jam:normJam(jamOf(a)),kat:tidy(a.kategori),
   lay:/^(ya|yes|y|true|1)$/i.test(str(a.layanan).trim())?'Ya':'Tidak',unit:tidy(a.unitPemohon).replace(/^-$/,''),prog:tidy(a.programTerkait),tujuan:tidy(a.tujuanOutput),catatan:tidy(a.catatan),
   peserta:tidy(a.pesertaTarget),narsum:tidy(a.unitAsalNarsum),pic:picList(a.picTimCM).slice().sort().join(', '),lokasi:tidy(lok),link:tidy(link),mode:modeOf(a.meetingMode,lok,link),
   st:dcmStatus(a.status),undNo:tidy(a.undangan),stNo:tidy(a.suratTugas),notulaTeks:tidy(notD(a)),ringkas:tidy(a.ringkasanHasil),tl:tidy(a.tindakLanjut),f:{}};
- FIELDS.forEach(([k,f])=>o.f[k]=dcmFileKeys(a,f,URLF[k]));return o}
+ FIELDS.forEach(([k,f])=>o.f[k]=dcmFileKeys(a,f,URLF[k]));extra(o,a.kendala,a.ikuRefs);return o}
 function canonM(x){const und=x.und||{},st=x.st||{};
  const o={nama:tidy(x.nama),tgl:str(x.tgl).slice(0,10),tglS:str(x.tglSelesai).slice(0,10)||str(x.tgl).slice(0,10),jam:normJam(x.jam),kat:tidy(x.kat),
   lay:x.layanan==='Ya'?'Ya':'Tidak',unit:tidy(x.unitP),prog:tidy(x.program),tujuan:tidy(x.tujuan),catatan:tidy(x.catatan),
   peserta:tidy(x.peserta),narsum:tidy(x.narsum),pic:picList(x.pic).slice().sort().join(', '),lokasi:tidy(x.lokasi),link:tidy(x.link),mode:modeOf(x.mode,x.lokasi,x.link),
   st:MT2DCM_ST[x.stat]?x.stat:'',undNo:tidy(und.no),stNo:tidy(st.no),notulaTeks:tidy(x.notulaTeks),ringkas:tidy(x.ringkas),tl:tidy(x.tl),f:{}};
- FIELDS.forEach(([k])=>o.f[k]=mtFileKeys(x[k]));return o}
+ FIELDS.forEach(([k])=>o.f[k]=mtFileKeys(x[k]));extra(o,x.kendala,x.ikuRefs);return o}
 const MODE_MT={offline:'Offline',online:'Online',hybrid:'Hybrid'};
 /* DCM → MT: tulis field bersama ke aktivitas MT x (dibuat bila baru). Berkas MT yang sudah ditarik dipertahankan. */
 function applyToMt(x,a){const c=canonD(a);
  x.cmDashboardId=a.id;x.keAkt=true;x.nama=c.nama;x.tgl=c.tgl;x.tglSelesai=c.tglS;x.jam=c.jam;x.kat=c.kat||'Rapat Koordinasi';x.layanan=c.lay;
  x.tahun=+c.tgl.slice(0,4)||x.tahun;x.tw=c.tgl?Math.ceil((+c.tgl.slice(5,7)||1)/3):(x.tw||1);x.no=Number(a.no)||x.no||0;
  x.unitP=c.unit;x.program=c.prog;x.tujuan=c.tujuan;x.catatan=c.catatan;x.peserta=c.peserta;x.narsum=c.narsum;x.pic=picList(a.picTimCM);
- x.lokasi=c.lokasi;x.link=c.link;x.mode=MODE_MT[c.mode]||'';x.stat=c.st;x.notulaTeks=notD(a);x.ringkas=c.ringkas;x.tl=c.tl;
+ x.lokasi=c.lokasi;x.link=c.link;x.mode=MODE_MT[c.mode]||'';x.stat=c.st;x.notulaTeks=notD(a);x.ringkas=c.ringkas;x.tl=c.tl;x.kendala=str(a.kendala);x.ikuRefs=ikuList(a.ikuRefs);
  FIELDS.forEach(([k,f])=>{const old=x[k]&&Array.isArray(x[k].items)?x[k].items:[];const byKey=new Map();old.forEach(m=>{const key=m.t==='l'?str(m.link).trim():str(m.sourceRefId||m.externalRefId);if(key)byKey.set(key,m)});
   const items=[];const seen=new Set();
   const push=(key,mk)=>{if(!key||seen.has(key))return;seen.add(key);items.push(byKey.get(key)||mk())};
@@ -77,7 +80,7 @@ function applyToDcm(a0,x,meta){const a=Object.assign({},a0||{});const c=canonM(x
  a.pesertaTarget=c.peserta;a.unitAsalNarsum=c.narsum;a.picTimCM=picList(x.pic).join(', ');a.meetingLocation=isUrl(c.lokasi)?'':c.lokasi;a.lokasiChannel=a0&&a0.lokasiChannel===c.lokasi?a0.lokasiChannel:c.lokasi;
  a.meetingLink=c.link;a.meetingMode=c.mode||str(a.meetingMode);
  const keep=dcmStatus(a0&&a0.status);a.status=c.st?MT2DCM_ST[c.st]:(keep?'':str(a0&&a0.status));
- a.undangan=c.undNo;a.suratTugas=c.stNo;a.notulaTeks=a0&&!str(a0.notulaTeks)&&tidy(x.notulaTeks)===tidy(notPrev(a0))?'':str(x.notulaTeks);a.ringkasanHasil=c.ringkas;a.tindakLanjut=c.tl;
+ a.undangan=c.undNo;a.suratTugas=c.stNo;a.notulaTeks=a0&&!str(a0.notulaTeks)&&tidy(x.notulaTeks)===tidy(notPrev(a0))?'':str(x.notulaTeks);a.ringkasanHasil=c.ringkas;a.tindakLanjut=c.tl;a.kendala=str(x.kendala);a.ikuRefs=ikuList(x.ikuRefs);
  FIELDS.forEach(([k,f])=>{const oldList=arr(a0&&a0[f]);const byKey=new Map();oldList.forEach(o=>{const key=typeof o==='string'?o.trim():str(o&&(o.refId||o.storagePath||o.id||o.url||o.link));if(key)byKey.set(key,o)});
   const urlF=URLF[k],urlV=urlF&&a0&&isUrl(a0[urlF])?str(a0[urlF]).trim():'';const list=[];let urlKept=false;
   (x[k]&&Array.isArray(x[k].items)?x[k].items:[]).forEach(it=>{

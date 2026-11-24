@@ -1545,7 +1545,7 @@ function mtFilterState(){
  const u=S.ui||{},tw=+u.oneTw||0;let from=u.actFrom||'',to=u.actTo||'';
  if(tw&&!from&&!to){const y=+(u.actTahun||S.ui.tahun||new Date().getFullYear()),m1=(tw-1)*3+1,m3=m1+2,last=new Date(y,m3,0).getDate();from=`${y}-${String(m1).padStart(2,'0')}-01`;to=`${y}-${String(m3).padStart(2,'0')}-${last}`}
  const v=x=>x?String(x):'ALL';
- return {kategori:v(u.actKat),program:v(u.actProg),status:v(u.actSt),pic:v(u.actPic),unit:v(u.actUnit),layanan:v(u.actLay),tahun:v(u.actTahun),unitType:'ALL',wbsGroup:v(u.actWbsGroup),wbsLevel4:v(u.actWbsLevel4),wbsLevel5:v(u.actWbsLevel5),dateFrom:from,dateTo:to,search:u.actQ||''};
+ return {kategori:v(u.actKat),program:v(u.actProg),status:v(u.actSt),pic:v(u.actPic),unit:v(u.actUnit),layanan:v(u.actLay),tahun:v(u.actTahun),unitType:'ALL',wbsGroup:'ALL',wbsLevel4:v(u.actWbsLevel4),wbsLevel5:v(u.actWbsLevel5),dateFrom:from,dateTo:to,search:u.actQ||''};
 }
 function mtFilteredRows(){
  const all=(typeof actRows==='function'?actRows():[]),u=S.ui||{},tw=+u.oneTw||0,kat=u.actKat||'',sf=u.actSt||'',pf=u.actPic||'',q=String(u.actQ||'').toLowerCase();
