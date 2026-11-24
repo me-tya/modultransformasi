@@ -11597,10 +11597,10 @@ var menuPM=[
 ['Aktivitas','Kegiatan PMO & CMO: daftar, kalender, ringkasan, dan matriks','aktivitas'],['Tim PMO & CMO','Highlight harian, agenda, kehadiran, cuti, penempatan tim, profil','tim'],
 ];
 var menuCM=[
-['Analisis Dampak (ADP)','As-Is, To-Be, POSTeR, risiko','cmo-adp'],['Perencanaan','Stakeholder, komunikasi, pelatihan','cmo-rencana'],
+['Analisis Dampak (ADP)','As-Is, To-Be, POSTeR, risiko, indikator (kode D/R/I)','cmo-adp'],['Perencanaan','Stakeholder, komunikasi, pelatihan, rancangan Monev, revisi rencana (kode S/K/P)','cmo-rencana'],
 ['Jaringan Pengelola Proyek dan Perubahan','SK Tim jaringan per modul WBS jejaring: rancang, isian unit, legal drafting, penetapan','cmo-jaringan'],['CRA','Kesiapan dan rencana aksi','cmo-cra'],
-['Pelaksanaan','Realisasi komunikasi dan pelatihan','cmo-pelaksanaan'],['Monev','Monitoring indikator dan tindak lanjut','cmo-monev'],
-['Evaluasi Pascaimplementasi','Keberlanjutan adopsi dan kanal resmi','cmo-pasca'],['Penutupan CM','Serah terima dan pengakhiran transisi','cmo-closing'],
+['Pelaksanaan','Realisasi komunikasi dan pelatihan per sesi (kode K01-1)','cmo-pelaksanaan'],['Monev','Rencana vs realisasi, evaluasi per kode, adopsi, keberhasilan CM, Reviu TW','cmo-monev'],
+['Evaluasi Pascaimplementasi','Masa pendampingan, evaluasi per titik, pengalihan, isu, dokumen, lesson learned','cmo-pasca'],['Penutupan CM','Syarat penutupan otomatis, pengajuan, dokumen penutupan','cmo-closing'],
 ['Aktivitas','Kegiatan PMO & CMO: daftar, kalender, ringkasan, dan matriks','aktivitas'],['Tim PMO & CMO','Highlight harian, agenda, kehadiran, cuti, penempatan tim, profil','tim'],
 ];
 var termsPM=[
@@ -11615,7 +11615,7 @@ var termsPM=[
 ];
 var termsCM=[
 ['CM / CMO','Change Management / Change Management Office.'],['ADP','Analisis Dampak Perubahan; membandingkan kondisi As-Is dan To-Be.'],
-['POSTeR','Proses kerja, Organisasi, SDM, Teknologi, Regulasi.'],['Stakeholder','Pihak yang terdampak atau dapat memengaruhi perubahan.'],
+['POSTeR','Proses kerja, Organisasi, SDM, Teknologi, Regulasi.'],['Kode CM','Kode kertas kerja: OA-124.D01 (dampak), R (risiko), I (indikator), S (stakeholder), K (komunikasi), P (pelatihan); sesi pelaksanaan OA-124.K01-1.'],['Paket validasi','Tujuh tahap CM yang diajukan untuk divalidasi CMO/PMO Kemenkeu; bila valid, item WBS terkait bernilai 100 pada bulan pengajuan.'],['Baseline & revisi','Rencana menjadi baseline saat paket Perencanaan diajukan; perubahan berikutnya dicatat sebagai Rev n (Ringan/Sedang/Besar).'],['Reviu TW','Titik keputusan triwulan di Monev atas rencana yang menyimpang, dikirim ke CMO Kemenkeu.'],['Ambang status','Batas On Track / Required Action / Off Track per indikator yang ditetapkan di rancangan Monev.'],['Masa pendampingan','Periode pendampingan transisi setelah go-live, sekaligus masa evaluasi pascaimplementasi.'],['Stakeholder','Pihak yang terdampak atau dapat memengaruhi perubahan.'],
 ['Sponsor','Pimpinan yang memberikan arah, dukungan, dan legitimasi perubahan.'],['Jaringan Perubahan','Kumpulan peran pelaksana/pendukung perubahan lintas unit.'],
 ['T-Agent','Agen perubahan; pada aplikasi ini khusus modul program DOA.'],['Change Champion','Penggerak perubahan dari lingkungan pemilik proses bisnis.'],
 ['CRA','Change Readiness Assessment: pengukuran kesiapan perubahan.'],['TNA','Training Needs Analysis: analisis kebutuhan pelatihan.'],
@@ -11766,10 +11766,18 @@ var skDeepTabsCM={
   ['Perbandingan Pengukuran','cmo-cra','cra:compare'],
   ['Riwayat Survei','cmo-cra','cra:history']],
  'cmo-monev':[
-  ['Pelaksanaan','cmo-monev','monev:lak'],
-  ['Pemantauan','cmo-monev','monev:pan'],
+  ['Rencana vs Realisasi','cmo-monev','monev:rr'],
+  ['Evaluasi','cmo-monev','monev:ev'],
   ['Adopsi','cmo-monev','monev:ado'],
-  ['Keberhasilan CM','cmo-monev','monev:kcm']]
+  ['Keberhasilan CM','cmo-monev','monev:kcm'],
+  ['Reviu TW','cmo-monev','monev:tw']],
+ 'cmo-pasca':[
+  ['Evaluasi per titik','cmo-pasca','pasca:ev'],
+  ['Pendampingan','cmo-pasca','pasca:pd'],
+  ['Rencana Pengalihan','cmo-pasca','pasca:pg'],
+  ['Isu Terbuka','cmo-pasca','pasca:is'],
+  ['Pemutakhiran Dokumen','cmo-pasca','pasca:dk'],
+  ['Lesson Learned','cmo-pasca','pasca:ll']]
 };
 /* Fitur per menu (Peta Menu › "Fitur di menu ini"): [kelompok,[[label, subtab, aksi]]].
    aksi: add:ID = tombol + pada tabel ID · xls:ID = menu Excel tabel ID · act:NAMA = tombol data-act · txt:TEKS = tombol berlabel TEKS · jj:AKSI = modul SK Tim jaringan · tab = buka tab saja. */
@@ -11801,14 +11809,14 @@ var SKFEAT={
  'cmo-adp':[['Daftar dampak',[['Tambah sub modul (wizard ADP)','adp:dampak','add:adp'],['Ajukan ADP','adp:dampak','act:adpsubmit']]],
   ['Risiko & indikator',[['Tambah risiko CM','adp:reg','add:reg'],['Ambil risiko dari proyek','adp:reg','act:cmrefpick'],['Tambah indikator keberhasilan','adp:ind','add:ind']]]],
  'cmo-rencana':[['Stakeholder',[['Tambah stakeholder','rencana:sh','add:sh'],['Impor/ekspor Excel stakeholder','rencana:sh','xls:sh']]],
-  ['Komunikasi & pelatihan',[['Rencana komunikasi','rencana:kom','tab'],['Rencana pelatihan','rencana:pel','tab']]]],
+  ['Komunikasi & pelatihan',[['Rencana komunikasi + rancangan Monev','rencana:kom','tab'],['Rencana pelatihan + rancangan Monev','rencana:pel','tab'],['Riwayat revisi rencana','rencana:kom','txt:Riwayat revisi']]],['Validasi',[['Paket validasi (strip di atas tab modul)','','txt:Paket validasi']]]],
  'cmo-jaringan':[['SK Tim',[['Rancang SK Tim','','jj:new'],['Muat contoh SK Tim Mekanisme Kerja','','jj:seed'],['Isi slot unit saya','','jj:fill']]],
   ['Legal drafting & penetapan',[['Buka SK Tim di legal drafting','','jj:ld'],['Buka SK Tim di penetapan','','jj:sk'],['Tampilkan panduan langkah','','jj:guide']]]],
  'cmo-cra':[['Survei',[['Buat survei','cra:create','tab'],['Survei aktif','cra:active','tab']]],['Analisis',[['Analisis kesiapan','cra:analytics','tab'],['Rencana aksi','cra:actions','tab'],['Perbandingan pengukuran','cra:compare','tab']]]],
  'cmo-pelaksanaan':[['Pelaksanaan',[['Impor/ekspor Excel realisasi','','xls:impl']]]],
- 'cmo-monev':[['Monev',[['Tambah catatan monev','monev:pan','add:pan'],['Tambah periode adopsi','monev:ado','add:ado'],['Impor/ekspor Excel pelaksanaan','monev:lak','xls:lak']]]],
- 'cmo-pasca':[['Evaluasi pascaimplementasi',[['Tambah evaluasi perubahan','','add:pasca'],['Impor/ekspor Excel','','xls:pasca']]]],
- 'cmo-closing':[['Penutupan CM',[['Tambah area transfer kepemilikan','','add:tr'],['Impor/ekspor Excel','','xls:tr']]]]
+ 'cmo-monev':[['Monev',[['Evaluasi kegiatan per kode','monev:ev','tab'],['Tambah periode adopsi','monev:ado','add:ado'],['Tambah Reviu TW','monev:tw','add:tw'],['Ekspor rencana vs realisasi','monev:rr','xls:rr']]]],
+ 'cmo-pasca':[['Masa & evaluasi',[['Tetapkan masa pendampingan','pasca:ev','add:pmasa'],['Tambah evaluasi per titik','pasca:ev','add:pasca']]],['Pengalihan & keberlanjutan',[['Tambah objek pengalihan','pasca:pg','add:tr'],['Tambah isu terbuka','pasca:is','add:pisu'],['Tambah dokumen terdampak','pasca:dk','add:pdok'],['Tambah lesson learned','pasca:ll','add:pll']]]],
+ 'cmo-closing':[['Penutupan CM',[['Rincian syarat & ajukan penutupan','','txt:☰'],['Dokumen penutupan','','act:mtCmBa']]]]
 };
 function skRunFeat(dest,sub,how){
  if(typeof window.mtP0Navigate==='function')window.mtP0Navigate(dest,sub||'');else location.hash='#'+dest;
@@ -11986,6 +11994,61 @@ function cmCommunication(){
  '<div class="sk-commStage"><div class="sk-commCode t3">T3<span>Eskalasi</span></div><div class="sk-commDesc"><b>Forum Sinergi BAS → Steering Committee</b><span>Isu kebijakan, lintas K/L–Pemda, atau perubahan pedoman.</span></div></div>'+
  '</div><aside><h4 class="sk-msgTitle">Pesan kunci sosialisasi</h4>'+msgs.map(function(x,i){return '<div class="sk-msg"><i>'+(i+1)+'</i>'+x+'</div>'}).join('')+'</aside></div>'+
  note('Contoh SIPN/Sinergi BAS pada slide digunakan sebagai <b>referensi desain komunikasi</b>. Penyebutan PIC dan SLA harus disesuaikan dengan proyek masing-masing.',true);
+}
+function cmStages(){
+ var D=[
+  {t:'Analisis Dampak Perubahan',k:'Perencanaan',c:'g',ref:'Bab V a.3.a–b',who:['CMO Unit','Pemilik proses bisnis','Reviu CMO Kemenkeu'],
+   in_:'Dokumen proyek, WBS, as-is proses bisnis',
+   s:[['Tetapkan objek','Sistem, modul, layanan, kelompok pengguna'],['As-Is → To-Be','Kesenjangan per sub modul'],['Nilai POSTeR','Proses · Organisasi · SDM · Teknologi · Regulasi'],['Risiko perubahan','Resistensi, operasional, ketergantungan'],['Indikator keberhasilan','Adopsi, kelancaran, manfaat']],
+   out:[['D01…','Dampak'],['R01…','Risiko'],['I01…','Indikator']],gate:'ADP Final → Paket 1 → WBS ADP = 100'},
+  {t:'Perencanaan Perubahan',k:'Perencanaan',c:'g',ref:'Bab V a.3.c, f, g',who:['CMO Unit','Pemilik proses bisnis','Fasilitasi CMO Kemenkeu'],
+   in_:'Hasil ADP (dampak & risiko)',
+   s:[['Identifikasi stakeholder','Kepentingan, pengaruh, sikap'],['Matriks Experience–Support','Champions · Advocates · Critics · Skeptics'],['Rencana komunikasi','Pesan, kanal T-House, waktu, PIC, Must Have'],['Rencana pelatihan (TNA)','Kompetensi, gap, program, indikator'],['Rancangan Monev','Fokus ADKAR, indikator, metode, target & ambang']],
+   out:[['S01…','Stakeholder'],['K01…','Komunikasi'],['P01…','Pelatihan']],gate:'Paket 2 Stakeholder + Paket 5 Perencanaan → baseline Rev 0'},
+  {t:'Jaringan Pengelola Perubahan',k:'Perencanaan',c:'g',ref:'Bab V a.3.d',who:['CMO Unit','Unit terkait','CMO Kemenkeu'],
+   in_:'Kebutuhan agen perubahan dari ADP & stakeholder',
+   s:[['Analisis kebutuhan','Perlu atau tidak, jumlah, sebaran unit'],['Rancang SK Tim','Struktur & peran T-Agent'],['Isian slot unit','Unit mengisi nama'],['Legal drafting','Telaah naskah'],['Penetapan KEP','Nomor & tanggal KEP']],
+   out:[['KEP','SK Tim'],['T-Agent','Jaringan aktif']],gate:'SK ditetapkan → Paket 3 → WBS Jaringan = 100',tip:'Bersifat kondisional: dibentuk bila hasil analisis kebutuhan menyatakan perlu.'},
+  {t:'Asesmen Kesiapan (CRA)',k:'Perencanaan',c:'g',ref:'Bab V a.3.e',who:['CMO Unit','Responden per peran','CMO Kemenkeu'],
+   in_:'Stakeholder & rencana go-live',
+   s:[['Buat survei','Pilih round: Baseline / Pre Go-Live / Go-Live / Post'],['Kumpulkan respons','Per peran: probis, operasional, dll.'],['Analytics','Skor dimensi, critical gate, akar masalah'],['Rencana aksi','Tindak lanjut kesenjangan → Aktivitas'],['Bandingkan round','Perubahan kesiapan antar-waktu']],
+   out:[['Skor','Kesiapan per dimensi'],['Aksi','Rencana aksi CRA']],gate:'Survei ditutup → Paket 4 → WBS Kesiapan = 100',tip:'Minimal Baseline dan Pre Go-Live; critical gate go/no-go di Pre Go-Live.'},
+  {t:'Pelaksanaan Perubahan',k:'Implementasi',c:'b',ref:'Bab V b',who:['CMO Unit','Pemilik probis (materi)','Unit teknis'],
+   in_:'Rencana K/P (baseline / revisi terakhir)',
+   s:[['Jadwalkan','Status: Terjadwal → Disiapkan'],['Siapkan materi','Divalidasi pemilik proses bisnis'],['Laksanakan sesi','Kode sesi K01-1, K01-2'],['Unggah bukti','Undangan/ND, daftar hadir, dokumentasi'],['Catat umpan balik','Kesenjangan, isu, peserta']],
+   out:[['K01-1','Sesi terlaksana'],['Bukti','Per sesi']],gate:'Must Have 100% + total ≥ ambang (75%) → Paket 6 → WBS Implementasi = 100'},
+  {t:'Pemantauan & Evaluasi',k:'Monev',c:'t',ref:'Bab V c',who:['CMO Unit','CMO Kemenkeu (konsolidasi)'],
+   in_:'Sesi terlaksana + rancangan Monev',
+   s:[['Rencana vs realisasi','Deviasi otomatis'],['Ukur hasil','T-Survey, T-Quiz, data sistem'],['?On Track?','Hasil ≥ target & ambang'],['Tindak lanjut','PJ, tenggat, status'],['Reviu TW','Tetap · tambah sesi · jadwal ulang · batal']],
+   out:[['Status','OT / RA / Off'],['Rev n','Revisi rencana']],gate:'Evaluasi lengkap + Reviu TW dikirim → Paket 7 → WBS Monev = 100'},
+  {t:'Evaluasi Pascaimplementasi',k:'Pascaimplementasi',c:'p',ref:'Bab V d',who:['CMO Unit','Pemilik probis','Unit teknis','CMO Kemenkeu → PMO'],
+   in_:'Go-live + hasil Monev',
+   s:[['Tetapkan masa','Go-live, akhir masa, titik evaluasi'],['Pendampingan transisi','Klinik, coaching, panduan, kanal layanan'],['Evaluasi per titik','4 aspek: adopsi, perilaku, isu, kesiapan alih'],['?Siap pengalihan?','Lanjut · perpanjang · siap'],['Rencana pengalihan','Penerima, dokumen, eskalasi, isu terbuka']],
+   out:[['Titik','Evaluasi terkirim'],['LL','Lesson learned']],gate:'Di luar WBS · bahan evaluasi kebermanfaatan (PMO)',tip:'Tidak menunggu penutupan proyek.'},
+  {t:'Penutupan Manajemen Perubahan',k:'Penutupan',c:'n',ref:'Bab V e',who:['CMO Unit','Pemilik probis / pengelola operasional','CMO Kemenkeu'],
+   in_:'Evaluasi terakhir “Siap pengalihan”',
+   s:[['Cek 4 syarat','Indikator · pengalihan · isu · evaluasi terkirim'],['Ajukan penutupan','Oleh CMO Unit'],['Tetapkan Ditutup','Oleh CMO Kemenkeu'],['Dokumen penutupan','5 unsur minimal (e.3)']],
+   out:[['BA','Dokumen penutupan'],['Alih','Tanggung jawab ke pemilik']],gate:'Penutupan tidak meniadakan tanggung jawab pemilik proses bisnis (e.4)'}];
+ var css='<style>.skst{--g:#b8860b;--b:#1d5fa8;--t:#0f7b6c;--p:#6d36a0;--n:#0b2f5b}.skst input{position:absolute;opacity:0;pointer-events:none}.skst-pills{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin:4px 0 14px}.skst-pills label{cursor:pointer;border:1px solid #e3e8ef;border-radius:12px;padding:8px 6px;text-align:center;background:#fff;font-size:11.5px;font-weight:700;color:#344054;line-height:1.25;transition:.15s}.skst-pills label i{display:grid;place-items:center;width:26px;height:26px;margin:0 auto 4px;border-radius:50%;font-style:normal;color:#fff;font-size:12px}.skst-pills label small{display:block;font-weight:600;color:#8a94a6;font-size:10px;text-transform:uppercase;letter-spacing:.04em;margin-top:2px}.skst-pane{display:none}'+
+  D.map(function(_,i){return '#skst'+i+':checked~.skst-pills label[for=skst'+i+']{border-color:var(--n);box-shadow:0 0 0 2px rgba(11,47,91,.15);background:#f6f9fd}#skst'+i+':checked~.skst-panes .skst-p'+i+'{display:block}'}).join('')+
+  '.skst-hd{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px}.skst-hd h4{margin:0;font-size:17px;color:#0b2f5b}.skst-ref{font:600 11px Consolas,monospace;background:#fff3d6;color:#7a5600;border-radius:5px;padding:1px 6px}.skst-who{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}.skst-who span{background:#eef4fb;color:#24496f;border-radius:12px;padding:2px 9px;font-size:11.5px;font-weight:600}'+
+  '.skst-flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;row-gap:12px;padding:14px;border-radius:14px;background:linear-gradient(180deg,#f8fafc,#fff);border:1px solid #e9eef5}.skst-in{align-self:center;max-width:150px;font-size:11.5px;color:#475467;border:1px dashed #c5cfdc;border-radius:10px;padding:8px 10px;background:#fff}.skst-in b{display:block;font-size:10.5px;color:#8a94a6;text-transform:uppercase;letter-spacing:.04em}'+
+  '.skst-ar{align-self:center;width:26px;height:2px;background:#c5cfdc;position:relative;margin:0 2px}.skst-ar:after{content:"";position:absolute;right:-1px;top:-4px;border:5px solid transparent;border-left:7px solid #c5cfdc}'+
+  '.skst-node{flex:1;min-width:120px;max-width:190px;background:#fff;border-radius:12px;padding:10px 10px 10px 12px;border:1px solid #e3e8ef;border-top:4px solid var(--c);box-shadow:0 2px 6px rgba(16,24,40,.05)}.skst-node i{font-style:normal;font-size:10.5px;font-weight:800;color:var(--c)}.skst-node b{display:block;font-size:12.5px;color:#101828;margin:1px 0 3px}.skst-node span{font-size:11.5px;color:#667085;line-height:1.35}'+
+  '.skst-dec{flex:0 0 124px;display:grid;place-items:center;position:relative;min-height:112px;padding-bottom:18px}.skst-dec div{width:84px;height:84px;transform:rotate(45deg);background:#fff;border:2px solid var(--c);border-radius:10px;display:grid;place-items:center;box-shadow:0 2px 6px rgba(16,24,40,.06)}.skst-dec div b{transform:rotate(-45deg);font-size:11px;text-align:center;color:#101828;line-height:1.2}.skst-dec small{position:absolute;bottom:0;font-size:10px;color:#667085;text-align:center;width:124px;line-height:1.2}'+
+  '.skst-cards{display:grid;grid-template-columns:1fr 1.4fr;gap:10px;margin-top:12px}.skst-card{border-radius:12px;padding:10px 12px;border:1px solid #e3e8ef;background:#fff}.skst-card h5{margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#8a94a6}.skst-codes{display:flex;gap:6px;flex-wrap:wrap}.skst-codes span{display:inline-flex;flex-direction:column;align-items:center;border:1px solid #e3e8ef;border-radius:9px;padding:5px 9px;font-size:10.5px;color:#667085}.skst-codes span b{font:700 12.5px Consolas,monospace;color:var(--c)}'+
+  '.skst-gate{background:linear-gradient(110deg,#0b2f5b,#123f73);color:#fff;border:0}.skst-gate h5{color:#f2b705}.skst-gate p{margin:0;font-size:13px;font-weight:600}.skst-tip{margin-top:10px;font-size:12px;color:#7a4b00;background:#fff8e1;border:1px solid #f1dc9b;border-radius:9px;padding:7px 10px}'+
+  '@media(max-width:900px){.skst-pills{grid-template-columns:repeat(4,1fr)}.skst-cards{grid-template-columns:1fr}.skst-ar{display:none}}</style>';
+ var col={g:'var(--g)',b:'var(--b)',t:'var(--t)',p:'var(--p)',n:'var(--n)'};
+ var pills='<div class="skst-pills">'+D.map(function(d,i){return '<label for="skst'+i+'"><i style="background:'+col[d.c]+'">'+(i+1)+'</i>'+d.t.replace('Manajemen Perubahan','CM').replace('Perubahan','').replace('Pengelola','').trim()+'<small>'+d.k+'</small></label>'}).join('')+'</div>';
+ var panes='<div class="skst-panes">'+D.map(function(d,i){var c=col[d.c];
+  var flow='<div class="skst-in"><b>Masukan</b>'+d.in_+'</div>'+d.s.map(function(s,j){var dec=s[0].charAt(0)==='?';return '<span class="skst-ar"></span>'+(dec?'<div class="skst-dec" style="--c:'+c+'"><div><b>'+s[0].replace(/\?/g,'')+'</b></div><small>'+s[1]+'</small></div>':'<div class="skst-node" style="--c:'+c+'"><i>'+String(j+1).padStart(2,'0')+'</i><b>'+s[0]+'</b><span>'+s[1]+'</span></div>')}).join('');
+  return '<div class="skst-pane skst-p'+i+'"><div class="skst-hd"><div style="flex:1;min-width:240px"><h4>'+(i+1)+' · '+d.t+' <span class="skst-ref">'+d.ref+'</span></h4><div class="skst-who">'+d.who.map(function(w){return '<span>'+w+'</span>'}).join('')+'</div></div></div>'+
+   '<div class="skst-flow">'+flow+'</div>'+
+   '<div class="skst-cards"><div class="skst-card" style="--c:'+c+'"><h5>Keluaran &amp; kode</h5><div class="skst-codes">'+d.out.map(function(o){return '<span><b>'+o[0]+'</b>'+o[1]+'</span>'}).join('')+'</div></div><div class="skst-card skst-gate"><h5>Gerbang validasi → WBS</h5><p>'+d.gate+'</p></div></div>'+
+   (d.tip?'<div class="skst-tip">💡 '+d.tip+'</div>':'')+'</div>'}).join('')+'</div>';
+ return intro('Alur per tahap · Bab V KEP-43','Alur Kerja Setiap Tahap Manajemen Perubahan','Pilih tahap untuk melihat alurnya: masukan, langkah kerja, titik keputusan, keluaran berkode, dan gerbang validasi ke WBS.','Bab V KEP-43 (File Kolaborasi) · KK CM')+
+  '<div class="skst">'+css+D.map(function(_,i){return '<input type="radio" name="skst" id="skst'+i+'"'+(i?'':' checked')+'>'}).join('')+pills+panes+'</div>';
 }
 function cmTraining(){var topics=[
  ['Kebijakan','Peraturan, keputusan, pedoman serta dasar tata kelola.','Semua'],
@@ -12203,7 +12266,7 @@ var cfg={
  },
  sheet:{
  pmo:[['pmbok','Framework PMBOK',pmFramework],['ref','Referensi',pmReference],['tata','Tata Kelola PM',pmGovernance],['charter','Charter',pmCharter],['wbs','WBS',pmWBS],['cr','Change Request',pmCR],['ko','Alur Koordinasi',coordination]],
- cmo:[['framework','Framework',cmFramework],['ref','Referensi',pmReference],['tata','Tata Kelola CM',cmGovernance],['kom','Komunikasi',cmCommunication],['pel','Pelatihan',cmTraining],['trans','Transisi & Tiket',cmTransition],['ko','Alur Koordinasi',coordination]]
+ cmo:[['framework','Framework',cmFramework],['tahap','Alur per Tahap',cmStages],['ref','Referensi',pmReference],['tata','Tata Kelola CM',cmGovernance],['kom','Komunikasi',cmCommunication],['pel','Pelatihan',cmTraining],['trans','Transisi & Tiket',cmTransition],['ko','Alur Koordinasi',coordination]]
  }
 };
 var active=null,lastFocus=null,modalKind=null,modalMode=null;
