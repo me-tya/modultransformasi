@@ -7,7 +7,7 @@
  * 2. Tata letak: grid 4 kolom sama lebar (.mt-fgrid); Program memakai 2 kolom (.ps27-f-wide);
  *    tablet 2 kolom, ponsel 1 kolom. Label di atas, tinggi kontrol seragam.
  * 3. Kolom Cari tidak berada di panel Filter: diletakkan di kanan baris tab tampilan
- *    (MT_TABSEARCH) dan hanya mencari teks pada tabel tab tersebut. Tab tanpa tabel
+ *    (MT_TABSEARCH), kecuali WBS yang menempatkan Cari di toolbar daftar tabel, dan hanya mencari teks pada tabel tab tersebut. Tab tanpa tabel
  *    (pembuat dokumen, formulir) tidak diberi kolom Cari.
  *
  * Pemakaian: '<nav ...tab...>'+MT_TABSEARCH('scope-unik',nilai,'Cari ...')
@@ -42,6 +42,14 @@ function placeTblSearch(){
   var pc=null,n=g.nav.parentNode.nextElementSibling;for(var j=0;j<4&&n&&!pc;j++){if(n.classList&&n.classList.contains('pchips'))pc=n;else if(n.querySelector&&n.querySelector('.pchips')&&!n.contains(g.tables[0]))pc=n.querySelector('.pchips');n=n.nextElementSibling}
   /* Tanpa baris chip: tombol aksi (+ Item WBS, ⋮) masuk ke kepala tabel; Cari tetap di kanan baris subtab seperti tab lain. */
   var band=g.nav.parentNode,bar0=band.querySelector('.wbs-actionbar'),tb=g.tables[0].querySelector('.tbar');
+  /* WBS Perencanaan/Pelaksanaan: pencarian tetap pada toolbar daftar, bukan baris tab.
+     Pindahkan node input asli agar state, keyboard shortcut dan handler data-q tetap sama. */
+  if(g.tables[0].id==='tw-wbs'&&band.classList.contains('mt-pmo-subtab-band')&&tb){
+   var wbsTools=document.createElement('div');wbsTools.className='tb-tools mt-wbs-list-tools';
+   wbsTools.appendChild(lab);if(bar0)wbsTools.appendChild(bar0);
+   tb.appendChild(wbsTools);tb.classList.add('tb-has-tools');
+   band.classList.remove('mt-subt-row');band.classList.add('mt-subt-full');return;
+  }
   if(!pc&&bar0&&tb){var t2=document.createElement('div');t2.className='pc-tools tb-tools';t2.appendChild(bar0);tb.appendChild(t2);tb.classList.add('tb-has-tools')}
   if(pc){var tools=document.createElement('div');tools.className='pc-tools';tools.appendChild(lab);var bar=g.nav.parentNode.querySelector('.wbs-actionbar');if(bar)tools.appendChild(bar);pc.appendChild(tools);pc.classList.add('pc-has-tools');g.nav.parentNode.classList.add('mt-subt-full');return}
   if(g.nav.nextSibling)g.nav.parentNode.insertBefore(lab,g.nav.nextSibling);else g.nav.parentNode.appendChild(lab);
@@ -76,6 +84,12 @@ if(!document.getElementById('mt-filter-kit-css')&&document.head){
  '#app .mt-tabsearch svg{position:absolute;left:11px;color:#6d84a0;pointer-events:none}'+
  '#app .mt-tabsearch input{box-sizing:border-box!important;width:100%!important;height:36px!important;margin:0!important;padding:6px 11px 6px 33px!important;border:1px solid #cddbea!important;border-radius:9px!important;background:#fff!important;color:#173a66;font:600 12px Inter,"Nunito Sans",Arial,sans-serif}'+
  '#app .mt-tabsearch input:focus{outline:2px solid #fdb913;outline-offset:1px;border-color:#fdb913}'+
+ /* WBS: tab tetap simetris; pencarian mengisi ruang di toolbar tabel. */
+ '#app .mt-pmo-subtab-band:not(:has(>.mt-tabsearch)):not(:has(>.wbs-actionbar))>.subt.ctabs>a{flex:1 1 0!important;justify-content:center!important}'+
+ '#app #tw-wbs .tbar .mt-wbs-list-tools{flex:1 1 420px;justify-content:flex-end;flex-wrap:wrap;min-width:0}'+
+ '#app #tw-wbs .tbar .mt-wbs-list-tools>.mt-tabsearch{flex:1 1 200px!important;width:auto!important;min-width:160px!important;max-width:none!important;margin:0!important;order:0!important}'+
+ '#app #tw-wbs .tbar .mt-wbs-list-tools>.wbs-actionbar{flex:0 0 auto;max-width:100%;flex-wrap:wrap}'+
+ '@media(max-width:650px){#app #tw-wbs .tbar .mt-wbs-list-tools{flex:1 1 100%;width:100%}#app #tw-wbs .tbar .mt-wbs-list-tools>.mt-tabsearch{flex:1 1 100%!important;min-width:0!important}#app #tw-wbs .tbar .mt-wbs-list-tools>.wbs-actionbar{justify-content:flex-end}}'+
  /* Grid filter standar: 4 kolom sama lebar */
  '#app .ps27 .mt-std-filter .ps27-filter-fields.mt-fgrid{display:grid!important;grid-template-columns:repeat(var(--mt-fcols,4),minmax(0,1fr))!important;gap:10px 14px!important;align-items:end!important}'+
  '#app .ps27 .mt-std-filter .mt-fgrid>label{grid-column:span 1!important;width:auto!important;min-width:0!important}'+
