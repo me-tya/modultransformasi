@@ -1,6 +1,6 @@
 <!-- PMO / CMO · RKMK (6) · Bantuan & Cheatsheet Visual · 2026-11-06 -->
 <title>Modul Transformasi Kemenkeu</title>
-<link rel="stylesheet" href="activity-wbs.css?v=261124"><link rel="stylesheet" href="mt-filter-consolidated-261119.css?v=261124-MT-06"><script src="activity-wbs.js?v=261124"></script>
+<link rel="stylesheet" href="activity-wbs.css?v=261124"><link rel="stylesheet" href="mt-filter-consolidated-261119.css?v=261124-MT-06"><script src="activity-wbs.js?v=261124b"></script>
 <link rel="stylesheet" href="charter-planning-report.css?v=20261108-1">
 <link rel="stylesheet" href="mt-header-ghost.css?v=20261113-mt18-hover">
 <link rel="stylesheet" href="mt-dcm-report.css?v=20261111-dcm1">
@@ -5753,7 +5753,7 @@ function editOneOnOne(item,step,after){
  let kat=item.kat||(isNew?'Rapat Koordinasi':ONE_KAT),mode=oneMode(item.mode,item),lay=item.layanan||'Ya',stat=ACT_MAN.includes(item.stat)?item.stat:'Terjadwal',pic=(item.pic||[]).slice(),eo=item.eo?oneClone(item.eo):{on:false,items:[]},nlo={},fmt=Object.assign({font:'Arial',size:11,indent:0,align:'justify'},item.notulaFmt||{}),activeEditor='one-rte';
  const inp=(k,l,o={})=>`<div class="fld${o.w?' wide':''}"><label for="one-${k}">${l}${o.req?' <i class="sw-rq">*</i>':''}</label><input class="inp" id="one-${k}" type="${o.t||'text'}" value="${esc(o.v!=null?o.v:item[k]||'')}"${o.list?' list="'+o.list+'"':''}${o.ph?' placeholder="'+esc(o.ph)+'"':''}></div>`;
  const ta=(k,l,rows,ph,w)=>`<div class="fld${w===0?'':' wide'}"><label for="one-${k}">${l}</label><textarea class="inp" id="one-${k}" rows="${rows}" placeholder="${esc(ph||'')}">${esc(item[k]||'')}</textarea></div>`;
- const sec=(n,t,d,body,cls)=>`<section class="sw-sec${cls?' '+cls:''}"><div class="sw-sh"><i>${n}</i><b>${t}${d&&!/(?:act-letter-section|act-method-section)/.test(cls||'')?IC(d):''}</b>${d&&/(?:act-letter-section|act-method-section)/.test(cls||'')?`<small>${esc(d)}</small>`:''}</div><div class="sw-sb">${body}</div></section>`;
+ const sec=(n,t,d,body,cls)=>`<section class="sw-sec${cls?' '+cls:''}"><div class="sw-sh"><i>${n}</i><b>${t}${d?IC(d):''}</b></div><div class="sw-sb">${body}</div></section>`;
  const chips=(name,list,cur)=>`<div class="act-chips" role="radiogroup" data-ch="${name}">${list.map(v=>`<button type="button" role="radio" data-chv="${esc(v)}" aria-checked="${v===cur}" class="${v===cur?'on':''}">${esc(v)}</button>`).join('')}</div>`;
  const opts=(arr,cur,ph)=>`<option value="">${ph}</option>`+arr.concat(cur&&!arr.includes(cur)?[cur]:[]).map(v=>`<option${v===cur?' selected':''}>${esc(v)}</option>`).join('');
  const mgr=(k,l)=>`<label for="one-${k}">${l} ${actCanEdit()?`<button type="button" class="act-mg" data-mg="${k}">Kelola</button>`:''}</label>`;
@@ -12356,7 +12356,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script src="mt-cm-migration.js?v=20261110-02"></script>
 <script src="mt-dcm-activity-sync.js?v=20261124-iku1"></script>
 <script src="mt-activity-reports.js?v=20261124-iku3"></script>
-<link rel="stylesheet" href="mt-iku-ipr.css?v=20261124-ipr1"><script src="mt-iku-ipr.js?v=20261124-ipr2"></script>
+<link rel="stylesheet" href="mt-iku-ipr.css?v=20261124-ipr1"><script src="mt-iku-ipr.js?v=20261124-ipr3"></script>
 <!-- Mesin laporan Aktivitas (port DashboardCM): pustaka yang sama dengan DashboardCM -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>

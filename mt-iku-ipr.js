@@ -54,7 +54,7 @@ const refsOf=x=>Array.isArray(x&&x.ikuRefs)?x.ikuRefs.map(nk).filter(Boolean):[]
 
 /* ---------- isian IKU Terkait pada form aktivitas ---------- */
 function fieldHTML(item){if(!isPusat())return '';const refs=refsOf(item);
- return `<div class="fld wide iku-fld" data-iku-fld><label>IKU terkait <span class="iku-opt">(boleh lebih dari satu · untuk data dukung IPR)</span></label><div class="iku-box"><div class="iku-chips" data-iku-chips></div><button type="button" class="btn sm" data-iku-pick>☑ Pilih IKU</button></div><input type="hidden" id="one-ikuRefs" value="${E(JSON.stringify(refs))}"></div>`}
+ return `<div class="fld wide iku-fld" data-iku-fld><label>IKU terkait${typeof IC==='function'?IC('Boleh lebih dari satu IKU. Dipakai sebagai data dukung kolom Tindakan dan Kendala pada Ekspor IPR.'):''}</label><div class="iku-box"><div class="iku-chips" data-iku-chips></div><button type="button" class="btn sm" data-iku-pick>☑ Pilih IKU</button></div><input type="hidden" id="one-ikuRefs" value="${E(JSON.stringify(refs))}"></div>`}
 function readForm(root){const h=root&&root.querySelector('#one-ikuRefs');if(!h)return null;try{const a=JSON.parse(h.value||'[]');return Array.isArray(a)?[...new Set(a.map(nk).filter(Boolean))]:[]}catch(e){return []}}
 function formYear(root){const t=root&&root.querySelector('#one-tgl');return t&&/^\d{4}/.test(t.value)?t.value.slice(0,4):String((S.ui&&S.ui.actTahun)||yNow())}
 function drawChips(root){const box=root&&root.querySelector('[data-iku-chips]');if(!box)return;const y=formYear(root),refs=readForm(root)||[];
