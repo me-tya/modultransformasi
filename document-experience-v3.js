@@ -486,7 +486,74 @@ window.MT_DOC_EXPERIENCE=Object.assign(window.MT_DOC_EXPERIENCE||{},{
   openProject(p,key,false);return true;
  }
 });
+/* 261125-MT-05: isi kolom kosong dari Perbandingan dokumen yang sama. */
+function comparisonBackfill(c){
+ const clean=v=>typeof v==='string'?v.trim():'';
+ const usable=v=>!!clean(v)&&!/^[-—–]+$/.test(clean(v));
+ const cs=Array.isArray(c.cs)?c.cs:[];
+ const seenA=new Set(),seenPair=new Set(),a=[],pairs=[];
+ for(const r of cs){
+  const x=clean(r?.a),y=clean(r?.b);
+  if(usable(x)&&!seenA.has(x)){seenA.add(x);a.push(x)}
+  if(usable(x)&&usable(y)){
+   const key=JSON.stringify([x,y]);
+   if(!seenPair.has(key)){seenPair.add(key);pairs.push({a:x,b:y,j:''})}
+  }
+ }
+ const change={};
+ if(!clean(c.asis?.pb)&&a.length)change.asis=a.map((v,i)=>(i+1)+'. '+v).join('\n');
+ const pb=c.tobe?.pb;
+ if((pb==null||Array.isArray(pb)&&!pb.some(r=>r&&Object.values(r).some(v=>v!=null&&String(v).trim())))&&pairs.length)change.tobe=pairs;
+ return change;
+}
+function applyComparisonBackfill(c,change){
+ if(change.asis)c.asis={...(c.asis||{}),pb:change.asis};
+ if(change.tobe)c.tobe={...(c.tobe||{}),pb:change.tobe};
+}
+function comparisonCandidates(){
+ if(typeof ME==='undefined'||ME?.role!=='SA'||typeof VIEW==='undefined'||VIEW!=='pmo-perencanaan'||!window.MTDP)return [];
+ const year=+S.ui.tahun;
+ const codes=new Set([...document.querySelectorAll('.pm-program-list .pm-program-card[data-pg-code]')].map(el=>el.dataset.pgCode));
+ const found=[],ids=new Set();
+ for(const p of (S.programs||[])){
+  if(!codes.has(p.akr))continue;
+  for(const g of MTDP.groups(p.akr)){
+   const c=g.c;
+   if(!c||+c.tahun!==year||ids.has(c.id)||!canEdit(p,'project',c))continue;
+   const change=comparisonBackfill(c);
+   if(!change.asis&&!change.tobe)continue;
+   ids.add(c.id);found.push({id:c.id,p,code:g.code,change,original:JSON.stringify({cs:c.cs,asis:c.asis,tobe:c.tobe,st:c.st,tahun:c.tahun})});
+  }
+ }
+ return found;
+}
+function comparisonBatch(){
+ const candidates=comparisonCandidates();
+ if(!candidates.length)return toast('Tidak ada isian As-is/To-be kosong yang dapat diisi dari Perbandingan pada dokumen draf dalam cakupan ini.');
+ const nA=candidates.filter(x=>x.change.asis).length,nT=candidates.filter(x=>x.change.tobe).length;
+ const rows=candidates.map(x=>'<tr><td>'+E(x.code)+'</td><td>'+E(x.p.nama)+'</td><td>'+(x.change.asis?'Isi uraian':'—')+'</td><td>'+(x.change.tobe?x.change.tobe.length+' pasangan':'—')+'</td></tr>').join('');
+ const body='<p><b>'+candidates.length+' dokumen draf</b> pada tahun '+E(S.ui.tahun)+' sesuai program yang tampil. As-is: '+nA+' dokumen · To-be: '+nT+' dokumen.</p><p>Isian kosong diisi dari Perbandingan dokumen yang sama. Isian lama, dokumen disahkan/reviu/arsip, jenis perubahan, dan informasi teknis tidak diubah. Periksa kesesuaian substansi sebelum dokumen disahkan.</p><div class="tscroll" style="max-height:48vh;overflow:auto"><table class="lap"><thead><tr><th>Dokumen</th><th>Program</th><th>As-is</th><th>To-be</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+ modal('Isi As-is & To-be dari Perbandingan',body,'Terapkan',()=>{
+  const latest=new Map(comparisonCandidates().map(x=>[x.id,x]));
+  if(candidates.some(x=>!latest.has(x.id)||latest.get(x.id).original!==x.original)){toast('Data atau cakupan berubah. Buka kembali pratinjau sebelum menerapkan.');return false}
+  const changed=candidates.map(x=>({entry:x,doc:(S.charters||[]).find(c=>c.id===x.id)}));
+  if(changed.some(x=>!x.doc||!canEdit(x.entry.p,'project',x.doc))){toast('Hak akses atau status dokumen berubah. Tidak ada perubahan disimpan.');return false}
+  for(const x of changed)applyComparisonBackfill(x.doc,x.entry.change);
+  if(typeof log==='function')log('Isi As-is dan To-be dari Perbandingan',changed.length+' dokumen · '+nA+' As-is · '+nT+' To-be');
+  save();render();toast(changed.length+' dokumen diperbarui · '+nA+' As-is · '+nT+' To-be.');
+ },{size:'wide'});
+}
+function addComparisonBatchButton(){
+ if(typeof VIEW==='undefined'||VIEW!=='pmo-perencanaan'||typeof ME==='undefined'||ME?.role!=='SA')return;
+ const host=document.querySelector('.pm-program-toolbar .pm-tb1');
+ if(!host||host.querySelector('[data-mt-comparison-batch]'))return;
+ const b=document.createElement('button');b.type='button';b.className='pm-tb-btn';b.dataset.mtComparisonBatch='1';
+ b.title='Isi isian kosong As-is dan To-be dari Perbandingan untuk dokumen draf pada tahun dan program yang tampil';
+ b.textContent='Isi As-is / To-be';b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();comparisonBatch()});
+ host.appendChild(b);
+}
 function decorate(){
+ addComparisonBatchButton();
  document.querySelectorAll('table.pdocs tbody tr').forEach(row=>{
   if(row.tabIndex!==0)row.tabIndex=0;
   row.setAttribute('role','button');
