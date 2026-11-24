@@ -149,8 +149,139 @@ function mtCapaianTwLayout(view){
  activate(activeKey,false);
 
 }
+/* 261125-MT-11 — Risk/issue monitoring workspace. No automatic residual assumptions. */
+function mtRiskLevel(k,d){return Number.isInteger(+k)&&+k>=1&&+k<=5&&Number.isInteger(+d)&&+d>=1&&+d<=5?+k*+d:null}
+function mtRiskHistory(r){var a=r.jenis==='Isu'?r.mtIssueReviews:r.mtRiskReviews;return Array.isArray(a)?a:[]}
+function mtRiskLast(r){var a=mtRiskHistory(r);return a.length?a[a.length-1]:null}
+function mtRiskInitial(r){var b=r.mtRiskInitial;return b&&mtRiskLevel(b.k,b.d)!==null?b:{k:r.kem,d:r.dmp}}
+function mtRiskResidual(r){var x=mtRiskLast(r);return x&&mtRiskLevel(x.k,x.d)!==null?x:null}
+function mtRiskStage(r,today){
+ var x=mtRiskLast(r),st=x&&x.status;
+ if(r.st==='Ditutup')return 'closed';
+ if(r.st==='Menjadi isu')return 'converted';
+ if(st==='Terkendali')return 'controlled';
+ if(r.tenggat&&r.tenggat<today)return 'late';
+ if(st==='Belum dimulai')return 'notstarted';
+ if(st==='Dalam proses')return 'progress';
+ return 'unknown';
+}
+function mtRiskReview(r,readOnly){
+ var issue=r.jenis==='Isu',last=mtRiskLast(r)||{},base=mtRiskInitial(r),history=mtRiskHistory(r);
+ var can=!readOnly&&canW('risk','U',r.pemilik);
+ var options=function(val,arr){return arr.map(function(v){return '<option value="'+esc(v)+'"'+(String(v)===String(val)?' selected':'')+'>'+esc(v||'— Pilih —')+'</option>'}).join('')};
+ var hist=history.slice().reverse().map(function(x){return '<tr><td>'+esc(String(x.at||'').slice(0,10))+'<small>'+esc(x.by||'')+'</small></td><td>'+esc(x.status||'—')+'</td><td>'+esc(x.progress==null?'—':x.progress+'%')+'</td>'+(!issue?'<td>'+esc(mtRiskLevel(x.k,x.d)??'—')+'</td>':'')+'<td>'+esc(x.note||'—')+'</td></tr>'}).join('');
+ var body='<p class="s"><b>'+esc(r.rid||'')+' · '+esc(r.uraian||'')+'</b></p>'+
+ (!issue?'<p class="s">Acuan sebelum mitigasi: '+esc(base.k||'—')+' × '+esc(base.d||'—')+' = '+esc(mtRiskLevel(base.k,base.d)??'—')+'. Nilai ini memakai skor register sebagai acuan sampai tersedia histori.</p>':'')+
+ (can?'<div class="fgrid"><label class="fld">Status penanganan<select id="mt-rv-status" class="sel">'+options(last.status||'',['','Belum dimulai','Dalam proses','Terkendali'])+'</select></label><label class="fld">Progres (%)<input id="mt-rv-progress" class="inp" type="number" min="0" max="100" step="1" value="'+esc(last.progress??'')+'" placeholder="0–100"></label>'+
+ (!issue?'<label class="fld">Kemungkinan residual<select id="mt-rv-k" class="sel">'+options('',['',1,2,3,4,5])+'</select></label><label class="fld">Dampak residual<select id="mt-rv-d" class="sel">'+options('',['',1,2,3,4,5])+'</select></label>':'')+
+ '<label class="fld wide">Realisasi mitigasi / penanganan dan tindak lanjut<textarea id="mt-rv-note" class="inp" rows="3" placeholder="Catat tindakan, hasil evaluasi dan tindak lanjut"></textarea></label></div>':'')+
+ '<h4 style="margin:10px 0 6px">Riwayat pemantauan</h4><div class="tscroll" style="max-height:35vh"><table class="lap"><thead><tr><th>Tanggal / pencatat</th><th>Status</th><th>Progres</th>'+(!issue?'<th>Residual</th>':'')+'<th>Catatan</th></tr></thead><tbody>'+(hist||'<tr><td colspan="'+(issue?4:5)+'">Belum ada pemantauan yang tercatat.</td></tr>')+'</tbody></table></div>';
+ modal('Pemantauan '+(issue?'Isu':'Risiko'),body,can?'Simpan pemantauan':'',can?function(ov){
+  var live=(S.risks||[]).find(function(x){return x.id===r.id});
+  if(!live||live.jenis!==r.jenis||!canW('risk','U',live.pemilik)){toast('Data atau hak akses berubah.');return false}
+  var status=ov.querySelector('#mt-rv-status').value,pr=ov.querySelector('#mt-rv-progress').value,note=ov.querySelector('#mt-rv-note').value.trim();
+  var k=issue?'':ov.querySelector('#mt-rv-k').value,d=issue?'':ov.querySelector('#mt-rv-d').value;
+  if(!status||!note){toast('Isi status dan catatan pemantauan.');return false}
+  if(pr!==''&&(!Number.isFinite(+pr)||+pr<0||+pr>100)){toast('Progres harus 0–100%.');return false}
+  if(!issue&&((!!k)!=(!!d)||k&&mtRiskLevel(k,d)===null)){toast('Isi kedua nilai residual atau kosongkan keduanya.');return false}
+  if(!issue&&!live.mtRiskInitial&&mtRiskLevel(live.kem,live.dmp)!==null)live.mtRiskInitial={k:+live.kem,d:+live.dmp};
+  var key=issue?'mtIssueReviews':'mtRiskReviews';
+  var entry={at:new Date().toISOString(),by:ME?.nama||ME?.email||'',status:status,progress:pr===''?null:+pr,note:note,k:k?+k:null,d:d?+d:null};
+  live[key]=mtRiskHistory(live).concat([entry]);
+  log('Pemantauan '+(issue?'isu':'risiko'),live.rid+' · '+status);save();render();toast('Pemantauan tersimpan.');
+ }:null,{size:'wide'});
+}
+function mtRiskWorkspace(view){
+ var table=view.querySelector('#tw-risk'),o=typeof T!=='undefined'?T.risk:null;
+ if(!table||!o||view.querySelector('.mt-risk-toolbar'))return;
+ var stk=table.closest('.stk'),oldMap=stk&&Array.from(stk.querySelectorAll('.card')).find(function(x){return x!==table&&x.querySelector('.rm')});
+ if(!stk||!oldMap)return;
+ var ui=S.ui,issue=ui.mtRiskKind==='issue',compare=ui.mtRiskMode==='compare',expanded=ui.mtRiskShow!==false,score=ui.mtRiskScore===true;
+ var filter=ui.mtRiskFilter||'';
+ if(ui.rf){if(!filter)filter='initial:'+ui.rf;ui.rf='';ui.mtRiskFilter=filter}
+ var base=pmoRiskList().filter(function(r){return (!ui.rstatus||r.st===ui.rstatus)&&(!ui.rrisk||skL(skor(r))===ui.rrisk)});
+ var visible=base.filter(function(r){return issue?r.jenis==='Isu':r.jenis!=='Isu'});
+ var active=visible.filter(function(r){return r.st!=='Ditutup'&&r.st!=='Menjadi isu'});
+ var valid=active.filter(function(r){var b=mtRiskInitial(r);return mtRiskLevel(b.k,b.d)!==null});
+ var paired=valid.filter(function(r){return !!mtRiskResidual(r)});
+ var now=typeof TODAY!=='undefined'?TODAY:new Date().toISOString().slice(0,10);
+ var byLevel=function(r,l){var b=mtRiskInitial(r),v=mtRiskLevel(b.k,b.d);return v!==null&&skL(v)===l};
+ var stage=function(r){return mtRiskStage(r,now)};
+ var movement=function(r){var x=mtRiskResidual(r),b=mtRiskInitial(r),v=mtRiskLevel(b.k,b.d);if(!x||v===null)return 'unrated';var d=mtRiskLevel(x.k,x.d)-v;return d<0?'down':d>0?'up':'same'};
+ function match(r){
+  if(!filter)return true;var parts=filter.split(':'),k=parts[0],v=parts[1],b=mtRiskInitial(r),x=mtRiskResidual(r);
+  if(k==='initial'||k==='before'||k==='after'){
+   if(!active.includes(r))return false;
+   if(k!=='initial'&&!paired.includes(r))return false;
+   var p=k==='after'?x:b;return !!p&&String(p.k)+'-'+String(p.d)===v;
+  }
+  if(k==='level')return active.includes(r)&&byLevel(r,v);
+  if(k==='stage')return visible.includes(r)&&stage(r)===v;
+  if(k==='movement')return active.includes(r)&&movement(r)===v;
+  return true;
+ }
+ function setFilter(v){ui.mtRiskFilter=filter===v?'':v;PG.risk=0;save();render()}
+ function pref(key,value){ui[key]=value;save();render()}
+ // Keep native table / import / export / access checks. Only the view and row metadata change.
+ o.rows=function(){return riskGroups(visible.filter(match))};
+ o.title=issue?'Register Isu':'Register Risiko';o.addLabel=issue?'Isu':'Risiko';o.addTitle='Tambah '+(issue?'Isu':'Risiko');
+ var kindCol=o.cols.find(function(c){return c.k==='jenis'});if(kindCol){kindCol.def=issue?'Isu':'Risiko';kindCol.tbl=false}
+ var oldRowAct=o.rowAct;
+ o.rowAct=function(r){return '<button type="button" data-mt-risk-review="'+esc(r.id)+'" title="Riwayat dan pemantauan '+(issue?'isu':'risiko')+'" aria-label="Riwayat dan pemantauan"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8m0-5v5h5m4-1v5l3 2"/></svg></button>'+(oldRowAct?oldRowAct(r):'')};
+ var sc=o.cols.find(function(c){return c.k==='_s'});
+ if(sc){sc.l=issue?'Skor register':'Skor awal/acuan';if(!issue){sc.r=function(r){var b=mtRiskInitial(r),v=mtRiskLevel(b.k,b.d);return v===null?'—':'<span class="chip '+(v>=15?'c-bad':v>=8?'c-warn':'c-ok')+'">'+v+' · '+skL(v)+'</span>'};sc.x=function(r){var b=mtRiskInitial(r);return mtRiskLevel(b.k,b.d)}}}
+ var extra=[{k:'mtReviewProgress',l:'Progres',frm:false,num:1,r:function(r){var x=mtRiskLast(r);return x&&x.progress!=null?esc(x.progress)+'%':'—'},x:function(r){return mtRiskLast(r)?.progress??''}},{k:'mtReviewStatus',l:'Pemantauan',frm:false,r:function(r){var x=mtRiskLast(r);return x?esc(x.status)+'<span class="sm">'+esc(String(x.at||'').slice(0,10))+'</span>':'<span class="s">Belum dicatat</span>'},x:function(r){return mtRiskLast(r)?.status||''}}];
+ if(!issue)extra.unshift({k:'mtResidual',l:'Residual',frm:false,r:function(r){var x=mtRiskResidual(r);if(!x)return '<span class="s">Belum dinilai</span>';var v=mtRiskLevel(x.k,x.d);return '<span class="chip '+(v>=15?'c-bad':v>=8?'c-warn':'c-ok')+'">'+v+' · '+skL(v)+'</span>'},x:function(r){var x=mtRiskResidual(r);return x?mtRiskLevel(x.k,x.d):''}});
+ o.cols.push.apply(o.cols,extra);
+ var head=table.querySelector('.tbar'),title=head&&head.querySelector('h3'),add=head&&head.querySelector('[data-act="add"][data-t="risk"]'),excel=head&&head.querySelector('[data-act="tdata"]');
+ if(title)title.textContent=o.title;if(add)add.textContent='+ '+o.addLabel;
+ var toolbar=document.createElement('div');toolbar.className='mt-risk-toolbar';
+ toolbar.innerHTML='<div class="mt-risk-chips" role="group" aria-label="Jenis register"><button type="button" data-mtr-kind="risk" aria-pressed="'+!issue+'">Register Risiko</button><button type="button" data-mtr-kind="issue" aria-pressed="'+issue+'">Register Isu</button></div><span class="mt-risk-spacer"></span><button type="button" class="btn mt-risk-toggle" data-mtr-toggle aria-expanded="'+expanded+'">'+(expanded?'Sembunyikan':'Tampilkan')+' ringkasan</button>';
+ var actions=document.createElement('div');actions.className='mt-risk-actions';
+ if(add)actions.appendChild(add);
+ if(excel){excel.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 3h8l5 5v13H6zM14 3v5h5M9 12h7M9 16h7M12 12v7"/></svg>';excel.setAttribute('aria-label','Template, impor dan ekspor Excel');excel.classList.add('mt-risk-excel');actions.appendChild(excel)}
+ toolbar.appendChild(actions);
+ var band=view.querySelector('.mt-pmo-subtab-band');
+ var search=table.querySelector('.tsearch input[data-q="risk"]');
+ if(search&&band){var lab=document.createElement('label');lab.className='mt-tabsearch mt-tabsearch-tbl';lab.innerHTML=ICON;lab.appendChild(search);table.querySelector('.tsearch').classList.add('mt-moved');band.classList.remove('mt-subt-full');band.classList.add('mt-subt-row');band.appendChild(lab)}
+ var summary=document.createElement('section');summary.className='card mt-risk-summary';summary.hidden=!expanded;
+ function metric(label,value,tone,key,sub){return '<button type="button" class="mt-risk-metric '+tone+(filter===key?' on':'')+'" data-mtr-filter="'+esc(key)+'" aria-pressed="'+(filter===key)+'"><span>'+esc(label)+'</span><b>'+esc(value)+'</b>'+(sub?'<small>'+esc(sub)+'</small>':'')+'</button>'}
+ function matrix(label,records,kind){
+  var html='<section class="mt-risk-matrix"><div class="mt-risk-matrix-title"><b>'+label+'</b><small>'+records.length+' risiko terpetakan</small></div><div class="mt-risk-map"><span class="mt-risk-axis-y">Kemungkinan</span><div class="mt-risk-grid">';
+  for(var k=5;k>=1;k--){html+='<span class="mt-risk-axis">'+k+'</span>';for(var d=1;d<=5;d++){
+   var n=records.filter(function(r){var p=kind==='after'?mtRiskResidual(r):mtRiskInitial(r);return p&&+p.k===k&&+p.d===d}).length;
+   var key=kind+':'+k+'-'+d,level=k*d>=15?'high':k*d>=8?'med':'low',unknown=kind==='after'&&!records.length;
+   html+='<button type="button" class="mt-risk-cell '+level+(n?'':' zero')+(filter===key?' on':'')+'" data-mtr-filter="'+key+'" aria-pressed="'+(filter===key)+'" title="Kemungkinan '+k+' × dampak '+d+' = '+k*d+'; '+(unknown?'belum ada penilaian residual':n+' risiko')+'"><b>'+(unknown?'—':n)+'</b><small'+(score?'':' hidden')+'>Skor '+k*d+'</small></button>';
+  }}
+  html+='<span></span>'+[1,2,3,4,5].map(function(d){return '<span class="mt-risk-axis">'+d+'</span>'}).join('')+'</div></div><div class="mt-risk-axis-x">Dampak</div></section>';return html;
+ }
+ var stageLabels=[['Belum dimulai','notstarted','neutral'],['Dalam mitigasi','progress','blue'],['Lewat tenggat','late','high'],['Terkendali','controlled','low'],['Belum tercatat','unknown','neutral']];
+ if(issue){
+  summary.innerHTML='<div class="mt-risk-summary-head"><b>Ringkasan Isu</b><small>'+visible.length+' isu dalam cakupan filter</small></div><div class="mt-risk-metrics mt-risk-issue-metrics">'+metric('Isu aktif',active.length,'blue','',null)+metric('Ditutup',visible.filter(function(r){return stage(r)==='closed'}).length,'low','stage:closed')+metric('Lewat tenggat',active.filter(function(r){return stage(r)==='late'}).length,'high','stage:late')+metric('Dalam penanganan',active.filter(function(r){return stage(r)==='progress'}).length,'blue','stage:progress')+metric('Belum tercatat',active.filter(function(r){return stage(r)==='unknown'}).length,'neutral','stage:unknown')+'</div>';
+ }else{
+  var high=valid.filter(function(r){return byLevel(r,'Tinggi')}).length,med=valid.filter(function(r){return byLevel(r,'Sedang')}).length,low=valid.filter(function(r){return byLevel(r,'Rendah')}).length;
+  var pctH=valid.length?(high/valid.length*100).toLocaleString('id-ID',{maximumFractionDigits:1}):'0';
+  var h='<div class="mt-risk-summary-head"><div class="mt-risk-mode" role="group" aria-label="Mode matriks"><button type="button" data-mtr-mode="summary" aria-pressed="'+!compare+'">Ringkasan</button><button type="button" data-mtr-mode="compare" aria-pressed="'+compare+'">Perbandingan Mitigasi</button></div><label class="mt-risk-score"><input type="checkbox" data-mtr-score '+(score?'checked':'')+'> Tampilkan skor</label></div>';
+  if(compare){
+   h+='<div class="mt-risk-compare">'+matrix('Sebelum mitigasi · acuan',paired,'before')+matrix('Setelah mitigasi · residual',paired,'after')+'<div class="mt-risk-comparison-stats"><b>Efektivitas mitigasi</b><small>'+paired.length+' dari '+active.length+' risiko aktif memiliki pasangan penilaian.</small><div class="mt-risk-metrics">'+metric('Skor menurun',paired.filter(function(r){return movement(r)==='down'}).length,'low','movement:down')+metric('Skor tetap',paired.filter(function(r){return movement(r)==='same'}).length,'neutral','movement:same')+metric('Skor meningkat',paired.filter(function(r){return movement(r)==='up'}).length,'high','movement:up')+metric('Belum dinilai / belum lengkap',active.length-paired.length,'neutral','movement:unrated')+'</div><small>Kedua matriks memakai kelompok risiko yang sama. Risiko yang belum lengkap tidak dihitung sebagai nol.</small></div></div>';
+  }else{
+   h+='<div class="mt-risk-split">'+matrix('Peta Risiko · skor awal/acuan',valid,'initial')+'<div class="mt-risk-profile"><div class="mt-risk-profile-title"><b>Profil Risiko</b><small>'+active.length+' aktif · '+(active.length-valid.length)+' belum lengkap</small></div><div class="mt-risk-metrics mt-risk-profile-metrics">'+metric('Tinggi',high,'high','level:Tinggi',valid.length?(high/valid.length*100).toFixed(1).replace('.',',')+'%':'—')+metric('Sedang',med,'med','level:Sedang',valid.length?(med/valid.length*100).toFixed(1).replace('.',',')+'%':'—')+metric('Rendah',low,'low','level:Rendah',valid.length?(low/valid.length*100).toFixed(1).replace('.',',')+'%':'—')+'</div><div class="mt-risk-distribution" aria-label="Distribusi level risiko">'+[['high',high],['med',med],['low',low]].map(function(x){return '<i class="'+x[0]+'" style="width:'+(valid.length?x[1]/valid.length*100:0)+'%"></i>'}).join('')+'</div><b class="mt-risk-subtitle">Status mitigasi</b><div class="mt-risk-metrics mt-risk-stage-metrics">'+stageLabels.map(function(x){return metric(x[0],active.filter(function(r){return stage(r)===x[1]}).length,x[2],'stage:'+x[1])}).join('')+'</div><p class="mt-risk-insight">'+(valid.length?'<b>'+pctH+'% ('+high+'/'+valid.length+')</b> risiko terpetakan berkategori tinggi. '+(high?'Prioritaskan evaluasi mitigasinya.':'Pantau risiko secara berkala.'):'Belum ada skor risiko yang lengkap.')+' '+(active.length-paired.length)+' risiko aktif belum memiliki penilaian residual yang dapat dibandingkan.</p></div></div>';
+  }
+  summary.innerHTML=h+'<div class="mt-risk-legend"><span><i class="low"></i> Rendah 1–7</span><span><i class="med"></i> Sedang 8–14</span><span><i class="high"></i> Tinggi 15–25</span><small>Angka besar = jumlah risiko · klik kotak atau kartu untuk memfilter.</small></div>';
+ }
+ // Use a compact single-column stack; keep the original table node and its data-imp input.
+ oldMap.remove();stk.classList.add('mt-risk-workspace');stk.prepend(toolbar,summary);
+ var reset=document.createElement('button');reset.type='button';reset.className='btn sm mt-risk-reset';reset.textContent='Hapus filter ringkasan';reset.hidden=!filter;reset.addEventListener('click',function(){setFilter(filter)});
+ if(head){head.querySelectorAll('[data-act="rfil"]').forEach(function(x){x.remove()});head.appendChild(reset)}
+ redrawT('risk');
+ toolbar.addEventListener('click',function(e){var b=e.target.closest('[data-mtr-kind],[data-mtr-toggle]');if(!b)return;e.preventDefault();e.stopPropagation();if(b.hasAttribute('data-mtr-kind')){ui.mtRiskKind=b.dataset.mtrKind;ui.mtRiskFilter='';PG.risk=0;save();render()}else pref('mtRiskShow',!expanded)});
+ summary.addEventListener('click',function(e){var b=e.target.closest('[data-mtr-mode],[data-mtr-filter]');if(!b)return;e.preventDefault();e.stopPropagation();if(b.hasAttribute('data-mtr-mode')){ui.mtRiskFilter='';PG.risk=0;pref('mtRiskMode',b.dataset.mtrMode)}else setFilter(b.dataset.mtrFilter)});
+ summary.addEventListener('change',function(e){if(e.target.matches('[data-mtr-score]'))pref('mtRiskScore',e.target.checked)});
+ table.addEventListener('click',function(e){var b=e.target.closest('[data-mt-risk-review]');if(!b)return;e.preventDefault();e.stopPropagation();var r=visible.find(function(x){return x.id===b.dataset.mtRiskReview});if(r)mtRiskReview(r,!canW('risk','U',r.pemilik))});
+}
 function placeTblSearch(){
  var view=document.getElementById('view');if(!view)return;
+ if(typeof VIEW!=='undefined'&&VIEW==='pmo-risiko'){mtRiskWorkspace(view);return;}
  if(typeof VIEW!=='undefined'&&VIEW==='pmo-laporan'){mtCapaianTwLayout(view);return;}
  var seq=view.querySelectorAll('.subt, [id^="tw-"]'),groups=[],cur=null;
  for(var i=0;i<seq.length;i++){var el=seq[i];
@@ -399,3 +530,5 @@ html :is(#app,#root,body) .ract:has(>.mt-action-icon){gap:4px;flex-wrap:wrap;ali
 (function(){var st=document.createElement('style');st.id='mt-capaian-tw-chips-style';st.textContent="\n/* 261125-MT-09: shared segmented controls and stable reporting toolbar. */\n#app .mt-tw-report-tools{display:flex;align-items:center;justify-content:flex-start;gap:8px;flex-wrap:wrap;padding:7px 10px;min-height:50px;box-sizing:border-box}\n#app .mt-tw-chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));flex:0 0 306px;max-width:100%;height:36px;box-sizing:border-box;background:#eef2f7;border:1px solid #d9e2ee;border-radius:9px;gap:3px;padding:3px}\n#app .mt-tw-chips .mt-tw-chip{min-width:0;padding:0 6px;border:1px solid transparent;border-radius:6px;background:transparent;color:#526781;font:700 12px Inter,\"Nunito Sans\",Arial,sans-serif;white-space:nowrap;cursor:pointer;transition:background-color .14s,color .14s,border-color .14s}\n#app .mt-tw-chips .mt-tw-chip:hover:not(.on){background:#e1e9f3;color:#173a66}\n#app .mt-tw-chips .mt-tw-chip.on{background:#14355d;border-color:#14355d;color:#fff}\n#app .mt-tw-chips .mt-tw-chip:focus-visible{outline:2px solid #fdb913;outline-offset:1px}\n#app .mt-tw-context{flex:0 0 auto}\n#app .mt-tw-context select{height:36px}\n#app .mt-tw-report-tools>.mt-tw-shared-search{flex:1 1 200px!important;width:auto!important;min-width:160px!important;max-width:320px!important;margin:0 0 0 auto!important;order:0!important}\n#app .mt-tw-report-tools>.mt-tw-shared-search[hidden]{display:none!important}\n#app .mt-tw-actions{flex:0 0 auto;gap:5px;margin-left:0}\n#app .mt-tw-actions .mt-tw-export-icon{display:inline-flex;align-items:center;justify-content:center;min-width:32px;width:32px;height:32px!important;padding:0!important;background:#eff9f6;color:#087f72;border:1px solid #b2dfd3;border-radius:9px}\n#app .mt-tw-actions .mt-tw-export-icon:hover{background:#e0f3ed;border-color:#80c7b6}\n#app .mt-tw-more{position:relative}\n#app .mt-tw-more .wbs-more-pop{min-width:210px;z-index:130}\n#app .mt-tw-more .wbs-kebab{width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;padding:0!important}\n#app .mt-tw-panel[hidden]{display:none!important}\n#app .mt-tw-panel>.ch,#app .mt-tw-panel>.tbar{min-height:45px!important}\n#app .mt-tw-panel .mt-tw-section-tools{flex:0 0 auto!important;margin-left:auto}\n@media(min-width:1100px){#app .mt-tw-report-tools{flex-wrap:nowrap}}\n@media(max-width:760px){#app .mt-tw-chips{flex:1 1 100%;width:100%}#app .mt-tw-actions{width:auto}#app .mt-tw-report-tools>.mt-tw-shared-search{flex:1 1 160px!important}}\n@media(prefers-reduced-motion:reduce){#app .mt-tw-chip{transition:none}}\n";document.head.appendChild(st)})();
 
 (function(){var st=document.createElement('style');st.id='mt-capaian-tw-search-align';st.textContent="/* 261125-MT-10: align Capaian TW search with other monitoring subtabs. */\n#app .mt-tw-report-tools>.mt-tw-actions{margin-left:auto}\n#app .mt-pmo-subtab-band.mt-subt-row>.mt-tw-shared-search{align-self:center}\n#app .mt-pmo-subtab-band.mt-subt-row>.mt-tw-shared-search[hidden]{display:none!important}\n";document.head.appendChild(st)})();
+
+(function(){var st=document.createElement('style');st.id='mt-risk-monitoring-style';st.textContent="\n/* 261125-MT-11 — compact risk monitoring. */\n#app .mt-risk-workspace{display:flex!important;flex-direction:column!important;gap:9px!important;align-items:stretch!important;min-width:0}\n#app .mt-risk-workspace>*{width:100%;min-width:0;box-sizing:border-box;order:initial!important}\n#app .mt-risk-workspace .mt-risk-summary[hidden],#app .mt-risk-workspace [hidden]{display:none!important}\n#app .mt-risk-toolbar{display:flex;align-items:center;gap:7px;padding:6px 9px;min-height:48px;border:1px solid #dce5ef;border-radius:10px;background:#fff;flex-wrap:wrap}\n#app .mt-risk-chips,#app .mt-risk-mode{display:inline-grid;grid-template-columns:repeat(2,minmax(0,1fr));height:36px;border:1px solid #dce5ef;border-radius:9px;padding:3px;gap:3px;background:#eef2f7;box-sizing:border-box}\n#app .mt-risk-chips{width:254px;max-width:100%}\n#app .mt-risk-mode{width:290px;max-width:100%;height:33px}\n#app :is(.mt-risk-chips,.mt-risk-mode)>button{background:transparent;border:1px solid transparent;border-radius:6px;color:#526781;font:700 12px Inter,\"Nunito Sans\",Arial,sans-serif;padding:0 7px;white-space:nowrap;cursor:pointer}\n#app :is(.mt-risk-chips,.mt-risk-mode)>button[aria-pressed=\"true\"]{background:#14355d;color:#fff}\n#app :is(.mt-risk-chips,.mt-risk-mode)>button:hover:not([aria-pressed=\"true\"]){background:#dfe8f3}\n#app .mt-risk-spacer{flex:1}\n#app .mt-risk-actions{display:flex;gap:5px;align-items:center}\n#app .mt-risk-toolbar .btn{height:36px;min-height:36px;font-size:12px}\n#app .mt-risk-toolbar .mt-risk-excel{display:inline-flex;align-items:center;justify-content:center;width:36px;padding:0;background:#eff9f6;color:#087f72;border-color:#b2dfd3}\n#app .mt-risk-summary{padding:9px 12px!important;margin:0!important;overflow:visible}\n#app .mt-risk-summary-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px}\n#app .mt-risk-score{display:flex;align-items:center;gap:6px;font-size:12px;color:#526781}\n#app .mt-risk-split{display:grid;grid-template-columns:minmax(260px,34%) minmax(0,1fr);gap:15px;align-items:start}\n#app .mt-risk-compare{display:grid;grid-template-columns:minmax(240px,1fr) minmax(240px,1fr) minmax(220px,.9fr);gap:14px;align-items:start}\n#app .mt-risk-matrix{min-width:0;max-width:100%}\n#app .mt-risk-matrix-title,#app .mt-risk-profile-title{display:flex;align-items:center;justify-content:space-between;gap:5px;flex-wrap:wrap;margin-bottom:6px;color:#173a66;font-size:12px}\n#app .mt-risk-summary small{font-size:10.5px;color:#62748b}\n#app .mt-risk-map{display:flex;gap:4px;align-items:stretch}\n#app .mt-risk-axis-y{writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;font-size:10px;color:#526781;font-weight:700;width:14px;flex:none}\n#app .mt-risk-grid{display:grid;grid-template-columns:18px repeat(5,minmax(0,1fr));gap:3px;flex:1;min-width:0}\n#app .mt-risk-axis{display:grid;place-items:center;font-size:11px;color:#526781;font-weight:700}\n#app .mt-risk-axis-x{text-align:center;margin-left:28px;font-size:10px;color:#526781;font-weight:700}\n#app .mt-risk-cell{height:32px;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border:1px solid transparent;border-radius:5px;padding:0;color:#173a66;font:inherit;cursor:pointer;transition:filter .14s,border-color .14s}\n#app .mt-risk-cell b{font-size:13px;line-height:1.1}\n#app .mt-risk-cell small{font-size:9px;line-height:1}\n#app .mt-risk-cell.zero b{color:#7b8b8d;font-weight:500}\n#app .mt-risk-cell:hover{filter:brightness(.96);border-color:#647d9e}\n#app .mt-risk-cell.on{outline:2px solid #173a66;outline-offset:-2px}\n#app .mt-risk-cell.high,#app .mt-risk-legend i.high{background:#f5ccce}\n#app .mt-risk-cell.med,#app .mt-risk-legend i.med{background:#fae7be}\n#app .mt-risk-cell.low,#app .mt-risk-legend i.low{background:#ddede4}\n#app .mt-risk-profile,#app .mt-risk-comparison-stats{display:flex;flex-direction:column;gap:6px;min-width:0}\n#app .mt-risk-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}\n#app .mt-risk-profile-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}\n#app .mt-risk-stage-metrics,#app .mt-risk-issue-metrics{grid-template-columns:repeat(5,minmax(0,1fr))}\n#app .mt-risk-metric{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;min-width:0;min-height:49px;padding:6px 8px;border:1px solid #dce5ef;border-radius:8px;background:#f8fafc;color:#173a66;text-align:left;font:inherit;cursor:pointer}\n#app .mt-risk-metric span{font-size:11px;font-weight:650;line-height:1.15;overflow-wrap:anywhere}\n#app .mt-risk-metric b{font-size:19px;line-height:1;font-variant-numeric:tabular-nums}\n#app .mt-risk-metric small{font-size:10px}\n#app .mt-risk-metric.high{background:#fff1f1;border-color:#efc7c9;color:#b73540}\n#app .mt-risk-metric.med{background:#fff8e9;border-color:#eed7a5;color:#a66b0a}\n#app .mt-risk-metric.low{background:#eff8f3;border-color:#c2e1d2;color:#087f72}\n#app .mt-risk-metric.blue{background:#f0f5fb;border-color:#cbdcef;color:#315e91}\n#app .mt-risk-metric:hover{filter:brightness(.98)}\n#app .mt-risk-metric.on{outline:2px solid currentColor;outline-offset:-2px}\n#app .mt-risk-distribution{display:flex;height:6px;background:#e7edf5;border-radius:4px;overflow:hidden}\n#app .mt-risk-distribution i.high{background:#d9777d}#app .mt-risk-distribution i.med{background:#e5bb65}#app .mt-risk-distribution i.low{background:#6eac97}\n#app .mt-risk-subtitle{font-size:12px;color:#173a66}\n#app .mt-risk-insight{margin:0;padding:7px 9px;background:#f3f6fa;border-radius:7px;font-size:11.5px;line-height:1.4;color:#536781}\n#app .mt-risk-legend{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px;padding-top:6px;border-top:1px solid #edf1f6;font-size:10.5px;color:#536781}\n#app .mt-risk-legend span{display:flex;align-items:center;gap:4px}#app .mt-risk-legend i{display:inline-block;width:10px;height:10px;border-radius:3px}\n#app .mt-risk-legend small{margin-left:auto}\n#app .mt-risk-workspace #tw-risk .tbar{min-height:43px;padding:6px 10px}\n#app .mt-risk-workspace #tw-risk td{vertical-align:middle;padding-top:7px;padding-bottom:7px}\n#app .mt-risk-workspace #tw-risk .tcard{min-width:980px}\n#app .mt-risk-workspace #tw-risk .ract{flex-wrap:nowrap}\n@media(max-width:1000px){#app .mt-risk-compare{grid-template-columns:repeat(2,minmax(0,1fr))}#app .mt-risk-comparison-stats{grid-column:1/-1}#app .mt-risk-stage-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}\n@media(max-width:680px){#app .mt-risk-split,#app .mt-risk-compare{grid-template-columns:1fr}#app .mt-risk-issue-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}#app .mt-risk-legend small{margin-left:0}}\n@media(prefers-reduced-motion:reduce){#app .mt-risk-cell{transition:none}}\n";document.head.appendChild(st)})();
