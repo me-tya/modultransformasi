@@ -26,8 +26,80 @@ if(typeof document==='undefined'||typeof document.addEventListener!=='function')
 /* Tabel bersama (tbl() di index.html): bila satu baris subtab (.subt) hanya membawahi SATU tabel,
    kolom Cari tabel itu dipindah ke kanan baris subtab. Handler input tetap memakai [data-q]. */
 var ICON='<svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>';
+/* 261125-MT-08 — Capaian TW: presentation only; calculations and exports stay native. */
+var mtTwQueries={};
+function mtCapaianTwLayout(view){
+ if(!view||!view.querySelector('#lap-tprog')||!view.querySelector('#lap-ue'))return;
+ if(view.querySelector('.mt-tw-report-tools'))return;
+ var prog=view.querySelector('#lap-tprog'),ue=view.querySelector('#lap-ue'),kw=view.querySelector('#tw-kw');
+ var band=view.querySelector('.mt-pmo-subtab-band');
+ if(band){
+  var promoted=band.querySelector('.mt-tabsearch input[data-q="kw"]');
+  if(promoted&&kw){var orig=kw.querySelector('.tsearch');if(orig){orig.appendChild(promoted);orig.classList.remove('mt-moved')}}
+  band.querySelectorAll('.mt-tabsearch-tbl').forEach(function(x){if(!x.querySelector('input'))x.remove()});
+  band.classList.remove('mt-subt-row');band.classList.add('mt-subt-full');
+ }
+ var tools=document.createElement('div');tools.className='mt-tw-report-tools';
+ var ctx=document.createElement('div');ctx.className='mt-tw-context';
+ var yr=typeof S!=='undefined'?S.ui.tahun:'';
+ var selected=typeof S!=='undefined'?Math.max(1,Math.min(4,+S.ui.ltw||3)):3;
+ ctx.innerHTML='<span class="mt-tw-year">Tahun '+String(+yr||'—')+'</span><label>Posisi laporan <select aria-label="Posisi laporan tahunan" data-on="ltw">'+[1,2,3,4].map(function(q){return '<option value="'+q+'"'+(q===selected?' selected':'')+'>TW '+q+'</option>'}).join('')+'</select></label>';
+ tools.appendChild(ctx);
+ var a=document.createElement('div');a.className='mt-tw-actions';
+ var headerActs=view.querySelector('.vh .acts');
+ if(headerActs){while(headerActs.firstChild)a.appendChild(headerActs.firstChild);headerActs.remove()}
+ tools.appendChild(a);prog.before(tools);
+ function fmtNumber(txt){
+  var v=String(txt||'').trim();if(!v.includes('%'))return null;
+  var n=Number(v.replace(/\s/g,'').replace('%','').replace(/\./g,'').replace(',','.'));
+  return Number.isFinite(n)?n:null;
+ }
+ function section(card,id){
+  var table=card.querySelector('table.lap'),head=card.querySelector('.ch');if(!table||!head)return;
+  card.classList.add('mt-tw-table-card');
+  table.classList.add('mt-tw-table');
+  var headers=table.querySelectorAll('thead th');
+  for(var i=1;i<=4;i++){if(!headers[i])continue;headers[i].innerHTML='TW '+i+'<small>Kumulatif</small>';if(i===selected)headers[i].classList.add('mt-tw-selected')}
+  if(headers[5])headers[5].innerHTML='Target<small>Tahunan</small>';
+  if(headers[6])headers[6].innerHTML='Capaian tahunan<small>s.d. TW '+selected+'</small>';
+  if(headers[6])headers[6].classList.add('mt-tw-annual');
+  var rows=Array.from(table.querySelectorAll('tbody tr'));
+  var total=rows.find(function(r){return r.cells[0]?.textContent.trim()==='Total'});
+  if(total){total.classList.add('mt-tw-total');total.parentNode.prepend(total)}
+  rows.forEach(function(r){
+   for(var j=1;j<=4;j++){
+    var cell=r.cells[j];if(!cell)continue;
+    var b=cell.querySelector('b'),v=fmtNumber(b?.textContent);
+    if(b){b.classList.add('mt-tw-value');b.dataset.tone=v===null?'na':v>=100?'met':'below'}
+    if(j===selected)cell.classList.add('mt-tw-selected');
+   }
+   var ac=r.cells[6];if(ac){
+    ac.classList.add('mt-tw-annual');var v=fmtNumber(ac.querySelector('b')?.textContent);
+    if(v!==null){
+     var track=document.createElement('span');track.className='mt-tw-progress';track.setAttribute('aria-hidden','true');
+     var fill=document.createElement('i');fill.style.width=Math.max(0,Math.min(100,v))+'%';fill.className=v>=100?'met':'';
+     track.appendChild(fill);ac.appendChild(track);
+    }
+   }
+  });
+  var search=document.createElement('label');search.className='mt-tabsearch mt-tw-search';search.innerHTML=ICON;
+  var input=document.createElement('input');input.type='search';input.placeholder=id==='program'?'Cari T-Program…':'Cari UE I…';input.setAttribute('aria-label',input.placeholder);input.value=mtTwQueries[id]||'';search.appendChild(input);
+  var count=document.createElement('span');count.className='mt-tw-count';count.setAttribute('aria-live','polite');
+  var right=document.createElement('div');right.className='mt-tw-section-tools';right.append(count,search);head.appendChild(right);
+  function filter(){var q=input.value.trim().toLocaleLowerCase('id'),n=0,all=0;mtTwQueries[id]=input.value;rows.forEach(function(r){if(r===total)return;all++;var match=String(r.cells[0]?.textContent||'').toLocaleLowerCase('id').includes(q);r.hidden=!match;if(match)n++});count.textContent=n+' / '+all}
+  input.addEventListener('input',filter);filter();
+  var note=card.querySelector(':scope > p.s');if(note){note.classList.add('mt-tw-note');if(id==='unit')note.hidden=true}
+ }
+ section(prog,'program');section(ue,'unit');
+ if(kw){
+  kw.classList.add('mt-tw-table-card','mt-tw-kwide');
+  var t=kw.querySelector('.tbar'),orig=kw.querySelector('.tsearch');
+  if(t&&orig){var inp=orig.querySelector('input[data-q]');if(inp){var lab=document.createElement('label');lab.className='mt-tabsearch mt-tw-search';lab.innerHTML=ICON;lab.appendChild(inp);orig.classList.add('mt-moved');var title=t.querySelector('h3');if(title)title.after(lab);else t.prepend(lab)}}
+ }
+}
 function placeTblSearch(){
  var view=document.getElementById('view');if(!view)return;
+ if(typeof VIEW!=='undefined'&&VIEW==='pmo-laporan'){mtCapaianTwLayout(view);return;}
  var seq=view.querySelectorAll('.subt, [id^="tw-"]'),groups=[],cur=null;
  for(var i=0;i<seq.length;i++){var el=seq[i];
   if(el.classList.contains('subt')){if(el.closest('.ov,.modal'))continue;cur={nav:el,tables:[]};groups.push(cur)}
@@ -269,3 +341,5 @@ html :is(#app,#root,body) .ract:has(>.mt-action-icon){gap:4px;flex-wrap:wrap;ali
  }
  if(document.body)init();else document.addEventListener('DOMContentLoaded',init,{once:true});
 })();
+
+(function(){var st=document.createElement('style');st.id='mt-capaian-tw-style';st.textContent="\n/* Capaian TW: compact reporting workspace, scoped to the three report cards. */\n#app .mt-tw-report-tools{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:0 0 9px;padding:7px 10px;border:1px solid #dce5ef;border-radius:10px;background:#fff}\n#app .mt-tw-context,#app .mt-tw-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;min-width:0}\n#app .mt-tw-context label{display:flex;align-items:center;gap:6px;font-size:12px;color:#536781;white-space:nowrap}\n#app .mt-tw-year{font-size:12px;font-weight:800;color:#173a66;border-right:1px solid #dce5ef;padding-right:9px}\n#app .mt-tw-context select{height:34px;min-width:86px;padding:0 8px;border:1px solid #d4dfec;border-radius:8px;background:#fff;color:#173a66;font:inherit;font-weight:700}\n#app .mt-tw-actions .btn{height:34px!important;min-height:34px!important;padding:0 10px!important;white-space:nowrap;font-size:12px!important}\n#app .mt-tw-table-card{margin-bottom:10px!important}\n#app .mt-tw-table-card>.ch,#app .mt-tw-table-card>.tbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 11px!important;min-height:45px;box-sizing:border-box}\n#app .mt-tw-table-card>.ch>h3,#app .mt-tw-table-card>.tbar>h3{font-size:14px!important;margin:0!important;white-space:nowrap}\n#app .mt-tw-section-tools{display:flex;align-items:center;gap:8px;margin-left:auto;min-width:0}\n#app .mt-tw-count{font-size:11px;color:#66788f;white-space:nowrap;font-variant-numeric:tabular-nums}\n#app .mt-tw-table-card .mt-tw-search{flex:0 1 260px!important;width:260px!important;min-width:155px!important;max-width:100%!important;margin:0!important}\n#app .mt-tw-kwide .mt-tw-search{margin-left:auto!important}\n#app .mt-tw-table-card .mt-tw-search input{height:34px!important;font-size:12px!important}\n#app .mt-tw-table-card>.tscroll{overflow-x:auto}\n#app .mt-tw-table{width:100%;table-layout:fixed;min-width:850px;font-variant-numeric:tabular-nums}\n#app .mt-tw-table thead th{background:#eef3f9!important;color:#536781!important;vertical-align:middle!important;padding:7px 9px!important;line-height:1.2;font-size:11.5px!important;white-space:normal}\n#app .mt-tw-table thead th:first-child{width:29%;text-align:left}\n#app .mt-tw-table thead th:nth-child(n+2):nth-child(-n+5){width:12%;text-align:right}\n#app .mt-tw-table thead th:nth-child(6){width:10%;text-align:right}\n#app .mt-tw-table thead th:nth-child(7){width:13%;text-align:right}\n#app .mt-tw-table thead th small{display:block;font-size:10px;font-weight:600;text-transform:none;margin-top:2px;letter-spacing:0}\n#app .mt-tw-table tbody td{padding:7px 9px!important;vertical-align:middle!important;border-bottom:1px solid #e9eef5;line-height:1.2;font-size:12px}\n#app .mt-tw-table tbody td:first-child{color:#16365b;overflow-wrap:anywhere}\n#app .mt-tw-table tbody td .sm{display:block;margin-top:3px;font-size:10.5px;color:#62748b;white-space:nowrap}\n#app .mt-tw-table tbody tr:nth-child(even){background:#fafbfd}\n#app .mt-tw-table tbody tr:hover{background:#f3f7fc}\n#app .mt-tw-table tbody tr[hidden]{display:none!important}\n#app .mt-tw-table .mt-tw-selected{background:#fff9eb!important}\n#app .mt-tw-table thead .mt-tw-selected{box-shadow:inset 0 -3px #fdb913;color:#173a66!important}\n#app .mt-tw-table .mt-tw-value{display:inline-block;min-width:52px;text-align:right;font-size:13px;font-weight:800;line-height:1.25}\n#app .mt-tw-table .mt-tw-value[data-tone=\"met\"]{color:#087f72}\n#app .mt-tw-table .mt-tw-value[data-tone=\"below\"]{color:#315e91}\n#app .mt-tw-table .mt-tw-value[data-tone=\"na\"]{color:#8391a4}\n#app .mt-tw-table .mt-tw-annual{background:#f0f5fb!important;border-left:1px solid #dce5ef}\n#app .mt-tw-table td.mt-tw-annual>b{font-size:14px;color:#173a66}\n#app .mt-tw-progress{display:block;height:4px;width:100%;max-width:100px;margin:5px 0 0 auto;background:#dce5ef;border-radius:5px;overflow:hidden}\n#app .mt-tw-progress>i{display:block;height:100%;background:#527bb2;border-radius:5px}\n#app .mt-tw-progress>i.met{background:#138477}\n#app .mt-tw-table .mt-tw-total>td{background:#e8eff8!important;color:#15385f;border-bottom:2px solid #cddbec;font-weight:800}\n#app .mt-tw-table .mt-tw-total>td.mt-tw-selected{background:#fff0c9!important}\n#app .mt-tw-table-card .mt-tw-note{padding:6px 11px!important;font-size:11px!important;line-height:1.4}\n#app .mt-tw-table-card .mt-tw-note[hidden]{display:none!important}\n#app .mt-tw-kwide table td{padding-top:7px!important;padding-bottom:7px!important;vertical-align:middle}\n@media(max-width:760px){#app .mt-tw-actions{width:100%}#app .mt-tw-section-tools{flex:1 1 100%;justify-content:flex-end}#app .mt-tw-table-card .mt-tw-search{flex:1 1 200px!important;width:auto!important}#app .mt-tw-table{min-width:790px}}\n";document.head.appendChild(st)})();
