@@ -44,7 +44,7 @@ function stOf(mk,p){const W=items(mk,p);if(!W.length)return {st:'Tidak ada item 
  const ok=p.cek(mk).every(c=>c.ok);return {st:ok?'Siap diajukan':'Belum lengkap',W}}
 Object.assign(CHIP,{'Tervalidasi':'ok','Siap diajukan':'warn','Belum lengkap':'gray','Tidak ada item WBS':'gray'});
 
-function ajukan(mk,p){const W=items(mk,p).filter(w=>!w.v);const tab=p.tab;
+function ajukan(mk,p){const W=items(mk,p).filter(w=>!w.v);const tab=p.tab;if(p.id==='ren'&&window.MTRV)MTRV.baseline(mk);
  W.forEach(w=>{w.v=0;w.rm=0;S.bukti[w.k]={st:'Menunggu validasi',auto:'cm-'+p.id,nama:'Isian '+p.l+' di aplikasi (paket '+p.n+')',link:'#modul-'+mk+'-t-'+tab,file:false,by:ME&&ME.nama,role:ME&&ME.role,tgl:TODAY,aktual:TODAY,note:'Bukti = isian kertas kerja CM di aplikasi (paket validasi '+p.n+' · '+p.l+').',cat:''}});
  log('Ajukan paket validasi CM',mk+' · paket '+p.n+' '+p.l+' → '+W.map(w=>w.k).join(', '))}
 function tarik(mk,p){items(mk,p).forEach(w=>{const b=S.bukti[w.k];if(b&&b.auto==='cm-'+p.id&&b.st!=='Valid'&&!w.v){delete S.bukti[w.k];w.rm=0}});log('Tarik paket validasi CM',mk+' · paket '+p.n)}
