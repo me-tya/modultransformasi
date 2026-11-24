@@ -1,6 +1,6 @@
 (function planningTabsPlugin(){
 'use strict';
-const order=[['asis','As-is'],['tobe','To-be'],['cs','Perbandingan'],['ch','Charter'],['kp','Kriteria'],['mf','Manfaat'],['rk','Linimasa']];
+const order=[['asis','As-is'],['tobe','To-be'],['cs','Perbandingan'],['ch','Charter Proyek'],['rk','Rencana Kerja'],['kp','Kriteria Penerimaan'],['mf','Evaluasi Manfaat']];
 const safe=x=>esc(String(x??''));const list=x=>Array.isArray(x)?x.filter(v=>String(v??'').trim()).map(String):String(x??'').trim()?[String(x)]:[];
 const limited=(arr,max=4)=>{let x=list(arr);return x.length>max?[...x.slice(0,max),'… dan '+(x.length-max)+' butir lainnya (lihat dokumen lengkap)']:x};
 const clean=x=>String(x??'').trim()||'Belum diisi';
@@ -133,4 +133,4 @@ css.textContent=`
 if(typeof VIEW!=='undefined'&&VIEW==='pmo-charter'&&typeof ME!=='undefined'&&ME)render();
 })();
 /* Document Experience v3 — loaded after all existing PMO and Project Selection plugins. */
-(function(){var script=document.createElement('script');script.src='document-experience-v3.js?v=20261115-1';script.defer=true;document.head.appendChild(script)})();
+(function(){var script=document.createElement('script');script.src='document-experience-v3.js?v=20261125-dp1';script.defer=true;document.head.appendChild(script)})();

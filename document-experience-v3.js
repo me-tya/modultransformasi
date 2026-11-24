@@ -1,6 +1,6 @@
 (function modulDocumentExperienceV3(){
 'use strict';
-const KEYS=[['asis','As-is'],['tobe','To-be'],['cs','Perbandingan'],['ch','Charter Proyek'],['kp','Kriteria'],['mf','Manfaat'],['rk','Linimasa']];
+const KEYS=[['asis','As-is'],['tobe','To-be'],['cs','Perbandingan'],['ch','Charter Proyek'],['rk','Rencana Kerja'],['kp','Kriteria Penerimaan'],['mf','Evaluasi Manfaat']];
 const E=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const clone=x=>JSON.parse(JSON.stringify(x));
 const empty=(p,kind)=>{
@@ -20,7 +20,7 @@ const canEdit=(p,kind,c)=>{
  if(kind==='project')return !!(chCan('U',p)||(!c&&chCan('C',p)))&&(!c||c.st==='Draft');
  return ['SA','PMOK','PMOU'].includes(ME.role)&&(!p.psYear||+p.psYear===(+S.ui.psSelectedYear||+S.ui.tahun||2026))&&(!p.psStatus||p.psStatus!=='Ditetapkan')&&(ME.role!=='PMOU'||!p.uic||p.uic===ME.unit);
 };
-const currentProject=p=>(S.charters||[]).filter(c=>c.prog===p.akr&&c.st!=='Arsip').sort((a,b)=>(a.st==='Draft'?0:a.st==='Reviu'?1:2)-(b.st==='Draft'?0:b.st==='Reviu'?1:2)||(+b.ver||0)-(+a.ver||0))[0]||null;
+const currentProject=p=>(S.charters||[]).filter(c=>c.prog===p.akr&&!c.dk&&c.st!=='Arsip').sort((a,b)=>(a.st==='Draft'?0:a.st==='Reviu'?1:2)-(b.st==='Draft'?0:b.st==='Reviu'?1:2)||(+b.ver||0)-(+a.ver||0))[0]||null;
 // Program and project charters have independent storage. Legacy PMO charter data can
 // initialize a program charter, but the new program document never overwrites it.
 const getSource=(p,kind)=>{
@@ -115,15 +115,24 @@ function form(){
  if(t==='ch'){
   const deck=makeDeck(c,active.kind);
   return (!active.edit?'<section class="mt-doc-slide-area"><div class="mt-doc-slide" data-mt-slide><div class="dk-scale">'+dkHtml(deck.slides[0])+'</div></div><p>Pratinjau menggunakan model slide yang sama persis dengan ekspor PPTX. Slide 2 Kriteria dan slide 3 Rencana Kerja turut diekspor.</p></section>':'')+
-   '<div class="mt-doc-grid">'+field('Judul '+(project?'Proyek':'Program'),'judul',c.judul)+field('Tujuan '+(project?'Proyek':'Program'),'tujuan',c.tujuan,3)+field('Periode Mulai (tahun)','p1',c.p1,1)+field('Periode Selesai (tahun)','p2',c.p2,1)+listField('Latar Belakang','lb',c.lb)+field('Terobosan','tb',c.tb,3)+listField('Output','out',c.out)+listField('Outcome','oc',c.oc)+listField('Risiko','ris',c.ris)+listField('Pendukung Kesuksesan','pk',c.pk)+field('Initiative Champion','ch',c.ch)+listField('Initiative Owner','ow',c.ow)+'</div>'+rows('Key Milestones','ms',c.ms,'ms')+
+   '<div class="mt-doc-grid">'+field('Judul '+(project?'Proyek':'Program'),'judul',c.judul)+field('Tujuan '+(project?'Proyek':'Program'),'tujuan',c.tujuan,3)+field('Periode Mulai (tahun)'+LK('p1'),'p1',c.p1,1)+field('Periode Selesai (tahun)'+LK('p2'),'p2',c.p2,1)+listField('Latar Belakang','lb',c.lb)+field('Terobosan','tb',c.tb,3)+listField('Output'+LK('out'),'out',c.out)+listField('Outcome','oc',c.oc)+listField('Risiko','ris',c.ris)+listField('Pendukung Kesuksesan','pk',c.pk)+field('Initiative Champion','ch',c.ch)+listField('Initiative Owner','ow',c.ow)+'</div>'+rows('Key Milestones'+LK('ms'),'ms',c.ms,'ms')+
    (project?'<section class="mt-doc-copy"><label>Salin Charter Program <select data-mt-copy-source><option value="">Pilih program sumber…</option>'+
     S.programs.filter(p=>p.psProgramCharter||chCur(p.akr)).map(p=>'<option value="'+E(p.id)+'">'+E(p.kode+' · '+p.nama)+'</option>').join('')+'</select></label><button type="button" data-mt-doc="copy">Salin ke Charter Proyek</button></section>':'');
  }
- if(t==='kp')return rows('Kriteria penyelesaian','kp',c.kp,'kp');
- if(t==='mf')return rows('Manfaat dan indikator','mf',c.mf,'mf');
- if(t==='rk')return rows('Linimasa dan UIC','rk',c.rk,'rk');
+ if(t==='kp')return (active.edit&&LK('rk')?'<div class="note i" style="margin-bottom:8px"><span>Mengubah teks/keluaran pada kriteria yang ada boleh langsung. Menambah atau menghapus kriteria = perubahan scope, perlu CR.</span></div>':'')+rows('Kriteria penyelesaian dan penerimaan hasil','kp',c.kp,'kp');
+ if(t==='mf')return rows('Rencana evaluasi kebermanfaatan (efisiensi biaya, proses bisnis, layanan)','mf',c.mf,'mf');
+ if(t==='rk')return rows('Rencana kerja dan UIC'+LK('rk'),'rk',c.rk,'rk');
  return '';
 }
+function crGate(diff){
+ const L=(S.crs||[]).filter(c=>['Disetujui Ketua','Diterapkan'].includes(c.st));
+ const body='<div class="note w"><span>Isian berikut mengubah ruang lingkup, output, atau jadwal yang sudah disahkan, sehingga harus dirujuk ke Change Request yang sudah disetujui (Bab V, Pelaksanaan Proyek angka 3):</span></div><ul style="margin:8px 0 10px 18px">'+diff.map(x=>'<li>'+E(x)+'</li>').join('')+'</ul>'+
+  '<label class="fld"><span>Change Request yang disetujui</span><select class="sel" id="mt-crref"><option value="">— pilih CR —</option>'+L.map(c=>'<option value="'+E(c.kode||c.id)+'">'+E((c.kode||'CR')+' · '+c.st+' · '+String(c.alasan||c.item||'').slice(0,60))+'</option>').join('')+'</select></label>'+
+  '<p class="s" style="margin:8px 0 0">Belum ada CR? Simpan dulu perubahan narasinya saja (kembalikan isian 🔒), lalu ajukan CR di Pelaksanaan › Change Request.</p>';
+ const ov=modal('Perlu Change Request',body,'Rujuk CR & simpan',()=>{const v=ov.querySelector('#mt-crref').value;if(!v){toast('Pilih CR yang disetujui.');return false}active.draft.crRef=v;setTimeout(()=>persist(),0)},{cancel:'Kembali'});
+ ov.style.zIndex='27000';
+}
+const LK=k=>active&&active.kind==='project'&&active.edit&&window.MTDP&&MTDP.baseOf(active.draft)&&MTDP.LOCK.some(x=>x[0]===k)?' 🔒':'';
 function setDeep(obj,path,v){const keys=path.split('.');let t=obj;for(let i=0;i<keys.length-1;i++)t=t[keys[i]]||(t[keys[i]]={});t[keys[keys.length-1]]=v;}
 function collect(){
  if(!active?.edit)return;
@@ -169,7 +178,7 @@ function controls(){
  (a.kind==='project'?'<button data-mt-doc="import" type="button">↑ Import Charter PPTX</button>':'<button data-mt-doc="import" type="button">↑ Import PPTX</button>')+
  '<button data-mt-doc="preview" type="button">Pratinjau 3 Slide</button>'+
  '<button data-mt-doc="export" type="button">↓ Unduh PPTX</button>'+
- (a.kind==='project'&&a.source?.st==='Disahkan'&&chCan('U',a.p)?'<button data-mt-doc="revision" type="button">⧉ Buat Versi Revisi</button>':'')+
+ (a.kind==='project'&&a.draft.dk&&edit?'<button data-mt-doc="scope" type="button">Ubah cakupan</button>':'')+(a.kind==='project'&&a.source?.st==='Disahkan'&&chCan('U',a.p)?'<button data-mt-doc="revision" type="button">⧉ Buat Versi Revisi</button>':'')+
  (edit?(!a.edit?'<button data-mt-doc="edit" type="button">✎ Ubah</button>':
  '<button data-mt-doc="cancel-edit" type="button">Batal Ubah</button><button class="mt-doc-primary" data-mt-doc="save" type="button">Simpan</button>'):'<span class="mt-doc-locked">Baca saja · versi disahkan/izin terbatas</span>')+
  (a.native?'':'<button data-mt-doc="close" type="button">Tutup</button>')+
@@ -197,24 +206,28 @@ function paint(){
     '<button type="button" class="btn pri" data-bank-preview-saveclose> Simpan &amp; Tutup</button></div>';
   }else if(footer)footer.innerHTML=controls();
  }else{
-  host.innerHTML='<section class="mt-doc-dialog" role="dialog" aria-modal="true" aria-label="Detail Dokumen Proyek"><header><div><b>Detail Dokumen Proyek</b><small>'+E(active.p.nama)+' · '+E(active.p.kode)+' · '+active.draft.tahun+'</small></div><button type="button" data-mt-doc="close" title="Tutup">×</button></header>'+nav+'<main class="mt-doc-scroll">'+doc+'</main><footer>'+controls()+'</footer></section>';
+  host.innerHTML='<section class="mt-doc-dialog" role="dialog" aria-modal="true" aria-label="Dokumen Proyek"><header><div><b>'+(active.edit?'✎ ':'')+(project?'Dokumen Proyek'+(active.draft.dk?' · '+E(active.draft.dk):'')+(active.draft.dpNama?' · '+E(active.draft.dpNama):''):'Charter Program')+'</b><small>'+E(active.p.nama)+' · '+E(active.p.kode)+' · '+active.draft.tahun+(project?' · Cakupan: '+E(covText(active.draft)):'')+'</small></div><button type="button" data-mt-doc="close" title="Tutup">×</button></header>'+nav+'<main class="mt-doc-scroll">'+doc+'</main><footer>'+controls()+'</footer></section>';
  }
  requestAnimationFrame(()=>fitSlide(host));
 }
-function start(p,kind,host,native=false){
- const source=getSource(p,kind),draft=clone(source||empty(p,kind));
+function start(p,kind,host,native=false,id=''){
+ const byId=id?(S.charters||[]).find(c=>c.id===id):null;
+ const source=byId||getSource(p,kind),draft=clone(source||empty(p,kind));
  active={p,kind,host,native,source,draft,tab:'ch',edit:false,year:kind==='program'?(+p.psYear||+S.ui.psSelectedYear||2026):(+S.ui.tahun||2026)};
  if(kind==='project')active.tab='asis';
  paint();
 }
-function openProject(p,tab='asis',edit=false){
- if(document.querySelector('.mt-doc-overlay'))return;
+function openProject(p,tab='asis',edit=false,id=''){
+ document.querySelectorAll('.mt-doc-overlay').forEach(x=>x.remove());
  const ov=document.createElement('div');ov.className='mt-doc-overlay';
- (document.querySelector('#app')||document.body).appendChild(ov);start(p,'project',ov);if(KEYS.some(x=>x[0]===tab))active.tab=tab;if(edit&&canEdit(p,'project',active.source))active.edit=true;paint();
+ (document.querySelector('#app')||document.body).appendChild(ov);start(p,'project',ov,false,id);if(KEYS.some(x=>x[0]===tab))active.tab=tab;if(edit&&canEdit(p,'project',active.source))active.edit=true;paint();
 }
+function covText(d){const L=d.cov;if(!L)return 'semua proyek yang belum punya dokumen sendiri (dokumen awal)';return L.map(k=>k.replace(/\b\w/g,m=>m.toUpperCase())).join(', ')||'—'}
 function persist(){
  if(!active||!canEdit(active.p,active.kind,active.source)){toast('Tidak memiliki hak mengubah dokumen ini.');return false}
  collect();
+ if(active.kind==='project'&&window.MTDP){const base=MTDP.baseOf(active.draft),diff=MTDP.lockedDiff(active.draft,base);
+  if(diff.length&&!active.draft.crRef){crGate(diff);return false}}
  const d=clone(active.draft);d.st=d.st||'Draft';
  if(active.kind==='project'){
   const idx=S.charters.findIndex(x=>x.id===d.id);
@@ -303,20 +316,21 @@ function copyProgram(){
 }
 async function onAction(btn){
  const a=btn.dataset.mtDoc;
- if(a==='close'){active?.host?.remove();active=null;return}
+ if(a==='close'){active?.host?.remove();active=null;if(typeof render==='function')render();return}
  if(!active)return;
  if(a==='tab'){if(active.edit)collect();active.tab=btn.dataset.mtTab;paint();return}
  if(a==='edit'){if(!canEdit(active.p,active.kind,active.source))return toast('Hak akses ubah tidak tersedia.');active.edit=true;paint();return}
  if(a==='cancel-edit'){active.draft=clone(active.source||empty(active.p,active.kind));active.edit=false;paint();return}
  if(a==='revision'){
   const prior=active.source;if(active.kind!=='project'||prior?.st!=='Disahkan'||!chCan('U',active.p))return;
-  const versions=(S.charters||[]).filter(c=>c.prog===active.p.akr).map(c=>+c.ver||0);
+  const versions=(S.charters||[]).filter(c=>c.prog===active.p.akr&&(c.dk||'')===(prior.dk||'')).map(c=>+c.ver||0);
   active.draft=clone(prior);active.draft.id=uid();active.draft.ver=Math.max(1,...versions)+1;
-  active.draft.st='Draft';active.draft.log=(active.draft.log||[]).concat({st:'Draft',by:ME?.nama||ME?.email||'PMO',at:TODAY});
+  active.draft.st='Draft';delete active.draft.crRef;active.draft.log=(active.draft.log||[]).concat({st:'Draft',by:ME?.nama||ME?.email||'PMO',at:TODAY});
   active.source=null;active.edit=true;paint();
   toast('Draf revisi disiapkan, versi disahkan tetap terlindungi. Klik Simpan untuk menyimpan revisi.');return;
  }
  if(a==='save'){persist();return}
+ if(a==='scope'){const id=active.draft.id;active.host?.remove();active=null;ACT.dpScope({dataset:{id}});return}
  if(a==='add'){
   collect();const k=btn.dataset.mtWhich;let obj={};
   for(const [prop] of RULES[k.split('.').pop()]||[])obj[prop]=prop==='k'?[]:'';
@@ -459,6 +473,8 @@ document.addEventListener('keydown',ev=>{
 },true);
 /* Deep link aman untuk Peta Menu PM: hanya membuka subtab dari program yang sudah dipilih. */
 window.MT_DOC_EXPERIENCE=Object.assign(window.MT_DOC_EXPERIENCE||{},{
+ openProject:function(p,tab,edit,id){openProject(p,tab||'asis',!!edit,id||'')},
+ openProgram:function(p,edit){document.querySelectorAll('.mt-doc-overlay').forEach(x=>x.remove());const ov=document.createElement('div');ov.className='mt-doc-overlay';(document.querySelector('#app')||document.body).appendChild(ov);start(p,'program',ov);if(edit&&canEdit(p,'program',active.source))active.edit=true;paint()},
  openProjectTab:function(tab){
   const key=String(tab||'asis'),valid=KEYS.some(x=>x[0]===key);
   if(!valid)return false;

@@ -289,15 +289,21 @@ function prioritasi(p){
 }
 function charter(p){
  if(!p)return '<div class="ps27-card ps27-empty">Pilih program untuk menampilkan Charter Program.</div>';
- S.ui.chp=p.akr;
- const c=foundCharter(p,yr())||(S.charters||[]).find(x=>x.prog===p.akr);
- let body='<div class="ps27-cardtop"><div><h3>Charter Program · 7 Dokumen Perencanaan'+(typeof MT_INFO_ICON==='function'?MT_INFO_ICON:()=>'')('Editor menggunakan komponen charter native Project Management: As-is, To-be, Perbandingan, Charter, Kriteria, Manfaat dan Linimasa.')+'</h3></div><span class="ps27-status">'+E(c?c.st:'Belum dibuat')+'</span></div>';
- if(typeof pCharter==='function'){
-  const h=pCharter(),at=h.indexOf('<div class="chbc">');if(at>=0){let content=h.slice(at).replace('href="#pmo-perencanaan"','href="#project-selection"');body+='<div class="ps27-charter-native">'+content+'</div>';}
-  else body+='<div class="ps27-empty">Gunakan editor Charter lengkap.</div>';
- }else body+='<div class="ps27-empty">Editor Charter belum tersedia di lingkungan ini.</div>';
- return '<div class="ps27-card ps27-charter">'+body+'</div>';
+ const pc=p.psProgramCharter&&typeof p.psProgramCharter==='object'&&Object.keys(p.psProgramCharter).length?p.psProgramCharter:null;
+ const st=pc?(pc.st||'Draft'):((S.charters||[]).some(c=>c.prog===p.akr&&!c.dk&&c.st!=='Arsip')?'Draft (dari charter sebelumnya)':'Belum dibuat');
+ const ic=typeof MT_INFO_ICON==='function'?MT_INFO_ICON:()=>'';
+ let deck=null,err='';try{deck=typeof dkHtml==='function'?window.MT_PM_PROGRAM_DOCS?.buildDeck(p):null}catch(e){err=e.message||String(e)}
+ const btn=(k,m,l,cls)=>'<button type="button" class="btn'+(cls?' '+cls:'')+'" data-act="pmProgramDoc" data-kind="'+k+'" data-mode="'+m+'" data-p="'+E(p.akr)+'" data-program-id="'+E(p.id||'')+'">'+l+'</button>';
+ const head='<div class="ps27-cardtop"><div><h3>Charter Program'+ic('Charter tingkat program: tujuan, latar belakang, terobosan, output, outcome, key milestones, risiko, dan pengelola. Disusun sebelum penetapan program dan menjadi dasar Draft RKMK. Di Project Management charter ini hanya dilihat/diunduh. Tujuh bagian dokumen proyek (As-is s.d. Evaluasi Manfaat) disusun per proyek di Project Management › Perencanaan.')+'</h3></div>'+
+  '<div class="ps27-chact"><span class="ps27-status">'+E(st)+'</span>'+(deck?btn('charter','download','↓ Unduh PPTX',''):'')+'<button type="button" class="btn pri" data-act="psProgCh" data-id="'+E(p.id)+'">'+(pc||deck?'✎ Ubah':'+ Buat Charter Program')+'</button></div></div>';
+ const body=deck?'<div class="dk-wrap ps27-chdeck" data-ps-chdeck>'+deck.slides.map((sl,i)=>'<figure class="dk-f" role="button" tabindex="0" title="Klik untuk pratinjau besar" data-act="pmProgramDoc" data-kind="charter" data-mode="preview" data-p="'+E(p.akr)+'" data-program-id="'+E(p.id||'')+'" style="cursor:zoom-in"><div class="dk-box"><div class="dk-scale">'+dkHtml(sl)+'</div></div><figcaption>'+(i+1)+'. '+E(sl.n||'')+'</figcaption></figure>').join('')+'</div>':
+  '<div class="ps27-empty" style="padding:28px;text-align:center"><b>Charter Program belum dibuat.</b><p class="s">'+E(err&&!/belum dibuat/i.test(err)?err:'Klik + Buat Charter Program. Isinya tujuan, latar belakang, terobosan, output, outcome, milestone, dan risiko program.')+'</p></div>';
+ setTimeout(fitDeck,0);
+ return '<div class="ps27-card ps27-charter">'+head+body+'</div>';
 }
+function fitDeck(){if(typeof document==='undefined'||!document.querySelectorAll)return;document.querySelectorAll('[data-ps-chdeck] .dk-scale').forEach(b=>{const w=b.parentElement.clientWidth;if(!w)return;b.style.transform='scale('+(w/1280)+')';b.parentElement.style.height=(720*w/1280)+'px'})}
+if(typeof window.addEventListener==='function')window.addEventListener('resize',()=>fitDeck());
+if(typeof ACT!=='undefined')ACT.psProgCh=el=>{const p=(S.programs||[]).find(x=>String(x.id)===String(el.dataset.id));if(!p)return;const X=window.MT_DOC_EXPERIENCE;if(!X||!X.openProgram)return toast('Editor charter belum termuat, muat ulang halaman.');X.openProgram(p,true)};
 /* K-Wide output trajectory: same columns and quarterly grouping as workbook
    WBS Transformation Program 2026 — Capaian K-Wide (A4:F56).
    This is a new-year form; historic 2026 realization is NEVER copied into 2027. */
@@ -585,7 +591,7 @@ function helpPage(tab){
   ['usulan','Usulan Program','Cari riwayat, buat dan lengkapi usulan, business case, manfaat, stakeholder, risiko, tata kelola, serta dokumen portofolio.'],
   ['mapping','Pemetaan Proyek','Pilih proyek lintas tahun dari riwayat, kelola identitas usulan, hasil pemetaan, dan dokumen usulan proyek tanpa menyalin WBS historis.'],
   ['prioritasi','Prioritasi','Beri penilaian dan urutkan calon proyek. SMART dan ambang bersifat opsional; skor hanya membantu pengambilan keputusan.'],
-  ['charter','Charter Program','Lengkapi tujuh bagian dokumen: As-is, To-be, Perbandingan, Charter, Kriteria, Manfaat, dan Linimasa.'],
+  ['charter','Charter Program','Susun charter tingkat program (tujuan, latar belakang, terobosan, output, outcome, milestone, risiko) sebagai dasar penetapan program dan Draft RKMK. Tujuh bagian dokumen proyek disusun per proyek di Project Management › Perencanaan.'],
   ['penetapan-program','Penetapan Program','Catat kontrak K-Wide, target TW I–IV, dan tetapkan program beserta proyek terpilih dalam satu proses.'],
   ['rkmk','Draft RKMK','Tinjau narasi, cek konsistensi tahun tujuan, lengkapi catatan reviu, dan ekspor rancangan Word.']
  ];
@@ -594,7 +600,7 @@ function helpPage(tab){
    [['Riwayat Program','usulan:bank'],['Usulan Program · Kelola & Unggah / Unduh','usulan:detail'],['Dokumen Portofolio','usulan:portfolio'],['Identitas','usulan:detail:identity'],['Business Case','usulan:detail:case'],['Manfaat','usulan:detail:benefits'],['Stakeholder','usulan:detail:stakeholders'],['Risiko','usulan:detail:risks'],['Tata Kelola','usulan:detail:governance'],['Buat Dokumen Program','usulan:detail:docs']],
    [['Riwayat Proyek','mapping:history'],['Usulan Proyek (accordion per program)','mapping:proposal'],['Buat Dokumen Proyek','mapping:docs']],
    [['Penilaian & Peringkat','prioritasi:ranking'],['Kriteria & Bobot','prioritasi:criteria'],['Referensi & Formula','prioritasi:reference']],
-   [['As-is','charter:asis'],['To-be','charter:tobe'],['Perbandingan','charter:cs'],['Charter','charter:ch'],['Kriteria','charter:kp'],['Manfaat','charter:mf'],['Linimasa','charter:rk']],
+   [['Charter Program','charter']],
    [['Kontrak K-Wide dan Cakupan Proyek','penetapan-program']],
    [['Narasi & Reviu','rkmk']]
   ];
@@ -625,7 +631,7 @@ function helpPage(tab){
    ['04','Stakeholder & risiko','Petakan pemangku kepentingan, ketergantungan lintas unit, risiko dan rencana mitigasi.','usulan:detail:stakeholders'],
    ['05','Pemetaan proyek','Ambil referensi Riwayat Proyek atau buat usulan baru. Periksa nama, ruang lingkup, UIC, tahun, status dan kode.','mapping:proposal'],
    ['06','Prioritasi proyek','Pilih manual atau SMART. Jika SMART aktif, isi kriteria dan bobot secara lengkap; gunakan snapshot untuk pembandingan.','prioritasi:ranking'],
-   ['07','Charter & dokumen','Isi As-is, To-be, Perbandingan, Charter, Kriteria, Manfaat dan Linimasa. Gunakan pratinjau sebelum ekspor.','charter'],
+   ['07','Charter Program','Susun charter tingkat program dan periksa pratinjau 3 slide sebelum penetapan. Dokumen proyek disusun per proyek di Project Management.','charter'],
    ['08','Kontrak dan penetapan','Periksa target K-Wide TW I–IV, nomor/tanggal/pejabat, dokumen kontrak dan proyek terpilih sebelum penetapan.','penetapan-program'],
    ['09','Reviu RKMK','Periksa substansi tahun tujuan, penanggung jawab dan keluaran sebelum mengunduh rancangan Word.','rkmk']
   ];
@@ -677,7 +683,7 @@ function sheetPage(tab){
    ['01','Usulan Program','Tetapkan alasan, sasaran, sponsor, indikator manfaat, pemilik proses bisnis dan unit pengelola.','usulan:detail'],
    ['02','Pemetaan Proyek','Gunakan Riwayat Proyek sebagai referensi; pilih proyek yang relevan untuk program tahun tujuan.','mapping:history'],
    ['03','Prioritasi','Bandingkan calon proyek. SMART bersifat opsional; nilai/skor membantu pemilihan, bukan keputusan otomatis.','prioritasi:ranking'],
-   ['04','Charter Program','Lengkapi tujuan, kondisi As-is/To-be, kriteria penyelesaian, manfaat dan linimasa.','charter'],
+   ['04','Charter Program','Lengkapi tujuan, latar belakang, terobosan, output, outcome, milestone dan risiko program.','charter'],
    ['05','Penetapan Program','Catat kontrak K-Wide dan tetapkan program beserta proyek terpilih pada satu tahapan.','penetapan-program'],
    ['06','Draft RKMK','Konsolidasikan narasi untuk tahun tujuan, reviu perubahan, lalu unduh rancangan dokumen.','rkmk']
   ];

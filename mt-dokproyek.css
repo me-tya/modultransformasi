@@ -1,0 +1,78 @@
+/* Perencanaan · Program & Dokumen Proyek (2026-11-25) */
+.pm-project-table.dpk th:nth-child(1){width:auto;min-width:230px}
+.pm-project-table.dpk th:nth-child(2){width:84px}
+.pm-project-table.dpk th:nth-child(3){width:92px}
+.pm-project-table.dpk th:nth-child(4){width:118px}
+.pm-project-table.dpk th.dp-h{width:66px;text-align:center;white-space:normal;line-height:1.15;padding:7px 3px}
+.pm-project-table.dpk th.pm-ws-action{width:132px}
+.pm-project-table.dpk td{padding:8px 8px}
+.pm-project-table.dpk td.ctr{text-align:center;padding:6px 2px}
+.dp-h .dn2{display:block;margin:0 auto 2px;width:18px;height:18px;border-radius:50%;background:#0B1F45;color:#fff;font-size:10.5px;line-height:18px}
+.dp-h .sm{display:block;font-size:10.5px;text-transform:none;letter-spacing:0}
+.pm-jdw2{display:inline-block;font-size:11.5px;line-height:1.35;white-space:nowrap}
+.dok-dot{width:26px;height:26px;border-radius:50%;border:1.5px dashed #B9C3D3;background:#fff;color:#AEB8C8;font-size:12px;cursor:pointer;display:inline-grid;place-items:center;padding:0}
+.dok-dot.y{border:0;background:#E3F4EC;color:#1E8A5B;font-weight:700}
+.dok-dot:hover,.dok-dot:focus-visible{outline:2px solid #F2B705;outline-offset:1px}
+.dp-cell{white-space:normal}
+.dp-code{border:0;background:#EEF3FA;color:#1C3D66;font:700 11.5px ui-monospace,Consolas,monospace;padding:2px 6px;border-radius:5px;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.dp-tag{display:inline-block;margin-top:3px;font-size:10.5px}
+.dp-new{font-size:11.5px;padding:4px 8px}
+.dp-sec{display:inline-flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+.dp-chip{border:0;cursor:pointer;font-size:11.5px}
+.pm-colseg{display:inline-flex;border:1px solid #DCE3EF;border-radius:8px;overflow:hidden}
+.pm-colseg button{border:0;background:#fff;padding:6px 11px;font:600 12px inherit;color:#5b6577;cursor:pointer}
+.pm-colseg button.on{background:#0B1F45;color:#fff}
+.pm-tb-lab{font-size:12px;font-weight:700;color:#5b6577}
+.pm-ws-icon.doc[disabled]{opacity:.4;cursor:not-allowed}
+/* pemilih cakupan */
+.dp-tree-h{display:flex;align-items:center;gap:6px;margin:12px 0 6px;font-size:12.5px;color:#1C3D66}.dp-tree-h span:last-child{margin-left:auto;color:#5b6577;font-size:12px}
+.dp-tree{border:1px solid #DCE3EF;border-radius:10px;max-height:46vh;overflow:auto}
+.dp-node{display:flex;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid #EFF2F7;font-size:13px;cursor:pointer}
+.dp-node.sub{padding-left:36px}.dp-node.dis{color:#98A2B3;background:#FAFBFC;cursor:not-allowed}
+/* dialog dokumen: ukuran tetap, hanya isi yang bergulir, tanpa gerak saat pindah tab */
+.mt-doc-overlay .mt-doc-dialog{width:min(1500px,96vw)!important;height:min(860px,92vh)!important;max-height:none!important;display:flex!important;flex-direction:column!important;animation:none!important;transition:none!important}
+.mt-doc-overlay .mt-doc-dialog>header,.mt-doc-overlay .mt-doc-dialog>nav,.mt-doc-overlay .mt-doc-dialog>footer{flex:none}
+.mt-doc-overlay .mt-doc-dialog .mt-doc-scroll{flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important;scrollbar-gutter:stable}
+.mt-doc-overlay .mt-doc-dialog *{animation:none!important}
+.mt-doc-overlay .mt-doc-dialog nav button,.mt-doc-overlay .mt-doc-dialog nav a{transition:none!important}
+.mt-doc-overlay .mt-doc-dialog>footer .mt-doc-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;padding-right:64px}
+.mt-doc-overlay .mt-doc-dialog>footer .mt-doc-actions button{white-space:nowrap}
+.ps27-chact{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ps27-chdeck{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding:4px 0;max-width:none!important}
+.ps27-chdeck .dk-box{position:relative;overflow:hidden;border:1px solid #DCE3EF;border-radius:8px;background:#fff}
+.ps27-chdeck figcaption{font-size:12px;color:#5b6577;margin-top:6px;text-align:center}
+@media(max-width:1100px){.ps27-chdeck{grid-template-columns:1fr}}
+/* Workspace proyek: tab tahap + sub-tab */
+.ws-tabs.ws-tabs-g .ws-tab{flex:1 1 0}
+.ws-tabs.ws-tabs-g .ws-gn{font-style:normal;display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#E6EBF3;color:#0B1F45;font-size:11px;font-weight:800}
+.ws-tabs.ws-tabs-g .ws-tab.on .ws-gn{background:#F2B705}
+.ws-subtabs{flex:none;display:flex;gap:2px;padding:0 18px;background:#fff;border-bottom:1px solid #DCE3EF;overflow-x:auto}
+.ws-stab{display:inline-flex;align-items:center;gap:7px;height:42px;padding:0 14px;border:0;border-bottom:3px solid transparent;background:transparent;color:#5b6577;font:700 12.5px inherit;cursor:pointer;white-space:nowrap}
+.ws-stab .ws-i{color:#8A95AB}
+.ws-stab b{font-family:var(--mono);font-size:11px;background:#EEF1F6;border-radius:10px;padding:1px 7px}
+.ws-stab:hover{color:#0B1F45}
+.ws-stab.on{color:#0B1F45;border-bottom-color:#F2B705}.ws-stab.on .ws-i{color:#0B1F45}
+/* tanpa gerak saat pindah tab/sub-tab di jendela pop up */
+.prj-overlay *,.prj-overlay *::before,.prj-overlay *::after,.mt-doc-overlay *,.mt-doc-overlay *::before,.mt-doc-overlay *::after{animation:none!important;transition:none!important}
+.prj-overlay .ws-tab:hover,.prj-overlay .pm-ws-icon:hover{transform:none!important}
+body:has(.prj-overlay) #app .view *,body:has(.mt-doc-overlay) #app .view *{animation:none!important;transition:none!important}
+/* panel dokumen proyek di workspace */
+.ws-dp{display:flex;flex-wrap:wrap;gap:8px}
+.ws-dp button{display:inline-flex;align-items:center;gap:6px;border:1px solid #DCE3EF;background:#fff;border-radius:10px;padding:8px 12px;font:600 12.5px inherit;color:#1C3D66;cursor:pointer}
+.ws-dp button.y{background:#E3F4EC;border-color:#BFE3CF;color:#1E8A5B}
+.ws-dp button i{font-style:normal;display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#0B1F45;color:#fff;font-size:10.5px}
+/* Laporan akhir gabungan */
+.rpt2-ext[hidden]{display:none!important}
+.rpt2-dd{position:relative}
+.rpt2-dd>summary{list-style:none;border:1px solid #CBD6E6;border-radius:8px;background:#fff;padding:7px 28px 7px 10px;font-size:13px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}
+.rpt2-dd>summary::-webkit-details-marker{display:none}
+.rpt2-dd>summary::after{content:"▾";position:absolute;right:10px;top:7px;color:#5b6577}
+.rpt2-ddp{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:30;background:#fff;border:1px solid #DCE3EF;border-radius:10px;box-shadow:0 10px 28px rgba(11,31,69,.16);max-height:260px;overflow:auto}
+.rpt2-ddh{background:#F3F6FA;font-size:11.5px;font-weight:700;color:#1C3D66;padding:6px 10px;text-transform:uppercase;letter-spacing:.3px}
+.rpt2-ddp label{display:flex;gap:8px;align-items:center;padding:7px 10px;border-bottom:1px solid #EFF2F7;font-size:13px;cursor:pointer}
+.prj-overlay nav.ws-tabs.ws-tabs-g{gap:6px;padding:8px 14px;background:#F6F8FC;border-bottom:1px solid #DCE3EF}
+.prj-overlay nav.ws-tabs.ws-tabs-g>button.ws-tab{height:40px;border:1px solid transparent!important;border-radius:10px!important;background:transparent!important;color:#1C3D66!important;font-weight:700;font-size:13px;box-shadow:none!important}
+.prj-overlay nav.ws-tabs.ws-tabs-g>button.ws-tab::after{display:none!important}
+.prj-overlay nav.ws-tabs.ws-tabs-g>button.ws-tab:hover:not(.on){background:#EEF3FB!important}
+.prj-overlay nav.ws-tabs.ws-tabs-g>button.ws-tab.on{background:#0B1F45!important;color:#fff!important;border-color:#0B1F45!important}
+.prj-overlay nav.ws-tabs.ws-tabs-g>button.ws-tab.on b{background:rgba(255,255,255,.18);color:#fff}

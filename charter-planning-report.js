@@ -1,6 +1,6 @@
 (function charterPlanningPlugin(){
 'use strict';
-const CPLAN_KEYS=[['asis','Analisis Kondisi Saat Ini (As-is)'],['tobe','Analisis Kondisi yang Diharapkan (To-be)'],['cs','Perbandingan Kondisi'],['ch','Charter Proyek'],['kp','Kriteria Penyelesaian'],['mf','Manfaat Proyek'],['rk','Linimasa dan Rencana Kerja']];
+const CPLAN_KEYS=[['asis','Analisis Kondisi Saat Ini (As-is)'],['tobe','Analisis Kondisi yang Diharapkan (To-be)'],['cs','Perbandingan Kondisi'],['ch','Charter Proyek'],['rk','Rencana Kerja'],['kp','Kriteria Penyelesaian dan Penerimaan Hasil'],['mf','Rencana Evaluasi Kebermanfaatan']];
 const cpDefault=()=>({asis:1,tobe:1,cs:1,ch:1,kp:1,mf:1,rk:1,toc:1,charts:1,tte:1});
 const cpTxt=(x,none='—')=>{const v=Array.isArray(x)?x.filter(y=>String(y??'').trim()).join('\n'):String(x??'').trim();return v||none};
 const cpName=(c)=>'Dokumen_Perencanaan_Proyek_'+String(chProg(c).kode||c.prog).replace(/[^A-Za-z0-9_-]/g,'_')+'_v'+c.ver;
@@ -11,7 +11,7 @@ function cpGanttImg(c){
  const x=cv.getContext('2d');if(!x)return null;x.scale(scale,scale);x.fillStyle='#fff';x.fillRect(0,0,W,H);
  const colW=(W-lh-right)/N;x.font='bold 12px Arial';x.textBaseline='middle';x.fillStyle='#17365e';x.fillText('Tindakan / Milestone',12,22);
  T.cols.forEach((d,i)=>{const X=lh+i*colW;x.fillStyle=i%2?'#f5f8fc':'#eaf1f9';x.fillRect(X,0,colW,H);x.fillStyle='#244469';x.font=N>16?'9px Arial':'11px Arial';x.fillText(d.yr?String(d.y):String(d.m),X+2,20);x.strokeStyle='#dce6f3';x.beginPath();x.moveTo(X,0);x.lineTo(X,H);x.stroke()});
- x.fillStyle='#16345c';x.font='bold 12px Arial';x.fillText('Jadwal berdasarkan data Linimasa',12,42);
+ x.fillStyle='#16345c';x.font='bold 12px Arial';x.fillText('Jadwal berdasarkan Rencana Kerja',12,42);
  rows.forEach((r,i)=>{const y=top+i*rh;x.fillStyle=i%2?'#f8fafc':'#fff';x.fillRect(0,y,lh,rh-1);x.fillStyle='#203a5a';x.font='11px Arial';const title=String(r.t||'—');let t=title;while(x.measureText(t).width>lh-20&&t.length>8)t=t.slice(0,-2);if(t!==title)t=t.slice(0,-1)+'…';x.fillText(t,12,y+14);
   x.fillStyle='#7386a1';x.font='10px Arial';x.fillText([r.s,r.e].filter(Boolean).join(' s.d. '),12,y+29);
   const span=rkSpan(T,r);if(span){const bx=lh+span[0]*colW+3,bw=(span[1]-span[0]+1)*colW-6;x.fillStyle='#205ab0';x.fillRect(bx,y+11,Math.max(2,bw),15);}
@@ -87,10 +87,10 @@ function cpModel(c,inc,sign,num=''){
   if(V.length){h2('Dasar evaluasi pascaproyek');para('Indikator, baseline, target, penerima manfaat, dan waktu pencapaian mengacu pada matriks manfaat di atas. Realisasi manfaat diukur pada tahapan evaluasi pascaproyek.')};
  }
  if(has('rk')){
-  h1('Linimasa dan Rencana Kerja');
+  h1('Rencana Kerja');
   table(['No.','Milestone / Tindakan','Mulai','Selesai','UIC Utama','UIC Pendukung'],R.map((r,i)=>[i+1,cpTxt(r.t),cpTxt(r.s),cpTxt(r.e),cpTxt(r.u),cpTxt(r.pd)]),'Jadwal dan penanggung jawab',[6,35,13,13,18,15]);
   if(inc.charts&&R.some(r=>r.s&&r.e)){
-   const img=cpGanttImg(c);if(img)B.push({t:'charts',items:[{title:'Diagram linimasa (Gantt)',img,caption:'Baris dan rentang waktu berasal dari isian dokumen Linimasa; tidak menunjukkan realisasi.'}]});
+   const img=cpGanttImg(c);if(img)B.push({t:'charts',items:[{title:'Diagram rencana kerja (Gantt)',img,caption:'Baris dan rentang waktu berasal dari isian dokumen Rencana Kerja; tidak menunjukkan realisasi.'}]});
   }
  }
  if(!CPLAN_KEYS.some(([k])=>has(k)))B.push({t:'callout',tone:'warn',title:'Belum ada substansi dipilih',lines:['Pilih sekurang-kurangnya satu dokumen untuk menyusun dokumen perencanaan.']});
@@ -106,7 +106,7 @@ function cpOptions(c){
 function cpFooter(c){
  const name='Dokumen Perencanaan Proyek';
  return `<section class="card cp-report-panel" id="cp-report-panel" aria-label="Generator ${name}">
- <div class="cp-report-left"><span class="cp-report-icon">▤</span><div><h3>Susun ${name}</h3><p>Gabungkan 7 dokumen (As-is s.d. Linimasa) menjadi satu dokumen resmi. Pilih substansi, grafik, tabel, dan penandatangan; periksa dahulu sebelum diekspor.</p></div></div>
+ <div class="cp-report-left"><span class="cp-report-icon">▤</span><div><h3>Susun ${name}</h3><p>Gabungkan 7 dokumen (As-is s.d. Evaluasi Manfaat) menjadi satu dokumen resmi. Pilih substansi, grafik, tabel, dan penandatangan; periksa dahulu sebelum diekspor.</p></div></div>
  <div class="cp-report-actions"><button class="btn cp-preview" data-act="cpReport" data-id="${esc(c.id)}" data-format="preview">◉ Pratinjau</button><button class="btn" data-act="cpReport" data-id="${esc(c.id)}" data-format="pdf">⬇ PDF</button><button class="btn" data-act="cpReport" data-id="${esc(c.id)}" data-format="docx">⬇ Word</button><button class="btn pri" data-act="cpReport" data-id="${esc(c.id)}" data-format="pptx">⬇ PowerPoint</button></div></section>`;
 }
 const originalCharter=pCharter;
