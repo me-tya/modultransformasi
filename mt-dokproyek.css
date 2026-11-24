@@ -76,3 +76,23 @@ body:has(.prj-overlay) #app .view *,body:has(.mt-doc-overlay) #app .view *{anima
 .prj-overlay nav.ws-tabs.ws-tabs-g>button.ws-tab:hover:not(.on){background:#EEF3FB!important}
 .prj-overlay nav.ws-tabs.ws-tabs-g>button.ws-tab.on{background:#0B1F45!important;color:#fff!important;border-color:#0B1F45!important}
 .prj-overlay nav.ws-tabs.ws-tabs-g>button.ws-tab.on b{background:rgba(255,255,255,.18);color:#fff}
+
+/* 261125-MT-04 — header rincian proyek: tahap sejajar atas, kolom biasa tengah vertikal. */
+#app table.pm-project-table.dpk > thead > tr > th:not(.dp-h){
+ vertical-align:middle!important;
+}
+#app table.pm-project-table.dpk > thead > tr > th.dp-h{
+ vertical-align:top!important;
+ text-align:center!important;
+ padding-top:7px!important;
+ padding-bottom:7px!important;
+}
+#app table.pm-project-table.dpk > thead > tr > th.dp-h > .dn2{
+ display:block!important;
+ margin:0 auto 3px!important;
+}
+#app table.pm-project-table.dpk > thead > tr > th.dp-h > .sm{
+ display:block!important;
+ margin:0!important;
+ line-height:1.2!important;
+}
