@@ -28,7 +28,7 @@ test('Sinkron DCM: Kendala & IKU ikut, sidik aktivitas lama tidak berubah',()=>{
 });
 test('Form & menu: IKU di Klasifikasi, Kesimpulan Rapat, Generate Laporan di kiri Simpan, tab Referensi IKU, ekspor IPR',()=>{
  const html=R('index.html');
- assert.ok(html.indexOf("MTIKU.fieldHTML(item)")>html.indexOf("sec(2,'Klasifikasi'")&&html.indexOf("MTIKU.fieldHTML(item)")<html.indexOf("sec('WBS'"),'IKU terkait berada di bagian Klasifikasi');
+ assert.ok(html.indexOf("MTIKU.fieldHTML(item)")>html.indexOf("sec(2,'Klasifikasi'")&&html.indexOf("MTIKU.fieldHTML(item)")<html.indexOf("sec(3,'Tahapan WBS'"),'IKU terkait berada di bagian Klasifikasi');
  assert.match(html,/\['Kesimpulan Rapat','Dokumentasi, kesimpulan'\]/);
  assert.match(html,/data-swrep[^>]*>▤ Generate Laporan<\/button><button type="button" class="btn" data-swsv>Simpan/);
  assert.match(html,/\['ikuref','Referensi IKU'\]/);assert.match(html,/MTIKU\.page\(\)/);
