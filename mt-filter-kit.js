@@ -47,6 +47,25 @@ function placeTblSearch(){
   if(['tw-wbs','tw-cr'].includes(g.tables[0].id)&&band.classList.contains('mt-pmo-subtab-band')&&tb){
    var wbsTools=document.createElement('div');wbsTools.className='tb-tools mt-wbs-list-tools mt-pmo-list-search-tools';
    wbsTools.appendChild(lab);if(bar0)wbsTools.appendChild(bar0);
+   // WBS: move Excel actions into the existing ellipsis menu, retaining access and export behavior.
+   if(g.tables[0].id==='tw-wbs'&&bar0){
+    var excelButton=tb.querySelector('button[data-act="tdata"][data-t="wbs"]');
+    var more=bar0.querySelector('.wbs-more-pop'),o=typeof T!=='undefined'?T.wbs:null;
+    if(excelButton&&more&&o){
+     var items=document.createDocumentFragment();
+     function excelItem(label,title,enabled,action){
+      var b=document.createElement('button');b.type='button';b.className='wbs-more-item';b.textContent=label;b.title=title;b.disabled=!enabled;
+      b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();if(b.disabled)return;var d=more.closest('details');if(d)d.open=false;action()});
+      items.appendChild(b);
+     }
+     var ct=hasTplT('wbs'),ci=canImpT('wbs');
+     if(!o.noexp)excelItem('Ekspor data ke Excel','Unduh data sesuai filter dan pencarian saat ini',true,function(){exportT('wbs')});
+     if(ct)excelItem('Unduh template Excel','Format kolom dan data WBS',true,function(){if(o.tpl)o.tpl();else tplT('wbs')});
+     if(ct||o.imp2)excelItem('Impor dari Excel',ci?'Tambah/perbarui data dari template':'Akun Anda hanya dapat melihat data ini',ci,function(){if(canImpT('wbs')){var inp=tb.querySelector('input[data-imp="wbs"]');if(inp)inp.click()}});
+     var sep=document.createElement('div');sep.className='mt-wbs-excel-divider';sep.setAttribute('role','separator');items.appendChild(sep);
+     more.prepend(items);excelButton.remove();
+    }
+   }
    if(g.tables[0].id==='tw-cr'){var seg=tb.querySelector('.seg');if(seg)wbsTools.appendChild(seg);var excel=tb.querySelector('button[data-act="tdata"]');if(excel)wbsTools.appendChild(excel)}
    tb.appendChild(wbsTools);tb.classList.add('tb-has-tools');
    band.classList.remove('mt-subt-row');band.classList.add('mt-subt-full');return;
@@ -97,6 +116,13 @@ if(!document.getElementById('mt-filter-kit-css')&&document.head){
  '#app :is(#tw-wbs,#tw-cr) .tbar .mt-pmo-list-search-tools>.mt-tabsearch input{height:36px!important;min-height:36px!important;max-height:36px!important}'+
  '#app #tw-cr .mt-pmo-list-search-tools>.seg,#app #tw-cr .mt-pmo-list-search-tools>.btn{flex:0 0 auto}'+
  '@media(max-width:650px){#app :is(#tw-wbs,#tw-cr) .tbar .mt-pmo-list-search-tools{flex:1 1 100%;width:100%}#app :is(#tw-wbs,#tw-cr) .tbar .mt-pmo-list-search-tools>.mt-tabsearch{flex:1 1 100%!important;width:100%!important;min-width:0!important;max-width:100%!important}}'+
+ /* Excel action grouping in WBS ellipsis. */
+ '#app #tw-wbs .mt-wbs-excel-divider{height:1px;background:#e0e6ef;margin:4px 5px}'+
+ '#app #tw-wbs .wbs-more-item:disabled{opacity:.45;cursor:not-allowed;background:transparent!important}'+
+ '#app #tw-wbs .tbar .mt-pmo-list-search-tools{flex:1 1 350px;min-width:0}'+
+ '#app #tw-wbs .tbar .mt-pmo-list-search-tools>.mt-tabsearch{flex:1 1 180px!important;width:auto!important;min-width:180px!important;max-width:320px!important}'+
+ '@media(min-width:1001px){#app #tw-wbs .tbar .mt-pmo-list-search-tools{flex-wrap:nowrap}#app #tw-wbs .tbar .mt-pmo-list-search-tools>.wbs-actionbar{flex-wrap:nowrap}}'+
+ '@media(max-width:650px){#app #tw-wbs .tbar .mt-pmo-list-search-tools>.mt-tabsearch{flex:1 1 100%!important;max-width:100%!important;min-width:0!important}}'+
  /* Grid filter standar: 4 kolom sama lebar */
  '#app .ps27 .mt-std-filter .ps27-filter-fields.mt-fgrid{display:grid!important;grid-template-columns:repeat(var(--mt-fcols,4),minmax(0,1fr))!important;gap:10px 14px!important;align-items:end!important}'+
  '#app .ps27 .mt-std-filter .mt-fgrid>label{grid-column:span 1!important;width:auto!important;min-width:0!important}'+
