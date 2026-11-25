@@ -1,0 +1,42 @@
+name: Build IIS offline staging 261125-MT-09
+on:
+  push:
+    branches: [internal-hosting-261125]
+    paths: ['internal-hosting/iis/**','.github/workflows/mt-iis-offline.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Snapshot before change
+        shell: bash
+        run: git archive --format=zip --output=261125-MT-09.zip 44d8cbdaec5b200107eac3976bea68f6090e8068
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 261125-MT-09
+          path: 261125-MT-09.zip
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: python internal-hosting/iis/build_offline.py
+      - run: node --check internal-hosting/iis/mt-local.js
+      - run: dotnet publish internal-hosting/iis/MT.csproj -c Release -r win-x64 --self-contained true -o publish
+      - name: Package configuration and schema
+        shell: pwsh
+        run: |
+          Copy-Item internal-hosting/iis/schema.sql publish/
+          Copy-Item internal-hosting/iis/DEPLOY.md publish/
+          Copy-Item internal-hosting/iis/import-backup.ps1 publish/
+          Compress-Archive -Path publish/* -DestinationPath MT-IIS-offline-staging.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MT-IIS-offline-staging
+          path: MT-IIS-offline-staging.zip
