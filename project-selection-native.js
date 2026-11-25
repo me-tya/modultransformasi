@@ -170,10 +170,11 @@ function deleteProject(id){
  if(!ME||!['SA','PMOK','PMOU'].includes(ME.role))return;
  const x=(S.projectSelectionExtra||[]).find(z=>z.id===id);
  if(!x)return;
- if(!window.confirm('Hapus usulan "'+x.name+'"?'))return;
- S.projectSelectionExtra=S.projectSelectionExtra.filter(z=>z.id!==id);
+ const run=()=>{S.projectSelectionExtra=S.projectSelectionExtra.filter(z=>z.id!==id);
  if(S.projectSelectionAssess)delete S.projectSelectionAssess[id];
- save();render();toast('Usulan proyek dihapus.');
+ save();render();toast('Usulan proyek dihapus.')};
+ if(typeof window.MT_PS_CONFIRM==='function')window.MT_PS_CONFIRM('Hapus Usulan Proyek?','Hapus usulan "'+x.name+'"? Penilaian terkait ikut terhapus.',run,'danger');
+ else toast('Dialog konfirmasi belum termuat. Muat ulang halaman lalu coba lagi.');
 }
 function addProject(){
  if(!ME||!['SA','PMOK','PMOU'].includes(ME.role))return;

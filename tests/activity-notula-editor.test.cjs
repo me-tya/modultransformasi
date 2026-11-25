@@ -30,7 +30,9 @@ test('PIC: pegawai Pusmantap lengkap dan kelompok penugasan dipisahkan',()=>{
  for(const n of ['Arifudin Miftakhul Huda','Atitya Pritasari','Kurniawan Jabar Malik','Sarah Khairina','Dina Septiani','Johan Pandu Asa','Muhammad Nailun Najih','Andos Heriyanto Hutahaean','Meida Embrianto','Winny Irmarooke','Alfarisi Muslim']){
    assert.ok(html.includes(n),'PIC tidak ditemukan: '+n);
  }
- for(const part of ['Tim Change Management','Pegawai Pusmantap Lainnya','Pegawai Sementara'])assert.ok(html.includes(part));
+ /* Pemilih PIC kini dikelompokkan per tim secara dinamis (termasuk pegawai sementara dan tanpa tim). */
+ assert.match(html,/function actPicPick\(cur,done\)/);
+ for(const part of ["'Sementara'","g.t||'Tanpa tim'",'Ketua Tim Change Management'])assert.ok(html.includes(part),part);
 });
 test('Notula: kontrol disederhanakan dan dua editor tersimpan',()=>{
  assert.match(html,/class="btn act-nlbtn" data-gen="notula"/);

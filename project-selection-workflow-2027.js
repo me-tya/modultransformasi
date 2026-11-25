@@ -541,7 +541,7 @@ function mount(){
     toast('Revisi K-Wide dibuat. Kontrak sebelumnya tersimpan dalam riwayat; lengkapi target dan nomor kontrak revisi.');
    };
    if(typeof window.MT_PS_CONFIRM==='function')window.MT_PS_CONFIRM('Buat Revisi Kontrak K-Wide?', 'Kontrak yang telah dicatat akan disimpan sebagai histori, sementara target output tahun berjalan dapat diperbarui melalui revisi.',revise);
-   else if(window.confirm('Buat revisi kontrak K-Wide?'))revise();
+   else toast('Dialog konfirmasi belum termuat. Muat ulang halaman lalu coba lagi.');
    return;
   }
   if(a==='wide-finalize'){
@@ -558,7 +558,7 @@ function mount(){
     save();render();toast('Kontrak K-Wide tercatat. Tetapkan program beserta proyek yang dipilih melalui panel di bawah.');
    };
    if(typeof window.MT_PS_CONFIRM==='function')window.MT_PS_CONFIRM('Catat Penetapan K-Wide?', 'Nomor '+contract.number+' · '+contract.date+'. Pencatatan ini menjadi prasyarat penetapan program dan proyek.',finish);
-   else if(window.confirm('Catat kontrak K-Wide '+contract.number+'?'))finish();
+   else toast('Dialog konfirmasi belum termuat. Muat ulang halaman lalu coba lagi.');
    return;
   }
   if(a==='filter'){ws().filterOpen=!ws().filterOpen;save();render();return}

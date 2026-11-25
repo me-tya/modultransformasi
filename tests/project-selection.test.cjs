@@ -134,6 +134,9 @@ test('Ten DOA project modules: three above 80 pass, only those are finalized pre
  const m=boot(2027,[p],true);selectTab(m,'projects',p);m.context.window.confirm=()=>true;
  assert.equal(m.context.window.__testChosen(p).length,3);
  m.context.window.__testFinalize(p);
+ assert.equal(p.psStatus,'Draft','Program 2027 belum boleh ditetapkan sebelum tercantum dalam kontrak K-Wide');
+ m.S.psWideTargets={2027:{contract:{status:'Ditetapkan',programIds:[p.id]}}};
+ m.context.window.__testFinalize(p);
  assert.equal(p.psStatus,'Ditetapkan');
  assert.equal(p.psDraft,false);
  assert.deepEqual(Array.from(p.psSelectedProjectIds),['p0','p1','p2']);
@@ -159,6 +162,7 @@ test('WBS project-list handoff has prefill and native PMO access checks',()=>{
 test('New program requires case, benefits, stakeholder and risk gate before finalization',()=>{
  const p=program();Object.assign(p,{psGovernanceV:1,sponsor:'Sponsor',psProjects:[project()]});
  const m=boot(2027,[p],true);selectTab(m,'projects',p);m.context.window.confirm=()=>true;
+ m.S.psWideTargets={2027:{contract:{status:'Ditetapkan',programIds:[p.id]}}};
  assert.equal(m.context.window.MT_PS_GOV.readiness(p).ok,false);
  m.context.window.__testFinalize(p);
  assert.equal(p.psStatus,'Draft');

@@ -82,13 +82,9 @@ test('project history has compact year and proportional columns plus matching ad
 });
 
 test('new assets are cache-busted for Pages without disturbing top header sizing',()=>{
- for(const str of [
-  'dashboard-executive-v2.js?v=20261109-mt06-tooltip',
-  'dashboard-executive-v2.css?v=20261109-mt06-tooltip',
-  'charter-planning-report.js?v=20261109-charter-import-v3',
-  'project-selection-scope-map.js?v=20261109-mt04-recap-r2',
-  'project-selection-program-bank.css?v=20261109-mt04-recap-r2'
- ])assert.ok(index.includes(str),str);
+ /* Setiap aset baru dimuat dengan penanda versi (?v=…) agar cache GitHub Pages diperbarui; nilai versinya berubah tiap rilis. */
+ for(const asset of ['dashboard-executive-v2.js','dashboard-executive-v2.css','charter-planning-report.js','project-selection-scope-map.js','project-selection-program-bank.css'])
+  assert.match(index,new RegExp(asset.replace(/[.]/g,'\\.')+'\\?v=[\\w.-]+'),asset);
  assert.match(index,/#app header\.top #bell\{[^\n]*width:36px!important/);
  assert.match(index,/#app header\.top \.sk-hdrActions \.sk-hdrHelp\{background:#FFC425!important/);
  assert.match(index,/#app header\.top \.sk-hdrActions \.sk-hdrHelp svg\{[^\n]*width:25px!important;height:25px!important/);
@@ -113,7 +109,7 @@ test('project categorization defaults align ICS and OA, and Core Non APBN can be
 });
 
 test('Usulan Proyek contains editing and recap contains hierarchy of program and projects',()=>{
- assert.match(scope,/Substansi & Usulan Proyek/);
+ assert.match(scope,/Substansi Usulan Proyek/);
  assert.match(scope,/Lihat Substansi Proyek/);
  assert.match(scope,/Ubah Substansi Proyek/);
  assert.match(scope,/Rekap Pemetaan/);
@@ -121,8 +117,8 @@ test('Usulan Proyek contains editing and recap contains hierarchy of program and
  assert.match(scope,/psbank-recap-projectrow/);
  assert.match(scope,/data-scope-aggregate-view/);
  assert.match(scope,/x\.goLive\|\|'—'/);
- assert.match(scope,/\['results','Rekap Program & Proyek'/);
- assert.match(scope,/b\.mappingTab\|\|'results'/);
+ assert.match(scope,/\['proposal','Usulan Proyek'/,'Rekap program & proyek kini menyatu di tab Usulan Proyek');
+ assert.match(scope,/\['results','mapping'\]\.includes\(b\.mappingTab\)\?'proposal'/,'Tab lama results/mapping dialihkan ke Usulan Proyek');
  assert.match(bankCss,/\.psbank-recap-table th:nth-child\(2\)\{width:27%\}/);
 });
 
@@ -132,7 +128,7 @@ test('preview uses left pane height and Daftar Program renamed Usulan Program',(
  assert.match(js,/Usulan Program ·/);
  assert.match(bankCss,/\.psbank-portfolio-doc \.psbank-docscroll\{flex:1 1 0;height:0!important/);
  assert.match(bankCss,/\.psbank-portfolio-doc \.psbank-docpreview\{display:flex;flex-direction:column/);
- assert.ok(index.includes('project-selection-program-bank.js?v=20261109-mt04-usulan'));
+ assert.match(index,/project-selection-program-bank\.js\?v=[\w.-]+/);
 });
 
 test('MT-06 chart title and a single native tooltip',()=>{

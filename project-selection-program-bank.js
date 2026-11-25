@@ -99,7 +99,7 @@ function deleteConcept(p){
   save();render();toast('Konsep program dihapus dari Usulan Program '+year()+'.');
  };
  if(typeof window.MT_PS_CONFIRM==='function')window.MT_PS_CONFIRM('Hapus Konsep Program?', 'Hapus "'+p.nama+'"? Seluruh isian usulan tahun ini akan dihapus. Program yang sudah ditetapkan tidak dapat dihapus.',perform,'danger');
- else if(window.confirm('Hapus konsep program "'+p.nama+'"?'))perform();
+ else toast('Dialog konfirmasi belum termuat. Muat ulang halaman lalu coba lagi.');
 }
 /* Project Management closure records are stored at p.closing[projectKey] with st='Ditutup'.
    WBS history can remain non-archived AFTER a valid project closing decision. */

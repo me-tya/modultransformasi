@@ -44,20 +44,16 @@ test('copy from project history produces new year code but does not mutate sourc
  assert.equal(prev.psProjects[0].psAcronym,'MKER');
  assert.equal(S.ui.psBank.mappingTab,'proposal');
 });
-test('programs display as native accordions with direct open-program actions',()=>{
- const {scope,S}=setup();S.ui.psBank.filterScopes.mapping.allProgramsSelected=true;S.ui.psBank.mappingTab='mapping';
- const html=scope.render();
- assert.match(html,/<details class="psbank-accordion-program"/);
- assert.match(html,/data-scope-program-toggle/);
- assert.match(html,/data-scope-aggregate-view/);
-});
-test('results use page scroll and right-aligned summary outside blue banner',()=>{
- const {scope,S}=setup();S.ui.psBank.mappingTab='results';
- const html=scope.render();
- assert.match(html,/psbank-tab-summary/);
- assert.match(html,/psbank-results-open/);
- assert.doesNotMatch(html,/psbank-workspace-banner/);
- assert.match(css,/\.psbank-results-tablewrap[^}]*overflow-y:visible/s);
+test('programs display as accordions in Usulan Proyek; legacy mapping/results tabs redirect there',()=>{
+ for(const legacy of ['mapping','results']){
+  const {scope,S}=setup();S.ui.psBank.filterScopes.mapping.allProgramsSelected=true;S.ui.psBank.mappingTab=legacy;
+  const html=scope.render();
+  assert.equal(S.ui.psBank.mappingTab,'proposal');
+  assert.match(html,/psbank-accordion-program/);
+  assert.match(html,/data-scope-program-toggle/);
+  assert.match(html,/data-scope-project-new/);
+  assert.doesNotMatch(html,/psbank-workspace-banner/);
+ }
 });
 test('existing year 2027 projects persist codes when rendered',()=>{
  const {scope,dst}=setup();

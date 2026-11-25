@@ -14,9 +14,11 @@ test('Semua skrip inline index dapat diparsing',()=>{
  scripts.forEach((s,i)=>assert.doesNotThrow(()=>new vm.Script(s,{filename:'index-inline-'+i+'.js'})));
 });
 test('Stylesheet tab dimuat sebelum render dan versi cache seragam',()=>{
- assert.match(html,/id="mt-unified-tabs-styles" rel="stylesheet" href="ui-tabs-unified\.css\?v=20261114-nav2"/);
- assert.match(html,/cheatsheet-referensi\.js\?v=20261114-nav2/);
- assert.equal((bridge.match(/ui-tabs-unified\.css\?v=20261114-nav2/g)||[]).length,2);
+ const m=html.match(/id="mt-unified-tabs-styles" rel="stylesheet" href="ui-tabs-unified\.css\?v=([\w.-]+)"/);
+ assert.ok(m,'Stylesheet tab dimuat di <head> sebelum render');
+ assert.match(html,/cheatsheet-referensi\.js\?v=[\w.-]+/);
+ const v=m[1].replace(/[.]/g,'\\.');
+ assert.equal((bridge.match(new RegExp('ui-tabs-unified\\.css\\?v='+v,'g'))||[]).length,2,'Bridge (halaman & iframe) memakai versi CSS yang sama dengan index.html');
 });
 test('Tab PMO selalu dibungkus dengan baris stabil terlepas dari tab aktif',()=>{
  assert.match(html,/function wbsActionSubline\(cur,\s*sub\)/);

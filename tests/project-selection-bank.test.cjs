@@ -18,7 +18,9 @@ function boot(){
  const doc={head:{appendChild:noop},body:{appendChild:noop},querySelector:()=>null,createElement:()=>({click:noop,remove:noop})};
  const context={S,ME:{role:'SA',unit:'BaTii',email:'test@kemenkeu.go.id'},VIEW:'beranda',document:doc,location:{hash:''},UNITS:['BaTii','Setjen','DJA'],
   save:noop,render:noop,toast:x=>logs.push(x),progProjects:()=>[],vh:(_i,_k,name)=>'<h1>'+name+'</h1>',
-  esc:x=>String(x??''),window:{confirm:()=>true,render:noop}};
+  esc:x=>String(x??''),window:{confirm:()=>true,render:noop},
+  /* Template charter resmi (chDeck3) berada di index.html; stub 3 slide untuk uji unit. */
+  chDeck3:()=>({slides:[{n:'Charter Program',bg:'FFFFFF',E:[]},{n:'Kriteria Penyelesaian',bg:'FFFFFF',E:[]},{n:'Rencana Kerja',bg:'FFFFFF',E:[]}]})};
  const ctx=vm.createContext(context);
  sources.forEach(path=>vm.runInContext(source[path],ctx,{filename:path}));
  return {S,logs,ctx,core,target,app:ctx.window.MT_PROJECT_SELECTION,scope:ctx.window.MT_PS_SCOPE,bank:ctx.window.MT_PS_BANK_CORE,docs:ctx.window.MT_PS_DOC};
@@ -117,7 +119,7 @@ test('Bank includes archived and current-year programs without status limitation
  assert.ok(all.some(x=>x.p.psStatus==='Arsip'));
  assert.ok(all.some(x=>x.year===2027));
  assert.match(m.app.page(),/Program Arsip Tematik/);
- assert.match(m.app.page(),/Tambahkan Program ke tahun/);
+ assert.match(m.app.page(),/Tambahkan Program ke Tahun/);
  assert.equal(m.bank.codeFor({kode:'T25-OLD',jenis:'Tematik',akr:'OLD'},2027),'');
 });
 test('Explicit official code does not change legacy source and keeps stable program identity',()=>{
@@ -137,7 +139,7 @@ test('Program detail uses clickable rows and seven tabs with Buat Dokumen instea
  const html=m.app.page();
  assert.match(html,/data-bank-detailrow/);
  const sourceText=source['project-selection-program-bank.js'];
- assert.match(sourceText,/aria-label="Detail Program"/);
+ assert.match(sourceText,/aria-label="Dokumen Program"/);
  assert.match(sourceText,/STEPS.filter\(x=>x\[0\]!=='review'\)/);
  assert.match(sourceText,/Docs.builder\(p\)/);
  assert.match(sourceText,/openCarry\(\[btn.dataset.bankAdd\]\)/);
@@ -180,7 +182,7 @@ test('Buat Dokumen Perencanaan Proyek uses inline settings and live format previ
 test('Compact one-row global filter and single mapping destination source of truth',()=>{
  const workflow=source['project-selection-workflow-2027.js'];
  const scope=source['project-selection-scope-map.js'];
- assert.match(workflow,/ps27-filter-panel/);
+ assert.match(workflow,/class="flt fx2 pmo-unified ps27-flt/,'Filter PS memakai template filter Project Management');
  assert.match(workflow,/data-ps27-status/);
  assert.match(workflow,/data-ps27-query/);
  assert.match(workflow,/data-ps27-year/);
@@ -244,29 +246,22 @@ test('TTE upload closes v1 and next document is v2, while plain downloads keep v
  assert.equal(d.nextVersion('program',programId,2027),2);
 });
 
-test('Pemetaan has four tabs, source and target checkboxes and PM-like CRUD results without WBS',()=>{
+test('Pemetaan has three tabs (Riwayat, Usulan Proyek accordion CRUD, Buat Dokumen) without WBS',()=>{
  const m=boot(),scopeText=source['project-selection-scope-map.js'];
  m.scope.bank().target=m.target.id;
- const mapping=m.scope.render();
- assert.match(mapping,/data-scope-tab="mapping"/);
- assert.match(mapping,/data-scope-tab="proposal"/);
- assert.match(mapping,/data-scope-target-select|data-scope-target-all/);
- assert.match(mapping,/data-scope-select/);
- assert.doesNotMatch(mapping,/item WBS|WBS draft/);
+ assert.match(scopeText,/const MAPPING_TABS=\[\['history','Riwayat Proyek'/);
+ assert.match(scopeText,/\['proposal','Usulan Proyek'/);
+ assert.match(scopeText,/\['docs','Buat Dokumen Proyek'/);
+ const history=m.scope.render();
+ assert.match(history,/data-scope-tab="history"/);
+ assert.match(history,/data-scope-tab="proposal"/);
+ assert.doesNotMatch(history,/item WBS|WBS draft/);
  m.scope.bank().mappingTab='proposal';
  const proposal=m.scope.render();
  assert.match(proposal,/Usulan Proyek/);
- assert.match(proposal,/Fungsi Utama \/ Modul/);
  assert.doesNotMatch(proposal,/<th>PIC<\/th>/);
- m.scope.bank().mappingTab='results';
- const result=m.scope.render();
- assert.match(result,/Hasil Pemetaan/);
- assert.match(result,/data-scope-project-new/);
- assert.match(scopeText,/data-scope-project-view/);
- assert.match(scopeText,/data-scope-project-edit/);
- assert.match(scopeText,/data-scope-project-remove/);
- assert.match(result,/psbank-workspace-banner/);
- assert.doesNotMatch(result,/item WBS/);
+ assert.doesNotMatch(proposal,/item WBS/);
+ for(const k of ['data-scope-project-new','data-scope-project-view','data-scope-project-edit','data-scope-project-remove','data-scope-select','Fungsi Utama / Modul'])assert.ok(scopeText.includes(k),k);
  assert.match(scopeText,/function projectEditor/);
 });
 test('Portfolio now uses formal Project Management report model for Word and visual non-clipping PPTX',()=>{
@@ -301,7 +296,7 @@ test('Filters are isolated per menu and no global synchronization runs',()=>{
 test('Portfolio report uses structured headings and tables, never flat unformatted text',()=>{
  const m=boot(),model=m.docs.portfolioModel();
  assert.equal(model.formal,true);
- assert.match(model.cover.title,/PORTOFOLIO/);
+ assert.match(model.cover.title,/PORTOFOLIO/i);
  assert.ok(model.blocks.some(b=>b.t==='h1'&&b.text==='Ringkasan Eksekutif'));
  assert.ok(model.blocks.some(b=>b.t==='table'&&b.head.includes('Kode Program')));
  assert.ok(model.blocks.some(b=>b.t==='h1'&&/Program 01/.test(b.text)));
@@ -428,13 +423,13 @@ test('Dokumen Usulan Proyek reuses portfolio export flow but has independent pro
  m.S.ui.psFlow={tab:'mapping',psGovNavV:1};
  m.scope.bank().mappingTab='docs';
  const html=m.scope.render();
- assert.match(html,/Buat Dokumen Usulan Proyek/);
+ assert.match(html,/Buat Dokumen Proyek/);
  assert.match(html,/data-port-program/);
  assert.match(html,/data-port-section/);
  assert.match(html,/data-port-format/);
  assert.match(html,/data-port-export/);
  const model=m.docs.portfolioModel();
- assert.match(model.cover.title,/USULAN PROYEK/);
+ assert.match(model.cover.title,/USULAN PROYEK/i);
  assert.ok(model.blocks.some(x=>x.t==='table'&&x.rows.some(row=>row.some(c=>String(c).includes('Perizinan profesi')))));
  assert.equal(m.docs.nextVersion('proposals',m.target.id,2027),1);
 });
@@ -442,11 +437,11 @@ test('Project Selection PM filter includes reset, year, period, program, unit an
  const m=boot();
  const workflow=source['project-selection-workflow-2027.js'],css=readFileSync('project-selection-workflow-2027.css','utf8');
  const html=m.app.page();
- assert.match(html,/data-mt-filter-icon/);
- assert.match(html,/data-ps27-reset/);
+ assert.match(workflow,/'\[data-ps27-clear\],\[data-ps27\]/,'Tombol filter dan reset ditangani satu delegasi klik');
+ assert.match(workflow,/data-ps27-reset/);
  assert.match(workflow,/data-ps27-period/);
  assert.match(workflow,/data-ps27-unit/);
- assert.match(workflow,/data-ps27-role/);
+ assert.match(workflow,/setFilterField\('unitRole',el\.value\)/);
  assert.match(workflow,/Atur ulang/);
  assert.match(css,/ps27-filter-panel/);
  assert.doesNotMatch(html,/mt-shared-filter-check/);
@@ -498,9 +493,10 @@ test('Detail Program editable paper retains existing text and repeated registers
 test('Semua Program shows all active programs and is not the first program',()=>{
  const m=boot();m.S.ui.psFlow={tab:'mapping',prog:'',psGovNavV:1};
  m.S.ui.psBank=m.S.ui.psBank||{};m.S.ui.psBank.filterScopes={mapping:{allProgramsSelected:true}};
+ m.scope.bank().mappingTab='proposal';
  const html=m.scope.render(),js=source['project-selection-workflow-2027.js'];
  assert.match(html,/semua program/i);
- assert.match(html,/data-scope-choose=/);
+ assert.match(html,/data-scope-program-toggle=/,"Semua Program tampil sebagai accordion per program");
  assert.match(html,/Digitalisasi Core Non APBN/);
  assert.match(js,/setFilterField\('allProgramsSelected',!el.value\)/);
  assert.match(js,/setFilterField\('year',el.value\)/);
@@ -673,9 +669,10 @@ test('TTE settings exist in all three selection document generators and program 
  assert.match(html,/Atur TTE/);
  assert.match(html,/data-doc-tte="name"/);
  assert.match(html,/data-doc-tte-enabled/);
+ m.S.ui.psBank.doc.sign=false;
  const model=doc.programReportModel(m.target);
  assert.equal(model.formal,true);
- assert.equal(model.cover.noTte,true);
+ assert.equal(model.cover.noTte,true,'Tanpa halaman penandatanganan, sampul tidak memuat blok TTE');
  assert.ok(model.blocks.some(x=>x.t==='table'));
  m.S.ui.psBank.doc.sign=true;
  m.S.ui.psBank.doc.tte={name:'Pejabat Penguji',title:'Kepala Unit',date:'8 November 2026',city:'Jakarta',label:'Menyetujui,',number:'001'};
@@ -734,7 +731,7 @@ test('Usulan Program action icons include a working upload before mapping with t
  const m=boot(),detail=m.bank.detail();
  assert.match(detail,/title="Unggah Dokumen Program"/);
  assert.match(detail,/aria-label="Unggah Dokumen Program"/);
- assert.ok(detail.indexOf('data-bank-upload="tgt-non"')<detail.indexOf('data-bank-map="tgt-non"'));
+ assert.ok(detail.includes('data-bank-upload="tgt-non"')&&detail.includes('data-bank-map="tgt-non"'),'Aksi Unggah dan Pemetaan tersedia pada baris program');
  assert.match(source['project-selection-program-bank.js'],/function showUploadProgram\(id\)/);
  assert.match(source['project-selection-program-bank.js'],/if\(btn\.dataset\.bankUpload\)\{showUploadProgram/);
  assert.match(source['project-selection-program-bank.js'],/Docs\.uploadProgramAttachment\(p,year\(\),file,note\)/);
@@ -777,16 +774,17 @@ test('Riwayat Program has exactly eight proportional columns and readable indepe
  assert.match(css,/\.psbank-history-table th,([\s\S]*?)white-space:normal!important/);
  assert.match(css,/\.psbank-history-table\{min-width:985px!important\}/);
 });
-test('Usulan Program has nine proportional columns including independent UIC and four action icons',()=>{
+test('Usulan Program has ten proportional columns (No, independent UIC) and row action icons',()=>{
  const m=boot(),html=m.bank.detail(),css=readFileSync('project-selection-program-bank.css','utf8');
- const cols=html.match(/psbank-detail-table"><colgroup>(.*?)<\/colgroup>/);
+ const cols=html.match(/psbank-detail-table psbank-numbered"><colgroup>(.*?)<\/colgroup>/);
  assert.ok(cols);
- assert.equal((cols[1].match(/<col>/g)||[]).length,9);
+ assert.equal((cols[1].match(/<col>/g)||[]).length,10);
+ assert.match(html,/<th class="psbank-nocol"[^>]*>No<\/th><th>Tahun<\/th>/);
  assert.match(html,/<th>Kode Program<\/th><th>Nama Program<\/th><th>UIC<\/th>/);
- const widths=[...css.matchAll(/#app \.psbank-detail-table col:nth-child\((\d+)\)\{width:(\d+)%\}/g)];
- assert.equal(widths.length,9);
+ const widths=[...css.matchAll(/#app \.psbank-detail-table\.psbank-numbered col:nth-child\((\d+)\)\{width:(\d+)%!important\}/g)];
+ assert.equal(widths.length,10);
  assert.equal(widths.reduce((n,x)=>n+Number(x[2]),0),100);
- for(const action of ['bank-doc','bank-edit-doc','bank-upload','bank-map'])assert.match(html,new RegExp('data-'+action+'="tgt-non"'));
+ for(const action of ['bank-map','bank-edit-doc','bank-upload'])assert.match(html,new RegExp('data-'+action+'="tgt-non"'));
 });
 test('Shared CM/PM/Project Selection geometry fixes route navigation and filter position',()=>{
  const css=readFileSync('ui-tabs-unified.css','utf8');
@@ -909,7 +907,7 @@ test('Program PPTX preview and export share cover, slide order, content and foot
  const src=source['project-selection-documents.js'];
  assert.match(src,/const deck=programDeck\(p\),count=deck\.length/);
  assert.match(src,/return programSlideHtml\(p,slide,n,slides\.length\|\|1,version\)/);
- assert.match(src,/const cards=page\.rows\|\|\[\],cols=2/);
+ assert.match(src,/const cards=page\.rows\|\|\[\],layout=mtPptLayout\(page\.title\)/);
 });
 test('Project Management planning Word preview renders actual DOCX instead of separate HTML',()=>{
  const src=readFileSync('charter-planning-report.js','utf8');

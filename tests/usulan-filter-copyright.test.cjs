@@ -3,10 +3,9 @@ const assert=require('node:assert/strict');
 const{readFileSync}=require('node:fs');
 const{join}=require('node:path');
 const read=name=>readFileSync(join(__dirname,'..',name),'utf8');
-test('Copyright permanen pada sidebar shell',()=>{
+test('Copyright permanen di footer konten shell',()=>{
  const html=read('index.html');
- assert.match(html, /<span class="mt-copyright">© 2026 Atitya Pritasari/);
- assert.match(html, /Pusat Manajemen Transformasi dan Perubahan<br>Kementerian Keuangan/);
+ assert.match(html, /<footer class="mt-content-copyright">© 2026 Atitya Pritasari · Pusat Manajemen Transformasi dan Perubahan · Kementerian Keuangan<\/footer>/);
 });
 test('Filter Usulan Program: kolom kategori di panel, kolom Cari di samping tab (standar mt-filter-kit)',()=>{
  const js=read('project-selection-workflow-2027.js');
