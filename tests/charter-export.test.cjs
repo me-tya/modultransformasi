@@ -27,10 +27,12 @@ test('Word XML valid dan memakai font 9 pt di dua mode',()=>{
   assert.equal((x.match(/<w:tbl>/g)||[]).length,3);assert.equal((x.match(/<w:tbl>/g)||[]).length,(x.match(/<\/w:tbl>/g)||[]).length);
   assert.ok(mode==='mono'?x.includes('Bookman Old Style'):x.includes('w:fill="1F2A44"'));}
 });
-test('Bar ekspor memuat chip mode dan 4 format',()=>{
- const {X}=boot(),h=X.barFor({id:'a'});
+test('Bar ekspor satu baris: chip mode + Export to dengan 4 format (dan grup Semua program)',()=>{
+ const {X}=boot(),h=X.barFor({id:'a'},{year:2027,n:9});
  for(const k of ['color','mono'])assert.ok(h.includes('data-chx-mode="'+k+'"'));
- for(const k of ['pdf','docx','jpg','pptx'])assert.ok(h.includes('data-chx-x="'+k+'"'));
+ assert.equal((h.match(/data-chx-dd/g)||[]).length,1);assert.match(h,/Export to/);
+ for(const k of ['pdf','docx','jpg','pptx'])assert.equal((h.match(new RegExp('data-chx-x="'+k+'"','g'))||[]).length,2);
+ assert.match(h,/Semua program \(9\)/);assert.ok(!X.barFor({id:'a'}).includes('data-chx-scope'));
 });
 test('Unduh semua: satu berkas Word berisi seluruh program tahun aktif',()=>{
  const {S,X}=boot(),b=X.bundle(S.programs.map(p=>({c:p.psProgramCharter,p})),'Semua');b.mode='mono';

@@ -302,13 +302,11 @@ function charter(p){
  let deck=null,err='';try{deck=typeof dkHtml==='function'?window.MT_PM_PROGRAM_DOCS?.buildDeck(p):null}catch(e){err=e.message||String(e)}
  const btn=(k,m,l,cls)=>'<button type="button" class="btn'+(cls?' '+cls:'')+'" data-act="pmProgramDoc" data-kind="'+k+'" data-mode="'+m+'" data-p="'+E(p.akr)+'" data-program-id="'+E(p.id||'')+'">'+l+'</button>';
  const head='<div class="ps27-cardtop"><div><h3>Charter Program'+ic('Charter tingkat program: tujuan, latar belakang, terobosan, output, outcome, key milestones, risiko, dan pengelola. Disusun sebelum penetapan program dan menjadi dasar Draft RKMK. Di Project Management charter ini hanya dilihat/diunduh. Tujuh bagian dokumen proyek (As-is s.d. Evaluasi Manfaat) disusun per proyek di Project Management › Perencanaan.')+'</h3></div>'+
-  '<div class="ps27-chact"><span class="ps27-status">'+E(st)+'</span>'+((pc||deck)&&window.MT_CHX?MT_CHX.barFor(p):'')+'<button type="button" class="btn pri" data-act="psProgCh" data-id="'+E(p.id)+'">'+(pc||deck?'✎ Ubah':'+ Buat Charter Program')+'</button></div></div>';
+  '<div class="ps27-chact"><span class="ps27-status">'+E(st)+'</span>'+((pc||deck)&&window.MT_CHX?MT_CHX.barFor(p,{year:yr(),n:MT_CHX.listAll(yr()).length}):'')+'<button type="button" class="btn pri" data-act="psProgCh" data-id="'+E(p.id)+'">'+(pc||deck?'✎ Ubah':'+ Buat Charter Program')+'</button></div></div>';
  const body=(pc||deck)&&window.MT_CHX?MT_CHX.preview('data-chx-pid="'+E(p.id)+'"'):deck?'<div class="dk-wrap ps27-chdeck" data-ps-chdeck>'+deck.slides.map((sl,i)=>'<figure class="dk-f" role="button" tabindex="0" title="Klik untuk pratinjau besar" data-act="pmProgramDoc" data-kind="charter" data-mode="preview" data-p="'+E(p.akr)+'" data-program-id="'+E(p.id||'')+'" style="cursor:zoom-in"><div class="dk-box"><div class="dk-scale">'+dkHtml(sl)+'</div></div><figcaption>'+(i+1)+'. '+E(sl.n||'')+'</figcaption></figure>').join('')+'</div>':
   '<div class="ps27-empty" style="padding:28px;text-align:center"><b>Charter Program belum dibuat.</b><p class="s">'+E(err&&!/belum dibuat/i.test(err)?err:'Klik + Buat Charter Program. Isinya tujuan, latar belakang, terobosan, output, outcome, milestone, dan risiko program.')+'</p></div>';
  setTimeout(fitDeck,0);setTimeout(()=>window.MT_CHX?.mountAll?.(),0);
- const nAll=window.MT_CHX?MT_CHX.listAll(yr()).length:0;
- const all=nAll>1?'<div class="ps27-chall" style="display:flex;justify-content:flex-end;margin:0 0 8px">'+MT_CHX.barAll(yr(),nAll)+'</div>':'';
- return '<div class="ps27-card ps27-charter">'+head+all+body+'</div>';
+ return '<div class="ps27-card ps27-charter">'+head+body+'</div>';
 }
 function fitDeck(){if(typeof document==='undefined'||!document.querySelectorAll)return;document.querySelectorAll('[data-ps-chdeck] .dk-scale').forEach(b=>{const w=b.parentElement.clientWidth;if(!w)return;b.style.transform='scale('+(w/1280)+')';b.parentElement.style.height=(720*w/1280)+'px'})}
 if(typeof window.addEventListener==='function')window.addEventListener('resize',()=>fitDeck());
