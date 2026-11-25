@@ -270,24 +270,26 @@ function wRun(t,o){o=o||{};return '<w:r><w:rPr><w:rFonts w:ascii="'+WF+'" w:hAns
 function wPara(runs,o){o=o||{};const hang=o.hang?'<w:ind w:left="'+o.hang+'" w:hanging="'+o.hang+'"/>':'';
  return '<w:p><w:pPr>'+(o.keep?'<w:keepNext/>':'')+(o.br?'<w:pageBreakBefore/>':'')+'<w:spacing w:before="0" w:after="'+(o.after==null?20:o.after)+'" w:line="240" w:lineRule="auto"/>'+hang+(o.jc?'<w:jc w:val="'+o.jc+'"/>':'')+'</w:pPr>'+runs+'</w:p>'}
 function wCellParas(c,sz){
- if(c.rich)return c.rich.map(x=>wPara(wRun(x.s,{b:x.b,sz})+(x.r!=null?wRun(x.r,{sz}):''))).join('');
+ if(c.rich)return c.rich.map(x=>wPara(wRun(x.s,{b:x.b,sz})+(x.r!=null?wRun(x.r,{sz}):''),{hang:!x.b&&/^(?:\d{1,2}|[a-z])\.\s/.test(x.s)?300:0})).join('');
  return c.t.map(s=>{const n=String(s).match(/^((?:\d{1,2}|[a-z])\.)\s(.*)$/);return wPara(wRun(s,{b:c.b,sz}),{jc:c.b&&c.al!=='left'?'center':(c.small?'center':''),hang:n&&!c.b?(n[1].length>2?360:300):0})}).join('');
 }
+const TCB='<w:tcBorders>'+['top','left','bottom','right'].map(k=>'<w:'+k+' w:val="single" w:sz="4" w:space="0" w:color="000000"/>').join('')+'</w:tcBorders>';
 function wTable(t,total){
  const sumW=t.w.reduce((a,b)=>a+b,0),W=t.w.map(w=>Math.round(w/sumW*total)),B='<w:top w:val="single" w:sz="4" w:space="0" w:color="000000"/><w:left w:val="single" w:sz="4" w:space="0" w:color="000000"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="000000"/><w:right w:val="single" w:sz="4" w:space="0" w:color="000000"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="000000"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="000000"/>';
  /* hitung peta sel: baris berikut dari sel rowspan diisi vMerge continue */
  const grid=t.rows.map(()=>[]),out=[];
  t.rows.forEach((r,ri)=>{let ci=0;r.forEach(c=>{while(grid[ri][ci])ci++;if(!c){return}const cs=c.cs||1,rs=c.rs||1;for(let k=0;k<rs;k++)for(let j=0;j<cs;j++){if(!grid[ri+k])grid[ri+k]=[];grid[ri+k][ci+j]=k===0&&j===0?{c,start:1}:(j===0?{cont:c,cs}:{skip:1})}ci+=cs})});
  grid.forEach(row=>{let tr='<w:tr>';for(let ci=0;ci<W.length;ci++){const x=row[ci];if(!x||x.skip)continue;const c=x.c||x.cont,cs=c.cs||1,w=W.slice(ci,ci+cs).reduce((a,b)=>a+b,0);
-  const pr='<w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/>'+(cs>1?'<w:gridSpan w:val="'+cs+'"/>':'')+((c.rs||1)>1?(x.start?'<w:vMerge w:val="restart"/>':'<w:vMerge/>'):'')+(c.fill?'<w:shd w:val="clear" w:color="auto" w:fill="'+c.fill+'"/>':'')+
+  const pr='<w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/>'+(cs>1?'<w:gridSpan w:val="'+cs+'"/>':'')+((c.rs||1)>1?(x.start?'<w:vMerge w:val="restart"/>':'<w:vMerge/>'):'')+TCB+(c.fill?'<w:shd w:val="clear" w:color="auto" w:fill="'+c.fill+'"/>':'')+
    '<w:tcMar><w:top w:w="30" w:type="dxa"/><w:left w:w="'+(c.small||t.gantt&&c.fill!==undefined?20:80)+'" w:type="dxa"/><w:bottom w:w="30" w:type="dxa"/><w:right w:w="'+(c.small||t.gantt&&c.fill!==undefined?20:80)+'" w:type="dxa"/></w:tcMar>'+(c.b?'<w:vAlign w:val="center"/>':'')+'</w:tcPr>';
   tr+='<w:tc>'+pr+(x.start?wCellParas(c,c.small?16:20):wPara(''))+'</w:tc>'}out.push(tr+'</w:tr>')});
- return '<w:tbl><w:tblPr><w:tblW w:w="'+total+'" w:type="dxa"/><w:tblBorders>'+B+'</w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>'+W.map(w=>'<w:gridCol w:w="'+w+'"/>').join('')+'</w:tblGrid>'+out.join('')+'</w:tbl>';
+ return '<w:tbl><w:tblPr><w:tblW w:w="'+total+'" w:type="dxa"/><w:jc w:val="left"/><w:tblInd w:w="0" w:type="dxa"/><w:tblBorders>'+B+'</w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:left w:w="80" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar><w:tblLook w:val="0000" w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:noHBand="1" w:noVBand="1"/></w:tblPr><w:tblGrid>'+W.map(w=>'<w:gridCol w:w="'+w+'"/>').join('')+'</w:tblGrid>'+out.join('')+'</w:tbl>';
 }
 function docxBody(models){
  const total=16838-2*850;let first=true,b='';
  models.forEach(m=>tables(m).forEach(t=>{
-  b+=wPara(wRun('KEMENTERIAN KEUANGAN REPUBLIK INDONESIA',{sz:18}),{jc:'center',br:!first,after:60});first=false;
+  if(!first)b+='<w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr><w:r><w:br w:type="page"/></w:r></w:p>';
+  b+=wPara(wRun('KEMENTERIAN KEUANGAN REPUBLIK INDONESIA',{sz:18}),{jc:'center',after:60});first=false;
   b+=wPara(wRun(t.title,{b:1,sz:24})+wRun(m.judul,{sz:24}),{keep:1,after:120});
   b+=wTable(t,total)+wPara('',{after:0});
  }));
@@ -297,9 +299,10 @@ async function docxBlob(models,type){
  const L=g('chLib');if(!g('JSZip')&&typeof L==='function')await L('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',()=>!!g('JSZip'));
  const Z=g('JSZip');if(!Z)throw new Error('Pustaka Word belum tersedia.');
  const z=new Z(),W='http://schemas.openxmlformats.org/wordprocessingml/2006/main';
- z.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>');
+ z.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/></Types>');
  z.file('_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
- z.file('word/_rels/document.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>');
+ z.file('word/_rels/document.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/></Relationships>');
+ z.file('word/settings.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:settings xmlns:w="'+W+'"><w:zoom w:percent="100"/><w:defaultTabStop w:val="720"/><w:characterSpacingControl w:val="doNotCompress"/><w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat></w:settings>');
  z.file('word/styles.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="'+W+'"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="'+WF+'" w:hAnsi="'+WF+'" w:cs="'+WF+'" w:eastAsia="'+WF+'"/><w:sz w:val="20"/><w:szCs w:val="20"/><w:lang w:val="id-ID"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="0" w:line="240" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="table" w:default="1" w:styleId="TableNormal"><w:name w:val="Normal Table"/><w:tblPr><w:tblCellMar><w:left w:w="80" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar></w:tblPr></w:style></w:styles>');
  z.file('word/document.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="'+W+'"><w:body>'+docxBody(models)+'</w:body></w:document>');
  return z.generateAsync({type:type||'blob',compression:'DEFLATE',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
