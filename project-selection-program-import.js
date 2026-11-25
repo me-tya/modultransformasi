@@ -20,13 +20,49 @@ const COLS={
  Program:{no:'no',tahun:'tahun',nama:'nama program',kodeResmi:'kode program resmi',jenis:'jenis program',uic:'uic utama',pend:'uic pendukung',
   champion:'initiative champion',owner:'initiative owner',p1:'periode mulai',p2:'periode selesai',tujuan:'tujuan program',lb:'latar belakang',tb:'terobosan',
   out:'output',oc:'outcome',ris:'risiko',pk:'pendukung kesuksesan',klaster:'klaster',sumber:'kode is sumber',catatan:'catatan impor'},
- Proyek:{prog:'nama program',kodeIS:'kode is',name:'nama proyek',uic:'uic utama',pend:'uic pendukung',pic:'pic / initiative owner',tujuan:'tujuan proyek',
-  lb:'latar belakang',out:'output',oc:'outcome',kp:'kriteria penyelesaian',status:'status usulan'},
+ Proyek:{no:'no',tahun:'tahun',prog:'nama program',kodeIS:'kode is',name:'nama proyek',psAcronym:'akronim',applicationName:'nama aplikasi',
+  mainFunction:'fungsi utama / modul',subModule:'sub modul',url:'url aplikasi',category:'kategori',uic:'uic utama',pend:'uic pendukung',
+  pic:'pic / initiative owner',status:'status usulan',tujuan:'tujuan proyek',lb:'latar belakang',urgency:'urgensi',legalBasis:'landasan hukum',
+  strategyAlignment:'strategi organisasi yang didukung',businessProcess:'proses bisnis terkait',businessNarrative:'narasi proses bisnis',
+  features:'fitur utama',out:'output',oc:'outcome',kp:'kriteria penyelesaian',batiiIdentification:'identifikasi tim batii',
+  probisConfirmation:'konfirmasi pemilik proses bisnis',start:'rencana mulai',goLive:'target go-live'},
  Milestone:{prog:'nama program',y:'tahun',t:'milestone',g:'kelompok wbs',kodeIS:'kode is'},
  Kriteria:{prog:'nama program',m:'milestone',k:'kriteria penyelesaian',kodeIS:'kode is'}
 };
 const REQUIRED={Program:['nama','tahun','uic'],Proyek:['prog','name','uic'],Milestone:['prog','y','t'],Kriteria:['prog','m']};
 const JENIS=['Berkelanjutan','Tematik','Lainnya'],STATUS=['Usulan','Berjalan','Ditunda','Selesai'];
+const CAT=['Core APBN','Core Non APBN','Office Automation','APBN','Non APBN','Manajemen Birokrasi'];
+const TEXT_FIELDS=['applicationName','mainFunction','subModule','urgency','legalBasis','strategyAlignment','businessProcess','businessNarrative','batiiIdentification','probisConfirmation'];
+const MON={jan:1,feb:2,mar:3,apr:4,mei:5,may:5,jun:6,jul:7,agu:8,aug:8,agt:8,sep:9,okt:10,oct:10,nov:11,des:12,dec:12};
+/* Tanggal → YYYY-MM-DD. Menerima 2027-03-01, 01/03/2027 (hari/bulan/tahun), Mar 2027, 2027-03, serial Excel. '' bila kosong, null bila tak dikenali. */
+function dateOf(v){
+ v=T(v);if(!v)return '';let m;const pad=n=>String(n).padStart(2,'0'),ok=(y,mo,d)=>y>=2000&&y<=2100&&mo>=1&&mo<=12&&d>=1&&d<=31?y+'-'+pad(mo)+'-'+pad(d):null;
+ if((m=v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)))return ok(+m[1],+m[2],+m[3]);
+ if((m=v.match(/^(\d{4})[-\/.](\d{1,2})$/)))return ok(+m[1],+m[2],1);
+ if((m=v.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})$/))){const y=+m[3]<100?2000+ +m[3]:+m[3];return ok(y,+m[2],+m[1])}
+ if((m=v.match(/^(?:(\d{1,2})\s+)?([A-Za-z]{3})[a-z]*\.?\s+(\d{4})$/))&&MON[m[2].toLowerCase()])return ok(+m[3],MON[m[2].toLowerCase()],+(m[1]||1));
+ if(/^\d{5}$/.test(v)){const d=new Date(Date.UTC(1899,11,30)+(+v)*864e5);return ok(d.getUTCFullYear(),d.getUTCMonth()+1,d.getUTCDate())}
+ return null;
+}
+const acr=v=>String(v||'').toUpperCase().normalize('NFKD').replace(/[^A-Z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,18);
+const editableProgram=p=>!(p.psStatus==='Ditetapkan'||p.arsip||p.psListStatus==='Arsip');
+/* Validasi + normalisasi satu baris proyek. */
+function checkProject(x,p,y){
+ const problems=[],notes=[];
+ if(!x.name)problems.push('Nama Proyek kosong');
+ if(!x.uic)problems.push('UIC kosong');
+ const start=dateOf(x.start),goLive=dateOf(x.goLive);
+ if(start===null)problems.push('Rencana Mulai tidak dikenali');
+ if(goLive===null)problems.push('Target Go-Live tidak dikenali');
+ if(start&&goLive&&goLive<start)problems.push('Go-Live sebelum Rencana Mulai');
+ const category=x.category?CAT.find(c=>key(c)===key(x.category)):'';
+ if(x.category&&!category)problems.push('Kategori tidak dikenal');
+ if(x.status&&!STATUS.some(s=>key(s)===key(x.status)))notes.push('Status "'+x.status+'" diganti Usulan');
+ if(x.url&&!/^https?:\/\//i.test(x.url))problems.push('URL harus diawali http(s)://');
+ const old=p?(p.psProjects||[]).find(z=>key(z.name)===key(x.name)||(x.kodeIS&&z.psSourceIS===x.kodeIS)):null;
+ return {...x,start:start||'',goLive:goLive||'',category:category||'',psAcronym:acr(x.psAcronym),problem:problems.join(', '),notes,old,
+  action:problems.length?'Galat':old?'Perbarui':'Baru'};
+}
 const me=()=>{try{return typeof ME!=='undefined'?ME:null}catch(_){return null}};
 const canRole=()=>!!me()&&['SA','PMOK','PMOU'].includes(me().role);
 
@@ -36,7 +72,7 @@ function tables(aoa){
  Object.keys(COLS).forEach(name=>{
   const sheetKey=Object.keys(aoa||{}).find(k=>norm(k)===norm(name));
   const data=sheetKey?aoa[sheetKey]:null;
-  if(!data||!data.length){out[name]=[];if(name==='Program')errors.push('Sheet "Program" tidak ditemukan. Gunakan template Impor Usulan Program.');return}
+  if(!data||!data.length){out[name]=[];return}
   const head=(data[0]||[]).map(norm),map={};
   Object.entries(COLS[name]).forEach(([k,label])=>{const i=head.indexOf(label);if(i>=0)map[k]=i});
   const miss=REQUIRED[name].filter(k=>map[k]==null);
@@ -44,6 +80,7 @@ function tables(aoa){
   out[name]=data.slice(1).map((r,i)=>{const o={_row:i+2};Object.entries(map).forEach(([k,ix])=>o[k]=T(r[ix]));return o})
    .filter(o=>Object.keys(COLS[name]).some(k=>k!=='no'&&o[k]));
  });
+ if(!(out.Program||[]).length&&!(out.Proyek||[]).length&&!errors.length)errors.push('Sheet "Program" atau "Proyek" tidak ditemukan/kosong. Gunakan template Impor Usulan Program.');
  return {out,errors};
 }
 function findProgram(name,y){
@@ -73,7 +110,8 @@ function plan(aoa){
   it.action=it.problems.length?'Galat':!existing?'Baru':(existing.psStatus==='Ditetapkan'||existing.arsip||existing.psListStatus==='Arsip')?'Dilewati':'Perbarui';
   if(it.action==='Dilewati')it.notes.push('Program sudah ditetapkan/diarsipkan');
   if(y&&y!==year())it.notes.push('Tahun '+y+' berbeda dengan tahun aktif '+year());
-  it.projects=(PR.get(k)||[]).map(x=>({...x,problem:!x.name?'Nama Proyek kosong':!x.uic?'UIC kosong':''}));
+  it.projects=(PR.get(k)||[]).map(x=>checkProject(x,existing,y));
+  const dupA=new Map();it.projects.forEach(x=>{if(x.psAcronym){if(dupA.has(x.psAcronym)&&!x.problem)x.problem='Akronim ganda dalam program';dupA.set(x.psAcronym,1)}if(x.problem)x.action='Galat'});
   it.ms=(MS.get(k)||[]).filter(x=>x.t);
   it.kp=(KR.get(k)||[]).filter(x=>x.m);
   const pc=it.existing?.psProgramCharter;
@@ -83,7 +121,25 @@ function plan(aoa){
   if(r.catatan)it.notes.push(r.catatan);
  });
  const known=new Set((out.Program||[]).map(r=>key(r.nama)));
- ['Proyek','Milestone','Kriteria'].forEach(s=>(out[s]||[]).forEach(r=>{if(r.prog&&!known.has(key(r.prog)))warn.push('Sheet '+s+' baris '+r._row+': Nama Program "'+r.prog+'" tidak ada di sheet Program.')}));
+ /* Baris Proyek yang programnya tidak ada di sheet Program → ditambahkan ke program yang sudah ada di aplikasi. */
+ const extra=new Map();
+ (out.Proyek||[]).forEach(r=>{
+  if(!r.prog||known.has(key(r.prog)))return;
+  const y=+r.tahun||year(),g=key(r.prog)+'|'+y;
+  if(!extra.has(g))extra.set(g,{y,name:r.prog,rows:[]});extra.get(g).rows.push(r);
+ });
+ extra.forEach(g=>{
+  const p=findProgram(g.name,g.y);
+  if(!p){g.rows.forEach(r=>warn.push('Sheet Proyek baris '+r._row+': program "'+r.prog+'" tahun '+g.y+' tidak ada di sheet Program maupun di aplikasi.'));return}
+  const it={row:g.rows[0]._row,src:{nama:p.nama,tahun:g.y,uic:p.uic,kodeResmi:p.kodeResmi||''},problems:[],notes:['Hanya menambah/memperbarui proyek pada program yang sudah ada'],existing:p,projectsOnly:true,ms:[],kp:[],charterLocked:true};
+  if(!editableProgram(p))it.problems.push('Program sudah ditetapkan/diarsipkan');
+  if(me()&&me().role==='PMOU'&&me().unit&&p.uic&&p.uic!==me().unit)it.problems.push('PMO Unit hanya dapat mengubah program dengan UIC '+me().unit);
+  it.projects=g.rows.map(x=>checkProject(x,p,g.y));
+  if(it.projects.some(x=>x.problem))it.notes.push(it.projects.filter(x=>x.problem).length+' baris proyek tidak lengkap dilewati');
+  it.action=it.problems.length?'Galat':'Proyek';
+  items.push(it);
+ });
+ ['Milestone','Kriteria'].forEach(s=>(out[s]||[]).forEach(r=>{if(r.prog&&!known.has(key(r.prog)))warn.push('Sheet '+s+' baris '+r._row+': Nama Program "'+r.prog+'" tidak ada di sheet Program.')}));
  return {items,errors,warn};
 }
 function charterFrom(it,p){
@@ -103,18 +159,33 @@ function charterFrom(it,p){
  };
 }
 function projectFrom(x,p,old){
+ const base=projectBase(x,p,old);
+ TEXT_FIELDS.forEach(k=>{if(x[k])base[k]=k==='mainFunction'||k==='subModule'||k==='applicationName'?T(x[k]):lines(x[k]).length>1?lines(x[k]).map(v=>'• '+v).join('\n'):T(x[k])});
+ if(x.features)base.features=lines(x.features).map(v=>'• '+v).join('\n');
+ if(x.url)base.url=x.url;if(x.category)base.category=x.category;
+ if(x.start)base.start=x.start;if(x.goLive)base.goLive=x.goLive;
+ if(x.psAcronym)base.psAcronym=x.psAcronym;
+ return base;
+}
+function projectBase(x,p,old){
  const desc=[T(x.tujuan),lines(x.lb).length?'Latar belakang:\n'+lines(x.lb).map(v=>'• '+v).join('\n'):''].filter(Boolean).join('\n\n');
  const st=STATUS.find(s=>key(s)===key(x.status))||old?.status||'Usulan';
  return Object.assign(old||{id:uid('proj'),included:true,scores:{},poster:{},risks:{},indicators:[],benefits:[],psOriginYear:null},{
-  name:x.name,uic:x.uic,pic:x.pic||old?.pic||'',status:st,description:desc,
-  outputs:lines(x.out).join('\n'),outcome:lines(x.oc).join('\n'),accepted:lines(x.kp).join('\n'),
-  psSupportUic:x.pend||'',psSourceIS:x.kodeIS||'',updatedAt:new Date().toISOString(),updatedBy:me()?.email||''});
+  name:x.name,uic:x.uic,pic:x.pic||old?.pic||'',status:st,description:desc||old?.description||'',
+  outputs:lines(x.out).join('\n')||old?.outputs||'',outcome:lines(x.oc).join('\n')||old?.outcome||'',accepted:lines(x.kp).join('\n')||old?.accepted||'',
+  psSupportUic:x.pend||old?.psSupportUic||'',psSourceIS:x.kodeIS||old?.psSourceIS||'',psImportedAt:new Date().toISOString(),updatedAt:new Date().toISOString(),updatedBy:me()?.email||''});
 }
 /* Menerapkan rencana ke S.programs. Mengembalikan ringkasan. */
 function apply(pl,meta){
  const done={created:0,updated:0,skipped:0,projects:0,ids:[]};
  S.programs=S.programs||[];
  pl.items.forEach(it=>{
+  if(it.action==='Proyek'){
+   const p=it.existing;p.psProjects=p.psProjects||[];
+   it.projects.filter(x=>!x.problem).forEach(x=>{const old=p.psProjects.find(z=>z===x.old)||null;const z=projectFrom(x,p,old);if(!old)p.psProjects.push(z);done.projects++});
+   try{window.MT_PS_SCOPE?.normalizeProjectCodes?.(p)}catch(_){}
+   p.psUpdatedAt=new Date().toISOString();done.ids.push(p.id);done.touched=(done.touched||0)+1;return;
+  }
   if(it.action!=='Baru'&&it.action!=='Perbarui'){done.skipped++;return}
   const r=it.src,y=+r.tahun,code=T(r.kodeResmi).toUpperCase();
   let p=it.existing;
@@ -136,7 +207,7 @@ function apply(pl,meta){
   else if(!p.kode)p.kode='';
   p.psProjects=p.psProjects||[];
   it.projects.filter(x=>!x.problem).forEach(x=>{
-   const old=p.psProjects.find(z=>key(z.name)===key(x.name));
+   const old=p.psProjects.find(z=>z===x.old)||p.psProjects.find(z=>key(z.name)===key(x.name));
    const z=projectFrom(x,p,old);if(!old)p.psProjects.push(z);done.projects++;
   });
   try{window.MT_PS_SCOPE?.normalizeProjectCodes?.(p)}catch(_){}
@@ -148,16 +219,19 @@ function apply(pl,meta){
 /* ---------- Unduh template ---------- */
 function templateBook(){
  const X=window.XLSX,wb=X.utils.book_new();
- const head=s=>Object.values(COLS[s]).map(h=>h.replace(/\b\w/g,m=>m.toUpperCase()).replace('Uic','UIC').replace('Pic','PIC').replace('Is','IS').replace('Wbs','WBS'));
+ const FIX={Uic:'UIC',Pic:'PIC',Is:'IS',Wbs:'WBS',Url:'URL',Batii:'BaTii',Dan:'dan',Yang:'yang'};
+ const head=s=>Object.values(COLS[s]).map(h=>h.replace(/\b\w/g,m=>m.toUpperCase()).replace(/\b[A-Z][a-z]+\b/g,w=>FIX[w]||w));
  const ex={
   Program:[[1,year(),'Contoh Program Transformasi','','Berkelanjutan','BaTii','DJPb, DJP','Menteri Keuangan','Kepala Badan Teknologi, Informasi, dan Intelijen Keuangan',year(),year()+2,'Tujuan program…','• Latar belakang 1\n• Latar belakang 2','• Terobosan 1','• Output 1','• Outcome 1','• Risiko 1','• Pendukung 1','','','']],
-  Proyek:[[1,'Contoh Program Transformasi','','Contoh Proyek','BaTii','DJPb','PIC proyek','Tujuan proyek…','• Latar belakang','• Output','• Outcome','Milestone — kriteria','Usulan']],
+  Proyek:[[1,year(),'Contoh Program Transformasi','','Contoh Proyek','CONTOH','Nama aplikasi','Fungsi utama','','https://…','Non APBN','BaTii','DJPb','PIC proyek','Usulan','Tujuan proyek…','• Latar belakang','• Urgensi','Landasan hukum','Strategi yang didukung','Proses bisnis level 3/4/5','Narasi proses bisnis','• Fitur 1','• Output','• Outcome','Milestone — kriteria','','',year()+'-01-01',year()+'-12-31']],
   Milestone:[['Contoh Program Transformasi',year(),'Milestone tahun pertama','','']],
   Kriteria:[['Contoh Program Transformasi','Milestone tahun pertama','Kriteria penyelesaian…','']]
  };
  Object.keys(COLS).forEach(s=>{const ws=X.utils.aoa_to_sheet([head(s),...ex[s]]);ws['!cols']=head(s).map(h=>({wch:Math.max(12,Math.min(44,h.length+8))}));X.utils.book_append_sheet(wb,ws,s)});
  const pet=X.utils.aoa_to_sheet([['PETUNJUK IMPOR USULAN PROGRAM'],['Satu baris sheet Program = satu Usulan Program + Charter Program. Nama Program menjadi kunci ke sheet Proyek, Milestone, dan Kriteria.'],
   ['Kolom wajib: Program (Tahun, Nama Program, UIC Utama); Proyek (Nama Program, Nama Proyek, UIC Utama); Milestone (Nama Program, Tahun, Milestone); Kriteria (Nama Program, Milestone).'],
+  ['Sheet Proyek langsung masuk ke Pemetaan Proyek › Usulan Proyek. Baris Proyek yang Nama Programnya tidak ada di sheet Program ditambahkan ke program tahun tsb yang sudah ada di aplikasi (sheet Program boleh kosong). Akronim kosong = dibuat otomatis; Kode Proyek = kode program + akronim.'],
+  ['Kategori: '+CAT.join(' / ')+'. Tanggal (Rencana Mulai, Target Go-Live) ditulis YYYY-MM-DD.'],
   ['Isian daftar ditulis satu butir per baris (Alt+Enter). Jenis Program: Berkelanjutan/Tematik/Lainnya. Status Usulan: Usulan/Berjalan/Ditunda/Selesai.'],
   ['Program dengan nama dan tahun sama diperbarui (selama belum Ditetapkan/Arsip). Charter yang sudah disahkan tidak ditimpa. Hapus baris contoh sebelum mengimpor.']]);
  pet['!cols']=[{wch:130}];X.utils.book_append_sheet(wb,pet,'Petunjuk');
@@ -173,31 +247,42 @@ function readFile(file){
  return new Promise((res,rej)=>{
   if(!window.XLSX)return rej(new Error('Pustaka Excel belum termuat. Periksa koneksi internet lalu muat ulang.'));
   const fr=new FileReader();fr.onerror=()=>rej(new Error('Berkas tidak dapat dibaca.'));
-  fr.onload=()=>{try{const wb=XLSX.read(new Uint8Array(fr.result),{type:'array'});const aoa={};
-   wb.SheetNames.forEach(n=>aoa[n]=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:'',raw:false,blankrows:false}));res(aoa)}catch(e){rej(new Error('Format berkas tidak dikenali.'))}};
+  fr.onload=()=>{try{const wb=XLSX.read(new Uint8Array(fr.result),{type:'array',cellDates:true});const aoa={};
+   wb.SheetNames.forEach(n=>aoa[n]=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:'',raw:false,dateNF:'yyyy-mm-dd',blankrows:false}));res(aoa)}catch(e){rej(new Error('Format berkas tidak dikenali.'))}};
   fr.readAsArrayBuffer(file);
  });
 }
-const tag=a=>'<span class="psimp-tag psimp-'+({Baru:'new',Perbarui:'upd',Dilewati:'skip',Galat:'err'}[a]||'skip')+'">'+E(a)+'</span>';
+const tag=a=>'<span class="psimp-tag psimp-'+({Baru:'new',Perbarui:'upd',Proyek:'upd',Dilewati:'skip',Galat:'err'}[a]||'skip')+'">'+E(a==='Proyek'?'Tambah proyek':a)+'</span>';
+function previewCode(it,x,i){
+ const base=String(it.existing?.kode||it.src.kodeResmi||'').toUpperCase();
+ let a=x.psAcronym||x.old?.psAcronym;try{a=a||window.MT_PS_SCOPE?.suggestedAcronym?.(x.name)}catch(_){}
+ a=a||'(otomatis)';return base?base+'-'+a:a;
+}
+function projectTable(it){
+ if(!it.projects.length)return '';
+ return '<tr class="psimp-sub"><td></td><td colspan="8"><details><summary>'+it.projects.length+' proyek → Pemetaan Proyek › Usulan Proyek</summary><table class="psimp-ptable"><thead><tr><th title="Kode Proyek = kode program + akronim; dibentuk saat diterapkan">Kode / Akronim</th><th>Nama Proyek</th><th>Kategori</th><th>UIC</th><th>Mulai</th><th>Go-Live</th><th>Status</th><th>Aksi</th></tr></thead><tbody>'+
+  it.projects.map((x,i)=>'<tr><td><b>'+E(previewCode(it,x,i))+'</b>'+(x.kodeIS?'<small>IS '+E(x.kodeIS)+'</small>':'')+'</td><td>'+E(x.applicationName||x.name||'—')+'</td><td>'+E(x.category||'—')+'</td><td>'+E(x.uic||'—')+'</td><td>'+E(x.start||'—')+'</td><td>'+E(x.goLive||'—')+'</td><td>'+E(STATUS.find(s=>key(s)===key(x.status))||'Usulan')+'</td><td>'+tag(x.action)+(x.problem?'<small class="psimp-perr">'+E(x.problem)+'</small>':'')+'</td></tr>').join('')+
+  '</tbody></table></details></td></tr>';
+}
 function body(){
  const c=current;
  const pick='<div class="psimp-pick"><div><b>1. Siapkan berkas</b><span>Gunakan template Impor Usulan Program (sheet Program, Proyek, Milestone, Kriteria).</span></div><button type="button" class="btn" data-psimp="template">↓ Unduh Template</button>'+
   '<div><b>2. Pilih berkas Excel</b><span>'+(c?.file?E(c.file):'Belum ada berkas dipilih')+'</span></div><button type="button" class="btn pri" data-psimp="pick">Pilih Berkas…</button><input type="file" accept=".xlsx,.xls" data-psimp-file hidden></div>';
  if(!c?.plan)return pick+'<div class="psimp-empty">Pratinjau tampil setelah berkas dipilih. Data belum disimpan sebelum Anda menekan <b>Terapkan Impor</b>.</div>';
- const pl=c.plan,n=a=>pl.items.filter(x=>x.action===a).length,np=pl.items.reduce((s,x)=>s+x.projects.filter(z=>!z.problem).length,0);
+ const pl=c.plan,n=a=>pl.items.filter(x=>x.action===a).length,np=pl.items.filter(x=>['Baru','Perbarui','Proyek'].includes(x.action)).reduce((s,x)=>s+x.projects.filter(z=>!z.problem).length,0);
  let h=pick;
  if(pl.errors.length)h+='<div class="psimp-alert err">'+pl.errors.map(E).join('<br>')+'</div>';
- h+='<div class="psimp-stats"><div><b>'+pl.items.length+'</b><span>Baris program</span></div><div><b>'+n('Baru')+'</b><span>Program baru</span></div><div><b>'+n('Perbarui')+'</b><span>Diperbarui</span></div><div><b>'+np+'</b><span>Proyek</span></div><div><b>'+(n('Galat')+n('Dilewati'))+'</b><span>Dilewati</span></div></div>';
+ h+='<div class="psimp-stats"><div><b>'+pl.items.length+'</b><span>Baris program</span></div><div><b>'+n('Baru')+'</b><span>Program baru</span></div><div><b>'+n('Perbarui')+'</b><span>Diperbarui</span></div><div><b>'+np+'</b><span>Proyek dipetakan</span></div><div><b>'+(n('Galat')+n('Dilewati'))+'</b><span>Dilewati</span></div></div>';
  h+='<div class="psimp-tablewrap"><table class="psimp-table"><thead><tr><th>Baris</th><th>Program</th><th>Tahun</th><th>UIC</th><th>Proyek</th><th>Milestone</th><th>Kriteria</th><th>Aksi</th><th>Catatan</th></tr></thead><tbody>'+
   pl.items.map(it=>'<tr><td>'+it.row+'</td><td><b>'+E(it.src.nama||'—')+'</b>'+(it.src.kodeResmi?'<small>'+E(it.src.kodeResmi)+'</small>':'')+'</td><td>'+E(it.src.tahun)+'</td><td>'+E(it.src.uic||'—')+'</td><td>'+it.projects.filter(z=>!z.problem).length+'</td><td>'+it.ms.length+'</td><td>'+it.kp.length+'</td><td>'+tag(it.action)+'</td><td class="psimp-note">'+
-   E([...it.problems,...it.notes].join(' · ')||'—')+'</td></tr>').join('')+'</tbody></table></div>';
+   E([...it.problems,...it.notes].join(' · ')||'—')+'</td></tr>'+projectTable(it)).join('')+'</tbody></table></div>';
  if(pl.warn.length)h+='<details class="psimp-warn"><summary>'+pl.warn.length+' baris rujukan tidak cocok</summary><div>'+pl.warn.map(E).join('<br>')+'</div></details>';
  return h;
 }
 function paint(){
  const ov=document.querySelector('.psimp-overlay');if(!ov)return;
  ov.querySelector('main').innerHTML=body();
- const ok=current?.plan&&current.plan.items.some(x=>x.action==='Baru'||x.action==='Perbarui');
+ const ok=current?.plan&&current.plan.items.some(x=>['Baru','Perbarui','Proyek'].includes(x.action));
  const b=ov.querySelector('[data-psimp="apply"]');if(b)b.disabled=!ok;
 }
 function open(preset){
@@ -216,7 +301,7 @@ function open(preset){
    const res=apply(current.plan,{file:current.file});
    S.ui.psSelectedYear=S.ui.psSelectedYear||year();S.ui.psBank=S.ui.psBank||{};S.ui.psBank.tab='detail';S.ui.psBank.detailPage=1;
    if(typeof save==='function')save();ov.remove();if(typeof render==='function')render();
-   toast(res.created+' program baru, '+res.updated+' diperbarui, '+res.projects+' proyek diimpor'+(res.skipped?'; '+res.skipped+' baris dilewati':'')+'.');
+   toast(res.created+' program baru, '+res.updated+' diperbarui'+(res.touched?', '+res.touched+' program ditambah proyek':'')+', '+res.projects+' proyek masuk Pemetaan Proyek'+(res.skipped?'; '+res.skipped+' baris dilewati':'')+'.');
   }
  });
  ov.addEventListener('change',async ev=>{
@@ -230,5 +315,5 @@ function open(preset){
  paint();
 }
 document.addEventListener('click',ev=>{if(ev.target.closest?.('[data-bank-import]')){ev.preventDefault();open()}});
-window.MT_PS_IMPORT={plan,apply,tables,templateBook,open,downloadTemplate,version:'20261125-import-v1'};
+window.MT_PS_IMPORT={plan,apply,tables,templateBook,open,downloadTemplate,dateOf,version:'20261125-import-v2'};
 })();
