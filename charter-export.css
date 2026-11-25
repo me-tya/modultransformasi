@@ -2,8 +2,8 @@
 .chx-off{position:fixed;left:-30000px;top:0;width:1123px;pointer-events:none;z-index:-1}
 .chx-page{position:relative;width:1123px;height:794px;box-sizing:border-box;padding:30px 38px 26px;background:#fff;display:flex;flex-direction:column;color:#000;font-size:12px;line-height:1.28;overflow:hidden}
 .chx-page *{box-sizing:border-box}
-.chx-page.chx-color{font-family:Arial,'Liberation Sans',Helvetica,sans-serif}
-.chx-page.chx-mono{font-family:'Bookman Old Style','Bookman','URW Bookman','URW Bookman L','TeX Gyre Bonum',Georgia,serif}
+/* Berwarna dan Monokrom memakai font yang sama (Bookman) */
+.chx-page.chx-color,.chx-page.chx-mono{font-family:'Bookman Old Style','Bookman','URW Bookman','URW Bookman L','TeX Gyre Bonum',Georgia,serif}
 .chx-band{position:absolute;left:0;top:0;right:0;height:6px;background:#1F2A44}
 .chx-band::after{content:"";position:absolute;left:0;top:6px;width:210px;height:3px;background:#F2B705}
 .chx-mono .chx-band{display:none}

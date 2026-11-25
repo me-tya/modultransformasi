@@ -163,7 +163,7 @@ async function toJpg(m){const o=offscreen(m);try{const cs=await canvases(o.pages
   await libs.zip();const z=new JSZip();const cnt={};blobs.forEach((b,i)=>{const f=m.all?o.pages[i].dataset.chxFile:base;cnt[f]=(cnt[f]||0)+1;z.file((m.all?String(m.all.findIndex(x=>x.file===f)+1).padStart(2,'0')+'_'+f:f)+'_hal'+String(cnt[f]).padStart(2,'0')+'.jpg',b)});saveBlob(await z.generateAsync({type:'blob'}),base+'_JPG.zip')}finally{o.done()}}
 const hex=c=>{const m=String(c||'').match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/);if(!m||m[4]==='0')return null;return [m[1],m[2],m[3]].map(x=>(+x).toString(16).padStart(2,'0')).join('').toUpperCase()};
 async function toPptx(m){const o=offscreen(m);try{await libs.ppt();const ppt=new PptxGenJS();ppt.defineLayout({name:'A4L',width:PW/PX,height:PH/PX});ppt.layout='A4L';
-  ppt.title='Charter Program — '+m.judul;ppt.author='PMO Kementerian Keuangan';const face=m.mode==='mono'?'Bookman Old Style':'Arial',inch=v=>v/PX;
+  ppt.title='Charter Program — '+m.judul;ppt.author='PMO Kementerian Keuangan';const face='Bookman Old Style',inch=v=>v/PX;
   o.pages.forEach(pg=>{const s=ppt.addSlide();s.background={color:'FFFFFF'};const R=pg.getBoundingClientRect();
    pg.querySelectorAll('[data-chx-r]').forEach(el=>{const r=el.getBoundingClientRect(),cs=getComputedStyle(el),fill=hex(cs.backgroundColor),bc=hex(cs.borderTopColor),bw=parseFloat(cs.borderTopWidth)||0;
     if(!fill&&!(bc&&bw))return;s.addShape(ppt.ShapeType.rect,{x:inch(r.left-R.left),y:inch(r.top-R.top),w:inch(r.width),h:inch(r.height),fill:fill?{color:fill}:{type:'none'},line:bc&&bw?{color:bc,width:Math.max(.5,bw*.75)}:{type:'none'}})});
@@ -181,7 +181,7 @@ async function toPptx(m){const o=offscreen(m);try{await libs.ppt();const ppt=new
 /* Word (.docx) — tabel Word asli. */
 const X=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 function docxXml(m){
- const mono=m.mode==='mono',font=mono?'Bookman Old Style':'Arial',NAVY='1F2A44',GOLD='F2B705',LINE=mono?'000000':'C9D1E0';
+ const mono=m.mode==='mono',font='Bookman Old Style',NAVY='1F2A44',GOLD='F2B705',LINE=mono?'000000':'C9D1E0';
  const rpr=(o={})=>'<w:rPr><w:rFonts w:ascii="'+font+'" w:hAnsi="'+font+'" w:cs="'+font+'"/>'+(o.b?'<w:b/>':'')+(o.i?'<w:i/>':'')+'<w:color w:val="'+(o.c||'000000')+'"/><w:sz w:val="'+(o.sz||18)+'"/><w:szCs w:val="'+(o.sz||18)+'"/></w:rPr>';
  const run=(t,o)=>'<w:r>'+rpr(o)+'<w:t xml:space="preserve">'+X(t)+'</w:t></w:r>';
  const para=(runs,o={})=>'<w:p><w:pPr><w:spacing w:before="0" w:after="'+(o.after||20)+'" w:line="240" w:lineRule="auto"/>'+(o.jc?'<w:jc w:val="'+o.jc+'"/>':'')+(o.hang?'<w:ind w:left="'+o.hang+'" w:hanging="'+o.hang+'"/>':'')+(o.keep?'<w:keepNext/>':'')+(o.pb?'<w:pageBreakBefore/>':'')+'</w:pPr>'+runs+'</w:p>';
