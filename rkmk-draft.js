@@ -59,8 +59,8 @@ function model(){
 
 /* ---------- PRATINJAU HTML ---------- */
 function inl(parts){return parts.map(x=>typeof x==='string'?E(x):x&&x.ph?'<mark class="rk-ph">['+E(x.ph)+']</mark>':'').join(' ')}
-/* Indentasi pratinjau = twip naskah × skala pratinjau (13 px ≈ 12 pt × 0,8125). */
-const TW=t=>(t/15*0.8125).toFixed(1)+'px';
+/* Pratinjau = halaman A4 skala 1:1 (96 dpi): 1 px = 15 twip, font 12 pt = 16 px, margin sama dengan Word. */
+const TW=t=>(t/15).toFixed(2)+'px';
 function PP(ind,hang,label,html,cls){return '<div class="rk-pp'+(cls?' '+cls:'')+'" style="padding-left:'+TW(ind)+';text-indent:-'+TW(hang)+'">'+(label!=null?'<span class="rk-lbl" style="width:'+TW(hang)+'">'+label+'</span>':'')+html+'</div>'}
 function previewHtml(m){
  const row3=(lab,items,sep)=>items.map((it,i)=>'<tr><td class="rk-l">'+(i?'':lab)+'</td><td class="rk-c">'+(i?'':':')+'</td><td class="rk-n">'+(sep==='a'?HURUF[i]+'.':(i+1)+'.')+'</td><td>'+inl(it)+'</td></tr>').join('');

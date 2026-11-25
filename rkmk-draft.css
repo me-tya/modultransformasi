@@ -56,3 +56,14 @@
 .rk-paper .rk-sign,.rk-paper .rk-lhead{margin-left:39.4%}
 
 .rk-paper table.rk-ms{margin-left:calc(567px/15*0.8125);width:calc(100% - 567px/15*0.8125)}
+
+/* Pratinjau 1:1 dengan Word: A4 (794 px), margin 1701/1008/1152/1296 twip, Bookman 12 pt, spasi 1,15 */
+#app .rk-prev{overflow:auto}
+.rk-paper{width:794px;max-width:none;box-sizing:border-box;padding:113px 67px 77px 86px;font-size:16px;line-height:1.38}
+.rk-paper .rk-pp{margin:0 0 5px}
+.rk-paper p{margin:0 0 5px}
+.rk-paper h3,.rk-paper h4,.rk-paper h5{font-size:16px}
+.rk-paper .rk-ms th,.rk-paper .rk-ms td{font-size:16px}
+.rk-paper table.rk-ms{margin-left:37.8px;width:calc(100% - 37.8px)}
+.rk-paper .rk-sign,.rk-paper .rk-lhead{margin-left:252.1px}
+.rk-paper .rk-break{margin:28px -67px 20px -86px}
