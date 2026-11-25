@@ -59,25 +59,33 @@ function model(){
 
 /* ---------- PRATINJAU HTML ---------- */
 function inl(parts){return parts.map(x=>typeof x==='string'?E(x):x&&x.ph?'<mark class="rk-ph">['+E(x.ph)+']</mark>':'').join(' ')}
+/* Indentasi pratinjau = twip naskah × skala pratinjau (13 px ≈ 12 pt × 0,8125). */
+const TW=t=>(t/15*0.8125).toFixed(1)+'px';
+function PP(ind,hang,label,html,cls){return '<div class="rk-pp'+(cls?' '+cls:'')+'" style="padding-left:'+TW(ind)+';text-indent:-'+TW(hang)+'">'+(label!=null?'<span class="rk-lbl" style="width:'+TW(hang)+'">'+label+'</span>':'')+html+'</div>'}
 function previewHtml(m){
  const row3=(lab,items,sep)=>items.map((it,i)=>'<tr><td class="rk-l">'+(i?'':lab)+'</td><td class="rk-c">'+(i?'':':')+'</td><td class="rk-n">'+(sep==='a'?HURUF[i]+'.':(i+1)+'.')+'</td><td>'+inl(it)+'</td></tr>').join('');
- const dk=m.diktum.map((it,i)=>'<tr><td class="rk-l">'+DIKTUM[i]+'</td><td class="rk-c">:</td><td colspan="2">'+inl(it.filter(x=>!x||!x.items))+
-  (it.find(x=>x&&x.items)?'<ol class="rk-alpha">'+it.find(x=>x&&x.items).items.map(t=>'<li>'+E(t)+';</li>').join('')+'</ol>':'')+'</td></tr>').join('');
- const num=L=>L.length?'<ol class="rk-num">'+L.map(t=>'<li>'+E(t)+'</li>').join('')+'</ol>':'<p><mark class="rk-ph">[belum diisi pada Charter Program]</mark></p>';
- const lamp=m.lamp.map(x=>'<h4>'+x.no+'. '+E(x.nama)+'</h4>'+(x.noC?'<p><mark class="rk-ph">[Charter Program belum dibuat untuk program ini]</mark></p>':'')+
-  '<h5>a. Ruang Lingkup dan Proses Bisnis</h5>'+num(x.ruang.lb)+(x.ruang.tb.length?'<p>Terobosan yang dilakukan meliputi:</p>'+num(x.ruang.tb):'')+
-  '<h5>b. Kondisi yang Diharapkan</h5>'+(x.kondisi.tujuan?'<p>'+E(x.kondisi.tujuan)+'</p>':'')+num(x.kondisi.oc)+
-  '<h5>c. Kegiatan</h5>'+num(x.kegiatan)+
-  '<h5>d. Penanggung Jawab</h5><table class="rk-kv"><tr><td>Initiative Champion</td><td>:</td><td>'+E(x.pj.champion||'—')+'</td></tr><tr><td>Initiative Owner</td><td>:</td><td>'+E(x.pj.owner.join('; ')||'—')+'</td></tr><tr><td>UIC Utama</td><td>:</td><td>'+E(x.pj.uic||'—')+'</td></tr><tr><td>UIC Pendukung</td><td>:</td><td>'+E(x.pj.pend||'—')+'</td></tr></table>').join('');
+ const dk=m.diktum.map((it,i)=>{const items=(it.find(x=>x&&x.items)||{}).items;return '<tr><td class="rk-l">'+DIKTUM[i]+'</td><td class="rk-c">:</td><td colspan="2">'+inl(it.filter(x=>!x||!x.items))+
+  (items?items.map((t,j)=>PP(446,448,HURUF[j]+'.',E(t)+(j<items.length-1?';':'.'))).join(''):'')+'</td></tr>'}).join('');
+ const L1=[567,567],L2=[993,426],L3=[1560,426],L4=[1985,425];
+ const H=(lv,lab,t)=>lv===L1?PP(lv[0],lv[1],'<b>'+lab+'</b>','<b>'+E(t)+'</b>','rk-h'):PP(lv[0],lv[1],lab,E(t),'rk-h');
+ const num=L=>L.length?L.map((t,i)=>PP(L4[0],L4[1],(i+1)+')',E(t))).join(''):PP(L4[0],0,null,'<mark class="rk-ph">[belum diisi pada Charter Program]</mark>');
+ const txt=t=>PP(L4[0],0,null,E(t));
+ const kv=(k,v)=>'<div class="rk-pp rk-kvrow" style="padding-left:'+TW(L4[0])+'"><span style="width:'+TW(2835)+'">'+E(k)+'</span><span style="width:'+TW(283)+'">:</span><span>'+E(v||'—')+'</span></div>';
+ const lamp=m.lamp.map(x=>H(L2,x.no+'.',x.nama)+(x.noC?PP(L3[0],0,null,'<mark class="rk-ph">[Charter Program belum dibuat untuk program ini]</mark>'):'')+
+  H(L3,'a.','Ruang Lingkup dan Proses Bisnis')+num(x.ruang.lb)+(x.ruang.tb.length?txt('Terobosan yang dilakukan meliputi:')+num(x.ruang.tb):'')+
+  H(L3,'b.','Kondisi yang Diharapkan')+(x.kondisi.tujuan?txt(x.kondisi.tujuan):'')+num(x.kondisi.oc)+
+  H(L3,'c.','Kegiatan')+num(x.kegiatan)+
+  H(L3,'d.','Penanggung Jawab')+kv('Initiative Champion',x.pj.champion)+kv('Initiative Owner',x.pj.owner.join('; '))+kv('UIC Utama',x.pj.uic)+kv('UIC Pendukung',x.pj.pend)).join('');
  let n=0;const msRows=m.ms.map(g=>'<tr class="rk-grp"><td colspan="'+(2+m.yrs.length)+'">'+E(g.nama)+'</td></tr>'+(g.rows.length?g.rows.map(r=>'<tr><td>'+(++n)+'.</td><td>'+E(r.t)+'</td>'+m.yrs.map(y=>'<td class="'+(y===r.y?'on':'')+'"></td>').join('')+'</tr>').join(''):'<tr><td></td><td><mark class="rk-ph">[Key Milestones belum diisi]</mark></td>'+m.yrs.map(()=>'<td></td>').join('')+'</tr>')).join('');
+ const COLS='<colgroup><col style="width:28.09%"><col style="width:3.74%"><col style="width:7.18%"><col style="width:60.99%"></colgroup>';
  return '<div class="rk-paper">'+
   '<p class="rk-c1"><b>KEPUTUSAN MENTERI KEUANGAN REPUBLIK INDONESIA</b></p><p class="rk-c1"><b>NOMOR <mark class="rk-ph">[…]</mark> TAHUN '+E(m.sy)+'</b></p><p class="rk-c1"><b>TENTANG</b></p><p class="rk-c1"><b>'+E(m.TTL)+'</b></p><p class="rk-c1 rk-sp">DENGAN RAHMAT TUHAN YANG MAHA ESA</p><p class="rk-c1"><b>MENTERI KEUANGAN REPUBLIK INDONESIA,</b></p>'+
-  '<table class="rk-t">'+row3('Menimbang',m.menimbang,'a')+row3('Mengingat',m.mengingat,'1')+'</table>'+
-  '<p class="rk-c1 rk-sp"><b>MEMUTUSKAN:</b></p><table class="rk-t"><tr><td class="rk-l">Menetapkan</td><td class="rk-c">:</td><td colspan="2"><b>KEPUTUSAN MENTERI KEUANGAN TENTANG '+E(m.TTL)+'.</b></td></tr>'+dk+'</table>'+
+  '<table class="rk-t">'+COLS+row3('Menimbang',m.menimbang,'a')+'<tr><td colspan="4">&nbsp;</td></tr>'+row3('Mengingat',m.mengingat,'1')+'</table>'+
+  '<p class="rk-c1 rk-sp"><b>MEMUTUSKAN:</b></p><table class="rk-t">'+COLS+'<tr><td class="rk-l">Menetapkan</td><td class="rk-c">:</td><td colspan="2"><b>KEPUTUSAN MENTERI KEUANGAN TENTANG '+E(m.TTL)+'.</b></td></tr>'+dk+'</table>'+
   '<div class="rk-sign"><p>Ditetapkan di Jakarta<br>pada tanggal <mark class="rk-ph">[…]</mark></p><p><b>MENTERI KEUANGAN REPUBLIK INDONESIA,</b></p><p class="rk-sp">Ditandatangani secara elektronik</p><p><mark class="rk-ph">[NAMA]</mark></p></div>'+
   '<div class="rk-break">Lampiran</div><div class="rk-lhead"><p>LAMPIRAN<br>KEPUTUSAN MENTERI KEUANGAN REPUBLIK INDONESIA<br>NOMOR <mark class="rk-ph">[…]</mark><br>TENTANG<br>'+E(m.TTL)+'</p></div>'+
-  '<h3>A. PROGRAM TRANSFORMASI KEMENTERIAN KEUANGAN</h3>'+(lamp||'<p><mark class="rk-ph">[Belum ada program dipilih]</mark></p>')+
-  '<h3>B. MILESTONE PROGRAM TRANSFORMASI KEMENTERIAN KEUANGAN</h3><table class="rk-ms"><thead><tr><th>No</th><th>Kegiatan</th>'+m.yrs.map(y=>'<th>'+y+'</th>').join('')+'</tr></thead><tbody>'+msRows+'</tbody></table>'+
+  H(L1,'A.','PROGRAM TRANSFORMASI KEMENTERIAN KEUANGAN')+(lamp||PP(L2[0],0,null,'<mark class="rk-ph">[Belum ada program dipilih]</mark>'))+
+  H(L1,'B.','MILESTONE PROGRAM TRANSFORMASI KEMENTERIAN KEUANGAN')+'<table class="rk-ms"><colgroup><col style="width:9.85%"><col><'+'/colgroup><thead><tr><th>No</th><th>Kegiatan</th>'+m.yrs.map(y=>'<th style="width:'+(Math.min(993,Math.floor((9573-943-3780)/Math.max(1,m.yrs.length)))/95.73).toFixed(2)+'%">'+y+'</th>').join('')+'</tr></thead><tbody>'+msRows+'</tbody></table>'+
   '<div class="rk-sign"><p><b>MENTERI KEUANGAN REPUBLIK INDONESIA,</b></p><p class="rk-sp">Ditandatangani secara elektronik</p><p><mark class="rk-ph">[NAMA]</mark></p></div></div>';
 }
 
@@ -87,13 +95,14 @@ function docxXml(m){
  const rpr=o=>'<w:rPr><w:rFonts w:ascii="'+F+'" w:hAnsi="'+F+'" w:cs="'+F+'"/>'+(o&&o.b?'<w:b/>':'')+(o&&o.hl?'<w:highlight w:val="yellow"/>':'')+'<w:sz w:val="'+(o&&o.sz||SZ)+'"/><w:szCs w:val="'+(o&&o.sz||SZ)+'"/></w:rPr>';
  const r=(t,o)=>'<w:r>'+rpr(o)+'<w:t xml:space="preserve">'+X(t)+'</w:t></w:r>';
  const runs=(parts,o)=>parts.map(x=>typeof x==='string'?r(x+' ',o):x&&x.ph?r('['+x.ph+'] ',Object.assign({},o,{hl:1})):'').join('');
- const p=(content,o={})=>'<w:p><w:pPr><w:spacing w:before="0" w:after="'+(o.after==null?80:o.after)+'" w:line="276" w:lineRule="auto"/>'+(o.jc?'<w:jc w:val="'+o.jc+'"/>':'<w:jc w:val="both"/>')+(o.ind?'<w:ind w:left="'+o.ind+'"'+(o.hang?' w:hanging="'+o.hang+'"':'')+'/>':'')+(o.pb?'<w:pageBreakBefore/>':'')+(o.keep?'<w:keepNext/>':'')+'</w:pPr>'+content+'</w:p>';
+ const p=(content,o={})=>'<w:p><w:pPr>'+(o.tabs?'<w:tabs>'+o.tabs.map(t=>'<w:tab w:val="left" w:pos="'+t+'"/>').join('')+'</w:tabs>':'')+'<w:spacing w:before="0" w:after="'+(o.after==null?80:o.after)+'" w:line="276" w:lineRule="auto"/>'+(o.jc?'<w:jc w:val="'+o.jc+'"/>':'<w:jc w:val="both"/>')+(o.ind?'<w:ind w:left="'+o.ind+'"'+(o.hang?' w:hanging="'+o.hang+'"':'')+'/>':'')+(o.pb?'<w:pageBreakBefore/>':'')+(o.keep?'<w:keepNext/>':'')+'</w:pPr>'+content+'</w:p>';
  const c1=(t,b,o)=>p(r(t,{b}),Object.assign({jc:'center',after:0},o||{}));
  const noB='<w:tblBorders>'+['top','left','bottom','right','insideH','insideV'].map(k=>'<w:'+k+' w:val="nil"/>').join('')+'</w:tblBorders>';
  const cell=(w,content,o={})=>'<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/>'+(o.span>1?'<w:gridSpan w:val="'+o.span+'"/>':'')+(o.fill?'<w:shd w:val="clear" w:color="auto" w:fill="'+o.fill+'"/>':'')+(o.vc?'<w:vAlign w:val="center"/>':'')+'</w:tcPr>'+(content||p(''))+'</w:tc>';
  const tbl=(grid,rows,borders)=>'<w:tbl><w:tblPr><w:tblW w:w="'+grid.reduce((a,b)=>a+b,0)+'" w:type="dxa"/><w:tblLayout w:type="fixed"/>'+(borders?'<w:tblBorders>'+['top','left','bottom','right','insideH','insideV'].map(k=>'<w:'+k+' w:val="single" w:sz="4" w:color="000000"/>').join('')+'</w:tblBorders>':noB)+'<w:tblCellMar><w:left w:w="60" w:type="dxa"/><w:right w:w="60" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>'+grid.map(w=>'<w:gridCol w:w="'+w+'"/>').join('')+'</w:tblGrid>'+rows.join('')+'</w:tbl>';
  const tr=(cells,head)=>'<w:tr>'+(head?'<w:trPr><w:tblHeader/><w:cantSplit/></w:trPr>':'<w:trPr><w:cantSplit/></w:trPr>')+cells+'</w:tr>';
- const G=[1650,280,420,7250];
+ /* Jarak & lebar kolom mengikuti naskah RKMK Peta Rencana (batang tubuh: 2552/340/652/5541 twip). */
+ const G=[2552,340,652,5541];
  const body=[];
  body.push(c1('KEPUTUSAN MENTERI KEUANGAN REPUBLIK INDONESIA',1),p(r('NOMOR ',{b:1})+r('[…]',{b:1,hl:1})+r(' TAHUN '+m.sy,{b:1}),{jc:'center',after:0}),c1('TENTANG',1),c1(m.TTL,1,{after:240}),c1('DENGAN RAHMAT TUHAN YANG MAHA ESA',0,{after:240}),c1('MENTERI KEUANGAN REPUBLIK INDONESIA,',1,{after:240}));
  const rows3=(lab,items,sep)=>items.map((it,i)=>tr(cell(G[0],p(r(i?'':lab),{jc:'left'}))+cell(G[1],p(r(i?'':':'),{jc:'left'}))+cell(G[2],p(r(sep==='a'?HURUF[i]+'.':(i+1)+'.'),{jc:'left'}))+cell(G[3],p(runs(it)))));
@@ -101,28 +110,31 @@ function docxXml(m){
  body.push(c1('MEMUTUSKAN:',1,{after:160}));
  const drows=[tr(cell(G[0],p(r('Menetapkan'),{jc:'left'}))+cell(G[1],p(r(':'),{jc:'left'}))+cell(G[2]+G[3],p(r('KEPUTUSAN MENTERI KEUANGAN TENTANG '+m.TTL+'.',{b:1})),{span:2}))];
  m.diktum.forEach((it,i)=>{const items=(it.find(x=>x&&x.items)||{}).items;
-  drows.push(tr(cell(G[0],p(r(DIKTUM[i]),{jc:'left'}))+cell(G[1],p(r(':'),{jc:'left'}))+cell(G[2]+G[3],p(runs(it.filter(x=>!x||!x.items)))+(items?items.map((t,j)=>p(r(HURUF[j]+'.\t'+t+(j<items.length-1?';':'.')),{ind:420,hang:420})).join(''):''),{span:2})))});
+  drows.push(tr(cell(G[0],p(r(DIKTUM[i]),{jc:'left'}))+cell(G[1],p(r(':'),{jc:'left'}))+cell(G[2]+G[3],p(runs(it.filter(x=>!x||!x.items)))+(items?items.map((t,j)=>p(r(HURUF[j]+'.\t'+t+(j<items.length-1?';':'.')),{ind:446,hang:448,tabs:[446]})).join(''):''),{span:2})))});
  body.push(tbl(G,drows));
- const sign=()=>[p(r('Ditetapkan di Jakarta'),{jc:'left',ind:5200,after:0}),p(r('pada tanggal ')+r('[…]',{hl:1}),{jc:'left',ind:5200,after:200}),p(r('MENTERI KEUANGAN REPUBLIK INDONESIA,'),{jc:'left',ind:5200,after:200}),p(r('Ditandatangani secara elektronik'),{jc:'left',ind:5200,after:200}),p(r('[NAMA]',{hl:1}),{jc:'left',ind:5200})];
+ const SG=3782,sign=()=>[p(r('Ditetapkan di Jakarta'),{jc:'left',ind:SG,after:0}),p(r('pada tanggal ')+r('[…]',{hl:1}),{jc:'left',ind:SG,after:200}),p(r('MENTERI KEUANGAN REPUBLIK INDONESIA,'),{jc:'left',ind:SG,after:200}),p(r('Ditandatangani secara elektronik'),{jc:'left',ind:SG,after:200}),p(r('[NAMA]',{hl:1}),{jc:'left',ind:SG})];
  body.push(p('',{after:200}),...sign());
  /* Lampiran */
- body.push(p(r('LAMPIRAN'),{jc:'left',ind:4800,after:0,pb:1}),p(r('KEPUTUSAN MENTERI KEUANGAN REPUBLIK INDONESIA'),{jc:'left',ind:4800,after:0}),p(r('NOMOR ')+r('[…]',{hl:1}),{jc:'left',ind:4800,after:0}),p(r('TENTANG'),{jc:'left',ind:4800,after:0}),p(r(m.TTL),{jc:'left',ind:4800,after:300}));
- const H=(t,ind)=>p(r(t,{b:1}),{jc:'left',ind:ind||0,keep:1,after:120});
- const nums=(L,ind)=>L.length?L.map((t,i)=>p(r((i+1)+')\t'+t),{ind:ind+420,hang:420})).join(''):p(r('[belum diisi pada Charter Program]',{hl:1}),{ind});
- body.push(H('A.\tPROGRAM TRANSFORMASI KEMENTERIAN KEUANGAN'));
- if(!m.lamp.length)body.push(p(r('[Belum ada program dipilih]',{hl:1}),{ind:420}));
+ body.push(p(r('LAMPIRAN'),{jc:'left',ind:SG,after:0,pb:1}),p(r('KEPUTUSAN MENTERI KEUANGAN REPUBLIK INDONESIA'),{jc:'left',ind:SG,after:0}),p(r('NOMOR ')+r('[…]',{hl:1}),{jc:'left',ind:SG,after:0}),p(r('TENTANG'),{jc:'left',ind:SG,after:0}),p(r(m.TTL),{jc:'left',ind:SG,after:300}));
+ const L1=[567,567],L2=[993,426],L3=[1560,426],L4=[1985,425];
+ const H=(t,lv)=>p(r(t,{b:lv===L1}),{jc:'left',ind:lv[0],hang:lv[1],tabs:[lv[0]],keep:1,after:120}); // hanya A./B. tebal, seperti naskah RKMK
+ const nums=L=>L.length?L.map((t,i)=>p(r((i+1)+')\t'+t),{ind:L4[0],hang:L4[1],tabs:[L4[0]]})).join(''):p(r('[belum diisi pada Charter Program]',{hl:1}),{ind:L4[0]});
+ const txt=t=>p(r(t),{ind:L4[0]});
+ body.push(H('A.\tPROGRAM TRANSFORMASI KEMENTERIAN KEUANGAN',L1));
+ if(!m.lamp.length)body.push(p(r('[Belum ada program dipilih]',{hl:1}),{ind:L2[0]}));
  m.lamp.forEach(x=>{
-  body.push(H(x.no+'.\t'+x.nama,420));
-  if(x.noC)body.push(p(r('[Charter Program belum dibuat untuk program ini]',{hl:1}),{ind:840}));
-  body.push(H('a.\tRuang Lingkup dan Proses Bisnis',840),nums(x.ruang.lb,840));
-  if(x.ruang.tb.length)body.push(p(r('Terobosan yang dilakukan meliputi:'),{ind:840}),nums(x.ruang.tb,840));
-  body.push(H('b.\tKondisi yang Diharapkan',840));if(x.kondisi.tujuan)body.push(p(r(x.kondisi.tujuan),{ind:840}));body.push(nums(x.kondisi.oc,840));
-  body.push(H('c.\tKegiatan',840),nums(x.kegiatan,840));
-  body.push(H('d.\tPenanggung Jawab',840));
-  [['Initiative Champion',x.pj.champion],['Initiative Owner',x.pj.owner.join('; ')],['UIC Utama',x.pj.uic],['UIC Pendukung',x.pj.pend]].forEach(([k,v])=>body.push(p(r(k+'\t: '+(v||'—')),{ind:1260,hang:420})));
+  body.push(H(x.no+'.\t'+x.nama,L2));
+  if(x.noC)body.push(p(r('[Charter Program belum dibuat untuk program ini]',{hl:1}),{ind:L3[0]}));
+  body.push(H('a.\tRuang Lingkup dan Proses Bisnis',L3),nums(x.ruang.lb));
+  if(x.ruang.tb.length)body.push(txt('Terobosan yang dilakukan meliputi:'),nums(x.ruang.tb));
+  body.push(H('b.\tKondisi yang Diharapkan',L3));if(x.kondisi.tujuan)body.push(txt(x.kondisi.tujuan));body.push(nums(x.kondisi.oc));
+  body.push(H('c.\tKegiatan',L3),nums(x.kegiatan));
+  body.push(H('d.\tPenanggung Jawab',L3));
+  [['Initiative Champion',x.pj.champion],['Initiative Owner',x.pj.owner.join('; ')],['UIC Utama',x.pj.uic],['UIC Pendukung',x.pj.pend]].forEach(([k,v])=>body.push(p(r(k+'\t:\t'+(v||'—')),{ind:L4[0]+2835+283,hang:2835+283,tabs:[L4[0]+2835,L4[0]+2835+283]})));
  });
- body.push(H('B.\tMILESTONE PROGRAM TRANSFORMASI KEMENTERIAN KEUANGAN'));
- const W=9600,yw=Math.min(900,Math.floor(4200/Math.max(1,m.yrs.length))),nw=560,kw=W-nw-yw*m.yrs.length,grid=[nw,kw].concat(m.yrs.map(()=>yw));
+ body.push(H('B.\tMILESTONE PROGRAM TRANSFORMASI KEMENTERIAN KEUANGAN',L1));
+ /* Tabel milestone: No 943, tahun ±993 per kolom, total 9573 (seperti naskah RKMK). */
+ const W=9573,nw=943,yw=Math.min(993,Math.floor((W-nw-3780)/Math.max(1,m.yrs.length))),kw=W-nw-yw*m.yrs.length,grid=[nw,kw].concat(m.yrs.map(()=>yw));
  const ms=[tr(cell(nw,p(r('No',{b:1}),{jc:'center',after:0}),{fill:'D9D9D9',vc:1})+cell(kw,p(r('Kegiatan',{b:1}),{jc:'center',after:0}),{fill:'D9D9D9',vc:1})+m.yrs.map(y=>cell(yw,p(r(String(y),{b:1}),{jc:'center',after:0}),{fill:'D9D9D9'})).join(''),1)];
  let n=0;m.ms.forEach(g=>{ms.push(tr(cell(W,p(r(g.nama,{b:1}),{jc:'left',after:0}),{span:grid.length,fill:'F2F2F2'})));
   (g.rows.length?g.rows:[null]).forEach(rw=>ms.push(tr(cell(nw,p(r(rw?(++n)+'.':''),{jc:'center',after:0}))+cell(kw,p(rw?r(rw.t):r('[Key Milestones belum diisi]',{hl:1}),{jc:'left',after:0}))+m.yrs.map(y=>cell(yw,p('',{after:0}),{fill:rw&&rw.y===y?'404040':null})).join(''))))});

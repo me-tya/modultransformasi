@@ -46,3 +46,11 @@
 .rk-pgrid .rk-pi{align-items:flex-start;justify-content:flex-start;text-transform:none;letter-spacing:0;font-weight:600;color:#1F2A44;text-align:left;padding:3px 0}
 .rk-pgrid .rk-pi>input{flex:0 0 auto;width:auto!important;height:auto;margin-top:3px;transform:none}
 .rk-pgrid .rk-pi>span{text-transform:none;letter-spacing:0;font-size:12.5px;text-align:left}
+
+/* Indentasi mengikuti naskah RKMK (twip × skala pratinjau) */
+.rk-paper .rk-t{table-layout:fixed}.rk-paper .rk-l{width:auto}
+.rk-paper .rk-pp{margin:0 0 4px;text-align:justify}
+.rk-paper .rk-pp .rk-lbl{display:inline-block;text-indent:0}
+.rk-paper .rk-pp.rk-h{margin-top:8px}
+.rk-paper .rk-kvrow{display:flex}.rk-paper .rk-kvrow>span{flex:0 0 auto}.rk-paper .rk-kvrow>span:last-child{flex:1 1 auto}
+.rk-paper .rk-sign,.rk-paper .rk-lhead{margin-left:39.4%}
