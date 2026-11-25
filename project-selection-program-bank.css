@@ -1231,3 +1231,23 @@
 .psimp-ptable th{background:#f2f5fa;text-align:left;padding:5px 7px;font-size:11px;color:#2b3d5c}
 .psimp-ptable td{padding:5px 7px;border-top:1px solid #edf1f7;vertical-align:top}
 .psimp-ptable td small{display:block;color:#6b7a93}.psimp-perr{color:#a11d1d!important}
+/* Usulan Program: kolom No (CSS counter, tetap urut setelah tabel diurutkan & lanjut antarhalaman) */
+#app .psbank-detail-table.psbank-numbered col:nth-child(1){width:4%!important}
+#app .psbank-detail-table.psbank-numbered col:nth-child(2){width:5%!important}
+#app .psbank-detail-table.psbank-numbered col:nth-child(3){width:10%!important}
+#app .psbank-detail-table.psbank-numbered col:nth-child(4){width:22%!important}
+#app .psbank-detail-table.psbank-numbered col:nth-child(5){width:7%!important}
+#app .psbank-detail-table.psbank-numbered col:nth-child(6){width:9%!important}
+#app .psbank-detail-table.psbank-numbered col:nth-child(7){width:8%!important}
+#app .psbank-detail-table.psbank-numbered col:nth-child(8){width:11%!important}
+#app .psbank-detail-table.psbank-numbered col:nth-child(9){width:6%!important}
+#app .psbank-detail-table.psbank-numbered col:nth-child(10){width:18%!important}
+#app .psbank-detail-table.psbank-numbered :is(th,td):nth-child(8){text-align:left!important}
+#app .psbank-detail-table.psbank-numbered :is(th,td):nth-child(1),
+#app .psbank-detail-table.psbank-numbered :is(th,td):nth-child(9),
+#app .psbank-detail-table.psbank-numbered :is(th,td):nth-child(10){text-align:center!important}
+#app .psbank-detail-table.psbank-numbered td:nth-child(2){font-weight:500;color:inherit}
+#app .psbank-detail-table.psbank-numbered td:nth-child(3){font-weight:750;overflow-wrap:anywhere;color:inherit}
+#app .psbank-detail-table.psbank-numbered td:nth-child(4){overflow-wrap:anywhere;color:#345b7e}
+#app .psbank-detail-table.psbank-numbered tbody tr:not(:has(.psbank-empty)){counter-increment:psbankno}
+#app .psbank-detail-table.psbank-numbered td.psbank-nocol::before{content:counter(psbankno);font-weight:700;color:#5b6b85}
