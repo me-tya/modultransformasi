@@ -31,6 +31,8 @@ const COLS={
 };
 const REQUIRED={Program:['nama','tahun','uic'],Proyek:['prog','name','uic'],Milestone:['prog','y','t'],Kriteria:['prog','m']};
 const JENIS=['Berkelanjutan','Tematik','Lainnya'],STATUS=['Usulan','Berjalan','Ditunda','Selesai'];
+/* Jenis Program longgar: 'Program Tematik', 'berkelanjutan (OA)', dsb. dikenali; nilai lain → Lainnya (bukan galat). */
+const jenisOf=v=>{const k=key(v);if(!k)return '';return JENIS.find(j=>key(j)===k)||JENIS.find(j=>k.includes(key(j)))||(/lanjut|sustain/.test(k)?'Berkelanjutan':/tema/.test(k)?'Tematik':'Lainnya')};
 const CAT=['Core APBN','Core Non APBN','Office Automation','APBN','Non APBN','Manajemen Birokrasi'];
 const TEXT_FIELDS=['applicationName','mainFunction','subModule','urgency','legalBasis','strategyAlignment','businessProcess','businessNarrative','batiiIdentification','probisConfirmation'];
 const MON={jan:1,feb:2,mar:3,apr:4,mei:5,may:5,jun:6,jul:7,agu:8,aug:8,agt:8,sep:9,okt:10,oct:10,nov:11,des:12,dec:12};
@@ -102,7 +104,7 @@ function plan(aoa){
   if(code){
    if(codes.has(y+'|'+code))it.problems.push('Kode Program Resmi ganda dalam berkas');codes.set(y+'|'+code,1);
   }
-  if(r.jenis&&!JENIS.some(j=>key(j)===key(r.jenis)))it.problems.push('Jenis Program harus Berkelanjutan/Tematik/Lainnya');
+  if(r.jenis&&!JENIS.some(j=>key(j)===key(r.jenis)))it.notes.push('Jenis Program "'+r.jenis+'" dibaca sebagai '+jenisOf(r.jenis));
   if(me()&&me().role==='PMOU'&&me().unit&&r.uic&&r.uic!==me().unit)it.problems.push('PMO Unit hanya dapat mengimpor program dengan UIC '+me().unit);
   const existing=r.nama&&y?findProgram(r.nama,y):null;
   if(code&&(S.programs||[]).some(p=>p!==existing&&+p.psYear===y&&String(p.kodeResmi||'').trim().toUpperCase()===code))it.problems.push('Kode Program Resmi sudah dipakai program lain');
@@ -194,7 +196,7 @@ function apply(pl,meta){
     psProjects:[],psWeights:{},psGovernanceV:1,psBenefits:[],psStakeholders:[],psRiskRegister:[],status:'Perencanaan'};
    S.programs.push(p);done.created++;
   }else done.updated++;
-  const jenis=JENIS.find(j=>key(j)===key(r.jenis));
+  const jenis=jenisOf(r.jenis);if(r.jenis&&jenis!==r.jenis)p.psJenisSumber=r.jenis;
   const p1=+r.p1||y,p2=Math.max(p1,+r.p2||p1);
   Object.assign(p,{nama:r.nama,uic:r.uic,pend:r.pend||p.pend||'',sponsor:r.champion||p.sponsor||'',
    psObjective:T(r.tujuan)||p.psObjective||'',psBackground:lines(r.lb).map(v=>'• '+v).join('\n')||p.psBackground||'',

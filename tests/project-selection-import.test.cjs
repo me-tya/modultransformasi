@@ -81,3 +81,9 @@ test('Parser tanggal',()=>{
  assert.equal(I.dateOf('2027-3-1'),'2027-03-01');assert.equal(I.dateOf('Mar 2027'),'2027-03-01');
  assert.equal(I.dateOf('46752'),'2027-12-31');assert.equal(I.dateOf('abc'),null);assert.equal(I.dateOf(''),'');
 });
+test('Jenis Program tidak baku tidak menggagalkan impor',()=>{
+ const {S,I}=boot();const A=JSON.parse(JSON.stringify(aoa));const h=A.Program[0].indexOf('Jenis Program');
+ A.Program[1][h]='Program Tematik';A.Program[2][h]='Inisiatif Strategis';A.Program[3][h]='Kode Resmi ISTK';
+ const pl=I.plan(A);assert.ok(pl.items.every(x=>x.action==='Baru'));I.apply(pl);
+ assert.equal(S.programs[0].jenis,'Tematik');assert.equal(S.programs[1].jenis,'Lainnya');assert.equal(S.programs[1].psJenisSumber,'Inisiatif Strategis');
+});
