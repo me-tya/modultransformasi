@@ -11,7 +11,7 @@
       - Charter berstatus Disahkan dan program Ditetapkan tidak ditimpa.
       - Rencana Kerja yang sudah berisi tidak ditimpa; bila kosong diisi
         dari Milestones (Level 4) + Penanggung Jawab, bulan Mulai/Selesai
-        dibiarkan kosong (tidak ditebak).
+        diisi per tahun milestone (Jan–Des) karena Excel hanya memuat tahun.
    2) Unduh Plain: format tabel hitam-putih seperti lampiran charter
       RKMK (Charter · Kriteria Penyelesaian · Rencana Kerja · Perbandingan
       bila ada) sebagai Word, PowerPoint, atau PDF (cetak). Pratinjau di
@@ -145,7 +145,9 @@ function toCharter(rec,p,Y,base,meta){
   out:items(rec.out),oc:items(rec.oc),p1:ys.length?Math.min(...ys):Y,p2:ys.length?Math.max(...ys):Y,ms,
   ris:items(rec.ris),pk:items(rec.pk),ch:strip(T(rec.ch).split('\n')[0]||''),ow:parseOw(rec.ow),kp});
  const keepRk=Array.isArray(d.rk)&&d.rk.some(r=>T(r&&r.t));
- if(!keepRk)d.rk=kp.map(k=>({t:k.m,s:'',e:'',u:pj.u,pd:pj.pd}));
+ /* Linimasa: satu tindakan per Key Milestone, batang sepanjang tahun milestone itu (Jan–Des).
+    Excel hanya memuat tahun, jadi granularitasnya tahunan; bulan bisa dipersempit manual. */
+ if(!keepRk)d.rk=(ms.length?ms.map(m=>({t:m.t,s:m.y+'-01',e:m.y+'-12',u:pj.u,pd:pj.pd})):kp.map(k=>({t:k.m,s:'',e:'',u:pj.u,pd:pj.pd})));
  d.tahun=+d.tahun||Y;d.st=d.st||'Draft';
  d.sumberImpor={jenis:'Tabulasi Charter IS',file:(meta&&meta.file)||'',sheet:(meta&&meta.sheet)||'',baris:rec.row||'',kode:rec.kode||'',klaster:rec.klaster||'',subisu:rec.subisu||'',lead:rec.lead||'',penanggungJawab:pj.raw,at:now,by:(M&&M.email)||''};
  d.log=(Array.isArray(d.log)?d.log:[]).concat([{t:now,u:(M&&M.email)||'',a:'Impor Tabulasi Charter IS '+(rec.kode||'')+' ('+((meta&&meta.file)||'Excel')+')'}]);
@@ -416,7 +418,7 @@ function importDialog(r){
   (U.open===String(i)?'<tr class="mtcis-pvrow"><td colspan="6"><div class="mtcis-pv">'+previewOf(i)+'</div></td></tr>':'')}).join('');
  const yrs=[2025,2026,2027,2028,2029];
  const body='<style>'+CSS+'</style><div class="mtcis-imp"><div class="mtcis-bar"><span>Berkas <b>'+E(r.file)+'</b> · sheet <b>'+E(r.sheet)+'</b> · '+r.rows.length+' IS</span><label>Tahun program tujuan <select data-mtcis-year>'+yrs.map(y=>'<option'+(y===U.Y?' selected':'')+'>'+y+'</option>').join('')+'</select></label>'+
-  (typeof g('MT_INFO_ICON')==='function'?g('MT_INFO_ICON')('Pemetaan kolom: Program Transformasi → Judul; Tujuan Program; Latar Belakang; Terobosan; Output; Outcome; Key Milestones (dipisah per tahun); Risiko; Pendukung Kesuksesan; Initiative Champion; Initiative Owner; Milestones (Level 4) dan Kriteria Penyelesaian → Kriteria Penyelesaian; Penanggung Jawab → UIC Utama/Pendukung Rencana Kerja (bulan Mulai/Selesai diisi manual). Kode IS, klaster, dan Lead/UIC dicatat sebagai sumber impor. Charter Disahkan dan program Ditetapkan tidak ditimpa.'):'')+'</div>'+
+  (typeof g('MT_INFO_ICON')==='function'?g('MT_INFO_ICON')('Pemetaan kolom: Program Transformasi → Judul; Tujuan Program; Latar Belakang; Terobosan; Output; Outcome; Key Milestones (dipisah per tahun); Risiko; Pendukung Kesuksesan; Initiative Champion; Initiative Owner; Milestones (Level 4) dan Kriteria Penyelesaian → Kriteria Penyelesaian; Key Milestones per tahun → linimasa Rencana Kerja (batang Jan–Des tahun tersebut, bisa dipersempit manual); Penanggung Jawab → UIC Utama/Pendukung. Kode IS, klaster, dan Lead/UIC dicatat sebagai sumber impor. Charter Disahkan dan program Ditetapkan tidak ditimpa.'):'')+'</div>'+
   (r.missing.length?'<div class="note w" style="margin:0 0 8px"><span>Kolom tidak ditemukan dan akan dibiarkan kosong: '+E(r.missing.join(', '))+'.</span></div>':'')+
   '<div class="mtcis-tw"><table class="mtcis-tbl"><thead><tr><th><input type="checkbox" data-mtcis-all aria-label="Pilih semua"></th><th>Kode IS</th><th>Program Transformasi (Excel)</th><th>Program tujuan di aplikasi</th><th>Hasil</th><th></th></tr></thead><tbody data-mtcis-rows></tbody></table></div></div>';
  init();
@@ -444,7 +446,7 @@ function apply(r,U){
  const ui=S.ui||(S.ui={});ui.psSelectedYear=U.Y;
  try{const P=g('MT_PROJECT_SELECTION');const s=P&&P.internals&&P.internals.state&&P.internals.state();if(s){s.prog=lastId;s.tab='charter'}}catch(_){}
  const sv=g('save'),rd=g('render');if(typeof sv==='function')sv();if(typeof rd==='function')rd();
- say(nFill+' charter program diisi dari Tabulasi Charter IS'+(nNew?' ('+nNew+' usulan program baru dibuat, lengkapi kode resmi & UIC di Usulan Program)':'')+(skipped.length?'; dilewati: '+skipped.join(', '):'')+'. Bulan Rencana Kerja perlu diisi.');
+ say(nFill+' charter program diisi dari Tabulasi Charter IS'+(nNew?' ('+nNew+' usulan program baru dibuat, lengkapi kode resmi & UIC di Usulan Program)':'')+(skipped.length?'; dilewati: '+skipped.join(', '):'')+'. Linimasa Rencana Kerja diisi per tahun milestone; persempit bulannya bila perlu.');
 }
 const API={version:VERSION,fromAoa,parseMs,parseKp,parsePj,parseOw,toCharter,autoMatch,score,model,tables,html,docxBody,docxBlob,pptxWrite,readFile,openImport,openPlain,newProgram,leadUnit,canImport};
 G.MT_CHARTER_IS=API;

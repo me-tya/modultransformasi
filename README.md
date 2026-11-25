@@ -64,7 +64,7 @@ Modul `mt-charter-is.js` (`window.MT_CHARTER_IS`, gaya `mt-charter-is.css`). Tom
 | Key Milestones (format `2027:` lalu butir) | `ms` = `{y,t}`; `p1`/`p2` = tahun terkecil/terbesar |
 | Initiative Champion / Initiative Owner | `ch` / `ow` (Owner dipisah baris atau `;`) |
 | Milestones (Level 4) dan Kriteria Penyelesaian (`1. Milestone — Kriteria`) | `kp` = `{m,k[]}` |
-| Penanggung Jawab (`Utama: … \| Pendukung: …`) | `rk` = satu tindakan per milestone L4 dengan `u`/`pd`; **bulan Mulai/Selesai dikosongkan** (diisi manual, tidak ditebak) |
+| Key Milestones + Penanggung Jawab (`Utama: … \| Pendukung: …`) | `rk` (linimasa) = satu tindakan per Key Milestone, Mulai/Selesai = Jan–Des tahun milestone (Excel hanya memuat tahun; bisa dipersempit manual), `u`/`pd` dari Penanggung Jawab |
 | Kode, Klaster, Subisu, Lead/UIC | dicatat di `sumberImpor` (jejak sumber) |
 
 - Pencocokan program tahun tujuan (bisa diganti per baris): kode IS yang pernah diimpor → nama sama → kemiripan kata (Jaccard ≥ 0,5, atau nama pendek ≥ 2 kata terkandung penuh). Satu program hanya dipasangkan ke satu baris.

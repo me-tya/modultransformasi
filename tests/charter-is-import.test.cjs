@@ -52,7 +52,7 @@ test('Kolom dikenali dari judul dan setiap isian charter terpetakan',()=>{
  assert.equal(c.ch,'Menteri Keuangan');
  assert.deepEqual([...c.ow],['Kepala Badan Teknologi, Informasi, dan Intelijen Keuangan']);
  assert.deepEqual(JSON.parse(JSON.stringify(c.kp)),[{m:'Desain HRIS',k:['Tersedianya desain HRIS yang ditetapkan.']},{m:'Pilot modul kinerja',k:['Terlaksananya pilot di dua unit.']}]);
- assert.deepEqual(JSON.parse(JSON.stringify(c.rk.map(x=>[x.t,x.s,x.e,x.u,x.pd]))),[['Desain HRIS','','','BaTii','BPPK, DJKN'],['Pilot modul kinerja','','','BaTii','BPPK, DJKN']],'bulan tidak ditebak');
+ assert.deepEqual(JSON.parse(JSON.stringify(c.rk.map(x=>[x.t,x.s,x.e,x.u,x.pd]))),[['Desain HRIS ditetapkan','2027-01','2027-12','BaTii','BPPK, DJKN'],['Pilot modul kinerja','2027-01','2027-12','BaTii','BPPK, DJKN'],['Rollout nasional','2028-01','2028-12','BaTii','BPPK, DJKN']],'linimasa per tahun milestone');
  assert.equal(c.st,'Draft');
  assert.equal(c.sumberImpor.kode,'3.3');
  assert.equal(c.sumberImpor.file,'LOM.xlsx');
@@ -100,8 +100,8 @@ test('Model plain: tabel Charter, Kriteria, Rencana Kerja; Word lanskap dengan s
  assert.equal(m.periode,'2027 s.d. 2028');
  const T=X.tables(m);
  assert.deepEqual([...T.map(t=>t.title.trim())],['Charter Program Transformasi:','Kriteria Penyelesaian Program Transformasi:','Rencana Kerja Program Transformasi:']);
- const rk=T[2];assert.equal(rk.gantt,12,'satu tahun = 12 kolom bulan');
- const filled=rk.rows[2].filter(x=>x&&x.fill==='404040').length;assert.equal(filled,3,'Maret–Mei terisi');
+ const rk=T[2];
+ assert.equal(rk.gantt,24,'dua tahun = 24 kolom bulan');const filled=rk.rows[2].filter(x=>x&&x.fill==='404040').length;assert.equal(filled,3,'Maret–Mei terisi');
  const out=X.html([m]);
  assert.match(out,/Tujuan Program/);assert.match(out,/Initiative Champion/);assert.match(out,/rowspan="3"/);
  const xml=X.docxBody([m]);
