@@ -47,8 +47,9 @@ function model(c,p){
  const rkRows=rk.map((r,i)=>{const on=[];for(let q=0;q<qn;q++)on.push(r.q[0]!=null&&r.q[1]!=null&&q>=Math.max(0,r.q[0])&&q<=Math.min(qn-1,r.q[1]));return {t:'rk',n:i+1,txt:r.txt,on,pj:r.pj}});
  const rencana=[{t:'rkhead',yrs}].concat(rkRows.length?rkRows:[{t:'rk',n:'',txt:'Rencana kerja belum diisi.',on:Array(qn).fill(false),pj:''}]);
  const code=T(p.kodeResmi)||T(p.kode)||'';
- return {src:{c,p},fs:fsOf(p),judul,code,yrs,mode:'color',file:'Charter_Program_'+((code?code+'_':'')+judul).replace(/[^A-Za-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,80),
-  sections:[{key:'charter',title:'Charter Program Transformasi:',blocks:charter},{key:'kp',title:'Kriteria Penyelesaian Program Transformasi:',blocks:kriteria},{key:'rk',title:'Rencana Kerja Program Transformasi:',blocks:rencana}]};
+ const FSM=fsMap(p);
+ return {src:{c,p},fs:1,judul,code,yrs,mode:'color',file:'Charter_Program_'+((code?code+'_':'')+judul).replace(/[^A-Za-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,80),
+  sections:[{key:'charter',fs:FSM.charter,title:'Charter Program Transformasi:',blocks:charter},{key:'kp',fs:FSM.kp,title:'Kriteria Penyelesaian Program Transformasi:',blocks:kriteria},{key:'rk',fs:FSM.rk,title:'Rencana Kerja Program Transformasi:',blocks:rencana}]};
 }
 
 /* ---------- HTML BLOK ---------- */
@@ -81,7 +82,7 @@ function block(b){
 function pageShell(m,sec,cont){
  const pg=document.createElement('div');pg.className='chx-page chx-'+m.mode+(m.lamp?' chx-lamp':'');
  if(m.pw){pg.style.width=m.pw+'px';pg.style.height=m.ph+'px'}
- pg.style.setProperty('--chxk',String(m.fs||1));
+ pg.style.setProperty('--chxk',String(sec.fs||m.fs||1));pg.dataset.chxSec=sec.key||'';
  pg.innerHTML='<div class="chx-band" data-chx-r></div><div class="chx-kmk" data-chx-t>KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</div>'+
   '<div class="chx-title" data-chx-t><b>'+E(sec.title)+'</b> '+E(m.judul)+(cont?' <i>(lanjutan)</i>':'')+'</div><div class="chx-body"></div>'+
   '<div class="chx-foot" data-chx-line><span data-chx-t>'+(m.code?E(m.code)+' · ':'')+E(m.judul)+'</span><span class="chx-pno" data-chx-t></span></div>';
@@ -139,13 +140,21 @@ function paginate(m,host,keep){
 const mode=()=>{try{return S.ui.chxMode==='mono'?'mono':'color'}catch(_){return 'color'}};
 /* Ukuran font per program: skala 70–130% (100% = 9 pt monokrom; isi slide berwarna 12–15 pt). Disimpan di program.psCharterFs. */
 const FS_MIN=.7,FS_MAX=1.3,FS_STEP=.05;
-const fsOf=p=>{const v=+(p&&p.psCharterFs);return v>=FS_MIN&&v<=FS_MAX?Math.round(v*100)/100:1};
-const fsLbl=k=>Math.round(k*100)+'%';
-function fsCtl(pid,k){return '<span class="chx-fs" role="group" aria-label="Ukuran font charter"'+(pid?' data-chx-fs-pid="'+E(pid)+'"':'')+' title="Ukuran font charter program ini (100% = 9 pt monokrom)"><button type="button" data-chx-fs="-1" aria-label="Perkecil font"'+(k<=FS_MIN+.001?' disabled':'')+'>A−</button><b data-chx-fs-v>'+fsLbl(k)+'</b><button type="button" data-chx-fs="1" aria-label="Perbesar font"'+(k>=FS_MAX-.001?' disabled':'')+'>A+</button></span>'}
-function setFs(pid,dir){const p=(S.programs||[]).find(x=>String(x.id)===String(pid));if(!p)return;
- const k=Math.min(FS_MAX,Math.max(FS_MIN,Math.round((fsOf(p)+dir*FS_STEP)*100)/100));if(k===1)delete p.psCharterFs;else p.psCharterFs=k;try{if(typeof save==='function')save()}catch(_){}
- document.querySelectorAll('[data-chx-fs-pid]').forEach(g=>{if(String(g.dataset.chxFsPid)!==String(pid))return;g.querySelector('[data-chx-fs-v]').textContent=fsLbl(k);g.querySelector('[data-chx-fs="-1"]').disabled=k<=FS_MIN+.001;g.querySelector('[data-chx-fs="1"]').disabled=k>=FS_MAX-.001});
- document.querySelectorAll('[data-chx-preview][data-chx-mounted]').forEach(x=>{try{const r=resolve(x);if(r&&r.p&&String(r.p.id)===String(pid)&&x.__chxRender)x.__chxRender()}catch(_){}})}
+const SECS=['charter','kp','rk'],SEC_LBL={charter:'Charter',kp:'Kriteria Penyelesaian',rk:'Rencana Kerja'};
+const clampFs=v=>{v=+v;return v>=FS_MIN-.001&&v<=FS_MAX+.001?Math.round(v*100)/100:1};
+/* psCharterFs: angka (semua halaman) atau {charter,kp,rk} (per halaman/slide). */
+const fsMap=p=>{const v=p&&p.psCharterFs,o={};SECS.forEach(k=>{o[k]=v&&typeof v==='object'?clampFs(v[k]==null?1:v[k]):clampFs(v==null?1:v)});return o};
+const fsOf=(p,sec)=>{const o=fsMap(p);return sec?o[sec]:(SECS.every(k=>o[k]===o.charter)?o.charter:null)};
+const fsLbl=k=>k==null?'Beragam':Math.round(k*100)+'%';
+function fsCtl(pid,k,sec){const lo=k!=null&&k<=FS_MIN+.001,hi=k!=null&&k>=FS_MAX-.001;
+ return '<span class="chx-fs" role="group" aria-label="Ukuran font '+(sec?'halaman '+SEC_LBL[sec]:'semua halaman')+'"'+(pid?' data-chx-fs-pid="'+E(pid)+'"':'')+(sec?' data-chx-fs-sec="'+sec+'"':'')+' title="'+(sec?'Ukuran font halaman '+SEC_LBL[sec]+' (termasuk halaman lanjutan & lampirannya)':'Ukuran font semua halaman charter program ini (100% = 9 pt monokrom). Atur per halaman lewat kontrol di pojok tiap halaman pratinjau.')+'">'+(sec?'<small>Font</small>':'')+'<button type="button" data-chx-fs="-1" aria-label="Perkecil font"'+(lo?' disabled':'')+'>A−</button><b data-chx-fs-v>'+fsLbl(k)+'</b><button type="button" data-chx-fs="1" aria-label="Perbesar font"'+(hi?' disabled':'')+'>A+</button></span>'}
+function setFs(pid,dir,sec){const p=(S.programs||[]).find(x=>String(x.id)===String(pid));if(!p)return;
+ const o=fsMap(p),st=v=>Math.min(FS_MAX,Math.max(FS_MIN,Math.round((v+dir*FS_STEP)*100)/100));
+ if(sec)o[sec]=st(o[sec]);else{const v=st(o.charter);SECS.forEach(k=>o[k]=v)}
+ const same=SECS.every(k=>o[k]===o.charter);if(same&&o.charter===1)delete p.psCharterFs;else p.psCharterFs=same?o.charter:o;
+ try{if(typeof save==='function')save()}catch(_){}
+ document.querySelectorAll('[data-chx-fs-pid]').forEach(g=>{if(String(g.dataset.chxFsPid)!==String(pid))return;const k=fsOf(p,g.dataset.chxFsSec||'');g.querySelector('[data-chx-fs-v]').textContent=fsLbl(k);g.querySelector('[data-chx-fs="-1"]').disabled=k!=null&&k<=FS_MIN+.001;g.querySelector('[data-chx-fs="1"]').disabled=k!=null&&k>=FS_MAX-.001});
+ document.querySelectorAll('[data-chx-preview][data-chx-mounted]').forEach(x=>{try{const r=resolve(x);if(r&&r.p&&String(r.p.id)===String(pid)&&x.__chxRender){const y=window.scrollY;x.__chxRender();window.scrollTo(0,y)}}catch(_){}})}
 function setMode(v){try{S.ui.chxMode=v==='mono'?'mono':'color';if(typeof save==='function')save()}catch(_){}
  document.querySelectorAll('[data-chx-mode]').forEach(b=>{const on=b.dataset.chxMode===mode();b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))});
  document.querySelectorAll('[data-chx-preview]').forEach(x=>x.__chxRender&&x.__chxRender());}
@@ -179,15 +188,16 @@ function deckFor(src){
  /* Kolom Penanggung Jawab di slide berukuran tetap: bila teks UIC panjang, tampilkan lebih sedikit baris agar tidak bertumpuk. */
  const pjLen=Math.max(0,...rk.map(r=>String(r.u||'').length+String(r.pd||'').length)),MAXRK=pjLen>70?5:pjLen>45?6:8;
  const more=Math.max(0,rk.length-MAXRK);c.rk=rk.slice(0,MAXRK);
- const K0=window.__dkFsK;window.__dkFsK=fsOf(p);
- try{const D=chDeck3(c,Object.assign({},p,{kode:p.kodeResmi||p.kode}));D.rkMore=more;
+ const K0=window.__dkFsK,FSM=fsMap(p),pp=Object.assign({},p,{kode:p.kodeResmi||p.kode}),built={};
+ const mk=k=>{if(!built[k]){window.__dkFsK=k;built[k]=chDeck3(Object.assign({},c,{rk:c.rk.slice()}),pp)}return built[k]};
+ try{const D=mk(FSM.charter);D.slides=D.slides.map((sl,i)=>i&&SECS[i]&&FSM[SECS[i]]!==FSM.charter?mk(FSM[SECS[i]]).slides[i]:sl);D.rkMore=more;
   if(more&&D.slides[2]&&typeof dkT==='function')D.slides[2].E.push(dkT(7.4,1.16,5.48,.3,'+'+more+' tindakan lainnya — rincian lengkap di Lampiran',{s:12,i:1,c:'5B6B82',a:'right'}));D.file='Charter_Program_'+String(p.kodeResmi||p.kode||c.prog||'').replace(/[^A-Za-z0-9_-]+/g,'_')+'_'+y+'_v'+c.ver;return D}catch(e){return null}finally{window.__dkFsK=K0}
 }
 const clippedText=e=>e&&e.txt!=null&&/…/.test(Array.isArray(e.txt)?e.txt.join(' '):String(e.txt));
 function pagesFor(m,host){
  if(m.mode!=='color')return paginate(m,host,true);
  const D=deckFor(m.src);if(!D)return paginate(m,host,true);
- const out=D.slides.map(sl=>{const w=document.createElement('div');w.className='chx-slide';w.innerHTML=dkHtml(sl);w.__deck=sl;w.dataset.chxFile=m.file;host.appendChild(w);return w});
+ const out=D.slides.map((sl,i)=>{const w=document.createElement('div');w.className='chx-slide';w.dataset.chxSec=SECS[i]||'';w.innerHTML=dkHtml(sl);w.__deck=sl;w.dataset.chxFile=m.file;host.appendChild(w);return w});
  const keys=['charter','kp','rk'].filter((k,i)=>D.slides[i]&&(D.slides[i].E.some(clippedText)||(k==='rk'&&D.rkMore)));
  if(keys.length){const L=Object.assign({},m,{pw:1280,ph:720,lamp:true,mode:'color',sections:m.sections.filter(x=>keys.includes(x.key)).map(x=>Object.assign({},x,{title:'Lampiran · '+x.title}))});out.push(...paginate(L,host,true))}
  return out;
@@ -245,7 +255,7 @@ function docxXml(m){
  const tbl=(grid,rows)=>'<w:tbl><w:tblPr><w:tblW w:w="'+grid.reduce((a,b)=>a+b,0)+'" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblBorders>'+['top','left','bottom','right','insideH','insideV'].map(k=>'<w:'+k+' w:val="single" w:sz="'+(mono?6:4)+'" w:color="'+LINE+'"/>').join('')+'</w:tblBorders><w:tblCellMar><w:top w:w="40" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:bottom w:w="40" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>'+grid.map(w=>'<w:gridCol w:w="'+w+'"/>').join('')+'</w:tblGrid>'+rows.join('')+'</w:tbl>';
  const tr=(cells,head)=>'<w:tr>'+(head?'<w:trPr><w:tblHeader/><w:cantSplit/></w:trPr>':'')+cells+'</w:tr>';
  const W=15704,body=[];
- (m.all||[m]).forEach((mm,mi)=>{K=mm.fs||1;mm.sections.forEach((sec,si)=>{
+ (m.all||[m]).forEach((mm,mi)=>{K=mm.fs||1;mm.sections.forEach((sec,si)=>{K=sec.fs||mm.fs||1;
   body.push(para(run('KEMENTERIAN KEUANGAN REPUBLIK INDONESIA',{sz:16,c:mono?'000000':'5B6B85'}),{jc:'center',pb:si>0||mi>0,after:60}));
   body.push(para(run(sec.title+' ',{b:1,sz:22,c:mono?'000000':NAVY})+run(mm.judul,{sz:22,c:mono?'000000':NAVY}),{after:100,keep:1}));
   if(sec.key==='rk'){
@@ -305,8 +315,8 @@ function bar(attrs,all,fs){
 }
 /* Semua program tahun y saja (tanpa grup 'Program ini'). */
 function barAllYear(y,n){return bar('data-chx-all="'+E(y)+'" data-chx-sel="1"',null).replace(/data-chx-x="(\w+)"/g,'data-chx-x="$1" data-chx-scope="all"').replace('<small>Charter Program</small>','<small>Program terpilih ('+n+')</small>')}
-const barFor=(p,o)=>bar('data-chx-pid="'+E(p.id)+'"'+(o&&o.year?' data-chx-all="'+E(o.year)+'"':''),o&&o.n>1?{n:o.n}:null,{pid:p.id,k:fsOf(p)});
-const barSrc=key=>{let f=null;try{const r=sources[key]&&sources[key]();const pid=r&&r.p&&r.p.id;const P=pid&&(S.programs||[]).find(x=>String(x.id)===String(pid));if(P)f={pid:P.id,k:fsOf(P)}}catch(_){}return bar('data-chx-src="'+E(key)+'"',null,f)};
+const barFor=(p,o)=>bar('data-chx-pid="'+E(p.id)+'"'+(o&&o.year?' data-chx-all="'+E(o.year)+'"':''),o&&o.n>1?{n:o.n}:null,{pid:p.id,k:fsOf(p,'')});
+const barSrc=key=>{let f=null;try{const r=sources[key]&&sources[key]();const pid=r&&r.p&&r.p.id;const P=pid&&(S.programs||[]).find(x=>String(x.id)===String(pid));if(P)f={pid:P.id,k:fsOf(P,'')}}catch(_){}return bar('data-chx-src="'+E(key)+'"',null,f)};
 /* Unduh semua Charter Program tahun y dalam satu berkas (JPG: satu ZIP). */
 function barAll(y,n){return '<div class="chx-bar chx-all" data-chx-bar data-chx-all="'+E(y)+'"><span class="chx-lbl">Unduh semua ('+n+' program)</span>'+FMT.map(([k,l])=>'<button type="button" class="chx-x" data-chx-x="'+k+'" title="Gabungkan seluruh Charter Program '+E(y)+' ke satu berkas '+l+'">'+l+'</button>').join('')+'</div>'}
 function bundle(list,name){const all=list.filter(x=>x&&x.c).map(x=>model(x.c,x.p));return {all,mode:mode(),file:name||'Charter_Program_Semua',judul:'Semua Program',sections:[]}}
@@ -323,18 +333,19 @@ async function exportAs(fmt,src){
    Kinerja: hasil paginasi di-cache per isi charter + mode (render ulang aplikasi tidak menyusun ulang halaman),
    pratinjau di dalam <details> tertutup baru disusun saat dibuka, dan penyesuaian skala hanya saat lebar berubah. */
 const CACHE=new Map();
-function cacheKey(src,md){try{return md+'|'+JSON.stringify([src.c,src.p&&[src.p.id,src.p.kode,src.p.kodeResmi,src.p.nama,src.p.uic,src.p.pend,src.p.psYear,fsOf(src.p)]])}catch(_){return ''}}
+function cacheKey(src,md){try{return md+'|'+JSON.stringify([src.c,src.p&&[src.p.id,src.p.kode,src.p.kodeResmi,src.p.nama,src.p.uic,src.p.pend,src.p.psYear,fsMap(src.p)]])}catch(_){return ''}}
 function pagesHtml(src,md){
  const k=cacheKey(src,md);if(k&&CACHE.has(k))return CACHE.get(k);
  const m=model(src.c,src.p);m.mode=md;const o=offscreen(m);
- const out=o.pages.map(pg=>{const [w,h]=dims(pg);return {w,h,html:pg.outerHTML}});o.done();
+ const out=o.pages.map(pg=>{const [w,h]=dims(pg);return {w,h,sec:pg.dataset.chxSec||'',html:pg.outerHTML}});o.done();
  if(k){CACHE.set(k,out);if(CACHE.size>24)CACHE.delete(CACHE.keys().next().value)}
  return out;
 }
 function mountPreview(el,getSrc){
  el.__chxRender=()=>{const src=getSrc();if(!src||!src.c){el.innerHTML='<div class="chx-empty">Charter Program belum dibuat.</div>';return}
   const md=mode(),pages=pagesHtml(src,md);el.classList.toggle('chx-prev-deck',md==='color');
-  el.innerHTML=pages.map(p=>'<div class="chx-pbox" data-w="'+p.w+'" data-h="'+p.h+'"><div class="chx-pscale">'+p.html+'</div></div>').join('');
+  const P=src.p&&src.p.id&&(S.programs||[]).find(x=>String(x.id)===String(src.p.id)),seen={};
+  el.innerHTML=pages.map(p=>{const first=p.sec&&!seen[p.sec];if(p.sec)seen[p.sec]=1;return (P&&p.sec&&first?'<div class="chx-phd"><span>Halaman '+E(SEC_LBL[p.sec])+'</span>'+fsCtl(P.id,fsOf(P,p.sec),p.sec)+'</div>':'')+'<div class="chx-pbox" data-w="'+p.w+'" data-h="'+p.h+'"><div class="chx-pscale">'+p.html+'</div></div>'}).join('');
   el.__chxW=0;fit(el)};
  el.__chxRender();
  if(!el.__chxRO&&typeof ResizeObserver==='function'){let raf=0;el.__chxRO=new ResizeObserver(()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;fit(el)})});el.__chxRO.observe(el)}
@@ -361,7 +372,7 @@ document.addEventListener('click',ev=>{
  if(dd){ev.preventDefault();ev.stopPropagation();const menu=dd.parentElement.querySelector('.chx-menu');closeMenus(menu);menu.hidden=!menu.hidden;dd.setAttribute('aria-expanded',String(!menu.hidden));
   if(!menu.hidden){menu.classList.remove('up');const r=menu.getBoundingClientRect();if(r.bottom>window.innerHeight-8)menu.classList.add('up')}return}
  if(!ev.target.closest?.('.chx-menu'))closeMenus();
- const f=ev.target.closest?.('[data-chx-fs]');if(f){ev.preventDefault();ev.stopPropagation();const g=f.closest('[data-chx-fs-pid]');if(g&&!f.disabled)setFs(g.dataset.chxFsPid,+f.dataset.chxFs);return}
+ const f=ev.target.closest?.('[data-chx-fs]');if(f){ev.preventDefault();ev.stopPropagation();const g=f.closest('[data-chx-fs-pid]');if(g&&!f.disabled)setFs(g.dataset.chxFsPid,+f.dataset.chxFs,g.dataset.chxFsSec||'');return}
  const m=ev.target.closest?.('[data-chx-mode]');if(m){ev.preventDefault();ev.stopPropagation();setMode(m.dataset.chxMode);return}
  const x=ev.target.closest?.('[data-chx-x]');if(x){ev.preventDefault();ev.stopPropagation();if(x.disabled)return;const src=resolve(x);closeMenus();x.disabled=true;exportAs(x.dataset.chxX,src).finally(()=>{x.disabled=false})}
 },true);

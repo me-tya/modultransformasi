@@ -92,3 +92,6 @@
 .chx-fs button:hover:not(:disabled){background:#FFF4D6}
 .chx-fs button:disabled{opacity:.35;cursor:default}
 .chx-fs b{font-size:12px;font-weight:800;color:#1F2A44;min-width:38px;text-align:center}
+.chx-phd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 0 -6px}
+.chx-phd>span{font-size:12px;font-weight:800;color:#1F2A44;letter-spacing:.02em;text-transform:uppercase}
+.chx-fs small{font-size:11px;font-weight:800;color:#5b6b85;padding:0 2px 0 8px}
