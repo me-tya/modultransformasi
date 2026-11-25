@@ -61,5 +61,19 @@
  const wbsText=(mk,kind)=>{const w=wbsFor(mk,kind);return w?w.k+' · '+deliv(w):''};
  /* Sufiks sesi Pelaksanaan: -1 setelah kegiatan mulai/terlaksana. */
  const started=st=>['Berjalan','Terlaksana'].includes(st);
+ /* Kode CM (merah/oranye/dst.) bisa diklik: membuka rincian baris kertas kerjanya (mis. D → detail ADP sub modul),
+    memakai tombol Lihat pada baris yang sama; bila tidak ada, buka baris/ubah. Kode WBS (span.code) tetap membuka detail WBS. */
+ const viewBtn=row=>row&&[...row.querySelectorAll('button[data-act],a[data-act]')].find(b=>/^(Lihat|Rincian|Detail)/i.test(b.getAttribute('title')||b.getAttribute('aria-label')||''));
+ function targetFor(el){const row=el.closest('tr,.it,[data-i]');if(!row)return null;const v=viewBtn(row);if(v)return ()=>v.click();if(row.matches('tr[data-act="open"]'))return ()=>row.click();
+  /* Register Risiko CM: baris hanya punya tombol ubah risiko sub modul → tampilkan rincian ADP sub modul tsb. */
+  const ae=row.querySelector('[data-act="adpedit"][data-i]');if(ae&&typeof ACT!=='undefined'&&ACT.adpview)return ()=>ACT.adpview({dataset:{i:ae.dataset.i}});
+  /* Tabel kertas kerja lain (Indikator, Stakeholder, Komunikasi, Pelatihan, Pelaksanaan, Monev): rincian hanya-baca. */
+  const card=row.closest('[id^="tw-"]'),tid=card&&card.id.slice(3),ri=row.querySelector('[data-i]')||(row.dataset.i!=null?row:null);
+  if(tid&&ri&&typeof window.tblRowDetail==='function')return ()=>{if(!window.tblRowDetail(tid,ri.dataset.i,el.outerHTML)){const ed=row.querySelector('button[data-act="edit"]');ed&&ed.click()}};
+  const ed=row.querySelector('button[data-act="edit"]');return ed?()=>ed.click():null}
+ if(typeof document!=='undefined'&&document.addEventListener){
+  document.addEventListener('click',e=>{const el=e.target.closest&&e.target.closest('.cc-code');if(!el||el.closest('.ov'))return;const t=targetFor(el);if(!t)return;e.preventDefault();e.stopPropagation();t()},true);
+  document.addEventListener('mouseover',e=>{const el=e.target.closest&&e.target.closest('.cc-code');if(!el||el.dataset.ccl)return;el.dataset.ccl='1';const t=targetFor(el);if(t){el.classList.add('cc-link');el.title='Buka rincian '+(el.textContent||'').trim()}});
+ }
  window.MTCC={ensure,full,chip,rCode,wbsFor,wbsCell,wbsText,started,LETTERS,writer};
 })();

@@ -18,7 +18,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="wbs-cap-2026-reference.js"></script>
-<link rel="stylesheet" href="mt-cm-codes.css?v=20261124-cc1"><script src="mt-cm-codes.js?v=20261125-cc2"></script>
+<link rel="stylesheet" href="mt-cm-codes.css?v=20261126-cc3"><script src="mt-cm-codes.js?v=20261126-cc5"></script>
 <script src="cheatsheet-referensi.js?v=20261126-css1"></script>
 <style>
 /* Atribut hidden selalu menyembunyikan, walau elemen punya display:flex/grid dari CSS lain (dipakai pencarian Profil Pegawai, form profil, dll.). */
@@ -4095,7 +4095,7 @@ function adpView(s){const m=modOf(s.modul)||{};const i=S.sub.filter(x=>x.modul==
  const row=(code,name,v,L,k)=>`<div class="dimr"><b><i>${code}</i>${name}</b><div><div class="lvb l${v||0}"><span></span><span></span><span></span></div><span class="t" style="color:${lvC[v||0]||'var(--ink-3)'}">${v?L[v]:'Belum dinilai'}</span></div><span class="u">${esc(s[k+'k']||'—')}</span></div>`;
  const dAvg=DIMS.reduce((a,d)=>a+(+s[d[0]]||0),0)/DIMS.length,rMax=Math.max(0,...RISK.map(r=>+s[r[0]]||0));
  const ed=can('adp','U',s.modul)&&st!=='Final';
- modal(`<span class="code">${s.modul}.${i}</span> Detail ADP`,`<div class="wd-hero"><div class="wtop"><span class="tg y">${esc(s.modul)}</span><span class="tg">${esc(progLabel(m.prog||''))}</span><span class="tg">${s.cc?esc(MTCC.full(s.modul,s.cc)):'Sub modul '+i}</span><span style="margin-left:auto">${chipSt(st)}</span></div>
+ modal(`${window.MTCC&&s.cc?MTCC.chip(s.modul,s.cc):`<span class="code">${s.modul}.${i}</span>`} Detail ADP`,`<div class="wd-hero"><div class="wtop"><span class="tg y">${esc(s.modul)}</span><span class="tg">${esc(progLabel(m.prog||''))}</span><span class="tg">${s.cc?esc(MTCC.full(s.modul,s.cc)):'Sub modul '+i}</span><span style="margin-left:auto">${chipSt(st)}</span></div>
  <h4>${esc(s.nama)}</h4><div class="s" style="color:#AFC6E8;margin-top:-6px">${esc(m.nama||'')}</div>
  <div class="wd-kp"><div><small>Rata-rata dampak</small><b>${dAvg.toFixed(1).replace('.',',')}</b><i>${LV_UB[Math.round(dAvg)]||'—'}</i></div><div><small>Risiko tertinggi</small><b>${LV_RS[rMax]}</b></div><div><small>UIC Utama</small><b style="font-size:13px">${esc(short(m.uic||'—',28))}</b></div><div><small>Indikator CM</small><b>${inds.length}</b><i>indikator</i></div></div></div>
  <div class="wd-sec">Kondisi saat ini → kondisi yang diharapkan</div>
@@ -11099,6 +11099,14 @@ function tSiklus(ms,mf,mk){const B=buildMods();
  <div class="g2"><div class="card"><div class="ch"><h3>Kegiatan CM tanpa item ADP</h3><span class="r s">tidak dibuat modul · usulkan ke PMO</span></div><div class="pad tl">${Object.entries(gapG).map(([k,v])=>`<div class="it"><div style="flex:1;min-width:0"><b>${esc(short(k.split(' › ').slice(1).join(' › ')||k,90))}</b><div class="s">${v.length} item: ${v.slice(0,3).map(x=>`<span class="code">${x.k}</span>`).join(' ')}${v.length>3?' … '+`<span class="code">${v[v.length-1].k}</span>`:''}</div></div>${can('usul','C')?`<button class="btn sm" data-act="usulmod" data-m="${v[0].k}" data-j="Tambah item ADP">Usulkan ADP</button>`:''}</div>`).join('')||'<span class="s">Tidak ada celah.</span>'}</div></div>
  <div class="card"><div class="ch"><h3>Modul tanpa item Monev di WBS</h3><span class="r s">${noMon.length} modul</span></div><div class="pad tl">${noMon.map(m=>`<div class="it"><span class="code">${m.kode}</span><div style="flex:1;min-width:0">${esc(m.nama)}</div>${can('usul','C',m.kode)?`<button class="btn sm" data-act="usulmod" data-m="${m.kode}" data-j="Tambah item Monev">Usulkan</button>`:''}</div>`).join('')||'<span class="s">Semua modul memiliki item Monev.</span>'}${noMon.length>1&&can('usul','C')?`<button class="btn" data-act="usulmass" style="margin-top:6px">Usulkan massal (${noMon.length})</button>`:''}</div></div></div>`}
 ACT.wdet=el=>wbsDetail(wbsBy(el.dataset.k));
+/* Rincian baris tabel (hanya baca) — dipakai saat kode kertas kerja CM (D/R/I/S/K/P) diklik pada tabel tanpa tombol Lihat. */
+function tblRowDetail(id,rid,codeHtml){const o=T[id];if(!o)return false;let row=null;try{row=o.rows().find(r=>String(r.id)===String(rid))}catch(e){}if(!row)return false;
+ const cols=(o.cols||[]).filter(c=>c.l&&c.tbl!==false&&c.k!=='_act');
+ const val=c=>{try{const v=c.r?c.r(row):row[c.k];const t=v==null||v===''?'—':(c.r?v:esc(v));return t}catch(e){return esc(row[c.k]??'—')}};
+ const body='<table class="lap rowdet"><tbody>'+cols.map(c=>`<tr><th style="width:30%;text-align:left;vertical-align:top">${esc(String(c.l).replace(/<[^>]*>/g,''))}</th><td>${val(c)}</td></tr>`).join('')+'</tbody></table>';
+ const canE=o.edit&&o.canEdit&&o.canEdit(row);
+ modal(`${codeHtml||''} Rincian ${esc(o.ent||'data')}`,body,canE?'✎ Ubah':null,canE?()=>{setTimeout(()=>formModal(id,row),0)}:null,{cancel:'Tutup',size:'wide'});return true}
+window.tblRowDetail=tblRowDetail;
 /* Kode WBS di mana pun (span.code) bisa diklik untuk membuka detail item WBS. Kode sub modul (mis. CORE-95.1) membuka item induknya. */
 function codeWbs(el){if(!el)return null;const a=el.closest('a[href]');if(a&&(a!==el||a.getAttribute('href')!=='#modul-'+(el.textContent||'').trim()+'-t-siklus'))return null;if(el.closest('button,[data-tp],input,select,textarea,label'))return null;const da=el.closest('[data-act]');if(da&&da.tagName!=='TR'&&da.tagName!=='TD')return null;const t=(el.textContent||'').trim();if(!t||t.length>40||/\s/.test(t))return null;let w=null;try{w=wbsBy(t);if(!w){const m=t.match(/^(.+)\.\d+$/);if(m)w=wbsBy(m[1])}}catch(e){}return w&&w.k?w:null}
 document.addEventListener('click',e=>{const el=e.target.closest&&e.target.closest('.code');if(!el)return;const w=codeWbs(el);if(!w)return;e.preventDefault();e.stopPropagation();wbsDetail(w)},true);
