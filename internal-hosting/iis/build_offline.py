@@ -10,7 +10,11 @@ def fetch(url,name=None):
     path=vendor/name;path.parent.mkdir(parents=True,exist_ok=True)
     if not path.exists():
         req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 OfflineBuild'})
-        with urllib.request.urlopen(req,timeout=90) as r: data=r.read()
+        print('Fetching',url,flush=True)
+        try:
+            with urllib.request.urlopen(req,timeout=90) as r: data=r.read()
+        except Exception as ex:
+            raise RuntimeError('Cannot download '+url) from ex
         if not data: raise ValueError('Empty dependency '+url)
         path.write_bytes(data)
     manifest[url]={'file':'vendor/'+name,'sha256':hashlib.sha256(path.read_bytes()).hexdigest()}
@@ -61,6 +65,8 @@ for p in root.iterdir():
         url=m.group()
         if url.endswith('.js') or url.endswith('.css'):
             if '/pdf.js/3.11.174/' in url: url='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/'+url.rsplit('/',1)[-1]
+            if '/pptxgenjs/3.12.0/' in url: url='https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js'
+            if 'docx-preview@0.4.1/' in url: url='https://cdn.jsdelivr.net/npm/docx-preview@0.3.6/dist/docx-preview.min.js'
             return fetch(url)
         raise ValueError('Unrecognized dependency '+url)
     s=urls.sub(local,s)
