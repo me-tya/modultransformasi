@@ -156,7 +156,9 @@ function charterFrom(it,p){
   ms:it.ms.map(x=>({y:String(+x.y||x.y),t:x.t,g:x.g||''})),
   ris:lines(r.ris),pk:lines(r.pk),ch:T(r.champion),ow:lines(r.owner).length?lines(r.owner):[r.uic].filter(Boolean),
   asis:base.asis||{pb:'',masalah:'',kor:[],tek:'',link:''},tobe:base.tobe||{pb:[],pot:[],ar:'',link:'',arLink:''},
-  cs:base.cs||[],kp:[...kpMap.values()],mf:base.mf||[],rk:base.rk||[],doc:base.doc||{link:''},
+  cs:base.cs||[],kp:[...kpMap.values()],mf:base.mf||[],
+  /* Rencana kerja: bila belum ada, satu tindakan per milestone sepanjang tahunnya (format Charter Plain RKMK). */
+  rk:(base.rk&&base.rk.length)?base.rk:it.ms.filter(x=>+x.y).slice().sort((a,b)=>+a.y-+b.y).map(x=>({t:x.t,s:(+x.y)+'-01',e:(+x.y)+'-12',u:r.uic||'',pd:r.pend||''})),doc:base.doc||{link:''},
   log:[...(base.log||[]),{t:new Date().toISOString(),by:me()?.email||'',act:'Impor Excel'}]
  };
 }

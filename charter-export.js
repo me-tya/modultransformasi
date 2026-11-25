@@ -162,14 +162,22 @@ function deckFor(src){
  ['lb','out','oc','ris','pk','ow'].forEach(k=>{if(!Array.isArray(c[k]))c[k]=list(c[k])});
  ['ms','kp','rk','cs','mf'].forEach(k=>{if(!Array.isArray(c[k]))c[k]=[]});
  if(typeof c.tb!=='string')c.tb=list(c.tb).join('\n');
- try{const D=chDeck3(c,Object.assign({},p,{kode:p.kodeResmi||p.kode}));D.file='Charter_Program_'+String(p.kodeResmi||p.kode||c.prog||'').replace(/[^A-Za-z0-9_-]+/g,'_')+'_'+y+'_v'+c.ver;return D}catch(e){return null}
+ /* Rencana kerja kosong → turunkan dari Key Milestones (satu tindakan per milestone, sepanjang tahunnya). */
+ let rk=c.rk.filter(r=>T(r.t));
+ if(!rk.length)rk=c.ms.filter(m=>T(m.t)&&+m.y).sort((a,b)=>+a.y-+b.y).map(m=>({t:T(m.t),s:(+m.y)+'-01',e:(+m.y)+'-12',u:p.uic||'',pd:p.pend||''}));
+ rk=rk.slice().sort((a,b)=>String(a.s||'').localeCompare(String(b.s||'')));
+ /* Kolom Penanggung Jawab di slide berukuran tetap: bila teks UIC panjang, tampilkan lebih sedikit baris agar tidak bertumpuk. */
+ const pjLen=Math.max(0,...rk.map(r=>String(r.u||'').length+String(r.pd||'').length)),MAXRK=pjLen>70?5:pjLen>45?6:8;
+ const more=Math.max(0,rk.length-MAXRK);c.rk=rk.slice(0,MAXRK);
+ try{const D=chDeck3(c,Object.assign({},p,{kode:p.kodeResmi||p.kode}));D.rkMore=more;
+  if(more&&D.slides[2]&&typeof dkT==='function')D.slides[2].E.push(dkT(7.4,1.16,5.48,.3,'+'+more+' tindakan lainnya — rincian lengkap di Lampiran',{s:12,i:1,c:'5B6B82',a:'right'}));D.file='Charter_Program_'+String(p.kodeResmi||p.kode||c.prog||'').replace(/[^A-Za-z0-9_-]+/g,'_')+'_'+y+'_v'+c.ver;return D}catch(e){return null}
 }
 const clippedText=e=>e&&e.txt!=null&&/…/.test(Array.isArray(e.txt)?e.txt.join(' '):String(e.txt));
 function pagesFor(m,host){
  if(m.mode!=='color')return paginate(m,host,true);
  const D=deckFor(m.src);if(!D)return paginate(m,host,true);
  const out=D.slides.map(sl=>{const w=document.createElement('div');w.className='chx-slide';w.innerHTML=dkHtml(sl);w.__deck=sl;w.dataset.chxFile=m.file;host.appendChild(w);return w});
- const keys=['charter','kp','rk'].filter((k,i)=>D.slides[i]&&D.slides[i].E.some(clippedText));
+ const keys=['charter','kp','rk'].filter((k,i)=>D.slides[i]&&(D.slides[i].E.some(clippedText)||(k==='rk'&&D.rkMore)));
  if(keys.length){const L=Object.assign({},m,{pw:1280,ph:720,lamp:true,mode:'color',sections:m.sections.filter(x=>keys.includes(x.key)).map(x=>Object.assign({},x,{title:'Lampiran · '+x.title}))});out.push(...paginate(L,host,true))}
  return out;
 }
