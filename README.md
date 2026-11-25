@@ -79,3 +79,12 @@ Setiap naskah dinas yang dicatat (ND permohonan LD, ND hasil LD, nota pengantar 
 ### Bantuan › Peta Menu › Fitur
 
 Setiap kartu menu di Peta Menu (PM & CM) punya bagian lipat **Fitur di menu ini** (`SKFEAT` di index.html), dikelompokkan per tab. Klik fitur → aplikasi membuka menu/tab lalu menjalankan tombolnya (`skRunFeat`): `add:ID`, `xls:ID`, `act:NAMA`, `txt:LABEL`, `jj:AKSI` (modul SK Tim: new, seed, fill, ld, sk, guide), atau `tab`. Pencarian Peta Menu juga mencari nama fitur dan membuka kelompoknya. Fitur ikut terindeks di Tanya Bantuan. Alur Aplikasi memuat alur **Penetapan SK Tim jaringan (Tim Lainnya)**.
+
+## Project Selection › Draft RKMK (kerangka KMK)
+
+Modul `rkmk-draft.js` (`window.MT_RKMK`). Aplikasi hanya menyusun **kerangka** naskah KMK; legal drafting dilakukan di Word.
+
+- **Terisi otomatis dari aplikasi:** judul & periode (dari periode Charter Program terpilih), Diktum KEDUA (daftar program), Lampiran A per program — a. Ruang Lingkup dan Proses Bisnis (Latar Belakang + Terobosan), b. Kondisi yang Diharapkan (Tujuan + Outcome), c. Kegiatan (Output), d. Penanggung Jawab (Initiative Champion/Owner, UIC utama/pendukung) — dan Lampiran B tabel Milestone (Key Milestones per tahun, sel tahun diarsir).
+- **Ditandai `[…]` (sorot kuning) untuk diisi di Word:** nomor, Menimbang huruf a, Mengingat, Diktum KETIGA, tanggal & nama penandatangan.
+- Pratinjau dan unduhan Word memakai model yang sama (A4 tegak, Bookman Old Style 12 pt). Data: `S.psRkmkDoc[tahun] = {title, signYear, programIds|null, docs:[...]}`.
+- **RKMK Ditetapkan** (SA, PMOK): nomor KMK, tanggal, tentang, PDF TTE (IndexedDB lokal `mt-signed-documents`, kunci `rkmk:<id>`), tautan opsional, program tercakup. Setiap unggahan = versi baru; program tercakup diberi `p.psRkmkRef`.

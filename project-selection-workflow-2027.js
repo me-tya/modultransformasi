@@ -216,8 +216,7 @@ function filter(p){
   F.push(field('UIC Proyek',mk('data-ps27-unit',uniq(rows.map(x=>x.uic||cp?.uic)),unit,'Semua Unit'),on(unit)?'UIC: '+unit:null));
   F.push(field('Status Penilaian',mk('data-ps27-status',['Sudah Dinilai','Belum Dinilai'],status,'Semua Status'),on(status)?status:null));
  }else if(stage==='rkmk'){
-  F.push({html:singleProgField,chip:null,wide:true});
-  F.push(field('Status Reviu',mk('data-ps27-status',['Perlu Reviu','Sudah Direviu'],status,'Semua Status'),on(status)?status:null));
+  /* Draft RKMK: program dipilih di panel kerangka; filter cukup Tahun. */
  }else if(stage==='mapping'&&sub==='docs'){
   F.push({html:programField,chip:null,wide:true});
  }else if(stage==='penetapan-program'){
@@ -413,6 +412,7 @@ function penetapan(p){
 }
 const RKMK_FIELDS=[['latar','Latar Belakang'],['tujuan','Tujuan / Sasaran'],['kondisi','Kondisi As-is'],['target','Kondisi To-be / Target'],['strategi','Strategi / Terobosan'],['output','Output / Deliverable'],['manfaat','Manfaat / Outcome'],['milestone','Milestone & Jadwal'],['risiko','Risiko & Mitigasi']];
 function rkmk(p){
+ if(window.MT_RKMK)return window.MT_RKMK.view(); // kerangka KMK + RKMK ditetapkan (rkmk-draft.js)
  if(!p)return '<div class="ps27-card ps27-empty">Pilih program untuk menyusun Draft RKMK.</div>';
  if(!p.psRkmk)p.psRkmk=newRkmk(p);
  if(!p.psRkmkReviewed)p.psRkmkReviewed={};
