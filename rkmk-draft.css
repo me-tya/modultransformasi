@@ -54,3 +54,5 @@
 .rk-paper .rk-pp.rk-h{margin-top:8px}
 .rk-paper .rk-kvrow{display:flex}.rk-paper .rk-kvrow>span{flex:0 0 auto}.rk-paper .rk-kvrow>span:last-child{flex:1 1 auto}
 .rk-paper .rk-sign,.rk-paper .rk-lhead{margin-left:39.4%}
+
+.rk-paper table.rk-ms{margin-left:calc(567px/15*0.8125);width:calc(100% - 567px/15*0.8125)}

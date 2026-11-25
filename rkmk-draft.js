@@ -66,11 +66,11 @@ function previewHtml(m){
  const row3=(lab,items,sep)=>items.map((it,i)=>'<tr><td class="rk-l">'+(i?'':lab)+'</td><td class="rk-c">'+(i?'':':')+'</td><td class="rk-n">'+(sep==='a'?HURUF[i]+'.':(i+1)+'.')+'</td><td>'+inl(it)+'</td></tr>').join('');
  const dk=m.diktum.map((it,i)=>{const items=(it.find(x=>x&&x.items)||{}).items;return '<tr><td class="rk-l">'+DIKTUM[i]+'</td><td class="rk-c">:</td><td colspan="2">'+inl(it.filter(x=>!x||!x.items))+
   (items?items.map((t,j)=>PP(446,448,HURUF[j]+'.',E(t)+(j<items.length-1?';':'.'))).join(''):'')+'</td></tr>'}).join('');
- const L1=[567,567],L2=[993,426],L3=[1560,426],L4=[1985,425];
+ const L1=[567,567],L2=[993,426],L3=[1419,426],L4=[1844,425];
  const H=(lv,lab,t)=>lv===L1?PP(lv[0],lv[1],'<b>'+lab+'</b>','<b>'+E(t)+'</b>','rk-h'):PP(lv[0],lv[1],lab,E(t),'rk-h');
- const num=L=>L.length?L.map((t,i)=>PP(L4[0],L4[1],(i+1)+')',E(t))).join(''):PP(L4[0],0,null,'<mark class="rk-ph">[belum diisi pada Charter Program]</mark>');
- const txt=t=>PP(L4[0],0,null,E(t));
- const kv=(k,v)=>'<div class="rk-pp rk-kvrow" style="padding-left:'+TW(L4[0])+'"><span style="width:'+TW(2835)+'">'+E(k)+'</span><span style="width:'+TW(283)+'">:</span><span>'+E(v||'—')+'</span></div>';
+ const num=L=>L.length?L.map((t,i)=>PP(L4[0],L4[1],(i+1)+')',E(t))).join(''):PP(L3[0],0,null,'<mark class="rk-ph">[belum diisi pada Charter Program]</mark>');
+ const txt=t=>PP(L3[0],0,null,E(t));
+ const kv=(k,v)=>'<div class="rk-pp rk-kvrow" style="padding-left:'+TW(L3[0])+'"><span style="width:'+TW(2835)+'">'+E(k)+'</span><span style="width:'+TW(283)+'">:</span><span>'+E(v||'—')+'</span></div>';
  const lamp=m.lamp.map(x=>H(L2,x.no+'.',x.nama)+(x.noC?PP(L3[0],0,null,'<mark class="rk-ph">[Charter Program belum dibuat untuk program ini]</mark>'):'')+
   H(L3,'a.','Ruang Lingkup dan Proses Bisnis')+num(x.ruang.lb)+(x.ruang.tb.length?txt('Terobosan yang dilakukan meliputi:')+num(x.ruang.tb):'')+
   H(L3,'b.','Kondisi yang Diharapkan')+(x.kondisi.tujuan?txt(x.kondisi.tujuan):'')+num(x.kondisi.oc)+
@@ -99,7 +99,7 @@ function docxXml(m){
  const c1=(t,b,o)=>p(r(t,{b}),Object.assign({jc:'center',after:0},o||{}));
  const noB='<w:tblBorders>'+['top','left','bottom','right','insideH','insideV'].map(k=>'<w:'+k+' w:val="nil"/>').join('')+'</w:tblBorders>';
  const cell=(w,content,o={})=>'<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/>'+(o.span>1?'<w:gridSpan w:val="'+o.span+'"/>':'')+(o.fill?'<w:shd w:val="clear" w:color="auto" w:fill="'+o.fill+'"/>':'')+(o.vc?'<w:vAlign w:val="center"/>':'')+'</w:tcPr>'+(content||p(''))+'</w:tc>';
- const tbl=(grid,rows,borders)=>'<w:tbl><w:tblPr><w:tblW w:w="'+grid.reduce((a,b)=>a+b,0)+'" w:type="dxa"/><w:tblLayout w:type="fixed"/>'+(borders?'<w:tblBorders>'+['top','left','bottom','right','insideH','insideV'].map(k=>'<w:'+k+' w:val="single" w:sz="4" w:color="000000"/>').join('')+'</w:tblBorders>':noB)+'<w:tblCellMar><w:left w:w="60" w:type="dxa"/><w:right w:w="60" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>'+grid.map(w=>'<w:gridCol w:w="'+w+'"/>').join('')+'</w:tblGrid>'+rows.join('')+'</w:tbl>';
+ const tbl=(grid,rows,borders,ind)=>'<w:tbl><w:tblPr><w:tblW w:w="'+grid.reduce((a,b)=>a+b,0)+'" w:type="dxa"/>'+(ind?'<w:tblInd w:w="'+ind+'" w:type="dxa"/>':'')+'<w:tblLayout w:type="fixed"/>'+(borders?'<w:tblBorders>'+['top','left','bottom','right','insideH','insideV'].map(k=>'<w:'+k+' w:val="single" w:sz="4" w:color="000000"/>').join('')+'</w:tblBorders>':noB)+'<w:tblCellMar><w:left w:w="60" w:type="dxa"/><w:right w:w="60" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>'+grid.map(w=>'<w:gridCol w:w="'+w+'"/>').join('')+'</w:tblGrid>'+rows.join('')+'</w:tbl>';
  const tr=(cells,head)=>'<w:tr>'+(head?'<w:trPr><w:tblHeader/><w:cantSplit/></w:trPr>':'<w:trPr><w:cantSplit/></w:trPr>')+cells+'</w:tr>';
  /* Jarak & lebar kolom mengikuti naskah RKMK Peta Rencana (batang tubuh: 2552/340/652/5541 twip). */
  const G=[2552,340,652,5541];
@@ -116,10 +116,11 @@ function docxXml(m){
  body.push(p('',{after:200}),...sign());
  /* Lampiran */
  body.push(p(r('LAMPIRAN'),{jc:'left',ind:SG,after:0,pb:1}),p(r('KEPUTUSAN MENTERI KEUANGAN REPUBLIK INDONESIA'),{jc:'left',ind:SG,after:0}),p(r('NOMOR ')+r('[…]',{hl:1}),{jc:'left',ind:SG,after:0}),p(r('TENTANG'),{jc:'left',ind:SG,after:0}),p(r(m.TTL),{jc:'left',ind:SG,after:300}));
- const L1=[567,567],L2=[993,426],L3=[1560,426],L4=[1985,425];
+ /* Berjenjang: nomor setiap tingkat sejajar dengan awal teks tingkat di atasnya. A. 0→567, 1. 567→993, a. 993→1419, 1) 1419→1844. */
+ const L1=[567,567],L2=[993,426],L3=[1419,426],L4=[1844,425];
  const H=(t,lv)=>p(r(t,{b:lv===L1}),{jc:'left',ind:lv[0],hang:lv[1],tabs:[lv[0]],keep:1,after:120}); // hanya A./B. tebal, seperti naskah RKMK
- const nums=L=>L.length?L.map((t,i)=>p(r((i+1)+')\t'+t),{ind:L4[0],hang:L4[1],tabs:[L4[0]]})).join(''):p(r('[belum diisi pada Charter Program]',{hl:1}),{ind:L4[0]});
- const txt=t=>p(r(t),{ind:L4[0]});
+ const nums=L=>L.length?L.map((t,i)=>p(r((i+1)+')\t'+t),{ind:L4[0],hang:L4[1],tabs:[L4[0]]})).join(''):p(r('[belum diisi pada Charter Program]',{hl:1}),{ind:L3[0]});
+ const txt=t=>p(r(t),{ind:L3[0]}); // paragraf penjelas sejajar teks a./b./c.
  body.push(H('A.\tPROGRAM TRANSFORMASI KEMENTERIAN KEUANGAN',L1));
  if(!m.lamp.length)body.push(p(r('[Belum ada program dipilih]',{hl:1}),{ind:L2[0]}));
  m.lamp.forEach(x=>{
@@ -130,15 +131,15 @@ function docxXml(m){
   body.push(H('b.\tKondisi yang Diharapkan',L3));if(x.kondisi.tujuan)body.push(txt(x.kondisi.tujuan));body.push(nums(x.kondisi.oc));
   body.push(H('c.\tKegiatan',L3),nums(x.kegiatan));
   body.push(H('d.\tPenanggung Jawab',L3));
-  [['Initiative Champion',x.pj.champion],['Initiative Owner',x.pj.owner.join('; ')],['UIC Utama',x.pj.uic],['UIC Pendukung',x.pj.pend]].forEach(([k,v])=>body.push(p(r(k+'\t:\t'+(v||'—')),{ind:L4[0]+2835+283,hang:2835+283,tabs:[L4[0]+2835,L4[0]+2835+283]})));
+  [['Initiative Champion',x.pj.champion],['Initiative Owner',x.pj.owner.join('; ')],['UIC Utama',x.pj.uic],['UIC Pendukung',x.pj.pend]].forEach(([k,v])=>body.push(p(r(k+'\t:\t'+(v||'—')),{ind:L3[0]+2835+283,hang:2835+283,tabs:[L3[0]+2835,L3[0]+2835+283]})));
  });
  body.push(H('B.\tMILESTONE PROGRAM TRANSFORMASI KEMENTERIAN KEUANGAN',L1));
  /* Tabel milestone: No 943, tahun ±993 per kolom, total 9573 (seperti naskah RKMK). */
- const W=9573,nw=943,yw=Math.min(993,Math.floor((W-nw-3780)/Math.max(1,m.yrs.length))),kw=W-nw-yw*m.yrs.length,grid=[nw,kw].concat(m.yrs.map(()=>yw));
+ const W=9602-567,nw=943,yw=Math.min(993,Math.floor((W-nw-3780)/Math.max(1,m.yrs.length))),kw=W-nw-yw*m.yrs.length,grid=[nw,kw].concat(m.yrs.map(()=>yw)); // tabel sejajar teks A./B. (indent 567)
  const ms=[tr(cell(nw,p(r('No',{b:1}),{jc:'center',after:0}),{fill:'D9D9D9',vc:1})+cell(kw,p(r('Kegiatan',{b:1}),{jc:'center',after:0}),{fill:'D9D9D9',vc:1})+m.yrs.map(y=>cell(yw,p(r(String(y),{b:1}),{jc:'center',after:0}),{fill:'D9D9D9'})).join(''),1)];
  let n=0;m.ms.forEach(g=>{ms.push(tr(cell(W,p(r(g.nama,{b:1}),{jc:'left',after:0}),{span:grid.length,fill:'F2F2F2'})));
   (g.rows.length?g.rows:[null]).forEach(rw=>ms.push(tr(cell(nw,p(r(rw?(++n)+'.':''),{jc:'center',after:0}))+cell(kw,p(rw?r(rw.t):r('[Key Milestones belum diisi]',{hl:1}),{jc:'left',after:0}))+m.yrs.map(y=>cell(yw,p('',{after:0}),{fill:rw&&rw.y===y?'404040':null})).join(''))))});
- body.push(tbl(grid,ms,true),p('',{after:240}),...sign().slice(2));
+ body.push(tbl(grid,ms,true,567),p('',{after:240}),...sign().slice(2));
  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+body.join('')+
   '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1701" w:right="1008" w:bottom="1152" w:left="1296" w:header="709" w:footer="706" w:gutter="0"/></w:sectPr></w:body></w:document>';
 }
