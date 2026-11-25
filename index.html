@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="dashboard-executive-v2.css?v=20261109-mt06-helpfix2">
 <link rel="stylesheet" href="project-selection-flow.css?v=20261108-6">
 <link rel="stylesheet" href="project-selection-governance.css?v=20261108-1">
-<link rel="stylesheet" href="project-selection-workflow-2027.css?v=20261126-sel1">
+<link rel="stylesheet" href="project-selection-workflow-2027.css?v=20261126-fs1">
 <link rel="stylesheet" href="project-selection-program-bank.css?v=20261125-imp2">
 <link rel="stylesheet" href="program-documents-detail.css?v=20261111-mt04">
 
@@ -8499,7 +8499,7 @@ const DK_CW=.46,DK_LH=1.2;let DK_CTX=null;
 function dkLines(t,fs,w){if(!DK_CTX){try{DK_CTX=document.createElement('canvas').getContext('2d')}catch(e){}}const W=w*96;if(!DK_CTX)return Math.max(1,Math.ceil(String(t).length/Math.max(8,Math.floor(w*72/(fs*DK_CW)))));
  DK_CTX.font=(fs*96/72).toFixed(2)+'px Calibri, Carlito, "Segoe UI", Arial, sans-serif';let n=0;String(t||'').split('\n').forEach(par=>{let line='';n++;par.split(/\s+/).filter(Boolean).forEach(wd=>{const tr=line?line+' '+wd:wd;if(DK_CTX.measureText(tr).width*1.04>W&&line){n++;line=wd}else line=tr})});return Math.max(1,n)}
 const dkH=(arr,fs,w)=>{const bw=arr.length>1?w-.24:w;return arr.reduce((a,t)=>a+dkLines(t,fs,bw)*fs*DK_LH/72+(arr.length>1?fs*0.25/72:0),0)+.04};
-function dkFit(items,w,h,max,min){min=min||12;const arr=(Array.isArray(items)?items:[items]).map(x=>String(x||''));for(let fs=max;fs>=min;fs-=0.5){if(dkH(arr,fs,w)<=h)return fs}return min}
+function dkFit(items,w,h,max,min){min=min||12;const k=+window.__dkFsK||1;if(k!==1){max=Math.round(max*k*2)/2;min=Math.round(min*k*2)/2}const arr=(Array.isArray(items)?items:[items]).map(x=>String(x||''));for(let fs=max;fs>=min;fs-=0.5){if(dkH(arr,fs,w)<=h)return fs}return min}
 function dkClip(items,w,h,fs){const out=[];const multi=items.length>1,bw=multi?w-.24:w,lh=fs*DK_LH/72,ps=multi?fs*0.25/72:0;let used=.04;
  for(let i=0;i<items.length;i++){const t=String(items[i]||'');const n=dkLines(t,fs,bw),l=n*lh+ps;if(used+l<=h){used+=l;out.push(t);continue}
   const rest=items.length-i-1,room=Math.floor((h-used-ps-(rest?lh+ps:0))/lh);
@@ -8601,7 +8601,7 @@ function chDeck3(c,programOverride){const p=programOverride||chProg(c),J=chJudul
   const G=yrs.map(y=>({y,L:(c.ms||[]).filter(m=>+m.y===y&&String(m.t||'').trim()).map(m=>m.t)})).filter(g=>g.L.length);let yy=y3+.5;const bot=y3+h3-.08;
   if(!G.length)A.push(dkT(X+.2,yy,W-.4,.4,'Belum diisi',{s:12,i:1,c:DK.mute}));
   G.forEach((g,gi)=>{if(yy+.3>bot)return;const cur=g.y===+S.ui.tahun;A.push(dkR(X+.18,yy+.03,.62,.24,cur?DK.navy:'E3E8F0',{rad:.5}));A.push(dkT(X+.18,yy+.03,.62,.24,String(g.y),{s:12,b:1,c:cur?DK.gold:DK.navy,a:'center',v:'middle'}));
-   const room=bot-yy,rest=G.slice(gi+1).length,avail=Math.max(.3,room-(rest?Math.min(rest,2)*.42:0)),fs=12,Lc=dkClip(g.L,W-1.1,avail,fs),hh=Math.min(avail,dkH(Lc,fs,W-1.1));A.push(dkT(X+.9,yy,W-1.0,hh+.02,Lc,{s:fs,c:DK.ink,bul:Lc.length>1}));yy+=Math.max(.34,hh)+.08})}
+   const room=bot-yy,rest=G.slice(gi+1).length,avail=Math.max(.3,room-(rest?Math.min(rest,2)*.42:0)),fs=Math.round(12*(+window.__dkFsK||1)*2)/2,Lc=dkClip(g.L,W-1.1,avail,fs),hh=Math.min(avail,dkH(Lc,fs,W-1.1));A.push(dkT(X+.9,yy,W-1.0,hh+.02,Lc,{s:fs,c:DK.ink,bul:Lc.length>1}));yy+=Math.max(.34,hh)+.08})}
 
  card(A,4.55,y3,3.0,h3,'Risiko',c.ris,{soft:1});card(A,7.7,y3,2.55,h3,'Pendukung Kesuksesan',c.pk,{soft:1});
  const ow=(c.ow||[]).filter(Boolean);A.push(dkR(10.4,y3,2.48,h3,DK.navy,{rad:.05}));A.push(dkT(10.52,y3+.06,2.3,.3,'UNIT PENGELOLA',{s:12,b:1,c:DK.gold,sp:1}));
@@ -12517,13 +12517,13 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script src="mt-foto-frame.js?v=20261114-ff6"></script>
 <script src="project-selection-flow.js?v=20261125-mf1"></script>
 <script src="project-selection-governance.js?v=20261111-mt13-info"></script>
-<script src="project-selection-workflow-2027.js?v=20261126-sel2"></script>
+<script src="project-selection-workflow-2027.js?v=20261126-fs1"></script>
 <script src="project-selection-scope-map.js?v=20261111-mt14-filter"></script>
 <script src="project-selection-documents.js?v=20261125-docall1"></script>
 <script src="project-selection-program-bank.js?v=20261125-imp1"></script>
 <script src="project-selection-program-import.js?v=20261125-imp4"></script>
-<link rel="stylesheet" href="charter-export.css?v=20261125-chx9">
-<script src="charter-export.js?v=20261126-sel1"></script>
+<link rel="stylesheet" href="charter-export.css?v=20261126-fs1">
+<script src="charter-export.js?v=20261126-fs1"></script>
 <link rel="stylesheet" href="rkmk-draft.css?v=20261126-rk7">
 <script src="rkmk-draft.js?v=20261126-rk7"></script>
 <script src="program-documents-detail.js?v=20261125-chx1"></script>

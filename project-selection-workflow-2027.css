@@ -479,3 +479,5 @@
 #app .ps27-chsel span{margin-left:auto;font-size:12px;color:#5b6b85}
 #app .ps27-chall-item.off>summary{background:#4A5A78}
 #app .ps27-chall-item.off>summary b{opacity:.85}
+#app .ps27-chall-item>summary .chx-fs{margin-left:auto}
+#app .ps27-chall-item>summary .chx-fs+.btn{margin-left:0}
