@@ -1,0 +1,26 @@
+name: Full prechange backup 261125-MT-07
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/mt-backup-261125-mt-07.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 79a4376616d20af10e22f2472585ed0b33df2eca
+          fetch-depth: 0
+      - name: Create full restorable ZIP of the pre-change snapshot
+        run: |
+          test "$(git rev-parse HEAD)" = "79a4376616d20af10e22f2472585ed0b33df2eca"
+          git archive --format=zip --output=261125-MT-07.zip HEAD
+          unzip -t 261125-MT-07.zip | tail -1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 261125-MT-07
+          path: 261125-MT-07.zip
+          retention-days: 90
