@@ -174,6 +174,14 @@ function offscreen(m){
  document.body.appendChild(host);const pages=(m.all||[m]).flatMap(x=>{x.mode=m.mode;return pagesFor(x,host)});return {host,pages,done:()=>host.remove()};
 }
 /* Berwarna: 3 slide resmi (chDeck3) + Lampiran bila ada isian yang diringkas. */
+/* Berwarna: 3 slide resmi (chDeck3). Isian yang tidak muat TIDAK diringkas ke Lampiran:
+   dibuat slide lanjutan dengan kotak yang sama (seperti halaman lanjutan monokrom). */
+const ELL=/…/;
+const txtOf=e=>e&&e.t==='t'?(Array.isArray(e.txt)?e.txt.join(' '):String(e.txt)):'';
+const BOX1=[['Latar Belakang','lb'],['Terobosan','tb'],['Output','out'],['Outcome','oc'],['Key Milestones','ms'],['Risiko','ris'],['Pendukung Kesuksesan','pk'],['UNIT PENGELOLA','']];
+function clipped1(sl){const E=sl.E,idx=BOX1.map(([t])=>E.findIndex(e=>txtOf(e)===t)),out=new Set();
+ BOX1.forEach(([t,f],i)=>{if(!f||idx[i]<0)return;const end=idx.slice(i+1).find(x=>x>idx[i])??E.length;for(let k=idx[i]+1;k<end;k++){if(ELL.test(txtOf(E[k]))){out.add(f);break}}});return out}
+const clippedAny=sl=>{const i=sl.E.findIndex(e=>txtOf(e)==='MILESTONES (LEVEL 4)');return sl.E.slice(i<0?0:i).some(e=>ELL.test(txtOf(e)))};
 function deckFor(src){
  if(!src||!src.c||typeof chDeck3!=='function'||typeof dkHtml!=='function')return null;
  const p=src.p||{},c=Object.assign({},src.c),y=+c.tahun||+p.psYear||+(S.ui&&S.ui.psSelectedYear)||new Date().getFullYear();
@@ -185,22 +193,45 @@ function deckFor(src){
  let rk=c.rk.filter(r=>T(r.t));
  if(!rk.length)rk=c.ms.filter(m=>T(m.t)&&+m.y).sort((a,b)=>+a.y-+b.y).map(m=>({t:T(m.t),s:(+m.y)+'-01',e:(+m.y)+'-12',u:p.uic||'',pd:p.pend||''}));
  rk=rk.slice().sort((a,b)=>String(a.s||'').localeCompare(String(b.s||'')));
- /* Kolom Penanggung Jawab di slide berukuran tetap: bila teks UIC panjang, tampilkan lebih sedikit baris agar tidak bertumpuk. */
+ /* Kolom Penanggung Jawab di slide berukuran tetap: bila teks UIC panjang, tampilkan lebih sedikit baris per slide. */
  const pjLen=Math.max(0,...rk.map(r=>String(r.u||'').length+String(r.pd||'').length)),MAXRK=pjLen>70?5:pjLen>45?6:8;
- const more=Math.max(0,rk.length-MAXRK);c.rk=rk.slice(0,MAXRK);
- const K0=window.__dkFsK,FSM=fsMap(p),pp=Object.assign({},p,{kode:p.kodeResmi||p.kode}),built={};
- const mk=k=>{if(!built[k]){window.__dkFsK=k;built[k]=chDeck3(Object.assign({},c,{rk:c.rk.slice()}),pp)}return built[k]};
- try{const D=mk(FSM.charter);D.slides=D.slides.map((sl,i)=>i&&SECS[i]&&FSM[SECS[i]]!==FSM.charter?mk(FSM[SECS[i]]).slides[i]:sl);D.rkMore=more;
-  if(more&&D.slides[2]&&typeof dkT==='function')D.slides[2].E.push(dkT(7.4,1.16,5.48,.3,'+'+more+' tindakan lainnya — rincian lengkap di Lampiran',{s:12,i:1,c:'5B6B82',a:'right'}));D.file='Charter_Program_'+String(p.kodeResmi||p.kode||c.prog||'').replace(/[^A-Za-z0-9_-]+/g,'_')+'_'+y+'_v'+c.ver;return D}catch(e){return null}finally{window.__dkFsK=K0}
+ const K0=window.__dkFsK,FSM=fsMap(p),pp=Object.assign({},p,{kode:p.kodeResmi||p.kode});
+ const build=(cx,k)=>{window.__dkFsK=k;return chDeck3(cx,pp)};
+ try{
+  const slides=[];
+  /* 1. Charter: kurangi butir per kotak sampai tidak ada yang terpotong; sisanya ke slide lanjutan. */
+  const L0={lb:c.lb.filter(Boolean),tb:String(c.tb||'').split('\n').filter(Boolean),out:c.out.filter(Boolean),oc:c.oc.filter(Boolean),ris:c.ris.filter(Boolean),pk:c.pk.filter(Boolean),
+   ms:c.ms.filter(m=>T(m.t)).map((m,i)=>[m,i]).sort((a,b)=>(+a[0].y-+b[0].y)||(a[1]-b[1])).map(x=>x[0])};
+  const F=Object.keys(L0);let rem=Object.assign({},L0),guard=0;
+  const cx1=(tk,cont)=>Object.assign({},c,{lb:tk.lb,tb:tk.tb.join('\n'),out:tk.out,oc:tk.oc,ris:tk.ris,pk:tk.pk,ms:tk.ms,rk:[],kp:[]});
+  do{const tk={};F.forEach(f=>tk[f]=rem[f].slice());const forced=new Set();let sl=build(cx1(tk),FSM.charter).slides[0],n=0;
+   for(let cl=clipped1(sl);n<80;cl=clipped1(sl),n++){const todo=[...cl].filter(f=>!forced.has(f));if(!todo.length)break;
+    todo.forEach(f=>{if(tk[f].length>1)tk[f].pop();else forced.add(f)});sl=build(cx1(tk),FSM.charter).slides[0]}
+   sl.__sec='charter';sl.__cont=slides.length>0;slides.push(sl);
+   F.forEach(f=>rem[f]=rem[f].slice(tk[f].length));
+  }while(F.some(f=>rem[f].length)&&++guard<8);
+  /* 2. Kriteria penyelesaian: baris sebanyak yang muat, sisanya ke slide lanjutan (nomor berlanjut). */
+  const KP=c.kp.filter(k=>T(k.m));let off=0;guard=0;
+  do{let k=Math.max(1,KP.length-off);let sl=build(Object.assign({},c,{kp:KP.slice(off,off+k),__kpOff:off,rk:[]}),FSM.kp).slides[1];
+   while(k>1&&clippedAny(sl)){k--;sl=build(Object.assign({},c,{kp:KP.slice(off,off+k),__kpOff:off,rk:[]}),FSM.kp).slides[1]}
+   sl.__sec='kp';sl.__cont=off>0;slides.push(sl);off+=Math.max(1,Math.min(k,KP.length-off));
+  }while(off<KP.length&&++guard<12);
+  /* 3. Rencana kerja: MAXRK tindakan per slide, sisanya ke slide lanjutan. */
+  off=0;guard=0;
+  do{const sl=build(Object.assign({},c,{rk:rk.slice(off,off+MAXRK),__rkOff:off}),FSM.rk).slides[2];sl.__sec='rk';sl.__cont=off>0;slides.push(sl);off+=MAXRK}while(off<rk.length&&++guard<12);
+  /* Judul "(lanjutan)", isian kosong di slide lanjutan ditulis "—", dan nomor slide n / total. */
+  const tot=slides.length;slides.forEach((sl,i)=>{sl.E.forEach(e=>{const t=txtOf(e);
+    if(sl.__cont&&e.s===22&&/^(Charter Program|Kriteria Penyelesaian|Rencana Kerja)$/.test(t))e.txt=t+' (lanjutan)';
+    else if(sl.__cont&&t==='Belum diisi')e.txt='—';
+    else if(/^\d+ \/ 3$/.test(t))e.txt=(i+1)+' / '+tot});
+   sl.n=(sl.n||'')+(sl.__cont?' (lanjutan)':'')});
+  return {slides,title:'Charter Program — '+c.judul,file:'Charter_Program_'+String(p.kodeResmi||p.kode||c.prog||'').replace(/[^A-Za-z0-9_-]+/g,'_')+'_'+y+'_v'+c.ver};
+ }catch(e){return null}finally{window.__dkFsK=K0}
 }
-const clippedText=e=>e&&e.txt!=null&&/…/.test(Array.isArray(e.txt)?e.txt.join(' '):String(e.txt));
 function pagesFor(m,host){
  if(m.mode!=='color')return paginate(m,host,true);
  const D=deckFor(m.src);if(!D)return paginate(m,host,true);
- const out=D.slides.map((sl,i)=>{const w=document.createElement('div');w.className='chx-slide';w.dataset.chxSec=SECS[i]||'';w.innerHTML=dkHtml(sl);w.__deck=sl;w.dataset.chxFile=m.file;host.appendChild(w);return w});
- const keys=['charter','kp','rk'].filter((k,i)=>D.slides[i]&&(D.slides[i].E.some(clippedText)||(k==='rk'&&D.rkMore)));
- if(keys.length){const L=Object.assign({},m,{pw:1280,ph:720,lamp:true,mode:'color',sections:m.sections.filter(x=>keys.includes(x.key)).map(x=>Object.assign({},x,{title:'Lampiran · '+x.title}))});out.push(...paginate(L,host,true))}
- return out;
+ return D.slides.map(sl=>{const w=document.createElement('div');w.className='chx-slide';w.dataset.chxSec=sl.__sec||'';w.innerHTML=dkHtml(sl);w.__deck=sl;w.dataset.chxFile=m.file;host.appendChild(w);return w});
 }
 const dims=pg=>[pg.offsetWidth||PW,pg.offsetHeight||PH];
 async function canvases(pages,scale){await libs.h2c();if(document.fonts?.ready)await document.fonts.ready;
