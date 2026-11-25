@@ -1265,3 +1265,7 @@
 .btn.mt-dlbtn{background:#FDB913!important;color:#0B2447!important;border:1px solid #E5A800!important;font-weight:800!important;box-shadow:0 3px 10px rgba(253,185,19,.25)}
 .btn.mt-dlbtn:hover:not(:disabled){background:#F2AD00!important}
 .btn.mt-dlbtn:disabled{background:#E7ECF3!important;border-color:#D6DFEA!important;color:#8A9AB2!important;box-shadow:none}
+/* Pratinjau PDF mengisi penuh area pratinjau (sama tinggi dengan pratinjau Word) */
+#app .psbank-docscroll:has(.psbank-actual-pdf){overflow:hidden!important;display:flex;flex-direction:column}
+#app .psbank-actual-view:has(>.psbank-actual-pdf){flex:1 1 auto;height:100%;min-height:450px;overflow:hidden;display:flex;flex-direction:column}
+#app .psbank-actual-view>.psbank-actual-pdf{flex:1 1 auto;height:100%!important;min-height:450px;max-height:none}
