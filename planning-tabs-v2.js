@@ -102,7 +102,7 @@ ACT.cpDeckPreview=()=>{
  const inc=(S.ui.cpReport||{})[c.prog]?.inc||Object.fromEntries(order.map(([k])=>[k,1]));
  let D;try{D=deck(c,inc)}catch(err){toast(err.message);return}
  const body='<div class="dk-wrap">'+D.slides.map((sl,i)=>'<figure class="dk-f"><div class="dk-box"><div class="dk-scale">'+dkHtml(sl)+'</div></div><figcaption>'+safe((i+1)+'. '+sl.n)+'</figcaption></figure>').join('')+'</div><p class="s">Slide Charter, Kriteria, dan Linimasa menggunakan tiga slide template PPTX asli; substansi lain dibuat ringkas untuk presentasi.</p>';
- const ov=modal('<span class="exh">Pratinjau PPTX Ringkas · '+safe(chJudul(c))+'</span>',body,null,null,{cancel:'Tutup',size:'wide dk-md',extra:'<button class="btn pri" data-mx="ppt">⇩ Unduh PPTX</button>',onExtra:k=>{if(k==='ppt'){download(c,inc).then(()=>toast('PPTX ringkas diunduh.')).catch(e=>toast('Ekspor gagal: '+e.message));return false}}});
+ const ov=modal('<span class="exh">Pratinjau PPTX Ringkas · '+safe(chJudul(c))+'</span>',body,null,null,{cancel:'Tutup',size:'wide dk-md',extra:'<button class="btn pri mt-dlbtn" data-mx="ppt">↓ Unduh PPTX</button>',onExtra:k=>{if(k==='ppt'){download(c,inc).then(()=>toast('PPTX ringkas diunduh.')).catch(e=>toast('Ekspor gagal: '+e.message));return false}}});
  const fit=()=>ov.querySelectorAll('.dk-scale').forEach(b=>{const w=b.parentElement.clientWidth;if(!w)return;b.style.transform='scale('+(w/1280)+')';b.parentElement.style.height=(w*720/1280)+'px'});
  requestAnimationFrame(fit);setTimeout(fit,100);
 };
@@ -133,4 +133,4 @@ css.textContent=`
 if(typeof VIEW!=='undefined'&&VIEW==='pmo-charter'&&typeof ME!=='undefined'&&ME)render();
 })();
 /* Document Experience v3 — loaded after all existing PMO and Project Selection plugins. */
-(function(){var script=document.createElement('script');script.src='document-experience-v3.js?v=20261125-chx1';script.defer=true;document.head.appendChild(script)})();
+(function(){var script=document.createElement('script');script.src='document-experience-v3.js?v=20261126-dl1';script.defer=true;document.head.appendChild(script)})();

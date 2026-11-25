@@ -67,3 +67,8 @@
 .rk-paper table.rk-ms{margin-left:37.8px;width:calc(100% - 37.8px)}
 .rk-paper .rk-sign,.rk-paper .rk-lhead{margin-left:252.1px}
 .rk-paper .rk-break{margin:28px -67px 20px -86px}
+
+/* Unduh seragam: tombol di dasar panel, panel setinggi pratinjau */
+#app .rk-grid{align-items:stretch}
+#app .rk-set{position:static}
+#app .rk-set .mt-dlbar{background:#f7f9fc}

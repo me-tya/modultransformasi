@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="project-selection-flow.css?v=20261108-6">
 <link rel="stylesheet" href="project-selection-governance.css?v=20261108-1">
 <link rel="stylesheet" href="project-selection-workflow-2027.css?v=20261126-fs1">
-<link rel="stylesheet" href="project-selection-program-bank.css?v=20261126-dl4">
+<link rel="stylesheet" href="project-selection-program-bank.css?v=20261126-dl5">
 <link rel="stylesheet" href="program-documents-detail.css?v=20261111-mt04">
 
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -2858,6 +2858,21 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 .imz-tip:after{content:'';position:absolute;left:var(--ax,auto);right:auto;bottom:100%;border:6px solid transparent;border-bottom-color:#0B2447}.imz-tip.up:after{bottom:auto;top:100%;border-bottom-color:transparent;border-top-color:#0B2447}.imz-tip{z-index:100000!important}
 .imz-tip b{color:#fff}.imz-tip p{margin:0 0 6px}.imz-tip p:last-child{margin:0}
 .imz-info:hover .imz-tip,.imz-info:focus .imz-tip{display:block}
+
+.rpt2.rpt2-split{flex-direction:row;align-items:stretch;gap:12px;height:min(80vh,860px);min-height:0}
+.rpt2-side{flex:0 0 380px;max-width:42%;display:flex;flex-direction:column;gap:10px;overflow-y:auto;min-height:0;padding:12px;background:#f5f8fc;border:1px solid #dae4ef;border-radius:12px;scrollbar-width:thin}
+.rpt2-side>*{flex-shrink:0}
+.rpt2-side .rpt2-stageNote{margin-bottom:0;flex-direction:column;align-items:flex-start;gap:4px}
+.rpt2-side .rpt2-bar{flex-direction:column;align-items:stretch;gap:9px}
+.rpt2-side .rpt2-f{min-width:0;flex:none}
+.rpt2-side .rpt2-bar>.btn{align-self:flex-start}
+.rpt2-side .rpt2-tteg{grid-template-columns:1fr 1fr}
+.rpt2-side .rpt2-checks{grid-template-columns:1fr 1fr;padding:4px 12px 6px}
+.rpt2-side .rpt2-flt{max-width:100%;margin-left:0;white-space:normal}
+.rpt2-side .rpt2-fmtbtns{grid-template-columns:repeat(4,minmax(0,1fr))}
+.rpt2-side .mt-dlbar{position:sticky;bottom:-12px;margin:auto -12px -12px;padding:10px 12px 12px;background:#f5f8fc;border-top:1px solid #dae4ef}
+.rpt2-split .rpt2-frame{min-height:0}
+@media(max-width:900px){.rpt2.rpt2-split{flex-direction:column;height:auto}.rpt2-side{flex:none;max-width:none;max-height:none}.rpt2-split .rpt2-frame{min-height:60vh}}
 </style>
 
 <style>
@@ -3180,7 +3195,7 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 
 </style>
 <script src="cra-native.js?v=20261125-an5"></script>
-<script src="mt-jaringan-sk.js?v=20261125-jj19"></script>
+<script src="mt-jaringan-sk.js?v=20261126-dl1"></script>
 <script src="pengelola-native.js?v=20261110-pegawai1"></script>
 <!-- Project Selection now uses native flow, not the Dashboard CM iframe/login. -->
 <script>
@@ -5187,7 +5202,7 @@ function oneDraftOpen(tw){if(!lv('wbs').includes('U')&&!lv('wbs').includes('C'))
    if(!miss.length&&nolink.length){toast('Isi tautan Teams untuk sesi Online/Hybrid: '+nolink.slice(0,3).join('; ')+(nolink.length>3?' (+'+(nolink.length-3)+' lagi)':''));return false}
    if(miss.length){(ov||document).querySelectorAll('.od-root tr').forEach(tr=>{const i=tr.querySelector('[data-f="tgl"]');if(i&&!i.value)tr.classList.add('od-miss')});toast('Lengkapi tanggal & jam: '+miss.slice(0,3).join('; ')+(miss.length>3?' (+'+(miss.length-3)+' lagi)':''));return false}
    oneCommit();OD=null;toast('Sesi dan draft undangan tersimpan — jadwal langsung tampil di Jadwal 1-on-1.');return true},
-  {size:'kertas',cancel:'Tutup',extra:'<button class="btn" data-mx="imp">⇪ Impor undangan</button><button class="btn gold" data-mx="doc">⬇ Unduh Word</button>',onExtra:(k,o)=>{
+  {size:'kertas',cancel:'Tutup',extra:'<button class="btn" data-mx="imp">⇪ Impor undangan</button><button class="btn gold mt-dlbtn" data-mx="doc" title="Unduh Word (.docx)">↓ Unduh DOCX</button>',onExtra:(k,o)=>{
    if(k==='doc'){const B=OD.by[OD.tw];oneDocx(B,OD.tw,OD.tahun).then(b=>mtRptDownloadBlob(b,'Draft_Undangan_1on1_TW'+ONE_RM[OD.tw]+'_'+OD.tahun+'.docx')).catch(e=>toast('Gagal membuat Word: '+e.message));
     const n=oneYCount(B);toast(n?'Word diunduh. '+n+' bagian masih bertanda kuning di berkas.':'Draft Word diunduh.');return false}
    if(k==='imp'){oneImport(true);return false}return false}});
@@ -5738,7 +5753,7 @@ function actDraftPreview(kind,src,apply){
   }
   ov.querySelector('#mt-docpv').innerHTML=`<article class="mt-word-page">${kop}<div class="mt-word-content">${content}</div><div class="mt-word-footer">${esc(ACT_BSRE)}</div></article>`;
  };
- const ov=modal('Pratinjau & Edit Konsep '+title,body,'Terapkan ke Aktivitas',o=>apply(read(o)),{size:'hp',extra:'<button type="button" class="btn gold" data-mx="dl" title="Unduh konsep format Word Pusmantap">⬇ Unduh Word</button>',onExtra:(k,o)=>{
+ const ov=modal('Pratinjau & Edit Konsep '+title,body,'Terapkan ke Aktivitas',o=>apply(read(o)),{size:'hp',extra:'<button type="button" class="btn gold mt-dlbtn" data-mx="dl" title="Unduh konsep format Word Pusmantap">↓ Unduh DOCX</button>',onExtra:(k,o)=>{
   if(k!=='dl')return false;
   const x=read(o),generate=isST?actDocxST:isND?actDocxNDNotula:actDocxUndangan;
   generate(x).then(b=>mtRptDownloadBlob(b,'Konsep_'+(isST?'ST':isND?'ND_Notula':'Undangan')+'_'+actName(x).replace(/[^\\w]+/g,'_').slice(0,50)+'.docx')).catch(e=>toast('Gagal mengunduh Word: '+e.message));
@@ -6189,7 +6204,7 @@ function actNotulaModal(x,onSave){const M0=actNotulaModel(x);
   <div class="fld"><label for="nl-kn">Mengetahui (nama)</label><input class="inp" id="nl-kn" value="${esc(M0.ketua.nama)}"></div><div class="fld"><label for="nl-kj">Jabatan Mengetahui</label><input class="inp" id="nl-kj" value="${esc(M0.ketua.jab)}"></div><div class="fld"><label for="nl-nt">Notulis</label><input class="inp" id="nl-nt" value="${esc(M0.notulis)}"></div>
   <p class="s" style="margin:0">Bagian <mark>kuning</mark> belum terisi di data aktivitas. Isi dulu di wizard, atau sunting langsung di Word.</p></div><div class="nl-pv" id="nl-pv"></div></div>`;
  const read=ov=>{const v=i=>ov.querySelector('#'+i).value;return {buka:v('nl-buka'),buat:v('nl-buat')||TODAY,ketua:{nama:v('nl-kn').trim(),jab:v('nl-kj').trim()},notulis:v('nl-nt').trim()}};
- const ov=modal('Generate Notula',body,'Terapkan ke aktivitas',o=>{const r=read(o);onSave({notulaBuka:r.buka,notulaTgl:r.buat,notulaKetua:r.ketua,notulaNotulis:r.notulis})},{size:'hp',extra:'<button type="button" class="btn gold" data-mx="dl">⬇ Unduh Word</button>',onExtra:(k,o)=>{if(k==='dl'){actDocxNotula(x,read(o)).then(b=>mtRptDownloadBlob(b,'Notula_'+actName(x).replace(/[^\w]+/g,'_').slice(0,50)+'.docx')).catch(e=>toast('Gagal membuat Word: '+e.message))}return false}});
+ const ov=modal('Generate Notula',body,'Terapkan ke aktivitas',o=>{const r=read(o);onSave({notulaBuka:r.buka,notulaTgl:r.buat,notulaKetua:r.ketua,notulaNotulis:r.notulis})},{size:'hp',extra:'<button type="button" class="btn gold mt-dlbtn" data-mx="dl" title="Unduh notula (Word .docx)">↓ Unduh DOCX</button>',onExtra:(k,o)=>{if(k==='dl'){actDocxNotula(x,read(o)).then(b=>mtRptDownloadBlob(b,'Notula_'+actName(x).replace(/[^\w]+/g,'_').slice(0,50)+'.docx')).catch(e=>toast('Gagal membuat Word: '+e.message))}return false}});
  const pv=()=>{ov.querySelector('#nl-pv').innerHTML=actNotulaHtml(x,read(ov))};pv();ov.addEventListener('input',pv);return ov}
 /* ---- Daftar aktivitas (CRUD) ---- */
 const actHay=x=>[actName(x),x.program,x.tema,x.uic,x.kat,x.unitP,(x.pic||[]).join(' '),x.lokasi,x.link,x.tujuan,x.narsum,x.peserta,x.ringkas,x.tl,x.undHal,attNorm(x.und).no,String(x.notulaSimHtml||''),String(x.notulaTeks||'').replace(/<[^>]*>/g,' ')].join(' ').toLowerCase();
@@ -9762,7 +9777,9 @@ ACT.pgRep=el=>{const d=el.dataset;let spec={k:d.k||'filter',p:d.p||'',j:d.j||'',
  const sg=S.ui.rptSigner||{};
  const optsC=()=>{const L=[[rptEnc({k:'filter'}),'Semua program sesuai filter ('+G.length+')']];G.forEach(g=>{L.push([rptEnc({k:'prog',p:g.p.akr}),'Program · '+g.p.kode+' '+g.p.nama]);if(spec.p===g.p.akr)g.P.forEach(r=>{L.push([rptEnc({k:'proj',p:g.p.akr,j:r.n}),'   Proyek · '+r.n]);if(spec.j===r.n)(r.subItems||[]).forEach(x=>L.push([rptEnc({k:'sub',p:g.p.akr,j:r.n,s:x.name}),'      Subproyek · '+x.name]))})});return L};
  const nInc=()=>RPT_SECT.filter(([k])=>inc[k]).length;
- const body=`<div class="rpt2">
+ const RFMT=[['doc','DOCX','Word'],['pdf','PDF','PDF'],['ppt','PPTX','PowerPoint'],['xls','XLSX','Excel']];let fmt=RFMT.some(f=>f[0]===S.ui.rptFmt)?S.ui.rptFmt:'doc';
+ const dlLbl=()=>fmt==='pdf'?'↓ Simpan PDF':'↓ Unduh '+RFMT.find(f=>f[0]===fmt)[1];
+ const body=`<div class="rpt2 rpt2-split"><aside class="rpt2-side">
   <div class="rpt2-stageNote"><b>${esc(stage?'Laporan Tahap · '+PMO_REPORT_LABEL[stage]:'Laporan Program / Proyek')}</b><span>${pre?'Laporan akhir dapat dibuat sebelum proyek ditutup dan ditandai DRAFT sampai seluruh penutupan disahkan.':'Komponen laporan dipilih sesuai tahap dan dapat disesuaikan melalui Isi laporan.'}</span></div>
   <div class="rpt2-bar">
    <label class="rpt2-f w3"><span>Cakupan laporan</span><select class="sel" id="rpt-sc">${opts(optsC(),rptEnc(spec))}</select></label>
@@ -9776,9 +9793,13 @@ ACT.pgRep=el=>{const d=el.dataset;let spec={k:d.k||'filter',p:d.p||'',j:d.j||'',
   <details class="rpt2-inc" ${S.ui.rptIncOpen===false?'':'open'}><summary><b>Isi laporan</b> <span id="rpt-n">${nInc()} bagian dipilih</span><span class="rpt2-flt">Filter: ${esc(pgFilterText())} · <button type="button" class="lnk" data-mx="flt">ubah filter ›</button></span></summary>
    <div class="rpt2-checks">${RPT_SECT.map(([k,l])=>`<label><input type="checkbox" data-rs="${k}" ${inc[k]?'checked':''}> ${l}</label>`).join('')}</div>
    <div class="rpt2-all"><button type="button" class="lnk" data-all="1">Pilih semua</button><button type="button" class="lnk" data-all="0">Kosongkan</button><button type="button" class="lnk" data-all="d">Bawaan</button></div></details>
-  <div class="rpt2-frame"><div class="rpt2-load">Menyusun laporan…</div><iframe id="rpt-if" title="Pratinjau laporan"></iframe></div></div>`;
+  <div class="psbank-docformat rpt2-fmt"><strong>Format Ekspor</strong><div class="psbank-formatbuttons rpt2-fmtbtns" role="group" aria-label="Format Ekspor">${RFMT.map(([k,l,t])=>`<button type="button" class="btn ${fmt===k?'on':''}" data-mx="fmt:${k}" aria-pressed="${fmt===k}" title="${t}">${l}</button>`).join('')}</div></div>
+  <div class="mt-dlbar"><button type="button" class="btn mt-dlbtn" data-mx="dl" id="rpt-dl" title="PDF dibuat melalui dialog cetak: pilih Simpan sebagai PDF">${dlLbl()}</button></div>
+  </aside><div class="rpt2-frame"><div class="rpt2-load">Menyusun laporan…</div><iframe id="rpt-if" title="Pratinjau laporan"></iframe></div></div>`;
  let ctx=null,model=null;
- const ov=modal(`<span class="exh">${RPT_ICO(20)} ${pre?'Pratinjau Laporan Akhir (draft bila belum ditutup)':'Pratinjau Laporan '+(PMO_REPORT_LABEL[stage]||'')}</span>`,body,null,null,{cancel:'Tutup',size:'wide rpt',extra:'<button class="btn" data-mx="xls">⬇ Excel</button><button class="btn" data-mx="ppt">⬇ PowerPoint</button><button class="btn" data-mx="pdf">⬇ PDF</button><button class="btn pri" data-mx="doc">⬇ Word (.docx)</button>',onExtra:(k,ov)=>{
+ const ov=modal(`<span class="exh">${RPT_ICO(20)} ${pre?'Pratinjau Laporan Akhir (draft bila belum ditutup)':'Pratinjau Laporan '+(PMO_REPORT_LABEL[stage]||'')}</span>`,body,null,null,{cancel:'Tutup',size:'wide rpt',extra:'',onExtra:(k,ov)=>{
+   if(String(k).startsWith('fmt:')){fmt=k.slice(4);S.ui.rptFmt=fmt;save();ov.querySelectorAll('[data-mx^="fmt:"]').forEach(b=>{const on=b.dataset.mx===k;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))});ov.querySelector('#rpt-dl').textContent=dlLbl();return false}
+   if(k==='dl')k=fmt;
    if(k==='flt'){S.ui.fopen=1;save();render();setTimeout(()=>document.querySelector('.flt')?.scrollIntoView({block:'start',behavior:'smooth'}),60);return true}
    if(!ctx||!model)return false;
    if(k==='pdf'){try{const w=ov.querySelector('#rpt-if').contentWindow;const t=w.document.title;w.document.title=model.fileName;w.focus();w.print();setTimeout(()=>{try{w.document.title=t}catch(e){}},1500)}catch(e){toast('Gagal mencetak: '+e.message)}log('Cetak laporan',ctx.title+' · '+ctx.name);save();return false}
@@ -9813,7 +9834,7 @@ function ddTplModel(){return {lang:'id',formal:false,fileName:'Template_Dokumen_
 ACT.ddTpl=()=>{const n=DD_TPL.reduce((a,g)=>a+g[1].length,0);
  const body=`<p class="s" style="margin:0 0 10px">${n} dokumen dalam ${DD_TPL.length} kelompok. Status tiap dokumen pada laporan dihitung otomatis: dokumen bertahapan WBS dari status bukti dukung item WBS tahapan tersebut, dokumen lain dari Dokumen Proyek dan register Workspace Proyek.</p>
  <div class="tscroll dd-tpl"><table class="lap"><thead><tr><th>Kode</th><th>Dokumen</th><th>Isi / tujuan</th><th>Format</th><th>PIC</th><th>Sumber status otomatis</th></tr></thead><tbody>${DD_TPL.map(([g,ds])=>`<tr class="dd-grp"><td colspan="6">${esc(g)}</td></tr>`+ds.map(d=>`<tr><td class="mono">${d[0]}</td><td><b>${esc(d[1])}</b></td><td>${esc(d[2])}</td><td>${esc(d[3])}</td><td>${esc(d[4])}</td><td>${esc(DD_SRC(d[5]))}</td></tr>`).join('')).join('')}</tbody></table></div>`;
- modal(`<span class="exh">${DD_ICO(20)} Template Dokumen Data Dukung</span>`,body,null,null,{cancel:'Tutup',size:'wide',extra:'<button class="btn" data-mx="xls">⬇ Checklist Excel</button><button class="btn pri" data-mx="doc">⬇ Template Word (.docx)</button>',onExtra:k=>{
+ modal(`<span class="exh">${DD_ICO(20)} Template Dokumen Data Dukung</span>`,body,null,null,{cancel:'Tutup',size:'wide',extra:'<button class="btn" data-mx="xls">⬇ Checklist Excel</button><button class="btn pri mt-dlbtn" data-mx="doc">↓ Unduh Template DOCX</button>',onExtra:k=>{
   if(k==='doc'){if(typeof JSZip==='undefined'){toast('Pustaka Word (JSZip) belum termuat.');return false}const m=ddTplModel();mtRptDocx(m).then(b=>mtRptDownloadBlob(b,m.fileName+'.docx'));log('Unduh template data dukung','Word')}
   if(k==='xls'){if(!window.XLSX){toast('Pustaka Excel belum termuat.');return false}const wb=XLSX.utils.book_new();const ws=XLSX.utils.aoa_to_sheet([['Program',''],['Proyek / subproyek',''],['UIC Utama',''],['Tahun anggaran',S.ui.tahun],[],['Kode','Kelompok','Dokumen','Isi / tujuan','Format','PIC','Sumber status otomatis','Status (Lengkap/Sebagian/Belum/N/A)','Lokasi berkas','Catatan'],...[].concat(...DD_TPL.map(([g,ds])=>ds.map(d=>[d[0],g,d[1],d[2],d[3],d[4],DD_SRC(d[5]),'','',''])))]);ws['!cols']=[6,26,40,50,22,22,30,18,30,24].map(w=>({wch:w}));XLSX.utils.book_append_sheet(wb,ws,'Checklist');chSaveBlob(new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),'Checklist_Dokumen_Data_Dukung.xlsx');log('Unduh template data dukung','Excel')}
   save();return false}})};
@@ -12524,20 +12545,20 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script src="project-selection-program-import.js?v=20261125-imp4"></script>
 <link rel="stylesheet" href="charter-export.css?v=20261126-fs2">
 <script src="charter-export.js?v=20261126-fs2"></script>
-<link rel="stylesheet" href="rkmk-draft.css?v=20261126-rk7">
-<script src="rkmk-draft.js?v=20261126-rk7"></script>
-<script src="program-documents-detail.js?v=20261125-chx1"></script>
+<link rel="stylesheet" href="rkmk-draft.css?v=20261126-dl1">
+<script src="rkmk-draft.js?v=20261126-dl1"></script>
+<script src="program-documents-detail.js?v=20261126-dl1"></script>
 
 
 <script src="pmo-planning-document.js?v=20261126-dl1"></script>
-<script src="planning-tabs-v2.js?v=20261125-chx1"></script>
+<script src="planning-tabs-v2.js?v=20261126-dl1"></script>
 
 <script src="standard-wbs-template.js?v=20261109-1"></script>
 <script src="mt-berita-acara.js?v=20261110-1"></script>
 
 <script src="mt-cm-migration.js?v=20261110-02"></script>
 <script src="mt-dcm-activity-sync.js?v=20261124-iku1"></script>
-<script src="mt-activity-reports.js?v=20261124-iku3"></script>
+<script src="mt-activity-reports.js?v=20261126-dl1"></script>
 <link rel="stylesheet" href="mt-iku-ipr.css?v=20261124-ipr1"><script src="mt-iku-ipr.js?v=20261124-ipr3"></script>
 <link rel="stylesheet" href="mt-cm-monev.css?v=20261125-mv4"><script src="mt-cm-monev.js?v=20261125-mv5"></script>
 <script src="mt-cm-paket.js?v=20261125-pk2"></script><script src="mt-inplace.js?v=20261125-ip2"></script><script src="mt-cm-revisi.js?v=20261125-rv1"></script><script src="mt-manfaat.js?v=20261125-mf1"></script><link rel="stylesheet" href="mt-dokproyek.css?v=20261125-dp1"><script src="mt-dokproyek.js?v=20261125-dp1"></script>

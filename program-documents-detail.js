@@ -65,7 +65,7 @@ function dialog(title,subtitle){
  node.innerHTML='<section class="mtpd-dialog" role="dialog" aria-modal="true" aria-label="'+esc(title)+'">'+
   '<header class="mtpd-head"><div><b>'+esc(title)+'</b><small>'+esc(subtitle)+'</small></div><button type="button" data-mtpd-close title="Tutup" aria-label="Tutup">×</button></header>'+
   '<main class="mtpd-body" data-mtpd-body></main>'+
-  '<footer class="mtpd-footer"><span data-mtpd-footnote></span><div><button type="button" class="btn" data-mtpd-close>Tutup</button><button type="button" class="btn pri" data-mtpd-download disabled>Unduh</button></div></footer>'+
+  '<footer class="mtpd-footer"><span data-mtpd-footnote></span><div><button type="button" class="btn" data-mtpd-close>Tutup</button><button type="button" class="btn pri mt-dlbtn" data-mtpd-download disabled>↓ Unduh</button></div></footer>'+
   '</section>';
  const s={node,focus:document.activeElement,blob:null,url:null,resize:null,resizeFn:null,tick:0};
  active=s;document.body.appendChild(node);
@@ -116,7 +116,7 @@ function pdfSelect(s,rows){
    const frame=document.createElement('iframe');frame.className='mtpd-pdf';frame.title='Pratinjau asli '+(rec.fileName||'Dokumen Program');frame.src=s.url;
    const body=s.node.querySelector('[data-mtpd-body]');body.innerHTML='';body.appendChild(frame);
    s.node.querySelector('[data-mtpd-download]').disabled=false;
-   s.node.querySelector('[data-mtpd-download]').textContent='Unduh PDF';
+   s.node.querySelector('[data-mtpd-download]').textContent='↓ Unduh PDF';
    s.node.querySelector('[data-mtpd-footnote]').textContent='PDF asli unggahan · Tahun '+rec.documentYear+' · v'+(rec.version||1)+' · TTE belum diverifikasi secara kriptografis';
   }catch(e){
    message(s,'Berkas belum dapat dibuka',e?.message||String(e));
@@ -161,7 +161,7 @@ function showCharter(p,deck){
  const s=dialog('Charter Program',origin.nama+' · '+(origin.kodeResmi||origin.kode||origin.akr||'')+' · Tahun '+(origin.psYear||currentYear()));
  s.deck=deck;
  s.node.querySelector('[data-mtpd-footnote]').textContent='Pratinjau dan PPTX menggunakan model 3 slide yang sama · font dapat bervariasi menurut perangkat.';
- const btn=s.node.querySelector('[data-mtpd-download]');btn.disabled=false;btn.textContent='Unduh PPTX';
+ const btn=s.node.querySelector('[data-mtpd-download]');btn.disabled=false;btn.textContent='↓ Unduh PPTX';
  s.node.addEventListener('click',e=>{
   const slide=e.target.closest('[data-mtpd-slide]');
   if(slide){drawSlide(s,Number(slide.dataset.mtpdSlide));return}
@@ -171,7 +171,7 @@ function showCharter(p,deck){
  btn.addEventListener('click',async()=>{
   btn.disabled=true;btn.textContent='Menyusun PPTX…';
   try{await dkPptx(s.deck)}catch(e){message(s,'Gagal mengunduh Charter Program',e.message||String(e))}
-  finally{if(active===s){btn.disabled=false;btn.textContent='Unduh PPTX'}}
+  finally{if(active===s){btn.disabled=false;btn.textContent='↓ Unduh PPTX'}}
  });
  drawSlide(s,0);
 }

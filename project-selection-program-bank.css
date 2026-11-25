@@ -1261,3 +1261,7 @@
 .psbank-dialogbody .psbank-docsettings .mt-dlbar,.cp-report-inline .cp-control-panel .mt-dlbar{position:sticky;bottom:-11px;margin-bottom:-11px;padding:9px 0 11px;background:#f5f8fc;border-top:1px solid #dae4ef;box-shadow:0 -8px 14px -10px rgba(11,36,71,.25)}
 #app .cp-report-inline .cp-control-panel .mt-dlbar{background:#f6f9fd}
 #app .psbank-docsettings>*,#app .cp-report-inline .cp-control-panel>*{flex-shrink:0}
+/* Tombol unduh mandiri (footer popup / toolbar) memakai gaya yang sama */
+.btn.mt-dlbtn{background:#FDB913!important;color:#0B2447!important;border:1px solid #E5A800!important;font-weight:800!important;box-shadow:0 3px 10px rgba(253,185,19,.25)}
+.btn.mt-dlbtn:hover:not(:disabled){background:#F2AD00!important}
+.btn.mt-dlbtn:disabled{background:#E7ECF3!important;border-color:#D6DFEA!important;color:#8A9AB2!important;box-shadow:none}

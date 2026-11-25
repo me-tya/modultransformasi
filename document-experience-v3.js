@@ -196,7 +196,7 @@ function paint(){
    const editable=canEdit(active.p,active.kind,active.source);
    footer.innerHTML='<div class="mt-charter-tools">'+
     '<button type="button" class="btn" data-mt-doc="import">↑ Import PPTX</button>'+
-    (window.MT_CHX?'<button type="button" class="btn" data-mt-doc="chxpreview">Pratinjau</button>'+MT_CHX.barSrc('dx'):'<button type="button" class="btn" data-mt-doc="preview">Pratinjau 3 Slide</button><button type="button" class="btn pri" data-mt-doc="export">↓ Unduh PPTX</button>')+
+    (window.MT_CHX?'<button type="button" class="btn" data-mt-doc="chxpreview">Pratinjau</button>'+MT_CHX.barSrc('dx'):'<button type="button" class="btn" data-mt-doc="preview">Pratinjau 3 Slide</button><button type="button" class="btn pri mt-dlbtn" data-mt-doc="export">↓ Unduh PPTX</button>')+
     '<input type="file" data-mt-import-file accept=".pptx" hidden></div>'+
     '<div class="mt-charter-default-actions">'+
     '<button type="button" class="btn" data-bank-preview-edit '+(!editable?'disabled':'')+'>✎ Ubah</button>'+
