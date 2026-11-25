@@ -22,7 +22,7 @@ def block(s,a,b,replacement):
     i=s.index(a);j=s.index(b,i)
     return s[:i]+replacement+'\n'+s[j:]
 def patch_index(s):
-    s=block(s,'const FIREBASE_CONFIG=','const FS_ARR=', 'const FIREBASE_CONFIG={projectId:"ModulTransformasi"};\nconst RULES="Otorisasi API internal";')
+    s=block(s,'\nconst FIREBASE_CONFIG=','const FS_ARR=', '\nconst FIREBASE_CONFIG={projectId:"ModulTransformasi"};\nconst RULES="Otorisasi API internal";')
     s=block(s,'async function fbInit(){','function demoUsers()', 'async function fbInit(){FB.db=MTLocal.db;FB.auth=MTLocal.auth;FB.cfg=FIREBASE_CONFIG;FB.on=true;return true}')
     s=block(s,'function bootstrapUI(email)','function splashOn(txt)', 'function bootstrapUI(){renderLogin("Database belum diimpor. Hubungi administrator server.")}\nasync function fbCreateAuth(){throw Error("Administrator server harus menetapkan kata sandi lokal melalui MT.exe set-password.")}')
     s=block(s,'function viewDb(){','/* ======== Import charter', '''function viewDb(){return vh('DB','adm','Database','SQL Server Express lokal · IIS')+
@@ -37,8 +37,10 @@ def patch_index(s):
     s=exactly(s,"if(!fbCfg()){load();","if(false){load();")
     s=exactly(s,"S=fsBlank();readHash();const sp=splashOn('Menghubungkan ke Firestore…');","S=fsBlank();FB.on=true;readHash();const sp=splashOn('Menghubungkan ke SQL Server…');")
     s=s.replace("FB.auth.currentUser.updatePassword(v).then(","MTLocal.req('password',{oldPassword:prompt('Kata sandi saat ini')||'',password:v},'POST').then(")
+    s=s.replace("toast('Kata sandi diperbarui.')},e=>toast(fbErr(e)))","toast('Kata sandi diperbarui. Masuk kembali.');location.reload()},e=>toast(fbErr(e)))")
     s=s.replace("Minimal 8 karakter.","Minimal 12 karakter.").replace("if(v.length<8)","if(v.length<12)").replace("min. 8 karakter","min. 12 karakter")
     s=s.replace("Firestore","SQL Server").replace("Firebase Authentication","login lokal").replace("Firebase","server internal")
+    s=s.replace('function fbCfg(){','function fbCfg(){')
     s=s.replace('const cl=fsClean(cur[c][id])','const cl=cur[c][id]').replace('const FS_MAX=1000000;','const FS_MAX=8000000;')
     s=re.sub(r'<script src="mt-dcm-activity-sync\.js[^"]*"></script>','',s)
     s=re.sub(r'<iframe class="mt-cm-frame" src="dashboard-cm-shared\.html[^>]*></iframe>','<div class="note w">Modul Dashboard CM tertanam belum dimigrasikan. Integrasi eksternal dinonaktifkan pada build offline.</div>',s)
