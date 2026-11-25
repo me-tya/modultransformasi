@@ -292,6 +292,8 @@ function bar(attrs,all){
   '<div class="chx-dd"><button type="button" class="chx-ddb" data-chx-dd aria-haspopup="menu" aria-expanded="false">Export to <span aria-hidden="true">▾</span></button>'+
   '<div class="chx-menu" role="menu" hidden>'+grp(all?'Program ini':'Charter Program','')+(all?grp('Semua program ('+all.n+')','all'):'')+'</div></div></div>';
 }
+/* Semua program tahun y saja (tanpa grup 'Program ini'). */
+function barAllYear(y,n){return bar('data-chx-all="'+E(y)+'"',null).replace(/data-chx-x="(\w+)"/g,'data-chx-x="$1" data-chx-scope="all"').replace('<small>Charter Program</small>','<small>Semua program ('+n+')</small>')}
 const barFor=(p,o)=>bar('data-chx-pid="'+E(p.id)+'"'+(o&&o.year?' data-chx-all="'+E(o.year)+'"':''),o&&o.n>1?{n:o.n}:null);
 const barSrc=key=>bar('data-chx-src="'+E(key)+'"');
 /* Unduh semua Charter Program tahun y dalam satu berkas (JPG: satu ZIP). */
@@ -338,5 +340,5 @@ document.addEventListener('click',ev=>{
 },true);
 if(typeof MutationObserver==='function'&&document.body)new MutationObserver(()=>{if(document.querySelector('[data-chx-preview]:not([data-chx-mounted])'))mountAll()}).observe(document.body,{childList:true,subtree:true});
 function listAll(y){return (S.programs||[]).filter(p=>+p.psYear===+y&&!p.arsip&&p.psListStatus!=='Arsip').map(fromProgram).filter(Boolean)}
-window.MT_CHX={deckFor,pagesFor,listAll,barAll,bundle,model,docxXml,docxBlob,paginate,bar,barFor,barSrc,preview,mountAll,open,register,fromProgram,exportAs,setMode,mode,version:'20261125-chx5'};
+window.MT_CHX={barAllYear,deckFor,pagesFor,listAll,barAll,bundle,model,docxXml,docxBlob,paginate,bar,barFor,barSrc,preview,mountAll,open,register,fromProgram,exportAs,setMode,mode,version:'20261125-chx5'};
 })();

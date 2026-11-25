@@ -462,3 +462,10 @@
 #app #view .flt.pmo-unified.ps27-flt .fbar>.fg.pm-program{flex:2 1 300px!important;max-width:520px}
 #app #view .flt.pmo-unified.ps27-flt .ftop .flist{display:inline-flex;gap:6px;min-width:0;overflow:hidden}
 #app #view .flt.pmo-unified.ps27-flt .ftop .rs2{margin-left:0!important}
+/* Charter Program › Semua Program */
+#app .ps27-chall-item{border:1px solid #dce4ef;border-radius:10px;margin:10px 0 0;background:#fff;overflow:hidden}
+#app .ps27-chall-item>summary{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;background:#0B2447;color:#fff;list-style:none}
+#app .ps27-chall-item>summary::-webkit-details-marker{display:none}
+#app .ps27-chall-item>summary small{opacity:.75;font-size:12px}
+#app .ps27-chall-item>summary .btn{margin-left:auto}
+#app .ps27-chall-item>.chx-prev{padding:12px}

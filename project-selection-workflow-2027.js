@@ -225,7 +225,9 @@ function filter(p){
   const wp=String(S.ui.ps27WideProg||'all'),wopts=list().map(x=>[String(x.id),x.nama]);
   F.push(field('Program',mk('data-ps27-wprog',wopts,wp,'Semua Program'),on(wp)&&wopts.some(o=>o[0]===wp)?'Program: '+pick(wp,wopts):null,true));
  }else if(stage==='charter'){
-  F.push({html:singleProgField,chip:null,wide:true});
+  /* Charter Program: pilihan "Semua Program" menampilkan charter seluruh program tahun aktif. */
+  const allOn=!!S.ui.ps27ChAll,cp=curP;
+  F.push({html:'<label>Program <select data-ps27-prog><option value="__all"'+(allOn?' selected':'')+'>Semua Program</option>'+options.map(x=>'<option value="'+E(x.id)+'" '+(!allOn&&cp&&String(cp.id)===String(x.id)?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label>',chip:allOn?null:null,wide:true});
  }
  const searchVal=stage==='mapping'&&sub==='history'?mapB.historySearch:f.search;
  const active=F.map(x=>x.chip).filter(Boolean);
@@ -293,6 +295,17 @@ function prioritasi(p){
  '<button role="tab" type="button" data-ps27-sub="'+x[0]+'" title="'+E(x[2])+'" aria-label="'+E(x[1]+'. '+x[2])+'" aria-selected="'+(sub===x[0])+'" class="'+(sub===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+'</nav>'+(sub==='ranking'?(typeof MT_TABSEARCH==='function'?MT_TABSEARCH:()=>'')('ps-prioritasi',localFilter().search,'Cari proyek, UIC atau kategori...'):'')+
  '<div class="ps27-smart-actions">'+mode+threshold+tip+'</div></div>'+
  (sub==='reference'?I.referencePage(p):sub==='criteria'?I.criteriaPage(p):I.projectsPage(p));
+}
+function charterAll(){
+ const X=window.MT_CHX;if(!X)return '<div class="ps27-card ps27-empty">Modul ekspor charter belum termuat.</div>';
+ const progs=list().filter(p=>!p.arsip&&p.psListStatus!=='Arsip'),withC=progs.filter(p=>X.fromProgram(p)),ic=typeof MT_INFO_ICON==='function'?MT_INFO_ICON:()=>'';
+ const head='<div class="ps27-cardtop"><div><h3>Charter Program · Semua Program'+ic('Seluruh Charter Program tahun '+yr()+'. Gunakan Export to untuk mengunduh semuanya dalam satu berkas; pilih satu program di Filter untuk mengubah charter.')+'</h3></div>'+
+  '<div class="ps27-chact"><span class="ps27-status">'+withC.length+' dari '+progs.length+' program</span>'+(withC.length?X.barAllYear(yr(),withC.length):'')+'</div></div>';
+ const body=withC.length?withC.map((p,i)=>'<details class="ps27-chall-item"'+(i===0?' open':'')+'><summary><b>'+E(p.nama)+'</b><small>'+E(p.kodeResmi||'Kode resmi belum ditetapkan')+' · '+E((p.psProgramCharter&&p.psProgramCharter.st)||'Draft')+'</small><button type="button" class="btn btn-sm" data-act="psProgCh" data-id="'+E(p.id)+'">✎ Ubah</button></summary>'+X.preview('data-chx-pid="'+E(p.id)+'"')+'</details>').join(''):
+  '<div class="ps27-empty" style="padding:28px;text-align:center"><b>Belum ada Charter Program tahun '+yr()+'.</b></div>';
+ const missing=progs.filter(p=>!withC.includes(p));
+ setTimeout(()=>X.mountAll&&X.mountAll(),0);
+ return '<div class="ps27-card ps27-charter">'+head+body+(missing.length?'<p class="s" style="margin:10px 2px 0">Belum punya charter: '+missing.map(p=>E(p.nama)).join(', ')+'.</p>':'')+'</div>';
 }
 function charter(p){
  if(!p)return '<div class="ps27-card ps27-empty">Pilih program untuk menampilkan Charter Program.</div>';
@@ -465,7 +478,7 @@ function page(){
  if(u.tab==='usulan')h+=usulan(p);
  else if(u.tab==='mapping')h+=mapping(p);
  else if(u.tab==='prioritasi')h+=prioritasi(p);
- else if(u.tab==='charter')h+=charter(p);
+ else if(u.tab==='charter')h+=S.ui.ps27ChAll?charterAll():charter(p);
  else if(u.tab==='penetapan-program')h+=widePanel()+penetapan(p);
  else h+=rkmk(p);
  h+='</section>';return h;
@@ -552,6 +565,7 @@ function mount(){
    const chosen=list().find(p=>String(p.id)===String(el.value)&&!p.arsip&&p.psListStatus!=='Arsip');
    if(chosen){state().prog=chosen.id;setFilterField('program',chosen.id);setFilterField('allProgramsSelected',false);save();render()}return;
   }
+  if(el.dataset.ps27Prog!==undefined&&state().tab==='charter'){S.ui.ps27ChAll=el.value==='__all';if(el.value==='__all'){save();render();return}}
   if(el.dataset.ps27Prog!==undefined){
     S.ui.psBank=S.ui.psBank||{};
     if(state().tab==='usulan'&&S.ui.psBank.tab==='bank'){S.ui.psBank.filterProgram=el.value;setFilterField('program',el.value)}
