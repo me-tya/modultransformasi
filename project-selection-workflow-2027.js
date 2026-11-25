@@ -298,6 +298,7 @@ function prioritasi(p){
 /* Charter Program › Semua Program: accordion per program dengan checkbox pilihan ekspor (default semua).
    Pilihan disimpan di S.ui.ps27ChSel[tahun] (null = semua). Klik checkbox tidak membuka/menutup accordion. */
 function chSel(ids){S.ui.ps27ChSel=S.ui.ps27ChSel||{};const v=S.ui.ps27ChSel[yr()];return Array.isArray(v)?ids.filter(id=>v.includes(id)):ids.slice()}
+function chOpen(){const o=S.ui.ps27ChOpen;return Array.isArray(o)?o:[]}
 function charterAll(){
  const X=window.MT_CHX;if(!X)return '<div class="ps27-card ps27-empty">Modul ekspor charter belum termuat.</div>';
  const progs=list().filter(p=>!p.arsip&&p.psListStatus!=='Arsip'),withC=progs.filter(p=>X.fromProgram(p)),ic=typeof MT_INFO_ICON==='function'?MT_INFO_ICON:()=>'';
@@ -305,7 +306,7 @@ function charterAll(){
  const head='<div class="ps27-cardtop"><div><h3>Charter Program · Semua Program'+ic('Seluruh Charter Program tahun '+yr()+'. Centang program yang ingin diekspor, lalu Export to untuk mengunduhnya dalam satu berkas. Pilih satu program di Filter untuk mengubah charter.')+'</h3></div>'+
   '<div class="ps27-chact"><span class="ps27-status">'+withC.length+' dari '+progs.length+' program</span>'+(withC.length?X.barAllYear(yr(),n):'')+'</div></div>';
  const selRow=withC.length?'<div class="ps27-chsel"><input type="checkbox" class="ps27-chcb" id="ps27-chall" data-ps27-chall '+(n===ids.length?'checked':'')+' aria-label="Pilih semua program"><label for="ps27-chall">Pilih semua</label><span>'+n+' dari '+ids.length+' program dipilih</span></div>':'';
- const body=withC.length?withC.map((p,i)=>{const on=sel.includes(String(p.id));return '<details class="ps27-chall-item'+(on?'':' off')+'"'+(i===0?' open':'')+'><summary><input type="checkbox" class="ps27-chcb" data-ps27-chsel="'+E(p.id)+'" '+(on?'checked':'')+' aria-label="Pilih '+E(p.nama)+' untuk diekspor"><b>'+E(p.nama)+'</b><small>'+E(p.kodeResmi||'Kode resmi belum ditetapkan')+' · '+E((p.psProgramCharter&&p.psProgramCharter.st)||'Draft')+'</small><button type="button" class="btn btn-sm" data-act="psProgCh" data-id="'+E(p.id)+'">✎ Ubah</button></summary>'+X.preview('data-chx-pid="'+E(p.id)+'"')+'</details>'}).join(''):
+ const body=withC.length?withC.map((p,i)=>{const on=sel.includes(String(p.id));return '<details class="ps27-chall-item'+(on?'':' off')+'" data-ps27-chopen="'+E(p.id)+'"'+(chOpen().includes(String(p.id))?' open':'')+'><summary><input type="checkbox" class="ps27-chcb" data-ps27-chsel="'+E(p.id)+'" '+(on?'checked':'')+' aria-label="Pilih '+E(p.nama)+' untuk diekspor"><b>'+E(p.nama)+'</b><small>'+E(p.kodeResmi||'Kode resmi belum ditetapkan')+' · '+E((p.psProgramCharter&&p.psProgramCharter.st)||'Draft')+'</small><button type="button" class="btn btn-sm" data-act="psProgCh" data-id="'+E(p.id)+'">✎ Ubah</button></summary>'+X.preview('data-chx-pid="'+E(p.id)+'"')+'</details>'}).join(''):
   '<div class="ps27-empty" style="padding:28px;text-align:center"><b>Belum ada Charter Program tahun '+yr()+'.</b></div>';
  const missing=progs.filter(p=>!withC.includes(p));
  setTimeout(()=>{X.mountAll&&X.mountAll();const a=document.getElementById('ps27-chall');if(a)a.indeterminate=n>0&&n<ids.length},0);
@@ -936,4 +937,5 @@ function open(mode){
 B.page=page;B.mount=mount;B.open=open;B.version='20261109-help-cheatsheet-rich-v1';
 window.MT_PS_WORKFLOW={carrySelected,cloneProgram,syncWbs,navigate,version:B.version};
 if(typeof VIEW!=='undefined'&&VIEW==='project-selection'&&ME)render();
+if(typeof document!=='undefined'&&document.addEventListener)document.addEventListener('toggle',ev=>{const d=ev.target;if(!d||!d.matches||!d.matches('details[data-ps27-chopen]'))return;const id=d.dataset.ps27Chopen,cur=new Set(chOpen());if(d.open)cur.add(id);else cur.delete(id);S.ui.ps27ChOpen=[...cur]},true);
 })();
