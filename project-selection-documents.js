@@ -234,7 +234,7 @@ function programReportModel(p){
   blocks.push({t:'table',caption:'Rangkuman Charter',head:['Komponen','Uraian'],widths:[32,68],rows:annex(p)});
  }
  if(d.sign)blocks.push({t:'tte'});
- return {lang:'id',formal:true,template:d.template||'activity',toc:!!d.toc,header:'Dokumen Perencanaan Program · '+name,
+ return {page:RKMK_PAGE,lang:'id',formal:true,template:d.template||'activity',toc:!!d.toc,header:'Dokumen Perencanaan Program · '+name,
   fileName:'Perencanaan_Program_'+year()+'_'+code.replace(/[^A-Za-z0-9_-]/g,'_')+'_v'+v,
   cover:{kicker:'DOKUMEN PROGRAM',title:name,
    subject:'Tahun Anggaran '+year(),
@@ -251,6 +251,9 @@ function programReportModel(p){
  * Official template uses A4 (11906 x 16838 twips), compact 14 mm margins (794 twips)
  * and a body area of 10318 twips—the same geometry as Final Project Report.
  */
+/* Margin dokumen Project Selection mengikuti RKMK (Lampiran Batang Tubuh RKMK Peta Rencana SPBE):
+   atas 2,54 cm · kanan 1,78 cm · bawah 2,03 cm · kiri 2,29 cm (twips). */
+const RKMK_PAGE={top:1440,right:1008,bottom:1152,left:1296,header:709,footer:706};
 async function assertOfficialWordTemplate(blob){
  const zip=await window.JSZip.loadAsync(blob),xml=await zip.file('word/document.xml')?.async('string');
  if(!xml)throw new Error('Dokumen Word tidak mempunyai konten.');
@@ -259,7 +262,7 @@ async function assertOfficialWordTemplate(blob){
  const page=dom.getElementsByTagNameNS('*','pgSz')[0],margin=dom.getElementsByTagNameNS('*','pgMar')[0];
  const attr=(e,k)=>e?.getAttribute('w:'+k)||e?.getAttribute(k);
  const right=Number(attr(margin,'right')),left=Number(attr(margin,'left'));
- if(Number(attr(page,'w'))!==11906||Number(attr(page,'h'))!==16838||left!==794||right!==794||
+ if(Number(attr(page,'w'))!==11906||Number(attr(page,'h'))!==16838||!((left===794&&right===794)||(left===RKMK_PAGE.left&&right===RKMK_PAGE.right))||
     !zip.file('word/styles.xml'))
   throw new Error('Template Word tidak sesuai format laporan resmi A4; unduhan dibatalkan untuk mencegah layout rusak.');
  return blob;
@@ -483,7 +486,7 @@ function table(rows){return '<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/><w:t
 async function exportFormalPdf(model,file,{preview=false}={}){
  await load('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',()=>!!window.jspdf?.jsPDF);
  const pdf=new window.jspdf.jsPDF({unit:'mm',format:'a4'});
- const ink=[21,45,78],navy=[14,41,81],pale=[237,244,251],gold=[250,181,36],gray=[93,110,137],W=210,left=19,right=191,bw=172;
+ const ink=[21,45,78],navy=[14,41,81],pale=[237,244,251],gold=[250,181,36],gray=[93,110,137],W=210,mm=t=>Math.round(t/56.6929*10)/10,PGm=model.page,left=PGm?mm(PGm.left):19,right=PGm?W-mm(PGm.right):191,bw=right-left;
  const headingPages=[];
  let y=25;
  const setColor=a=>pdf.setTextColor(...a),line=(v,size=10,bold=false,space=4)=>{
@@ -530,8 +533,8 @@ async function exportFormalPdf(model,file,{preview=false}={}){
   pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.setTextColor(245,191,64);
   pdf.text('KEMENTERIAN KEUANGAN REPUBLIK INDONESIA',left,20);
   pdf.setTextColor(255,255,255);pdf.setFontSize(24);
-  const heading=pdf.splitTextToSize(String(model.cover?.title||'DOKUMEN PROGRAM'),170);
-  pdf.text(heading,left,43);pdf.setFontSize(12);pdf.text(pdf.splitTextToSize(String(model.cover?.subject||''),170),left,68);
+  const heading=pdf.splitTextToSize(String(model.cover?.title||'DOKUMEN PROGRAM'),bw);
+  pdf.text(heading,left,43);pdf.setFontSize(12);pdf.text(pdf.splitTextToSize(String(model.cover?.subject||''),bw),left,68);
   y=129;line((model.cover?.chips||[]).join('   |   '),10,true,8);
   if(model.cover?.meta?.length)drawTable(['IDENTITAS DOKUMEN','KETERANGAN'],typeof mtRptOrderedMeta==='function'?mtRptOrderedMeta(model.cover.meta):model.cover.meta,[35,65]);
  }else{
@@ -820,7 +823,7 @@ function portfolioModel(){
  h1('Catatan Penggunaan dan Pembaruan Dokumen');
  B.push({t:'bullets',items:['Dokumen memuat data program yang dipilih pada saat ekspor; perubahan isian setelah ekspor tidak otomatis mengubah berkas yang telah diunduh.','Nomor versi dokumen baru diterbitkan setelah PDF hasil TTE diunggah kembali sebagai bukti dukung.','Status dan bukti tanda tangan elektronik memerlukan verifikasi melalui layanan resmi sebelum dianggap sah.']});
  if(d.sign)B.push({t:'tte'});
- return {lang:'id',formal:true,template:d.template||'activity',toc:true,fileName:(mode?'Dokumen_Usulan_Proyek_':'Dokumen_Portofolio_Transformasi_')+year()+'_v'+version,
+ return {page:RKMK_PAGE,lang:'id',formal:true,template:d.template||'activity',toc:true,fileName:(mode?'Dokumen_Usulan_Proyek_':'Dokumen_Portofolio_Transformasi_')+year()+'_v'+version,
   header:(mode?'Dokumen Usulan Proyek · ':'Dokumen Portofolio Program Transformasi · ')+year(),
   cover:{kicker:mode?'DOKUMEN USULAN PROYEK':'DOKUMEN PORTOFOLIO',title:mode?(projectAllPrograms()?'Usulan Proyek Seluruh Program':String(projectTarget()?.nama||'Usulan Proyek')):'Portofolio Program Transformasi',subject:'Tahun Anggaran '+year(),
    chips:['Tahun '+year(),data.length+(mode?' usulan proyek':' program'),'Versi v'+version],scope:[],

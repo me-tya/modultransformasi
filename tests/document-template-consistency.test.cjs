@@ -18,7 +18,8 @@ test('Riwayat dan Daftar Program: Kode Program tepat sebelum Nama Program',()=>{
 });
 test('Dokumen Program dan Portofolio selalu gunakan engine formal Laporan Akhir Proyek',()=>{
  assert.match(docs,/formal:true,template:d\.template\|\|'activity',toc:!!d\.toc,header:'Dokumen Perencanaan Program/);
- assert.match(docs,/return \{lang:'id',formal:true,template:d\.template\|\|'activity',toc:true,fileName:/);
+ assert.match(docs,/return \{page:RKMK_PAGE,lang:'id',formal:true,template:d\.template\|\|'activity',toc:true,fileName:/);
+ assert.match(docs,/const RKMK_PAGE=\{top:1440,right:1008,bottom:1152,left:1296,header:709,footer:706\}/);
  assert.match(docs,/const blob=await assertOfficialWordTemplate\(await mtRptDocx\(model\)\)/);
  assert.match(docs,/await assertOfficialWordTemplate\(await mtRptDocx\(model\)\)/);
  assert.match(docs,/Do not fall back to the deprecated plain XML document template/);
@@ -26,9 +27,9 @@ test('Dokumen Program dan Portofolio selalu gunakan engine formal Laporan Akhir 
  assert.match(docs,/showActualDocumentPreview\(root,programReportModel\(p\),d\.format\)/);
 });
 test('Ukuran Word A4, margin dan lebar tabel persis sesuai bidang cetak',()=>{
- assert.match(html,/const W=10318,EMU=635/);
+ assert.match(html,/const PG=Object\.assign\(\{top:794,right:794,bottom:907,left:794,header:454,footer:454\},model\.page\|\|\{\}\),W=11906-PG\.left-PG\.right,EMU=635/);
  assert.match(html,/<w:pgSz w:w="11906" w:h="16838"\/>/);
- assert.match(html,/<w:pgMar w:top="794" w:right="794" w:bottom="907" w:left="794"/);
+ assert.match(html,/<w:pgMar w:top="\$\{PG\.top\}" w:right="\$\{PG\.right\}" w:bottom="\$\{PG\.bottom\}" w:left="\$\{PG\.left\}"/);
  assert.match(html,/ws\[ws\.length-1\]\+=W-ws\.reduce\(/);
  assert.match(html,/const weightSum=weights\.reduce\(/);
  assert.match(html,/@page\{size:A4;margin:14mm 14mm 16mm\}/);
