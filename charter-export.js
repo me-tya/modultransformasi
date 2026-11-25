@@ -273,7 +273,7 @@ function resolve(el){
  const bar=el.closest('[data-chx-bar],[data-chx-preview]');if(!bar)return null;
  const scopeAll=el.closest('[data-chx-scope="all"]')&&bar.dataset.chxAll;
  const k=bar.dataset.chxSrc;if(k&&sources[k]&&!scopeAll)return sources[k]();
- if(scopeAll){const y=+bar.dataset.chxAll;const L=(S.programs||[]).filter(p=>+p.psYear===y&&!p.arsip&&p.psListStatus!=='Arsip').sort((a,b)=>String(a.kodeResmi||a.kode||'~').localeCompare(String(b.kodeResmi||b.kode||'~'),'id',{numeric:true})||(S.programs.indexOf(a)-S.programs.indexOf(b))).map(fromProgram).filter(Boolean);return {list:L,name:'Charter_Program_Semua_'+y}}
+ if(scopeAll){const y=+bar.dataset.chxAll,pick=bar.dataset.chxSel&&S.ui&&S.ui.ps27ChSel&&Array.isArray(S.ui.ps27ChSel[y])?S.ui.ps27ChSel[y]:null;const L=(S.programs||[]).filter(p=>+p.psYear===y&&!p.arsip&&p.psListStatus!=='Arsip'&&(!pick||pick.includes(String(p.id)))).sort((a,b)=>String(a.kodeResmi||a.kode||'~').localeCompare(String(b.kodeResmi||b.kode||'~'),'id',{numeric:true})||(S.programs.indexOf(a)-S.programs.indexOf(b))).map(fromProgram).filter(Boolean);return {list:L,picked:!!pick,name:'Charter_Program_'+(pick?'Terpilih_':'Semua_')+y}}
  const id=bar.dataset.chxPid;if(id)return fromProgram((S.programs||[]).find(p=>String(p.id)===String(id)));
  return null;
 }
@@ -293,14 +293,14 @@ function bar(attrs,all){
   '<div class="chx-menu" role="menu" hidden>'+grp(all?'Program ini':'Charter Program','')+(all?grp('Semua program ('+all.n+')','all'):'')+'</div></div></div>';
 }
 /* Semua program tahun y saja (tanpa grup 'Program ini'). */
-function barAllYear(y,n){return bar('data-chx-all="'+E(y)+'"',null).replace(/data-chx-x="(\w+)"/g,'data-chx-x="$1" data-chx-scope="all"').replace('<small>Charter Program</small>','<small>Semua program ('+n+')</small>')}
+function barAllYear(y,n){return bar('data-chx-all="'+E(y)+'" data-chx-sel="1"',null).replace(/data-chx-x="(\w+)"/g,'data-chx-x="$1" data-chx-scope="all"').replace('<small>Charter Program</small>','<small>Program terpilih ('+n+')</small>')}
 const barFor=(p,o)=>bar('data-chx-pid="'+E(p.id)+'"'+(o&&o.year?' data-chx-all="'+E(o.year)+'"':''),o&&o.n>1?{n:o.n}:null);
 const barSrc=key=>bar('data-chx-src="'+E(key)+'"');
 /* Unduh semua Charter Program tahun y dalam satu berkas (JPG: satu ZIP). */
 function barAll(y,n){return '<div class="chx-bar chx-all" data-chx-bar data-chx-all="'+E(y)+'"><span class="chx-lbl">Unduh semua ('+n+' program)</span>'+FMT.map(([k,l])=>'<button type="button" class="chx-x" data-chx-x="'+k+'" title="Gabungkan seluruh Charter Program '+E(y)+' ke satu berkas '+l+'">'+l+'</button>').join('')+'</div>'}
 function bundle(list,name){const all=list.filter(x=>x&&x.c).map(x=>model(x.c,x.p));return {all,mode:mode(),file:name||'Charter_Program_Semua',judul:'Semua Program',sections:[]}}
 async function exportAs(fmt,src){
- if(Array.isArray(src?.list)){if(!src.list.length){say('Belum ada Charter Program pada tahun ini.');return}}
+ if(Array.isArray(src?.list)){if(!src.list.length){say(src.picked?'Centang minimal satu program dulu.':'Belum ada Charter Program pada tahun ini.');return}}
  else if(!src||!src.c){say('Charter Program belum tersedia.');return}
  const m=src.list?bundle(src.list,src.name):model(src.c,src.p);m.mode=mode();
  say('Menyiapkan '+({pdf:'PDF',docx:'Word',jpg:'JPG',pptx:'PowerPoint'}[fmt])+' · '+(m.mode==='mono'?'monokrom':'berwarna')+'…');
