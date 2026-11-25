@@ -220,24 +220,31 @@ function filter(p){
   F.push(field('Status Reviu',mk('data-ps27-status',['Perlu Reviu','Sudah Direviu'],status,'Semua Status'),on(status)?status:null));
  }else if(stage==='mapping'&&sub==='docs'){
   F.push({html:programField,chip:null,wide:true});
- }else if(stage==='charter'||stage==='penetapan-program'){
+ }else if(stage==='penetapan-program'){
+  /* Tabel K-Wide memuat semua program: filter Program menyaring baris tabel (bukan memilih satu program). */
+  const wp=String(S.ui.ps27WideProg||'all'),wopts=list().map(x=>[String(x.id),x.nama]);
+  F.push(field('Program',mk('data-ps27-wprog',wopts,wp,'Semua Program'),on(wp)&&wopts.some(o=>o[0]===wp)?'Program: '+pick(wp,wopts):null,true));
+ }else if(stage==='charter'){
   F.push({html:singleProgField,chip:null,wide:true});
  }
  const searchVal=stage==='mapping'&&sub==='history'?mapB.historySearch:f.search;
  const active=F.map(x=>x.chip).filter(Boolean);
  if(searchVal)active.push('Cari: '+searchVal);
- const fields=F.map(x=>x.wide&&!/ps27-f-wide/.test(x.html)?x.html.replace('<label','<label class="ps27-f-wide"'):x.html).join('');
- // Simetris: ≤5 unit → satu baris penuh; 6 → 3×2; 7–8 → 4 kolom. Program = 2 unit.
- const units=F.reduce((n,x)=>n+((x.wide||/ps27-f-wide/.test(x.html))?2:1),0),fcols=units<=5?units:units===6?3:4;
- const icon='<span class="ps27-filter-ic" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg></span>';
- return '<div class="ps27-filter ps27-filter-panel ps27-filter-contextual mt-std-filter'+(w.filterOpen?' is-open':'')+'" aria-label="Filter Project Selection" role="search">'+
-  '<div class="ps27-filter-header" data-ps27="filter" role="button" tabindex="0" aria-expanded="'+!!w.filterOpen+'"><div class="ps27-filter-titlebar">'+icon+
-  '<button type="button" class="ps27-filter-label" data-ps27="filter">Filter</button></div>'+
-  '<div class="ps27-filter-active"><b>FILTER AKTIF</b><span>'+(active.length?active.map(t=>'<em>'+E(t)+'</em>').join(''):'Belum ada — semua data')+'</span>'+
-  '<span class="ps27-filter-spacer"></span>'+(active.length?'<button type="button" class="ps27-filter-reset" data-ps27-reset>↺ Atur ulang</button>':'')+
-  '<button type="button" class="ps27-filter-expand" data-ps27="filter" aria-label="Buka atau tutup filter"><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"'+(w.filterOpen?' style="transform:rotate(180deg)"':'')+'><path d="M2.2 3.8h7.6L6 8.6z" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/></svg></button></div></div>'+
-  (w.filterOpen?'<div class="ps27-filter-body"><div class="ps27-filter-fields mt-fgrid" style="--mt-fcols:'+fcols+'">'+fields+'</div></div>':'')+
- '</div>';
+ /* Template filter = Project Management (.flt.fx2.pmo-unified): bar krem, label Filter navy, chip aktif, toggle emas. */
+ const ico='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg>';
+ const toFg=x=>{if(/data-ps27-year/.test(x.html))x={...x,year:1};const m=String(x.html).match(/^<label([^>]*)>([\s\S]*?)(<select[\s\S]*<\/select>)<\/label>$/);if(!m)return x.html;
+  const wide=x.wide||/ps27-f-wide/.test(m[1]),sel=m[3],val=(sel.match(/<option value="([^"]*)"[^>]*selected/)||[])[1],isAct=x.chip!=null&&val!=null&&val!==''&&val!=='all';
+  return '<span class="fg'+(x.year?' ps27-fyear':'')+(wide?' w2 pm-program':'')+'"><label>'+(x.year?'Tahun':m[2])+'</label>'+sel.replace(/^<select /,'<select class="sel'+(isAct?' act':'')+'" ')+'</span>'};
+ const chipOf=x=>{if(!x.chip)return '';const a=(String(x.html).match(/<select[^>]*?(data-ps27-[a-z-]+)/)||[])[1];return '<span class="c1">'+E(x.chip)+(a?'<button type="button" class="fx" data-ps27-clear="'+a+'" aria-label="Hapus filter '+E(x.chip)+'" title="Hapus filter ini">×</button>':'')+'</span>'};
+ const chips=F.map(chipOf).filter(Boolean).concat(searchVal?['<span class="c1">Cari: '+E(searchVal)+'</span>']:[]);
+ const open=!!w.filterOpen,tri='<span class="fcar" aria-hidden="true"><svg class="fcar-tri" viewBox="0 0 12 12" width="12" height="12"><path d="M2.2 3.8h7.6L6 8.6z" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/></svg></span>';
+ return '<section class="flt fx2 pmo-unified ps27-flt'+(open?' open':'')+'" aria-label="Filter '+E(title)+'" role="search">'+
+  '<div class="lp" data-ps27="filter" title="Klik untuk '+(open?'menyembunyikan':'menampilkan')+' filter"><span class="gi">'+ico+'</span><div class="lt"><span><b>Filter</b></span></div></div>'+
+  '<div class="rp"><div class="ftop" data-ps27="filter" role="button" tabindex="0" aria-expanded="'+open+'" title="Klik untuk '+(open?'menyembunyikan':'menampilkan')+' filter">'+
+  (active.length?'<span class="tl">'+active.length+' filter aktif</span><span class="flist">'+chips.join('')+'</span>':'')+
+  '<span class="ps27-fsp" style="flex:1 1 auto"></span><span class="rs2" data-ps27-count hidden></span>'+
+  (active.length?'<button type="button" class="freset rsm" data-ps27-reset>↺ Atur ulang</button>':'')+tri+'</div>'+
+  '<div class="fbar"'+(open?'':' hidden')+'>'+F.map(toFg).join('')+'</div></div></section>';
 }
 function actionBar(){return '<div class="ps27-actionbar" hidden></div>';}
 function sourcePicker(){
@@ -336,7 +343,7 @@ function widePanel(){
  // Archived programs remain in past quarters if they already had a K-Wide output row.
  // Newer quarters do not add them back automatically.
  const historical=list().filter(p=>!active.includes(p)&&d.rows.some(x=>String(x.programId)===String(p.id)));
- const all=[...active,...historical],visible=all.filter(p=>active.includes(p)||d.rows.some(x=>String(x.programId)===String(p.id)&&+x.quarter===q));
+ const wp=String(S.ui.ps27WideProg||'all'),all=[...active,...historical],visible=all.filter(p=>(active.includes(p)||d.rows.some(x=>String(x.programId)===String(p.id)&&+x.quarter===q))&&(wp==='all'||!all.some(z=>String(z.id)===wp)||String(p.id)===wp));
  const sum=wideSummary(d,all),status=d.contract.status||'Konsep',fixed=status==='Ditetapkan';
  const filled=active.filter(p=>[1,2,3,4].some(qq=>{const r=wideRow(d,p,qq);return String(r.targets||'').trim()&&Number(r.targetCount)>0}));
  return '<section class="ps27-card ps27-kwide" aria-label="Penetapan Program melalui Kontrak Kinerja K-Wide">'+
@@ -465,10 +472,14 @@ function page(){
  else h+=rkmk(p);
  h+='</section>';return h;
 }
+/* Ringkasan hasil di bar filter (seperti PM): ambil jumlah dari lencana tabel pada tab aktif. */
+function fillCount(root){const box=root.querySelector('[data-ps27-count]'),badge=root.querySelector('.psbank-count, .ps27-count');if(!box||!badge)return;
+ const m=String(badge.textContent||'').trim().match(/^(\d+)\s*(.*)$/);if(!m)return;box.innerHTML='<b>'+m[1]+'</b> '+E(m[2]||'data');box.hidden=false}
 function mount(){
  const root=document.querySelector('#view .pswf');if(!root)return;
+ setTimeout(()=>fillCount(root),0);
  root.addEventListener('click',function(ev){
-  const b=ev.target.closest('[data-ps27],[data-ps27-tab],[data-ps27-pick],[data-ps27-remove],[data-ps27-sub],[data-ps27-usul],[data-ps27-reset],[data-ps27-period],[data-mt-filter-icon]');
+  const b=ev.target.closest('[data-ps27-clear],[data-ps27],[data-ps27-tab],[data-ps27-pick],[data-ps27-remove],[data-ps27-sub],[data-ps27-usul],[data-ps27-reset],[data-ps27-period],[data-mt-filter-icon]');
   if(!b)return;
   ev.stopImmediatePropagation();
   if(b.hasAttribute('data-mt-filter-icon')){ws().filterOpen=!ws().filterOpen;save();render();return}
@@ -477,8 +488,9 @@ function mount(){
   if(b.dataset.ps27Sub){ws().prioritySub=b.dataset.ps27Sub;if(ws().prioritySub==='reference'&&!ws().referenceVisited){I.state().formula=true;I.state().params=true;ws().referenceVisited=true}save();render();return}
   if(b.dataset.ps27Usul){ws().usulanSub=b.dataset.ps27Usul;save();render();return}
   if(b.dataset.ps27Remove){toast('Hapus proyek hanya tersedia di Pemetaan Proyek → Usulan Proyek.');return}
+  if(b.dataset.ps27Clear){const sel=root.querySelector('select['+b.dataset.ps27Clear+']');if(sel){sel.value=sel.options[0]?.value??'all';sel.dispatchEvent(new Event('change',{bubbles:true}))}return}
   if(b.hasAttribute('data-ps27-reset')){
-   const f=localFilter();Object.assign(f,{search:'',status:'all',program:'',category:'all',origin:'all',contractStatus:'all',programName:'',unit:'all',unitRole:'all',period:'all',rangeFrom:'',rangeTo:'',year:state().tab==='usulan'&&(S.ui.psBank?.tab||'bank')==='bank'?'all':String(yr())});
+   S.ui.ps27WideProg='all';const f=localFilter();Object.assign(f,{search:'',status:'all',program:'',category:'all',origin:'all',contractStatus:'all',programName:'',unit:'all',unitRole:'all',period:'all',rangeFrom:'',rangeTo:'',year:state().tab==='usulan'&&(S.ui.psBank?.tab||'bank')==='bank'?'all':String(yr())});
    const st=S.ui.psBank||(S.ui.psBank={});st.filterProgram='';st.detailProgram='';f.allProgramsSelected=false;st.search='';st.filterStatus='all';st.filterOrigin='all';st.filterYear=f.year;f.ready='all';st.filterReady='all';st.filterUnit='all';if(state().tab==='mapping'){const m=window.MT_PS_SCOPE?.bank?.();if(m){m.historyYear='all';m.historyProgram='all';m.historyUnit='all';m.historySearch='';m.historySelected=[]}}
    save();render();return;
   }
@@ -555,6 +567,7 @@ function mount(){
    if(el.dataset.ps27Category!==undefined){setFilterField('category',el.value);save();render();return}
    if(el.dataset.ps27Ready!==undefined){setFilterField('ready',el.value);save();render();return}
    // Pemetaan › Usulan Proyek: Program hanya menyaring accordion, bukan mengganti mode tampilan.
+   if(el.dataset.ps27Wprog!==undefined){S.ui.ps27WideProg=el.value||'all';save();render();return}
    if(el.dataset.ps27Mprog!==undefined){setFilterField('program',el.value==='all'?'':el.value);save();render();return}
    if(el.dataset.ps27Hyear!==undefined||el.dataset.ps27Hprog!==undefined||el.dataset.ps27Hunit!==undefined){
     const m=window.MT_PS_SCOPE?.bank?.();if(m){const k=el.dataset.ps27Hyear!==undefined?'historyYear':el.dataset.ps27Hprog!==undefined?'historyProgram':'historyUnit';m[k]=el.value;m.historySelected=[]}
