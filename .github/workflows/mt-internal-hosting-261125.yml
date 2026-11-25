@@ -1,0 +1,29 @@
+name: Internal hosting contract and prechange ZIP 261125-MT-08
+on:
+  push:
+    branches: [internal-hosting-261125]
+    paths: ['internal-hosting/**', '.github/workflows/mt-internal-hosting-261125.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  backup-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Archive immutable pre-update repository
+        run: |
+          git archive --format=zip --output=261125-MT-08.zip cba07357368394928fb96e30a6236ba35256135a
+          unzip -t 261125-MT-08.zip | tail -1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 261125-MT-08
+          path: 261125-MT-08.zip
+          retention-days: 90
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test internal-hosting/backup-api.test.cjs
+      - run: node --check internal-hosting/backup-client.js
