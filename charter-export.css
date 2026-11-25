@@ -1,0 +1,62 @@
+/* Ekspor Charter Program (charter-export.js) — halaman A4 lanskap 1123×794 px, isi 9 pt (12 px) */
+.chx-off{position:fixed;left:-30000px;top:0;width:1123px;pointer-events:none;z-index:-1}
+.chx-page{position:relative;width:1123px;height:794px;box-sizing:border-box;padding:30px 38px 26px;background:#fff;display:flex;flex-direction:column;color:#000;font-size:12px;line-height:1.28;overflow:hidden}
+.chx-page *{box-sizing:border-box}
+.chx-page.chx-color{font-family:Arial,'Liberation Sans',Helvetica,sans-serif}
+.chx-page.chx-mono{font-family:'Bookman Old Style','Bookman','URW Bookman','URW Bookman L','TeX Gyre Bonum',Georgia,serif}
+.chx-band{position:absolute;left:0;top:0;right:0;height:6px;background:#1F2A44}
+.chx-band::after{content:"";position:absolute;left:0;top:6px;width:210px;height:3px;background:#F2B705}
+.chx-mono .chx-band{display:none}
+.chx-kmk{text-align:center;font-size:12px;letter-spacing:.02em;margin:0 0 5px}
+.chx-color .chx-kmk{color:#5B6B85}
+.chx-title{font-size:14.67px;margin:0 0 7px}
+.chx-color .chx-title{color:#1F2A44}
+.chx-title i{font-weight:400;font-size:12px}
+.chx-body{flex:1 1 auto;min-height:0}
+.chx-foot{display:flex;justify-content:space-between;font-size:12px;margin-top:6px;padding-top:4px;border-top:1px solid #C9D1E0;color:#5B6B85}
+.chx-mono .chx-foot{border-top-color:#000;color:#000}
+.chx-tb{width:100%;border-collapse:collapse;table-layout:fixed;margin:0}
+.chx-tb+.chx-tb{margin-top:-1px}
+.chx-tb th,.chx-tb td{border:1px solid #C9D1E0;padding:4px 6px;vertical-align:top;text-align:left;font-size:12px;font-weight:400}
+.chx-mono .chx-tb th,.chx-mono .chx-tb td{border-color:#000}
+.chx-tb th{text-align:center;font-weight:700;vertical-align:middle}
+.chx-color .chx-tb th{background:#1F2A44;color:#fff;border-color:#1F2A44}
+.chx-color .chx-tb th.chx-lab{background:#F2B705;color:#1F2A44;border-color:#E3AA00;text-align:left}
+.chx-mono .chx-tb th{background:#fff;color:#000}
+.chx-mono .chx-tb th.chx-lab{text-align:left}
+.chx-tb th.chx-q{font-size:12px;padding:2px 0;letter-spacing:-.02em}
+.chx-color .chx-tb th.chx-q{background:#2C3B5E}
+.chx-tb td.chx-on{background:#1F2A44}
+.chx-mono .chx-tb td.chx-on{background:#404040}
+.chx-rk td{padding:4px 4px}
+.chx-it{margin:0 0 2px}
+.chx-it:last-child{margin-bottom:0}
+.chx-n{display:flex;gap:4px}
+.chx-no{flex:0 0 auto;min-width:15px}
+.chx-tx{flex:1 1 auto;min-width:0}
+.chx-h{font-weight:700;margin-top:3px}
+.chx-h:first-child{margin-top:0}
+.chx-color .chx-h{color:#1F2A44;border-left:3px solid #F2B705;padding-left:4px}
+/* Pratinjau */
+.chx-prev{display:grid;gap:14px}
+.chx-pbox{position:relative;width:100%;overflow:hidden;border:1px solid #dce4ef;border-radius:6px;box-shadow:0 4px 14px rgba(6,27,53,.08);background:#fff}
+.chx-pscale{position:absolute;left:0;top:0;width:1123px;height:794px;transform-origin:0 0}
+.chx-empty{padding:28px;text-align:center;color:#5b6b85;border:1px dashed #c9d1e0;border-radius:10px}
+/* Bar ekspor */
+.chx-bar{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
+.chx-lbl{font-size:12px;font-weight:800;color:#1F2A44;letter-spacing:.02em}
+.chx-chips{display:inline-flex;border:1px solid #c9d1e0;border-radius:999px;padding:2px;background:#f4f6fa}
+.chx-chip{border:0;background:transparent;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;color:#5b6b85;cursor:pointer}
+.chx-chip.on{background:#1F2A44;color:#fff}
+.chx-chip[data-chx-mode="mono"].on{background:#3a3a3a}
+.chx-x{border:1px solid #c9d1e0;background:#fff;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:800;color:#1F2A44;cursor:pointer}
+.chx-x:hover{border-color:#1F2A44}
+.chx-x:disabled{opacity:.55;cursor:progress}
+/* Dialog */
+.chx-ov{position:fixed;inset:0;z-index:210000;background:#061B35B9;display:flex;align-items:center;justify-content:center;padding:12px}
+.chx-dlg{width:min(1180px,96vw);height:92vh;background:#fff;border-radius:14px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 25px 75px rgba(0,20,49,.33);font-family:'Nunito Sans','Inter',sans-serif}
+.chx-dlg>header{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:#1F2A44;color:#fff;border-bottom:3px solid #F2B705}
+.chx-dlg>header small{display:block;opacity:.8;font-size:12px}
+.chx-dlg>header button{background:none;border:0;color:#fff;font-size:22px;cursor:pointer}
+.chx-dlg>main{flex:1;overflow:auto;padding:14px 18px;background:#f4f6fa}
+.chx-dlg>footer{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 18px;border-top:1px solid #dce4ef}

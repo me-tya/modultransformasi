@@ -192,6 +192,13 @@ async function handle(button){
   finally{button.disabled=false}
   return;
  }
+ if(kind==='charter'&&window.MT_CHX){
+  const origin=charterSourceProgram(p),src=hasCharter(origin)?MT_CHX.fromProgram(origin):null;
+  if(!src)return errorDialog('Charter Program','Charter Program belum dibuat untuk program ini di Project Selection.');
+  if(mode!=='download'){MT_CHX.open(src,origin.nama+' · '+(origin.kodeResmi||origin.kode||'')+' · Tahun '+(origin.psYear||currentYear()));return}
+  button.disabled=true;try{await MT_CHX.exportAs('pdf',src)}finally{button.disabled=false}
+  return;
+ }
  if(kind==='charter'){
   let deck;try{deck=buildDeck(p)}catch(e){errorDialog('Charter Program',e.message||String(e));return}
   if(mode!=='download'){showCharter(p,deck);return}

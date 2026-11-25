@@ -176,8 +176,7 @@ function controls(){
  const a=active,edit=canEdit(a.p,a.kind,a.source);
  return '<div class="mt-doc-actions">'+
  (a.kind==='project'?'<button data-mt-doc="import" type="button">↑ Import Charter PPTX</button>':'<button data-mt-doc="import" type="button">↑ Import PPTX</button>')+
- '<button data-mt-doc="preview" type="button">Pratinjau 3 Slide</button>'+
- '<button data-mt-doc="export" type="button">↓ Unduh PPTX</button>'+
+ (a.kind==='program'&&window.MT_CHX?'<button data-mt-doc="chxpreview" type="button">Pratinjau</button>'+MT_CHX.barSrc('dx'):'<button data-mt-doc="preview" type="button">Pratinjau 3 Slide</button><button data-mt-doc="export" type="button">↓ Unduh PPTX</button>')+
  (a.kind==='project'&&a.draft.dk&&edit?'<button data-mt-doc="scope" type="button">Ubah cakupan</button>':'')+(a.kind==='project'&&a.source?.st==='Disahkan'&&chCan('U',a.p)?'<button data-mt-doc="revision" type="button">⧉ Buat Versi Revisi</button>':'')+
  (edit?(!a.edit?'<button data-mt-doc="edit" type="button">✎ Ubah</button>':
  '<button data-mt-doc="cancel-edit" type="button">Batal Ubah</button><button class="mt-doc-primary" data-mt-doc="save" type="button">Simpan</button>'):'<span class="mt-doc-locked">Baca saja · versi disahkan/izin terbatas</span>')+
@@ -197,8 +196,7 @@ function paint(){
    const editable=canEdit(active.p,active.kind,active.source);
    footer.innerHTML='<div class="mt-charter-tools">'+
     '<button type="button" class="btn" data-mt-doc="import">↑ Import PPTX</button>'+
-    '<button type="button" class="btn" data-mt-doc="preview">Pratinjau 3 Slide</button>'+
-    '<button type="button" class="btn pri" data-mt-doc="export">↓ Unduh PPTX</button>'+
+    (window.MT_CHX?'<button type="button" class="btn" data-mt-doc="chxpreview">Pratinjau</button>'+MT_CHX.barSrc('dx'):'<button type="button" class="btn" data-mt-doc="preview">Pratinjau 3 Slide</button><button type="button" class="btn pri" data-mt-doc="export">↓ Unduh PPTX</button>')+
     '<input type="file" data-mt-import-file accept=".pptx" hidden></div>'+
     '<div class="mt-charter-default-actions">'+
     '<button type="button" class="btn" data-bank-preview-edit '+(!editable?'disabled':'')+'>✎ Ubah</button>'+
@@ -343,6 +341,7 @@ async function onAction(btn){
  }
  if(a==='copy'){copyProgram();return}
  if(a==='import'){active.host.querySelector('[data-mt-import-file]')?.click();return}
+ if(a==='chxpreview'){if(active.edit)collect();window.MT_CHX?.open({c:active.draft,p:active.p});return}
  if(a==='preview'||a==='export'){
   if(active.edit)collect();
   const D=makeDeck(active.draft,active.kind);
@@ -472,6 +471,8 @@ document.addEventListener('keydown',ev=>{
  if(ev.key==='Escape'&&active&&!active.native&&active.host?.isConnected){active.host.remove();active=null}
 },true);
 /* Deep link aman untuk Peta Menu PM: hanya membuka subtab dari program yang sudah dipilih. */
+if(window.MT_CHX)MT_CHX.register('dx',()=>{if(!active)return null;if(active.edit)collect();return {c:active.draft,p:active.p}});
+else document.addEventListener('DOMContentLoaded',()=>window.MT_CHX?.register('dx',()=>{if(!active)return null;if(active.edit)collect();return {c:active.draft,p:active.p}}));
 window.MT_DOC_EXPERIENCE=Object.assign(window.MT_DOC_EXPERIENCE||{},{
  openProject:function(p,tab,edit,id){openProject(p,tab||'asis',!!edit,id||'')},
  openProgram:function(p,edit){document.querySelectorAll('.mt-doc-overlay').forEach(x=>x.remove());const ov=document.createElement('div');ov.className='mt-doc-overlay';(document.querySelector('#app')||document.body).appendChild(ov);start(p,'program',ov);if(edit&&canEdit(p,'program',active.source))active.edit=true;paint()},

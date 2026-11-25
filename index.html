@@ -8568,7 +8568,8 @@ async function dkPptx(D){if(!window.PptxGenJS){try{await chLib('https://cdnjs.cl
   if(Array.isArray(e.txt))s.addText(e.txt.map((t,i)=>({text:t,options:{bullet:e.bul?{indent:12}:false,breakLine:i<e.txt.length-1}})),base);else s.addText(String(e.txt),base)})});
  await ppt.writeFile({fileName:D.file+'.pptx'})}
 function chDeckOpen(c){const D=chDeck3(c);const body=`<div class="dk-wrap">${D.slides.map((sl,i)=>`<figure class="dk-f"><div class="dk-box"><div class="dk-scale">${dkHtml(sl)}</div></div><figcaption>${i+1}. ${esc(sl.n)}</figcaption></figure>`).join('')}</div><p class="s" style="margin:8px 0 0">Pratinjau 3 slide charter (format resmi: Charter, Kriteria Penyelesaian, Rencana Kerja) dari isian ${c.st==='Disahkan'?'versi berlaku':'draf'} saat ini. Berkas PowerPoint dapat diedit; isian yang terlalu panjang diringkas menjadi “… dan n butir lainnya”.</p>`;
- const ov=modal(`<span class="exh">🎞 Ekspor PowerPoint charter · ${esc(D.title)}</span>`,body,null,null,{cancel:'Tutup',size:'wide dk-md',extra:'<button class="btn pri" data-mx="pptx">⬇ Unduh PowerPoint</button>',onExtra:async k=>{if(k==='pptx'){busy('Menyusun PowerPoint…',D.file+'.pptx');try{await dkPptx(D);busyOff();toast('Paparan PowerPoint diunduh.')}catch(err){busyOff();toast('Gagal membuat PPTX: '+(err.message||err))}return false}}});
+ if(window.MT_CHX)MT_CHX.register('legacy',()=>({c,p:Object.assign({},chProg(c))}));
+ const ov=modal(`<span class="exh">🎞 Charter · ${esc(D.title)}</span>`,body,null,null,{cancel:'Tutup',size:'wide dk-md',extra:(window.MT_CHX?MT_CHX.barSrc('legacy'):'')+'<button class="btn" data-mx="pptx" title="Paparan 3 slide (ringkas)">⬇ Paparan 3 Slide</button>',onExtra:async k=>{if(k==='pptx'){busy('Menyusun PowerPoint…',D.file+'.pptx');try{await dkPptx(D);busyOff();toast('Paparan PowerPoint diunduh.')}catch(err){busyOff();toast('Gagal membuat PPTX: '+(err.message||err))}return false}}});
  const fit=()=>ov.querySelectorAll('.dk-scale').forEach(b=>{const w=b.parentElement.clientWidth;if(!w)return;b.style.transform=`scale(${w/1280})`;b.parentElement.style.height=(720*w/1280)+'px'});requestAnimationFrame(fit);setTimeout(fit,120);setTimeout(fit,400);try{const ro=new ResizeObserver(fit);ov.querySelectorAll('.dk-f').forEach(f=>ro.observe(f))}catch(e){}}
 ACT.chdeck=el=>{const c=el.dataset.id?S.charters.find(x=>x.id===el.dataset.id):null;const src=c&&CHD&&CHD.id===c.id?CHD:(c||CHD);if(!src){toast('Charter tidak ditemukan.');return}chDeckOpen(src)};
 
@@ -12512,16 +12513,18 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script src="mt-foto-frame.js?v=20261114-ff6"></script>
 <script src="project-selection-flow.js?v=20261125-mf1"></script>
 <script src="project-selection-governance.js?v=20261111-mt13-info"></script>
-<script src="project-selection-workflow-2027.js?v=20261125-dp1"></script>
+<script src="project-selection-workflow-2027.js?v=20261125-chx1"></script>
 <script src="project-selection-scope-map.js?v=20261111-mt14-filter"></script>
 <script src="project-selection-documents.js?v=20261111-mt13-info"></script>
 <script src="project-selection-program-bank.js?v=20261125-imp1"></script>
 <script src="project-selection-program-import.js?v=20261125-imp3"></script>
-<script src="program-documents-detail.js?v=20261111-mt04"></script>
+<link rel="stylesheet" href="charter-export.css?v=20261125-chx2">
+<script src="charter-export.js?v=20261125-chx2"></script>
+<script src="program-documents-detail.js?v=20261125-chx1"></script>
 
 
 <script src="pmo-planning-document.js?v=20261111-mt03"></script>
-<script src="planning-tabs-v2.js?v=20261125-dp1"></script>
+<script src="planning-tabs-v2.js?v=20261125-chx1"></script>
 
 <script src="standard-wbs-template.js?v=20261109-1"></script>
 <script src="mt-berita-acara.js?v=20261110-1"></script>
