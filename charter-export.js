@@ -90,8 +90,8 @@ function splitAt(el,b,room){
   /* judul tahun tidak boleh tertinggal sendirian di akhir halaman */
   const L=b.cols[cells.indexOf(td)][0];while(n>0&&n<L.length&&L[n-1]&&L[n-1].h)n--;return n});
 }
-function paginate(m,host){
- host.innerHTML='';const pages=[];
+function paginate(m,host,keep){
+ if(!keep)host.innerHTML='';const pages=[];
  m.sections.forEach(sec=>{
   let pg,body,room,lastHead=null;
   const fresh=cont=>{pg=pageShell(m,sec,cont);host.appendChild(pg);pages.push(pg);body=pg.querySelector('.chx-body');room=body.clientHeight};
@@ -126,7 +126,7 @@ function paginate(m,host){
    queue.unshift(b);
   }
  });
- pages.forEach((pg,i)=>{pg.querySelector('.chx-pno').textContent='Halaman '+(i+1)+' / '+pages.length});
+ pages.forEach((pg,i)=>{pg.querySelector('.chx-pno').textContent='Halaman '+(i+1)+' / '+pages.length;pg.dataset.chxFile=m.file});
  return pages;
 }
 
@@ -148,19 +148,19 @@ const say=m=>{try{toast(m)}catch(_){}};
 /* Halaman lepas-layar (skala 1:1) untuk ekspor. */
 function offscreen(m){
  const host=document.createElement('div');host.className='chx-off';host.setAttribute('aria-hidden','true');
- document.body.appendChild(host);const pages=paginate(m,host);return {host,pages,done:()=>host.remove()};
+ document.body.appendChild(host);const pages=m.all?m.all.flatMap(x=>{x.mode=m.mode;return paginate(x,host,true)}):paginate(m,host);return {host,pages,done:()=>host.remove()};
 }
 async function canvases(pages,scale){await libs.h2c();if(document.fonts?.ready)await document.fonts.ready;
  const out=[];for(const pg of pages)out.push(await html2canvas(pg,{scale:scale||2,backgroundColor:'#ffffff',useCORS:true,logging:false,width:PW,height:PH,windowWidth:PW}));return out}
 
 /* ---------- EKSPOR ---------- */
-async function toPdf(m){const o=offscreen(m);try{const cs=await canvases(o.pages,2);await libs.pdf();const doc=new jspdf.jsPDF({orientation:'landscape',unit:'mm',format:'a4',compress:true});
+async function toPdf(m){const o=offscreen(m);try{const cs=await canvases(o.pages,m.all?1.6:2);await libs.pdf();const doc=new jspdf.jsPDF({orientation:'landscape',unit:'mm',format:'a4',compress:true});
   cs.forEach((cv,i)=>{if(i)doc.addPage('a4','landscape');doc.addImage(cv.toDataURL('image/jpeg',.93),'JPEG',0,0,297,210)});doc.setProperties({title:'Charter Program — '+m.judul});
   saveBlob(doc.output('blob'),m.file+(m.mode==='mono'?'_Monokrom':'_Berwarna')+'.pdf')}finally{o.done()}}
 async function toJpg(m){const o=offscreen(m);try{const cs=await canvases(o.pages,2),base=m.file+(m.mode==='mono'?'_Monokrom':'_Berwarna');
   const blobs=await Promise.all(cs.map(cv=>new Promise(r=>cv.toBlob(r,'image/jpeg',.93))));
   if(blobs.length===1)return saveBlob(blobs[0],base+'.jpg');
-  await libs.zip();const z=new JSZip();blobs.forEach((b,i)=>z.file(base+'_hal'+String(i+1).padStart(2,'0')+'.jpg',b));saveBlob(await z.generateAsync({type:'blob'}),base+'_JPG.zip')}finally{o.done()}}
+  await libs.zip();const z=new JSZip();const cnt={};blobs.forEach((b,i)=>{const f=m.all?o.pages[i].dataset.chxFile:base;cnt[f]=(cnt[f]||0)+1;z.file((m.all?String(m.all.findIndex(x=>x.file===f)+1).padStart(2,'0')+'_'+f:f)+'_hal'+String(cnt[f]).padStart(2,'0')+'.jpg',b)});saveBlob(await z.generateAsync({type:'blob'}),base+'_JPG.zip')}finally{o.done()}}
 const hex=c=>{const m=String(c||'').match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/);if(!m||m[4]==='0')return null;return [m[1],m[2],m[3]].map(x=>(+x).toString(16).padStart(2,'0')).join('').toUpperCase()};
 async function toPptx(m){const o=offscreen(m);try{await libs.ppt();const ppt=new PptxGenJS();ppt.defineLayout({name:'A4L',width:PW/PX,height:PH/PX});ppt.layout='A4L';
   ppt.title='Charter Program — '+m.judul;ppt.author='PMO Kementerian Keuangan';const face=m.mode==='mono'?'Bookman Old Style':'Arial',inch=v=>v/PX;
@@ -191,11 +191,11 @@ function docxXml(m){
  const tbl=(grid,rows)=>'<w:tbl><w:tblPr><w:tblW w:w="'+grid.reduce((a,b)=>a+b,0)+'" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblBorders>'+['top','left','bottom','right','insideH','insideV'].map(k=>'<w:'+k+' w:val="single" w:sz="'+(mono?6:4)+'" w:color="'+LINE+'"/>').join('')+'</w:tblBorders><w:tblCellMar><w:top w:w="40" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:bottom w:w="40" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>'+grid.map(w=>'<w:gridCol w:w="'+w+'"/>').join('')+'</w:tblGrid>'+rows.join('')+'</w:tbl>';
  const tr=(cells,head)=>'<w:tr>'+(head?'<w:trPr><w:tblHeader/><w:cantSplit/></w:trPr>':'')+cells+'</w:tr>';
  const W=15704,body=[];
- m.sections.forEach((sec,si)=>{
-  body.push(para(run('KEMENTERIAN KEUANGAN REPUBLIK INDONESIA',{sz:16,c:mono?'000000':'5B6B85'}),{jc:'center',pb:si>0,after:60}));
-  body.push(para(run(sec.title+' ',{b:1,sz:22,c:mono?'000000':NAVY})+run(m.judul,{sz:22,c:mono?'000000':NAVY}),{after:100,keep:1}));
+ (m.all||[m]).forEach((mm,mi)=>mm.sections.forEach((sec,si)=>{
+  body.push(para(run('KEMENTERIAN KEUANGAN REPUBLIK INDONESIA',{sz:16,c:mono?'000000':'5B6B85'}),{jc:'center',pb:si>0||mi>0,after:60}));
+  body.push(para(run(sec.title+' ',{b:1,sz:22,c:mono?'000000':NAVY})+run(mm.judul,{sz:22,c:mono?'000000':NAVY}),{after:100,keep:1}));
   if(sec.key==='rk'){
-   const yrs=m.yrs,qn=yrs.length*4,tw=Math.round(W*.24),pw=Math.round(W*.20),qw=Math.floor((W-tw-pw)/qn),grid=[tw].concat(Array(qn).fill(qw)).concat([W-tw-pw-qw*qn+pw]);
+   const yrs=mm.yrs,qn=yrs.length*4,tw=Math.round(W*.24),pw=Math.round(W*.20),qw=Math.floor((W-tw-pw)/qn),grid=[tw].concat(Array(qn).fill(qw)).concat([W-tw-pw-qw*qn+pw]);
    const hp=t=>para(run(t,headC),{jc:'center',after:0}),hq=t=>para(run(t,Object.assign({},headC,{sz:12})),{jc:'center',after:0});
    const rows=[tr(cell(grid[0],hp('Tindakan'),{vm:'r',fill:headFill,vc:1})+yrs.map(y=>cell(qw*4,hp(String(y)),{span:4,fill:headFill})).join('')+cell(grid[grid.length-1],hp('Penanggung Jawab'),{vm:'r',fill:headFill,vc:1}),1),
     tr(cell(grid[0],para(''),{vm:'c',fill:headFill})+yrs.map(()=>QN.map(q=>cell(qw,hq(q),{fill:headFill})).join('')).join('')+cell(grid[grid.length-1],para(''),{vm:'c',fill:headFill}),1)];
@@ -211,7 +211,7 @@ function docxXml(m){
    rows.push(tr(b.cols.map(([L,s])=>{const c=cell(span(i,s),itemsP(L),{span:s});i+=s;return c}).join('')));
   });
   body.push(tbl(g,rows));
- });
+ }));
  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+body.join('')+
   '<w:sectPr><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="567" w:right="567" w:bottom="567" w:left="567" w:header="284" w:footer="284" w:gutter="0"/></w:sectPr></w:body></w:document>';
 }
@@ -229,6 +229,7 @@ function register(key,fn){sources[key]=fn}
 function resolve(el){
  const bar=el.closest('[data-chx-bar],[data-chx-preview]');if(!bar)return null;
  const k=bar.dataset.chxSrc;if(k&&sources[k])return sources[k]();
+ if(bar.dataset.chxAll){const y=+bar.dataset.chxAll;const L=(S.programs||[]).filter(p=>+p.psYear===y&&!p.arsip&&p.psListStatus!=='Arsip').sort((a,b)=>String(a.kodeResmi||a.kode||'~').localeCompare(String(b.kodeResmi||b.kode||'~'),'id',{numeric:true})||(S.programs.indexOf(a)-S.programs.indexOf(b))).map(fromProgram).filter(Boolean);return {list:L,name:'Charter_Program_Semua_'+y}}
  const id=bar.dataset.chxPid;if(id)return fromProgram((S.programs||[]).find(p=>String(p.id)===String(id)));
  return null;
 }
@@ -246,9 +247,13 @@ function bar(attrs){
 }
 const barFor=p=>bar('data-chx-pid="'+E(p.id)+'"');
 const barSrc=key=>bar('data-chx-src="'+E(key)+'"');
+/* Unduh semua Charter Program tahun y dalam satu berkas (JPG: satu ZIP). */
+function barAll(y,n){return '<div class="chx-bar chx-all" data-chx-bar data-chx-all="'+E(y)+'"><span class="chx-lbl">Unduh semua ('+n+' program)</span>'+FMT.map(([k,l])=>'<button type="button" class="chx-x" data-chx-x="'+k+'" title="Gabungkan seluruh Charter Program '+E(y)+' ke satu berkas '+l+'">'+l+'</button>').join('')+'</div>'}
+function bundle(list,name){const all=list.filter(x=>x&&x.c).map(x=>model(x.c,x.p));return {all,mode:mode(),file:name||'Charter_Program_Semua',judul:'Semua Program',sections:[]}}
 async function exportAs(fmt,src){
- if(!src||!src.c){say('Charter Program belum tersedia.');return}
- const m=model(src.c,src.p);m.mode=mode();
+ if(Array.isArray(src?.list)){if(!src.list.length){say('Belum ada Charter Program pada tahun ini.');return}}
+ else if(!src||!src.c){say('Charter Program belum tersedia.');return}
+ const m=src.list?bundle(src.list,src.name):model(src.c,src.p);m.mode=mode();
  say('Menyiapkan '+({pdf:'PDF',docx:'Word',jpg:'JPG',pptx:'PowerPoint'}[fmt])+' · '+(m.mode==='mono'?'monokrom':'berwarna')+'…');
  try{if(fmt==='pdf')await toPdf(m);else if(fmt==='docx')await toDocx(m);else if(fmt==='jpg')await toJpg(m);else await toPptx(m);say('Charter Program berhasil diekspor.')}
  catch(e){say('Ekspor gagal: '+(e?.message||e))}
@@ -280,5 +285,6 @@ document.addEventListener('click',ev=>{
  const x=ev.target.closest?.('[data-chx-x]');if(x){ev.preventDefault();ev.stopPropagation();if(x.disabled)return;x.disabled=true;exportAs(x.dataset.chxX,resolve(x)).finally(()=>{x.disabled=false})}
 },true);
 if(typeof MutationObserver==='function'&&document.body)new MutationObserver(()=>{if(document.querySelector('[data-chx-preview]:not([data-chx-mounted])'))mountAll()}).observe(document.body,{childList:true,subtree:true});
-window.MT_CHX={model,docxXml,docxBlob,paginate,bar,barFor,barSrc,preview,mountAll,open,register,fromProgram,exportAs,setMode,mode,version:'20261125-chx1'};
+function listAll(y){return (S.programs||[]).filter(p=>+p.psYear===+y&&!p.arsip&&p.psListStatus!=='Arsip').map(fromProgram).filter(Boolean)}
+window.MT_CHX={listAll,barAll,bundle,model,docxXml,docxBlob,paginate,bar,barFor,barSrc,preview,mountAll,open,register,fromProgram,exportAs,setMode,mode,version:'20261125-chx1'};
 })();

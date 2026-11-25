@@ -32,3 +32,8 @@ test('Bar ekspor memuat chip mode dan 4 format',()=>{
  for(const k of ['color','mono'])assert.ok(h.includes('data-chx-mode="'+k+'"'));
  for(const k of ['pdf','docx','jpg','pptx'])assert.ok(h.includes('data-chx-x="'+k+'"'));
 });
+test('Unduh semua: satu berkas Word berisi seluruh program tahun aktif',()=>{
+ const {S,X}=boot(),b=X.bundle(S.programs.map(p=>({c:p.psProgramCharter,p})),'Semua');b.mode='mono';
+ const x=X.docxXml(b);assert.equal(b.all.length,9);assert.equal((x.match(/<w:tbl>/g)||[]).length,27);
+ for(const p of S.programs)assert.ok(x.includes(p.nama.replace(/&/g,'&amp;')));
+});
