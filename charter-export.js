@@ -308,15 +308,30 @@ async function exportAs(fmt,src){
  catch(e){say('Ekspor gagal: '+(e?.message||e))}
 }
 /* Pratinjau: halaman 1:1 diskalakan agar muat lebar wadah. */
+/* Pratinjau: halaman 1:1 diskalakan agar muat lebar wadah.
+   Kinerja: hasil paginasi di-cache per isi charter + mode (render ulang aplikasi tidak menyusun ulang halaman),
+   pratinjau di dalam <details> tertutup baru disusun saat dibuka, dan penyesuaian skala hanya saat lebar berubah. */
+const CACHE=new Map();
+function cacheKey(src,md){try{return md+'|'+JSON.stringify([src.c,src.p&&[src.p.id,src.p.kode,src.p.kodeResmi,src.p.nama,src.p.uic,src.p.pend,src.p.psYear]])}catch(_){return ''}}
+function pagesHtml(src,md){
+ const k=cacheKey(src,md);if(k&&CACHE.has(k))return CACHE.get(k);
+ const m=model(src.c,src.p);m.mode=md;const o=offscreen(m);
+ const out=o.pages.map(pg=>{const [w,h]=dims(pg);return {w,h,html:pg.outerHTML}});o.done();
+ if(k){CACHE.set(k,out);if(CACHE.size>24)CACHE.delete(CACHE.keys().next().value)}
+ return out;
+}
 function mountPreview(el,getSrc){
  el.__chxRender=()=>{const src=getSrc();if(!src||!src.c){el.innerHTML='<div class="chx-empty">Charter Program belum dibuat.</div>';return}
-  const m=model(src.c,src.p);m.mode=mode();const o=offscreen(m);el.innerHTML='';el.classList.toggle('chx-prev-deck',m.mode==='color');
-  o.pages.forEach(pg=>{const box=document.createElement('div');box.className='chx-pbox';const [pw,ph]=dims(pg);box.dataset.w=pw;box.dataset.h=ph;const sc=document.createElement('div');sc.className='chx-pscale';sc.appendChild(pg);box.appendChild(sc);el.appendChild(box)});o.done();fit(el)};
+  const md=mode(),pages=pagesHtml(src,md);el.classList.toggle('chx-prev-deck',md==='color');
+  el.innerHTML=pages.map(p=>'<div class="chx-pbox" data-w="'+p.w+'" data-h="'+p.h+'"><div class="chx-pscale">'+p.html+'</div></div>').join('');
+  el.__chxW=0;fit(el)};
  el.__chxRender();
- if(!el.__chxRO&&typeof ResizeObserver==='function'){el.__chxRO=new ResizeObserver(()=>fit(el));el.__chxRO.observe(el)}
+ if(!el.__chxRO&&typeof ResizeObserver==='function'){let raf=0;el.__chxRO=new ResizeObserver(()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;fit(el)})});el.__chxRO.observe(el)}
 }
-function fit(el){el.querySelectorAll('.chx-pbox').forEach(b=>{const w=b.clientWidth;if(!w)return;const pw=+b.dataset.w||PW,ph=+b.dataset.h||PH,s=w/pw;const sc=b.firstElementChild;sc.style.width=pw+'px';sc.style.height=ph+'px';sc.style.transform='scale('+s+')';b.style.height=(ph*s)+'px'})}
-function mountAll(root){(root||document).querySelectorAll('[data-chx-preview]:not([data-chx-mounted])').forEach(el=>{el.setAttribute('data-chx-mounted','');mountPreview(el,()=>resolve(el))})}
+function fit(el){const W=el.clientWidth;if(!W||Math.abs(W-(el.__chxW||0))<2&&el.__chxW)return;el.__chxW=W;
+ el.querySelectorAll('.chx-pbox').forEach(b=>{const w=b.clientWidth;if(!w)return;const pw=+b.dataset.w||PW,ph=+b.dataset.h||PH,s=w/pw;const sc=b.firstElementChild;sc.style.width=pw+'px';sc.style.height=ph+'px';sc.style.transform='scale('+s+')';b.style.height=(ph*s)+'px'})}
+function mountAll(root){(root||document).querySelectorAll('[data-chx-preview]:not([data-chx-mounted])').forEach(el=>{if(el.closest('details:not([open])'))return;el.setAttribute('data-chx-mounted','');mountPreview(el,()=>resolve(el))})}
+document.addEventListener('toggle',ev=>{const d=ev.target;if(d&&d.tagName==='DETAILS'&&d.open&&d.querySelector('[data-chx-preview]:not([data-chx-mounted])'))mountAll(d)},true);
 function preview(attrs){return '<div class="chx-prev" data-chx-preview '+(attrs||'')+'></div>'}
 function open(src,title){
  if(!src||!src.c){say('Charter Program belum tersedia.');return}
@@ -338,7 +353,7 @@ document.addEventListener('click',ev=>{
  const m=ev.target.closest?.('[data-chx-mode]');if(m){ev.preventDefault();ev.stopPropagation();setMode(m.dataset.chxMode);return}
  const x=ev.target.closest?.('[data-chx-x]');if(x){ev.preventDefault();ev.stopPropagation();if(x.disabled)return;const src=resolve(x);closeMenus();x.disabled=true;exportAs(x.dataset.chxX,src).finally(()=>{x.disabled=false})}
 },true);
-if(typeof MutationObserver==='function'&&document.body)new MutationObserver(()=>{if(document.querySelector('[data-chx-preview]:not([data-chx-mounted])'))mountAll()}).observe(document.body,{childList:true,subtree:true});
+if(typeof MutationObserver==='function'&&document.body){let pend=0;new MutationObserver(()=>{if(pend)return;pend=requestAnimationFrame(()=>{pend=0;if(document.querySelector('[data-chx-preview]:not([data-chx-mounted])'))mountAll()})}).observe(document.body,{childList:true,subtree:true})}
 function listAll(y){return (S.programs||[]).filter(p=>+p.psYear===+y&&!p.arsip&&p.psListStatus!=='Arsip').map(fromProgram).filter(Boolean)}
 window.MT_CHX={barAllYear,deckFor,pagesFor,listAll,barAll,bundle,model,docxXml,docxBlob,paginate,bar,barFor,barSrc,preview,mountAll,open,register,fromProgram,exportAs,setMode,mode,version:'20261125-chx5'};
 })();
