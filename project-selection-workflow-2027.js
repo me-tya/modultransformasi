@@ -287,15 +287,21 @@ function prioritasi(p){
  '<div class="ps27-smart-actions">'+mode+threshold+tip+'</div></div>'+
  (sub==='reference'?I.referencePage(p):sub==='criteria'?I.criteriaPage(p):I.projectsPage(p));
 }
+function cisBtns(p){
+ /* Impor Tabulasi Charter IS & unduh plain RKMK (mt-charter-is.js) */
+ const X=window.MT_CHARTER_IS;if(!X)return '';
+ return (X.canImport()?'<button type="button" class="btn" data-act="mtCisImport" title="Isi Charter Program dari sheet Tabulasi Charter IS (Excel tindak lanjut LOM)">↑ Impor Excel IS</button>':'')+
+  '<button type="button" class="btn" data-act="mtCisPlain" data-id="'+E(p?p.id:'')+'" title="Unduh charter format tabel polos untuk disalin ke RKMK (Word, PowerPoint, PDF)">↓ Plain RKMK</button>';
+}
 function charter(p){
- if(!p)return '<div class="ps27-card ps27-empty">Pilih program untuk menampilkan Charter Program.</div>';
+ if(!p)return '<div class="ps27-card ps27-empty">Pilih program untuk menampilkan Charter Program.'+(window.MT_CHARTER_IS&&window.MT_CHARTER_IS.canImport()?'<div class="ps27-chact" style="justify-content:center;margin-top:10px">'+cisBtns(null)+'</div>':'')+'</div>';
  const pc=p.psProgramCharter&&typeof p.psProgramCharter==='object'&&Object.keys(p.psProgramCharter).length?p.psProgramCharter:null;
  const st=pc?(pc.st||'Draft'):((S.charters||[]).some(c=>c.prog===p.akr&&!c.dk&&c.st!=='Arsip')?'Draft (dari charter sebelumnya)':'Belum dibuat');
  const ic=typeof MT_INFO_ICON==='function'?MT_INFO_ICON:()=>'';
  let deck=null,err='';try{deck=typeof dkHtml==='function'?window.MT_PM_PROGRAM_DOCS?.buildDeck(p):null}catch(e){err=e.message||String(e)}
  const btn=(k,m,l,cls)=>'<button type="button" class="btn'+(cls?' '+cls:'')+'" data-act="pmProgramDoc" data-kind="'+k+'" data-mode="'+m+'" data-p="'+E(p.akr)+'" data-program-id="'+E(p.id||'')+'">'+l+'</button>';
  const head='<div class="ps27-cardtop"><div><h3>Charter Program'+ic('Charter tingkat program: tujuan, latar belakang, terobosan, output, outcome, key milestones, risiko, dan pengelola. Disusun sebelum penetapan program dan menjadi dasar Draft RKMK. Di Project Management charter ini hanya dilihat/diunduh. Tujuh bagian dokumen proyek (As-is s.d. Evaluasi Manfaat) disusun per proyek di Project Management › Perencanaan.')+'</h3></div>'+
-  '<div class="ps27-chact"><span class="ps27-status">'+E(st)+'</span>'+(deck?btn('charter','download','↓ Unduh PPTX',''):'')+'<button type="button" class="btn pri" data-act="psProgCh" data-id="'+E(p.id)+'">'+(pc||deck?'✎ Ubah':'+ Buat Charter Program')+'</button></div></div>';
+  '<div class="ps27-chact"><span class="ps27-status">'+E(st)+'</span>'+cisBtns(p)+(deck?btn('charter','download','↓ Unduh PPTX',''):'')+'<button type="button" class="btn pri" data-act="psProgCh" data-id="'+E(p.id)+'">'+(pc||deck?'✎ Ubah':'+ Buat Charter Program')+'</button></div></div>';
  const body=deck?'<div class="dk-wrap ps27-chdeck" data-ps-chdeck>'+deck.slides.map((sl,i)=>'<figure class="dk-f" role="button" tabindex="0" title="Klik untuk pratinjau besar" data-act="pmProgramDoc" data-kind="charter" data-mode="preview" data-p="'+E(p.akr)+'" data-program-id="'+E(p.id||'')+'" style="cursor:zoom-in"><div class="dk-box"><div class="dk-scale">'+dkHtml(sl)+'</div></div><figcaption>'+(i+1)+'. '+E(sl.n||'')+'</figcaption></figure>').join('')+'</div>':
   '<div class="ps27-empty" style="padding:28px;text-align:center"><b>Charter Program belum dibuat.</b><p class="s">'+E(err&&!/belum dibuat/i.test(err)?err:'Klik + Buat Charter Program. Isinya tujuan, latar belakang, terobosan, output, outcome, milestone, dan risiko program.')+'</p></div>';
  setTimeout(fitDeck,0);
@@ -399,7 +405,7 @@ function rkmk(p){
  const s=p.psRkmk,rev=p.psRkmkReviewed,remain=RKMK_FIELDS.filter(x=>!rev[x[0]]).length,edit=can(p)&&p.psStatus!=='Ditetapkan';
  return '<div class="ps27-card"><div class="ps27-cardtop"><div><h3>Draft Narasi RKMK · '+yr()+''+(typeof MT_INFO_ICON==='function'?MT_INFO_ICON:()=>'')('Sumber awal: <b>'+E(p.psRkmkSource||'Data usulan program')+'</b>. Prioritaskan narasi 2025 jika tersedia; bagian kuning perlu direviu untuk tahun tujuan.')+'</h3></div><span class="ps27-reviewcount">'+remain+' perlu reviu</span></div>'+
  '<div class="ps27-rkmkgrid">'+RKMK_FIELDS.filter(f=>{const st=localFilter().status;return st==='Perlu Reviu'?!rev[f[0]]:st==='Sudah Direviu'?!!rev[f[0]]:true}).map(f=>'<label class="ps27-rkmkfield '+(rev[f[0]]?'reviewed':'needs-review')+'"><span><b>'+E(f[1])+'</b><em>'+(rev[f[0]]?'Sudah direviu':'Perlu penyesuaian')+'</em></span><textarea data-ps27-rkmk="'+f[0]+'" rows="4" '+(edit?'':'disabled')+' placeholder="Lengkapi narasi '+E(f[1])+' untuk tahun '+yr()+'">'+E(s[f[0]]||'')+'</textarea><span class="ps27-reviewline"><input type="checkbox" data-ps27-reviewed="'+f[0]+'" '+(rev[f[0]]?'checked':'')+' '+(edit?'':'disabled')+'> Sudah direviu untuk tahun '+yr()+'</span></label>').join('')+'</div>'+
- '<div class="ps27-footer"><span>Highlight kuning menandai area yang memerlukan konfirmasi; bukan otomatis dinyatakan valid.</span>'+(edit?'<button class="btn pri" data-ps27="save-rkmk">Simpan Narasi</button>':'')+'<button class="btn" data-pswf="generate-word">Unduh Draft Word</button></div></div>';
+ '<div class="ps27-footer"><span>Highlight kuning menandai area yang memerlukan konfirmasi; bukan otomatis dinyatakan valid.</span>'+(edit?'<button class="btn pri" data-ps27="save-rkmk">Simpan Narasi</button>':'')+(window.MT_CHARTER_IS?'<button class="btn" data-act="mtCisPlain" data-id="'+E(p.id)+'" title="Tabel charter format polos untuk lampiran RKMK">↓ Charter Plain (RKMK)</button>':'')+'<button class="btn" data-pswf="generate-word">Unduh Draft Word</button></div></div>';
 }
 function syncWbs(p){
  if(!p||p.psStatus!=='Ditetapkan'||!Array.isArray(p.psWbsDraft))return 0;

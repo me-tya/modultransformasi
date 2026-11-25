@@ -47,6 +47,37 @@ Panel Filter CM memakai grid 6 kolom (`.fbar.mt-g6`, fungsi `fGrid` di index.htm
 - **Cari**: bila satu baris subtab hanya membawahi satu tabel, kolom Cari tabel dipindah ke kanan baris subtab (`MT_PLACE_TBL_SEARCH`). Tab tanpa subtab (Jaringan, Pelaksanaan, Evaluasi Pasca, Penutupan) tetap memakai Cari di header tabel.
 - Atur ulang mengosongkan filter cakupan, filter kolom, dan Cari pada tabel yang tampil.
 
+## Project Selection › Charter Program: Impor Tabulasi Charter IS & Unduh Plain (RKMK)
+
+Modul `mt-charter-is.js` (`window.MT_CHARTER_IS`, gaya `mt-charter-is.css`). Tombol ada di kepala kartu **Charter Program** (*↑ Impor Excel IS*, *↓ Plain RKMK*) dan di footer **Draft RKMK** (*↓ Charter Plain (RKMK)*).
+
+### Impor dari sheet "Tabulasi Charter IS"
+- Sumber: Excel Tabulasi Tindak Lanjut LOM, satu baris = satu Inisiatif Strategis. Sheet dicari dengan nama *Charter IS*; bila tidak ada, sheet pertama yang memiliki kolom *Program Transformasi* dan *Tujuan Program*. Kolom dikenali dari **judul kolom**, bukan posisi.
+- Pemetaan ke `p.psProgramCharter`:
+
+| Kolom Excel | Isian charter |
+|---|---|
+| Program Transformasi | `judul` |
+| Tujuan Program | `tujuan` |
+| Latar Belakang / Output / Outcome / Risiko / Pendukung Kesuksesan | `lb` / `out` / `oc` / `ris` / `pk` (satu butir per baris, tanda • dibuang) |
+| Terobosan | `tb` (butir dipisah baris baru) |
+| Key Milestones (format `2027:` lalu butir) | `ms` = `{y,t}`; `p1`/`p2` = tahun terkecil/terbesar |
+| Initiative Champion / Initiative Owner | `ch` / `ow` (Owner dipisah baris atau `;`) |
+| Milestones (Level 4) dan Kriteria Penyelesaian (`1. Milestone — Kriteria`) | `kp` = `{m,k[]}` |
+| Key Milestones + Penanggung Jawab (`Utama: … \| Pendukung: …`) | `rk` (linimasa) = satu tindakan per Key Milestone, Mulai/Selesai = Jan–Des tahun milestone (Excel hanya memuat tahun; bisa dipersempit manual), `u`/`pd` dari Penanggung Jawab |
+| Kode, Klaster, Subisu, Lead/UIC | dicatat di `sumberImpor` (jejak sumber) |
+
+- Pencocokan program tahun tujuan (bisa diganti per baris): kode IS yang pernah diimpor → nama sama → kemiripan kata (Jaccard ≥ 0,5, atau nama pendek ≥ 2 kata terkandung penuh). Satu program hanya dipasangkan ke satu baris.
+- Baris tanpa pasangan: SA/PMO Kemenkeu dapat memilih **+ Buat usulan program baru** (status Draft, `psListStatus` Baru, kode resmi kosong, UIC dari *Utama* Penanggung Jawab).
+- Aturan: hanya SA, PMOK, PMOU (PMOU hanya program unitnya). Program **Ditetapkan** dan charter **Disahkan** tidak ditimpa. Charter yang sudah ada ditimpa isiannya tetapi `id`, `ver`, As-is/To-be, dan **Rencana Kerja yang sudah berisi** dipertahankan. Setiap impor menambah entri `log`.
+- Pratinjau per baris memakai format plain yang sama dengan unduhan.
+
+### Unduh Plain (RKMK)
+- Format tabel hitam-putih seperti lampiran charter RKMK: *Charter Program Transformasi*, *Kriteria Penyelesaian*, *Rencana Kerja* (Gantt: kolom bulan untuk ≤ 2 tahun, triwulan untuk > 2 tahun), dan *Perbandingan Kondisi* bila diisi.
+- Cakupan: program terpilih atau semua program tahun aktif yang memiliki charter.
+- **Word** (.docx A4 lanskap, Bookman Old Style, sel gabungan asli), **PowerPoint** (16:9, tabel asli, font 12–16; tabel yang terlalu panjang dipecah ke slide lanjutan, baris diregangkan agar slide terisi), **PDF** (cetak dari pratinjau). Ketiganya dibangun dari model yang sama (`model()` → `tables()`).
+- Uji: `tests/charter-is-import.test.cjs`.
+
 ## CMO › Jaringan Pengelola Proyek dan Perubahan: SK Tim (Tim Lainnya)
 
 Modul `mt-jaringan-sk.js` (`window.MT_JARINGAN_SK.attach({S,ME,mods,save,toast,mk})`) menggantikan tampilan lama tab Jaringan (data `S.jj` tetap tersimpan, tidak ditampilkan). Data disimpan di `S.modMeta.__JJSK__ = {version, sk:[...]}` sehingga ikut tersinkron lewat jalur `modMeta` (Firestore/localStorage). Tampil di `#cmo-jaringan` dan `#modul-<kode>-t-jaringan`.
