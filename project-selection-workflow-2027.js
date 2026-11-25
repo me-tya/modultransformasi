@@ -312,14 +312,14 @@ function charterAll(){
  return '<div class="ps27-card ps27-charter">'+head+selRow+body+(missing.length?'<p class="s" style="margin:10px 2px 0">Belum punya charter: '+missing.map(p=>E(p.nama)).join(', ')+'.</p>':'')+'</div>';
 }
 /* Checkbox di <summary>: cegah buka/tutup accordion, ubah pilihan secara manual. */
-document.addEventListener('click',ev=>{
+if(typeof document!=='undefined'&&document.addEventListener)document.addEventListener('click',ev=>{
  const cb=ev.target.closest&&ev.target.closest('[data-ps27-chsel]');if(!cb)return;
  ev.preventDefault();ev.stopPropagation();
  const X=window.MT_CHX,ids=list().filter(p=>!p.arsip&&p.psListStatus!=='Arsip'&&X&&X.fromProgram(p)).map(p=>String(p.id));
  const cur=new Set(chSel(ids)),id=String(cb.dataset.ps27Chsel);cur.has(id)?cur.delete(id):cur.add(id);
  S.ui.ps27ChSel=S.ui.ps27ChSel||{};S.ui.ps27ChSel[yr()]=cur.size===ids.length?null:[...cur];save();render();
 },true);
-document.addEventListener('change',ev=>{
+if(typeof document!=='undefined'&&document.addEventListener)document.addEventListener('change',ev=>{
  if(!ev.target.matches||!ev.target.matches('[data-ps27-chall]'))return;
  S.ui.ps27ChSel=S.ui.ps27ChSel||{};S.ui.ps27ChSel[yr()]=ev.target.checked?null:[];save();render();
 });
