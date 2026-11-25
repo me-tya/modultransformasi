@@ -469,3 +469,6 @@
 #app .ps27-chall-item>summary small{opacity:.75;font-size:12px}
 #app .ps27-chall-item>summary .btn{margin-left:auto}
 #app .ps27-chall-item>.chx-prev{padding:12px}
+/* Kepala Charter Program: status, chip mode, Export to, Ubah rata kanan */
+#app .ps27-charter>.ps27-cardtop{display:flex;align-items:center;gap:12px}
+#app .ps27-charter>.ps27-cardtop>.ps27-chact{margin-left:auto;display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}

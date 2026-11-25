@@ -83,3 +83,6 @@
 .chx-mi{display:block;width:100%;text-align:left;border:0;background:transparent;border-radius:6px;padding:7px 10px;font-size:13px;font-weight:700;color:#1F2A44;cursor:pointer}
 .chx-mi:hover{background:#f2f5fa}
 .chx-mi:disabled{opacity:.5;cursor:progress}
+/* Tombol Export to: emas (kontras dengan chip navy) */
+.chx-ddb{background:#FDB913;border-color:#E3A500;color:#0B2447}
+.chx-ddb:hover{background:#F5C842;border-color:#D49A00;color:#0B2447}
