@@ -51,5 +51,33 @@ test('Program ditetapkan dilewati; PMO Unit dibatasi unitnya',()=>{
 test('Sheet Program hilang / kolom wajib hilang memberi galat',()=>{
  const {I}=boot();
  assert.ok(I.plan({Lain:[['a']]}).errors.length);
- assert.ok(I.plan({Program:[['Nama Program'],['x']]}).errors[0].includes('tahun'));
+ assert.ok(I.plan({Program:[['Nama Program','Tahun'],['x','2027']]}).errors[0].includes('uic'));
+});
+test('Proyek terpetakan lengkap ke form Pemetaan Proyek',()=>{
+ const {S,I}=boot();I.apply(I.plan(aoa));
+ const p=S.programs.find(p=>p.nama==='Human Capital Development');
+ const x=p.psProjects.find(z=>z.psSourceIS==='2.9');
+ assert.equal(x.psAcronym,'PKPYK');assert.equal(x.uic,'Setjen');assert.equal(x.status,'Usulan');
+ assert.ok(x.urgency.length>20&&x.features.startsWith('•')&&x.strategyAlignment.includes('2b. SDM'));
+ assert.ok(x.description&&x.outputs&&x.accepted);
+});
+test('Sheet Proyek saja menambah proyek ke program yang sudah ada',()=>{
+ const prog={id:'x',akr:'ICS',kode:'B27-ICS',nama:'Integrated Core System APBN',psYear:2027,psStatus:'Draft',uic:'BaTii',psProjects:[{id:'o',name:'Modul Lama',uic:'BaTii'}]};
+ const {S,I}=boot('SA','BaTii',[prog]);
+ const H=['Tahun','Nama Program','Nama Proyek','Akronim','Kategori','UIC Utama','Rencana Mulai','Target Go-Live','Status Usulan'];
+ const pl=I.plan({Proyek:[H,['2027','Integrated Core System APBN','Modul Baru','MBARU','Core APBN','BaTii','2027-02-01','15/11/2027','Usulan'],
+  ['2027','Integrated Core System APBN','Modul Lama','','Kategori Aneh','BaTii','','',''],
+  ['2027','Program Tak Ada','Z','','','BaTii','','','']]});
+ assert.equal(pl.errors.length,0);
+ const it=pl.items[0];assert.equal(it.action,'Proyek');
+ assert.equal(it.projects[0].action,'Baru');assert.equal(it.projects[0].goLive,'2027-11-15');
+ assert.equal(it.projects[1].action,'Galat');assert.equal(pl.warn.length,1);
+ I.apply(pl);assert.equal(prog.psProjects.length,2);
+ const z=prog.psProjects.find(z=>z.name==='Modul Baru');
+ assert.equal(z.psAcronym,'MBARU');assert.equal(z.category,'Core APBN');assert.equal(z.start,'2027-02-01');
+});
+test('Parser tanggal',()=>{
+ const {I}=boot();
+ assert.equal(I.dateOf('2027-3-1'),'2027-03-01');assert.equal(I.dateOf('Mar 2027'),'2027-03-01');
+ assert.equal(I.dateOf('46752'),'2027-12-31');assert.equal(I.dateOf('abc'),null);assert.equal(I.dateOf(''),'');
 });

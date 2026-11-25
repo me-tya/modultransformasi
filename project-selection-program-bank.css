@@ -1225,3 +1225,9 @@
 .psimp-new{background:#e3f4ea;color:#17663a}.psimp-upd{background:#fff4d6;color:#7a5a00}.psimp-skip{background:#eef1f5;color:#5b6b85}.psimp-err{background:#fdecec;color:#a11d1d}
 .psimp-warn{margin-top:10px;font-size:12px;color:#7a5a00}.psimp-warn summary{cursor:pointer;font-weight:700}
 @media(max-width:780px){.psimp-pick{grid-template-columns:1fr auto}.psimp-stats{grid-template-columns:repeat(2,1fr)}}
+.psimp-sub>td{border-top:0;padding-top:0;background:#fbfcfe}
+.psimp-sub summary{cursor:pointer;font-size:12px;font-weight:700;color:#1F2A44;padding:2px 0 6px}
+.psimp-ptable{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:6px}
+.psimp-ptable th{background:#f2f5fa;text-align:left;padding:5px 7px;font-size:11px;color:#2b3d5c}
+.psimp-ptable td{padding:5px 7px;border-top:1px solid #edf1f7;vertical-align:top}
+.psimp-ptable td small{display:block;color:#6b7a93}.psimp-perr{color:#a11d1d!important}
