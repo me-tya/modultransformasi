@@ -78,3 +78,7 @@
 #app .cp-report-inline .psbank-version-rows>div{padding:7px 10px;border-top:1px solid #e0e9f1}
 #app .cp-report-inline .psbank-version-rows span{display:block;font-size:11px;color:#5F6B85}
 @media(max-width:900px){#app .cp-report-inline .cp-modal{grid-template-columns:1fr;height:auto}#app .cp-report-inline .cp-frame-wrap{height:520px}}
+/* Unduh di bawah panel kustomisasi */
+#app .cp-report-inline .cp-control-panel{display:flex;flex-direction:column}
+#app .cp-report-inline .cp-inline-fmtbox{justify-content:space-between;min-height:0;padding:10px 0 0;margin-top:6px}
+#app .cp-report-inline .mt-dlbar{background:linear-gradient(180deg,rgba(246,249,253,0),#f6f9fd 30%)}

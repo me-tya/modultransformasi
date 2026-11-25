@@ -454,6 +454,9 @@ function documentPreview(p){
  (d.sign?'<section class="psbank-docsignature">Mengetahui / menyetujui<br><br><br>Pejabat Berwenang</section>':'')+
  '<footer class="psbank-docfoot">Versi '+version+' · Pratinjau '+(d.format==='pdf'?'PDF':'Word')+' · '+list.length+' substansi · '+year()+'</footer></article>';
 }
+/* Tombol Unduh seragam: di bawah panel kustomisasi (setelah Format Ekspor), label mengikuti format. */
+function dlBar(attr,fmt,disabled,extra){const f=String(fmt||'word'),lbl=f==='word'||f==='docx'?'DOCX':f.toUpperCase();
+ return '<div class="mt-dlbar"><button type="button" class="btn mt-dlbtn" '+attr+(disabled?' disabled':'')+' title="Unduh dokumen dalam format '+lbl+'">↓ Unduh '+lbl+'</button>'+(extra||'')+'</div>'}
 function builder(p){
  const d=cfg(),list=STEPS,fmt=d.format||'word',ver=nextVersion('program',p.id||p.akr,year());
  return '<div class="psbank-docbuilder"><div class="psbank-docsettings"><div class="psbank-docsetting-head"><h3>Dokumen Perencanaan Program · Pratinjau & Ekspor'+(typeof MT_INFO_ICON==='function'?MT_INFO_ICON:()=>'')('Substansi dokumen dan riwayat pengesahan versi '+ver+'.')+'</h3></div>'+
@@ -466,9 +469,10 @@ function builder(p){
  tteControls(d,'doc')+
  '<div class="psbank-template-picker"><label><b>Template dokumen Word/PDF</b><select data-doc-template aria-label="Pilih template dokumen">'+[['activity','Warna · Laporan Kegiatan'],['classic','Formal · Navy-Emas']].map(([k,v])=>'<option value="'+k+'" '+((d.template||'activity')===k?'selected':'')+'>'+v+'</option>').join('')+'</select></label><small>Pratinjau dan unduhan memakai template yang sama.</small></div>'+
  (fmt==='pptx'?'<div class="psbank-template-picker"><label><b>Template PPTX</b><select data-doc-ppt-template aria-label="Pilihan template PowerPoint">'+[['standard','Standar (lama)'],['navy-gold-executive','Navy–Gold Executive (alternatif)']].map(([k,v])=>'<option value="'+k+'" '+((d.pptTemplate||'standard')===k?'selected':'')+'>'+v+'</option>').join('')+'</select></label><small>Charter tetap menggunakan desain aslinya.</small></div>':'')+
+ versionPanel('program',p.id||p.akr,year())+
  '<div class="psbank-docformat"><strong>Format Ekspor</strong><div class="psbank-formatbuttons" role="group" aria-label="Format Ekspor">'+
  [['pdf','PDF'],['word','DOCX'],['pptx','PPTX']].map(x=>'<button type="button" class="btn '+(fmt===x[0]?'on':'')+'" data-doc-format-btn="'+x[0]+'" aria-pressed="'+(fmt===x[0])+'">'+x[1]+'</button>').join('')+'</div></div>'+
- versionPanel('program',p.id||p.akr,year())+
+ dlBar('data-doc-export',fmt,!d.sections.length)+
  '</div><div class="psbank-docpreview"><div class="psbank-docpreview-head"><div><b>Pratinjau '+(fmt==='word'?'Word':fmt==='pdf'?'PDF':'PowerPoint')+'</b><small>'+E(p.nama)+'</small></div><span>v'+ver+' · '+sections(p).length+' substansi</span></div>'+
  '<div class="psbank-docscroll">'+documentPreview(p)+'</div></div></div>';
 }
@@ -972,10 +976,11 @@ function portfolioBuilder(){
  tteControls(d,'port')+
  '<div class="psbank-template-picker"><label><b>Template dokumen Word/PDF</b><select data-port-template aria-label="Pilih template dokumen">'+[['activity','Warna · Laporan Kegiatan'],['classic','Formal · Navy-Emas']].map(([k,v])=>'<option value="'+k+'" '+((d.template||'activity')===k?'selected':'')+'>'+v+'</option>').join('')+'</select></label><small>Pratinjau dan unduhan memakai template yang sama.</small></div>'+
  (d.format==='pptx'?'<div class="psbank-template-picker"><label><b>Template PPTX</b><select data-port-ppt-template aria-label="Pilihan template PowerPoint">'+[['standard','Standar (lama)'],['navy-gold-executive','Navy–Gold Executive (alternatif)']].map(([k,v])=>'<option value="'+k+'" '+((d.pptTemplate||'standard')===k?'selected':'')+'>'+v+'</option>').join('')+'</select></label><small>Charter tetap menggunakan desain aslinya.</small></div>':'')+
+ versionPanel(docKind(),docId(),year())+
  '<div class="psbank-docformat"><strong>Format Ekspor</strong><div class="psbank-formatbuttons">'+[['pdf','PDF'],['word','DOCX'],['pptx','PPTX']].map(x=>'<button type="button" class="btn '+(d.format===x[0]?'on':'')+'" data-port-format="'+x[0]+'" aria-pressed="'+(d.format===x[0])+'">'+x[1]+'</button>').join('')+'</div></div>'+
- versionPanel(docKind(),docId(),year())+'</div>'+
+ dlBar('data-port-export',d.format,!chosen.length||!d.sections.length)+'</div>'+
  '<div class="psbank-docpreview"><div class="psbank-docpreview-head"><div><b>Pratinjau '+(d.format==='pptx'?'PowerPoint':d.format==='pdf'?'PDF':'Word')+'</b><small>'+(mode?'Dokumen Proyek':'Portofolio Transformasi')+' '+year()+'</small></div><span>v'+ver+' · '+chosen.length+(mode?' proyek':' program')+'</span></div>'+
- '<div class="psbank-docscroll">'+portfolioPreview()+'</div><div class="psbank-portfolio-download"><button type="button" class="btn pri" data-port-export '+(!chosen.length||!d.sections.length?'disabled':'')+'>↓ Unduh</button></div></div></div></div>';
+ '<div class="psbank-docscroll">'+portfolioPreview()+'</div></div></div></div>';
 }
 async function portfolioExport(){
  const d=portCfg(),data=portData(),mode=projectMode();
@@ -1184,5 +1189,5 @@ function change(ev,inline=false){
 }
 // Laporan Akhir Proyek: pertahankan iframe HTML asli agar scroll per halaman bekerja.
 // installFinalReportPreview();
-window.MT_PS_DOC={programCharterSource,exportFormalPdf,assertOfficialWordTemplate,readLocalProof,fields,sections,slidePages,programDeck,programSlideHtml,paper,builder,exportFile,click,change,documentPreview,programReportModel,tteControls,hydrateProgram,hydratePortfolio,showActualDocumentPreview,versionPanel,nextVersion,registerExport,confirmSigned,uploadProgramAttachment,history,processSigned,openSignedProof,portfolioModel,portSlides,splitPortText,portfolioBuilder,portfolioClick,portfolioChange,portfolioExport,version:'20261109-program-document-builder-v5-native-charter'};
+window.MT_PS_DOC={dlBar,programCharterSource,exportFormalPdf,assertOfficialWordTemplate,readLocalProof,fields,sections,slidePages,programDeck,programSlideHtml,paper,builder,exportFile,click,change,documentPreview,programReportModel,tteControls,hydrateProgram,hydratePortfolio,showActualDocumentPreview,versionPanel,nextVersion,registerExport,confirmSigned,uploadProgramAttachment,history,processSigned,openSignedProof,portfolioModel,portSlides,splitPortText,portfolioBuilder,portfolioClick,portfolioChange,portfolioExport,version:'20261109-program-document-builder-v5-native-charter'};
 })();

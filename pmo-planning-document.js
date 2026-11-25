@@ -108,10 +108,11 @@ function builder(){
  '<div class="psbank-template-picker"><label><b>Template Word / PDF</b><select data-plan-template><option value="activity" '+(d.template==='activity'?'selected':'')+'>Warna · Laporan Kegiatan</option><option value="classic" '+(d.template==='classic'?'selected':'')+'>Formal · Navy–Emas</option></select></label></div>'+
  '<div class="mt-plan-tte"><label><input type="checkbox" data-plan-sign '+(d.sign?'checked':'')+'> Sertakan blok penandatanganan elektronik (TTE)</label>'+
  (d.sign?'<div class="mt-plan-ttegr"><input type="text" data-plan-tte="name" placeholder="Nama pejabat" value="'+E(d.tte.name)+'"><input type="text" data-plan-tte="title" placeholder="Jabatan" value="'+E(d.tte.title)+'"><input type="text" data-plan-tte="label" placeholder="Keterangan (mis. Mengetahui)" value="'+E(d.tte.label)+'"><input type="text" data-plan-tte="city" placeholder="Kota" value="'+E(d.tte.city)+'"><input type="date" data-plan-tte="date" value="'+E(d.tte.date)+'"><input type="text" data-plan-tte="number" placeholder="Nomor dokumen" value="'+E(d.tte.number)+'"></div>':'')+'</div>'+
+ (api?.versionPanel?.('planning','all',year())||'')+
  '<div class="psbank-docformat"><strong>Format Ekspor</strong><div class="psbank-formatbuttons">'+[['pdf','PDF'],['word','DOCX'],['pptx','PPTX']].map(x=>'<button type="button" class="btn '+(d.format===x[0]?'on':'')+'" data-plan-format="'+x[0]+'" aria-pressed="'+(d.format===x[0])+'">'+x[1]+'</button>').join('')+'</div></div>'+
- (api?.versionPanel?.('planning','all',year())||'')+'</div>'+
+ '<div class="mt-dlbar"><button type="button" class="btn mt-dlbtn" data-plan-export '+(!selected.length||!d.sections.length?'disabled':'')+'>↓ Unduh '+(d.format==='word'?'DOCX':d.format.toUpperCase())+'</button></div></div>'+
  '<div class="psbank-docpreview"><div class="psbank-docpreview-head"><div><b>Pratinjau '+(d.format==='pptx'?'PowerPoint':d.format==='pdf'?'PDF':'Word')+'</b><small>Dokumen Perencanaan · '+year()+'</small></div><span>v'+v+' · '+selected.length+' program</span></div>'+
- '<div class="psbank-docscroll">'+preview()+'</div><div class="psbank-portfolio-download"><button type="button" class="btn pri" data-plan-export '+(!selected.length||!d.sections.length?'disabled':'')+'>↓ Unduh '+(d.format==='word'?'DOCX':d.format.toUpperCase())+'</button></div></div></div></div>';
+ '<div class="psbank-docscroll">'+preview()+'</div></div></div></div>';
 }
 function hydrate(){const root=document.getElementById('mt-plan-builder');if(root&&config().format!=='pptx')window.MT_PS_DOC?.showActualDocumentPreview?.(root,model(),config().format)}
 function page(){

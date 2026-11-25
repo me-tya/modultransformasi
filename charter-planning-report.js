@@ -193,14 +193,15 @@ ACT.cpReport=el=>{
  {cancel:'Tutup',size:'wide rpt cp-report-modal',extra,onExtra:doExport});
  if(!ov)return;
  if(isInline){
-  const chooser='<div class="cp-inline-top"><span><b>Format Ekspor</b><small>'+esc(chJudul(c))+'</small></span><div class="cp-inline-formats" role="group" aria-label="Format Ekspor">'+
+  const chooser='<div class="cp-inline-top cp-inline-fmtbox"><span><b>Format Ekspor</b></span><div class="cp-inline-formats" role="group" aria-label="Format Ekspor">'+
    [['pdf','PDF'],['docx','DOCX'],['pptx','PPTX']].map(a=>'<button type="button" class="btn '+(a[0]==='docx'?'on':'')+'" data-cp-output="'+a[0]+'" aria-pressed="'+(a[0]==='docx')+'">'+a[1]+'</button>').join('')+'</div></div>';
   const ledger=Version?.versionPanel?.('project',docId,docYear)||'';
-  let contents=body.replace(/<\/div><div class="cp-frame-wrap">/,ledger+'</div><div class="cp-frame-wrap">');
+  const dl='<div class="mt-dlbar"><small>Dokumen v'+version()+' · belum TTE</small><button type="button" class="btn mt-dlbtn" data-cp-inline-export>↓ Unduh DOCX</button><button type="button" class="btn mt-dlsec" data-cp-inline-close>Tutup</button></div>';
+  let contents=body.replace(/<\/div><div class="cp-frame-wrap">/,ledger+chooser+dl+'</div><div class="cp-frame-wrap">');
   contents=contents.replace('<iframe id="cp-report-frame" title="Pratinjau dokumen perencanaan proyek"></iframe>',
    '<iframe id="cp-report-frame" title="Pratinjau dokumen perencanaan proyek"></iframe><div class="cp-inline-slides" hidden><div class="cp-inline-slidebox"></div><div class="cp-inline-slidecontrols"><button type="button" class="btn" data-cp-prev>‹ Sebelumnya</button><span data-cp-slide-count></span><button type="button" class="btn" data-cp-next>Berikutnya ›</button></div></div>'+
-   '<div class="cp-inline-download"><span>Dokumen v'+version()+' · belum TTE</span><div><button type="button" class="btn pri" data-cp-inline-export>↓ Unduh</button><button type="button" class="btn" data-cp-inline-close>Tutup</button></div></div>');
-  ov.innerHTML=chooser+contents;
+   '');
+  ov.innerHTML=contents;
  }
 
  const frame=ov.querySelector('#cp-report-frame'),status=ov.querySelector('#cp-state');
@@ -221,7 +222,7 @@ ACT.cpReport=el=>{
     const slidesPanel=ov.querySelector('.cp-inline-slides');
     const slideBox=ov.querySelector('.cp-inline-slidebox');
     const exportButton=ov.querySelector('[data-cp-inline-export]');
-    exportButton.textContent='↓ Unduh';
+    exportButton.textContent='↓ Unduh '+(fmt==='docx'?'DOCX':fmt.toUpperCase());
     exportButton.disabled=!n;
     slidesPanel.hidden=fmt!=='pptx';frame.hidden=fmt==='pptx';
     ov.querySelector('.cp-preview-h b').textContent='Pratinjau '+(fmt==='docx'?'Word':fmt==='pdf'?'PDF':'PowerPoint');

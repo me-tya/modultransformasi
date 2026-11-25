@@ -316,7 +316,7 @@ function showPreview(key,initialTab='identity',startEdit=false){
  const view=()=>v().tab==='docs'?Docs.builder(p):editable&&v().edit?editForm(p,v().tab,rec.year):Docs.paper(p,v().tab,rec.year);
  const foot=()=>{
   const x=d.querySelector('.psbank-dialog>footer>div');if(!x)return;
-  if(v().tab==='docs'&&isTarget){x.innerHTML='<button type="button" class="btn pri" data-doc-export>↓ Unduh</button><button type="button" class="btn" data-bank-dismiss>Tutup</button>';return}
+  if(v().tab==='docs'&&isTarget){x.innerHTML='<button type="button" class="btn" data-bank-dismiss>Tutup</button>';return}
   if(isTarget){x.innerHTML=(editable?'<button type="button" class="btn" data-bank-preview-edit>✎ Ubah</button><button type="button" class="btn" data-bank-preview-save '+(!v().edit?'disabled':'')+'>Simpan</button><button type="button" class="btn pri" data-bank-preview-saveclose>Simpan & Tutup</button>':'<button type="button" class="btn" data-bank-dismiss>Tutup</button>');return}
   x.innerHTML='<button type="button" class="btn pri" data-bank-preview-add="'+E(key)+'">+ Tambahkan ke Tahun</button><button type="button" class="btn" data-bank-dismiss>Tutup</button>';
  };

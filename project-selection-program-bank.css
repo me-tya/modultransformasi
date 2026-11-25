@@ -1251,3 +1251,13 @@
 #app .psbank-detail-table.psbank-numbered td:nth-child(4){overflow-wrap:anywhere;color:#345b7e}
 #app .psbank-detail-table.psbank-numbered tbody tr:not(:has(.psbank-empty)){counter-increment:psbankno}
 #app .psbank-detail-table.psbank-numbered td.psbank-nocol::before{content:counter(psbankno);font-weight:700;color:#5b6b85}
+/* Tombol Unduh seragam di semua pembuat dokumen: paling bawah panel kustomisasi, sejajar dasar pratinjau. */
+.mt-dlbar{margin-top:auto;position:relative;z-index:2;display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 0 2px;background:linear-gradient(180deg,rgba(245,248,252,0),#f5f8fc 30%)}
+.mt-dlbar>small{flex:1 0 100%;font:600 11px 'Inter',sans-serif;color:#5F6B85}
+.mt-dlbar .mt-dlbtn{flex:1 1 auto;min-height:40px;border:1px solid #E5A800;background:#FDB913;color:#0B2447;border-radius:9px;font:800 13px 'Inter',sans-serif;letter-spacing:.01em;box-shadow:0 3px 10px rgba(253,185,19,.28);cursor:pointer}
+.mt-dlbar .mt-dlbtn:hover:not(:disabled){background:#F2AD00}
+.mt-dlbar .mt-dlbtn:disabled{background:#E7ECF3;border-color:#D6DFEA;color:#8A9AB2;box-shadow:none;cursor:not-allowed}
+.mt-dlbar .mt-dlsec{flex:0 0 auto;min-height:40px;border-radius:9px}
+.psbank-dialogbody .psbank-docsettings .mt-dlbar,.cp-report-inline .cp-control-panel .mt-dlbar{position:sticky;bottom:-11px;margin-bottom:-11px;padding:9px 0 11px;background:#f5f8fc;border-top:1px solid #dae4ef;box-shadow:0 -8px 14px -10px rgba(11,36,71,.25)}
+#app .cp-report-inline .cp-control-panel .mt-dlbar{background:#f6f9fd}
+#app .psbank-docsettings>*,#app .cp-report-inline .cp-control-panel>*{flex-shrink:0}
