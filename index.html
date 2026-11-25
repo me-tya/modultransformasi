@@ -6264,7 +6264,7 @@ function pAktDaftar(){const all=actRows(),tw=+S.ui.oneTw||0,kat=S.ui.actKat||'',
  const nAct=[tw,kat,sf,pf,qq,U.actProg,U.actUnit,U.actLay,U.actFrom,U.actTo,U.actWbsL4,U.actWbsL5,U.actIku].filter(Boolean).length,fopen=!U.actFClosed;
  const uniq=f=>[...new Set(all.map(f).filter(Boolean))].sort();
  /* Data & Backup: Ekspor Excel + migrasi (Impor JSON/ZIP Dashboard CM) dalam satu menu di samping Filter. */
- const dbk='<button type="button" class="btn-filter-toggle act-dbk" data-act="actDbk" data-e="'+(editable?1:0)+'" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Data &amp; Backup</button>'+(editable?'<input type="file" id="act-json-file" accept=".json,application/json" hidden><input type="file" id="act-migration-zip" accept=".zip,application/zip" hidden>':'');
+ const dbk='<button type="button" class="btn-filter-toggle act-dbk" data-act="actDbk" data-e="'+(editable?1:0)+'" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 4 16 4 16 0V5M4 12c0 4 16 4 16 0"/></svg>Data &amp; Backup</button>'+(editable?'<input type="file" id="act-json-file" accept=".json,application/json" hidden><input type="file" id="act-migration-zip" accept=".zip,application/zip" hidden>':'');
  const fbar='<div class="card filter-bar" style="border-radius:14px"><div class="filter-bar-row1"><div class="search-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input type="search" data-actf="actQ" value="'+esc(U.actQ||'')+'" placeholder="Cari kegiatan, PIC, program, kategori, lokasi, notulen… lalu Enter" aria-label="Cari aktivitas">'+'<button type="button" class="search-clear-btn" data-act="actClear" title="Hapus pencarian" aria-label="Hapus pencarian"'+(U.actQ?'':' disabled')+'><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'+dbk+
   '<button type="button" class="btn-filter-toggle'+(fopen?' open':'')+'" data-act="actFOpen" aria-expanded="'+fopen+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>Filter'+(nAct?' <span class="filter-active-badge">'+nAct+'</span>':'')+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 15l6-6 6 6"/></svg></button></div>'+
   '<div class="filter-bar-body act-fgrid'+(fopen?'':' hidden')+'">'+
@@ -6917,10 +6917,97 @@ ACT.actAddMenu=el=>{const prev=document.getElementById('act-add-menu');if(prev){
  const oc=ev=>{if(ev.target.closest('.act-addc')===el)return;if(m.contains(ev.target)){setTimeout(close,0);return}close()},ok=ev=>{if(ev.key==='Escape'){close();el.focus()}};
  document.addEventListener('click',oc,true);document.addEventListener('keydown',ok);addEventListener('scroll',close,true);addEventListener('resize',close);
  const f=m.querySelector('.am-it');if(f)f.focus()};
+/* MT Backup All: full persisted data, read-only, Superadmin only. */
+let mtBackupRunning=false;
+function mtBackupAllowed(){return !!(ME&&ME.role==='SA'&&ME.aktif!==false&&(!FB.on||(FB.ready&&FB.me&&FB.me.role==='SA'&&FB.auth&&FB.auth.currentUser)))}
+function mtBackupAssert(){if(!mtBackupAllowed())throw Error('Backup All hanya dapat dijalankan oleh Superadmin aktif.')}
+function mtBackupWithTimeout(p){let t;return Promise.race([p,new Promise((_,reject)=>{t=setTimeout(()=>reject(Error('Tidak ada respons database. Periksa koneksi dan ulangi.')),120000)})]).finally(()=>clearTimeout(t))}
+function mtBackupNoPassword(u){const d=Object.assign({},u);delete d.pw;delete d.password;return d}
+async function mtBackupReadCollection(name,progress){
+ const docs=[];let last=null;
+ do{
+  mtBackupAssert();
+  let q=FB.db.collection(name).orderBy(firebase.firestore.FieldPath.documentId()).limit(100);
+  if(last)q=q.startAfter(last);
+  const snap=await mtBackupWithTimeout(q.get({source:'server'}));
+  if(snap.metadata&&snap.metadata.fromCache)throw Error('Koleksi '+name+' terbaca dari cache.');
+  snap.docs.forEach(d=>docs.push({id:d.id,data:name==='users'?mtBackupNoPassword(d.data()):d.data()}));
+  progress(docs.length);
+  if(snap.docs.length<100)break;
+  last=snap.docs[snap.docs.length-1];
+ }while(last);
+ return docs;
+}
+async function mtBackupLocalFiles(progress){
+ const db=await IDBF.open();
+ const rows=await new Promise((resolve,reject)=>{
+  const out=[],tx=db.transaction('f','readonly'),req=tx.objectStore('f').openCursor();
+  req.onsuccess=()=>{const c=req.result;if(c){out.push({id:c.key,blob:c.value});c.continue()}};
+  req.onerror=()=>reject(req.error);tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||Error('Pembacaan lampiran dibatalkan.'));tx.oncomplete=()=>resolve(out);
+ });
+ const files=[];
+ for(const x of rows){mtBackupAssert();files.push({id:x.id,name:x.blob.name||'',type:x.blob.type||'',size:x.blob.size,base64:await b64of(x.blob)});progress(files.length)}
+ return files;
+}
+async function mtBuildFullBackup(includeFiles,progress){
+ mtBackupAssert();
+ const p={kind:'mt-full-backup',version:1,startedAt:new Date().toISOString(),exportedAt:null,source:{mode:FB.on?'firestore':'local',projectId:FB.on?FB.cfg.projectId:null},includesAttachments:includeFiles,counts:{},collections:{}};
+ if(FB.on){
+  if(!FB.ready)throw Error('Firestore belum siap.');
+  if(/Menyimpan|gagal/i.test(FB.st||'')||FB.err)throw Error('Sinkronisasi belum selesai atau ada galat. Selesaikan sinkronisasi sebelum backup.');
+  await mtBackupWithTimeout(FB.db.waitForPendingWrites());
+  const names=[...new Set([...FS_ARR,...FS_MAP,'config',...(includeFiles?['files']:[])])];
+  for(let i=0;i<names.length;i++){
+   const c=names[i];progress('Membaca '+c+' ('+(i+1)+'/'+names.length+')',i/names.length*95);
+   p.collections[c]=await mtBackupReadCollection(c,n=>progress('Membaca '+c+' · '+n.toLocaleString('id-ID')+' dokumen ('+(i+1)+'/'+names.length+')',i/names.length*95));
+   p.counts[c]=p.collections[c].length;
+  }
+ }else{
+  if(fbCfg())throw Error('Firestore dikonfigurasi tetapi belum tersambung. Sambungkan terlebih dahulu agar backup bukan hanya data lokal.');
+  const state=JSON.parse(JSON.stringify(S));state.users=(state.users||[]).map(mtBackupNoPassword);
+  p.localState=state;
+  Object.keys(state).forEach(k=>{if(Array.isArray(state[k]))p.counts[k]=state[k].length});
+  if(includeFiles){p.localFiles=await mtBackupLocalFiles(n=>progress('Membaca '+n+' lampiran lokal',null));p.counts.files=p.localFiles.length}
+ }
+ mtBackupAssert();p.exportedAt=new Date().toISOString();return p;
+}
+function mtBackupFileName(){
+ const d=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Jakarta',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(new Date());
+ const t=Object.fromEntries(d.map(x=>[x.type,x.value]));
+ return 'MT_Backup_All_'+t.year+t.month+t.day+'_'+t.hour+t.minute+t.second+'.json';
+}
+ACT.mtBackupAll=()=>{
+ if(!mtBackupAllowed())return toast('Backup All hanya untuk Superadmin.');
+ if(mtBackupRunning)return toast('Backup sedang berlangsung.');
+ const source=FB.on?'Database Firestore · '+esc(FB.cfg.projectId):'Data lokal peramban ini';
+ const body='<div class="note i"><span><b>'+source+'</b><br>Seluruh data tersimpan, tanpa mengikuti filter, tahun, unit atau menu aktif.</span></div>'+
+ '<p style="margin:10px 0">Program, proyek, WBS, progres, risiko, stakeholder, data CM, aktivitas, tim, referensi, pengaturan akses dan riwayat.</p>'+
+ '<label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="mt-backup-files" checked><span><b>Sertakan lampiran tersimpan</b><br><small class="s">Isi berkas dicadangkan sebagai Base64. Ukuran backup dapat besar. Tautan eksternal hanya disimpan sebagai referensi.</small></span></label>'+
+ '<div class="note w" style="margin-top:10px"><span>Simpan file di lokasi internal yang aman. Backup tidak memuat sandi atau akun Firebase Authentication. Tidak mengubah data sumber.</span></div>'+
+ '<div id="mt-backup-status" class="s" role="status" style="margin-top:8px"></div>';
+ modal('Backup All Data',body,'Unduh Backup JSON',ov=>{
+  if(mtBackupRunning)return false;
+  const include=ov.querySelector('#mt-backup-files').checked,btn=ov.querySelector('[data-ok]'),status=ov.querySelector('#mt-backup-status');
+  mtBackupRunning=true;btn.disabled=true;busy('Membuat backup…','Menyiapkan seluruh data',0);
+  (async()=>{
+   try{
+    const p=await mtBuildFullBackup(include,(msg,n)=>busy('Membuat backup…',msg,n));
+    busy('Membuat backup…','Menyusun file JSON',98);
+    const blob=new Blob([JSON.stringify(p)],{type:'application/json'});
+    const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=mtBackupFileName();
+    document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);
+    ov.remove();toast('Backup All berhasil disiapkan untuk diunduh.');
+   }catch(err){status.textContent='Backup gagal: '+(err.message||String(err));toast('Backup gagal. Tidak ada file backup parsial yang diunduh.')}
+   finally{mtBackupRunning=false;btn.disabled=false;busyOff()}
+  })();return false;
+ },{size:'sm'});
+};
+
 ACT.actDbk=el=>{const prev=document.getElementById('act-dbk-menu');if(prev){prev.remove();el.setAttribute('aria-expanded','false');return}
  const e=el.dataset.e==='1',it=(act,lab,sub,p)=>'<button type="button" role="menuitem" class="am-it" data-act="'+act+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg><span><b>'+lab+'</b><small>'+sub+'</small></span></button>';
  const m=document.createElement('div');m.id='act-dbk-menu';m.className='act-more-menu act-dbk-menu';m.setAttribute('role','menu');
  m.innerHTML='<div class="am-hd">Ekspor</div>'+it('oneExport','Ekspor Excel','Daftar aktivitas sesuai filter aktif','<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 12l6 6M15 12l-6 6"/>')
+  +(mtBackupAllowed()?it('mtBackupAll','Backup All (JSON)','Cadangan seluruh data Modul Transformasi','<path d="M12 3v12m-4-4 4 4 4-4M4 16v4h16v-4"/>'):'')
   +(e?'<div class="am-sep" role="separator"></div><div class="am-hd">Migrasi dari Dashboard CM</div>'+it('actJsonImport','Impor JSON aktivitas','Berkas backup aktivitas (.json)','<path d="M8 3H7a2 2 0 0 0-2 2v4a2 2 0 0 1-2 2 2 2 0 0 1 2 2v4a2 2 0 0 0 2 2h1M16 3h1a2 2 0 0 1 2 2v4a2 2 0 0 0 2 2 2 2 0 0 0-2 2v4a2 2 0 0 1-2 2h-1"/>')
   +it('actZipImport','Impor paket + lampiran','Aktivitas beserta berkas lampiran (.zip)','<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M10 6h1M10 9h1M10 12h1M10 15h1v3h-1z"/>')+'<div class="am-sep" role="separator"></div><div class="am-hd">Sinkron otomatis</div>'+it('actDcmSync','Sinkron Dashboard CM',(window.MTDCM?window.MTDCM.status().t:'Belum terhubung'),'<path d="M21 12a9 9 0 0 1-15.5 6.2M3 12a9 9 0 0 1 15.5-6.2"/><path d="M18 3v4h-4M6 21v-4h4"/>'):'');
  document.body.appendChild(m);el.setAttribute('aria-expanded','true');
@@ -11264,6 +11351,7 @@ function parseCfg(t){const m=String(t).match(/\{[\s\S]*\}/);if(!m)throw new Erro
 function viewDb(){const cfg=fbCfg();const on=FB.on&&FB.ready;
  return vh('DB','adm','Database','Penyimpanan data: lokal di peramban atau Firebase Firestore.')+
  `<div class="g2"><div class="card"><div class="ch"><h3>Status koneksi</h3></div><div class="pad"><div class="kv"><span>Mode</span><div>${on?`<span class="chip c-ok">Firestore</span> project <b>${esc(FB.cfg.projectId)}</b>`:cfg?'<span class="chip c-warn">Firestore dikonfigurasi, belum tersambung</span>':'<span class="chip c-gray">Lokal</span> data hanya di peramban ini'}</div><span>Sinkron</span><div>${esc(FB.st||'—')}</div>${FB.err?`<span>Galat terakhir</span><div style="color:var(--bad)">${esc(FB.err)}</div>`:''}<span>Isi data</span><div>${rp(S.wbs.length)} item WBS · ${S.users.length} pengguna · ${S.sh.length} stakeholder · ${S.log.length} log</div></div>
+ ${mtBackupAllowed()?'<div style="margin-top:12px"><button class="btn" data-act="mtBackupAll">⇩ Backup All (JSON)</button></div>':''}
  ${on&&ME.role==='SA'?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn pri" data-act="fbaccts">Buat akun login semua pengguna</button></div><p class="s" style="margin:8px 0 0">Akun dibuat di Firebase Authentication dengan kata sandi awal <span class="mono">${PW}</span>; minta pengguna menggantinya lewat menu akun.</p>`:''}</div></div>
  <div class="card"><div class="ch"><h3>Konfigurasi Firebase</h3></div><div class="pad"><div class="fld"><label for="fbc">Objek firebaseConfig dari Firebase Console</label><textarea id="fbc" rows="8" placeholder="{ apiKey: '…', authDomain: '…', projectId: '…', storageBucket: '…', messagingSenderId: '…', appId: '…' }" ${FIREBASE_CONFIG?'disabled':''}>${cfg?esc(JSON.stringify(cfg,null,2)):''}</textarea><small>${FIREBASE_CONFIG?'Terkunci: konfigurasi ditanam di berkas HTML (FIREBASE_CONFIG).':'Disimpan di peramban ini saja. Untuk semua pengguna, isi konstanta FIREBASE_CONFIG di berkas HTML sebelum di-hosting.'}</small></div>
  <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">${FIREBASE_CONFIG?'':'<button class="btn pri" data-act="fbsave">Simpan & sambungkan</button>'}${cfg&&!FIREBASE_CONFIG?'<button class="btn dng" data-act="fboff">Putuskan, kembali ke mode lokal</button>':''}</div>
