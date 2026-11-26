@@ -633,3 +633,19 @@ button.ps27-pkpi.navy:hover{border-color:#0a4277}
 #app .ps27.ps27-clearance .kka-clearance-usulan .kka-register-search{width:190px!important;flex:0 1 190px;height:30px!important;min-height:0!important;line-height:28px!important}
 #app .ps27.ps27-clearance .kka-clearance-usulan .psbank-headright .btn{min-height:30px;padding:4px 9px}
 @media(max-width:750px){#app .ps27.ps27-split .ps27-lanes button,#app .ps27.ps27-split .ps27-tabs button,#app .ps27.ps27-split .kka-lane-nav .kka-group-main button{font-size:11px;padding:4px}#app .ps27.ps27-clearance .kka-group-notice .kka-syncnotice small{display:block;margin:2px 0 0}#app .ps27.ps27-clearance .kka-clearance-usulan .psbank-headright{width:100%}#app .ps27.ps27-clearance .kka-clearance-usulan .kka-register-search{flex:1 1 130px}}
+
+
+/* Compact lane control in the existing view header, not an extra menu row. */
+#app #view .vh:has(.ps27-header-lane){align-items:center;gap:10px;flex-wrap:nowrap}
+#app #view .vh:has(.ps27-header-lane)>div:nth-child(2){flex:1 1 0;min-width:0}
+#app #view .vh:has(.ps27-header-lane) .acts{flex:0 0 auto;margin-left:auto;align-items:center;gap:6px;flex-wrap:nowrap}
+#app #view .ps27-header-lane{display:flex;align-items:center;gap:7px;flex:none;color:#526784;font:inherit}
+#app #view .ps27-lane-label{font-size:11.5px;font-weight:600;white-space:nowrap}
+#app #view .ps27-lane-seg{display:grid;grid-template-columns:repeat(2,minmax(75px,1fr));background:#fff;border:1px solid #d5dfec;padding:3px;gap:2px;border-radius:8px}
+#app #view .ps27-lane-seg button{min-height:27px;padding:4px 10px;border:0;border-radius:5px;background:transparent;color:#526784;font:inherit;font-size:11.5px;font-weight:700;line-height:1.25;white-space:nowrap;cursor:pointer}
+#app #view .ps27-lane-seg button.on{background:#12275a;color:#fff;box-shadow:inset 0 -2px #f2b92c}
+#app #view .ps27-lane-seg button:not(.on):hover{background:#edf2fa;color:#12275a}
+#app #view .ps27-lane-seg button:focus-visible{outline:2px solid #d4a31b;outline-offset:1px}
+#app #view .vh:has(.ps27-header-lane)>.mt-audit-trigger{position:static;flex:none;align-self:center;margin:0}
+@media(max-width:750px){#app #view .ps27-lane-label{display:none}#app #view .ps27-lane-seg{grid-template-columns:repeat(2,minmax(62px,1fr))}#app #view .ps27-lane-seg button{padding:4px 6px}}
+@media(max-width:420px){#app #view .vh:has(.ps27-header-lane){flex-wrap:wrap;row-gap:4px}#app #view .vh:has(.ps27-header-lane)>div:nth-child(2){flex:1 1 calc(100% - 55px)}#app #view .vh:has(.ps27-header-lane) .acts{margin-left:auto}}
