@@ -812,7 +812,7 @@ function impPengelola(){if(!canEdit())return;let x=null;try{x=S.modMeta.__PENGEL
   x.people.forEach(o=>{const n=String(o.name||'').trim();if(!n)return;let ex=M.pic.find(p=>p.n.toLowerCase()===n.toLowerCase());const v={n,nip:o.nip||'',jab:o.position||'',unitAsal:o.unit||'',emailK:o.email||'',hp:o.phone||'',foto:o.photo||'',pang:o.pangkat||'',keahlian:Array.isArray(o.skills)?o.skills.join(', '):(o.skills||''),wfhDays:Array.isArray(o.wfh)?o.wfh.map(d=>(+d+1)%7):[],jenis:/magang|re-?entry|second/i.test(o.type||'')?'Sementara':'Definitif',jenisSementara:/magang/i.test(o.type||'')?'Magang Kemnaker':/re-?entry/i.test(o.type||'')?'Re-Entry':/second/i.test(o.type||'')?'Secondment':''};
    if(ex){Object.keys(v).forEach(key=>{if(key!=='n'&&v[key]&&!(Array.isArray(v[key])&&!v[key].length)&&!ex[key])ex[key]=v[key]});upd++}else{M.pic.push(Object.assign({status:'WFO',cuti:[]},v));add++}
    const asg=(x.assignments||[]).filter(a=>a.personId===o.id);asg.forEach(a=>{const tm=k.tims.find(t=>tshort(t).toUpperCase()===String(a.program||'').toUpperCase());if(!tm)return;if(!k.pt[n])k.pt[n]=tm;else if(k.pt[n]!==tm&&!(k.ptx[n]||[]).includes(tm))k.ptx[n]=(k.ptx[n]||[]).concat(tm);if(a.unit){k.asg[a.unit]=k.asg[a.unit]||[];if(!k.asg[a.unit].includes(n))k.asg[a.unit].push(n)}})});
-  actMasterSave(M);try{log('Impor data menu Pengelola',add+' baru, '+upd+' diperbarui')}catch(e){}toastT(add+' pegawai baru, '+upd+' dilengkapi dari menu Pengelola.');rr()},{delHead:'Impor data menu Pengelola?',delMsg:w=>'<p style="margin:0">Salin '+H(w)+' ke Tim Pusmantap: profil yang sudah ada hanya dilengkapi (tidak ditimpa), penugasan program menjadi tim, unit penanggung jawab menjadi unit dampingan.</p>',okLabel:'Impor'})}
+  actMasterSave(M);try{log('Impor data menu Pengelola',add+' baru, '+upd+' diperbarui')}catch(e){}save();toastT(add+' pegawai baru, '+upd+' dilengkapi dari menu Pengelola.'+(FB.on?' Menunggu konfirmasi Firebase.':''));rr()},{delHead:'Impor data menu Pengelola?',delMsg:w=>'<p style="margin:0">Salin '+H(w)+' ke Tim Pusmantap: profil yang sudah ada hanya dilengkapi (tidak ditimpa), penugasan program menjadi tim, unit penanggung jawab menjadi unit dampingan.</p>',okLabel:'Impor'})}
 
 /* ---------- impor pegawai: JSON Satu Kemenkeu / Excel / skrinsyut (OCR) ----------
    Hanya data kerja yang disimpan: nama, NIP, jabatan, unit organisasi, pangkat/golongan, email kantor, HP, foto, status.
@@ -871,7 +871,7 @@ function impApply(rows){const M=actMaster(),k=kpCfg();k.str=k.str||{};k.ptx=k.pt
   const tm=k.tims.find(t=>o.tim&&(t.toLowerCase()===o.tim.toLowerCase()||tshort(t).toLowerCase()===o.tim.toLowerCase()));if(tm&&!o.off)k.pt[x.n]=tm;
   if(o.timx&&!o.off){const L=o.timx.split(/[,;]/).map(s=>k.tims.find(t=>t.toLowerCase()===s.trim().toLowerCase()||tshort(t).toLowerCase()===s.trim().toLowerCase())).filter(t=>t&&t!==k.pt[x.n]);if(L.length)k.ptx[x.n]=[...new Set((k.ptx[x.n]||[]).concat(L))]}});
  actMasterSave(M);try{log('Impor pegawai',add+' baru, '+upd+' diperbarui, '+st+' struktural, '+ex+' ex-pegawai')}catch(e){}
- toastT(add+' baru, '+upd+' diperbarui'+(st?', '+st+' struktural':'')+(ex?', '+ex+' ex-pegawai':'')+'.');rr()}
+ save();toastT(add+' baru, '+upd+' diperbarui'+(st?', '+st+' struktural':'')+(ex?', '+ex+' ex-pegawai':'')+'.'+(FB.on?' Menunggu konfirmasi Firebase.':''));rr()}
 
 /* ---------- impor Squad Team Dashboard CM: bagian Tim CM (sheet ST CM) + direktori PIC PMO / CMO Unit / Pemilik Probis ----------
    Dashboard CM sudah tertanam (dashboard-cm-shared.html, origin sama) → dimuat tersembunyi, data dibaca memakai fungsi Dashboard CM sendiri
@@ -928,7 +928,7 @@ function squadApply(m,ci,pi,ai,ri){const have=kpPeople(),M=actMaster(),k=kpCfg()
  pi.map(i=>m.KP[i]).forEach(o=>{const x=matchPic(o,M.pic);if(x){['nip','jab','pang','emailK','hp','foto'].forEach(f=>{if(o[f]&&!x[f])x[f]=o[f]});pU++}else{M.pic.push({n:o.n,nip:o.nip,jab:o.jab,pang:o.pang,emailK:o.emailK,hp:o.hp,foto:o.foto,jenis:'Definitif',status:'WFO',statusKerja:'WFO',cuti:[],wfhDays:[]});pA++;const cm=k.tims.find(t=>/(^|\s)CM(\s|$)/i.test(t));if(cm&&!k.pt[o.n])k.pt[o.n]=cm}});
  ai.map(i=>m.A[i]).forEach(a=>{if(!a._p)return;k.asg[a.unit]=k.asg[a.unit]||[];if(!k.asg[a.unit].includes(a._p)){k.asg[a.unit].push(a._p);aN++}});
  actMasterSave(M);save();try{log('Impor Squad Team (Dashboard CM)',cA+' kontak baru, '+cU+' diperbarui; '+pA+' pegawai baru, '+pU+' dilengkapi; '+aN+' penugasan pendamping')}catch(e){}
- toastT('Kontak unit: '+cA+' baru, '+cU+' diperbarui · Pegawai: '+pA+' baru, '+pU+' dilengkapi · Pendamping: '+aN+' penugasan.');rr()}
+ save();toastT('Kontak unit: '+cA+' baru, '+cU+' diperbarui · Pegawai: '+pA+' baru, '+pU+' dilengkapi · Pendamping: '+aN+' penugasan.'+(FB.on?' Menunggu konfirmasi Firebase.':''));rr()}
 
 /* ---------- CSS ---------- */
 const css=`
