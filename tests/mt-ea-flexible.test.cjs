@@ -1,0 +1,4 @@
+const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');const c={window:{}};vm.runInNewContext(fs.readFileSync(__dirname+'/../mt-ea-taxonomy.js','utf8'),c);const E=c.window.MT_EA;
+assert.equal(E.level('3'),1);assert.equal(E.level('3.2'),2);assert.equal(E.level('3.2.1'),3);assert.equal(E.primary({eaL2:'3.2.1'}),'3.2.1');assert.equal(E.primary({eaMain:'3.2',eaL2:'3.2.1'}),'3.2');assert.equal(E.primary({eaMain:'',eaL2:'3.2.1'}),'');
+assert.equal(E.mapping('3.2',['1.1','3.7.2']).eaL2,'');assert.equal(E.mapping('3.2',['1.1','3.7.2']).eaSupport.length,2);assert.equal(E.mapping('3.2.1',[]).eaL2,'3.2.1');assert.equal(E.mapping('3',[]).eaL1,'');assert.throws(()=>E.mapping('3.2',['3.2.1']));assert.throws(()=>E.mapping('3.2',['1','1.1']));assert.throws(()=>E.mapping('', ['1']));assert.throws(()=>E.mapping('unknown',[]));assert.equal(E.mapping('3.2',['1.1','1.1']).eaSupport.length,1);
+console.log('15 EA assertions passed');
