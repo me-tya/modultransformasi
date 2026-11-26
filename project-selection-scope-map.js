@@ -361,12 +361,13 @@ function render(){
  scopeTabs(on,proposalRows(p))+
  (on==='history'?historyView(p):on==='proposal'?proposalView():on==='nonistk'?nonIstkView():on==='docs'?(window.MT_PS_DOC?.portfolioBuilder?.()||'<div class="psbank-empty">Generator dokumen belum tersedia.</div>'):mappingView(p))+'</div>';
 }
-function projectEditor(id,readonly=false){
- const p=target();if(!p||(!can(p)&&!readonly))return;
+function projectEditor(id,readonly=false,explicitProgram=null,initialGroup=''){
+ const p=explicitProgram==null?target():get(explicitProgram);if(!p||(+p.psYear!==year()&&explicitProgram!=null)||(!can(p)&&!readonly))return false;
  const existing=(p.psProjects||[]).find(x=>String(x.id)===String(id));
  if(id&&!existing)return;
  const d=document.createElement('div');d.className='psbank-overlay psbank-project-editor';
- const groups=[...new Set(PROJECT_FIELDS.map(x=>x[3]))];
+ const groups=[...new Set(PROJECT_FIELDS.map(x=>x[3]))],initial=Math.max(0,groups.indexOf(initialGroup));
+ const openedYear=year(),openedUser=ME?.email,original=existing?JSON.stringify(existing):null;
  const control=([key,label,type])=>{
   if(key==='estimatedStaff'&&(existing?.estimatedStaff==null||existing.estimatedStaff===''))return '';
   const value=String(key==='uic'?(existing?.uic||p.uic||''):key==='category'?projectCategory(p,existing):projectValue(existing||{},key));
@@ -389,8 +390,8 @@ function projectEditor(id,readonly=false){
  '<header><div><b>'+(readonly?'Detail':existing?'Ubah':'Tambah')+' Usulan Proyek</b><small>'+E(p.nama)+' · '+year()+'</small></div><button type="button" data-scope-editor-close title="Tutup" aria-label="Tutup">✕</button></header>'+
  '<main class="psbank-dialogbody"><div class="psbank-form-provenance"><b>Sumber Usulan'+info('Perubahan isian tahun tujuan tidak mengubah informasi tahun sumber.')+'</b><span>'+E(existing?.psOriginYear?existing.psOriginProgram+' · '+existing.psOriginYear:'Usulan baru')+'</span></div>'+
  '<div class="psbank-project-code-preview"><span>Kode Proyek'+info(FIELD_GUIDES.psAcronym)+'</span><strong data-scope-code-preview>'+E(existing?currentCode(p,existing):String(p.kode||p.akr)+'-…')+'</strong></div>'+
- '<nav class="psbank-proj-editor-tabs" role="tablist" aria-label="Substansi Usulan Proyek">'+groups.map((g,i)=>'<button type="button" role="tab" data-scope-editor-tab="'+i+'" aria-selected="'+(!i)+'" class="'+(!i?'on':'')+'">'+E(g)+'</button>').join('')+'</nav>'+
- groups.map((g,i)=>'<section class="psbank-form-section psbank-proj-editor-panel" data-scope-editor-panel="'+i+'" '+(i?'hidden':'')+'><h3>'+E(g)+'</h3><div class="psbank-proj-editor-grid">'+PROJECT_FIELDS.filter(x=>x[3]===g).map(control).join('')+'</div></section>').join('')+
+ '<nav class="psbank-proj-editor-tabs" role="tablist" aria-label="Substansi Usulan Proyek">'+groups.map((g,i)=>'<button type="button" role="tab" data-scope-editor-tab="'+i+'" aria-selected="'+(i===initial)+'" class="'+(i===initial?'on':'')+'">'+E(g)+'</button>').join('')+'</nav>'+
+ groups.map((g,i)=>'<section class="psbank-form-section psbank-proj-editor-panel" data-scope-editor-panel="'+i+'" '+(i!==initial?'hidden':'')+'><h3>'+E(g)+'</h3><div class="psbank-proj-editor-grid">'+PROJECT_FIELDS.filter(x=>x[3]===g).map(control).join('')+'</div></section>').join('')+
  '</main><footer><span>Form usulan'+info('WBS disusun kemudian pada tahap perencanaan proyek. Panduan pilihan mengacu Kertas Kerja A Prioritas SI 2027, sheet Usulan, Daftar dan Petunjuk.')+'</span><div><button type="button" class="btn" data-scope-editor-close>Tutup</button>'+
  (!readonly?'<button type="button" class="btn pri" data-scope-editor-save>Simpan</button>':can(p)?'<button type="button" class="btn pri" data-scope-editor-edit>✎ Ubah</button>':'')+'</div></footer></section>';
  (document.querySelector('#app')||document.body).appendChild(d);
@@ -412,8 +413,9 @@ function projectEditor(id,readonly=false){
   const tab=ev.target.closest('[data-scope-editor-tab]');
   if(tab){const selected=tab.dataset.scopeEditorTab;d.querySelectorAll('[data-scope-editor-tab]').forEach(x=>{const active=x.dataset.scopeEditorTab===selected;x.classList.toggle('on',active);x.setAttribute('aria-selected',String(active))});d.querySelectorAll('[data-scope-editor-panel]').forEach(x=>x.hidden=x.dataset.scopeEditorPanel!==selected);return}
   if(ev.target===d||ev.target.closest('[data-scope-editor-close]')){d.remove();return}
-  if(ev.target.closest('[data-scope-editor-edit]')){d.remove();projectEditor(id,false);return}
+  if(ev.target.closest('[data-scope-editor-edit]')){d.remove();projectEditor(id,false,explicitProgram,initialGroup);return}
   if(!ev.target.closest('[data-scope-editor-save]'))return;
+  if(!can(p)||year()!==openedYear||ME?.email!==openedUser||get(p.id)!==p||(existing&&(!(p.psProjects||[]).includes(existing)||JSON.stringify(existing)!==original))){toast('Data, tahun, atau hak akses berubah. Buka ulang sebelum menyimpan.');return}
   const fields={};d.querySelectorAll('[data-scope-field]').forEach(x=>fields[x.dataset.scopeField]=x.value.trim());
   if(!fields.name){toast('Nama aplikasi/proyek wajib diisi.');return}
   for(const k of ['estimatedCostMillions','durationMonths','estimatedStaffMonths','estimatedStaff']){
@@ -434,8 +436,9 @@ function projectEditor(id,readonly=false){
   if(existing)Object.assign(existing,fields);else {p.psProjects=p.psProjects||[];p.psProjects.push({id:uid('proj'),included:true,scores:{},poster:{},risks:{},psOriginYear:null,...fields})}
   normalizeProjectCodes(p);
   mapState().proposalFocus=existing?.id||p.psProjects[p.psProjects.length-1].id;
-  p.psUpdatedAt=new Date().toISOString();save();d.remove();window.render();toast('Detail usulan proyek berhasil disimpan.');
+  p.psUpdatedAt=new Date().toISOString();save();d.remove();window.render();toast('Perubahan diproses. Periksa status sinkronisasi Firebase.');
  });
+ return true;
 }
 
 function remove(id){
@@ -552,5 +555,5 @@ function change(ev){
  return false;
 }
 if(typeof document!=='undefined'&&typeof document.addEventListener==='function')document.addEventListener('keydown',ev=>{if(ev.key!=='Enter'&&ev.key!==' ')return;const row=ev.target.closest?.('tr[data-scope-history-detail]');if(row&&ev.target===row){ev.preventDefault();historyDetail(row.dataset.scopeHistoryDetail);return}const rec=ev.target.closest?.('tr[data-scope-aggregate-view]');if(rec&&ev.target===rec){ev.preventDefault();click({target:rec})}});
-window.MT_PS_SCOPE={historyRecords,modules,sourceWbs,render,transfer,click,change,bank,target,codeFor,currentCode,suggestedAcronym,normalizeProjectCodes,projectFields:PROJECT_FIELDS,projectValue,projectCategory,version:'20261109-project-recap-v6'};
+window.MT_PS_SCOPE={canEditProject:(programId,projectId)=>{const p=get(programId);return !!p&&+p.psYear===year()&&can(p)&&(p.psProjects||[]).some(x=>String(x.id)===String(projectId))},openProject:(programId,projectId,readonly=true,group='')=>projectEditor(projectId,readonly,programId,group),historyRecords,modules,sourceWbs,render,transfer,click,change,bank,target,codeFor,currentCode,suggestedAcronym,normalizeProjectCodes,projectFields:PROJECT_FIELDS,projectValue,projectCategory,version:'20261109-project-recap-v6'};
 })();
