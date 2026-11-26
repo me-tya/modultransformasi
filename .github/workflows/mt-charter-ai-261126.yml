@@ -1,0 +1,36 @@
+name: Verify Charter AI integration 261126
+on:
+  push:
+    branches: [main]
+    paths:
+      - charter-export.js
+      - cloudflare/mt-assistant.js
+      - tests/charter-ai-gateway.test.cjs
+      - .github/workflows/mt-charter-ai-261126.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify source and existing charter exports
+        run: |
+          node --check charter-export.js
+          node --input-type=module --check < cloudflare/mt-assistant.js
+          node --test tests/charter-ai-gateway.test.cjs tests/charter-export.test.cjs tests/program-charter-deck-regression.test.cjs tests/rkmk-draft.test.cjs
+      - name: Identify public Firebase project ID and default auth wiring
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          s=Path('index.html').read_text()
+          ids=sorted(set(re.findall(r"""\bprojectId\s*:\s*['"]([a-z0-9-]+)['"]""",s)))
+          print("Firebase project ID candidates: "+", ".join(ids))
+          print("Default firebase.auth() calls: "+str(len(re.findall(r'firebase\.auth\s*\(',s))))
+          print("Firebase app initializations: "+str(len(re.findall(r'firebase\.initializeApp\s*\(',s))))
+          PY
