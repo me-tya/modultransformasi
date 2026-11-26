@@ -3644,6 +3644,10 @@ function tBody(id){const o=T[id];const all=tRows(id);const cols=o.cols.filter(c=
   return `<tr class="${o.open?'click ':''}${o.rowCls?o.rowCls(r):''}"${o.open?` data-act="open" data-t="${id}" data-i="${esc(r.id)}"`:''}>${cols.map((c,ci)=>`<td class="${c.w?'w':''} ${c.num?'num':''}${ci===0?' tc1':''}" data-l="${esc(String(c.l||'').replace(/<[^>]*>/g,''))}"><div class="tv">${c.r?c.r(r):esc(r[c.k]??'')}</div></td>`).join('')}${hasAct?`<td class="tact"><div class="ract">${acts}</div></td>`:''}</tr>`}).join('')}</tbody></table></div>
  <div class="tfoot"><label>Tampilkan <select data-ps="${id}" aria-label="Jumlah baris">${[10,20,50,100].map(n=>`<option ${n===ps?'selected':''}>${n}</option>`).join('')}</select> baris</label><span>${rp(pg*ps+1)}–${rp(Math.min(all.length,pg*ps+ps))} dari ${rp(all.length)}</span>${o.foot?o.foot(all):''}<div class="pager"><button data-pg="${id}" data-n="${pg-1}" ${pg===0?'disabled':''} aria-label="Sebelumnya">‹</button>${pl.join('')}<button data-pg="${id}" data-n="${pg+1}" ${pg>=pages-1?'disabled':''} aria-label="Berikutnya">›</button></div></div>`}
 function redrawT(id){const b=$('#tb-'+id);if(b)b.innerHTML=tBody(id)}
+/* Form Pengguna: "Modul ditugaskan" hanya relevan untuk peran bercakupan Modul (Tim CM Proyek); disembunyikan untuk peran lain. */
+function usrModToggle(){const r=document.getElementById('f_role'),m=document.getElementById('f_modules');if(!r||!m)return;const w=m.closest('.fld')||m.parentElement,on=((aksOf(r.value)||{}).scope)==='Modul';w.style.display=on?'':'none';if(!on)m.querySelectorAll('input:checked').forEach(i=>i.checked=false)}
+document.addEventListener('change',e=>{if(e.target&&e.target.id==='f_role')usrModToggle()});
+new MutationObserver(()=>{const m=document.getElementById('f_modules');if(m&&!m.dataset.mt){m.dataset.mt='1';usrModToggle()}}).observe(document.body,{childList:true});
 function field(c,row){const v=row?row[c.k]:(c.def!=null?(typeof c.def==='function'?c.def():c.def):'');const id='f_'+c.k;const dis=c.ro?' disabled':'';
  if(c.t==='sec')return `<div class="fsec">${c.l}</div>`;let inp;
  if(c.t==='sel')inp=`<select id="${id}"${dis}>${opts(c.o,v)}</select>`;
@@ -11295,7 +11299,7 @@ function viewUsers(){const ed=lv('user');
    {k:'role',l:'Peran',t:'sel',o:ROLES.map(r=>[r.id,r.nama]),r:u=>`<span class="chip ${u.role==='SA'?'c-bad':u.role.startsWith('PMO')?'c-info':u.role==='TIM'?'c-teal':'c-gold'}">${roleN(u.role)}</span>`,x:u=>roleN(u.role)},
    {k:'unit',l:'Unit Eselon I',t:'sel',o:UNITS},{k:'sub',l:'Unit Eselon II / tim',hint:'Tim CM Proyek: Pusakti, Pusilki, Puspensi, Pusdatin'},
    {k:'_sc',l:'Cakupan',frm:false,r:u=>`<span class="sm" style="color:var(--ink-2)">${esc((S.akses[u.role]||{}).scope||'')}: ${SCOPE_DESK[(S.akses[u.role]||{}).scope]||''}</span>`},
-   {k:'modules',l:'Modul ditugaskan',t:'multi',o:()=>mods().map(m=>[m.kode,`${m.kode} · ${m.nama}`]),r:u=>(u.modules||[]).map(k=>`<span class="code">${k}</span>`).join(' ')||'—',x:u=>(u.modules||[]).join(', ')},
+   {k:'modules',l:'Modul ditugaskan',t:'multi',hint:'Hanya untuk peran bercakupan Modul (Tim CM Proyek).',o:()=>mods().map(m=>[m.kode,`${m.kode} · ${m.nama}`]),r:u=>(u.modules||[]).map(k=>`<span class="code">${k}</span>`).join(' ')||'—',x:u=>(u.modules||[]).join(', ')},
    {k:'aktif',l:'Status',t:'chk',cl:'Aktif',def:true,r:u=>chipSt(u.aktif?'Aktif':'Nonaktif'),x:u=>u.aktif?'Aktif':'Nonaktif'}]})+
  `<div style="display:flex;gap:8px;justify-content:flex-end">${ME.role==='SA'?'<button class="btn dng" data-act="reset">Pulihkan data awal</button>':''}</div>`}
 ACT.reset=()=>FB.on?toast('Tidak tersedia pada mode Firestore.'):modal('Pulihkan data awal?','<p style="margin:0">Seluruh perubahan di peramban ini diganti data awal (WBS Kompilasi + kertas kerja CM). Anda akan keluar.</p>','Pulihkan',()=>{S=seed();numberIds();MODC=null;WIDX=null;save();ME=null;setSess(null);location.hash='';render()},{danger:true,size:'sm'});
