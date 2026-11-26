@@ -786,7 +786,7 @@ function helpPage(tab){
   ];
 
   const split=yr()>=2027,order=split?[0,1,3,4,5,2]:[0,1,2,3,4,5];
-  if(split){deep[1]=deep[1].filter(z=>z[1]!=='mapping:nonistk');deep[2]=[['Usulan Non-ISTK','prioritasi:mcda-non'],...deep[2].filter(z=>z[1]!=='prioritasi:mcda-non')]}
+  if(split){deep[1]=deep[1].filter(z=>z[1]!=='mapping:nonistk');deep[2]=[['Usulan Non-ISTK','prioritasi:mcda-non'],['Penilaian & Peringkat (MCDA / SMART)','prioritasi:mcda-rank'],['Anggaran & SDM','prioritasi:mcda-roadmap'],['Analisis','prioritasi:mcda-analysis'],['Riwayat Hasil','prioritasi:mcda-repo'],['Kriteria & Bobot','prioritasi:mcda-criteria'],['Metodologi & Rubrik','prioritasi:mcda-ref'],['Referensi','prioritasi:mcda-literature']]}
   return '<div class="ps27-sheet">'+ps27SheetHead('NAVIGASI · PROJECT SELECTION','Peta Menu sampai Level Tab',split?'Lima tahap Program & Proyek ISTK dan jalur terpisah Clearance Proyek Non ISTK. Gunakan pencarian atau shortcut menu.':'Enam tahapan utama dan tautan langsung menuju subtab.')+
    '<input class="sk-search" type="search" data-ps27-help-search placeholder="Cari menu, tab, fungsi atau istilah seperti manfaat, kontrak, WBS..." aria-label="Cari menu Project Selection">'+
    '<div class="ps27-helpmap">'+order.map((i,n)=>{const x=items[i];return '<section data-ps27-menuitem="'+E((x[1]+' '+x[2]+' '+deep[i].map(z=>z[0]).join(' ')).toLowerCase())+'"><button class="ps27-helpmap-head" data-ps27-jump="'+x[0]+'"><b>'+(split&&i===2?'NON ISTK':n+1)+' · '+x[1]+'</b><span>Buka submenu ↗</span></button><p>'+x[2]+'</p><div class="ps27-helpmap-links">'+deep[i].map(z=>'<button type="button" data-ps27-jump="'+z[1]+'">'+z[0]+'</button>').join('')+'</div></section>'}).join('')+'</div>'+
@@ -813,11 +813,12 @@ function helpPage(tab){
    ['03','Manfaat & indikator','Tetapkan outcome yang terukur, baseline, target, benefit owner, kelompok penerima dan waktu ukur.','usulan:detail:benefits'],
    ['04','Stakeholder & risiko','Petakan pemangku kepentingan, ketergantungan lintas unit, risiko dan rencana mitigasi.','usulan:detail:stakeholders'],
    ['05','Pemetaan proyek','Ambil referensi Riwayat Proyek atau buat usulan baru. Periksa nama, ruang lingkup, UIC, tahun, status dan kode.','mapping:proposal'],
-   ['06','Prioritasi proyek','Pilih metode SMART atau MCDA. SMART: isi 12 kriteria dan ambang. MCDA: centang gate G1–G4, isi skor K1–K7 (arti 1–5 ada di rubrik), cek simulasi Anggaran & SDM, lalu simpan hasil ke Repositori. Proyek ISTK diprioritaskan otomatis; yang dinilai MCDA hanya usulan di luar ISTK.','prioritasi:ranking'],
+   ['06','Prioritasi proyek','Pilih metode SMART atau MCDA sesuai program dan tahun.','prioritasi:ranking'],
    ['07','Charter Program','Susun charter tingkat program dan periksa pratinjau 3 slide sebelum penetapan. Dokumen proyek disusun per proyek di Project Management.','charter'],
    ['08','Kontrak dan penetapan','Periksa target K-Wide TW I–IV, nomor/tanggal/pejabat, dokumen kontrak dan proyek terpilih sebelum penetapan.','penetapan-program'],
    ['09','Reviu RKMK','Periksa substansi tahun tujuan, penanggung jawab dan keluaran sebelum mengunduh rancangan Word.','rkmk']
   ];
+  if(yr()>=2027){tasks.splice(5,1);tasks.forEach((x,i)=>x[0]=String(i+1).padStart(2,'0'));tasks.push(['N','Clearance Proyek Non ISTK','Buka jalur clearance tersendiri: lengkapi Usulan Non-ISTK dan gate G1–G4, nilai K1–K7, cek Anggaran & SDM, analisis bila diperlukan, lalu simpan Riwayat Hasil. ISTK tidak dinilai.','prioritasi:mcda-non'])}
   return '<div class="ps27-sheet">'+ps27SheetHead('CARA PENGISIAN · PRAKTIS','Langkah Pengisian dari Hulu ke Hilir','Panduan pengisian mengikuti form dan tab yang benar-benar tersedia pada Project Selection.')+
    '<div class="ps27-sheet-grid ps27-sheet-grid3">'+tasks.map(x=>ps27SheetCard(x[0],x[1],x[2],ps27SheetJump('Buka form',x[3]))).join('')+'</div>'+
    ps27SheetNote('Kapan pekerjaan dianggap selesai?','Setiap tahap perlu diperiksa sesuai kelengkapan, otoritas dan dokumen pendukung. Mengisi form, menekan Simpan atau mendapatkan skor SMART bukan otomatis penetapan.','gold')+'</div>';
