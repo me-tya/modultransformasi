@@ -426,7 +426,7 @@ function penetapan(p){
  '<div class="ps27-minimetrics"><span><b>'+a.length+'</b> proyek dipilih</span><span><b>'+rows.length+'</b> WBS draft</span><span><b>'+(r?r.done+'/7':'—')+'</b> kesiapan dokumen</span></div>'+
  (r&&r.applies&&!r.ok?'<div class="ps27-warning">Kelengkapan program belum memenuhi persyaratan: '+E(r.missing.join(', '))+'. <button class="btn btn-outline btn-sm" data-ps27-tab="usulan">Lengkapi Usulan</button></div>':'')+
  '<div class="ps27-tablewrap"><table class="ps27-table"><thead><tr><th>Proyek / Modul</th><th>UIC</th><th>Target</th><th>Skor</th><th>Status</th></tr></thead><tbody>'+
- (a.length?a.map(x=>'<tr><td><b>'+E(x.name)+'</b></td><td>'+E(x.uic||p.uic||'—')+'</td><td>'+E(x.goLive||'—')+'</td><td>'+(p.psPrioritize?(I.calc(x,p).score??'Belum lengkap'):'Manual')+'</td><td>'+E(already?'Ditetapkan':'Siap ditetapkan')+'</td></tr>').join(''):'<tr><td colspan="5" class="ps27-center">Belum ada proyek dipilih. Lengkapi di Pemetaan Proyek atau Prioritasi.</td></tr>')+
+ (a.length?a.map(x=>'<tr><td><b>'+E(x.name)+'</b></td><td>'+E(x.uic||p.uic||'—')+'</td><td>'+E(x.goLive||'—')+'</td><td>'+(p.psMethod==='kka'&&window.MT_PS_KKA?((MT_PS_KKA.compute().rows.find(r=>String(r.id)===String(x.id))||{}).score??'Belum lengkap'):p.psPrioritize?(I.calc(x,p).score??'Belum lengkap'):'Manual (lama)')+'</td><td>'+E(already?'Ditetapkan':'Siap ditetapkan')+'</td></tr>').join(''):'<tr><td colspan="5" class="ps27-center">Belum ada proyek dipilih. Lengkapi di Pemetaan Proyek atau Prioritasi.</td></tr>')+
  '</tbody></table></div><div class="ps27-footer">'+(already?'<span>Program beserta '+a.length+' proyek telah ditetapkan. Susun WBS baru melalui Project Management.</span><button class="btn" data-pswf="reopen">Buka Revisi</button><button class="btn pri" data-ps27="go-wbs">Buka WBS ›</button>':
  '<span>Program dan proyek ditetapkan bersama setelah kontrak K-Wide tercatat dan dokumen lengkap. WBS disusun setelahnya.</span><button class="btn pri" data-pswf="finalize" '+(!can(p)||!a.length||(r?.applies&&!r?.ok)||((+p.psYear||yr())>=2027&&(wideState().contract.status!=='Ditetapkan'||!wideState().contract.programIds?.includes(String(p.id))))?'disabled':'')+' title="Tetapkan program berikut seluruh proyek yang dipilih setelah persyaratan K-Wide dan kesiapan terpenuhi">Tetapkan Program beserta '+a.length+' Proyek</button>')+'</div></div>';
 }
@@ -468,6 +468,7 @@ function navigate(target){
   window.MT_PS_SCOPE.bank().mappingTab=['proposal','usulan-proyek','results','hasil'].includes(sub)?'proposal':['docs','dokumen'].includes(sub)?'docs':'history';
  }
  if(actual==='prioritasi'&&sub==='monev'){location.hash='#pmo-pascaproyek';return}
+ if(actual==='prioritasi'&&/^mcda-/.test(sub||'')){S.ui.psKka=S.ui.psKka||{};const k=sub.slice(5);S.ui.psKka.sub=k==='non'?'rank':k;if(k==='non')S.ui.psKka.scope='non';else if(k==='rank'&&S.ui.psKka.scope==='non')S.ui.psKka.scope='program'}
  if(actual==='prioritasi'&&['ranking','criteria','reference'].includes(sub)){
   ws().prioritySub=sub;
   if(sub==='reference'&&!ws().referenceVisited){I.state().formula=true;I.state().params=true;ws().referenceVisited=true}
@@ -637,7 +638,7 @@ function helpPage(tab){
  const items=[
   ['usulan','Usulan Program','Cari riwayat, buat dan lengkapi usulan, business case, manfaat, stakeholder, risiko, tata kelola, serta dokumen portofolio.'],
   ['mapping','Pemetaan Proyek','Pilih proyek lintas tahun dari riwayat, kelola identitas usulan, hasil pemetaan, dan dokumen usulan proyek tanpa menyalin WBS historis.'],
-  ['prioritasi','Prioritasi','Beri penilaian dan urutkan calon proyek. SMART dan ambang bersifat opsional; skor hanya membantu pengambilan keputusan.'],
+  ['prioritasi','Prioritasi','Pilih metode per program: SMART (12 kriteria, ambang skor) atau MCDA (gate G1–G4, skor tertimbang K1–K7, roadmap terhadap pagu & SDM, repositori hasil). Skor membantu keputusan, bukan penetapan.'],
   ['charter','Charter Program','Susun charter tingkat program (tujuan, latar belakang, terobosan, output, outcome, milestone, risiko) sebagai dasar penetapan program dan Draft RKMK. Tujuh bagian dokumen proyek disusun per proyek di Project Management › Perencanaan.'],
   ['penetapan-program','Penetapan Program','Catat kontrak K-Wide, target TW I–IV, dan tetapkan program beserta proyek terpilih dalam satu proses.'],
   ['rkmk','Draft RKMK','Tinjau narasi, cek konsistensi tahun tujuan, lengkapi catatan reviu, dan ekspor rancangan Word.']
@@ -645,8 +646,8 @@ function helpPage(tab){
  if(tab==='map'){
   const deep=[
    [['Riwayat Program','usulan:bank'],['Usulan Program · Kelola & Unggah / Unduh','usulan:detail'],['Dokumen Portofolio','usulan:portfolio'],['Identitas','usulan:detail:identity'],['Business Case','usulan:detail:case'],['Manfaat','usulan:detail:benefits'],['Stakeholder','usulan:detail:stakeholders'],['Risiko','usulan:detail:risks'],['Tata Kelola','usulan:detail:governance'],['Buat Dokumen Program','usulan:detail:docs']],
-   [['Riwayat Proyek','mapping:history'],['Usulan Proyek (accordion per program)','mapping:proposal'],['Buat Dokumen Proyek','mapping:docs']],
-   [['Penilaian & Peringkat','prioritasi:ranking'],['Kriteria & Bobot','prioritasi:criteria'],['Referensi & Formula','prioritasi:reference']],
+   [['Riwayat Proyek','mapping:history'],['Usulan Proyek (accordion per program)','mapping:proposal'],['Gate Penyaringan (form Usulan Proyek)','mapping:proposal'],['Buat Dokumen Proyek','mapping:docs']],
+   [['SMART · Penilaian & Peringkat','prioritasi:ranking'],['SMART · Kriteria & Bobot','prioritasi:criteria'],['SMART · Referensi & Formula','prioritasi:reference'],['MCDA · Penilaian & Peringkat','prioritasi:mcda-rank'],['MCDA · Usulan di luar ISTK','prioritasi:mcda-non'],['MCDA · Kriteria & Bobot','prioritasi:mcda-criteria'],['MCDA · Roadmap & Analisis','prioritasi:mcda-roadmap'],['MCDA · Repositori Hasil','prioritasi:mcda-repo'],['MCDA · Referensi & Rubrik','prioritasi:mcda-ref']],
    [['Charter Program','charter']],
    [['Kontrak K-Wide dan Cakupan Proyek','penetapan-program']],
    [['Narasi & Reviu','rkmk']]
@@ -664,7 +665,7 @@ function helpPage(tab){
   '<div class="ps27-sheet-subhead"><h4>Alur keputusan dan keluaran</h4></div><div class="ps27-sheet-tablewrap"><table class="ps27-sheet-table"><thead><tr><th>Tahap</th><th>Keluaran yang diperiksa</th><th>Berikutnya</th></tr></thead><tbody>'+
   '<tr><td>Usulan</td><td>Tujuan, business case, manfaat, stakeholder, risiko dan dokumen program</td><td>Pemetaan proyek</td></tr>'+
   '<tr><td>Pemetaan</td><td>Proyek relevan dan pemilik pekerjaan teridentifikasi</td><td>Prioritasi</td></tr>'+
-  '<tr><td>Prioritasi</td><td>Peringkat/pertimbangan pemilihan; snapshot bila diperlukan</td><td>Charter</td></tr>'+
+  '<tr><td>Prioritasi</td><td>SMART: peringkat & snapshot. MCDA: hasil gate, peringkat P1–P4, roadmap Didanai/Cadangan, versi hasil di Repositori (Draft/Final). Proyek di luar ISTK berhenti di sini (tidak ke Penetapan/WBS)</td><td>Charter</td></tr>'+
   '<tr><td>Charter</td><td>Rencana awal, milestone, manfaat, kriteria penyelesaian, unit pengelola</td><td>Penetapan</td></tr>'+
   '<tr><td>Penetapan</td><td>Kontrak K-Wide, target triwulan dan cakupan proyek terpilih</td><td>Draft RKMK / WBS</td></tr>'+
   '<tr><td>RKMK</td><td>Narasi rancangan direviu dan disiapkan untuk proses formal</td><td>Project Management setelah penetapan</td></tr>'+
@@ -677,7 +678,7 @@ function helpPage(tab){
    ['03','Manfaat & indikator','Tetapkan outcome yang terukur, baseline, target, benefit owner, kelompok penerima dan waktu ukur.','usulan:detail:benefits'],
    ['04','Stakeholder & risiko','Petakan pemangku kepentingan, ketergantungan lintas unit, risiko dan rencana mitigasi.','usulan:detail:stakeholders'],
    ['05','Pemetaan proyek','Ambil referensi Riwayat Proyek atau buat usulan baru. Periksa nama, ruang lingkup, UIC, tahun, status dan kode.','mapping:proposal'],
-   ['06','Prioritasi proyek','Pilih manual atau SMART. Jika SMART aktif, isi kriteria dan bobot secara lengkap; gunakan snapshot untuk pembandingan.','prioritasi:ranking'],
+   ['06','Prioritasi proyek','Pilih metode SMART atau MCDA. SMART: isi 12 kriteria dan ambang. MCDA: centang gate G1–G4, isi skor K1–K7 (arti 1–5 ada di rubrik), cek roadmap pagu & SDM, lalu simpan hasil ke Repositori. Usulan yang tidak termapping ke ISTK dicatat di lingkup Di luar ISTK.','prioritasi:ranking'],
    ['07','Charter Program','Susun charter tingkat program dan periksa pratinjau 3 slide sebelum penetapan. Dokumen proyek disusun per proyek di Project Management.','charter'],
    ['08','Kontrak dan penetapan','Periksa target K-Wide TW I–IV, nomor/tanggal/pejabat, dokumen kontrak dan proyek terpilih sebelum penetapan.','penetapan-program'],
    ['09','Reviu RKMK','Periksa substansi tahun tujuan, penanggung jawab dan keluaran sebelum mengunduh rancangan Word.','rkmk']
