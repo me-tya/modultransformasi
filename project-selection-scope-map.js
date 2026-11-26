@@ -303,7 +303,7 @@ const MAPPING_TABS=[['history','Riwayat Proyek','Referensi proyek lintas tahun; 
 function scopeTabs(on,rows){
  return '<div class="psbank-scope-tabline"><nav class="psbank-mapping-tabs" role="tablist" aria-label="Tahapan Pemetaan Proyek">'+
  MAPPING_TABS.map(x=>'<button type="button" role="tab" data-scope-tab="'+x[0]+'" title="'+E(x[2])+'" aria-label="'+E(x[1]+'. '+x[2])+'" aria-selected="'+(on===x[0])+'" class="'+(on===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+
- '</nav>'+(on==='history'?(typeof MT_TABSEARCH==='function'?MT_TABSEARCH:()=>'')('ps-history',mapState().historySearch,'Cari nama proyek, kode, program atau UIC...'):on==='proposal'?(typeof MT_TABSEARCH==='function'?MT_TABSEARCH:()=>'')('ps-proposal',S.ui?.psBank?.filterScopes?.mapping?.search,'Cari proyek, aplikasi, deskripsi atau UIC...'):(typeof MT_TABSEARCH_PH==='function'?MT_TABSEARCH_PH():''))+'</div>';
+ '</nav>'+(on==='nonistk'?(typeof MT_TABSEARCH==='function'?MT_TABSEARCH:()=>'')('ps-nonistk',S.ui?.psKka?.uq,'Cari usulan, ID, UE I atau unit pemilik...'):on==='history'?(typeof MT_TABSEARCH==='function'?MT_TABSEARCH:()=>'')('ps-history',mapState().historySearch,'Cari nama proyek, kode, program atau UIC...'):on==='proposal'?(typeof MT_TABSEARCH==='function'?MT_TABSEARCH:()=>'')('ps-proposal',S.ui?.psBank?.filterScopes?.mapping?.search,'Cari proyek, aplikasi, deskripsi atau UIC...'):(typeof MT_TABSEARCH_PH==='function'?MT_TABSEARCH_PH():''))+'</div>';
 }
 function nonIstkView(){return window.MT_PS_KKA&&window.MT_PS_KKA.usulanHtml?'<div class="kka kka-inmap">'+window.MT_PS_KKA.usulanHtml()+'</div>':'<div class="psbank-empty">Modul usulan non-ISTK belum termuat.</div>'}
 function aggregateView(){
