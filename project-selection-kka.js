@@ -198,22 +198,39 @@ function rubLegend(){
   KR.map(k=>'<tr><td><b>'+k.c+' '+E(k.n)+'</b></td>'+RUB[k.c].map(t=>'<td>'+E(t)+'</td>').join('')+'</tr>').join('')+
   '<tr><td><b>Kategori</b></td><td colspan="5">'+(()=>{const c=cfg();return '<span class="kka-chip kka-pc p1">P1</span> Utama (skor ≥ '+c.p1+') · <span class="kka-chip kka-pc p2">P2</span> Tinggi (≥ '+c.p2+') · <span class="kka-chip kka-pc p3">P3</span> Menengah (≥ '+c.p3+') · <span class="kka-chip kka-pc p4">P4</span> Rendah/Tunda. Skor = Σ(skor K × bobot aktif) ÷ 5 × 100.'})()+'</td></tr><tr><td><b>Gate G1–G4</b></td><td colspan="5">☑ dicentang = Ya · ☐ tidak dicentang = Tidak → <b>Tinjau Ulang</b> · kotak bergaris putus-putus = belum dijawab → <b>Lengkapi</b>. Hanya usulan <b>Lolos</b> (G1–G4 semua Ya) yang diranking (sesuai pengaturan).</td></tr></tbody></table></div></details>';
 }
+const KCOL=['#3B6FD1','#6C8FE0','#C08B1F','#E0A82E','#2F8F6A','#1D3A78','#8E5BB8'];
+const PDESC={'Seimbang':'Porsi merata antara strategi, manfaat, kesiapan, dan risiko.','Prioritas Kepatuhan':'Menonjolkan mandat regulasi & urgensi (K3, K4).','Prioritas Efisiensi':'Menonjolkan nilai bisnis & reusability (K2, K5).'};
 function criteriaView(D){
- const c=D.c,ed=canCfg(),dis=ed?'':' disabled';
- const tot=PROFILES.map(pr=>c.weights[pr].reduce((a,v)=>a+v,0));
- const rows=KR.map((k,i)=>'<tr><td><b>'+k.c+'</b></td><td><b>'+E(k.n)+'</b><small>'+E(k.q)+'</small></td>'+PROFILES.map(pr=>'<td class="kka-w"><input type="number" min="0" max="100" step="1" data-kka-w="'+E(pr)+'|'+i+'" value="'+c.weights[pr][i]+'"'+dis+' aria-label="Bobot '+E(k.c+' '+pr)+'">%</td>').join('')+'<td class="kka-w on">'+c.weights[c.profile][i]+'%</td><td><small>'+E(k.ref)+'</small></td></tr>').join('');
- const f=(k,l,h,t,extra)=>'<label class="kka-set"><span>'+l+ic(h)+'</span>'+(t==='sel'?'<select data-kka-cfg="'+k+'"'+dis+'>'+extra.map(v=>'<option'+(String(c[k])===v?' selected':'')+'>'+v+'</option>').join('')+'</select>':'<input type="number" min="0" step="any" data-kka-cfg="'+k+'" value="'+E(c[k])+'"'+dis+'>')+'</label>';
- return '<div class="kka-card"><h3>A. Pengaturan · '+D.y+ic('Diambil dari sheet Kriteria bagian A. Berlaku untuk seluruh portofolio metode MCDA tahun ini.')+'</h3><div class="kka-sets">'+
-  f('profile','Profil bobot aktif','Seimbang / Prioritas Kepatuhan / Prioritas Efisiensi.','sel',PROFILES)+
-  f('onlyPassed',"Hanya usulan 'Lolos' gate yang diranking?",'Ya = usulan Tinjau Ulang/Lengkapi tidak ikut ranking. Tidak = semua usulan yang skornya lengkap diranking.','sel',['Ya','Tidak'])+
-  f('pagu','Pagu anggaran pengembangan (Rp juta)','Pagu indikatif/definitif; batas roadmap.')+f('sdm','Kapasitas SDM pengembangan (orang-bulan)','Mis. jumlah personel pengembang/analis × bulan efektif.')+
-  f('quadThr','Ambang kuadran Nilai & Kemudahan (0–100)','Skor ≥ ambang dianggap tinggi (60 ≈ rata-rata 3 dari 5).')+f('p1','Ambang Prioritas 1 – Utama (skor ≥)','Asumsi awal; sesuaikan dengan sebaran skor.')+
-  f('p2','Ambang Prioritas 2 – Tinggi (skor ≥)','Asumsi awal.')+f('p3','Ambang Prioritas 3 – Menengah (skor ≥)','Di bawah ambang ini = Prioritas 4 (Rendah/Tunda).')+
-  f('tol',"Toleransi selisih peringkat 'Stabil'/'Konsisten'",'Rentang peringkat antar-profil ≤ nilai ini → Stabil; selisih MCDA vs WSJF ≤ nilai ini → Konsisten.')+'</div></div>'+
-  '<div class="kka-card"><h3>B. Kriteria dan Bobot (skala skor 1–5)'+ic('Bobot tiap profil harus berjumlah 100%. Bobot awal adalah asumsi penyusun; sesuaikan melalui diskusi pemangku kepentingan.')+'</h3>'+
-  '<div class="kka-scroll"><table class="kka-t kka-wt"><thead><tr><th>Kode</th><th>Kriteria & pertanyaan penilaian</th>'+PROFILES.map(pr=>'<th>'+E(pr)+'</th>').join('')+'<th>Bobot aktif</th><th>Rujukan utama</th></tr></thead><tbody>'+rows+
-  '<tr class="kka-tot"><td></td><td>Total bobot</td>'+tot.map(t=>'<td class="'+(t===100?'ok':'bad')+'">'+t+'%'+(t===100?' · OK':' · ≠ 100%')+'</td>').join('')+'<td>'+tot[PROFILES.indexOf(c.profile)]+'%</td><td></td></tr></tbody></table></div>'+
-  (ed?'<div class="kka-actions"><button type="button" class="btn btn-sm" data-kka-wreset>↺ Bobot bawaan</button></div>':'<p class="kka-note">Hanya Superadmin dan PMO Kemenkeu yang dapat mengubah pengaturan.</p>')+'</div>';
+ const c=D.c,ed=canCfg(),dis=ed?'':' disabled',sum=a=>a.reduce((x,y)=>x+(+y||0),0);
+ const shortRef=r=>String(r||'').replace(/\s*\([^)]*\)/g,'').split(/;\s*/).map(x=>x.replace(/^COBIT 2019\s*/,'COBIT ').trim()).filter(Boolean).slice(0,3);
+ const head='<div class="kkb-strip"><div><h3>Kriteria & Bobot · '+D.y+'</h3><p>Berlaku untuk seluruh usulan Non-ISTK tahun ini. Setiap perubahan langsung menghitung ulang skor dan peringkat.</p></div><span class="kkb-sp"></span>'+
+  '<span class="kkb-saved">✓ Tersimpan otomatis</span>'+(ed?'<button type="button" class="btn btn-sm" data-kka-wreset>↺ Bobot bawaan</button>':'<span class="kkb-lock">🔒 Hanya Superadmin & PMO Kemenkeu yang dapat mengubah</span>')+'</div>';
+ const profs='<div class="kkb-sech"><h4>Profil bobot</h4><small>'+(ed?'klik untuk menjadikan profil aktif · ':'')+'total tiap profil harus 100%</small></div><div class="kkb-profs">'+PROFILES.map(pr=>{const w=c.weights[pr],t=sum(w),on=pr===c.profile;
+  return '<button type="button" class="kkb-prof'+(on?' on':'')+'" data-kka-setprof="'+E(pr)+'"'+(ed?'':' disabled')+'><span class="kkb-tot '+(t===100?'ok':'bad')+'">'+(t===100?'✓ 100%':fmt(t)+'%')+'</span><div class="kkb-pt"><b>'+E(pr)+'</b>'+(on?'<i>AKTIF</i>':'')+'</div><p>'+E(PDESC[pr]||'')+'</p><div class="kkb-stack">'+w.map((v,i)=>'<i style="width:'+(v/Math.max(100,t)*100)+'%;background:'+KCOL[i]+'" title="'+KR[i].c+' '+v+'%"></i>').join('')+'</div><div class="kkb-leg">'+KR.map((k,i)=>'<span>'+k.c+' '+fmt(w[i])+'</span>').join('')+'</div></button>'}).join('')+'</div>';
+ const th='<thead><tr><th>Kriteria & pertanyaan penilaian</th>'+PROFILES.map(pr=>'<th class="kkb-pc'+(pr===c.profile?' on':'')+'">'+E(pr.replace('Prioritas ',''))+'<small>'+(pr===c.profile?'● profil aktif':'&nbsp;')+'</small></th>').join('')+'</tr></thead>';
+ const tb='<tbody>'+KR.map((k,i)=>'<tr><td><div class="kkb-kc"><code style="background:'+KCOL[i]+'">'+k.c+'</code><div><b>'+E(k.n)+'</b><small>'+E(k.q)+'</small><div class="kkb-refs">'+shortRef(k.ref).map(r=>'<span title="'+E(k.ref)+'">'+E(r)+'</span>').join('')+'</div></div></div></td>'+
+  PROFILES.map(pr=>{const v=c.weights[pr][i];return '<td class="kkb-pc'+(pr===c.profile?' on':'')+'"><span class="kkb-step">'+(ed?'<button type="button" data-kka-wstep="'+E(pr)+'|'+i+'|-5" aria-label="Turunkan bobot '+k.c+'">−</button>':'')+'<input type="number" min="0" max="100" step="1" data-kka-w="'+E(pr)+'|'+i+'" value="'+v+'"'+dis+' aria-label="Bobot '+E(k.c+' '+pr)+'"><em>%</em>'+(ed?'<button type="button" data-kka-wstep="'+E(pr)+'|'+i+'|5" aria-label="Naikkan bobot '+k.c+'">+</button>':'')+'</span><div class="kkb-mbar"><i style="width:'+Math.min(100,v*2.5)+'%;background:'+KCOL[i]+'"></i></div></td>'}).join('')+'</tr>').join('')+'</tbody>';
+ const tf='<tfoot><tr><td>Total bobot</td>'+PROFILES.map(pr=>{const t=sum(c.weights[pr]);return '<td class="kkb-pc'+(pr===c.profile?' on':'')+'"><span class="kkb-chk '+(t===100?'ok':'bad')+'">'+(t===100?'✓ 100%':fmt(t)+'% · '+(t<100?'kurang '+fmt(100-t):'lebih '+fmt(t-100)))+'</span>'+(t!==100&&t>0&&ed?'<button type="button" class="kkb-fix" data-kka-wfix="'+E(pr)+'">Normalisasi ke 100%</button>':'')+'</td>'}).join('')+'</tr></tfoot>';
+ const w=c.weights[c.profile],tA=sum(w),r=54,C=2*Math.PI*r;let acc=0;
+ const donut='<svg width="150" height="150" viewBox="0 0 150 150" role="img" aria-label="Komposisi bobot profil aktif"><circle cx="75" cy="75" r="'+r+'" fill="none" stroke="#EEF2F7" stroke-width="18"/>'+w.map((v,i)=>{const l=v/Math.max(tA,1)*C,o='<circle cx="75" cy="75" r="'+r+'" fill="none" stroke="'+KCOL[i]+'" stroke-width="18" stroke-dasharray="'+l+' '+(C-l)+'" stroke-dashoffset="'+(-acc)+'" transform="rotate(-90 75 75)"/>';acc+=l;return o}).join('')+'<text x="75" y="72" text-anchor="middle" font-size="22" font-weight="900" fill="'+(tA===100?'#0F2346':'#B42318')+'">'+fmt(tA)+'%</text><text x="75" y="90" text-anchor="middle" font-size="10" fill="#64748B">total bobot</text></svg>';
+ const nv=sum(w.slice(0,5)),ke=sum(w.slice(5)),top=w.indexOf(Math.max(...w));
+ const side='<aside class="kkb-side"><h4>Profil aktif · '+E(c.profile)+'</h4><p>Porsi tiap kriteria terhadap skor akhir (0–100).</p><div class="kkb-donut">'+donut+'</div><div class="kkb-dl">'+KR.map((k,i)=>'<div><i style="background:'+KCOL[i]+'"></i><b>'+k.c+'</b><span>'+E(k.n.replace(' – skor 5 = terendah',''))+'</span><em>'+fmt(w[i])+'%</em></div>').join('')+'</div>'+
+  '<div class="kkb-grp"><small>Nilai vs Kemudahan (dipakai kuadran)</small><div class="kkb-gb"><div style="width:'+nv/Math.max(tA,1)*100+'%;background:#1D3A78">'+fmt(nv)+'%</div><div style="width:'+ke/Math.max(tA,1)*100+'%;background:#2F8F6A">'+fmt(ke)+'%</div></div><div class="kkb-gbl"><span>■ Nilai (K1–K5)</span><span style="color:#2F8F6A">Kemudahan (K6–K7) ■</span></div></div>'+
+  '<div class="kkb-tip">'+(tA===100?'Kriteria paling berpengaruh: <b>'+KR[top].c+' '+E(KR[top].n.replace(' – skor 5 = terendah',''))+'</b> ('+fmt(w[top])+'%). Skor 5 pada kriteria ini menyumbang '+fmt(w[top])+' poin.':'⚠ Total profil aktif <b>'+fmt(tA)+'%</b>. Skor belum bisa dihitung dengan benar sampai total tepat 100%.')+'</div></aside>';
+ const inp=(k,l,h,pre,suf)=>'<div class="kkb-fld"><label>'+l+ic(h)+'</label><div class="kkb-inp">'+(pre?'<span>'+pre+'</span>':'')+'<input type="number" min="0" step="any" data-kka-cfg="'+k+'" value="'+E(c[k])+'"'+dis+'>'+(suf?'<span class="r">'+suf+'</span>':'')+'</div></div>';
+ const s=D.sum||{},usedC=+s.istkCost||0,usedS=+s.istkSdm||0,pc=(u,t)=>t>0?Math.min(100,u/t*100):0;
+ const ord=c.p1>c.p2&&c.p2>c.p3&&c.p3>0&&c.p1<=100;
+ const band=ord?'<div class="kkb-band"><div style="width:'+c.p3+'%;background:#F1F5F9;color:#475569">P4 &lt; '+fmt(c.p3)+'</div><div style="width:'+(c.p2-c.p3)+'%;background:#FFF0C2;color:#7A5300">P3</div><div style="width:'+(c.p1-c.p2)+'%;background:#D7F0E2;color:#0F5E3B">P2</div><div style="width:'+(100-c.p1)+'%;background:#0F7A4B;color:#fff">P1 ≥ '+fmt(c.p1)+'</div></div>':'<div class="kkb-err">⚠ Urutan ambang harus P1 &gt; P2 &gt; P3 (semua 1–100).</div>';
+ const sets='<div class="kkb-sech"><h4>Pengaturan</h4><small>batas roadmap, kategori prioritas, dan analisis pendukung</small></div><div class="kkb-sets">'+
+  '<div class="kkb-box"><h5><i>💰</i>Anggaran & kapasitas</h5><p>Batas pengisian roadmap. Proyek ISTK mengambil lebih dulu.</p>'+inp('pagu','Pagu anggaran pengembangan','Pagu indikatif/definitif; batas roadmap.','Rp','juta')+inp('sdm','Kapasitas SDM pengembangan','Jumlah personel pengembang/analis × bulan efektif.','','org-bln')+
+   '<div class="kkb-util"><div class="kkb-meter"><small>Terpakai ISTK</small><b>Rp '+fmt(usedC)+' jt</b><div class="kkb-mbar w"><i style="width:'+pc(usedC,c.pagu)+'%;background:'+(usedC>=c.pagu?'#B42318':'#1D3A78')+'"></i></div></div><div class="kkb-meter"><small>Terpakai ISTK</small><b>'+fmt(usedS,1)+' org-bln</b><div class="kkb-mbar w"><i style="width:'+pc(usedS,c.sdm)+'%;background:'+(usedS>=c.sdm?'#B42318':'#1D3A78')+'"></i></div></div></div>'+
+   (usedC>=c.pagu||usedS>=c.sdm?'<div class="kkb-warn">⚠ '+(usedC>=c.pagu?'Pagu':'Kapasitas SDM')+' sudah habis oleh proyek ISTK — usulan Non-ISTK akan menjadi Cadangan.</div>':'<div class="kkb-hint">Sisa untuk Non-ISTK: Rp '+fmt(Math.max(0,c.pagu-usedC))+' jt · '+fmt(Math.max(0,c.sdm-usedS),1)+' org-bln</div>')+'</div>'+
+  '<div class="kkb-box"><h5><i>🏷</i>Kategori prioritas</h5><p>Ambang skor tertimbang untuk P1–P3; di bawah P3 = P4 (Rendah/Tunda).</p>'+band+'<div class="kkb-ticks"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div><div class="kkb-thr3">'+
+   [['p1','#0F7A4B','P1 Utama ≥'],['p2','#7CC79F','P2 Tinggi ≥'],['p3','#F2C94C','P3 Menengah ≥']].map(x=>'<div class="kkb-fld"><label><span class="kkb-dot" style="background:'+x[1]+'"></span>'+x[2]+'</label><div class="kkb-inp"><input type="number" min="0" max="100" step="any" data-kka-cfg="'+x[0]+'" value="'+E(c[x[0]])+'"'+dis+'></div></div>').join('')+'</div></div>'+
+  '<div class="kkb-box"><h5><i>⚙</i>Analisis</h5><p>Aturan ranking dan pembanding.</p><label class="kkb-toggle"><span><b>Ranking hanya usulan Lolos gate</b><small>'+(c.onlyPassed==='Ya'?'Usulan Tinjau Ulang/Lengkapi tidak ikut ranking':'Semua usulan berskor lengkap ikut ranking')+'</small></span><span class="kkb-sw"><input type="checkbox" data-kka-olsw'+(c.onlyPassed==='Ya'?' checked':'')+dis+' aria-label="Ranking hanya usulan Lolos gate"><i></i></span></label>'+
+   inp('quadThr','Ambang kuadran Nilai & Kemudahan','Skor ≥ ambang dianggap tinggi (60 ≈ rata-rata 3 dari 5).','','/ 100')+inp('tol','Toleransi selisih peringkat',"Rentang peringkat antar-profil ≤ nilai ini → Stabil; selisih MCDA vs WSJF ≤ nilai ini → Konsisten.",'','peringkat')+'<div class="kkb-hint">≤ '+fmt(c.tol)+' → Stabil / Konsisten</div></div></div>';
+ return '<div class="kkb">'+head+profs+'<div class="kkb-sech"><h4>Bobot kriteria</h4><small>skala skor 1–5 · K7 terbalik (5 = risiko terendah)</small></div><div class="kkb-wgrid"><div class="kkb-card"><table class="kkb-wt">'+th+tb+tf+'</table></div>'+side+'</div>'+sets+
+  '<div class="kkb-foot">⚖ <span><b>Catatan.</b> Bobot dan ambang awal adalah asumsi penyusun Kertas Kerja A — sepakati melalui forum.</span></div></div>';
 }
 function quadSvg(D){
  const W=640,H=320,m=48,R=D.R.filter(r=>r.value!=null),t=D.c.quadThr,X=v=>m+(v/100)*(W-m-16),Y=v=>H-m-(v/100)*(H-m-16);
@@ -586,6 +603,9 @@ document.addEventListener('click',ev=>{
  if(b.dataset.kkaSnapx){const s=store()[b.dataset.kkaSnapx];if(s)try{downloadXlsx({year:s.year,cfg:s.cfg,sum:s.sum,rows:s.rows},'Prioritas_SI_'+s.year+'_v'+s.version+'.xlsx')}catch(e){say(e.message)}return}
  if(b.dataset.kkaSnapfinal&&canCfg()){const st=store();snaps().forEach(s=>{if(s.status==='Final')st[s.key].status='Draft'});st[b.dataset.kkaSnapfinal].status='Final';try{log('Tandai final hasil prioritasi',b.dataset.kkaSnapfinal)}catch(_){}save();render();return}
  if(b.dataset.kkaSnapdel&&canCfg()){const k=b.dataset.kkaSnapdel,s=store()[k];if(!s||s.status==='Final')return;const go=()=>{delete store()[k];save();render();say('Versi v'+s.version+' dihapus.')};if(typeof window.MT_PS_CONFIRM==='function')window.MT_PS_CONFIRM('Hapus v'+s.version+'?','Hasil "'+s.title+'" akan dihapus dari repositori.',go);else go();return}
+ if(b.dataset.kkaSetprof&&canCfg()){if(cfg().profile!==b.dataset.kkaSetprof){setCfg({profile:b.dataset.kkaSetprof});render()}return}
+ if(b.dataset.kkaWstep&&canCfg()){const[pr,i,d]=b.dataset.kkaWstep.split('|'),w=cfg().weights;w[pr][+i]=Math.max(0,Math.min(100,(+w[pr][+i]||0)+(+d)));setCfg({weights:w});render();return}
+ if(b.dataset.kkaWfix&&canCfg()){const pr=b.dataset.kkaWfix,w=cfg().weights,t=w[pr].reduce((a,v)=>a+(+v||0),0);if(t>0){const n=w[pr].map(v=>Math.round(v/t*100));n[n.indexOf(Math.max(...n))]+=100-n.reduce((a,v)=>a+v,0);w[pr]=n;setCfg({weights:w});render();say('Bobot '+pr+' dinormalisasi ke 100%.')}return}
  if(b.hasAttribute('data-kka-wreset')&&canCfg()){setCfg({weights:JSON.parse(JSON.stringify(DEFW))});render();say('Bobot dikembalikan ke bawaan.');return}
 });
 document.addEventListener('change',ev=>{
@@ -597,6 +617,7 @@ document.addEventListener('change',ev=>{
   if(t.dataset.kkaScore){f.x.kka=f.x.kka||{};if(t.value==='')delete f.x.kka[k];else f.x.kka[k]=+t.value}else f.x[k]=t.value;
   f.p.psUpdatedAt=new Date().toISOString();save();render();return}
  if(!canCfg())return;
+ if(t.matches('[data-kka-olsw]')){if(canCfg()){setCfg({onlyPassed:t.checked?'Ya':'Tidak'});render()}return}
  if(t.matches('[data-kka-cfg]')){const k=t.dataset.kkaCfg,v=t.tagName==='SELECT'?t.value:+t.value;if(t.tagName!=='SELECT'&&(!isFinite(v)||v<0)){say('Nilai harus angka nonnegatif.');return}setCfg({[k]:v});render();return}
  if(t.matches('[data-kka-w]')){const[pr,i]=t.dataset.kkaW.split('|'),v=+t.value;if(!isFinite(v)||v<0||v>100){say('Bobot 0–100%.');return}const w=cfg().weights;w[pr][+i]=v;setCfg({weights:w});render();return}
 });
@@ -663,6 +684,62 @@ b.up{color:#0F7A4B}b.dn{color:#B42318}
 .kka .kka-kpi.is-active{border-color:#13294b;box-shadow:inset 0 0 0 1px #13294b,0 4px 12px #0b2d5922}.kka .kka-kpi.kka-tone-navy.is-active{border-color:#0a4277;box-shadow:0 6px 16px #071e5140}
 .kka .kka-kpi.is-active:after{content:'✓';position:absolute;top:9px;right:11px;font-size:13px;font-weight:900;color:#13294b;opacity:1}.kka .kka-kpi.kka-tone-navy.is-active:after{color:#fff}
 .kka .kka-pen .kka-module-title{display:block;line-height:1.3;overflow-wrap:anywhere}.kka .kka-module-meta{display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-top:3px}.kka .kka-module-meta .kka-non{margin-left:0;vertical-align:middle}.kka .kka-module-actions{display:inline-flex;align-items:center;gap:3px}.kka .kka-pen .kka-nm small:empty{display:none}
+.kkb{color:#0F2346;font-size:13px}
+.kkb-strip{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:12px 16px;margin-bottom:6px}.kkb-strip h3{margin:0;font-size:16px;color:#12275A}.kkb-strip p{margin:2px 0 0;color:#64748B;font-size:12px}.kkb-sp{flex:1}
+.kkb-saved{white-space:nowrap;font-size:12px;font-weight:700;color:#0F7A4B;background:#E3F5EB;border-radius:999px;padding:4px 10px}.kkb-lock{font-size:11.5px;color:#64748B}
+.kkb-sech{display:flex;align-items:baseline;gap:10px;margin:16px 0 10px}.kkb-sech h4{margin:0;font-size:15px;color:#12275A}.kkb-sech small{color:#64748B;font-size:12px}
+.kkb-profs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.kkb-prof{appearance:none;position:relative;background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:14px 16px;cursor:pointer;transition:transform .15s,border-color .15s,box-shadow .15s;text-align:left;font:inherit;color:#0F2346}
+.kkb-prof:not(:disabled):hover{border-color:#9DB3D8;transform:translateY(-2px);box-shadow:0 8px 18px rgba(18,39,90,.08)}.kkb-prof:disabled{cursor:default}
+.kkb-prof.on{background:linear-gradient(135deg,#064781,#071e51);border-color:#0a4277;color:#fff}
+.kkb-pt{display:flex;align-items:center;gap:8px;padding-right:64px}.kkb-pt b{font-size:14px}.kkb-pt i{font-style:normal;font-size:10.5px;font-weight:800;border-radius:999px;padding:2px 8px;background:#F2B92C;color:#0F2346}
+.kkb-prof p{margin:4px 0 10px;font-size:12px;color:#64748B;line-height:1.45}.kkb-prof.on p{color:#C7D4EC}
+.kkb-stack{display:flex;height:12px;border-radius:6px;overflow:hidden;background:#EEF2F7}.kkb-stack i{display:block;height:100%}
+.kkb-leg{display:flex;justify-content:space-between;gap:4px;margin-top:5px;font-size:10.5px;color:#64748B;font-variant-numeric:tabular-nums}.kkb-prof.on .kkb-leg{color:#C7D4EC}
+.kkb-tot{position:absolute;top:12px;right:14px;font-size:11px;font-weight:800;border-radius:999px;padding:2px 8px}.kkb-tot.ok{background:#E3F5EB;color:#0F7A4B}.kkb-tot.bad{background:#FDE8E8;color:#B42318}.kkb-prof.on .kkb-tot.ok{background:rgba(255,255,255,.15);color:#B8F0D2}
+.kkb-wgrid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;align-items:start}
+.kkb-card{background:#fff;border:1px solid #E2E8F0;border-radius:14px;overflow:auto}
+.kkb-wt{width:100%;border-collapse:separate;border-spacing:0}
+.kkb-wt th{background:#12275A;color:#fff;font-size:11px;letter-spacing:.04em;text-transform:uppercase;padding:10px 12px;text-align:left;font-weight:800}
+.kkb-wt th.kkb-pc{text-align:center;width:132px}.kkb-wt th.kkb-pc.on{background:#0A1C45;box-shadow:inset 0 -3px 0 #F2B92C}.kkb-wt th small{display:block;font-size:9.5px;text-transform:none;letter-spacing:.02em;color:#C7D4EC}
+.kkb-wt td{padding:10px 12px;border-bottom:1px solid #EEF2F7;vertical-align:middle}.kkb-wt tbody tr:hover td{background:#FAFBFE}.kkb-wt td.kkb-pc{text-align:center}.kkb-wt td.kkb-pc.on{background:#F6F8FD}
+.kkb-kc{display:flex;gap:10px;align-items:flex-start}.kkb-kc code{font-family:ui-monospace,Consolas,monospace;font-weight:900;font-size:12px;border-radius:7px;padding:4px 7px;color:#fff;flex:none}
+.kkb-kc b{display:block;font-size:13px}.kkb-kc small{display:block;color:#64748B;font-size:11.5px;line-height:1.4;margin-top:2px}
+.kkb-refs{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}.kkb-refs span{font-size:10px;font-weight:700;border-radius:5px;padding:1px 6px;background:#EEF2FB;color:#12275A}
+.kkb-step{display:inline-flex;align-items:center;border:1px solid #C9D8EE;border-radius:9px;overflow:hidden;background:#fff}
+.kka .kkb-step button{width:24px!important;min-width:0!important;height:30px!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:#F5F8FD!important;color:#12275A!important;font:800 14px inherit;cursor:pointer;padding:0!important;display:grid;place-items:center}.kka .kkb-step button:hover{background:#E6EDF8!important}
+.kka .kkb-step input{width:42px!important;min-width:0!important;height:30px!important;border:0!important;text-align:center;font:800 13px inherit;color:#0F2346;padding:0!important;background:#fff!important;box-shadow:none!important;-moz-appearance:textfield}
+.kkb-step input::-webkit-outer-spin-button,.kkb-step input::-webkit-inner-spin-button{-webkit-appearance:none}.kkb-step em{font-style:normal;font-size:11px;color:#64748B;padding-right:6px}
+.kkb-mbar{height:4px;width:96px;margin:5px auto 0;border-radius:3px;background:#EEF2F7;overflow:hidden}.kkb-mbar i{display:block;height:100%}.kkb-mbar.w{width:100%;margin:0;height:5px}
+.kkb-wt tfoot td{background:#FBFCFE;font-weight:800;border-bottom:0}
+.kkb-chk{display:inline-flex;font-size:12px;border-radius:999px;padding:3px 9px}.kkb-chk.ok{background:#E3F5EB;color:#0F7A4B}.kkb-chk.bad{background:#FDE8E8;color:#B42318}
+.kkb-fix{display:block;margin:5px auto 0;font:800 10.5px inherit;color:#1D3A78;background:none;border:0;cursor:pointer;text-decoration:underline}
+.kkb-side{position:sticky;top:12px;background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:16px}.kkb-side h4{margin:0 0 2px;font-size:13px;color:#12275A}.kkb-side>p{margin:0 0 8px;color:#64748B;font-size:11.5px}
+.kkb-donut{display:grid;place-items:center;margin:4px 0 10px}
+.kkb-dl{display:flex;flex-direction:column;gap:6px}.kkb-dl div{display:grid;grid-template-columns:12px 28px minmax(0,1fr) 40px;gap:8px;align-items:center;font-size:12px}
+.kkb-dl i{width:10px;height:10px;border-radius:3px}.kkb-dl b{font-family:ui-monospace,Consolas,monospace}.kkb-dl span{color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.kkb-dl em{font-style:normal;font-weight:800;text-align:right}
+.kkb-grp{margin-top:14px;padding-top:12px;border-top:1px dashed #E2E8F0}.kkb-grp small{display:block;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#64748B;margin-bottom:6px}
+.kkb-gb{display:flex;height:26px;border-radius:8px;overflow:hidden;font-size:11px;font-weight:800;color:#fff}.kkb-gb div{display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden}
+.kkb-gbl{display:flex;justify-content:space-between;font-size:10.5px;font-weight:700;color:#1D3A78;margin-top:4px}
+.kkb-tip{margin-top:12px;background:#FFF4D6;border-radius:10px;padding:9px 11px;font-size:11.5px;color:#5C4300;line-height:1.5}
+.kkb-sets{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr) minmax(0,1fr);gap:12px}
+.kkb-box{background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:14px 16px}.kkb-box h5{margin:0 0 2px;font-size:13.5px;color:#12275A;display:flex;align-items:center;gap:8px}.kkb-box h5 i{font-style:normal;width:26px;height:26px;border-radius:8px;display:grid;place-items:center;background:#EEF2FB}
+.kkb-box>p{margin:0 0 12px;color:#64748B;font-size:11.5px}
+.kkb-fld{margin-bottom:10px;min-width:0}.kkb-fld label{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#334155;margin-bottom:4px}
+.kkb-inp{min-width:0;display:flex;align-items:center;border:1px solid #C9D8EE;border-radius:10px;background:#fff;overflow:hidden}.kkb-inp:focus-within{border-color:#12275A;box-shadow:0 0 0 3px rgba(29,58,120,.12)}
+.kkb-inp span{padding:0 10px;font-size:11.5px;color:#64748B;background:#F5F8FD;align-self:stretch;display:flex;align-items:center;border-right:1px solid #E2E8F0;white-space:nowrap}.kkb-inp span.r{border-right:0;border-left:1px solid #E2E8F0}
+.kka .kkb-inp input{flex:1;min-width:0!important;width:auto!important;border:0!important;height:36px!important;padding:0 10px!important;font:700 13px inherit;color:#0F2346;background:#fff!important;box-shadow:none!important}
+.kkb-util{margin-top:4px;display:grid;grid-template-columns:1fr 1fr;gap:8px}.kkb-meter{background:#F5F8FD;border-radius:10px;padding:8px 10px}.kkb-meter small{font-size:10.5px;color:#64748B;font-weight:700}.kkb-meter b{display:block;font-size:13px;margin:2px 0 4px}
+.kkb-warn{font-size:11.5px;color:#B42318;font-weight:700;margin-top:6px}.kkb-hint{font-size:11px;color:#64748B;margin-top:4px}
+.kkb-band{display:flex;height:40px;border-radius:10px;overflow:hidden;margin:6px 0 4px}.kkb-band div{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden}
+.kkb-ticks{display:flex;justify-content:space-between;font-size:10px;color:#64748B}.kkb-err{font-size:12px;color:#B42318;font-weight:700;background:#FDE8E8;border-radius:10px;padding:10px 12px;margin:6px 0}
+.kkb-thr3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}.kkb-thr3 .kkb-fld{margin:0}.kkb-dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+.kkb-toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#F5F8FD;border-radius:10px;padding:10px 12px;margin-bottom:10px;cursor:pointer}.kkb-toggle b{font-size:12px;display:block}.kkb-toggle small{font-size:11px;color:#64748B}
+.kkb-sw{position:relative;width:42px;height:24px;flex:none}.kkb-sw input{position:absolute;opacity:0;width:0;height:0}.kkb-sw i{position:absolute;inset:0;border-radius:999px;background:#CBD5E1;transition:.2s}
+.kkb-sw i:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}.kkb-sw input:checked+i{background:#12275A}.kkb-sw input:checked+i:before{transform:translateX(18px)}.kkb-sw input:disabled+i{opacity:.6}
+.kkb-foot{margin-top:16px;display:flex;gap:10px;align-items:center;background:#fff;border:1px solid #E2E8F0;border-left:4px solid #F2B92C;border-radius:12px;padding:12px 14px;font-size:12.5px;color:#334155}.kkb-foot b{color:#12275A}
+@media(max-width:1200px){.kkb-wgrid,.kkb-sets{grid-template-columns:1fr}.kkb-side{position:static}}
+@media(max-width:800px){.kkb-profs{grid-template-columns:1fr}}
 @media(max-width:1200px){.kka-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}.kka-grid2{grid-template-columns:1fr}.kka-sets{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){.kka-kpis{grid-template-columns:1fr 1fr}.kka-sets{grid-template-columns:1fr}}`;document.head.appendChild(s)})();
 
