@@ -57,6 +57,57 @@ function attachNon(inp){
   q('[data-e2-use="'+type+'"]').disabled=!used||!valid||!Number.isFinite(total);
   return {total,valid:used&&valid&&Number.isFinite(total)};
  }
+
+ /* Pro hire: role/level chips with explicitly identified salary or consulting references. */
+ function proHire(){
+  const host=document.createElement('div');host.className='est2-pro';
+  host.innerHTML='<button type="button" class="est2-pro-toggle" data-ph-toggle>+ Pro hire berdasarkan peran &amp; level</button><div data-ph-body hidden><div class="est2-ph-line"><b>Peran</b><div data-ph-group="role"></div></div><div class="est2-ph-line"><b>Level</b><div data-ph-group="level"></div></div><div class="est2-ph-line"><b>Referensi</b><div data-ph-group="source"></div></div><div class="est2-ph-fields"><label>Pengalaman (tahun)<input type="number" min="0" max="60" step="1" data-ph-years value="2"></label><label>Orang<input type="number" min="1" step="1" data-ph-n value="1"></label><label>Bulan<input type="number" min="0.01" step="any" data-ph-m></label><label>Tarif (Rp juta/OB)<input type="number" min="0" step="any" data-ph-rate></label></div><p class="est2-guide" data-ph-ref></p><div class="est2-ph-actions"><button type="button" data-ph-fill>Gunakan tarif referensi</button><b data-ph-total>—</b><button type="button" data-ph-add>Tambah ke rincian biaya</button></div><p class="est2-hint">Level adalah label perencanaan internal; tarif ditentukan dari pengalaman aktual dan sumber terpilih. Pastikan biaya jasa, pajak dan komponen kontrak yang belum termasuk dihitung sesuai kebutuhan.</p></div>';
+  q('[data-e2-panel="cost"]').querySelector('.est2-scroll').before(host);
+  const h=s=>host.querySelector(s),ha=s=>Array.from(host.querySelectorAll(s));
+  const groups={role:['Frontend','Backend','Fullstack','.NET Developer','Business Analyst','System Analyst','UI/UX Designer','QA','DevOps','Cloud Engineer','Project Manager','Data Engineer','Security Engineer','Mobile Developer','Lainnya'],level:['Junior','Middle','Senior'],source:['PERSOL 2026','INKINDO 2026','Kontrak / Manual']};
+  const state={role:'Frontend',level:'Junior',source:'PERSOL 2026'};
+  Object.keys(groups).forEach(k=>groups[k].forEach(v=>{const b=document.createElement('button');b.type='button';b.className='est2-chip';b.dataset.phGroup=k;b.dataset.phValue=v;b.textContent=v;h('[data-ph-group="'+k+'"]').appendChild(b)}));
+  const market={'Frontend':['ReactJS Developer (IT)',2,4,10,12],'Backend':['Backend Developer (Credit Agency/Leasing)',1,3,8,10],'Fullstack':['Fullstack Developer (IT)',0,2,7.5,12],'.NET Developer':['.NET Developer (IT)',0,2,6,11],'Business Analyst':['Business Analyst (IT)',1,3,10.4,13],'System Analyst':['System Analyst (IT)',0,1,8,11],'UI/UX Designer':['UI/UX Designer (IT)',1,3,8.5,10.5],'QA':['Quality Assurance (IT)',3,5,10.5,14.5],'DevOps':['DevOps Engineer (IT)',2,4,18,20],'Cloud Engineer':['AWS Cloud Engineer (IT)',1,3,10,15],'Project Manager':['Junior Project Manager (IT)',1,3,10,15]};
+  const ink=[28.85,30.6,32.3,34,35.7,37.4,39.15,40.85,42.55,44.25,46,47.7,49.4,51.1,52.8,54.55,56.25,57.95,59.65,61.35,63.1,64.8,66.5];
+  const sourceLinks={'PERSOL 2026':'https://www.scribd.com/document/991716451/Indonesia-Salary-Guide-2026-v2','INKINDO 2026':'https://www.inkindo.org/documents/ikdweb-billing-rate-2026.pdf'};
+  function reference(){
+   const y=parse(h('[data-ph-years]'));if(y===null||!Number.isInteger(y))return {note:'Isi pengalaman kerja yang relevan.'};
+   if(state.source==='PERSOL 2026'){
+    const a=state.role==='.NET Developer'&&y>=5&&y<=7?['Senior .NET Developer (IT)',5,7,15,17]:market[state.role];
+    if(!a||y<a[1]||y>a[2])return {note:'Tidak ada rentang PERSOL 2026 terverifikasi untuk kombinasi peran/pengalaman ini. Isi tarif manual atau gunakan sumber lain.'};
+    return {rate:(a[3]+a[4])/2,note:a[0]+' · '+a[1]+'–'+a[2]+' tahun · Rp '+nf(a[3])+'–'+nf(a[4])+' jt/bulan. Titik tengah simulasi Rp '+nf((a[3]+a[4])/2)+' jt, bukan billing rate.'};
+   }
+   if(state.source==='INKINDO 2026'){
+    if(y>=3&&y<=25)return {rate:ink[y-3],note:'Tabel 3-26, S1 tanpa SKK, NCB, badan usaha, DKI Jakarta · '+y+' tahun · Rp '+nf(ink[y-3])+' jt/bulan. Bukan tarif khusus FE/BE.'};
+    if(y<=2&&['Frontend','Backend','Fullstack','.NET Developer','Mobile Developer'].includes(state.role))return {rate:17.6,note:'Tabel 4-26, pemrogram perangkat lunak (sub-professional), DKI Jakarta · Rp 17,6 jt/bulan. Asumsi S1/setara, pengalaman ≤2 tahun.'};
+    return {note:'Referensi INKINDO otomatis belum tersedia untuk kualifikasi ini. Gunakan tarif manual sesuai tabel yang relevan.'};
+   }
+   return {note:'Masukkan tarif dari kontrak sebelumnya, survei pasar, atau penawaran penyedia.'};
+  }
+  function render(){
+   ha('[data-ph-group][data-ph-value]').forEach(b=>{const on=state[b.dataset.phGroup]===b.dataset.phValue;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))});
+   const ref=reference(),el=h('[data-ph-ref]');el.textContent=ref.note;
+   if(sourceLinks[state.source]){const a=document.createElement('a');a.href=sourceLinks[state.source];a.target='_blank';a.rel='noopener noreferrer';a.textContent=' Lihat sumber ↗';el.appendChild(a)}
+   h('[data-ph-fill]').disabled=ref.rate==null;
+   const n=parse(h('[data-ph-n]')),m=parse(h('[data-ph-m]')),rate=parse(h('[data-ph-rate]'));const ok=n!==null&&n>=1&&Number.isInteger(n)&&m!==null&&m>0&&rate!==null&&Number.isFinite(n*m*rate);
+   h('[data-ph-total]').textContent=ok?nf(n*m)+' OB · Rp '+nf(n*m*rate)+' jt':'—';h('[data-ph-add]').disabled=!ok;
+  }
+  host.addEventListener('input',e=>{if(e.target.matches('[data-ph-years]'))h('[data-ph-rate]').value='';render()});
+  host.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;e.stopPropagation();e.preventDefault();
+   if(b.hasAttribute('data-ph-toggle')){const panel=h('[data-ph-body]');panel.hidden=!panel.hidden;if(!panel.hidden&&h('[data-ph-m]').value===''&&parse(dur)>0)h('[data-ph-m]').value=dur.value;render();return}
+   if(b.dataset.phGroup){state[b.dataset.phGroup]=b.dataset.phValue;if(b.dataset.phGroup==='level')h('[data-ph-years]').value=({Junior:2,Middle:4,Senior:7})[state.level];h('[data-ph-rate]').value='';render();return}
+   if(b.hasAttribute('data-ph-fill')){const ref=reference();if(ref.rate!=null)h('[data-ph-rate]').value=ref.rate;render();return}
+   if(b.hasAttribute('data-ph-add')&&!b.disabled){
+    const n=parse(h('[data-ph-n]')),m=parse(h('[data-ph-m]')),rate=parse(h('[data-ph-rate]'));if(n===null||m===null||rate===null)return;
+    add('cost','Pro hire · '+state.role+' · '+state.level+' ('+state.source+')','orang-bulan');
+    const row=qa('[data-e2-row="cost"]').slice(-1)[0];row.querySelector('[data-e2-n]').value=String(n*m);row.querySelector('[data-e2-rate]').value=String(rate);
+    calc('cost');h('[data-ph-body]').hidden=true;
+   }
+  });
+  render();
+ }
+ proHire();
+
  let mode='';
  function show(type){mode=type;p.hidden=false;q('[data-e2-title]').textContent=type==='cost'?'Kalkulator estimasi biaya':'Kalkulator kebutuhan SDM';qa('[data-e2-panel]').forEach(el=>el.hidden=el.dataset.e2Panel!==type);calc(type)}
  [[cost,'cost','Hitung estimasi biaya'],[sdm,'sdm','Hitung kebutuhan SDM']].forEach(([el,type,label])=>{
@@ -111,6 +162,8 @@ let raf=0;new MutationObserver(()=>{if(raf)return;raf=requestAnimationFrame(()=>
 .esth-t button{background:#12275A!important;color:#fff!important;border-color:#12275A!important}
  .est2[hidden],.est2 [hidden]{display:none!important}.est2-trigger{display:block;margin-top:5px;padding:3px 0;border:0;background:transparent;color:#1D3A78;font:inherit;font-size:12px;cursor:pointer;text-align:left}.est2-trigger:hover{text-decoration:underline}
  .est2{border:1px solid #D6E0EF;border-left:3px solid #F2B92C;border-radius:10px;background:#fff;margin:12px 0 0;padding:12px;font:inherit;color:#12275A}.est2-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.est2-guide,.est2-hint{font-size:12px;line-height:1.5;margin:6px 0 10px;color:#475569}.est2-scroll{overflow-x:auto}.est2-grid{display:grid;gap:6px;align-items:center;min-width:580px;font-size:12px}.est2-grid.cost{grid-template-columns:minmax(155px,2fr) minmax(70px,.7fr) minmax(90px,1fr) minmax(100px,1fr) minmax(100px,1fr) 28px}.est2-grid.sdm{grid-template-columns:minmax(155px,2fr) repeat(3,minmax(76px,1fr)) minmax(100px,1fr) 28px}.est2-rows,.est2-row{display:contents}.est2-grid strong{font-size:11px;color:#64748B}.est2 input{width:100%;min-width:0;box-sizing:border-box;border:1px solid #C9D8EE;border-radius:7px;background:#fff;height:32px;padding:5px 7px;font:inherit;color:#12275A}.est2 output{text-align:right;font-weight:600;padding-right:4px;font-variant-numeric:tabular-nums}.est2 button{border:1px solid #C9D8EE;background:#fff;border-radius:7px;color:#12275A;font:inherit;font-size:12px;padding:6px 10px;cursor:pointer}.est2 [data-e2-del]{padding:4px;color:#64748B}.est2 [data-e2-add],.est2 [data-e2-duration]{margin:9px 8px 0 0}.est2-total{display:flex;align-items:center;gap:12px;border-top:1px solid #E2E8F0;margin-top:10px;padding-top:10px}.est2-total span{flex:1}.est2-total b{font-size:16px}.est2-total button{background:#F2B92C;border-color:#F2B92C;font-weight:700}.est2-total button:disabled{opacity:.5;cursor:not-allowed}.est2-row.invalid input{border-color:#D97706}.est2-hint{margin-bottom:0}
+
+ .est2-pro{border:1px solid #E2E8F0;border-radius:9px;padding:9px 10px;margin:0 0 12px;background:#fff}.est2 .est2-pro-toggle{border:0;padding:2px 0;color:#12275A;font-weight:700}.est2-ph-line{display:grid;grid-template-columns:78px minmax(0,1fr);align-items:start;gap:8px;margin-top:9px;font-size:12px}.est2-ph-line>b{padding-top:5px}.est2-ph-line>div{display:flex;flex-wrap:wrap;gap:5px}.est2 .est2-chip{border-radius:999px;padding:4px 10px;background:#F5F8FD;color:#334155;font-size:11.5px}.est2 .est2-chip.on{background:#12275A;border-color:#12275A;color:#fff;box-shadow:inset 3px 0 0 #F2B92C}.est2-ph-fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}.est2-ph-fields label{font-size:11px;color:#475569}.est2-ph-fields input{display:block;margin-top:4px}.est2-ph-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px}.est2-ph-actions b{margin-left:auto}.est2 .est2-ph-actions [data-ph-add]{background:#F2B92C;border-color:#F2B92C;font-weight:700}.est2-ph-actions button:disabled{opacity:.5;cursor:not-allowed}.est2-pro a{color:#1D3A78;text-decoration:underline}@media(max-width:650px){.est2-ph-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
 `;document.head.appendChild(s)})();
 window.MT_EST_HELPER={attach,version:'20261127-est1'};
 })();
