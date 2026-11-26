@@ -203,7 +203,8 @@ function open(deps){
    try{
      const result=applySelection(picks,deps);
      deps.log?.('Impor Dashboard CM Tim CM & Squad Team',JSON.stringify(result));
-     deps.toastT(result.profilesNew+' profil baru, '+result.profilesUpdated+' profil diperbarui; '+result.contactsNew+' kontak baru, '+result.contactsUpdated+' kontak dilengkapi.');
+     if(typeof fsImportCapture==='function')fsImportCapture();deps.save();
+     deps.toastT(result.profilesNew+' profil baru, '+result.profilesUpdated+' profil diperbarui; '+result.contactsNew+' kontak baru, '+result.contactsUpdated+' kontak dilengkapi.'+(typeof FB!=='undefined'&&FB.on?' Menunggu konfirmasi Firebase.':''));
      deps.rr();
    }catch(e){deps.toastT('Gagal impor: '+(e.message||String(e)));return false}
  },{size:'lg'});
