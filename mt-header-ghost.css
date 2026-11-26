@@ -62,3 +62,6 @@ html body #app header.top #bell:hover,html body #app header.top #bell:focus-visi
 html body #app header.top #bell:hover svg,html body #app header.top #bell:focus-visible svg{fill:#102C4E!important;stroke:#102C4E!important}
 html body #app header.top #bell:hover svg *,html body #app header.top #bell:focus-visible svg *{fill:#102C4E!important;stroke:#102C4E!important}
 html body #app header.top #bell:hover i,html body #app header.top #bell:focus-visible i{border-color:#FDB913!important}
+
+/* Hamburger: no gold focus ring competing with the brand mark; keep a subtle keyboard focus indicator. */
+html body #app header.top>.hamb:focus-visible{outline:1px solid rgba(255,255,255,.65)!important;outline-offset:-3px!important}
