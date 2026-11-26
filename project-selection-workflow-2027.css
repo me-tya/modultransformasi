@@ -549,3 +549,33 @@ button.ps27-pkpi.navy:hover{border-color:#0a4277}
 .ps27-clear{display:flex;flex-direction:column;gap:2px;background:#fff;border:1px solid #d6e0ef;border-left:4px solid #12275A;border-radius:12px;padding:10px 14px;margin:0 0 12px}
 .ps27-clear b{color:#12275A;font-size:14px}.ps27-clear span{color:#475569;font-size:12.5px;line-height:1.5}.ps27-clear span b{font-size:12.5px}
 .kka-mseg label small{font-size:10px;font-weight:700;opacity:.75;margin-left:3px}
+
+
+/* Project Selection Cheatsheet: compact Input–Process–Output swimlanes. */
+.ps27-ipo-map{display:grid;gap:8px}
+.ps27-ipo-lane{display:grid;grid-template-columns:88px minmax(0,1fr);align-items:center;gap:6px 10px;padding:10px 12px;background:#fff;border:1px solid #dce5ef;border-radius:10px}
+.ps27-ipo-lane>b{align-self:stretch;display:grid;place-items:center;background:#12275a;color:#fff;border-radius:7px;font-size:12px;grid-row:1/3;padding:8px 3px}
+.ps27-ipo-lane.non>b{background:#fff4d6;color:#765712;border:1px solid #f4dfa5}
+.ps27-ipo-lane>div{display:flex;align-items:center;gap:5px;flex-wrap:wrap;min-width:0}
+.ps27-ipo-lane>div>span{flex:1;min-width:95px;background:#f2f5fa;border:1px solid #e1e8f2;border-radius:6px;padding:8px 7px;text-align:center;font-size:11.5px;font-weight:700;color:#12275a}
+.ps27-ipo-lane>div>span.ps27-ipo-end{background:#12275a;border-color:#12275a;color:#fff}
+.ps27-ipo-lane>div>i{font-size:19px;color:#ba942f;font-style:normal;line-height:1}
+.ps27-ipo-lane>small{font-size:11.5px;color:#586d86;line-height:1.45}
+.ps27-ipo-table{border:1px solid #dce5ef;border-radius:11px;overflow:hidden;background:#fff}
+.ps27-ipo-cols,.ps27-ipo-row{display:grid;grid-template-columns:minmax(155px,.85fr) minmax(0,1.12fr) minmax(0,1.65fr) minmax(0,1.3fr);align-items:stretch}
+.ps27-ipo-cols{background:#12275a;color:#fff;font-size:10.5px;font-weight:750;letter-spacing:.02em}
+.ps27-ipo-cols>span{padding:10px 12px}
+.ps27-ipo-row+.ps27-ipo-row{border-top:1px solid #dce5ef}
+.ps27-ipo-step,.ps27-ipo-cell{min-width:0;padding:12px;display:flex;flex-direction:column;gap:5px}
+.ps27-ipo-step{background:#f8fafd;position:relative;align-items:flex-start;justify-content:flex-start}
+.ps27-ipo-step>.ps27-sheet-number{background:#fff4d6;color:#12275a;border:1px solid #f4dfa5}
+.ps27-ipo-step h4{font-size:13px;line-height:1.3;margin:2px 0;color:#12275a}
+.ps27-ipo-step small{font-size:10px;color:#697b92;font-weight:700;letter-spacing:.025em}
+.ps27-ipo-step .ps27-sheet-link{margin-top:3px}
+.ps27-ipo-cell{border-left:1px solid #e5ebf3}
+.ps27-ipo-cell p{font-size:12px;line-height:1.55;margin:0;color:#34465f;overflow-wrap:anywhere}
+.ps27-ipo-cell.output{background:#f6f9fc}
+.ps27-ipo-label{display:none;font-size:10px;font-weight:800;color:#63748c}
+.ps27-ipo-next{display:block;margin-top:auto;border-top:1px solid #e0e7f0;padding-top:7px;color:#12275a;font-size:11px;font-weight:700;line-height:1.4}
+@media(max-width:900px){.ps27-ipo-cols,.ps27-ipo-row{grid-template-columns:minmax(110px,.8fr) minmax(0,1fr) minmax(0,1.45fr) minmax(0,1.2fr)}.ps27-ipo-step,.ps27-ipo-cell{padding:9px}.ps27-ipo-lane>div>span{min-width:80px}}
+@media(max-width:650px){.ps27-ipo-cols{display:none}.ps27-ipo-row{grid-template-columns:minmax(0,1fr)}.ps27-ipo-step{flex-direction:row;align-items:center;gap:8px}.ps27-ipo-step .ps27-sheet-link{margin:0 0 0 auto}.ps27-ipo-cell{border-left:0;border-top:1px solid #e5ebf3}.ps27-ipo-label{display:block}.ps27-ipo-lane{grid-template-columns:1fr}.ps27-ipo-lane>b{grid-row:auto;justify-self:start;padding:6px 12px}.ps27-ipo-lane>div>span{flex:0 1 auto}}
