@@ -4861,16 +4861,15 @@ ACT.lapexp=()=>exportLaporan();
 /* ======================== PMO ======================== */
 
 /* ===== Satu komponen filter PMO lintas tab ===== */
-/* Program per tahun (bukan rentang periode). Mulai tahun Project Selection (2027, atau tahun yang sudah memiliki program Project Selection),
-   program tampil di PM hanya bila DITETAPKAN di Project Selection untuk tahun itu (ISTK tahun tsb). Tahun sebelumnya: program tampil bila
-   memiliki item WBS bertanggal tahun tsb, atau programnya satu tahun (mulai = selesai = tahun tsb). Periode multiyears (mis. 2025–2029) tidak dipakai. */
+/* ISTK baru berlaku mulai 2027: sejak 2027 program tampil di PM hanya bila DITETAPKAN di Project Selection untuk tahun itu (per tahun,
+   bukan rentang periode multiyears). Sampai 2026 tetap aturan lama: periode program mencakup tahun tsb atau ada item WBS bertanggal tahun tsb. */
 const PS_FIRST_YEAR=2027;
-function psYearOn(y){y=+y;return y>=PS_FIRST_YEAR||(S.programs||[]).some(p=>+p.psYear===y)}
+function psYearOn(y){return +y>=PS_FIRST_YEAR}
 function pmoAllWbsRaw(){return S.wbs.filter(w=>!w.arsip&&(VIEW==='pmo-wbsplan'&&S.ui.planYear!=='year'||yrOf(w)===S.ui.tahun))}
 function pmoYearOk(p,y){y=+y;if(p.psDraft)return false;
  if(psYearOn(y))return +p.psYear===y&&p.psStatus==='Ditetapkan';
  const ys=String(p.periode||'').match(/20\d{2}/g)||[],y0=+p.mulai||+(ys[0]||0),y1=+(ys[ys.length-1]||0)||y0;
- return (+p.psYear===y)||(y0&&y0===y1&&y0===y)||S.wbs.some(w=>!w.arsip&&w.prog===p.akr&&yrOf(w)===y)}
+ return (y0&&y>=y0&&y<=(y1||y0))||S.wbs.some(w=>!w.arsip&&w.prog===p.akr&&yrOf(w)===y)}
 function pmoYearAkr(y){return new Set((S.programs||[]).filter(p=>pmoYearOk(p,y)).map(p=>p.akr))}
 function pmoAllWbs(){const raw=pmoAllWbsRaw();if(VIEW==='pmo-wbsplan')return raw; /* Susun WBS tetap menampilkan semua item agar dapat ditinjau */if(!psYearOn(S.ui.tahun))return raw;const ok=pmoYearAkr(+S.ui.tahun);return raw.filter(w=>ok.has(w.prog))}
 /* Item WBS bertanggal tahun berjalan milik program yang tidak ditetapkan untuk tahun itu (mis. program multiyears lama yang tidak masuk ISTK). */
