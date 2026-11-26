@@ -180,9 +180,9 @@ function projectBase(x,p,old){
   psSupportUic:x.pend||old?.psSupportUic||'',psSourceIS:x.kodeIS||old?.psSourceIS||'',psImportedAt:new Date().toISOString(),updatedAt:new Date().toISOString(),updatedBy:me()?.email||''});
 }
 /* Menerapkan rencana ke S.programs. Mengembalikan ringkasan. */
-function apply(pl,meta){
+function apply(pl,meta,target){
  const done={created:0,updated:0,skipped:0,projects:0,ids:[]};
- S.programs=S.programs||[];
+ const programs=target||(S.programs=S.programs||[]);
  pl.items.forEach(it=>{
   if(it.action==='Proyek'){
    const p=it.existing;p.psProjects=p.psProjects||[];
@@ -196,7 +196,7 @@ function apply(pl,meta){
   if(!p){
    p={id:uid('program'),akr:'PS'+y+'-'+uid('p'),psYear:y,psDraft:true,psStatus:'Draft',psListStatus:'Baru',psThreshold:80,psPrioritize:false,
     psProjects:[],psWeights:{},psGovernanceV:1,psBenefits:[],psStakeholders:[],psRiskRegister:[],status:'Perencanaan'};
-   S.programs.push(p);done.created++;
+   programs.push(p);done.created++;
   }else done.updated++;
   const jenis=jenisOf(r.jenis);if(r.jenis&&jenis!==r.jenis)p.psJenisSumber=r.jenis;
   const p1=+r.p1||y,p2=Math.max(p1,+r.p2||p1);
@@ -219,6 +219,82 @@ function apply(pl,meta){
   done.ids.push(p.id);
  });
  return done;
+}
+/* Stage on copies; never publish an unconfirmed import to the live app. */
+function stageImport(pl,meta){
+ const copies=new Map(),base=new Map();
+ const copy=p=>{
+  if(!p)return null;
+  if(!copies.has(p.id)){
+   copies.set(p.id,JSON.parse(JSON.stringify(p)));
+   base.set(String(p.id),JSON.parse(JSON.stringify(p)));
+  }
+  return copies.get(p.id);
+ };
+ const items=pl.items.map(it=>{
+  const existing=copy(it.existing);
+  return {...it,existing,projects:it.projects.map(x=>({...x,old:x.old&&existing?(existing.psProjects||[]).find(z=>String(z.id)===String(x.old.id))||null:null}))};
+ });
+ const programs=Array.from(copies.values());
+ const result=apply({...pl,items},meta,programs);
+ let order=(S.programs||[]).reduce((m,p)=>Math.max(m,+p._o||0),0);
+ const docs=Array.from(new Set(result.ids.map(String))).map(id=>{
+  const p=programs.find(x=>String(x.id)===id);
+  if(!p)throw Error('Program hasil impor tidak ditemukan.');
+  if(p._o==null)p._o=++order;
+  return {id,name:p.nama,before:base.get(id)||null,after:p};
+ });
+ return {result,docs};
+}
+const canonical=p=>p==null?null:stab(fsClean(p));
+function validateStage(stage){
+ if(!stage.docs.length)throw Error('Tidak ada program yang dapat disimpan.');
+ if(stage.docs.length>100)throw Error('Maksimal 100 program per impor. Pecah berkas menjadi beberapa bagian.');
+ let bytes=0;
+ for(const d of stage.docs){
+  if(!d.id||d.id.includes('/'))throw Error('ID program tidak valid: '+d.name);
+  const size=new TextEncoder().encode(canonical(d.after)).length;
+  if(size>950000)throw Error('Dokumen '+d.name+' terlalu besar untuk batas Firestore 1 MB. Kurangi isi atau pecah program.');
+  bytes+=size;
+ }
+ if(bytes>8000000)throw Error('Ukuran seluruh impor terlalu besar. Pecah berkas menjadi beberapa bagian.');
+}
+async function commitStage(stage,db){
+ validateStage(stage);
+ const records=stage.docs.map(d=>({...d,ref:db.collection('programs').doc(d.id),expected:canonical(d.before),desired:canonical(d.after)}));
+ await db.runTransaction(async tx=>{
+  // All reads first, then writes. Keep retries idempotent and reject concurrent edits.
+  const snaps=await Promise.all(records.map(d=>tx.get(d.ref)));
+  records.forEach((d,i)=>{
+   const remote=snaps[i].exists?canonical(snaps[i].data()):null;
+   if(remote!==d.expected&&remote!==d.desired)
+    throw Error('Konflik data server: '+d.name+'. Data server berbeda. Buka ulang impor setelah data terbaru dimuat.');
+  });
+  records.forEach((d,i)=>{
+   const remote=snaps[i].exists?canonical(snaps[i].data()):null;
+   if(remote!==d.desired)tx.set(d.ref,JSON.parse(d.desired));
+  });
+ });
+ return records;
+}
+function publishConfirmed(records){
+ S.programs=S.programs||[];
+ FB.last.programs=FB.last.programs||{};
+ for(const d of records){
+  const i=S.programs.findIndex(x=>String(x.id)===d.id),old=i<0?null:S.programs[i];
+  const local=canonical(old);
+  // Real-time listener may already have delivered this or a newer version.
+  if(local!==d.expected&&local!==d.desired)continue;
+  if(local!==d.desired){
+   const confirmed=JSON.parse(d.desired);
+   if(old){Object.keys(old).forEach(k=>delete old[k]);Object.assign(old,confirmed)}
+   else S.programs.push(confirmed);
+  }
+  const last=FB.last.programs[d.id];
+  if(last==null||last===d.expected||last===d.desired)FB.last.programs[d.id]=d.desired;
+ }
+ if(typeof MODC!=='undefined')MODC=null;
+ if(typeof WIDX!=='undefined')WIDX=null;
 }
 /* ---------- Unduh template ---------- */
 function templateBook(){
@@ -291,33 +367,70 @@ function paint(){
 }
 function open(preset){
  if(!canRole()){toast('Impor program hanya untuk Superadmin, PMO Kemenkeu, dan PMO Unit.');return}
+ if(document.querySelector('.psimp-overlay[data-saving="1"]')){toast('Impor sedang disimpan ke Firebase.');return}
  document.querySelectorAll('.psimp-overlay').forEach(x=>x.remove());current=null;
+ let pendingStage=null,saving=false;
  const ov=document.createElement('div');ov.className='pswf-overlay psimp-overlay';
  ov.innerHTML='<section class="pswf-modal psimp-modal" role="dialog" aria-modal="true" aria-label="Impor Usulan Program"><header><h2>Impor Usulan Program · '+year()+'</h2><button type="button" data-psimp="close" aria-label="Tutup">✕</button></header><main></main><footer><button class="btn" type="button" data-psimp="close">Batal</button><button class="btn pri" type="button" data-psimp="apply" disabled>Terapkan Impor</button></footer></section>';
  document.body.appendChild(ov);
  ov.addEventListener('click',async ev=>{
   const a=ev.target.closest('[data-psimp]')?.dataset.psimp;
+  if(saving)return;
   if(ev.target===ov||a==='close'){ov.remove();return}
   if(a==='template')downloadTemplate();
   else if(a==='pick')ov.querySelector('[data-psimp-file]').click();
   else if(a==='apply'){
    if(!current?.plan)return;
-   const res=apply(current.plan,{file:current.file});
-   S.ui.psSelectedYear=S.ui.psSelectedYear||year();S.ui.psBank=S.ui.psBank||{};S.ui.psBank.tab='detail';S.ui.psBank.detailPage=1;
-   if(typeof save==='function')save();ov.remove();if(typeof render==='function')render();
-   toast(res.created+' program baru, '+res.updated+' diperbarui'+(res.touched?', '+res.touched+' program ditambah proyek':'')+', '+res.projects+' proyek masuk Pemetaan Proyek'+(res.skipped?'; '+res.skipped+' baris dilewati':'')+'.');
+   const b=ov.querySelector('[data-psimp="apply"]'),main=ov.querySelector('main');
+   const status=main.querySelector('[data-psimp-status]')||document.createElement('div');
+   if(!status.isConnected){status.dataset.psimpStatus='1';status.setAttribute('role','status');main.prepend(status)}
+   const inform=(msg,bad)=>{status.className='psimp-alert'+(bad?' err':'');status.textContent=msg};
+   const configured=typeof fbCfg==='function'&&!!fbCfg();
+   const online=typeof FB!=='undefined'&&FB.on&&FB.ready&&FB.db&&FB.auth?.currentUser;
+   if(configured&&!online){inform('Firebase belum tersambung. Impor belum diterapkan. Periksa status koneksi Database dan coba lagi.',true);return}
+   saving=true;ov.dataset.saving='1';b.disabled=true;b.textContent='Menyimpan…';
+   ov.querySelectorAll('[data-psimp="pick"],[data-psimp-file]').forEach(el=>el.disabled=true);
+   try{
+    let res;
+    if(online){
+     if(!pendingStage){
+      const fresh=current.aoa?plan(current.aoa):current.plan;
+      const fingerprint=pl=>JSON.stringify(pl.items.map(it=>[it.row,it.action,it.charterLocked,it.existing?.id,it.projects.map(x=>[x.action,x.problem,x.old?.id])]));
+      if(fingerprint(fresh)!==fingerprint(current.plan))throw Error('Rencana impor berubah karena data diperbarui. Pilih kembali berkas untuk memeriksa pratinjau.');
+      pendingStage=stageImport(fresh,{file:current.file});
+     }
+     inform('Menyimpan '+pendingStage.docs.length+' program ke Firebase. Jangan tutup halaman.',false);
+     const records=await commitStage(pendingStage,FB.db);
+     publishConfirmed(records);res=pendingStage.result;
+    }else{
+     res=apply(current.plan,{file:current.file});
+     if(typeof save==='function')save();
+    }
+    S.ui.psSelectedYear=S.ui.psSelectedYear||year();S.ui.psBank=S.ui.psBank||{};S.ui.psBank.tab='detail';S.ui.psBank.detailPage=1;
+    if(online){try{localStorage.setItem(KEY+'_ui',JSON.stringify(S.ui))}catch(_){}}
+    ov.remove();if(typeof render==='function')render();
+    toast(res.created+' program baru, '+res.updated+' diperbarui'+(res.touched?', '+res.touched+' program ditambah proyek':'')+', '+res.projects+' proyek masuk Pemetaan Proyek'+(res.skipped?'; '+res.skipped+' baris dilewati':'')+(online?'. Terkonfirmasi tersimpan ke Firestore.':'. Tersimpan lokal saja; tidak tersinkron ke Firebase.'));
+   }catch(err){
+    const msg=typeof fbErr==='function'?fbErr(err):err.message||String(err);
+    inform('Impor belum terkonfirmasi tersimpan ke Firebase: '+msg+'. '+(pendingStage?'Gunakan Ulangi Sinkronisasi untuk mencoba lagi dengan ID program yang sama.':'Periksa koneksi dan coba lagi.'),true);
+    b.textContent=pendingStage?'Ulangi Sinkronisasi':'Terapkan Impor';
+   }finally{
+    saving=false;delete ov.dataset.saving;b.disabled=false;
+    ov.querySelectorAll('[data-psimp="pick"],[data-psimp-file]').forEach(el=>el.disabled=false);
+   }
   }
  });
  ov.addEventListener('change',async ev=>{
-  const f=ev.target.closest('[data-psimp-file]');if(!f||!f.files[0])return;
+  const f=ev.target.closest('[data-psimp-file]');if(saving||!f||!f.files[0])return;
+  pendingStage=null;ov.querySelector('[data-psimp="apply"]').textContent='Terapkan Impor';
   const file=f.files[0];
-  try{const aoa=await readFile(file);current={file:file.name,plan:plan(aoa)};paint()}
+  try{const aoa=await readFile(file);current={file:file.name,aoa,plan:plan(aoa)};paint()}
   catch(e){current={file:file.name,plan:null};paint();toast(e.message||'Berkas gagal dibaca.')}
  });
- ov.addEventListener('keydown',ev=>{if(ev.key==='Escape')ov.remove()});
- if(preset?.aoa)current={file:preset.file||'',plan:plan(preset.aoa)};
+ ov.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&!saving)ov.remove()});
+ if(preset?.aoa)current={file:preset.file||'',aoa:preset.aoa,plan:plan(preset.aoa)};
  paint();
 }
 document.addEventListener('click',ev=>{if(ev.target.closest?.('[data-bank-import]')){ev.preventDefault();open()}});
-window.MT_PS_IMPORT={plan,apply,tables,templateBook,open,downloadTemplate,dateOf,version:'20261125-import-v2'};
+window.MT_PS_IMPORT={plan,apply,stageImport,commitStage,tables,templateBook,open,downloadTemplate,dateOf,version:'20261126-import-sync-v3'};
 })();
