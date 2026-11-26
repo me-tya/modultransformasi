@@ -666,7 +666,7 @@ html :is(#app,#root,body) .ract:has(>.mt-action-icon){gap:4px;flex-wrap:wrap;ali
    el.classList.remove('mt-action-icon');el.removeAttribute('data-mt-tone');return;
   }
   if(el.classList.contains('mt-action-icon'))return;
-  if(el.closest('.kkb-step,.top,.t-dh2,.pm-stage-shell,.ptabs,.subt,[role="tablist"],.flt,.fbar,.tfoot,.t-pager,.t-mnav,.t-dnav')||el.matches('[role="tab"],[data-pg],[data-tpg],.t-acc,.search-clear-btn,.fx,.ui-info-control,.ui-help-aligned,.hq,.hlp,.ui-note-link,[role="switch"],[aria-haspopup="dialog"].ui-info-control'))return;
+  if(el.closest('.kkb-step,.esth-wrap,.top,.t-dh2,.pm-stage-shell,.ptabs,.subt,[role="tablist"],.flt,.fbar,.tfoot,.t-pager,.t-mnav,.t-dnav')||el.matches('[role="tab"],[data-pg],[data-tpg],.t-acc,.search-clear-btn,.fx,.ui-info-control,.ui-help-aligned,.hq,.hlp,.ui-note-link,[role="switch"],[aria-haspopup="dialog"].ui-info-control'))return;
   const label=(el.getAttribute('aria-label')||el.getAttribute('title')||'').trim(),txt=plain(el),kind=glyphMap.get(txt);
   const svg=!!el.querySelector('svg');
   if(!kind&&txt)return; // never resize text-bearing buttons or count chips
