@@ -301,7 +301,8 @@ async function importFile(file){
    const pf=T(cell(4,2));setCfg({profile:PROFILES.includes(pf)?pf:cfg().profile,onlyPassed:T(cell(6,2))==='Tidak'?'Tidak':'Ya',pagu:+cell(7,2)||cfg().pagu,sdm:+cell(8,2)||cfg().sdm,quadThr:+cell(9,2)||cfg().quadThr,p1:+cell(10,2)||cfg().p1,p2:+cell(11,2)||cfg().p2,p3:+cell(12,2)||cfg().p3,tol:+cell(13,2)||cfg().tol,weights:Object.assign(cfg().weights,w)})}
   touched.forEach(p=>{if(p.nonIstk)p._doc.updatedAt=new Date().toISOString();else p.psUpdatedAt=new Date().toISOString()});
   try{log('Impor Kertas Kerja A',ok.length+' diperbarui, '+nNew+' proyek baru')}catch(_){}save();render();
-  say('Impor selesai: '+ok.length+' proyek diperbarui, '+nNew+' proyek baru, '+nG+' jawaban gate, '+nS+' skor.'+(nS?'':' Skor K1–K7 belum ada di berkas — isi di tabel penilaian.'))},{size:'wide'});
+  if(nNew&&tp){ui().scope=tp.nonIstk?'non':'all';if(!tp.nonIstk){try{I.state().prog=tp.id}catch(_){}ui().scope='program'}save();render()}
+  say('Impor selesai: '+ok.length+' proyek diperbarui, '+nNew+' proyek baru'+(nNew&&tp?' di '+tp.nama:'')+', '+nG+' jawaban gate, '+nS+' skor.'+(nS?'':' Skor K1–K7 belum ada di berkas — isi di tabel penilaian.'))},{size:'wide'});
 }
 function nonEdit(id){
  const n=nonP(),x=id?n.psProjects.find(z=>String(z.id)===String(id)):null;if(id&&!x)return;const v=k=>E(x?(k==='cost'?(x.estimatedCost==null||x.estimatedCost===''?'':x.estimatedCost/1e6):x[k]??''):'');
@@ -407,5 +408,5 @@ function refView(){
   '<div class="kka-card"><h3>Referensi & Literasi</h3><div class="kka-scroll"><table class="kka-t kka-ref"><thead><tr><th>No</th><th>Rujukan</th><th>Jenis</th><th>Dipakai untuk</th></tr></thead><tbody>'+REFS.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+E(r[0])+'</td><td>'+E(r[1])+'</td><td>'+E(r[2])+'</td></tr>').join('')+'</tbody></table></div><p class="kka-note" style="margin-top:8px">Verifikasi versi/perubahan terbaru setiap regulasi sebelum dijadikan dasar resmi.</p></div>';
 }
 let _fc=null;function isFunded(x){if(!_fc||_fc.t!==Date.now()>>8||_fc.y!==year()){const D=compute(),set=new Set(D.funded.map(r=>String(r.id)));_fc={t:Date.now()>>8,y:year(),set}}return _fc.set.has(String(x.id))}
-window.MT_PS_KKA={page,methodSelect,compute,cfg,method,isFunded,GATES,KR,version:'20261127-kka1'};
+window.MT_PS_KKA={page,methodSelect,importFile,compute,cfg,method,isFunded,GATES,KR,version:'20261127-kka1'};
 })();

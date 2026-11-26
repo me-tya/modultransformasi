@@ -95,7 +95,7 @@ function tables(aoa){
   out[name]=data.slice(1).map((r,i)=>{const o={_row:i+2};Object.entries(map).forEach(([k,ix])=>o[k]=T(r[ix]));return o})
    .filter(o=>Object.keys(COLS[name]).some(k=>k!=='no'&&o[k]));
  });
- if(!(out.Program||[]).length&&!(out.Proyek||[]).length&&!errors.length)errors.push('Sheet "Program" atau "Proyek" tidak ditemukan/kosong. Gunakan template Impor Usulan Program.');
+ if(!(out.Program||[]).length&&!(out.Proyek||[]).length&&!errors.length)errors.push('Sheet "Program" atau "Proyek" tidak ditemukan/kosong. Gunakan template Impor Usulan Program, atau workbook Kertas Kerja A (sheet "Usulan").');
  return {out,errors};
 }
 function findProgram(name,y){
@@ -457,7 +457,11 @@ function open(preset){
   const f=ev.target.closest('[data-psimp-file]');if(saving||!f||!f.files[0])return;
   pendingStage=null;ov.querySelector('[data-psimp="apply"]').textContent='Terapkan Impor';
   const file=f.files[0];
-  try{const aoa=await readFile(file);current={file:file.name,aoa,plan:plan(aoa)};paint()}
+  try{const aoa=await readFile(file);
+   /* Workbook Kertas Kerja A Pusakti (sheet 'Usulan' berkolom 'Nama Sistem / Modul', tanpa sheet Program/Proyek) → diteruskan ke impor MCDA. */
+   const isKka=!aoa.Program&&!aoa.Proyek&&Array.isArray(aoa.Usulan)&&aoa.Usulan.slice(0,12).some(r=>(r||[]).some(c=>/nama sistem\s*\/\s*modul/i.test(String(c))));
+   if(isKka&&window.MT_PS_KKA&&window.MT_PS_KKA.importFile){ov.remove();toast('Berkas dikenali sebagai Kertas Kerja A (Pusakti) — dibuka melalui impor Kertas Kerja A.');window.MT_PS_KKA.importFile(file);return}
+   current={file:file.name,aoa,plan:plan(aoa)};paint()}
   catch(e){current={file:file.name,plan:null};paint();toast(e.message||'Berkas gagal dibaca.')}
  });
  ov.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&!saving)ov.remove()});
