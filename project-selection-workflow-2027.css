@@ -579,3 +579,26 @@ button.ps27-pkpi.navy:hover{border-color:#0a4277}
 .ps27-ipo-next{display:block;margin-top:auto;border-top:1px solid #e0e7f0;padding-top:7px;color:#12275a;font-size:11px;font-weight:700;line-height:1.4}
 @media(max-width:900px){.ps27-ipo-cols,.ps27-ipo-row{grid-template-columns:minmax(110px,.8fr) minmax(0,1fr) minmax(0,1.45fr) minmax(0,1.2fr)}.ps27-ipo-step,.ps27-ipo-cell{padding:9px}.ps27-ipo-lane>div>span{min-width:80px}}
 @media(max-width:650px){.ps27-ipo-cols{display:none}.ps27-ipo-row{grid-template-columns:minmax(0,1fr)}.ps27-ipo-step{flex-direction:row;align-items:center;gap:8px}.ps27-ipo-step .ps27-sheet-link{margin:0 0 0 auto}.ps27-ipo-cell{border-left:0;border-top:1px solid #e5ebf3}.ps27-ipo-label{display:block}.ps27-ipo-lane{grid-template-columns:1fr}.ps27-ipo-lane>b{grid-row:auto;justify-self:start;padding:6px 12px}.ps27-ipo-lane>div>span{flex:0 1 auto}}
+
+
+/* Two independent Project Selection lanes, sharing year and source data. */
+#app .ps27 .ps27-lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:5px;background:#fff;border:1px solid #d9e2ef;border-radius:11px;min-width:0;margin:0 0 7px}
+#app .ps27 .ps27-lanes button{display:flex;align-items:center;justify-content:center;gap:8px;min-width:0;min-height:39px;border:0;border-radius:7px;background:#f5f7fb;color:#526784;font:700 13px/1.3 inherit;font-family:inherit;font-size:13px;font-weight:700;padding:7px 9px;cursor:pointer}
+#app .ps27 .ps27-lanes button.on{background:#12275a;color:#fff;box-shadow:inset 0 -3px #f2b92c}
+#app .ps27 .ps27-lanes button:not(.on):hover{background:#edf2fa}
+#app .ps27 .ps27-lane-icon{display:inline-grid;place-items:center;flex:none;width:23px;height:23px;color:#7184a1}
+#app .ps27 .ps27-lanes button.on .ps27-lane-icon{color:#f2b92c}
+#app .ps27 .ps27-lane-icon svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linejoin:round;stroke-linecap:round}
+#app .ps27.ps27-split .ps27-tabs button{min-width:0;gap:5px;white-space:normal;line-height:1.25;padding:7px 6px}
+#app .ps27.ps27-split .ps27-tabs button>span{display:flex;align-items:center;justify-content:center;gap:4px;min-width:0}
+#app .ps27.ps27-split .ps27-tabs button em{flex:none}
+#app .ps27 .kka-lane-nav{min-height:59px;margin:0}
+#app .ps27 .kka-lane-nav .kka-group-main{min-height:54px;background:#f7f9fd;border-radius:12px;gap:4px;padding:5px}
+#app .ps27 .kka-lane-nav .kka-group-main button{min-height:43px;font-size:12px;padding:7px 8px}
+#app .ps27 .kka-lane-subnav{margin:0 0 4px}
+#app .ps27 .kka-clearance-usulan{min-width:0}
+#app .ps27 .kka-clearance-search{display:flex;justify-content:flex-end;margin:0 0 8px}
+#app .ps27 .kka-clearance-search .kka-q{width:min(340px,100%)}
+.ps27-ipo-row-non{border-top:3px solid #e6c166!important}
+.ps27-ipo-row-non .ps27-ipo-step{background:#fff9eb}
+@media(max-width:750px){#app .ps27 .ps27-lanes button{font-size:11.5px;gap:4px}#app .ps27.ps27-split .ps27-tabs button{font-size:10.5px;padding:6px 4px}#app .ps27.ps27-split .ps27-tabs button>span{flex-wrap:wrap}#app .ps27.ps27-split .ps27-tabs button b{display:none}}
