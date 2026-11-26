@@ -68,21 +68,26 @@
           x[t.dest]=att;
         }
         stored++;
-        if(stored%10===0)save();
+        if(stored%10===0){if(typeof fsImportCapture==='function')fsImportCapture();save()}
       }catch(e){
         errors++;report.push({refId:entry.refId,reason:e?.message||String(e)});
         console.warn('Migrasi berkas gagal',entry.refId,e);
       }
       progress('Memindahkan file '+(stored+skipped+errors-failed)+'/'+valid.length+' · berhasil '+stored+' · gagal '+errors);
     }
-    save();render();
+    if(typeof fsImportCapture==='function')fsImportCapture();save();render();
     if(report.length){
       const payload={kind:'cm-mt-migration-report',at:new Date().toISOString(),source:manifest.sourceProject||'DashboardCM',failed:report};
       const url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));
       const a=document.createElement('a');a.href=url;a.download='CM_Migration_Failed_Files.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
     }
     const final='Impor selesai: '+manifest.agendas.length+' aktivitas (baru '+result.added+', diperbarui '+result.updated+'), '+stored+' file tersimpan, '+skipped+' dilewati, '+errors+' file gagal/tidak tersedia.';
-    progress(final);toast(final);
+    progress('Data paket diproses. Menunggu konfirmasi Firebase…');
+    await fsFlush();
+    const pending=typeof fsImportRead==='function'?fsImportRead():[];
+    const confirmed=!pending.length&&/Tersimpan/.test(FB.st||'')&&!FB.err;
+    const msg=confirmed?final+' Terkonfirmasi tersimpan ke Firestore.':'Impor paket belum seluruhnya terkonfirmasi Firebase. Periksa cadangan dan status sinkronisasi.';
+    progress(msg);toast(msg);
   }
   ACT.actZipImport=()=>{
     if(!actCanEdit())return toast('Tidak berwenang mengimpor aktivitas.');
