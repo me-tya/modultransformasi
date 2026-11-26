@@ -156,7 +156,7 @@ async function run(){if(st.busy){st.dirty=true;return}if(!st.loaded||!canRun()||
    if(dIds.has(str(x.cmDashboardId)))return;const s=x.cmSync;if(!s||!s.d)return;
    plan.push(hash(canonM(x))===s.m?{k:'delMt',x}:{k:'newDcm',x})});
   const nDelMt=plan.filter(p=>p.k==='delMt').length,nDelDcm=plan.filter(p=>p.k==='delDcm').length,nNewDcm=plan.filter(p=>p.k==='newDcm').length;
-  if((nDelMt>DEL_GUARD||nDelDcm>DEL_GUARD||nNewDcm>NEW_GUARD)&&!st.okDel){st.err='Sinkron dijeda untuk ditinjau: '+[nDelMt>DEL_GUARD?nDelMt+' aktivitas akan dihapus dari Modul Transformasi':'',nDelDcm>DEL_GUARD?nDelDcm+' aktivitas akan dihapus dari Dashboard CM':'',nNewDcm>NEW_GUARD?nNewDcm+' aktivitas MT akan dibuat di Dashboard CM':''].filter(Boolean).join(', ')+'. Buka Data & Backup › Sinkron Dashboard CM.';st.pendingDel={nDelMt,nDelDcm,nNewDcm};badge();return}
+  if((nDelMt>DEL_GUARD||nDelDcm>DEL_GUARD||nNewDcm>NEW_GUARD)&&!st.okDel){st.err='Sinkron dijeda untuk ditinjau: '+[nDelMt>DEL_GUARD?nDelMt+' aktivitas akan dihapus dari Modul Transformasi':'',nDelDcm>DEL_GUARD?nDelDcm+' aktivitas akan dihapus dari Dashboard CM':'',nNewDcm>NEW_GUARD?nNewDcm+' aktivitas MT akan dibuat di Dashboard CM':''].filter(Boolean).join(', ')+'. Buka menu profil › Data & Backup › Sinkron Dashboard CM.';st.pendingDel={nDelMt,nDelDcm,nNewDcm};badge();return}
   st.okDel=false;st.pendingDel=null;
   /* 2) jalankan */
   let no=Math.max(0,...[...st.dcm.values()].map(a=>+a.no||0));

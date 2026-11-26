@@ -191,7 +191,7 @@ function buildPreview(parsed,deps,ov){
 function open(deps){
  if(!deps||!deps.canEdit||!deps.canEdit())return;
  const ov=deps.modal('Impor Tim CM & PIC PMO/CMO/Pemilik Probis dari Dashboard CM',
- '<div class="t2 t-dcm-import">'+window.impZone({id:'t2-dcm-f',accept:'.json,application/json',title:'Backup Dashboard CM (.json)',info:'Di Dashboard CM pilih <b>Setting → Data & Backup → Backup</b> lalu unduh file <b>.json</b>. Impor akan membaca <b>Resource Tim CM</b> dan <b>Squad Team</b> sekaligus. Hanya Tim CM dan PIC PMO/CMO unit yang jelas dipilih otomatis; kandidat pemilik probis harus diverifikasi.'})+
+ '<div class="t2 t-dcm-import">'+window.impZone({id:'t2-dcm-f',accept:'.json,application/json',title:'Backup Dashboard CM (.json)',info:'Di Dashboard CM pilih <b>menu profil → Data & Backup → Backup All</b> lalu unduh file <b>.json</b>. Impor akan membaca <b>Resource Tim CM</b> dan <b>Squad Team</b> sekaligus. Hanya Tim CM dan PIC PMO/CMO unit yang jelas dipilih otomatis; kandidat pemilik probis harus diverifikasi.'})+
  '<div id="t2-dcm-r" class="t-s" style="margin-top:9px" role="status">Belum ada file dipilih.</div></div>',
  'Impor terpilih',node=>{
    const parsed=node._parsed;
