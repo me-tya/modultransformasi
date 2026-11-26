@@ -21,18 +21,21 @@ function sdmBox(){return '<details class="esth"><summary>🧮 Hitung orang-bulan
 function scope(el){return el.closest('dialog,[role="dialog"],.ov,.modal,form,section')||document}
 
 function attachNon(inp){
- const form=inp.closest('.ke-form.ke-three');if(!form||!inp.closest('.ke-ov')||!inp.id.startsWith('kn-'))return false;
- const cost=form.querySelector('#kn-cost'),sdm=form.querySelector('#kn-estimatedStaffMonths'),dur=form.querySelector('#kn-durationMonths');
+ const istk=inp.matches('[data-scope-field]')&&!!inp.closest('.psbank-project-editor');
+ const form=istk?inp.closest('.psbank-proj-editor-grid'):inp.closest('.ke-form.ke-three');
+ if(!form||(!istk&&(!inp.closest('.ke-ov')||!inp.id.startsWith('kn-'))))return false;
+ const cost=form.querySelector(COST),sdm=form.querySelector(SDM),dur=form.querySelector(DUR);
  if(!cost||!sdm||!dur||cost.disabled||sdm.disabled||cost.readOnly||sdm.readOnly)return false;
  if(form.dataset.esth2)return true;
- const originalCard=form.closest('.kd2-card'),gateCard=originalCard?.nextElementSibling;
- if(!originalCard||!gateCard||!gateCard.querySelector('select'))return false;
+ const originalCard=istk?form:form.closest('.kd2-card'),gateCard=istk?null:originalCard?.nextElementSibling;
+ if(!originalCard||(!istk&&(!gateCard||!gateCard.querySelector('select'))))return false;
+ const fieldBox=el=>el.closest(istk?'.psbank-scope-field':'.fld')||el;
  form.dataset.esth2='1';cost.dataset.esth=sdm.dataset.esth='1';
  const p=document.createElement('div');p.className='est2';p.hidden=true;
  p.innerHTML='<div class="est2-top"><div class="est2-title"><b data-e2-title></b><span data-e2-info></span></div><div class="est2-switch"><button type="button" data-e2-mode="cost">Biaya</button><button type="button" data-e2-mode="sdm">SDM</button></div><button type="button" class="est2-icon" data-e2-close aria-label="Tutup kalkulator" title="Tutup">✕</button></div>'+
  '<section data-e2-panel="cost" hidden><p class="est2-guide"><b>Rumus:</b> volume × tarif satuan. Isi belanja barang proyek; gaji/tunjangan PNS tidak dihitung. Jangan menghitung dua kali biaya yang sudah termasuk kontrak lain. Gunakan penawaran, kontrak sejenis, atau standar biaya yang berlaku. Tarif dalam <b>Rp juta</b>.</p><div class="est2-scroll"><div class="est2-grid cost"><strong>Komponen biaya</strong><strong>Volume</strong><strong>Satuan</strong><strong>Tarif (Rp jt)</strong><strong>Subtotal (Rp jt)</strong><span></span><div data-e2-cost-rows class="est2-rows"></div></div></div><button type="button" data-e2-add="cost">+ Tambah komponen</button><div class="est2-total"><span>Estimasi biaya</span><b data-e2-total="cost">Rp 0 jt</b><button type="button" data-e2-use="cost">Gunakan hasil</button></div><p class="est2-hint">Contoh ilustrasi: 2 tenaga ahli × 4 bulan = 8 orang-bulan; tarif Rp 15 juta/orang-bulan = Rp 120 juta. Bukan tarif resmi.</p></section>'+
  '<section data-e2-panel="sdm" hidden><p class="est2-guide"><b>Rumus:</b> jumlah orang × bulan keterlibatan × alokasi waktu (%). Hitung kapasitas PNS in-house dan pro hire tim tetap. Tenaga kontrak khusus proyek/vendor dicatat di biaya, bukan kapasitas internal (sesuai definisi estimasi yang ada).</p><div class="est2-scroll"><div class="est2-grid sdm"><strong>Peran / fungsi</strong><strong>Orang</strong><strong>Bulan</strong><strong>Alokasi (%)</strong><strong>Orang-bulan</strong><span></span><div data-e2-sdm-rows class="est2-rows"></div></div></div><button type="button" data-e2-add="sdm">+ Tambah peran</button><button type="button" data-e2-duration>Isi bulan kosong dari durasi proyek</button><div class="est2-total"><span>Kebutuhan SDM</span><b data-e2-total="sdm">0 org-bln</b><button type="button" data-e2-use="sdm">Gunakan hasil</button></div><p class="est2-hint">Contoh: 2 developer × 6 bulan × 50% = 6 orang-bulan. Satu orang-bulan setara satu orang bekerja penuh selama satu bulan.</p></section>';
- originalCard.before(p);
+ if(istk){const shell=document.createElement('div');shell.className='ke estv-istk-shell';originalCard.before(shell);shell.append(p)}else originalCard.before(p);
  const q=s=>p.querySelector(s),qa=s=>Array.from(p.querySelectorAll(s));
  function info(title,items){
   const d=document.createElement('details');d.className='est2-info';const s=document.createElement('summary');s.textContent='i';s.title=title;s.setAttribute('aria-label',title);d.appendChild(s);
@@ -51,11 +54,11 @@ function attachNon(inp){
  const svg=path=>'<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">'+path+'</svg>';
  const icons={sdm:svg('<circle cx="9" cy="7" r="3"/><path d="M3 19v-3a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v3M16 4a3 3 0 0 1 0 6m3 9v-3a5 5 0 0 0-3-4"/>'),cost:svg('<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 9h18M15 14h3"/>'),gate:svg('<path d="M7 3h10v3H7zM5 5H4v16h16V5h-1M8 13l2 2 5-5"/>'),trash:svg('<path d="M4 7h16M10 7V4h4v3M6 7l1 13h10l1-13M10 10v7m4-7v7"/>')};
  const nav=document.createElement('aside');nav.className='estv-nav';
- nav.innerHTML='<div class="estv-kicker">DURASI PROYEK</div><div class="estv-duration"></div><div class="estv-kicker estv-nav-sub">ESTIMASI &amp; GATE</div>'+[['sdm','Kebutuhan SDM'],['cost','Estimasi biaya'],['gate','Gate penyaringan']].map(([t,l])=>'<button type="button" class="estv-link" data-e2-mode="'+t+'"><span class="estv-nav-icon">'+icons[t]+'</span><span class="estv-nav-text"><b>'+l+'</b><small data-estv-nav="'+t+'">Belum diisi</small></span><span class="estv-arrow">›</span></button>').join('');
+ nav.innerHTML='<div class="estv-kicker">DURASI PROYEK</div><div class="estv-duration"></div><div class="estv-kicker estv-nav-sub">'+(istk?'ESTIMASI':'ESTIMASI &amp; GATE')+'</div>'+[['sdm','Kebutuhan SDM'],['cost','Estimasi biaya'],...(!istk?[['gate','Gate penyaringan']]:[])].map(([t,l])=>'<button type="button" class="estv-link" data-e2-mode="'+t+'"><span class="estv-nav-icon">'+icons[t]+'</span><span class="estv-nav-text"><b>'+l+'</b><small data-estv-nav="'+t+'">Belum diisi</small></span><span class="estv-arrow">›</span></button>').join('');
  const workspace=document.createElement('div');workspace.className='estv-main';
  p.classList.add('estv');q('.est2-top').remove();p.prepend(nav);p.append(workspace);
- const durationBox=nav.querySelector('.estv-duration');durationBox.append(dur.closest('.fld')||dur);
- const durationInfo=document.createElement('p');durationInfo.textContent='Durasi pelaksanaan proyek dalam bulan.';const durationLabel=durationBox.querySelector('label');(durationLabel||durationBox).append(info('Durasi proyek',[durationInfo]));
+ const durationBox=nav.querySelector('.estv-duration');durationBox.append(fieldBox(dur));
+ const durationInfo=document.createElement('p');durationInfo.textContent='Durasi pelaksanaan proyek dalam bulan.';const durationLabel=durationBox.querySelector('label,.psbank-field-caption');(durationLabel||durationBox).append(info('Durasi proyek',[durationInfo]));
  ['sdm','cost'].forEach((t,i)=>{
   const sec=q('[data-e2-panel="'+t+'"]');workspace.append(sec);
   const title=document.createElement('div');title.className='estv-heading';title.innerHTML='<div><div class="estv-kicker">0'+(i+1)+' / ESTIMASI</div><h3>'+ (t==='sdm'?'Kebutuhan SDM':'Estimasi biaya')+'</h3><span class="estv-sub">'+(t==='sdm'?'Kapasitas internal proyek':'Rincian belanja proyek')+'</span></div><div class="estv-actions"></div>';sec.prepend(title);title.querySelector('h3').append(guides[t]);
@@ -66,18 +69,18 @@ function attachNon(inp){
   const result=sec.querySelector('.est2-total');result.className='estv-result';const total=result.querySelector('[data-e2-total]'),use=result.querySelector('[data-e2-use]');
   result.innerHTML='<div class="estv-result-top"><div class="estv-kicker">TOTAL ESTIMASI</div><div data-estv-amount></div><span>'+(t==='sdm'?'orang-bulan':'dalam rupiah juta')+'</span></div><div class="estv-result-details"><div><span>'+(t==='sdm'?'Peran terisi':'Komponen terisi')+'</span><b data-estv-count="'+t+'">0</b></div>'+(t==='sdm'?'<div><span data-estv-fte-label>Rata-rata FTE</span><b data-estv-fte>—</b></div>':'')+'<div class="estv-manual"><span>Nilai usulan</span></div></div><div class="estv-result-action"></div>';
   result.querySelector('[data-estv-amount]').append(total);result.querySelector('.estv-result-action').append(use);use.textContent='Gunakan hasil →';
-  const target=t==='cost'?cost:sdm;result.querySelector('.estv-manual').append(target.closest('.fld')||target);
+  const target=t==='cost'?cost:sdm;result.querySelector('.estv-manual').append(fieldBox(target));
   const manualNote=document.createElement('p');manualNote.textContent='Nilai yang disimpan ke usulan. Bisa diisi manual atau diisi melalui tombol Gunakan hasil. Rincian kalkulator hanya berlaku selama formulir terbuka.';result.querySelector('.estv-manual>span').append(info('Nilai usulan',[manualNote]));
   if(t==='sdm'){const note=document.createElement('p');note.textContent='FTE rata-rata = total orang-bulan dibagi durasi proyek. Ini bukan jumlah pegawai unik.';result.querySelector('[data-estv-fte-label]').append(info('Rata-rata FTE',[note]))}
   grid.append(editor,result);sec.append(grid);
  });
- const gate=document.createElement('section');gate.dataset.e2Panel='gate';gate.innerHTML='<div class="estv-heading"><div><div class="estv-kicker">03 / PENYARINGAN</div><h3>Gate penyaringan</h3><span class="estv-sub">Kelengkapan persyaratan usulan</span></div></div>';const gateNote=document.createElement('p');gateNote.textContent='Jawab setiap persyaratan sesuai kondisi usulan. Hasil gate tetap dihitung oleh mekanisme yang sudah ada.';gate.querySelector('h3').append(info('Panduan gate',[gateNote]));const gh=gateCard.querySelector('h4');if(gh)gh.hidden=true;gate.append(gateCard);workspace.append(gate);originalCard.remove();
- const actual=e=>e===dur||e===cost||e===sdm||gateCard.contains(e);
+ if(gateCard){const gate=document.createElement('section');gate.dataset.e2Panel='gate';gate.innerHTML='<div class="estv-heading"><div><div class="estv-kicker">03 / PENYARINGAN</div><h3>Gate penyaringan</h3><span class="estv-sub">Kelengkapan persyaratan usulan</span></div></div>';const gateNote=document.createElement('p');gateNote.textContent='Jawab setiap persyaratan sesuai kondisi usulan. Hasil gate tetap dihitung oleh mekanisme yang sudah ada.';gate.querySelector('h3').append(info('Panduan gate',[gateNote]));const gh=gateCard.querySelector('h4');if(gh)gh.hidden=true;gate.append(gateCard);workspace.append(gate);originalCard.remove()}
+ const actual=e=>e===dur||e===cost||e===sdm||!!gateCard?.contains(e);
  function closeInfos(){qa('.est2-info[open]').forEach(d=>d.open=false)}
  p.addEventListener('toggle',e=>{const d=e.target;if(!d.matches?.('.est2-info[open]'))return;const box=d.querySelector('.est2-info-body'),r=d.querySelector('summary').getBoundingClientRect();const width=Math.min(320,window.innerWidth-24);box.style.width=width+'px';box.style.left=Math.max(12,Math.min(r.left,window.innerWidth-width-12))+'px';box.style.right='auto';box.style.top='12px';const h=box.getBoundingClientRect().height;box.style.top=Math.max(12,Math.min(r.bottom+7,window.innerHeight-h-12))+'px'},true);
  p.closest('.kd2-body')?.addEventListener('scroll',closeInfos,{passive:true});
  p.addEventListener('scroll',closeInfos,true);
- function navRefresh(){q('[data-estv-nav="cost"]').textContent=cost.value===''?'Belum diisi':'Rp '+nf(num(cost.value))+' juta';q('[data-estv-nav="sdm"]').textContent=sdm.value===''?'Belum diisi':nf(num(sdm.value))+' OB';const g=Array.from(gateCard.querySelectorAll('select'));q('[data-estv-nav="gate"]').textContent=g.filter(x=>x.value).length+' dari '+g.length+' dijawab'}
+ function navRefresh(){q('[data-estv-nav="cost"]').textContent=cost.value===''?'Belum diisi':'Rp '+nf(num(cost.value))+' juta';q('[data-estv-nav="sdm"]').textContent=sdm.value===''?'Belum diisi':nf(num(sdm.value))+' OB';if(gateCard){const g=Array.from(gateCard.querySelectorAll('select'));q('[data-estv-nav="gate"]').textContent=g.filter(x=>x.value).length+' dari '+g.length+' dijawab'}}
  const number=(key,lab,step='any',extra='')=>'<input type="number" min="0" step="'+step+'" data-e2-'+key+' aria-label="'+lab+'" '+extra+'>';
  function add(type,name='',unit=''){
   const r=document.createElement('div');r.className='est2-row estv-row '+type;r.dataset.e2Row=type;
@@ -122,7 +125,7 @@ function attachNon(inp){
   h('[data-ph-info]').appendChild(info('Dasar tarif & asumsi',[h('[data-ph-ref]'),h('.est2-hint')]));
   const groups={role:['Frontend','Backend','Fullstack','.NET Developer','Business Analyst','System Analyst','UI/UX Designer','QA','DevOps','Cloud Engineer','Project Manager','Data Engineer','Security Engineer','Mobile Developer','Lainnya'],level:['Junior','Middle','Senior'],source:['PERSOL 2026','INKINDO 2026','Kontrak / Manual']};
   const state={role:'Frontend',level:'Junior',source:'PERSOL 2026'};
-  Object.keys(groups).forEach(k=>groups[k].forEach(v=>{const b=document.createElement('button');b.type='button';b.className='est2-chip';b.dataset.phGroup=k;b.dataset.phValue=v;b.textContent=v;h('[data-ph-group="'+k+'"]').appendChild(b)}));
+  Object.keys(groups).forEach(k=>groups[k].forEach(v=>{const b=document.createElement('button');b.type='button';b.className='est2-chip';b.dataset.phGroup=k;b.dataset.phValue=v;b.textContent=v==='PERSOL 2026'?'Kelly / PERSOL 2026':v;h('[data-ph-group="'+k+'"]').appendChild(b)}));
   const market={'Frontend':['ReactJS Developer (IT)',2,4,10,12],'Backend':['Backend Developer (Credit Agency/Leasing)',1,3,8,10],'Fullstack':['Fullstack Developer (IT)',0,2,7.5,12],'.NET Developer':['.NET Developer (IT)',0,2,6,11],'Business Analyst':['Business Analyst (IT)',1,3,10.4,13],'System Analyst':['System Analyst (IT)',0,1,8,11],'UI/UX Designer':['UI/UX Designer (IT)',1,3,8.5,10.5],'QA':['Quality Assurance (IT)',3,5,10.5,14.5],'DevOps':['DevOps Engineer (IT)',2,4,18,20],'Cloud Engineer':['AWS Cloud Engineer (IT)',1,3,10,15],'Project Manager':['Junior Project Manager (IT)',1,3,10,15]};
   const ink=[28.85,30.6,32.3,34,35.7,37.4,39.15,40.85,42.55,44.25,46,47.7,49.4,51.1,52.8,54.55,56.25,57.95,59.65,61.35,63.1,64.8,66.5];
   const sourceLinks={'PERSOL 2026':'https://www.scribd.com/document/991716451/Indonesia-Salary-Guide-2026-v2','INKINDO 2026':'https://www.inkindo.org/documents/ikdweb-billing-rate-2026.pdf'};
@@ -171,7 +174,7 @@ function attachNon(inp){
  p.addEventListener('input',e=>{if(actual(e.target)){navRefresh();if(e.target===dur)calc('sdm');return}e.stopPropagation();if(mode!=='gate')calc(mode)});
  p.addEventListener('change',e=>{if(actual(e.target)){navRefresh();return}e.stopPropagation();if(mode!=='gate')calc(mode)});
  p.addEventListener('click',e=>{
-  const b=e.target.closest('button');if(!b||gateCard.contains(b))return;e.stopPropagation();e.preventDefault();
+  const b=e.target.closest('button');if(!b||gateCard?.contains(b)||b.closest('.mt-info-ic'))return;e.stopPropagation();e.preventDefault();
   if(b.dataset.e2Mode){show(b.dataset.e2Mode);return}
   if(b.dataset.e2Add){add(b.dataset.e2Add);calc(b.dataset.e2Add);q('[data-e2-'+b.dataset.e2Add+'-rows]').lastElementChild?.querySelector('input')?.focus();return}
   if(b.dataset.estvReset){if(confirm('Reset rincian kalkulator? Nilai usulan tidak berubah.')){resetRows(b.dataset.estvReset);calc(b.dataset.estvReset)}return}
@@ -232,7 +235,8 @@ let raf=0;new MutationObserver(()=>{if(raf)return;raf=requestAnimationFrame(()=>
  .est2-ph-actions{justify-content:space-between;border-top:1px solid #E2E8F0;margin-top:9px;padding-top:9px}.est2-ph-amount{display:flex;flex-direction:column;gap:3px}.est2-ph-amount small{font-size:10.5px;color:#64748B}.est2-ph-actions .est2-ph-amount b{margin:0;font-size:14px;color:#12275A}.est2-total{background:#F2F5FA;border:1px solid #E2E8F0;padding:9px 10px;border-radius:8px;margin-top:10px}.est2-total b{font-size:17px;color:#12275A}.est2 button:focus-visible,.est2 summary:focus-visible{outline:2px solid #1D3A78;outline-offset:2px}
  @media(max-width:650px){.est2-top{gap:6px}.est2-title{min-width:120px}.est2-switch button{padding:4px 9px!important}.est2-pro-sub{display:none}.est2-total{gap:7px;flex-wrap:wrap}.est2-info-body{width:min(270px,70vw)}}
 
- /* V2 approved workspace, scoped to Non-ISTK only. */
+ /* Shared V2 workspace; ISTK keeps its original gate and scheduling fields. */
+ .estv-istk-shell{grid-column:1/-1;min-width:0;margin:0 0 12px}.estv-istk-shell .estv-duration .psbank-scope-field{display:block;min-width:0}.estv-istk-shell .estv-duration .psbank-field-caption{display:flex;align-items:center;gap:5px;margin:0 0 5px;font-size:11px}.estv-istk-shell .estv-manual .psbank-field-caption{display:none}.estv-istk-shell .estv-manual input{width:100%;min-width:0;text-align:right;font:inherit}.estv-istk-shell .estv-manual .psbank-scope-field{display:block;min-width:0;margin-top:5px}.psbank-project-editor .estv-istk-shell .estv-duration input{max-width:100%}
  .ke .estv{--ev-navy:#152854;--ev-gold:#f2b827;--ev-line:#dfe6ef;--ev-muted:#738198;display:grid;grid-template-columns:202px minmax(0,1fr);gap:18px;align-items:start;border:0;box-shadow:none;border-radius:0;background:#fff;padding:4px 0 10px;margin:0;color:#263852;min-width:0}
  .estv *{box-sizing:border-box}.estv svg{width:16px;height:16px;flex:none;vertical-align:middle}.estv .estv-nav{display:flex;flex-direction:column;gap:5px;padding:6px 12px 8px 0;border-right:1px solid #e4eaf2;position:sticky;top:0;align-self:start;min-width:0}
  .estv .estv-kicker{font-size:10px;font-weight:700;letter-spacing:.07em;color:#738198}.estv .estv-nav>.estv-kicker{padding:0 8px}.estv .estv-nav-sub{margin-top:13px}.estv .estv-duration{background:#f5f7fb;border:1px solid #e1e7f0;border-radius:9px;padding:9px 11px;margin:2px 0 1px}.estv .estv-duration .fld{display:block;margin:0}.estv .estv-duration label{display:flex;align-items:center;gap:6px;font-size:11px;color:#63748c;margin:0 0 4px}.ke .estv .estv-duration input{height:34px;width:88px;font-size:20px;font-weight:650;border:1px solid #d7e0ef;border-radius:5px;color:#152854;background:white;text-align:center}
