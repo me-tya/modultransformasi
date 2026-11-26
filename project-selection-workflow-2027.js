@@ -635,6 +635,24 @@ function mount(){
  I.mount();
 }
 /* Cheatsheet › SMART & MCDA: perbandingan metode dan rincian MCDA (sumber aturan: project-selection-kka.js). */
+/* Cheatsheet › Telaah SI & Proses Bisnis EA: alur penyusunan Peta Rencana Pengembangan SI, metodologi telaah, dan taksonomi
+   Proses Bisnis EA Level 0–2 (window.MT_EA). Sumber: paparan 24 Nov 2026; slide bertanda Confidential (ISTK) tidak dimuat. */
+function eaSheet(){
+ const EA=window.MT_EA,steps=[['Unit Eselon I','Menyampaikan usulan pengembangan SI beserta kajian kebutuhan (pengembangan oleh BaTii) atau kajian kebutuhan/peta rencana/cetak biru (pengembangan oleh unit).'],['Pusakti','Menelaah kajian kebutuhan: gateway G1–G4, lalu penilaian kriteria K1–K7 → usulan prioritas pengembangan.'],['Pusakti & Puspensi','Menyepakati timeline pengembangan untuk usulan yang dikembangkan BaTii.'],['Tim Kebijakan Pusakti & Setban','Legal drafting Peta Rencana Pengembangan SI.'],['Pengembangan','Dilaksanakan oleh BaTii atau oleh UE I sesuai hasil penetapan.']];
+ const tax=EA?EA.tree.map(d=>'<details class="ps27-ea-dom" data-ps27-menuitem="'+E((d[0]+' '+d[1]+' '+d[2].map(a=>a[0]+' '+a[1]+' '+a[2].map(b=>b[0]+' '+b[1]).join(' ')).join(' ')).toLowerCase())+'"'+(d[0]==='3'?' open':'')+'><summary><span class="ps27-sheet-chip">'+E(d[0])+'</span><b>'+E(d[1])+'</b><small>'+d[2].length+' Level 1 · '+d[2].reduce((n,a)=>n+a[2].length,0)+' Level 2</small></summary><div class="ps27-ea-grid">'+d[2].map(a=>'<div class="ps27-ea-l1"><b><code>'+E(a[0])+'</code>'+E(a[1])+'</b><ul>'+a[2].map(b=>'<li><code>'+E(b[0])+'</code>'+E(b[1])+'</li>').join('')+'</ul></div>').join('')+'</div></details>').join(''):ps27SheetNote('Taksonomi belum termuat','Muat ulang halaman.');
+ return '<div class="ps27-sheet">'+ps27SheetHead('REFERENSI · TELAAH SI','Telaah Rencana Pengembangan SI & Proses Bisnis EA','Alur penyusunan Peta Rencana Pengembangan Sistem Informasi, metodologi telaah usulan, dan taksonomi Proses Bisnis Enterprise Architecture (Level 0–2) untuk memetakan usulan.')+
+  '<div class="ps27-sheet-subhead"><h4>A. Alur penyusunan Peta Rencana Pengembangan SI</h4></div>'+
+  '<div class="ps27-ea-flow">'+steps.map((x,i)=>'<div><span class="ps27-sheet-number">0'+(i+1)+'</span><b>'+E(x[0])+'</b><p>'+E(x[1])+'</p></div>').join('<i aria-hidden="true">›</i>')+'</div>'+
+  '<div class="ps27-sheet-subhead"><h4>B. Metodologi telaah usulan pengembangan SI</h4></div>'+
+  '<div class="ps27-sheet-grid ps27-sheet-grid3">'+ps27SheetCard('1','Gateway G1–G4','G1 Selaras (Renstra/EA/Arsitektur SPBE) · G2 Tidak duplikatif · G3 Sponsor & pemilik jelas · G4 Menyampaikan kajian kebutuhan. Semua terpenuhi → lanjut dinilai.')+
+   ps27SheetCard('2','Penilaian kriteria K1–K7','K1 Strategis, K2 Nilai Bisnis, K3 Regulasi, K4 Urgensi, K5 Reuse & Integrasi, K6 Kesiapan, K7 Risiko → usulan prioritas pengembangan (P1–P4, roadmap pagu & SDM).',ps27SheetJump('Prioritasi MCDA','prioritasi:mcda-rank'))+
+   ps27SheetCard('REF','Referensi kriteria','COBIT 2019, TOGAF 10, Perpres 132/2022 (Arsitektur SPBE), UU 27/2022 (PDP), PP 71/2019 (PSE), Perpres 47/2023 (Strategi Keamanan Siber Nasional).')+'</div>'+
+  '<div class="ps27-sheet-subhead"><h4>C. Taksonomi Proses Bisnis EA · Level 0–2</h4><span>'+(EA?EA.tree.reduce((n,d)=>n+1+d[2].length+d[2].reduce((m,a)=>m+a[2].length,0),0)+' proses':'')+'</span></div>'+
+  '<input class="sk-search" type="search" data-ps27-help-search placeholder="Cari kode atau nama proses, mis. 3.7.2 atau sistem informasi…" aria-label="Cari proses bisnis EA">'+
+  '<div class="ps27-ea-tax">'+tax+'</div>'+
+  ps27SheetNote('Pemakaian dalam aplikasi','Usulan Non-ISTK wajib dipetakan ke satu proses Level 2 utama (Level 1 dan Level 0 mengikuti) dan boleh memiliki proses pendukung. Isian ada di form Usulan Non-ISTK; peta tampil di Detail Usulan › Peta Proses Bisnis EA.','gold')+
+  ps27SheetNote('Sumber','Paparan "Proses Bisnis Non APBN dan Mekanisme Telaah Rencana Pengembangan Sistem Informasi", 24 November 2026. Materi bertanda Confidential tidak dimuat di aplikasi.')+'</div>';
+}
 function mcdaCompare(){
  const rows=[['Nama lengkap','Simple Multi-Attribute Rating Technique','Multi-Criteria Decision Analysis — mudahnya: <b>“skor tertimbang + gate”</b>'],
   ['Cocok untuk','Memilih sub-proyek/modul di dalam satu program ISTK','Menilai usulan pengembangan SI <b>di luar ISTK</b>. Proyek ISTK diprioritaskan otomatis (tidak dinilai) dan mengambil pagu & SDM lebih dulu; sisa pagu & SDM diisi usulan non-ISTK sesuai peringkat'],
@@ -829,6 +847,7 @@ function sheetPage(tab){
    ps27SheetNote('Catatan penting','Status salinan tetap draf dan perlu diputuskan kembali untuk tahun tujuan. Perubahan pada data tujuan tidak mengubah data sumber, sedangkan WBS baru disusun setelah penetapan.','gold')+
    '</div>';
  }
+ if(tab==='ea')return eaSheet();
  if(tab==='formula'){
   const weighted=criteria.map(k=>({code:k.code,name:k.name,w:Math.max(0,Number(p?.psWeights?.[k.code]??k.w??1)||0)}));
   const total=weighted.reduce((n,k)=>n+k.w,0);
@@ -953,7 +972,7 @@ function open(mode){
  const isSheet=mode==='sheet';
  let tab=isSheet?'framework':'map';
  const tabs=isSheet?
-  [['framework','Framework'],['governance','Tata Kelola'],['carry','Carry Over'],['formula','SMART & MCDA'],['kwide','Penetapan K-Wide'],['rkmk','RKMK'],['terms','Istilah'],['reference','Referensi']]:
+  [['framework','Framework'],['governance','Tata Kelola'],['carry','Carry Over'],['formula','SMART & MCDA'],['ea','Telaah SI & Proses Bisnis EA'],['kwide','Penetapan K-Wide'],['rkmk','RKMK'],['terms','Istilah'],['reference','Referensi']]:
   [['map','Peta Menu'],['flow','Tahapan'],['fill','Cara Pengisian'],['roles','Peran & Akses'],['check','Checklist']];
  const old=document.querySelector('.ps27-rich-overlay');if(old)old.remove();
  const previous=document.activeElement;
@@ -980,6 +999,7 @@ function open(mode){
   if(!ev.target.matches('[data-ps27-help-search]'))return;
   const search=ev.target.value.toLowerCase().trim();
   root.querySelectorAll('[data-ps27-menuitem]').forEach(item=>{item.hidden=!!search&&!String(item.dataset.ps27Menuitem||'').includes(search)});
+  root.querySelectorAll('.ps27-ea-dom').forEach(d=>{if(search&&!d.hidden)d.open=true;d.querySelectorAll('.ps27-ea-l1').forEach(c=>{const hit=!search||c.textContent.toLowerCase().includes(search);c.hidden=!hit;c.querySelectorAll('li').forEach(li=>li.classList.toggle('hit',!!search&&li.textContent.toLowerCase().includes(search)))})});
  });
  root.addEventListener('keydown',function(ev){if(ev.key==='Escape'){ev.preventDefault();close()}});
 }
