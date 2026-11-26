@@ -69,6 +69,10 @@ const NONK=y=>'non-'+(y||year());
 function nonP(y){const st=store(),k=NONK(y),d=st[k]&&Array.isArray(st[k].projects)?st[k]:{year:+(y||year()),projects:[]};
  return {id:'__nonistk',nama:'Di luar ISTK',nonIstk:true,psMethod:'kka',psProjects:d.projects,_doc:d,_keep:()=>{st[k]=d}}}
 const roP=p=>p&&p.nonIstk?!canCfg():I.readonly(p);
+/* SMART sebagai pembanding untuk usulan Non-ISTK: program semu yang menyimpan bobot/ambang di dokumen non-ISTK tahun ini. */
+function nonSmartP(y){const n=nonP(y),d=n._doc;n._keep();const sm=d.smart||(d.smart={});const o={id:'__nonistk_smart',akr:'NON-ISTK',nama:'Usulan Non-ISTK',nonIstk:true,psDraft:true,psMethod:'smart',psPrioritize:true,psYear:+(y||year()),uic:'',psProjects:d.projects};
+ ['psWeights','psThreshold','psRubrics','psSnapshots','psStatus','psNorm'].forEach(k=>Object.defineProperty(o,k,{enumerable:true,get:()=>sm[k],set:v=>{sm[k]=v}}));return o}
+const nonMethod=y=>cfg(y).nonMethod==='smart'?'smart':'kka';
 const allProgs=y=>{const a=I.programs().slice(),n=nonP(y);if(n.psProjects.length)a.push(n);return a};
 /* ---------- perhitungan ---------- */
 const method=p=>p.psMethod||(p.psPrioritize?'smart':'manual');
@@ -119,10 +123,11 @@ const gateCls=g=>g==='Lolos'?'ok':g==='Tinjau Ulang'?'bad':'warn';
 const METHODS=[['smart','SMART','Simple Multi-Attribute Rating Technique: 12 kriteria, skor absolut di atas ambang.'],['kka','MCDA','Multi-Criteria Decision Analysis: gate G1–G4, skor tertimbang 7 kriteria (3 profil bobot), peringkat, dan roadmap terhadap pagu & SDM.']];
 function methodSelect(p,ro){const m=method(p);return '<div class="kka-method" role="radiogroup" aria-label="Metode prioritisasi"><span>Metode</span>'+(m==='manual'?'<em class="kka-mlegacy" title="Program ini dibuat dengan pemilihan manual (versi lama). Pilihan proyek tetap dipertahankan sampai metode SMART atau MCDA dipilih.">Manual (lama)</em>':'')+'<div class="kka-mseg">'+METHODS.map(o=>'<label title="'+E(o[2])+'" class="'+(m===o[0]?'on':'')+(ro?' dis':'')+'"><input type="radio" name="pswf-method" value="'+o[0]+'"'+(m===o[0]?' checked':'')+(ro?' disabled':'')+'>'+o[1]+'</label>').join('')+'</div></div>'}
 const SUBS=[['usulan','Usulan Non-ISTK'],['rank','Penilaian & Peringkat'],['criteria','Kriteria & Bobot'],['roadmap','Roadmap & Analisis'],['repo','Repositori'],['ref','Referensi & Rubrik']];
+let NONONLY=false;
 function page(p,o){
- o=o||{};const u=ui(),sub=SUBS.some(s=>s[0]===u.sub)?u.sub:'rank',ro=!!o.readOnly;
+ o=o||{};const u=ui(),sub=SUBS.some(s=>s[0]===u.sub)?u.sub:'rank',ro=!!o.readOnly;NONONLY=!!o.nonOnly;if(NONONLY)u.scope='non';
  const head='<div class="ps27-priority-head"><nav class="ps27-minitabs" role="tablist" aria-label="Tab Prioritasi MCDA">'+SUBS.map(s=>'<button role="tab" type="button" data-kka-sub="'+s[0]+'" aria-selected="'+(sub===s[0])+'" class="'+(sub===s[0]?'on':'')+'">'+s[1]+'</button>').join('')+'</nav>'+
-  '<div class="ps27-smart-actions">'+methodSelect(p,ro)+'</div></div>';
+  '<div class="ps27-smart-actions">'+(o.methodHtml!=null?o.methodHtml:methodSelect(p,ro))+'</div></div>';
  const D=compute();
  const body=sub==='usulan'?usulanView(D):sub==='criteria'?criteriaView(D):sub==='roadmap'?roadmapView(D):sub==='repo'?repoView(D):sub==='ref'?refView():rankView(p,D,ro);
  return head+'<div class="kka">'+pendingBanner(D.y)+body+'</div>';
@@ -164,7 +169,7 @@ function rankView(p,D,ro){
  const rk=r=>u.mode==='ue'?r.rankUe:r.rank;
  rows.sort((a,b)=>(b.istk-a.istk)||(rk(a)||1e9)-(rk(b)||1e9)||a.ord-b.ord);
  const ues=[...new Set([...UE,...D.rows.map(r=>r.uic).filter(Boolean)])];
- const tb='<div class="kka-toolbar"><div class="kka-seg" role="group" aria-label="Lingkup">'+[['non','Non-ISTK · dinilai'+(nonP().psProjects.length?' ('+nonP().psProjects.length+')':'')],['program','Program ini · ISTK'],['all','Portofolio '+D.y]].map(x=>'<button type="button" data-kka-scope="'+x[0]+'" class="'+((u.scope||'program')===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+'</div>'+
+ const tb='<div class="kka-toolbar">'+(NONONLY?'':'<div class="kka-seg" role="group" aria-label="Lingkup">'+[['non','Non-ISTK · dinilai'+(nonP().psProjects.length?' ('+nonP().psProjects.length+')':'')],['program','Program ini · ISTK'],['all','Portofolio '+D.y]].map(x=>'<button type="button" data-kka-scope="'+x[0]+'" class="'+((u.scope||'program')===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+'</div>')+
   '<label class="kka-inl" title="Mode ranking"><select data-kka-mode aria-label="Mode ranking"><option value="all"'+(u.mode!=='ue'?' selected':'')+'>Ranking semua UE I</option><option value="ue"'+(u.mode==='ue'?' selected':'')+'>Ranking per UE I</option></select></label>'+
   '<details class="kka-uef"><summary>UE I: '+(ueSel.length?E(ueSel.join(', ')):'Semua')+'</summary><div>'+ues.map(v=>'<label><input type="checkbox" data-kka-ue="'+E(v)+'" '+(ueSel.includes(v)?'checked':'')+'> '+E(v)+'</label>').join('')+'<button type="button" class="btn btn-sm" data-kka-ue-clear>Semua</button></div></details>'+
   '<input class="kka-q" type="search" data-kka-q placeholder="Cari proyek, kode, UE I…" value="'+E(u.q||'')+'" aria-label="Cari proyek">'+
@@ -778,5 +783,5 @@ function isFunded(x){return x.included!==false} /* program ISTK bermetode MCDA: 
 .kn-sup{border:1px solid #C9D8EE;border-radius:9px;background:#fff}.kn-sup summary{cursor:pointer;padding:8px 10px;font-size:12.5px;color:#334155}.kn-sup>div{max-height:260px;overflow:auto;padding:8px 10px;border-top:1px solid #E2E8F0}.kn-sup input[type=search]{width:100%;height:32px;margin-bottom:6px}.kn-supg b{display:block;font-size:11.5px;color:#12275A;margin:6px 0 3px}.kn-supg label{display:flex;gap:6px;align-items:flex-start;font-size:12px;font-weight:500;padding:2px 0}.kn-supg input{width:auto;margin-top:2px}
 @media(max-width:900px){.kd2-g3,.kd2-g2,.kd2-ctx,.kd2-est{grid-template-columns:1fr}.kd2-score{display:none}.kd2-step{flex-wrap:wrap;gap:6px}}
 `;document.head.appendChild(st)})();
-window.MT_PS_KKA={page,methodSelect,importFile,nonProjects:y=>nonP(y).psProjects,usulanHtml:()=>usulanMapView(),compute,cfg,method,isFunded,GATES,KR,version:'20261126-import16'};
+window.MT_PS_KKA={page,nonSmartP,nonMethod,setNonMethod:v=>setCfg({nonMethod:v==='smart'?'smart':'kka'}),methodSelect,importFile,nonProjects:y=>nonP(y).psProjects,usulanHtml:()=>usulanMapView(),compute,cfg,method,isFunded,GATES,KR,version:'20261126-import16'};
 })();

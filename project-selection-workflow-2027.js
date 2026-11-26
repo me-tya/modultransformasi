@@ -211,11 +211,11 @@ function filter(p){
   F.push(field('Status',mk('data-ps27-status',projectStatuses,status,'Semua Status'),on(status)?'Status: '+status:null));
   F.push(field('Kategori Proyek',mk('data-ps27-category',projectCategories,String(f.category||'all'),'Semua Kategori'),on(f.category)?'Kategori: '+f.category:null));
  }else if(stage==='prioritasi'){
-  const cp=curP,rows=(cp?.psProjects||[]);
+  const nonY=yr()>=2027&&window.MT_PS_KKA,cp=nonY?null:curP,rows=nonY?window.MT_PS_KKA.nonProjects():(cp?.psProjects||[]);
   /* MCDA: "Semua Program" = lingkup Portofolio (sinkron dengan tombol Portofolio di Penilaian & Peringkat). SMART tetap per program karena bobot & ambang melekat pada program. */
   const kAll=cp?.psMethod==='kka'&&(S.ui.psKka||{}).scope==='all';
   const sAll=!!ws().prioAll&&cp?.psMethod!=='kka',anyAll=kAll||sAll;
-  F.push({html:'<label>Program <select data-ps27-prog><option value="__all"'+(anyAll?' selected':'')+'>'+(cp?.psMethod==='kka'?'Semua Program · Portofolio MCDA':'Semua Program')+'</option>'+options.map(x=>'<option value="'+E(x.id)+'" '+(!anyAll&&cp&&String(cp.id)===String(x.id)?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label>',chip:anyAll?'Program: Semua':null,wide:true});
+  if(!nonY)F.push({html:'<label>Program <select data-ps27-prog><option value="__all"'+(anyAll?' selected':'')+'>'+(cp?.psMethod==='kka'?'Semua Program · Portofolio MCDA':'Semua Program')+'</option>'+options.map(x=>'<option value="'+E(x.id)+'" '+(!anyAll&&cp&&String(cp.id)===String(x.id)?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label>',chip:anyAll?'Program: Semua':null,wide:true});
   F.push(field('UIC Proyek',mk('data-ps27-unit',uniq(rows.map(x=>x.uic||cp?.uic)),unit,'Semua Unit'),on(unit)?'UIC: '+unit:null));
   F.push(field('Status Penilaian',mk('data-ps27-status',['Sudah Dinilai','Belum Dinilai'],status,'Semua Status'),on(status)?status:null));
  }else if(stage==='rkmk'){
@@ -311,14 +311,30 @@ function methodChooser(p,ro){
  '<button type="button" class="ps27-mcard" data-ps27-setmethod="smart"'+(ro?' disabled':'')+'><i>SMART</i><b>Nilai proyek di program ini</b><span>Isi 12 kriteria per proyek. Proyek dengan skor di atas ambang otomatis terpilih.</span><em>Cocok bila perlu memilih sebagian proyek</em></button>'+
  '<button type="button" class="ps27-mcard" data-ps27-setmethod="kka"'+(ro?' disabled':'')+'><i>MCDA</i><b>Proyek ISTK langsung diprioritaskan</b><span>Tidak perlu menilai proyek ISTK. Yang dinilai hanya usulan di luar ISTK terhadap pagu & SDM.</span><em>Cocok bila semua proyek program sudah pasti (ISTK)</em></button></div></div>';
 }
+/* 2027+: proyek ISTK otomatis terpilih (tidak diprioritaskan). Prioritasi = clearance usulan Non-ISTK yang masuk ke Pusakti; default MCDA, SMART sebagai pembanding. */
+if(typeof window!=='undefined')window.MT_PS_PICK_OVERRIDE=()=>{try{return state().tab==='prioritasi'&&yr()>=2027&&window.MT_PS_KKA&&window.MT_PS_KKA.nonMethod()==='smart'?window.MT_PS_KKA.nonSmartP():null}catch(_){return null}};
+function nonIstkPrio(){
+ const K=window.MT_PS_KKA;if(!K)return '<div class="ps27-card ps27-empty">Memuat…</div>';
+ const m=K.nonMethod();
+ const seg='<div class="kka-method" role="radiogroup" aria-label="Metode penilaian usulan Non-ISTK"><span>Metode</span><div class="kka-mseg">'+[['kka','MCDA','Metode utama (Kertas Kerja A Pusakti): gate G1–G4, K1–K7, peringkat, pagu & SDM.'],['smart','SMART','Pembanding: 12 kriteria SMART dengan ambang skor.']].map(o=>'<label title="'+E(o[2])+'" class="'+(m===o[0]?'on':'')+'"><input type="radio" data-ps27-nmethod="'+o[0]+'" name="ps27-nmethod" value="'+o[0]+'"'+(m===o[0]?' checked':'')+'>'+o[1]+(o[0]==='kka'?' <small>utama</small>':' <small>pembanding</small>')+'</label>').join('')+'</div></div>';
+ const intro='<div class="ps27-clear"><b>Clearance usulan Non-ISTK</b><span>Yang dinilai di sini hanya usulan proyek di luar ISTK yang diajukan ke Pusakti, untuk menentukan mana yang <b>boleh lanjut</b> dan mana yang <b>di-drop</b>. Proyek ISTK otomatis terpilih dan tidak perlu dinilai.</span></div>';
+ if(m==='kka')return intro+K.page(current()||{id:'',psProjects:[]},{nonOnly:true,methodHtml:seg});
+ const p=current(),sub=(ws().prioritySub==='monev'?'ranking':ws().prioritySub)||'ranking',ro=I.readonly(p);
+ const threshold='<label class="ps27-smart-threshold">Ambang skor &gt; <input type="number" id="pswf-threshold" min="0" max="99" value="'+E(p.psThreshold??80)+'" '+(ro?'disabled':'')+' aria-label="Ambang skor SMART"> %</label>';
+ return intro+'<div class="ps27-priority-head"><nav class="ps27-minitabs" role="tablist" aria-label="Tab Prioritasi">'+
+ [['ranking','Penilaian & Peringkat'],['criteria','Kriteria & Bobot'],['reference','Referensi & Formula']].map(x=>'<button role="tab" type="button" data-ps27-sub="'+x[0]+'" aria-selected="'+(sub===x[0])+'" class="'+(sub===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+'</nav>'+
+ (sub==='ranking'?(typeof MT_TABSEARCH==='function'?MT_TABSEARCH:()=>'')('ps-prioritasi',localFilter().search,'Cari usulan, UIC…'):'')+
+ '<div class="ps27-smart-actions">'+seg+threshold+'</div></div>'+
+ (sub==='reference'?I.referencePage(p):sub==='criteria'?I.criteriaPage(p):I.projectsPage(p));
+}
 function prioritasi(p){
+ if(yr()>=2027)return nonIstkPrio();
  if(ws().prioAll&&!(p&&p.psMethod==='kka'))return prioritasiAll();
  if(!p)return '<div class="ps27-card ps27-empty">Pilih program untuk mengurutkan prioritas proyeknya.</div>';
  const sub=(ws().prioritySub==='monev'?'ranking':ws().prioritySub)||'ranking',readOnly=I.readonly(p);
  const meth=p.psMethod||(p.psPrioritize?'smart':'manual');
  if(meth==='kka'&&window.MT_PS_KKA)return window.MT_PS_KKA.page(p,{readOnly});
  const mode=window.MT_PS_KKA?window.MT_PS_KKA.methodSelect(p,readOnly):'';
- if(meth==='manual'&&!readOnly)return methodChooser(p,readOnly)+I.projectsPage(p);
  const threshold=p.psPrioritize?'<label class="ps27-smart-threshold">Ambang skor &gt; <input type="number" id="pswf-threshold" min="0" max="99" value="'+E(p.psThreshold??80)+'" '+(readOnly?'disabled':'')+' aria-label="Ambang skor SMART"> %</label>':'';
  const tip='<button class="ps27-smart-info" type="button" data-pswf="smart-info" title="Aturan pemilihan: 12 kriteria lengkap dan skor absolut lebih besar dari ambang" aria-label="Informasi aturan seleksi otomatis SMART">i</button>';
  return '<div class="ps27-priority-head"><nav class="ps27-minitabs" role="tablist" aria-label="Tab Prioritasi">'+
@@ -541,10 +557,11 @@ function mount(){
  const root=document.querySelector('#view .pswf');if(!root)return;
  setTimeout(()=>fillCount(root),0);
  root.addEventListener('click',function(ev){
-  const b=ev.target.closest('[data-ps27-setmethod],[data-ps27-pkpi],[data-ps27-openprog],[data-ps27-clear],[data-ps27],[data-ps27-tab],[data-ps27-pick],[data-ps27-remove],[data-ps27-sub],[data-ps27-usul],[data-ps27-reset],[data-ps27-period],[data-mt-filter-icon]');
+  const b=ev.target.closest('[data-ps27-nmethod],[data-ps27-setmethod],[data-ps27-pkpi],[data-ps27-openprog],[data-ps27-clear],[data-ps27],[data-ps27-tab],[data-ps27-pick],[data-ps27-remove],[data-ps27-sub],[data-ps27-usul],[data-ps27-reset],[data-ps27-period],[data-mt-filter-icon]');
   if(!b)return;
   ev.stopImmediatePropagation();
   if(b.hasAttribute('data-mt-filter-icon')){ws().filterOpen=!ws().filterOpen;save();render();return}
+  if(b.dataset.ps27Nmethod){const K=window.MT_PS_KKA;if(K&&K.nonMethod()!==b.dataset.ps27Nmethod){K.setNonMethod(b.dataset.ps27Nmethod);ws().prioritySub='ranking';render()}return}
   if(b.dataset.ps27Setmethod){const p=I.pickedProgram();if(!p||I.readonly(p))return;const v=b.dataset.ps27Setmethod;
    const go=()=>{p.psMethod=v;p.psPrioritize=v==='smart';ws().prioritySub='ranking';try{log('Pilih metode prioritisasi',p.nama+' → '+(v==='kka'?'MCDA':'SMART'))}catch(_){}save();render();toast('Metode '+(v==='kka'?'MCDA':'SMART')+' dipilih untuk program ini.')};
    const n=(p.psProjects||[]).length;
@@ -733,7 +750,7 @@ function helpPage(tab){
  const items=[
   ['usulan','Usulan Program','Cari riwayat, buat dan lengkapi usulan, business case, manfaat, stakeholder, risiko, tata kelola, serta dokumen portofolio.'],
   ['mapping','Pemetaan Proyek','Pilih proyek lintas tahun dari riwayat, kelola identitas usulan, hasil pemetaan, dan dokumen usulan proyek tanpa menyalin WBS historis.'],
-  ['prioritasi','Prioritasi','Pilih metode per program: SMART (12 kriteria, ambang skor) atau MCDA (gate G1–G4, skor tertimbang K1–K7, roadmap terhadap pagu & SDM, repositori hasil). Skor membantu keputusan, bukan penetapan.'],
+  ['prioritasi','Prioritasi','Mulai 2027: proyek ISTK otomatis terpilih. Prioritasi hanya untuk clearance usulan Non-ISTK yang diajukan ke Pusakti (lanjut atau drop) — metode utama MCDA (gate G1–G4, K1–K7, pagu & SDM), SMART sebagai pembanding. Tahun 2026 ke bawah tetap per program.'],
   ['charter','Charter Program','Susun charter tingkat program (tujuan, latar belakang, terobosan, output, outcome, milestone, risiko) sebagai dasar penetapan program dan Draft RKMK. Tujuh bagian dokumen proyek disusun per proyek di Project Management › Perencanaan.'],
   ['penetapan-program','Penetapan Program','Catat kontrak K-Wide, target TW I–IV, dan tetapkan program beserta proyek terpilih dalam satu proses.'],
   ['rkmk','Draft RKMK','Tinjau narasi, cek konsistensi tahun tujuan, lengkapi catatan reviu, dan ekspor rancangan Word.']
@@ -825,7 +842,7 @@ function sheetPage(tab){
   const steps=[
    ['01','Usulan Program','Tetapkan alasan, sasaran, sponsor, indikator manfaat, pemilik proses bisnis dan unit pengelola.','usulan:detail'],
    ['02','Pemetaan Proyek','Gunakan Riwayat Proyek sebagai referensi; pilih proyek yang relevan untuk program tahun tujuan.','mapping:history'],
-   ['03','Prioritasi','Bandingkan calon proyek. SMART bersifat opsional; nilai/skor membantu pemilihan, bukan keputusan otomatis.','prioritasi:ranking'],
+   ['03','Prioritasi','2027+: clearance usulan Non-ISTK (MCDA utama, SMART pembanding). Proyek ISTK otomatis terpilih. Skor membantu keputusan, bukan penetapan.','prioritasi:ranking'],
    ['04','Charter Program','Lengkapi tujuan, latar belakang, terobosan, output, outcome, milestone dan risiko program.','charter'],
    ['05','Penetapan Program','Catat kontrak K-Wide dan tetapkan program beserta proyek terpilih pada satu tahapan.','penetapan-program'],
    ['06','Draft RKMK','Konsolidasikan narasi untuk tahun tujuan, reviu perubahan, lalu unduh rancangan dokumen.','rkmk']

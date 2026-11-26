@@ -58,7 +58,7 @@ const norm=p=>{
  p.psProjects.forEach(x=>{if(!x.scores)x.scores={};if(!x.poster)x.poster={};if(!x.risks)x.risks={};if(!Array.isArray(x.indicators))x.indicators=[];if(!Array.isArray(x.benefits))x.benefits=[]});
  return p;
 };
-const pickedProgram=()=>{const s=state(),arr=programs();if(!arr.length)return null;const p=arr.find(x=>x.id===s.prog||x.akr===s.prog)||arr[0];if(s.prog!==p.id)s.prog=p.id;return norm(p)};
+const pickedProgram=()=>{const ov=typeof window.MT_PS_PICK_OVERRIDE==='function'&&window.MT_PS_PICK_OVERRIDE();if(ov)return norm(ov);const s=state(),arr=programs();if(!arr.length)return null;const p=arr.find(x=>x.id===s.prog||x.akr===s.prog)||arr[0];if(s.prog!==p.id)s.prog=p.id;return norm(p)};
 const rowsFor=p=>p?(p.psProjects||[]):[];
 const activeCriteria=p=>PS_CRITERIA.map(c=>Object.assign({},c,(p.psRubrics||{})[c.code]||{}));
 const weight=(p,k)=>Math.min(7,Math.max(1,+((p.psWeights||{})[k]||PS_CRITERIA.find(c=>c.code===k).w)));
@@ -84,7 +84,7 @@ function calc(x,p){
 const labelScore=r=>r.score==null?'—':r.score.toFixed(1);
 const level=r=>r.score==null?'pending':r.score>=70?'high':r.score>=40?'mid':'low';
 const levelName=r=>r.score==null?'Belum dinilai':r.score>=70?'Tinggi':r.score>=40?'Sedang':'Rendah';
-const included=(x,p)=>p.psMethod==='kka'&&window.MT_PS_KKA?window.MT_PS_KKA.isFunded(x):!p.psPrioritize?x.included!==false:calc(x,p).score!=null&&calc(x,p).score>+p.psThreshold;
+const included=(x,p)=>(+p.psYear>=2027&&!p.nonIstk)?x.included!==false:p.psMethod==='kka'&&window.MT_PS_KKA?window.MT_PS_KKA.isFunded(x):!p.psPrioritize?x.included!==false:calc(x,p).score!=null&&calc(x,p).score>+p.psThreshold;
 const chosen=p=>rowsFor(p).filter(x=>included(x,p));
 const readonly=p=>!ownerOk(p)||p.psStatus==='Ditetapkan'||p.arsip||p.psListStatus==='Arsip';
 const programsOpts=(selected)=>programs().map(p=>'<option value="'+esc2(p.id)+'"'+(selected===p.id?' selected':'')+'>'+esc2(p.nama)+' · '+esc2(p.psStatus||'Draft')+'</option>').join('');
@@ -158,7 +158,7 @@ function projectsPage(p){
   const x=z.x,r=z.r,on=(u.open||[]).includes(x.id),label=levelName(r),sel=included(x,p);
   h+='<article class="prio-row cat-'+level(r)+(on?' open':'')+'"><div class="prio-rank"><b>'+(i+1)+'</b><small>'+(!p.psPrioritize?'CALON':r.score==null?'—':'P'+(r.score>=70?1:r.score>=40?2:3))+'</small></div>'+
   '<div class="prio-main"><div class="prio-title"><h4>'+esc2(x.name)+'</h4></div><div class="prio-meta"><span class="prio-status">'+esc2(x.status||'Usulan')+'</span><span class="prio-ue">'+esc2(x.uic||p.uic||'—')+'</span><span class="prio-prog">'+esc2(p.nama)+'</span><span>Go-live: <b>'+esc2(x.goLive||'—')+'</b></span><span>PIC: '+esc2(x.pic||'—')+'</span><span>Pengguna: '+esc2(x.users||'—')+'</span>'+
-  (sel?'<span class="pswf-picked">✓ Dipilih</span>':'<span class="pswf-rejected">Belum dipilih</span>')+'</div><div class="prio-utils">'+r.details.map(d=>'<span class="prio-u" title="'+esc2(d.c.code+' '+d.c.name)+'"><span class="prio-ub"><i style="height:'+Math.max(3,Math.round(d.u*100))+'%"></i></span><em>'+d.c.code+'</em></span>').join('')+'</div></div>'+
+  (p.nonIstk?(r.score==null?'<span class="pswf-rejected">Belum dinilai</span>':sel?'<span class="pswf-picked">✓ Lanjut</span>':'<span class="pswf-rejected">Drop</span>'):sel?'<span class="pswf-picked">✓ Dipilih</span>':'<span class="pswf-rejected">Belum dipilih</span>')+'</div><div class="prio-utils">'+r.details.map(d=>'<span class="prio-u" title="'+esc2(d.c.code+' '+d.c.name)+'"><span class="prio-ub"><i style="height:'+Math.max(3,Math.round(d.u*100))+'%"></i></span><em>'+d.c.code+'</em></span>').join('')+'</div></div>'+
   '<div class="prio-score"><b>'+(p.psPrioritize?labelScore(r):'—')+'</b><div class="prio-bar"><i style="width:'+(r.score||0)+'%"></i></div><span class="prio-cat">'+(p.psPrioritize?'Prioritas '+label:'Seleksi manual')+'</span>'+snapshotDelta(p,x,r)+'</div>'+
   '<div class="prio-actions"><button type="button" class="btn btn-outline btn-sm" data-pswf-detail="'+esc2(x.id)+'">'+(on?'Tutup':'Rincian')+'</button>'+
   (ownerOk(p)&&p.psStatus!=='Ditetapkan'?'<button type="button" class="btn btn-ghost btn-sm" title="Ubah penilaian proyek" data-pswf-project="'+esc2(x.id)+'">✎</button>':'')+
@@ -167,7 +167,7 @@ function projectsPage(p){
  });
  h+='</section>';
  }
- h+=decisionPanel(p);return h;
+ if(!p.nonIstk)h+=decisionPanel(p);return h;
 }
 function snapshotDelta(p,x,r){
  const id=state().snapshot,sp=id&&(p.psSnapshots||[]).find(z=>z.id===id);
