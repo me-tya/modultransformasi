@@ -318,14 +318,11 @@ function nonIstkPrio(){
  const m=K.nonMethod();
  const seg='<div class="kka-method" role="radiogroup" aria-label="Metode penilaian usulan Non-ISTK"><span>Metode</span><div class="kka-mseg">'+[['kka','MCDA','Metode utama (Kertas Kerja A Pusakti): gate G1–G4, K1–K7, peringkat, pagu & SDM.'],['smart','SMART','Pembanding: 12 kriteria SMART dengan ambang skor.']].map(o=>'<label title="'+E(o[2])+'" class="'+(m===o[0]?'on':'')+'"><input type="radio" data-ps27-nmethod="'+o[0]+'" name="ps27-nmethod" value="'+o[0]+'"'+(m===o[0]?' checked':'')+'>'+o[1]+(o[0]==='kka'?' <small>utama</small>':' <small>pembanding</small>')+'</label>').join('')+'</div></div>';
  const intro='<div class="ps27-clear"><b>Clearance usulan Non-ISTK</b><span>Yang dinilai di sini hanya usulan proyek di luar ISTK yang diajukan ke Pusakti, untuk menentukan mana yang <b>boleh lanjut</b> dan mana yang <b>di-drop</b>. Proyek ISTK otomatis terpilih dan tidak perlu dinilai.</span></div>';
- if(m==='kka')return intro+K.page(current()||{id:'',psProjects:[]},{nonOnly:true,methodHtml:seg});
- const p=current(),sub=(ws().prioritySub==='monev'?'ranking':ws().prioritySub)||'ranking',ro=I.readonly(p);
- const threshold='<label class="ps27-smart-threshold">Ambang skor &gt; <input type="number" id="pswf-threshold" min="0" max="99" value="'+E(p.psThreshold??80)+'" '+(ro?'disabled':'')+' aria-label="Ambang skor SMART"> %</label>';
- return intro+'<div class="ps27-priority-head"><nav class="ps27-minitabs" role="tablist" aria-label="Tab Prioritasi">'+
- [['ranking','Penilaian & Peringkat'],['criteria','Kriteria & Bobot'],['reference','Referensi & Formula']].map(x=>'<button role="tab" type="button" data-ps27-sub="'+x[0]+'" aria-selected="'+(sub===x[0])+'" class="'+(sub===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+'</nav>'+
- (sub==='ranking'?(typeof MT_TABSEARCH==='function'?MT_TABSEARCH:()=>'')('ps-prioritasi',localFilter().search,'Cari usulan, UIC…'):'')+
- '<div class="ps27-smart-actions">'+seg+threshold+'</div></div>'+
- (sub==='reference'?I.referencePage(p):sub==='criteria'?I.criteriaPage(p):I.projectsPage(p));
+ const p=m==='smart'?current():(current()||{id:'',psProjects:[]}),ro=m==='smart'?I.readonly(p):false;
+ const threshold=m==='smart'?'<label class="ps27-smart-threshold">Ambang skor &gt; <input type="number" id="pswf-threshold" min="0" max="99" value="'+E(p.psThreshold??80)+'" '+(ro?'disabled':'')+' aria-label="Ambang skor SMART"> %</label>':'';
+ const search=m==='smart'?(typeof MT_TABSEARCH==='function'?MT_TABSEARCH:()=>'')('ps-prioritasi',localFilter().search,'Cari usulan, UIC…'):'';
+ return intro+K.page(p,{nonOnly:true,readOnly:ro,methodHtml:seg,smart:m==='smart',smartTools:threshold,smartBody:sub=>sub==='criteria'?I.criteriaPage(p):sub==='ref'||sub==='literature'?I.referencePage(p):search+I.projectsPage(p)});
+
 }
 function prioritasi(p){
  if(yr()>=2027)return nonIstkPrio();
