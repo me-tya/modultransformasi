@@ -653,16 +653,33 @@ b.up{color:#0F7A4B}b.dn{color:#B42318}
 @media(max-width:700px){.kka-kpis{grid-template-columns:1fr 1fr}.kka-sets{grid-template-columns:1fr}}`;document.head.appendChild(s)})();
 
 function refView(){
- return '<div class="kka-card"><h3>Metode MCDA (Multi-Criteria Decision Analysis)</h3><ul class="kka-bars" style="gap:6px">'+
-  ['<b>Gate penyaringan:</b> usulan Lolos bila G1–G4 semua Ya; ada Tidak = Tinjau Ulang; ada kosong = Lengkapi. G1 selaras Renstra/peta rencana EA/Arsitektur SPBE; G2 tidak duplikatif; G3 pemilik proses bisnis & sponsor jelas; G4 dokumen kajian kebutuhan sudah dikirim ke Pusakti.',
-   '<b>Skor Tertimbang (0–100)</b> = Σ(skor kriteria × bobot) ÷ 5 × 100. K7 diskalakan terbalik: skor 5 = risiko terendah. Bila skor seri, urutan usulan menjadi pemutus.',
-   '<b>Peringkat</b> Semua UE I (satu pagu & kapasitas) atau Per UE I. Kategori: Prioritas 1 Utama / 2 Tinggi / 3 Menengah / 4 Rendah-Tunda sesuai ambang.',
-   '<b>Roadmap</b> greedy dari peringkat 1: bila biaya ATAU SDM kumulatif melampaui batas → Cadangan / Tunda; usulan berikutnya yang masih muat tetap dapat didanai. Biaya bukan kriteria skor.',
-   '<b>WSJF</b> = Cost of Delay ÷ Job Size; Cost of Delay = K2 + K4 + K5, Job Size = 6 − K7 (proksi) — pembanding terhadap skor tertimbang.',
-   '<b>Catatan:</b> mandat regulasi yang tidak dapat ditawar beri skor K3 = 5 dan, bila perlu, kunci secara manual dalam keputusan komite. Hasil adalah bahan keputusan; keputusan akhir pada forum tata kelola.'].map(x=>'<li style="display:block">'+x+'</li>').join('')+'</ul></div>'+
-  '<div class="kka-card"><h3>Rubrik Skala Penilaian 1–5'+ic('Semua kriteria searah: skor 5 = paling mendukung untuk diprioritaskan.')+'</h3><div class="kka-scroll"><table class="kka-t kka-ref"><thead><tr><th>Kode</th><th>Kriteria</th><th>1 – Sangat rendah</th><th>2 – Rendah</th><th>3 – Sedang</th><th>4 – Tinggi</th><th>5 – Sangat tinggi</th></tr></thead><tbody>'+
-  KR.map(k=>'<tr><td><b>'+k.c+'</b></td><td><b>'+E(k.n)+'</b><small>'+E(k.q)+'</small></td>'+RUB[k.c].map(t=>'<td>'+E(t)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div></div>'+
-  '<div class="kka-card"><h3>Referensi & Literasi</h3><div class="kka-scroll"><table class="kka-t kka-ref"><thead><tr><th>No</th><th>Rujukan</th><th>Jenis</th><th>Dipakai untuk</th></tr></thead><tbody>'+REFS.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+E(r[0])+'</td><td>'+E(r[1])+'</td><td>'+E(r[2])+'</td></tr>').join('')+'</tbody></table></div><p class="kka-note" style="margin-top:8px">Verifikasi versi/perubahan terbaru setiap regulasi sebelum dijadikan dasar resmi.</p></div>';
+ if(!window.MT_PS_REFX)return '<div class="kka-card">Memuat referensi…</div>';
+ const c=cfg(),W=c.weights[c.profile],COL=['#7FA2E0','#A9BDF0','#E0A82E','#F5CE6B','#3FBF8A','#5FD0E0','#B58BE0'];
+ const EV={K1:'Cek dokumen Renstra/IKU dan peta rencana EA; tunjukkan sasaran yang didukung.',K2:'Minta baseline & target manfaat (waktu, biaya, pengguna).',K3:'Sebutkan pasal/temuan dan tenggatnya.',K4:'Apa yang terjadi bila ditunda 12 bulan?',K5:'Cek data master & layanan bersama yang dipakai.',K6:'Cek SOP, sponsor, ketersediaan data, rencana change management.',K7:'Skala terbalik: makin rendah risiko, makin tinggi skor.'};
+ const f1=v=>fmt(v,1);
+ const crit=KR.map((k,i)=>({code:k.c,name:k.n.replace(' – skor 5 = terendah',' (5 = terendah)'),q:k.q,rub:RUB[k.c],wShort:fmt(W[i])+'%',wText:'bobot '+fmt(W[i])+'%',w:W[i],evidence:EV[k.c],refs:String(k.ref||'').split('; ').filter(Boolean),
+  side:'<b>'+fmt(W[i])+'%</b><small>bobot · '+E(c.profile)+'</small>'}));
+ const keyOf=t=>(String(t).match(/K[1-7]/g)||[]).filter((v,i,a)=>a.indexOf(v)===i);
+ const col=(title,icon,test)=>({icon,title,items:REFS.filter(r=>test(r[1])).map(r=>({t:r[0],sub:r[2],tags:keyOf(r[2])}))});
+ const flow=[
+  {t:'Gate penyaringan',d:'Usulan disaring 4 syarat sebelum dinilai.',out:[['Lolos','ok'],['Tinjau Ulang','bad'],['Lengkapi','warn']],det:'<div><h5>Aturan</h5><ul><li><b>Lolos</b> bila G1–G4 semua Ya.</li><li><b>Tinjau Ulang</b> bila ada yang Tidak.</li><li><b>Lengkapi</b> bila ada yang belum dijawab.</li><li>'+(c.onlyPassed==='Ya'?'Hanya usulan Lolos yang diranking.':'Semua usulan diranking (pengaturan: tidak hanya yang Lolos).')+'</li></ul></div><div><h5>Empat gate</h5><ul>'+GATES.map(g=>'<li><b>'+E(g[1])+'</b> '+E(g[3])+'</li>').join('')+'</ul></div>'},
+  {t:'Skor tertimbang',d:'7 kriteria berskala 1–5 dikalikan bobot profil aktif.',out:[['0–100','n'],[PROFILES.length+' profil bobot','n']],det:'<div><h5>Rumus</h5><p>Skor = Σ(skor K × bobot) ÷ 5 × 100, dibulatkan 2 desimal. Skor dihitung hanya bila 7 kriteria terisi. Bila skor seri, urutan usulan menjadi pemutus.</p><div class="rfx-tip">Profil aktif: <b>'+E(c.profile)+'</b>. Profil lain: '+PROFILES.filter(x=>x!==c.profile).map(E).join(', ')+'.</div></div><div><h5>Kuadran pendukung</h5><p>Nilai Manfaat = K1–K5, Kemudahan = K6–K7 (diboboti). ≥ '+fmt(c.quadThr)+' dianggap tinggi → Quick Win, Proyek Strategis, Pelengkap, Tunda / Kaji Ulang.</p></div>'},
+  {t:'Peringkat & kategori',d:'Diurutkan semua UE I atau per UE I; dikelompokkan P1–P4.',out:[['P1','ok'],['P2','ok'],['P3','warn'],['P4','n']],det:'<div><h5>Kategori</h5><div class="rfx-cat"><span style="background:#0F7A4B;color:#fff">P1 ≥ '+fmt(c.p1)+'<br>Utama</span><span style="background:#D7F0E2;color:#0F5E3B">P2 ≥ '+fmt(c.p2)+'<br>Tinggi</span><span style="background:#FFF0C2;color:#7A5300">P3 ≥ '+fmt(c.p3)+'<br>Menengah</span><span style="background:#F1F5F9;color:#475569">P4<br>Rendah/Tunda</span></div></div><div><h5>Pengecekan</h5><ul><li><b>Sensitivitas:</b> peringkat dihitung ulang dengan '+PROFILES.length+' profil; Stabil bila rentang ≤ '+fmt(c.tol)+'.</li><li><b>WSJF</b> = (K2 + K4 + K5) ÷ (6 − K7) sebagai pembanding.</li><li>Proyek ISTK diprioritaskan otomatis, tidak dinilai.</li></ul></div>'},
+  {t:'Roadmap pagu & SDM',d:'ISTK otomatis lebih dulu; non-ISTK mengisi sisa pagu & SDM.',out:[['Didanai','ok'],['Cadangan / Tunda','bad']],det:'<div><h5>Aturan greedy</h5><p>Proyek ISTK mengambil pagu & SDM lebih dulu. Usulan non-ISTK diambil mulai peringkat 1 selama biaya <b>dan</b> SDM kumulatif masih muat (pagu '+fmt(c.pagu)+' · SDM '+fmt(c.sdm)+'); yang melampaui menjadi Cadangan/Tunda, usulan berikutnya yang masih muat tetap didanai.</p></div><div><h5>Catatan</h5><ul><li>Biaya bukan kriteria skor.</li><li>Biaya/SDM kosong → "Lengkapi biaya/SDM".</li><li>Simpan hasil ke Repositori sebagai versi Draft/Final.</li></ul></div>'}];
+ return '<div class="kka-ref-x">'+window.MT_PS_REFX.html({id:'mcda',eyebrow:'Metode prioritisasi · Kertas Kerja A',title:'MCDA — Skor tertimbang + gate',
+  desc:'Usulan pengembangan SI di luar ISTK disaring dengan 4 gate, dinilai 7 kriteria berskala 1–5, diperingkat, lalu dimasukkan ke roadmap sesuai pagu dan kapasitas SDM. Hasilnya bahan keputusan forum tata kelola, bukan penetapan otomatis.',
+  chips:['4 gate','7 kriteria',PROFILES.length+' profil bobot','P1–P4','Roadmap pagu & SDM','Uji sensitivitas · WSJF'],
+  formula:{label:'Rumus skor tertimbang · profil '+c.profile,f:'Skor = Σ(<em>skor K</em> × <em>bobot</em>) ÷ 5 × 100'},
+  wbar:KR.map((k,i)=>({pct:W[i]/Math.max(1,W.reduce((a,b)=>a+b,0))*100,color:COL[i],title:k.c+' '+W[i]+'%'})),
+  wleg:KR.map((k,i)=>({color:COL[i],label:k.c,sub:fmt(W[i])+'%'})),
+  flow,crit,tools:'',
+  rubNote:'5 = paling mendukung untuk diprioritaskan · K7 terbalik (5 = risiko terendah)',searchPh:'Cari kata, mis. audit, shared service…',
+  contribLabel:'Bukti yang dicek',
+  contribHint:()=>'',
+  contrib:(x,i)=>'<b>Skor dipilih: '+(i+1)+'</b>Kontribusi ke skor tertimbang: '+f1((i+1)*x.w/5)+' poin dari '+fmt(x.w)+'.',
+  filters:KR.map((k,i)=>({key:k.c,label:k.c,color:COL[i]})),refNote:'klik chip kriteria untuk menyorot rujukannya',
+  refCols:[col('Regulasi','⚖',t=>t==='Regulasi'),col('Standar','▦',t=>/Standar/.test(t)),col('Literatur & metode','✎',t=>t==='Literatur'||t==='Metode')],
+  foot:'<b>Catatan metodologi.</b> Bobot awal dan ambang P1–P3 adalah asumsi penyusun kertas kerja — sepakati melalui forum. Mandat regulasi yang tidak dapat ditawar diberi K3 = 5 dan, bila perlu, dikunci dalam keputusan komite. Verifikasi versi terbaru regulasi sebelum dijadikan dasar resmi.'})+'</div>';
 }
 function isFunded(x){return x.included!==false} /* program ISTK bermetode MCDA: semua proyek diprioritaskan otomatis */
 

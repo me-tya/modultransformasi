@@ -376,25 +376,56 @@ function smartFormulaPanel(p){
  '<div class="prio-worked"><b>Bobot aktif program</b><div class="prio-wk">'+all.map(c=>'<span>'+c.code+' · '+weight(p,c.code)+'</span>').join('')+'</div><p>Normalisasi otomatis menyesuaikan perubahan bobot.</p></div></aside>';
 }
 function referencePage(p){
- const u=state(),w=PS_CRITERIA.reduce((n,c)=>n+weight(p,c.code),0);
- let h='<div class="prio-card prio-t1"><div class="pswf-ref-head"><h3>Tabel 1 · Kriteria dan Bobot</h3><span class="pswf-sp"></span>'+
- '<label><input type="checkbox" id="pswf-formula" '+(u.formula?'checked':'')+'> Tampilkan formula</label>'+
- '<label><input type="checkbox" id="pswf-params" '+(u.params?'checked':'')+'> Tampilkan semua parameter</label>'+
- (ownerOk(p)&&p.psStatus!=='Ditetapkan'?'<button type="button" class="btn btn-outline btn-sm" data-pswf="edit-text">✎ Ubah teks</button><button type="button" class="btn btn-outline btn-sm" data-pswf="reset-text">↺ Teks default</button>':'')+
- '<button type="button" class="btn btn-outline btn-sm" data-pswf="excel-reference">⇩ Excel</button></div>';
- if(u.formula)h+='<p class="pswf-note">Skor akhir = 100 × Σ (bobot normalisasi × utility). Utility manfaat = (nilai−1)/4; utility biaya = (5−nilai)/4. Bobot normalisasi = bobot / '+w+'.</p>';
- h+='<div class="prio-likert-wrap"><table class="prio-kb-table"><thead><tr><th>No</th><th>Variabel</th><th>Nama Kriteria</th><th>Parameter</th><th>Nilai Kriteria</th><th>Bobot Kriteria<br><small>Skala 1–7</small></th><th>Normalisasi Bobot</th></tr></thead><tbody>';
- activeCriteria(p).forEach((c,i)=>{
-  const n=u.params?5:1,v=weight(p,c.code),pct=(v/w*100).toFixed(1).replace('.',',')+'%',name=(PS_GROUPS.find(x=>x[0]===c.g)||[])[1]||c.g;
-  for(let j=0;j<n;j++){const ri=u.params?4-j:0;
-   h+='<tr class="'+(j===0?'kb-first':'')+'">'+(j===0?'<td rowspan="'+n+'" class="kb-no">'+(i+1)+'</td><td rowspan="'+n+'">'+esc2(name)+'</td><td rowspan="'+n+'" class="kb-name"><b>'+c.code+' · '+esc2(c.name)+'</b><small>'+esc2(c.note||'')+'</small><em class="'+c.type+'">'+c.type+'</em></td>':'')+
-    '<td>'+esc2(u.params?c.rubric[ri]:c.desc)+'</td><td class="kb-val">'+(u.params?ri+1:'1–5')+'</td>'+(j===0?'<td rowspan="'+n+'" class="kb-w">'+v+'</td><td rowspan="'+n+'" class="kb-w">'+pct+'</td>':'')+'</tr>';
-  }
- });
- h+='</tbody><tfoot><tr><td colspan="5">Jumlah bobot</td><td>'+w+'</td><td>100%</td></tr></tfoot></table></div></div>';
- h+='<div class="prio-card"><h3>Tabel 2 · Rubrik POSTeR (dasar nilai C6)</h3><p class="prio-sub">Perubahan Proses kerja, Organisasi, SDM, Teknologi, dan Regulasi dinilai 1–5. C6 dihitung dari rata-rata; apabila terdapat nilai 5, C6 minimal 3.</p></div>';
- h+='<div class="prio-card"><h3>Tabel 3 · Panduan Implementasi</h3><p>1. Susun program dan calon proyek untuk tahun terpilih.</p><p>2. Aktifkan SMART hanya jika perlu memilih proyek berdasarkan skor.</p><p>3. Tetapkan proyek final, generate rancangan RKMK, kemudian susun WBS pada Project Management.</p><p>4. Monev mengukur adopsi dan manfaat setelah implementasi.</p></div>';
- return '<div class="prio-rlayout'+(u.formula?'':' noformula')+'"><div class="prio-rmain">'+h+'</div>'+(u.formula?smartFormulaPanel(p):'')+'</div>';
+ if(!window.MT_PS_REFX)return '<div class="prio-card">Memuat referensi…</div>';
+ const R=window.MT_PS_REFX,E=R.E,all=activeCriteria(p),W=all.map(c=>weight(p,c.code)),SUM=W.reduce((a,b)=>a+b,0);
+ const GK=PS_GROUPS.map(g=>g[0]),GC={SD:'#7FA2E0',UK:'#F5CE6B',UP:'#F08A8A',BR:'#3FBF8A'},GN=g=>(PS_GROUPS.find(x=>x[0]===g)||[])[1]||g;
+ const AUTO={users:'jumlah pengguna pada isian proyek',golive:'tanggal go-live proyek',readiness:'asesmen kesiapan organisasi Tim CM atau CRA',poster:'rata-rata Likert POSTeR',sdm:'target pengurangan SDM (proyek tematik)',risk:'rata-rata risiko resistensi, operasional, ketergantungan'};
+ const pc=v=>(v).toFixed(1).replace('.',','),f2=v=>v.toFixed(2).replace('.',',');
+ const thr=+(p.psThreshold??80),ro=!(ownerOk(p)&&p.psStatus!=='Ditetapkan');
+ const crit=all.map((c,i)=>{const wp=W[i]/SUM*100;return {code:c.code,name:c.name,q:c.desc,ask:c.desc,rub:c.rubric,grp:GN(c.g),gi:GK.indexOf(c.g),color:GC[c.g]||'#94A3B8',cost:c.type==='cost',auto:c.auto?AUTO[c.auto]||'data sumber':'',
+  short:c.note&&!c.auto&&c.type!=='cost'?'':'',wShort:String(W[i]),wText:'bobot '+W[i],wp,side:'<b>'+W[i]+' <small style="font-size:12px">/ 7</small></b><small>bobot · w′ '+pc(wp)+'%</small>'}});
+ const ut=(c,i)=>c.cost?(4-i)/4:i/4;
+ const grpW=GK.map(g=>({g,w:all.reduce((n,c,i)=>n+(c.g===g?W[i]:0),0),codes:all.filter(c=>c.g===g).map(c=>c.code)}));
+ const flow=[
+  {t:'Normalisasi bobot',d:'Bobot 1–7 per kriteria dibagi total bobot.',out:[['Σ = '+SUM,'n'],['Σ w′ = 1','n']],det:'<div><h5>Rumus</h5><p>w′<sub>j</sub> = w<sub>j</sub> ÷ Σw. Bobot 1–7 menunjukkan tingkat kepentingan relatif; mengubah satu bobot otomatis menggeser seluruh w′.</p></div><div><h5>Contoh pada program ini</h5><p>'+E(all[0].code)+' bobot '+W[0]+' → w′ = '+W[0]+' ÷ '+SUM+' = '+pc(W[0]/SUM*100)+'%.</p><div class="rfx-tip">Bobot diatur di tab <b>Kriteria & Bobot</b> dan hanya berlaku untuk program ini.</div></div>'},
+  {t:'Nilai kriteria',d:'Setiap proyek dinilai 1–5; sebagian kriteria dapat terisi otomatis.',out:[['Manual','n'],['Otomatis','ok']],det:'<div><h5>Otomatis dari data sumber</h5><ul>'+all.filter(c=>c.auto).map(c=>'<li><b>'+E(c.code)+'</b> dari '+E(AUTO[c.auto]||'data sumber')+'</li>').join('')+'</ul></div><div><h5>Manual</h5><p>'+all.filter(c=>!c.auto).map(c=>c.code).join(', ')+' dipilih penilai berdasarkan rubrik dan bukti pendukung.</p><div class="rfx-tip">C6 = round((P + O + S + Te + R) ÷ 5); bila ada dimensi POSTeR bernilai 5, C6 minimal 3.</div></div>'},
+  {t:'Utility 0–1',d:'Nilai dinormalisasi; kriteria biaya dibalik.',out:[['benefit ↑','ok'],['biaya ↓','bad']],det:'<div><h5>Benefit</h5><div class="rfx-tip">u = (nilai − 1) ÷ 4 → 1 = 0 · 2 = 0,25 · 3 = 0,5 · 4 = 0,75 · 5 = 1</div></div><div><h5>Biaya ('+all.filter(c=>c.type==='cost').map(c=>c.code).join(', ')+')</h5><div class="rfx-tip bad">u = (5 − nilai) ÷ 4 → 1 = 1 · 2 = 0,75 · 3 = 0,5 · 4 = 0,25 · 5 = 0</div><p style="margin-top:6px">Makin berat beban/risiko, makin kecil sumbangannya.</p></div>'},
+  {t:'Skor & seleksi',d:'Skor 0–100 → kategori P1–P3 dan seleksi ambang.',out:[['P1','ok'],['P2','warn'],['P3','n']],det:'<div><h5>Rumus</h5><p>S = 100 × Σ w′ · u, dihitung hanya bila 12 kriteria terisi.</p><div class="rfx-cat"><span style="background:#0F7A4B;color:#fff">P1 ≥ 70</span><span style="background:#FFF0C2;color:#7A5300">P2 40–69</span><span style="background:#F1F5F9;color:#475569">P3 &lt; 40</span></div></div><div><h5>Seleksi otomatis</h5><p>'+(p.psPrioritize?'Dipilih bila skor <b>lebih besar</b> dari ambang program (saat ini &gt; '+thr+').':'Prioritisasi SMART belum diaktifkan pada program ini; proyek dipilih manual.')+' Hasil tetap ditetapkan dalam Penetapan Program.</p></div>'}];
+ const PD=[['P','Proses kerja'],['O','Organisasi'],['S','SDM'],['Te','Teknologi'],['R','Regulasi']],RD=[['res','Resistensi'],['op','Operasional'],['dep','Ketergantungan']];
+ const SIM=referencePage.sim||(referencePage.sim={pv:{P:3,O:2,S:3,Te:4,R:2},rv:{res:2,op:1,dep:3},thr:null});
+ const c6c=all.find(c=>c.code==='C6'),c12c=all.find(c=>c.code==='C12');
+ const c6=()=>{const v=PD.map(d=>SIM.pv[d[0]]),avg=v.reduce((a,b)=>a+b,0)/5;let r=Math.round(avg),fl=false;if(v.includes(5)&&r<3){r=3;fl=true}return '<span class="v">'+r+'</span><div><b>'+E(c6c?c6c.rubric[r-1]:'')+'</b><small>rata-rata '+pc(avg)+(fl?' → dinaikkan ke 3 karena ada dimensi bernilai 5':' → dibulatkan '+r)+' · utility '+f2((r-1)/4)+'</small></div>'};
+ const c12=()=>{const avg=(SIM.rv.res+SIM.rv.op+SIM.rv.dep)/3,r=Math.round((avg-1)*2)+1;return '<span class="v">'+r+'</span><div><b>'+E(c12c?c12c.rubric[r-1]:'')+'</b><small>rata-rata '+f2(avg)+' → round((rata − 1) × 2) + 1 = '+r+' · utility '+f2((5-r)/4)+' (biaya)</small></div>'};
+ const riskRows=()=>RD.map(d=>'<div class="rfx-row r2"><b>'+d[1]+'</b><div class="rfx-pills">'+['Rendah','Sedang','Tinggi'].map((t,i)=>'<button type="button" data-rfx-act="risk" data-r="'+d[0]+'" data-v="'+(i+1)+'" class="'+(SIM.rv[d[0]]===i+1?'rfx-on':'')+'">'+t+'</button>').join('')+'</div></div>').join('');
+ const tv=SIM.thr??thr,thrTxt=v=>'lolos bila skor &gt; '+v+(v<70?' · mencakup sebagian P2':' · hanya sebagian P1');
+ const extra='<section class="rfx-sec"><div class="rfx-sech"><h3>Kalkulator kriteria otomatis</h3><small>simulasi cara aplikasi menurunkan C6 dan C12 dari isian — tidak menyimpan data</small></div><div class="rfx-calc">'+
+  '<div class="rfx-box"><h4>C6 · Tingkat Perubahan (POSTeR)</h4><p>Rata-rata dibulatkan; bila ada dimensi bernilai 5, C6 minimal 3.</p>'+PD.map(d=>'<div class="rfx-row"><b>'+d[0]+' · '+d[1]+'</b><input type="range" min="1" max="5" value="'+SIM.pv[d[0]]+'" data-rfx-in="poster" data-p="'+d[0]+'" aria-label="POSTeR '+d[1]+'"><output data-o="'+d[0]+'">'+SIM.pv[d[0]]+'</output></div>').join('')+'<div class="rfx-res" data-res="c6">'+c6()+'</div></div>'+
+  '<div class="rfx-box"><h4>C12 · Tingkat Risiko Implementasi</h4><p>Rata-rata 3 dimensi (1 Rendah – 3 Tinggi) dipetakan ke 1–5. Kriteria biaya.</p><div data-risk>'+riskRows()+'</div><div class="rfx-res" data-res="c12">'+c12()+'</div></div></div></section>'+
+  '<section class="rfx-sec"><div class="rfx-sech"><h3>Membaca skor & seleksi</h3><small>kategori prioritas vs ambang seleksi program</small></div><div class="rfx-box"><div class="rfx-scale"><div class="rfx-band" style="grid-template-columns:40fr 30fr 30fr"><div style="background:#F1F5F9;color:#475569">P3 · Rendah<small>&lt; 40 · tinjau ulang / dukungan proporsional</small></div><div style="background:#FFF0C2;color:#7A5300">P2 · Sedang<small>40–69 · jadwalkan sesuai kapasitas</small></div><div style="background:#0F7A4B;color:#fff">P1 · Tinggi<small>≥ 70 · prioritas pendampingan</small></div></div>'+
+  '<div class="rfx-thr" data-thr style="left:'+tv+'%"><span>ambang &gt; '+tv+'</span></div><div class="rfx-ticks"><span>0</span><span>20</span><span>40</span><span>60</span><span>80</span><span>100</span></div></div>'+
+  '<div class="rfx-thrctl"><b>Simulasi ambang</b><input type="range" min="0" max="99" value="'+tv+'" data-rfx-in="thr" aria-label="Simulasi ambang"><span data-thrv style="font-weight:800;min-width:190px">'+thrTxt(tv)+'</span><small style="color:var(--rm)">Ambang tersimpan program: '+(p.psPrioritize?'&gt; '+thr:'SMART belum aktif')+'</small></div>'+
+  '<div class="rfx-rules"><div><b>Kategori ≠ seleksi</b>P1 menunjukkan urgensi relatif; seleksi otomatis memakai ambang program yang terpisah.</div><div><b>Harus lebih besar</b>Skor sama dengan ambang tidak lolos (mis. 80,00 pada ambang 80).</div><div><b>Data lengkap</b>Skor dan kategori baru muncul setelah 12 kriteria terisi.</div></div></div></section>';
+ const tools='<span class="rfx-tools">'+(ro?'':'<button type="button" class="btn btn-outline btn-sm" data-pswf="edit-text">✎ Ubah teks</button><button type="button" class="btn btn-outline btn-sm" data-pswf="reset-text">↺ Teks default</button>')+'<button type="button" class="btn btn-outline btn-sm" data-pswf="excel-reference">⇩ Excel</button></span>';
+ const F=GK.map(g=>({key:g,label:GN(g),color:GC[g]}));
+ return R.html({id:'smart',eyebrow:'Metode prioritisasi · Priority Dashboard CM',title:'SMART — Simple Multi-Attribute Rating Technique',
+  desc:'Calon proyek dalam program dinilai 12 kriteria berskala 1–5, dikonversi menjadi utility 0–1 (kriteria biaya dibalik), lalu dijumlahkan dengan bobot ternormalisasi. Proyek terpilih otomatis bila 12 kriteria lengkap dan skor melampaui ambang program — tetap ditetapkan oleh pejabat berwenang.',
+  chips:['12 kriteria','4 kelompok',all.filter(c=>c.auto).length+' dapat otomatis',all.filter(c=>c.type==='cost').length+' kriteria biaya','Bobot 1–7','P1–P3',p.psPrioritize?'Ambang > '+thr:'SMART belum aktif'],
+  formula:{label:'Rumus skor · Edwards (1977)',f:'S = 100 × Σ <em>w′</em> · <em>u</em>',sub:'w′ = bobot ÷ Σ bobot (<b>Σ = '+SUM+'</b>) · u = utility 0–1'},
+  wbar:all.map((c,i)=>({pct:W[i]/SUM*100,color:GC[c.g],title:c.code+' bobot '+W[i]})),
+  wleg:grpW.map(x=>({color:GC[x.g],label:GN(x.g),sub:x.codes.join(' ')+' · '+pc(x.w/SUM*100)+'%'})),
+  flowTitle:'Alur perhitungan',flow,tools,crit,util:ut,utilLabel:(c,i)=>'utility '+f2(ut(c,i)),
+  rubNote:'<span class="rfx-tag auto">otomatis</span> dihitung dari data sumber · <span class="rfx-tag cost">biaya</span> nilai tinggi = utility rendah'+(Object.keys(p.psRubrics||{}).length?' · teks rubrik disesuaikan untuk program ini':''),
+  searchPh:'Cari kata, mis. go-live, BPK, POSTeR…',
+  contribHint:c=>'Klik salah satu tingkat skor untuk melihat sumbangannya ke skor akhir (maksimum '+pc(c.wp)+' poin).',
+  contrib:(c,i)=>'Nilai '+(i+1)+' → utility '+f2(ut(c,i))+' × w′ '+pc(c.wp)+'% = <b class="rfx-inl">'+pc(ut(c,i)*c.wp)+' poin</b> dari maksimum '+pc(c.wp)+'.',
+  extra,refNote:'klik kelompok kriteria untuk menyorot rujukannya',filters:F,
+  refCols:[{icon:'✎',title:'Metode keputusan',items:[{t:'Edwards (1977) · How to Use Multiattribute Utility Measurement for Social Decisionmaking',sub:'Dasar metode SMART',tags:GK},{t:'Edwards & Barron (1994) · SMARTS and SMARTER',sub:'Pembobotan & normalisasi utility',tags:GK},{t:'Goodwin & Wright · Decision Analysis for Management Judgment',sub:'Kriteria benefit vs biaya, uji sensitivitas',tags:['UP']}]},
+   {icon:'▦',title:'Standar & kerangka',items:[{t:'PMI · The Standard for Program Management',sub:'Business case, governance, benefits',tags:['SD','BR']},{t:'PMI · Benefits Realization Management',sub:'Indikator, baseline, benefit owner',tags:['BR']},{t:'ISO 31000:2018 · Risk Management',sub:'Dimensi risiko implementasi',tags:['UP']},{t:'Prosci · Change Readiness / ADKAR',sub:'Gap kesiapan perubahan',tags:['UK']}]},
+   {icon:'⚙',title:'Sumber internal',items:[{t:'Priority Dashboard CM (8 Nov 2026)',sub:'12 kriteria & rubrik asli',tags:GK},{t:'WBS Program Transformasi & IKU Kemenkeu',sub:'Acuan keselarasan C1',tags:['SD']},{t:'Analisis dampak POSTeR',sub:'Dasar nilai C6',tags:['UP']},{t:'Asesmen kesiapan organisasi / CRA',sub:'Dasar nilai C5',tags:['UK']},{t:'Temuan BPK/Itjen & profil risiko',sub:'Dasar nilai C11',tags:['BR']}]}],
+  foot:'<b>Catatan metodologi.</b> Kriteria & rubrik konsisten dengan Priority Dashboard CM; penyesuaian bobot dan teks hanya berlaku pada program ini di Modul Transformasi. Skor adalah bahan pertimbangan — mandat, ketersediaan SDM, regulasi, dan penetapan pejabat berwenang tetap menentukan.',
+  input:(n,t,root)=>{if(n==='poster'){SIM.pv[t.dataset.p]=+t.value;root.querySelector('[data-o="'+t.dataset.p+'"]').textContent=t.value;root.querySelector('[data-res="c6"]').innerHTML=c6()}
+   else if(n==='thr'){const v=+t.value;SIM.thr=v;const m=root.querySelector('[data-thr]');m.style.left=v+'%';m.firstChild.textContent='ambang > '+v;root.querySelector('[data-thrv]').innerHTML=thrTxt(v)}},
+  act:(n,el,root)=>{if(n==='risk'){SIM.rv[el.dataset.r]=+el.dataset.v;root.querySelector('[data-risk]').innerHTML=riskRows();root.querySelector('[data-res="c12"]').innerHTML=c12()}}});
 }
 
 function mount(){
