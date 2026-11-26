@@ -19,6 +19,63 @@ function sdmBox(){return '<details class="esth"><summary>🧮 Hitung orang-bulan
  '<div class="esth-sh"><span>Peran</span><span>Orang</span><span></span><span>Bulan</span><span></span><span>Porsi</span></div><div data-esth-rows>'+sdmRow()+'</div><button type="button" class="esth-add" data-esth-add>+ Tambah peran</button>'+
  '<div class="esth-t"><span>Total</span><b data-esth-stot>0 org-bln</b><button type="button" data-esth-suse>Pakai hasil</button></div><p class="esth-x">Contoh: 3 developer × 6 bulan × 50% = 9 org-bln.</p></div></details>'}
 function scope(el){return el.closest('dialog,[role="dialog"],.ov,.modal,form,section')||document}
+
+function attachNon(inp){
+ const form=inp.closest('.ke-form.ke-three');if(!form||!inp.closest('.ke-ov')||!inp.id.startsWith('kn-'))return false;
+ const cost=form.querySelector('#kn-cost'),sdm=form.querySelector('#kn-estimatedStaffMonths'),dur=form.querySelector('#kn-durationMonths');
+ if(!cost||!sdm||!dur||cost.disabled||sdm.disabled||cost.readOnly||sdm.readOnly)return false;
+ if(form.dataset.esth2)return true;
+ form.dataset.esth2='1';cost.dataset.esth=sdm.dataset.esth='1';
+ const p=document.createElement('div');p.className='est2';p.hidden=true;
+ p.innerHTML='<div class="est2-top"><b data-e2-title></b><button type="button" data-e2-close aria-label="Tutup kalkulator">✕</button></div>'+
+ '<section data-e2-panel="cost" hidden><p class="est2-guide"><b>Rumus:</b> volume × tarif satuan. Isi belanja barang proyek; gaji/tunjangan PNS tidak dihitung. Jangan menghitung dua kali biaya yang sudah termasuk kontrak lain. Gunakan penawaran, kontrak sejenis, atau standar biaya yang berlaku. Tarif dalam <b>Rp juta</b>.</p><div class="est2-scroll"><div class="est2-grid cost"><strong>Komponen biaya</strong><strong>Volume</strong><strong>Satuan</strong><strong>Tarif (Rp jt)</strong><strong>Subtotal (Rp jt)</strong><span></span><div data-e2-cost-rows class="est2-rows"></div></div></div><button type="button" data-e2-add="cost">+ Tambah komponen</button><div class="est2-total"><span>Estimasi biaya</span><b data-e2-total="cost">Rp 0 jt</b><button type="button" data-e2-use="cost">Gunakan hasil</button></div><p class="est2-hint">Contoh ilustrasi: 2 tenaga ahli × 4 bulan = 8 orang-bulan; tarif Rp 15 juta/orang-bulan = Rp 120 juta. Bukan tarif resmi.</p></section>'+
+ '<section data-e2-panel="sdm" hidden><p class="est2-guide"><b>Rumus:</b> jumlah orang × bulan keterlibatan × alokasi waktu (%). Hitung kapasitas PNS in-house dan pro hire tim tetap. Tenaga kontrak khusus proyek/vendor dicatat di biaya, bukan kapasitas internal (sesuai definisi estimasi yang ada).</p><div class="est2-scroll"><div class="est2-grid sdm"><strong>Peran / fungsi</strong><strong>Orang</strong><strong>Bulan</strong><strong>Alokasi (%)</strong><strong>Orang-bulan</strong><span></span><div data-e2-sdm-rows class="est2-rows"></div></div></div><button type="button" data-e2-add="sdm">+ Tambah peran</button><button type="button" data-e2-duration>Isi bulan kosong dari durasi proyek</button><div class="est2-total"><span>Kebutuhan SDM</span><b data-e2-total="sdm">0 org-bln</b><button type="button" data-e2-use="sdm">Gunakan hasil</button></div><p class="est2-hint">Contoh: 2 developer × 6 bulan × 50% = 6 orang-bulan. Satu orang-bulan setara satu orang bekerja penuh selama satu bulan.</p></section>';
+ form.insertAdjacentElement('afterend',p);
+ const q=s=>p.querySelector(s),qa=s=>Array.from(p.querySelectorAll(s));
+ const number=(key,lab,step='any',extra='')=>'<input type="number" min="0" step="'+step+'" data-e2-'+key+' aria-label="'+lab+'" '+extra+'>';
+ function add(type,name='',unit=''){
+  const r=document.createElement('div');r.className='est2-row';r.dataset.e2Row=type;
+  r.innerHTML='<input type="text" data-e2-name aria-label="'+(type==='cost'?'Komponen biaya':'Peran')+'" placeholder="'+(type==='cost'?'Nama komponen':'Contoh: Developer')+'">'+(type==='cost'?number('n','Volume')+'<input type="text" data-e2-unit aria-label="Satuan" placeholder="paket">'+number('rate','Tarif Rp juta'):number('n','Jumlah orang','1')+number('months','Bulan')+number('pct','Alokasi waktu (%)','any','max="100" value="100"'))+'<output data-e2-sub>—</output><button type="button" data-e2-del aria-label="Hapus baris">×</button>';
+  r.querySelector('[data-e2-name]').value=name;if(type==='cost')r.querySelector('[data-e2-unit]').value=unit;
+  q('[data-e2-'+type+'-rows]').appendChild(r);
+ }
+ [['Pro hire / tenaga ahli','orang-bulan'],['Jasa pengembangan / vendor','paket'],['Lisensi / langganan','lisensi'],['Infrastruktur / cloud','bulan'],['Pelatihan / lainnya','paket']].forEach(a=>add('cost',...a));
+ ['Project Manager / Koordinator','Business Analyst','Developer','Tester / QA','Change Management'].forEach(n=>add('sdm',n));
+ const parse=e=>{if(!e||e.value.trim()===''||!e.validity.valid)return null;const n=Number(e.value);return Number.isFinite(n)&&n>=0?n:null};
+ function calc(type){
+  let total=0,valid=true,used=false;
+  qa('[data-e2-row="'+type+'"]').forEach(r=>{
+   const v=k=>r.querySelector('[data-e2-'+k+']'),fields=type==='cost'?['n','rate']:['n','months','pct'];
+   const active=(type==='cost'?fields:['n','months']).some(k=>v(k).value.trim()!==''||v(k).validity.badInput);
+   const vals=fields.map(k=>parse(v(k)));
+   const ok=active&&vals.every(x=>x!==null)&&(type==='cost'||(Number.isInteger(vals[0])&&vals[2]<=100))&&v('name').value.trim()&&(type!=='cost'||v('unit').value.trim());
+   const sub=ok?(type==='cost'?vals[0]*vals[1]:vals[0]*vals[1]*vals[2]/100):null;
+   if(active){used=true;if(sub===null||!Number.isFinite(sub))valid=false;else total+=sub}
+   v('sub').textContent=sub===null?'—':nf(sub);r.classList.toggle('invalid',active&&sub===null);
+  });
+  q('[data-e2-total="'+type+'"]').textContent=(type==='cost'?'Rp ':'')+nf(total)+(type==='cost'?' jt':' org-bln');
+  q('[data-e2-use="'+type+'"]').disabled=!used||!valid||!Number.isFinite(total);
+  return {total,valid:used&&valid&&Number.isFinite(total)};
+ }
+ let mode='';
+ function show(type){mode=type;p.hidden=false;q('[data-e2-title]').textContent=type==='cost'?'Kalkulator estimasi biaya':'Kalkulator kebutuhan SDM';qa('[data-e2-panel]').forEach(el=>el.hidden=el.dataset.e2Panel!==type);calc(type)}
+ [[cost,'cost','Hitung estimasi biaya'],[sdm,'sdm','Hitung kebutuhan SDM']].forEach(([el,type,label])=>{
+  const b=document.createElement('button');b.type='button';b.className='est2-trigger';b.textContent='▦ '+label;el.insertAdjacentElement('afterend',b);
+  b.addEventListener('click',e=>{e.stopPropagation();if(!p.hidden&&mode===type)p.hidden=true;else show(type)});
+ });
+ p.addEventListener('input',e=>{e.stopPropagation();if(mode)calc(mode)});
+ p.addEventListener('change',e=>{e.stopPropagation();if(mode)calc(mode)});
+ p.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;e.stopPropagation();e.preventDefault();
+  if(b.hasAttribute('data-e2-close')){p.hidden=true;return}
+  if(b.dataset.e2Add){add(b.dataset.e2Add);calc(b.dataset.e2Add);return}
+  if(b.hasAttribute('data-e2-del')){const r=b.closest('[data-e2-row]'),t=r.dataset.e2Row;r.remove();calc(t);return}
+  if(b.hasAttribute('data-e2-duration')){if(parse(dur)>0)qa('[data-e2-row="sdm"]').forEach(r=>{const n=r.querySelector('[data-e2-n]'),m=r.querySelector('[data-e2-months]');if(n.value!==''&&m.value==='')m.value=dur.value});calc('sdm');return}
+  if(b.dataset.e2Use){const t=b.dataset.e2Use,v=calc(t);if(v.valid){setVal(t==='cost'?cost:sdm,v.total);p.hidden=true}}
+ });
+ return true;
+}
+
 function attach(root){
  (root||document).querySelectorAll(COST+','+SDM).forEach(inp=>{
   if(inp.dataset.esth||inp.disabled||inp.readOnly)return;if(attachNon(inp))return;inp.dataset.esth='1';
