@@ -11523,8 +11523,14 @@ function fsImportPaint(){
  if(!document.body)return;
  const rows=fsImportRead();let el=document.getElementById('mt-import-sync-pending');
  if(!rows.length||!FB.ready){if(el)el.remove();return}
- if(!el){el=document.createElement('div');el.id='mt-import-sync-pending';el.setAttribute('role','status');el.style.cssText='position:fixed;right:14px;bottom:34px;z-index:8500;max-width:min(430px,90vw);padding:10px 12px;border:1px solid #e6c77f;background:#fff9ec;color:#795000;border-radius:9px;box-shadow:0 3px 12px #142b5020;font:inherit;font-size:12px';document.body.appendChild(el)}
- el.replaceChildren();const t=document.createElement('div');t.style.fontWeight='700';t.textContent=rows.length+' dokumen impor belum terkonfirmasi Firebase';el.appendChild(t);
+ if(!el){el=document.createElement('div');el.id='mt-import-sync-pending';el.setAttribute('role','status');document.body.appendChild(el)}
+ /* Dapat diciutkan (×) menjadi pil kecil selama sesi ini; pil tetap tampil agar cadangan yang belum tersinkron tidak terlupa. */
+ let mini=false;try{mini=sessionStorage.getItem('mt_import_mini')==='1'}catch(_){}
+ el.replaceChildren();
+ if(mini){el.style.cssText='position:fixed;right:92px;bottom:30px;z-index:8500;padding:6px 12px;border:1px solid #e6c77f;background:#fff9ec;color:#795000;border-radius:999px;box-shadow:0 3px 12px #142b5020;font:inherit;font-size:12px;font-weight:700;cursor:pointer';el.title='Tampilkan detail impor yang belum tersinkron';el.textContent='⚠ '+rows.length+' impor belum tersinkron';el.onclick=()=>{try{sessionStorage.removeItem('mt_import_mini')}catch(_){}fsImportPaint()};return}
+ el.onclick=null;el.title='';el.style.cssText='position:fixed;right:92px;bottom:30px;z-index:8500;max-width:min(430px,80vw);padding:10px 34px 10px 12px;border:1px solid #e6c77f;background:#fff9ec;color:#795000;border-radius:9px;box-shadow:0 3px 12px #142b5020;font:inherit;font-size:12px';
+ const x=document.createElement('button');x.type='button';x.textContent='×';x.title='Ciutkan';x.setAttribute('aria-label','Ciutkan pemberitahuan');x.style.cssText='position:absolute;right:6px;top:4px;border:0;background:none;color:#795000;font-size:18px;line-height:1;cursor:pointer;padding:2px 6px';x.onclick=e=>{e.stopPropagation();try{sessionStorage.setItem('mt_import_mini','1')}catch(_){}fsImportPaint()};el.appendChild(x);
+ const t=document.createElement('div');t.style.fontWeight='700';t.textContent=rows.length+' dokumen impor belum terkonfirmasi Firebase';el.appendChild(t);
  const msg=document.createElement('div');msg.style.margin='4px 0';msg.textContent=fsImportError||'Cadangan tersimpan pada browser dan akun ini. Sinkronkan atau unduh sebelum menutup halaman.';el.appendChild(msg);
  for(const [label,fn] of [['Unduh cadangan JSON',fsImportDownload],['Coba sinkronkan',fsImportRetry]]){const b=document.createElement('button');b.type='button';b.className='btn btn-sm';b.textContent=label;b.disabled=fsImportWorking;b.style.marginRight='6px';b.onclick=fn;el.appendChild(b)}
 }
