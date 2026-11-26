@@ -7764,7 +7764,7 @@ function kwideView(){
  return strip+tbl}
 function kwStatus(x){if(x[3]==null)return '<span class="chip c-gray">Belum tersedia</span>';return '<span class="chip '+(x[3]>=x[2]?'c-ok':'c-bad')+'">'+(x[3]>=x[2]?'Tercapai':'Belum tercapai')+'</span>'}
 /* ---- data K-Wide per tahun (impor dari sheet Capaian K-Wide) ---- */
-function kwMetaYear(y){const a=S.kwide||[];return a.find(x=>x.id==='kw-import-'+y)||a[y]||null}
+function kwMetaYear(y){const a=S.kwide||[];return (Array.isArray(a)?a.find(x=>x&&x.id==='kw-import-'+y):null)||a[y]||null}
 function kwMeta(){return kwMetaYear(S.ui.tahun)}
 function kwRows(){const m=kwMeta();if(m&&m.rows&&m.rows.length)return m.rows.map(r=>Array.isArray(r)?r:Array.from({length:7},(_,i)=>r[i]??null));return S.ui.tahun===2026?KWIDE_2026:null}
 const kwKey=row=>S.ui.tahun+'|'+row[0]+'|'+String(row[1]).trim().toLowerCase();
@@ -11457,11 +11457,18 @@ function fsDocs(includeDenied=false){const out={};FS_ARR.forEach(c=>{out[c]={};c
 
 /* Import durability: track only changed documents at the import boundary, not the entire database.
    Retry is explicit; compare-and-set prevents an old browser draft from overwriting newer server edits. */
-let fsImportIntent=false,fsImportError='',fsImportVolatile={},fsImportWorking=false,fsFlushRunning=null,fsFlushAgain=false;
+var fsImportIntent=false,fsImportError='',fsImportVolatile={},fsImportWorking=false,fsFlushRunning=null,fsFlushAgain=false;
 function fsImportKey(){const a=FB.auth?.currentUser?.email;return FB.on&&a?'mt-import-outbox-v2:'+FB.cfg.projectId+':'+a.toLowerCase():''}
 function fsImportRead(){const k=fsImportKey();if(!k)return [];if(fsImportVolatile[k])return fsImportVolatile[k];try{return JSON.parse(localStorage.getItem(k)||'[]')}catch(_){return []}}
 function fsImportWrite(rows){const k=fsImportKey();if(!k)return false;try{if(rows.length)localStorage.setItem(k,JSON.stringify(rows));else localStorage.removeItem(k);delete fsImportVolatile[k];fsImportError='';return true}catch(e){fsImportVolatile[k]=rows;fsImportError='Penyimpanan browser penuh/ditolak. Unduh cadangan JSON sebelum menutup halaman.';return false}}
 function fsImportAllowed(c,id){return c!=='users'&&c!=='log'&&c!=='files'&&!(c==='config'&&id!=='cfg')&&!!id&&!id.includes('/')&&!/^__.*__$/.test(id)&&(FS_ARR.includes(c)||FS_MAP.includes(c)||c==='config')}
+function fsImportStage(rows){
+ if(!FB.on||!FB.ready||!fsImportKey())return false;
+ const out=new Map(fsImportRead().map(r=>[r.c+'/'+r.id,r]));
+ for(const r of rows){if(!fsImportAllowed(r.c,r.id))return false;const k=r.c+'/'+r.id,p=out.get(k);if(p&&p.after!==r.after){fsImportError='Ada cadangan impor terdahulu untuk '+k+'. Sinkronkan atau unduh sebelum impor lagi.';fsImportPaint();return false}out.set(k,p||r)}
+ const ok=fsImportWrite([...out.values()]);fsImportPaint();return ok
+}
+function fsImportConfirmDocs(rows){const done=new Map(rows.map(r=>[r.c+'/'+r.id,r.after]));fsImportWrite(fsImportRead().filter(r=>!done.has(r.c+'/'+r.id)||done.get(r.c+'/'+r.id)!==r.after));fsImportPaint()}
 function fsImportCapture(){
  if(!FB.on||!FB.ready||!fsImportKey())return false;
  const cur=fsDocs(true),old=fsImportRead(),out=new Map(old.map(r=>[r.c+'/'+r.id,r]));
@@ -11476,7 +11483,7 @@ function fsImportCapture(){
  }
  const ok=fsImportWrite([...out.values()]);fsImportPaint();return ok
 }
-function fsImportReconcile(){const rows=fsImportRead();if(!rows.length)return;const left=rows.filter(r=>FB.optDenied?.[r.c]||(FB.last[r.c]?.[r.id]??null)!==r.after);if(left.length!==rows.length)fsImportWrite(left);fsImportPaint()}
+function fsImportReconcile(){if(!FB.ready)return;const rows=fsImportRead();if(!rows.length)return;const left=rows.filter(r=>FB.optDenied?.[r.c]||!Object.prototype.hasOwnProperty.call(FB.last,r.c)||(FB.last[r.c]?.[r.id]??null)!==r.after);if(left.length!==rows.length){fsImportWrite(left);if(!left.length)toast('Hasil impor terkonfirmasi tersimpan di Firebase.')}fsImportPaint()}
 function fsImportDownload(){const rows=fsImportRead();if(!rows.length)return;const u=URL.createObjectURL(new Blob([JSON.stringify({kind:'mt-import-outbox',version:2,project:FB.cfg.projectId,docs:rows},null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download='MT-Impor-Belum-Terkonfirmasi-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
 async function fsImportRetry(){
  if(!FB.ready||!FB.auth?.currentUser||fsImportWorking)return;
@@ -11494,12 +11501,23 @@ async function fsImportRetry(){
    const refs=part.map(r=>FB.db.collection(r.c).doc(r.id));
    await FB.db.runTransaction(async tx=>{const snaps=await Promise.all(refs.map(ref=>tx.get(ref)));part.forEach((r,j)=>{const now=snaps[j].exists?stab(snaps[j].data()):null;if(now!==r.before&&now!==r.after)throw Error('Konflik data server: '+r.c+'/'+r.id+'. Tidak ditimpa.')});part.forEach((r,j)=>{const now=snaps[j].exists?stab(snaps[j].data()):null;if(now===r.after)return;r.after===null?tx.delete(refs[j]):tx.set(refs[j],JSON.parse(r.after))})});
    if(key!==fsImportKey())throw Error('Sesi berubah setelah penyimpanan.');
-   const done=new Map(part.map(r=>[r.c+'/'+r.id,r.after]));
-   fsImportWrite(fsImportRead().filter(r=>!done.has(r.c+'/'+r.id)||done.get(r.c+'/'+r.id)!==r.after));
+   const current=fsDocs(true);
+   for(const r of part){
+    const local=current[r.c]?.[r.id],localCanon=local==null?null:stab(fsClean(local)),last=FB.last[r.c]?.[r.id]??null;
+    if(last!==r.before&&last!==r.after)continue;
+    if(localCanon!==r.before&&localCanon!==r.after)continue;
+    FB.last[r.c]=FB.last[r.c]||{};
+    if(r.after===null)delete FB.last[r.c][r.id];else FB.last[r.c][r.id]=r.after;
+    const value=r.after===null?null:JSON.parse(r.after);
+    if(FS_MAP.includes(r.c)){const k=fsMapKey(r.c,r.id);S[r.c]=S[r.c]||{};if(value===null)delete S[r.c][k];else S[r.c][k]=value}
+    else if(FS_ARR.includes(r.c)){S[r.c]=S[r.c]||[];const j=S[r.c].findIndex(v=>String(v.id)===r.id);if(value===null){if(j>=0)S[r.c].splice(j,1)}else if(j>=0)S[r.c][j]=value;else S[r.c].push(value)}
+    else if(r.c==='config'&&r.id==='cfg'&&value)S.cfg=value.v;
+   }
+   fsImportConfirmDocs(part);
   }
   toast('Cadangan impor terkonfirmasi di Firebase. Muat ulang halaman untuk membaca data terbaru.');
  }catch(e){fsImportError=fbErr(e);toast('Sinkronisasi cadangan belum berhasil: '+fsImportError)}
- finally{fsImportWorking=false;fsImportPaint()}
+ finally{fsImportWorking=false;fsImportPaint();if(fsFlushAgain){fsFlushAgain=false;fsSchedule()}}
 }
 function fsImportPaint(){
  if(!document.body)return;
@@ -11516,9 +11534,9 @@ function fsSchedule(){if(!FB.on||!FB.ready)return;clearTimeout(FB.timer);FB.st='
 function fsClean(v,inArr){if(Array.isArray(v)){const a=v.map(x=>fsClean(x,true));if(inArr){const o={};a.forEach((x,i)=>o[i]=x);return o}return a}
  if(v&&typeof v==='object'){const o={};Object.keys(v).forEach(k=>{if(k==='')return;const x=fsClean(v[k],false);if(x!==undefined)o[k]=x});return o}return v}
 const FS_MAX=1000000;
-async function fsFlush(){if(fsFlushRunning){fsFlushAgain=true;return fsFlushRunning}const run=fsFlushCore();fsFlushRunning=run;try{return await run}finally{fsFlushRunning=null;fsImportReconcile();if(fsFlushAgain){fsFlushAgain=false;fsSchedule()}}}
+async function fsFlush(){if(fsImportWorking){fsFlushAgain=true;return}if(fsFlushRunning){fsFlushAgain=true;return fsFlushRunning}const run=fsFlushCore();fsFlushRunning=run;try{return await run}finally{fsFlushRunning=null;fsImportReconcile();if(fsFlushAgain){fsFlushAgain=false;fsSchedule()}}}
 async function fsFlushCore(){const cur=fsDocs(),ops=[],next={},skip=[],baseline=Object.fromEntries(Object.entries(FB.last).map(([c,v])=>[c,{...v}]));
- for(const c in cur){const prev=FB.last[c]||{};next[c]={};for(const id in cur[c]){if(/^__.*__$/.test(id)||!id||id.includes('/'))continue;const cl=fsClean(cur[c][id]),js=stab(cl);next[c][id]=js;if(prev[id]!==js){if(new TextEncoder().encode(js).length>950000){skip.push(c+'/'+id+' (ukuran '+Math.round(new TextEncoder().encode(js).length/1024)+' KB mendekati batas 1 MB)');continue}ops.push(['set',c,id,JSON.parse(js)])}}if(c!=='log')for(const id in prev)if(!(id in next[c]))ops.push(['del',c,id])}
+ for(const c in cur){const prev=FB.last[c]||{};next[c]={};for(const id in cur[c]){if(/^__.*__$/.test(id)||!id||id==='undefined'||id==='null'||id.includes('/'))continue;const cl=fsClean(cur[c][id]),js=stab(cl);next[c][id]=js;if(prev[id]!==js){if(new TextEncoder().encode(js).length>950000){skip.push(c+'/'+id+' (ukuran '+Math.round(new TextEncoder().encode(js).length/1024)+' KB mendekati batas 1 MB)');continue}ops.push(['set',c,id,JSON.parse(js)])}}if(c!=='log')for(const id in prev)if(!(id in next[c])&&id!=='undefined'&&id!=='null'&&!/^__.*__$/.test(id))ops.push(['del',c,id])}
  const keepLast=fail=>{const blocked=new Set(fail.map(f=>f.c+'/'+f.id));for(const [op,c,id] of ops){if(blocked.has(c+'/'+id))continue;FB.last[c]=FB.last[c]||{};const now=FB.last[c][id],before=baseline[c]?.[id],desired=next[c]?.[id];if(now!==before&&now!==desired)continue;if(op==='del')delete FB.last[c][id];else FB.last[c][id]=desired}};
  const sk=skip.map(x=>{const[c,id]=x.split(' ')[0].split('/');return {c,id}});
  if(!ops.length){keepLast(sk);FB.st=skip.length?'Sebagian gagal':'Tersimpan';setDbBadge();if(skip.length)toast('Tidak tersimpan ke Firestore: '+skip.join('; '));if(FB.done){toast(skip.length?'Impor belum seluruhnya tersimpan ke Firestore. Periksa dokumen yang gagal.':FB.done+' Terkonfirmasi tersimpan ke Firestore.');FB.done='';busyOff()}return}
