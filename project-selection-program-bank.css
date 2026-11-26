@@ -1279,3 +1279,11 @@
 .psbank-project-editor .psbank-initiative-options{padding:4px 10px 8px;display:grid;gap:5px;border-top:1px solid #dbe4ee}
 .psbank-project-editor .psbank-initiative-options label{display:flex!important;flex-direction:row!important;align-items:center!important;gap:7px;font-weight:400}
 .psbank-project-editor .psbank-initiative-options input[type=checkbox]{width:15px!important;height:15px!important;min-height:0!important;flex:none;margin:0;accent-color:#153a65}
+/* Buat Dokumen Proyek: pilihan jenis usulan ISTK / Non-ISTK */
+#app .psbank-docsrc{display:flex;flex-direction:column;gap:6px}
+#app .psbank-docsrc>b{color:#1a466f;font-size:12px;font-weight:800}
+#app .psbank-docsrc>div{display:grid;grid-template-columns:1fr 1fr;border:1px solid #C9D8EE;border-radius:9px;overflow:hidden;background:#fff}
+#app .psbank-docsrc label{position:relative;display:flex;align-items:center;justify-content:center;height:34px;font-size:12px;font-weight:700;color:#334155;cursor:pointer;border-left:1px solid #E2E8F0;text-align:center;padding:0 6px}
+#app .psbank-docsrc label:first-child{border-left:0}
+#app .psbank-docsrc label.on{background:#12275A;color:#fff}
+#app .psbank-docsrc input{position:absolute;opacity:0;width:0;height:0;pointer-events:none}

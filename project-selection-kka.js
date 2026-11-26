@@ -500,5 +500,5 @@ function refView(){
   '<div class="kka-card"><h3>Referensi & Literasi</h3><div class="kka-scroll"><table class="kka-t kka-ref"><thead><tr><th>No</th><th>Rujukan</th><th>Jenis</th><th>Dipakai untuk</th></tr></thead><tbody>'+REFS.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+E(r[0])+'</td><td>'+E(r[1])+'</td><td>'+E(r[2])+'</td></tr>').join('')+'</tbody></table></div><p class="kka-note" style="margin-top:8px">Verifikasi versi/perubahan terbaru setiap regulasi sebelum dijadikan dasar resmi.</p></div>';
 }
 function isFunded(x){return x.included!==false} /* program ISTK bermetode MCDA: semua proyek diprioritaskan otomatis */
-window.MT_PS_KKA={page,methodSelect,importFile,usulanHtml:()=>usulanView(compute()),compute,cfg,method,isFunded,GATES,KR,version:'20261127-kka1'};
+window.MT_PS_KKA={page,methodSelect,importFile,nonProjects:y=>nonP(y).psProjects,usulanHtml:()=>usulanView(compute()),compute,cfg,method,isFunded,GATES,KR,version:'20261127-kka1'};
 })();

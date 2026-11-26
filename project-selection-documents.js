@@ -763,21 +763,23 @@ function projectTarget(){return window.MT_PS_SCOPE?.target?.()||null}
 /* Buat Dokumen Proyek: Filter Program kosong (Semua Program) = proyek dari seluruh program tahun aktif. */
 function projectProgramFilter(){return String(S.ui?.psBank?.filterScopes?.mapping?.program||'')}
 function projectAllPrograms(){return projectMode()&&!projectProgramFilter()}
+/* Sumber usulan Buat Dokumen Proyek: 'istk' (proyek program ISTK) atau 'non' (usulan di luar ISTK dari Prioritasi/Pemetaan). */
+function docSrc(){S.ui.psBank=S.ui.psBank||{};return S.ui.psBank.docSrc==='non'?'non':'istk'}
 function projectPrograms(){
  if(!projectAllPrograms()){const t=projectTarget();return t?[t]:[]}
  return I.programs().filter(p=>!p.arsip&&p.psListStatus!=='Arsip');
 }
 function docSections(){return projectMode()?PROJECT_SECTIONS:STEPS}
 function docKind(){return projectMode()?'proposals':'portfolio'}
-function docId(){return projectMode()?(projectAllPrograms()?'all-programs':String(projectTarget()?.id||'unselected')):'all'}
+function docId(){return projectMode()?(docSrc()==='non'?'non-istk':projectAllPrograms()?'all-programs':String(projectTarget()?.id||'unselected')):'all'}
 function projectFields(x,section){
  const get=k=>window.MT_PS_SCOPE?.projectValue?.(x,k)||x[k]||'Belum diisi';
  const sets={
- identity:[['Nama Aplikasi',get('applicationName')],['Nama Proyek / Modul',get('name')],['Fungsi Utama / Modul',get('mainFunction')],['Sub Modul',get('subModule')],['URL Aplikasi',get('url')],['Kategori',get('category')],['UIC Utama',get('uic')],['Status Usulan',get('status')],['Program Tujuan',projectTarget()?.nama||'—'],['Asal Program',x.psOriginProgram||'Usulan baru'],['Tahun Sumber',x.psOriginYear||'—']],
+ identity:[['Nama Aplikasi',get('applicationName')],['Nama Proyek / Modul',get('name')],['Fungsi Utama / Modul',get('mainFunction')],['Sub Modul',get('subModule')],['URL Aplikasi',get('url')],['Kategori',get('category')],['UIC Utama',get('uic')],['Status Usulan',get('status')],['Program Tujuan',x.programId==='__nonistk'?'Di luar ISTK (tidak termapping ke program ISTK)':projectTarget()?.nama||'—'],['Asal Program',x.psOriginProgram||'Usulan baru'],['Tahun Sumber',x.psOriginYear||'—']],
  validation:[['Identifikasi Tim BaTii',get('batiiIdentification')],['Konfirmasi Pemilik Proses Bisnis',get('probisConfirmation')],['Deskripsi Aplikasi / Modul',get('description')],['Urgensi',get('urgency')]],
  strategic:[['Landasan Hukum / Regulasi',get('legalBasis')],['Strategi Organisasi yang Didukung (Renstra Kementerian / UE I)',get('strategyAlignment')]],
  business:[['Proses Bisnis Terkait (Level 3, 4, atau 5)',get('businessProcess')],['Penjelasan / Narasi Proses Bisnis Aplikasi',get('businessNarrative')]],
- development:[['Fitur Utama yang Akan Dikembangkan',get('features')],['Rencana Mulai',get('start')],['Target Go-Live',get('goLive')]]
+ development:[['Fitur Utama yang Akan Dikembangkan',get('features')],['Rencana Mulai',get('start')],['Target Go-Live',get('goLive')],...(x.programId==='__nonistk'?[['Estimasi Biaya (Rp juta)',x.estimatedCost===''||x.estimatedCost==null?'Belum diisi':String(Math.round(x.estimatedCost/1e4)/100)],['Durasi (bulan)',x.durationMonths===''||x.durationMonths==null?'Belum diisi':String(x.durationMonths)],['Kebutuhan SDM (orang-bulan)',x.estimatedStaffMonths===''||x.estimatedStaffMonths==null?'Belum diisi':String(x.estimatedStaffMonths)],['Gate G1–G4',['kkaG1','kkaG2','kkaG3','kkaG4'].map((k,i)=>'G'+(i+1)+': '+(x[k]||'belum dijawab')).join(' · ')],['Unit Pemilik Proses Bisnis',get('businessOwner')],['Domain Arsitektur SPBE',get('spbeDomain')],['Jenis Inisiatif',get('initiativeType')]]:[])]
  };
  return sets[section]||[];
 }
@@ -785,11 +787,12 @@ function portCfg(){
  S.ui.psBank=S.ui.psBank||{};
  const mode=projectMode(),key=mode?'proposalDocument':'portfolioDoc';
  const d=S.ui.psBank[key]||(S.ui.psBank[key]={format:'word',selected:[],sections:(mode?PROJECT_SECTIONS:STEPS).map(x=>x[0]),toc:true,sign:true,slide:0,initialized:false});
- const scope=mode?(projectAllPrograms()?'all':'p:'+String(projectTarget()?.id||'')):'portfolio';
+ const scope=mode?(docSrc()==='non'?'non':projectAllPrograms()?'all':'p:'+String(projectTarget()?.id||'')):'portfolio';
  if(!d.initialized||(mode&&d.scope!==scope)){d.selected=portPrograms().map(p=>String(p.id));d.initialized=true;d.scope=scope}
  return d;
 }
 function portPrograms(){
+ if(projectMode()&&docSrc()==='non'){const L=window.MT_PS_KKA&&window.MT_PS_KKA.nonProjects?window.MT_PS_KKA.nonProjects():[];return L.map((x,i)=>({...x,id:'non::'+String(x.id),nama:x.name,kode:x.psOriginRef||('NON-'+String(i+1).padStart(2,'0')),akr:'N-'+(i+1),jenis:x.initiativeType||'—',psProjects:[],psStatus:'Usulan non-ISTK',psOriginProgram:'Di luar ISTK',uic:x.uic||'—',programName:'Di luar ISTK',programId:'__nonistk'}))}
  if(projectMode()){const many=projectAllPrograms();return projectPrograms().flatMap(P=>(P.psProjects||[]).map((x,i)=>{let code='';try{code=window.MT_PS_SCOPE?.currentCode?.(P,x)||x.psCode||''}catch(_){code=x.psCode||''}
   return { ...x,id:many?String(P.id)+'::'+String(x.id):x.id,nama:x.applicationName||x.name,kode:code||((P.kodeResmi||P.kode||'')+' / '+(i+1)),akr:'U-'+(i+1),jenis:x.category||'—',psProjects:[],psStatus:x.status||'Usulan',psOriginProgram:x.psOriginProgram||(x.psOriginYear?'Sumber historis':'Usulan baru'),psOriginYear:x.psOriginYear,uic:x.uic||P.uic,programName:P.nama,programId:String(P.id)}}))}
  // Use the same active-year program source as the Usulan Program tab.
@@ -806,7 +809,7 @@ function portfolioModel(){
  const h1=x=>B.push({t:'h1',text:x}),h2=x=>B.push({t:'h2',text:x});
  const meaningful=rows=>rows.filter(x=>String(x[1]??'').trim()&&!/^belum diisi$/i.test(String(x[1]).trim()));
  h1('Ringkasan Eksekutif');
- const progLabel=projectAllPrograms()?[...new Set(data.map(o=>o.p.programName).filter(Boolean))].length+' program':'program '+(projectTarget()?.nama||'');
+ const progLabel=docSrc()==='non'&&mode?'kelompok di luar ISTK':projectAllPrograms()?[...new Set(data.map(o=>o.p.programName).filter(Boolean))].length+' program':'program '+(projectTarget()?.nama||'');
  B.push({t:'p',text:'Dokumen ini menghimpun informasi '+data.length+(mode?' usulan proyek pada '+progLabel:' program transformasi Kementerian Keuangan')+' tahun '+year()+'. Seluruh informasi bersumber dari isian program yang dipilih pada Modul Transformasi. Dokumen ini merupakan rancangan dan belum disahkan.'});
  B.push({t:'kv',rows:[['Tahun anggaran',String(year())],[mode?'Jumlah usulan proyek':'Jumlah program',String(data.length)],['Jumlah proyek terpetakan',String(mode?data.length:data.reduce((n,o)=>n+(o.p.psProjects||[]).length,0))],['Versi dokumen','v'+version],['Status','Rancangan (belum TTE)']]});
  h1(mode?'Ikhtisar Usulan Proyek':'Ikhtisar Portofolio Program');
@@ -827,9 +830,9 @@ function portfolioModel(){
  h1('Catatan Penggunaan dan Pembaruan Dokumen');
  B.push({t:'bullets',items:['Dokumen memuat data program yang dipilih pada saat ekspor; perubahan isian setelah ekspor tidak otomatis mengubah berkas yang telah diunduh.','Nomor versi dokumen baru diterbitkan setelah PDF hasil TTE diunggah kembali sebagai bukti dukung.','Status dan bukti tanda tangan elektronik memerlukan verifikasi melalui layanan resmi sebelum dianggap sah.']});
  if(d.sign)B.push({t:'tte'});
- return {page:RKMK_PAGE,lang:'id',formal:true,template:d.template||'activity',toc:true,fileName:(mode?'Dokumen_Usulan_Proyek_':'Dokumen_Portofolio_Transformasi_')+year()+'_v'+version,
+ return {page:RKMK_PAGE,lang:'id',formal:true,template:d.template||'activity',toc:true,fileName:(mode?(docSrc()==='non'?'Dokumen_Usulan_Non-ISTK_':'Dokumen_Usulan_Proyek_'):'Dokumen_Portofolio_Transformasi_')+year()+'_v'+version,
   header:(mode?'Dokumen Usulan Proyek · ':'Dokumen Portofolio Program Transformasi · ')+year(),
-  cover:{kicker:mode?'DOKUMEN USULAN PROYEK':'DOKUMEN PORTOFOLIO',title:mode?(projectAllPrograms()?'Usulan Proyek Seluruh Program':String(projectTarget()?.nama||'Usulan Proyek')):'Portofolio Program Transformasi',subject:'Tahun Anggaran '+year(),
+  cover:{kicker:mode?'DOKUMEN USULAN PROYEK':'DOKUMEN PORTOFOLIO',title:mode?(docSrc()==='non'?'Usulan Proyek di Luar ISTK':projectAllPrograms()?'Usulan Proyek Seluruh Program':String(projectTarget()?.nama||'Usulan Proyek')):'Portofolio Program Transformasi',subject:'Tahun Anggaran '+year(),
    chips:['Tahun '+year(),data.length+(mode?' usulan proyek':' program'),'Versi v'+version],scope:[],
    meta:[['Tahun Anggaran',String(year())],['Versi','v'+version],[mode?'Jumlah Usulan Proyek':'Jumlah Program',String(data.length)],['Unit Pengelola',String(ME?.unit||'—')],['Nomor Dokumen',signer.number||'Belum ditetapkan']],noTte:!d.sign,tte:{name:signer.name,title:signer.title,label:signer.label,city:signer.city,date:signer.date}},blocks:B};
 }
@@ -970,7 +973,7 @@ function portfolioPreview(){
 function portfolioBuilder(){
  const d=portCfg(),all=portPrograms(),chosen=portSelected(),mode=projectMode(),steps=docSections(),ver=nextVersion(docKind(),docId(),year());
  return '<div class="psbank-card psbank-portfolio-doc"><div class="psbank-sectionhead"><div><h3>'+(mode?'Buat Dokumen Proyek':'Buat Dokumen Portofolio')+' · '+year()+''+(typeof MT_INFO_ICON==='function'?MT_INFO_ICON:()=>'')(''+(mode?'Pilih proyek (Filter › Program: satu program atau Semua Program), tentukan substansi, kemudian pratinjau dan unduh dokumen proyek.':'Kompilasi substansi beberapa program, dikelompokkan menurut program sumbernya.')+'')+'</h3></div><span class="psbank-count">'+chosen.length+' dari '+all.length+(mode?' usulan proyek':' program')+'</span></div>'+
- '<div class="psbank-docbuilder"><div class="psbank-docsettings"><div class="psbank-doccheckhead"><b>'+(mode?'Pilih Proyek':'Pilih Program')+'</b><button class="btn" type="button" data-port-all '+(!mode&&!all.length?'disabled':'')+'>'+(all.length&&chosen.length===all.length?'Kosongkan':'Pilih Semua')+'</button></div>'+
+ '<div class="psbank-docbuilder"><div class="psbank-docsettings">'+(mode?'<div class="psbank-docsrc" role="radiogroup" aria-label="Jenis usulan proyek"><b>Jenis usulan</b><div>'+[['istk','Usulan Proyek ISTK'],['non','Usulan Non-ISTK']].map(o=>'<label class="'+(docSrc()===o[0]?'on':'')+'"><input type="radio" name="port-src" data-port-src="'+o[0]+'"'+(docSrc()===o[0]?' checked':'')+'>'+o[1]+'</label>').join('')+'</div></div>':'')+'<div class="psbank-doccheckhead"><b>'+(mode?'Pilih Proyek':'Pilih Program')+'</b><button class="btn" type="button" data-port-all '+(!mode&&!all.length?'disabled':'')+'>'+(all.length&&chosen.length===all.length?'Kosongkan':'Pilih Semua')+'</button></div>'+
  '<div class="psbank-portfolio-checks">'+(all.length?all.map(p=>'<label><input type="checkbox" data-port-program="'+E(p.id)+'" '+(d.selected.includes(String(p.id))?'checked':'')+'><span><b>'+E(p.nama)+'</b><small>'+E(mode?(p.kode||officialCode(p)):officialCode(p))+(mode&&projectAllPrograms()&&p.programName?' · '+E(p.programName):'')+'</small></span></label>').join('') :'<p>'+(mode?'Belum ada usulan proyek pada tahun ini.':'Belum ada usulan program tahun '+year()+'. Tambahkan program baru atau salin program dari Riwayat Program untuk menyusun dokumen portofolio.')+'</p>')+'</div>'+
  '<div class="psbank-doccheckhead"><b>Substansi</b><span>'+d.sections.length+'/'+steps.length+' dipilih</span></div><div class="psbank-docchecks">'+steps.map((x,i)=>'<label><input type="checkbox" data-port-section="'+x[0]+'" '+(d.sections.includes(x[0])?'checked':'')+'>'+(i+1)+'. '+x[1]+'</label>').join('')+'</div>'+
  tteControls(d,'port')+
@@ -1134,6 +1137,8 @@ async function portfolioExport(){
 
 function portfolioClick(ev){
  const d=portCfg();
+ const src=ev.target.closest('[data-port-src]');
+ if(src){S.ui.psBank.docSrc=src.dataset.portSrc;d.slide=0;save();render();return true}
  const fmt=ev.target.closest('[data-port-format]');
  if(fmt){d.format=fmt.dataset.portFormat;d.slide=0;save();render();return true}
  const slide=ev.target.closest('[data-port-slide]');
