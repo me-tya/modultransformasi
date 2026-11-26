@@ -602,3 +602,34 @@ button.ps27-pkpi.navy:hover{border-color:#0a4277}
 .ps27-ipo-row-non{border-top:3px solid #e6c166!important}
 .ps27-ipo-row-non .ps27-ipo-step{background:#fff9eb}
 @media(max-width:750px){#app .ps27 .ps27-lanes button{font-size:11.5px;gap:4px}#app .ps27.ps27-split .ps27-tabs button{font-size:10.5px;padding:6px 4px}#app .ps27.ps27-split .ps27-tabs button>span{flex-wrap:wrap}#app .ps27.ps27-split .ps27-tabs button b{display:none}}
+
+
+/* Compact Project Selection: preserve hierarchy, reclaim the first viewport for data. */
+#app .pswf.ps27.ps27-split{gap:6px;padding-bottom:12px}
+#app .ps27.ps27-split .ps27-lanes{margin:0;padding:3px;gap:4px;border-radius:9px}
+#app .ps27.ps27-split .ps27-lanes button{min-height:32px;padding:4px 8px;font-size:12px;gap:6px;border-radius:6px;line-height:1.25}
+#app .ps27.ps27-split .ps27-lanes button.on{box-shadow:inset 0 -2px #f2b92c}
+#app .ps27.ps27-split .ps27-lane-icon{width:18px;height:18px}
+#app .ps27.ps27-split .ps27-lane-icon svg{width:16px;height:16px}
+#app .ps27.ps27-split .ps27-stage,#app .ps27.ps27-split .kka-lane-nav{min-height:39px;margin:0}
+#app .ps27.ps27-split .ps27-tabs,#app .ps27.ps27-split .kka-lane-nav .kka-group-main{min-height:39px;padding:3px;gap:4px;border-radius:9px}
+#app .ps27.ps27-split .ps27-tabs button,#app .ps27.ps27-split .kka-lane-nav .kka-group-main button{min-height:31px;padding:4px 7px;border-radius:6px;font-size:12px;line-height:1.25}
+#app .ps27.ps27-split .kka-lane-nav .kka-group-main button.on{box-shadow:inset 0 -2px #f2b92c}
+#app .ps27.ps27-split .ps27-tabs button em{width:19px;height:19px;font-size:10px}
+#app .ps27.ps27-split .ps27-contextinfo{width:28px;height:28px;flex-basis:28px;border-radius:7px}
+#app #view .ps27.ps27-split .flt.pmo-unified.ps27-flt{margin:0!important}
+#app .ps27.ps27-clearance .kka-lane-subnav{margin:0}
+#app .ps27.ps27-clearance .kka-group-subline{min-height:34px;gap:6px}
+#app .ps27.ps27-clearance .kka-group-sub button{min-height:32px;padding:5px 6px;font-size:12px;border-bottom-width:2px}
+#app .ps27.ps27-clearance .kka-group-actions{padding:2px 0}
+#app .ps27.ps27-clearance .kka-group-notice,#app .ps27.ps27-clearance .kka-group-content{margin:0;gap:8px}
+#app .ps27.ps27-clearance .kka-group-notice .kka-syncnotice{padding:7px 9px;gap:6px;font-size:11.5px}
+#app .ps27.ps27-clearance .kka-group-notice .kka-syncnotice>div{min-width:180px;line-height:1.4}
+#app .ps27.ps27-clearance .kka-group-notice .kka-syncnotice small{display:inline;margin:0 0 0 6px;font-size:11px}
+#app .ps27.ps27-clearance .kka-group-notice .kka-syncnotice .btn{min-height:29px;padding:4px 8px;font-size:11.5px}
+#app .ps27.ps27-clearance .kka-clearance-usulan .psbank-proposal-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 7px;padding:3px 0;flex-wrap:wrap}
+#app .ps27.ps27-clearance .kka-clearance-usulan .psbank-headright{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}
+#app .ps27.ps27-clearance .kka-clearance-usulan .psbank-proposal-head h3{margin:0;font-size:14px;line-height:1.35}
+#app .ps27.ps27-clearance .kka-clearance-usulan .kka-register-search{width:190px!important;flex:0 1 190px;height:30px!important;min-height:0!important;line-height:28px!important}
+#app .ps27.ps27-clearance .kka-clearance-usulan .psbank-headright .btn{min-height:30px;padding:4px 9px}
+@media(max-width:750px){#app .ps27.ps27-split .ps27-lanes button,#app .ps27.ps27-split .ps27-tabs button,#app .ps27.ps27-split .kka-lane-nav .kka-group-main button{font-size:11px;padding:4px}#app .ps27.ps27-clearance .kka-group-notice .kka-syncnotice small{display:block;margin:2px 0 0}#app .ps27.ps27-clearance .kka-clearance-usulan .psbank-headright{width:100%}#app .ps27.ps27-clearance .kka-clearance-usulan .kka-register-search{flex:1 1 130px}}
