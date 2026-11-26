@@ -243,7 +243,7 @@ function usulan(){
  const b=store(),tab=b.tab;
  return '<div class="psbank-subhead"><nav class="psbank-subtabs" role="tablist" aria-label="Usulan Program">'+
  [['bank','Riwayat Program'],['detail','Usulan Program'],['portfolio','Buat Dokumen Portofolio']].map(t=>'<button type="button" class="'+(tab===t[0]?'on':'')+'" data-bank-tab="'+t[0]+'" title="'+E(helpInfo[t[0]])+'">'+t[1]+(t[0]==='detail'?' <b>'+active().length+'</b>':'')+'</button>').join('')+
- '</nav>'+(tab!=='portfolio'?(typeof MT_TABSEARCH==='function'?MT_TABSEARCH:()=>'')('ps-usulan',b.search,tab==='bank'?'Cari nama program, kode atau UIC...':'Cari nama program, kode atau UIC...'):'')+(tab==='detail'?'<div class="psbank-headbtns"><button class="btn" data-bank-import title="Impor usulan program dan Charter Program dari Excel (template Impor Usulan Program)">↑ Impor Program</button><button class="btn pri" data-bank-new>+ Tambah Program Baru</button></div>':'')+'</div>'+
+ '</nav>'+(tab!=='portfolio'?(typeof MT_TABSEARCH==='function'?MT_TABSEARCH:()=>'')('ps-usulan',b.search,tab==='bank'?'Cari nama program, kode atau UIC...':'Cari nama program, kode atau UIC...'):(typeof MT_TABSEARCH_PH==='function'?MT_TABSEARCH_PH():''))+(tab==='detail'?'<div class="psbank-headbtns"><button class="btn" data-bank-import title="Impor usulan program dan Charter Program dari Excel (template Impor Usulan Program)">↑ Impor Program</button><button class="btn pri" data-bank-new>+ Tambah Program Baru</button></div>':'')+'</div>'+
  (tab==='bank'?bank():tab==='portfolio'?(Docs.portfolioBuilder?.(active())||'<div class="psbank-card">Fitur dokumen portofolio belum tersedia.</div>'):detail());
 }
 const EDIT_FIELDS={

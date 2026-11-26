@@ -22,6 +22,8 @@ window.MT_TABSEARCH=function(scope,value,placeholder){
  return '<label class="mt-tabsearch"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>'+
   '<input type="search" data-mt-tabsearch="'+attr(scope)+'" value="'+attr(value||'')+'" placeholder="'+attr(placeholder||'Cari...')+'" aria-label="'+attr(placeholder||'Cari')+'"></label>';
 };
+/* Placeholder tak terlihat selebar kolom Cari: dipakai pada subtab tanpa pencarian agar posisi & lebar tab tetap statis. */
+window.MT_TABSEARCH_PH=function(){return '<label class="mt-tabsearch mt-tabsearch-ph" aria-hidden="true" style="visibility:hidden;pointer-events:none"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24"></svg><input type="search" tabindex="-1" disabled aria-hidden="true"></label>';};
 if(typeof document==='undefined'||typeof document.addEventListener!=='function')return;
 /* Tabel bersama (tbl() di index.html): bila satu baris subtab (.subt) hanya membawahi SATU tabel,
    kolom Cari tabel itu dipindah ke kanan baris subtab. Handler input tetap memakai [data-q]. */
