@@ -21,7 +21,7 @@ function sdmBox(){return '<details class="esth"><summary>🧮 Hitung orang-bulan
 function scope(el){return el.closest('dialog,[role="dialog"],.ov,.modal,form,section')||document}
 function attach(root){
  (root||document).querySelectorAll(COST+','+SDM).forEach(inp=>{
-  if(inp.dataset.esth||inp.disabled||inp.readOnly)return;inp.dataset.esth='1';
+  if(inp.dataset.esth||inp.disabled||inp.readOnly)return;if(attachNon(inp))return;inp.dataset.esth='1';
   const host=inp.closest('label')||inp,box=document.createElement('div');box.className='esth-wrap';box.innerHTML=inp.matches(COST)?costBox():sdmBox();
   box._target=inp;host.insertAdjacentElement('afterend',box);
   if(inp.matches(SDM)){const d=scope(inp).querySelector(DUR);if(d&&num(d.value))box.querySelector('[data-esth-m]').value=num(d.value)}
@@ -51,6 +51,9 @@ let raf=0;new MutationObserver(()=>{if(raf)return;raf=requestAnimationFrame(()=>
 .esth-wrap button{border:1px solid #C9D8EE;background:#fff;border-radius:8px;padding:4px 10px;font:700 11.5px inherit;color:#12275A;cursor:pointer;min-height:0;box-shadow:none}
 .esth-sr button{padding:0;width:24px;height:24px;color:#B42318;border-color:#F3C6C6}.esth-add{margin:2px 0 6px}
 .esth-t{display:flex;align-items:center;gap:10px;border-top:1px dashed #C9D8EE;padding-top:8px;margin-top:4px}.esth-t span{flex:1;font-weight:700;color:#334155}.esth-t b{font-size:13px}
-.esth-t button{background:#12275A!important;color:#fff!important;border-color:#12275A!important}`;document.head.appendChild(s)})();
+.esth-t button{background:#12275A!important;color:#fff!important;border-color:#12275A!important}
+ .est2[hidden],.est2 [hidden]{display:none!important}.est2-trigger{display:block;margin-top:5px;padding:3px 0;border:0;background:transparent;color:#1D3A78;font:inherit;font-size:12px;cursor:pointer;text-align:left}.est2-trigger:hover{text-decoration:underline}
+ .est2{border:1px solid #D6E0EF;border-left:3px solid #F2B92C;border-radius:10px;background:#fff;margin:12px 0 0;padding:12px;font:inherit;color:#12275A}.est2-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.est2-guide,.est2-hint{font-size:12px;line-height:1.5;margin:6px 0 10px;color:#475569}.est2-scroll{overflow-x:auto}.est2-grid{display:grid;gap:6px;align-items:center;min-width:580px;font-size:12px}.est2-grid.cost{grid-template-columns:minmax(155px,2fr) minmax(70px,.7fr) minmax(90px,1fr) minmax(100px,1fr) minmax(100px,1fr) 28px}.est2-grid.sdm{grid-template-columns:minmax(155px,2fr) repeat(3,minmax(76px,1fr)) minmax(100px,1fr) 28px}.est2-rows,.est2-row{display:contents}.est2-grid strong{font-size:11px;color:#64748B}.est2 input{width:100%;min-width:0;box-sizing:border-box;border:1px solid #C9D8EE;border-radius:7px;background:#fff;height:32px;padding:5px 7px;font:inherit;color:#12275A}.est2 output{text-align:right;font-weight:600;padding-right:4px;font-variant-numeric:tabular-nums}.est2 button{border:1px solid #C9D8EE;background:#fff;border-radius:7px;color:#12275A;font:inherit;font-size:12px;padding:6px 10px;cursor:pointer}.est2 [data-e2-del]{padding:4px;color:#64748B}.est2 [data-e2-add],.est2 [data-e2-duration]{margin:9px 8px 0 0}.est2-total{display:flex;align-items:center;gap:12px;border-top:1px solid #E2E8F0;margin-top:10px;padding-top:10px}.est2-total span{flex:1}.est2-total b{font-size:16px}.est2-total button{background:#F2B92C;border-color:#F2B92C;font-weight:700}.est2-total button:disabled{opacity:.5;cursor:not-allowed}.est2-row.invalid input{border-color:#D97706}.est2-hint{margin-bottom:0}
+`;document.head.appendChild(s)})();
 window.MT_EST_HELPER={attach,version:'20261127-est1'};
 })();
