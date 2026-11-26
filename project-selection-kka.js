@@ -126,17 +126,25 @@ function rankView(p,D,ro){
   '<input class="kka-q" type="search" data-kka-q placeholder="Cari proyek, kode, UE I…" value="'+E(u.q||'')+'" aria-label="Cari proyek">'+
   '<span class="kka-sp"></span><span class="kka-prof">Profil bobot: <b>'+E(D.c.profile)+'</b></span>'+
   '<button type="button" class="btn btn-sm" data-kka-import '+(ro&&!canCfg()?'disabled':'')+'>↑ Impor Kertas Kerja A</button><button type="button" class="btn btn-sm" data-kka-xlsx>⇩ Excel</button></div>';
- const hdK=KR.map(k=>'<th class="kka-k" title="'+E(k.n+' — '+k.q)+'">'+k.c+'<small>'+E(k.s)+'</small><em>'+fmt(D.c.weights[D.c.profile][+k.c.slice(1)-1])+'%</em></th>').join('');
- const hdG=GATES.map(g=>'<th class="kka-g" title="'+E(g[3])+'">'+g[1]+'</th>').join('');
+ const rubTxt=k=>k.n+' — '+k.q+'\n'+RUB[k.c].map((t,i)=>(i+1)+' = '+t).join('\n');
+ const hdK=KR.map(k=>'<th class="kka-k" title="'+E(rubTxt(k))+'"><span class="kka-thc">'+k.c+ic(rubTxt(k))+'</span><small>'+E(k.s)+'</small><em>'+fmt(D.c.weights[D.c.profile][+k.c.slice(1)-1])+'%</em></th>').join('');
+ const hdG=GATES.map(g=>'<th class="kka-g" title="'+E(g[3])+'"><span class="kka-thc">'+g[1]+ic(g[1]+' — '+g[3]+'\nYa = terpenuhi; Tidak = tidak terpenuhi (usulan Tinjau Ulang); kosong = belum dijawab (Lengkapi).')+'</span></th>').join('');
  const roOf=r=>ro||I.readonly(r.p);
- const sel=(r,attr,val,opts,lab)=>'<select '+attr+' aria-label="'+E(lab)+'" '+(roOf(r)?'disabled':'')+'>'+opts.map(v=>'<option value="'+v+'"'+(String(val??'')===String(v)?' selected':'')+'>'+(v===''?'–':v)+'</option>').join('')+'</select>';
+ const sel=(r,attr,val,opts,lab,desc)=>{const cur=desc&&val!=null&&val!==''?desc[+val-1]:'';return '<select '+attr+' aria-label="'+E(lab)+'" title="'+E(cur?val+' = '+cur:lab)+'" '+(roOf(r)?'disabled':'')+'>'+opts.map(v=>'<option value="'+v+'"'+(String(val??'')===String(v)?' selected':'')+(desc&&v!==''?' title="'+E(desc[+v-1])+'" data-l="'+E(v+' – '+desc[+v-1])+'"':'')+'>'+(v===''?'–':v)+'</option>').join('')+'</select>'};
  const tr=rows.map(r=>'<tr class="'+(r.ranked?'':'kka-nr')+'"><td class="kka-rk">'+(rk(r)||'—')+'</td><td class="kka-nm"><b>'+E(r.name)+'</b><small>'+E([r.code,scopeAll?r.p.nama:''].filter(Boolean).join(' · '))+'</small></td><td>'+E(r.uic||'—')+'</td><td class="kka-sc">'+(r.score==null?'<small>'+r.n+'/7</small>':fmt(r.score,2))+'</td><td>'+(r.cat?'<span class="kka-chip '+catCls(r.cat)+'">'+E(r.cat.replace(' – ',' · '))+'</span>':'<small>'+(r.full?'':'Belum lengkap')+'</small>')+(r.full&&!r.ranked?'<small>Tidak diranking (gate)</small>':'')+'</td>'+
   GATES.map((g,i)=>'<td class="kka-g">'+sel(r,'data-kka-gate="'+E(r.id)+'|'+g[0]+'"',r.g[i],['','Ya','Tidak'],g[1]+' '+r.name)+'</td>').join('')+
   '<td><span class="kka-chip '+gateCls(r.gate)+'">'+r.gate+'</span></td>'+
-  KR.map((k,i)=>'<td class="kka-k">'+sel(r,'data-kka-score="'+E(r.id)+'|'+k.c+'"',r.s[i],['',1,2,3,4,5],k.c+' '+r.name)+'</td>').join('')+
+  KR.map((k,i)=>'<td class="kka-k">'+sel(r,'data-kka-score="'+E(r.id)+'|'+k.c+'"',r.s[i],['',1,2,3,4,5],k.c+' '+r.name,RUB[k.c])+'</td>').join('')+
   '</tr>').join('');
  return kpis(D)+tb+'<div class="kka-scroll"><table class="kka-t"><thead><tr><th>'+(u.mode==='ue'?'Rank UE I':'Rank')+'</th><th>Proyek</th><th>UE I</th><th>Skor<small>0–100</small></th><th>Kategori</th>'+hdG+'<th>Hasil Gate</th>'+hdK+'</tr></thead><tbody>'+(tr||'<tr><td colspan="18" class="kka-empty">Tidak ada proyek sesuai filter.</td></tr>')+'</tbody></table></div>'+
-  '<p class="kka-note">Skor 1–5 per kriteria mengikuti <b>Referensi & Rubrik</b> (arahkan kursor ke judul kolom). K7 terbalik: 5 = risiko terendah. Gate dan estimasi biaya/SDM juga dapat diisi di Pemetaan Proyek › Usulan Proyek. Hasil adalah bahan keputusan; keputusan akhir pada forum tata kelola.</p>';
+  rubLegend()+'<p class="kka-note">Skor 1–5 per kriteria mengikuti rubrik di atas (juga pada ikon ⓘ judul kolom dan saat dropdown dibuka). K7 terbalik: 5 = risiko terendah. Gate dan estimasi biaya/SDM juga dapat diisi di Pemetaan Proyek › Usulan Proyek. Hasil adalah bahan keputusan; keputusan akhir pada forum tata kelola.</p>';
+}
+function rubLegend(){
+ const open=!!ui().rubOpen;
+ return '<details class="kka-card kka-rub" data-kka-rub'+(open?' open':'')+'><summary><b>Arti skor 1–5 tiap kriteria</b><small>5 = paling mendukung untuk diprioritaskan · K7 terbalik: 5 = risiko terendah</small></summary>'+
+  '<div class="kka-scroll"><table class="kka-t kka-ref"><thead><tr><th>Kriteria</th><th>1 – Sangat rendah</th><th>2 – Rendah</th><th>3 – Sedang</th><th>4 – Tinggi</th><th>5 – Sangat tinggi</th></tr></thead><tbody>'+
+  KR.map(k=>'<tr><td><b>'+k.c+' '+E(k.n)+'</b></td>'+RUB[k.c].map(t=>'<td>'+E(t)+'</td>').join('')+'</tr>').join('')+
+  '<tr><td><b>Gate G1–G4</b></td><td colspan="5">Ya = terpenuhi · Tidak = tidak terpenuhi → <b>Tinjau Ulang</b> · kosong = belum dijawab → <b>Lengkapi</b>. Hanya usulan <b>Lolos</b> (G1–G4 semua Ya) yang diranking (sesuai pengaturan).</td></tr></tbody></table></div></details>';
 }
 function criteriaView(D){
  const c=D.c,ed=canCfg(),dis=ed?'':' disabled';
@@ -294,6 +302,11 @@ document.addEventListener('change',ev=>{
  if(t.matches('[data-kka-cfg]')){const k=t.dataset.kkaCfg,v=t.tagName==='SELECT'?t.value:+t.value;if(t.tagName!=='SELECT'&&(!isFinite(v)||v<0)){say('Nilai harus angka nonnegatif.');return}setCfg({[k]:v});render();return}
  if(t.matches('[data-kka-w]')){const[pr,i]=t.dataset.kkaW.split('|'),v=+t.value;if(!isFinite(v)||v<0||v>100){say('Bobot 0–100%.');return}const w=cfg().weights;w[pr][+i]=v;setCfg({weights:w});render();return}
 });
+/* Dropdown skor: tertutup = angka saja; saat dibuka = angka + arti rubrik. */
+const kkaLong=(t,on)=>{if(!t||!t.matches||!t.matches('select[data-kka-score]'))return;[...t.options].forEach(o=>{if(o.dataset.l)o.text=on?o.dataset.l:o.value})};
+document.addEventListener('focusin',ev=>kkaLong(ev.target,true));document.addEventListener('mousedown',ev=>kkaLong(ev.target,true),true);
+document.addEventListener('focusout',ev=>kkaLong(ev.target,false));document.addEventListener('change',ev=>kkaLong(ev.target,false),true);
+document.addEventListener('toggle',ev=>{const t=ev.target;if(t&&t.matches&&t.matches('[data-kka-rub]'))ui().rubOpen=t.open},true);
 document.addEventListener('input',ev=>{const t=ev.target;if(!t.matches||!t.matches('[data-kka-q]'))return;ui().q=t.value;clearTimeout(window.__kkaQ);const pos=t.selectionStart;window.__kkaQ=setTimeout(()=>{render();const n=document.querySelector('[data-kka-q]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}},260)});
 
 /* ---------- gaya ---------- */
@@ -318,7 +331,7 @@ document.addEventListener('input',ev=>{const t=ev.target;if(!t.matches||!t.match
 .kka-actions{display:flex;justify-content:flex-end;margin-top:8px}.kka-act{white-space:nowrap}.kka-act .btn{margin-right:4px}
 .kka-grid2{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:12px}.kka-quad{width:100%;height:auto}.kka-ql{font:700 12px Inter,Arial;fill:#475569}.kka-ax{font:10px Inter,Arial;fill:#64748B}.kka-at{font:600 11px Inter,Arial;fill:#334155}.kka-pl{font:700 11px Inter,Arial;fill:#0F2346}
 .kka-ql2{display:flex;flex-wrap:wrap;gap:12px;list-style:none;padding:0;margin:6px 0 0;font-size:12px}.kka-bars{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:7px;font-size:12px}.kka-bars li{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto;gap:8px;align-items:center}.kka-bars i{height:8px;background:#EEF2F7;border-radius:6px;overflow:hidden}.kka-bars em{display:block;height:100%;background:#94A3B8}.kka-bars em.p1{background:#0F7A4B}.kka-bars em.p2{background:#5BBF8A}.kka-bars em.p3{background:#F2B92C}.kka-bars em.p4{background:#94A3B8}
-.kka-ref td{vertical-align:top}.kka-ref td:nth-child(n+3){min-width:150px}
+.kka-thc{display:inline-flex;align-items:center;gap:3px}.kka-rub{padding:0}.kka-rub>summary{cursor:pointer;padding:11px 14px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;color:#0F2346;font-size:13px}.kka-rub>summary small{color:#64748B;font-size:11.5px}.kka-rub .kka-scroll{border:0;border-top:1px solid #E2E8F0;border-radius:0 0 12px 12px}.kka-rub td{font-size:12px}.kka-ref td{vertical-align:top}.kka-ref td:nth-child(n+3){min-width:150px}
 b.up{color:#0F7A4B}b.dn{color:#B42318}
 @media(max-width:1200px){.kka-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}.kka-grid2{grid-template-columns:1fr}.kka-sets{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){.kka-kpis{grid-template-columns:1fr 1fr}.kka-sets{grid-template-columns:1fr}}`;document.head.appendChild(s)})();
