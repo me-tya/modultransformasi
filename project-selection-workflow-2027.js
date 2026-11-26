@@ -465,7 +465,7 @@ function navigate(target){
   if(item&&['identity','case','benefits','stakeholders','risks','governance','docs'].includes(item))S.ui.psBank.wtab=item;
  }
  if(actual==='mapping'&&window.MT_PS_SCOPE){
-  window.MT_PS_SCOPE.bank().mappingTab=['proposal','usulan-proyek','results','hasil'].includes(sub)?'proposal':['docs','dokumen'].includes(sub)?'docs':'history';
+  window.MT_PS_SCOPE.bank().mappingTab=sub==='nonistk'?'nonistk':['proposal','usulan-proyek','results','hasil'].includes(sub)?'proposal':['docs','dokumen'].includes(sub)?'docs':'history';
  }
  if(actual==='prioritasi'&&sub==='monev'){location.hash='#pmo-pascaproyek';return}
  if(actual==='prioritasi'&&/^mcda-/.test(sub||'')){S.ui.psKka=S.ui.psKka||{};const k=sub.slice(5);S.ui.psKka.sub=k==='non'?'rank':k;if(k==='non')S.ui.psKka.scope='non';else if(k==='rank'&&S.ui.psKka.scope==='non')S.ui.psKka.scope='program'}
@@ -682,7 +682,7 @@ function helpPage(tab){
  if(tab==='map'){
   const deep=[
    [['Riwayat Program','usulan:bank'],['Usulan Program · Kelola & Unggah / Unduh','usulan:detail'],['Dokumen Portofolio','usulan:portfolio'],['Identitas','usulan:detail:identity'],['Business Case','usulan:detail:case'],['Manfaat','usulan:detail:benefits'],['Stakeholder','usulan:detail:stakeholders'],['Risiko','usulan:detail:risks'],['Tata Kelola','usulan:detail:governance'],['Buat Dokumen Program','usulan:detail:docs']],
-   [['Riwayat Proyek','mapping:history'],['Usulan Proyek (accordion per program)','mapping:proposal'],['Gate Penyaringan (form Usulan Proyek)','mapping:proposal'],['Buat Dokumen Proyek','mapping:docs']],
+   [['Riwayat Proyek','mapping:history'],['Usulan Proyek ISTK (accordion per program)','mapping:proposal'],['Usulan Non-ISTK','mapping:nonistk'],['Gate Penyaringan (form Usulan Proyek)','mapping:proposal'],['Buat Dokumen Proyek','mapping:docs']],
    [['SMART · Penilaian & Peringkat','prioritasi:ranking'],['SMART · Kriteria & Bobot','prioritasi:criteria'],['SMART · Referensi & Formula','prioritasi:reference'],['MCDA · Penilaian & Peringkat','prioritasi:mcda-rank'],['MCDA · Usulan di luar ISTK','prioritasi:mcda-non'],['MCDA · Kriteria & Bobot','prioritasi:mcda-criteria'],['MCDA · Roadmap & Analisis','prioritasi:mcda-roadmap'],['MCDA · Repositori Hasil','prioritasi:mcda-repo'],['MCDA · Referensi & Rubrik','prioritasi:mcda-ref']],
    [['Charter Program','charter']],
    [['Kontrak K-Wide dan Cakupan Proyek','penetapan-program']],

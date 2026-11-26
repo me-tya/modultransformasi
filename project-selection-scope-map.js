@@ -299,12 +299,13 @@ function programAccordion(programs,on){
   return '<details class="psbank-accordion-program" '+(expanded?'open':'')+'>'+head+(on==='results'?treeBody:otherBody)+'</details>';
  }).join('')+'</div>';
 }
-const MAPPING_TABS=[['history','Riwayat Proyek','Referensi proyek lintas tahun; salin ke program tujuan tanpa menyalin WBS atau realisasi historis.'],['proposal','Usulan Proyek','Seluruh usulan proyek disusun per program induk dalam accordion, dengan aksi lihat, ubah, tambah, dan hapus.'],['docs','Buat Dokumen Proyek','Pilih proyek dan substansi untuk menyusun dokumen proyek; dokumen bukan bukti penetapan.']];
+const MAPPING_TABS=[['history','Riwayat Proyek','Referensi proyek lintas tahun; salin ke program tujuan tanpa menyalin WBS atau realisasi historis.'],['proposal','Usulan Proyek ISTK','Usulan proyek pada program ISTK, disusun per program induk dalam accordion, dengan aksi lihat, ubah, tambah, dan hapus.'],['nonistk','Usulan Non-ISTK','Usulan pengembangan SI yang tidak termapping ke program ISTK (isian sheet Usulan Kertas Kerja A). Dinilai MCDA di Prioritasi; dapat dipetakan ke program ISTK bila diputuskan.'],['docs','Buat Dokumen Proyek','Pilih proyek dan substansi untuk menyusun dokumen proyek; dokumen bukan bukti penetapan.']];
 function scopeTabs(on,rows){
  return '<div class="psbank-scope-tabline"><nav class="psbank-mapping-tabs" role="tablist" aria-label="Tahapan Pemetaan Proyek">'+
  MAPPING_TABS.map(x=>'<button type="button" role="tab" data-scope-tab="'+x[0]+'" title="'+E(x[2])+'" aria-label="'+E(x[1]+'. '+x[2])+'" aria-selected="'+(on===x[0])+'" class="'+(on===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+
  '</nav>'+(on==='history'?(typeof MT_TABSEARCH==='function'?MT_TABSEARCH:()=>'')('ps-history',mapState().historySearch,'Cari nama proyek, kode, program atau UIC...'):on==='proposal'?(typeof MT_TABSEARCH==='function'?MT_TABSEARCH:()=>'')('ps-proposal',S.ui?.psBank?.filterScopes?.mapping?.search,'Cari proyek, aplikasi, deskripsi atau UIC...'):(typeof MT_TABSEARCH_PH==='function'?MT_TABSEARCH_PH():''))+'</div>';
 }
+function nonIstkView(){return window.MT_PS_KKA&&window.MT_PS_KKA.usulanHtml?'<div class="kka kka-inmap">'+window.MT_PS_KKA.usulanHtml()+'</div>':'<div class="psbank-empty">Modul usulan non-ISTK belum termuat.</div>'}
 function aggregateView(){
  const b=mapState(),on=MAPPING_TABS.some(x=>x[0]===b.mappingTab)?b.mappingTab:'history',y=year();
  const f=S.ui?.psBank?.filterScopes?.mapping||{},query=String(f.search||'').toLowerCase();
@@ -314,6 +315,7 @@ function aggregateView(){
  const rows=programs.flatMap(p=>proposalRows(p));
  let content='';
  if(on==='history')content=historyView(target());
+ else if(on==='nonistk')content=nonIstkView();
  else if(on==='docs')content=window.MT_PS_DOC?.portfolioBuilder?.()||'<div class="psbank-empty">Generator dokumen belum tersedia.</div>';
  else content=proposalView();
  return '<div class="psbank-card psbank-scope-stage"><div class="psbank-sectionhead"><div><h3 tabindex="0" data-mt-guide="Ringkasan semua program tahun '+E(y)+'. Buka accordion untuk melihat proyek atau membuka program." data-mt-guide-bound="Ringkasan hanya menampilkan data; pemetaan proyek bukan penetapan program.">Pemetaan Proyek / Modul</h3></div></div>'+
@@ -340,7 +342,7 @@ function render(){
  const b=mapState(),on=MAPPING_TABS.some(x=>x[0]===b.mappingTab)?b.mappingTab:'history';
  return '<div class="psbank-card psbank-scope-stage"><div class="psbank-sectionhead"><div><h3>Pemetaan Proyek / Modul'+(typeof MT_INFO_ICON==='function'?MT_INFO_ICON:()=>'')('Tentukan ruang lingkup program, lengkapi detail usulan, tinjau hasil, lalu buat dokumen.')+'</h3></div></div>'+
  scopeTabs(on,proposalRows(p))+
- (on==='history'?historyView(p):on==='proposal'?proposalView():on==='docs'?(window.MT_PS_DOC?.portfolioBuilder?.()||'<div class="psbank-empty">Generator dokumen belum tersedia.</div>'):mappingView(p))+'</div>';
+ (on==='history'?historyView(p):on==='proposal'?proposalView():on==='nonistk'?nonIstkView():on==='docs'?(window.MT_PS_DOC?.portfolioBuilder?.()||'<div class="psbank-empty">Generator dokumen belum tersedia.</div>'):mappingView(p))+'</div>';
 }
 function projectEditor(id,readonly=false){
  const p=target();if(!p||(!can(p)&&!readonly))return;
