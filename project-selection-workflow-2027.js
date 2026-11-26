@@ -16,8 +16,8 @@ const ws=()=>{S.ui.ps27=S.ui.ps27||{sourceYear:2026,selected:[],search:'',sub:'i
 const TABS=[['usulan','Usulan Program'],['mapping','Pemetaan Proyek'],['prioritasi','Prioritasi'],['charter','Charter Program'],['penetapan-program','Penetapan Program'],['rkmk','Draft RKMK']];
 const ISTK_TABS=TABS.filter(t=>t[0]!=='prioritasi');
 function laneNav(active){
- const choices=[['istk','Program & Proyek ISTK','Usulan, pemetaan, charter, penetapan dan Draft RKMK.'],['non','Clearance Proyek Non ISTK','Telaah dan prioritas usulan SI di luar ISTK. ISTK diperhitungkan terlebih dahulu dalam simulasi anggaran dan SDM, tanpa penilaian MCDA.']];
- return '<nav class="ps27-lanes" role="tablist" aria-label="Jalur Project Selection">'+choices.map(([k,label,tip])=>'<button type="button" role="tab" class="'+(active===k?'on':'')+'" aria-selected="'+(active===k)+'" data-ps27-lane="'+k+'" title="'+E(tip)+'"><span class="ps27-lane-icon" aria-hidden="true">'+(k==='istk'?'<svg viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5ZM3 12l9 5 9-5M3 16l9 5 9-5"/></svg>':'<svg viewBox="0 0 24 24"><path d="m3 6 2 2 4-4M11 6h10M3 12l2 2 4-4M11 12h10M3 18l2 2 4-4M11 18h10"/></svg>')+'</span>'+E(label)+'</button>').join('')+'</nav>';
+ const choices=[['istk','ISTK','Program & Proyek ISTK'],['non','Non-ISTK','Clearance Proyek Non ISTK']];
+ return '<div class="ps27-header-lane"><span class="ps27-lane-label">Jalur</span><div class="ps27-lane-seg" role="group" aria-label="Jalur Project Selection">'+choices.map(([k,label,tip])=>'<button type="button" class="'+(active===k?'on':'')+'" aria-pressed="'+(active===k)+'" data-ps27-lane="'+k+'" title="'+E(tip)+'" aria-label="'+E(tip)+'">'+E(label)+'</button>').join('')+'</div></div>';
 }
 function switchLane(lane){
  if(yr()<2027||!['istk','non'].includes(lane))return;
@@ -553,9 +553,8 @@ function page(){
   window.MT_PS_SCOPE.bank().mappingTab='proposal';u.tab='prioritasi';S.ui.psKka=S.ui.psKka||{};S.ui.psKka.sub='usulan';ws().istkLastTab='mapping';
  }
  const p=current(),T=list(),countAll=T.reduce((n,x)=>n+count(x),0),clearance=split&&u.tab==='prioritasi',tabs=split?ISTK_TABS:TABS;
- let h=vh('PS','pmo','Project Selection',split?'Pengelolaan usulan program dan seleksi proyek.':'Usulkan program, petakan proyek, prioritaskan, susun charter dan tetapkan dasar WBS.');
+ let h=vh('PS','pmo','Project Selection',split?'Pengelolaan usulan program dan seleksi proyek.':'Usulkan program, petakan proyek, prioritaskan, susun charter dan tetapkan dasar WBS.',split?laneNav(clearance?'non':'istk'):'');
  h+='<section class="pswf ps27'+(split?' ps27-split':'')+(clearance?' ps27-clearance':'')+'" aria-label="Project Selection">';
- if(split)h+=laneNav(clearance?'non':'istk');
  if(clearance)return h+nonIstkPrio(filter(p)+actionBar(p))+'</section>';
  h+='<div class="pm-stage-shell ps27-stage"><nav class="ptabs pmo-journey ps27-tabs" role="tablist" aria-label="Submenu Project Selection">'+
  tabs.map((t,i)=>'<button type="button" role="tab" title="'+E(TOP_HELP[t[0]]||'')+'" aria-selected="'+(u.tab===t[0])+'" class="'+(u.tab===t[0]?'on':'')+'" data-ps27-tab="'+t[0]+'"><span><em>'+(''+(i+1))+'</em> '+t[1]+'</span>'+(t[0]==='usulan'&&T.length?'<b>'+T.length+'</b>':t[0]==='mapping'&&countAll?'<b>'+countAll+'</b>':'')+'</button>').join('')+
@@ -574,6 +573,8 @@ function fillCount(root){const box=root.querySelector('[data-ps27-count]'),badge
  const m=String(badge.textContent||'').trim().match(/^(\d+)\s*(.*)$/);if(!m)return;box.innerHTML='<b>'+m[1]+'</b> '+E(m[2]||'data');box.hidden=false}
 function mount(){
  const root=document.querySelector('#view .pswf');if(!root)return;
+ const lane=root.parentElement?.querySelector('.vh .ps27-header-lane');
+ if(lane&&!lane.dataset.ps27Bound){lane.dataset.ps27Bound='1';lane.addEventListener('click',ev=>{const b=ev.target.closest('[data-ps27-lane]');if(!b)return;ev.preventDefault();const selected=b.dataset.ps27Lane;switchLane(selected);document.querySelector('#view .ps27-header-lane [data-ps27-lane="'+selected+'"]')?.focus({preventScroll:true})})}
  setTimeout(()=>fillCount(root),0);
  root.addEventListener('click',function(ev){
   const b=ev.target.closest('[data-ps27-lane],[data-ps27-nmethod],[data-ps27-setmethod],[data-ps27-pkpi],[data-ps27-openprog],[data-ps27-clear],[data-ps27],[data-ps27-tab],[data-ps27-pick],[data-ps27-remove],[data-ps27-sub],[data-ps27-usul],[data-ps27-reset],[data-ps27-period],[data-mt-filter-icon]');
