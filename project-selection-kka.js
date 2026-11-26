@@ -125,7 +125,7 @@ function page(p,o){
   '<div class="ps27-smart-actions">'+methodSelect(p,ro)+'</div></div>';
  const D=compute();
  const body=sub==='usulan'?usulanView(D):sub==='criteria'?criteriaView(D):sub==='roadmap'?roadmapView(D):sub==='repo'?repoView(D):sub==='ref'?refView():rankView(p,D,ro);
- return head+'<div class="kka">'+body+'</div>';
+ return head+'<div class="kka">'+pendingBanner(D.y)+body+'</div>';
 }
 /* KPI filters use the same portfolio rows as the summary, without modifying scoring or source data. */
 const KFILTER={
@@ -290,7 +290,52 @@ function currentData(){const D=compute(),R={};const rows=D.rows.map(r=>({istk:!!
 function downloadXlsx(data,name){const wb=workbook(data);window.XLSX.writeFile(wb,name)}
 /* ---------- impor workbook Kertas Kerja A ---------- */
 const nk=s=>T(s).toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+/* Import Non-ISTK: durable, account-scoped outbox, confirmed transaction, no replacement of the whole portfolio with stale browser data. */
+const cloudKka=()=>typeof FB!=='undefined'&&FB.on;
+const kkaAccount=()=>cloudKka()&&FB.auth?.currentUser?.email?String(FB.auth.currentUser.email).toLowerCase():'';
+const kkaOutboxKey=y=>{const a=kkaAccount();return a?'mt_kka_import_v1:'+FB.cfg.projectId+':'+a+':'+y:''};
+const pendingMem=new Map(),pendingBusy=new Set(),pendingErrors=new Map();
+function pendingImport(y){const k=kkaOutboxKey(y);if(!k)return null;try{const raw=localStorage.getItem(k);return raw?JSON.parse(raw):pendingMem.get(k)||null}catch(_){return pendingMem.get(k)||null}}
+function queueImport(y,ops){const k=kkaOutboxKey(y);if(!k)throw Error('Login Firebase belum siap. Masuk ulang sebelum impor.');if(pendingImport(y))throw Error('Masih ada impor tertunda. Sinkronkan cadangan tersebut dahulu.');const job={id:uid(),year:+y,ops,createdAt:new Date().toISOString()};localStorage.setItem(k,JSON.stringify(job));pendingMem.set(k,job);return job}
+const cloneKka=v=>JSON.parse(JSON.stringify(v));
+const sameKka=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+const importNameKey=v=>nk(T(v).replace(/^Satu\s+Kemenkeu\s*[/|:–—-]\s*/i,''));
+function matchNon(rows,x){const id=T(x.psOriginRef),n=importNameKey(x.name);return rows.find(r=>x.id&&r.id===x.id)||rows.find(r=>id&&T(r.psOriginRef)===id)||rows.find(r=>n&&importNameKey(r.name)===n)}
+const fillKeys=new Set(['initiativeType','uic','businessOwner','spbeDomain','description','urgency','legalBasis','strategyAlignment','businessProcess','businessNarrative','features','psOriginRef']);
+function importDelta(old,x){const set={};Object.keys(x).forEach(k=>{if(k==='id'||k==='name')return;if(!sameKka(old?.[k],x[k]))set[k]=x[k]});if(set.kka){const diff={};Object.entries(set.kka).forEach(([k,v])=>{if(old?.kka?.[k]!==v)diff[k]=v});set.kka=diff}return {id:x.id,name:x.name,psOriginRef:x.psOriginRef||'',create:!old,set}}
+function mergeImport(doc,job){
+ const out=cloneKka(doc||{year:job.year,projects:[]});if(!Array.isArray(out.projects))throw Error('Format dokumen Non-ISTK di Firebase tidak valid.');
+ for(const op of job.ops){let x=matchNon(out.projects,op);if(!x){if(!op.create)throw Error('Usulan '+op.name+' sudah tidak ada di Firebase. Periksa data sebelum mengulang impor.');x={id:op.id,name:op.name,status:'Usulan',included:true,nonIstk:true};out.projects.push(x)}
+  for(const [k,v] of Object.entries(op.set)){if(k==='kka'){x.kka=Object.assign({},x.kka||{},v);continue}if(fillKeys.has(k)&&T(x[k]))continue;if(op.create&&['status','included','scores','poster','risks','indicators','benefits','psOriginYear','nonIstk'].includes(k)&&Object.prototype.hasOwnProperty.call(x,k))continue;x[k]=v}
+ }
+ out.year=job.year;out.updatedAt=job.createdAt;return out;
+}
+function pendingBanner(y){if(!cloudKka()||!canCfg())return '';const k=kkaOutboxKey(y),job=pendingImport(y),running=pendingBusy.has(k),err=pendingErrors.get(k);
+ if(!job&&!FB_DENIED())return '';
+ return '<div class="kka-syncnotice" role="status"><div><b>'+(job?(running?'Sedang menyimpan ke Firebase…':'Impor Non-ISTK belum terkonfirmasi Firebase'):'Koleksi Non-ISTK belum dapat dibaca dari Firebase')+'</b><small>'+(job?job.ops.length+' baris tersimpan sebagai cadangan di browser ini. '+E(err||'Data baru akan masuk daftar resmi setelah Firebase mengonfirmasi. Jangan hapus data browser.'):'Periksa Security Rules psKka di Pengaturan › Database. Impor dapat dicadangkan lokal sampai akses pulih.')+'</small></div>'+(job?'<button type="button" class="btn btn-sm" data-kka-draft>Unduh cadangan JSON</button><button type="button" class="btn btn-sm pri" data-kka-retry '+(running?'disabled':'')+'>Coba sinkronkan</button>':'')+'</div>'
+}
+async function syncImport(y){
+ const key=kkaOutboxKey(y),job=pendingImport(y);if(!key||!job||pendingBusy.has(key))return false;
+ if(!canCfg()||!FB.db||!FB.ready){say('Firebase belum siap atau akun tidak berhak. Cadangan tetap tersedia.');return false}
+ pendingBusy.add(key);pendingErrors.delete(key);render();
+ try{
+  const id=NONK(y),ref=FB.db.collection('psKka').doc(id);
+  const account=kkaAccount(),prev=FB.last?.psKka?.[id];
+  const result=await FB.db.runTransaction(async tx=>{const snap=await tx.get(ref);const d=mergeImport(snap.exists?snap.data():null,job);
+   const bytes=new TextEncoder().encode(JSON.stringify(d)).length;if(bytes>900000)throw Error('Dokumen Non-ISTK mendekati batas 1 MB Firestore. Cadangan aman; perlu pemecahan dokumen sebelum impor.');
+   tx.set(ref,d);return d});
+  /* The transaction promise resolves only after server commit. Keep the listener's newer state if it already advanced. */
+  if(kkaAccount()===account){FB.last.psKka=FB.last.psKka||{};if(FB.last.psKka[id]===prev||FB.last.psKka[id]===stab(result)){store()[id]=result;FB.last.psKka[id]=stab(result)}
+   if(FB.optDenied?.psKka){say('Impor tersimpan di Firebase. Muat ulang untuk menyambungkan kembali listener psKka.')}else say('Impor Non-ISTK berhasil tersimpan di Firebase ('+job.ops.length+' baris).')}
+  const active=pendingImport(y);if(kkaAccount()===account&&active?.id===job.id){localStorage.removeItem(key);pendingMem.delete(key)}
+  return true;
+ }catch(e){const msg=typeof fbErr==='function'?fbErr(e):String(e.message||e);pendingErrors.set(key,msg);say('Impor Non-ISTK belum tersimpan di Firebase: '+msg+'. Cadangan tetap tersedia.');return false}
+ finally{pendingBusy.delete(key);if(kkaOutboxKey(y)===key)render()}
+}
+function downloadPending(y){const job=pendingImport(y);if(!job)return;const url=URL.createObjectURL(new Blob([JSON.stringify(job,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='Non-ISTK-impor-tertunda-'+y+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+
 async function importFile(file){
+ const importYear=year();if(cloudKka()&&pendingImport(importYear)){say('Ada impor Non-ISTK tertunda. Gunakan Coba sinkronkan dahulu.');return}
  const X=window.XLSX;if(!X){say('Pustaka Excel belum termuat.');return}
  let wb;try{wb=X.read(await file.arrayBuffer(),{type:'array'})}catch(e){say('Berkas tidak dapat dibaca sebagai Excel.');return}
  const us=wb.Sheets['Usulan'];if(!us){say("Sheet 'Usulan' tidak ditemukan. Gunakan workbook Kertas Kerja A.");return}
@@ -302,7 +347,7 @@ async function importFile(file){
  const scoreOf=r=>P[T(r[0])]||PN[nk(r[1])]||[];
  const kr=wb.Sheets['Kriteria']?aoa(wb.Sheets['Kriteria']):null;
  const progs=allProgs(),all=[];progs.forEach(p=>(p.psProjects||[]).forEach(x=>all.push({p,x})));
- const match=r=>{const n=nk(r[1]);if(!n)return null;return all.find(o=>nk(o.x.name)===n||nk(o.x.applicationName)===n)||all.find(o=>{const a=nk(o.x.name);return a&&a.length>4&&(a.includes(n)||n.includes(a))})||null};
+ const match=r=>{const n=nk(r[1]),id=T(r[0]);if(!n)return null;return all.find(o=>o.p.nonIstk&&id&&!bad(id)&&T(o.x.psOriginRef)===id)||all.find(o=>nk(o.x.name)===n||(!o.p.nonIstk&&nk(o.x.applicationName)===n))||all.find(o=>o.p.nonIstk&&importNameKey(o.x.name)===importNameKey(r[1]))||all.find(o=>{const a=nk(o.x.name);return !o.p.nonIstk&&a&&a.length>4&&(a.includes(n)||n.includes(a))})||null};
  const plan=U.map(r=>({r,m:match(r)})),ok=plan.filter(z=>z.m),miss=plan.filter(z=>!z.m);
  const yn=v=>/^ya$/i.test(T(v))?'Ya':/^tidak$/i.test(T(v))?'Tidak':'';
  const sv=v=>{const n=+v;return T(v)!==''&&n>=1&&n<=5&&Number.isInteger(n)?n:null};
@@ -319,7 +364,8 @@ async function importFile(file){
  <label style="display:flex;gap:8px;align-items:center;margin-top:6px"><input type="checkbox" id="kka-imp-method" checked style="width:auto"> Set metode program terkait ke MCDA</label>
  <p class="s" style="margin:8px 0 0">Nilai rusak (#REF!) atau kosong diabaikan; isian lama di aplikasi tidak dihapus.</p>`,'Impor',o=>{
   const q=id=>o.querySelector(id),est=q('#kka-imp-est')?.checked,useCfg=q('#kka-imp-cfg')?.checked,setM=q('#kka-imp-method')?.checked,desc=q('#kka-imp-desc')?.checked,add=q('#kka-imp-add')?.checked,tp=q('#kka-imp-prog')?.value==='__nonistk'?nonP():progs.find(p=>p.id===q('#kka-imp-prog')?.value);
-  let nG=0,nS=0,nNew=0;const touched=new Set();
+  if(+year()!==+importYear){say('Tahun aktif berubah. Buka ulang impor.');return false}
+  const useCloud=cloudKka(),nonOps=[],deferred=[];let nG=0,nS=0,nNew=0;const touched=new Set();
   const DESC=[[7,'initiativeType'],[8,'uic'],[9,'businessOwner'],[10,'spbeDomain'],[11,'description'],[12,'urgency'],[13,'legalBasis'],[14,'strategyAlignment'],[15,'businessProcess'],[16,'businessNarrative'],[17,'features']];
   const apply=(r,x,p,isNew)=>{touched.add(p);
    GATES.forEach((g,i)=>{const v=yn(r[21+i]);if(v){x[g[0]]=v;nG++}});
@@ -327,17 +373,22 @@ async function importFile(file){
    if(est||isNew){const cst=+r[18],du=+r[19],sd=+r[20];if(T(r[18])!==''&&isFinite(cst))x.estimatedCost=Math.round(cst*1e6);if(T(r[19])!==''&&isFinite(du))x.durationMonths=du;if(T(r[20])!==''&&isFinite(sd))x.estimatedStaffMonths=sd}
    if(desc||isNew)DESC.forEach(([c,k])=>{const v=T(r[c]);if(v&&!bad(v)&&!T(x[k]))x[k]=v});
    if(!T(x.psOriginRef)&&T(r[0])&&!bad(r[0]))x.psOriginRef=T(r[0])};
-  ok.forEach(({r,m})=>{if(roP(m.p)&&!canCfg())return;apply(r,m.x,m.p,false)});
-  if(add&&miss.length){if(!tp){say('Pilih program tujuan untuk usulan baru.');return false}
-   if(tp.nonIstk)tp._keep();tp.psProjects=tp.psProjects||[];miss.forEach(({r})=>{const x={id:'proj-'+uid(),name:T(r[1]),status:'Usulan',included:true,scores:{},poster:{},risks:{},indicators:[],benefits:[],psOriginYear:null};apply(r,x,tp,true);tp.psProjects.push(x);nNew++});
-   if(!tp.nonIstk)try{window.MT_PS_SCOPE&&window.MT_PS_SCOPE.normalizeProjectCodes&&window.MT_PS_SCOPE.normalizeProjectCodes(tp)}catch(_){}}
+  if(add&&miss.length&&!tp){say('Pilih program tujuan untuk usulan baru.');return false}
+  if(useCloud&&((add&&miss.length&&tp?.nonIstk)||ok.some(z=>z.m.p.nonIstk))&&!canCfg()){say('Hanya Superadmin atau PMO Kemenkeu dapat mengimpor Non-ISTK.');return false}
+  const stage=(r,x,p,isNew)=>{if(useCloud&&p.nonIstk){const copy=cloneKka(x);apply(r,copy,p,isNew);nonOps.push(importDelta(isNew?null:x,copy));}else deferred.push(()=>{apply(r,x,p,isNew);if(isNew)p.psProjects.push(x)})};
+  ok.forEach(({r,m})=>{if(roP(m.p)&&!canCfg())return;stage(r,m.x,m.p,false)});
+  if(add&&miss.length){miss.forEach(({r})=>{const x={id:'proj-'+uid(),name:T(r[1]),status:'Usulan',included:true,scores:{},poster:{},risks:{},indicators:[],benefits:[],psOriginYear:null};stage(r,x,tp,true);nNew++})}
+  if(nonOps.length){try{queueImport(importYear,nonOps)}catch(e){say('Impor dibatalkan: '+(e.message||e)+'. Cadangan browser tidak dapat dibuat.');return false}}
+  if(add&&miss.length&&tp&&!(useCloud&&tp.nonIstk)){if(tp.nonIstk)tp._keep();tp.psProjects=tp.psProjects||[]}
+  deferred.forEach(fn=>fn());
+  if(add&&miss.length&&tp&&!tp.nonIstk)try{window.MT_PS_SCOPE&&window.MT_PS_SCOPE.normalizeProjectCodes&&window.MT_PS_SCOPE.normalizeProjectCodes(tp)}catch(_){}
   if(setM)touched.forEach(p=>{if(!p.nonIstk){p.psMethod='kka';p.psPrioritize=false}});
   if(useCfg&&kr){const cell=(r,cI)=>(kr[r-1]||[])[cI];const w={};PROFILES.forEach((p,j)=>{const a=[0,1,2,3,4,5,6].map(i=>Math.round(+cell(17+i,3+j)*1000)/10);if(a.every(v=>isFinite(v)))w[p]=a});
    const pf=T(cell(4,2));setCfg({profile:PROFILES.includes(pf)?pf:cfg().profile,onlyPassed:T(cell(6,2))==='Tidak'?'Tidak':'Ya',pagu:+cell(7,2)||cfg().pagu,sdm:+cell(8,2)||cfg().sdm,quadThr:+cell(9,2)||cfg().quadThr,p1:+cell(10,2)||cfg().p1,p2:+cell(11,2)||cfg().p2,p3:+cell(12,2)||cfg().p3,tol:+cell(13,2)||cfg().tol,weights:Object.assign(cfg().weights,w)})}
-  touched.forEach(p=>{if(p.nonIstk)p._doc.updatedAt=new Date().toISOString();else p.psUpdatedAt=new Date().toISOString()});
+  touched.forEach(p=>{if(p.nonIstk){if(!useCloud)p._doc.updatedAt=new Date().toISOString()}else p.psUpdatedAt=new Date().toISOString()});
   try{log('Impor Kertas Kerja A',ok.length+' diperbarui, '+nNew+' proyek baru')}catch(_){}save();render();
   if(nNew&&tp){ui().scope=tp.nonIstk?'non':'all';if(!tp.nonIstk){try{I.state().prog=tp.id}catch(_){}ui().scope='program'}save();render()}
-  say('Impor selesai: '+ok.length+' proyek diperbarui, '+nNew+' proyek baru'+(nNew&&tp?' di '+tp.nama:'')+', '+nG+' jawaban gate, '+nS+' skor.'+(nS?'':' Skor K1–K7 belum ada di berkas — isi di tabel penilaian.'))},{size:'wide'});
+  if(nonOps.length){say('Cadangan impor Non-ISTK dibuat. Menunggu konfirmasi Firebase.');void syncImport(importYear)}else say('Impor diproses: '+ok.length+' proyek diperbarui, '+nNew+' proyek baru'+(useCloud?'. Periksa indikator sinkronisasi Firestore.':'.'))},{size:'wide'});
 }
 /* Usulan non-ISTK: isian mengikuti sheet 'Usulan' Kertas Kerja A (ID, nama, jenis inisiatif, unit, domain, deskripsi & konteks, estimasi, gate). */
 const UF=[
@@ -444,7 +495,7 @@ function usulanMapView(){
   '<td data-label="Gate">'+dots(x)+'<span class="psbank-status-chip kn-g '+gateCls(g)+'">'+g+'</span></td>'+
   '<td data-label="Validasi"><span class="psbank-status-chip kn-g '+(v==='OK'?'ok':'warn')+'" title="'+E(v)+'">'+(v==='OK'?'Lengkap':'Lengkapi')+'</span></td>'+
   '<td data-label="Aksi" class="psbank-actions">'+ib('view','data-kka-nondetail',x.id,'Lihat detail usulan')+(ed?ib('edit','data-kka-nonedit',x.id,'Ubah usulan')+ib('map','data-kka-nonmap',x.id,'Petakan ke program ISTK')+ib('delete','data-kka-nondel',x.id,'Hapus usulan'):'')+'</td></tr>'}).join('');
- return '<section class="psbank-proposals-detail psbank-proposal-groups"><div class="psbank-proposal-head"><div><h3>Usulan Non-ISTK · '+y+ic('Usulan pengembangan SI yang tidak termapping ke program ISTK (isian sheet Usulan Kertas Kerja A). Dinilai MCDA di Prioritasi › Penilaian & Peringkat; dapat dipetakan ke program ISTK bila diputuskan.')+'</h3></div><div class="psbank-headright"><span class="psbank-count">'+L.length+' usulan'+(q?' · '+rows.length+' sesuai pencarian':'')+'</span>'+(ed?'<button type="button" class="btn" data-kka-import title="Impor dari workbook Kertas Kerja A (sheet Usulan)">↑ Impor</button>':'')+'<button type="button" class="btn" data-kka-uxlsx title="Unduh dalam format sheet Usulan" '+(L.length?'':'disabled')+'>↓ Excel</button></div></div>'+
+ return '<section class="psbank-proposals-detail psbank-proposal-groups">'+pendingBanner(y)+'<div class="psbank-proposal-head"><div><h3>Usulan Non-ISTK · '+y+ic('Usulan pengembangan SI yang tidak termapping ke program ISTK (isian sheet Usulan Kertas Kerja A). Dinilai MCDA di Prioritasi › Penilaian & Peringkat; dapat dipetakan ke program ISTK bila diputuskan.')+'</h3></div><div class="psbank-headright"><span class="psbank-count">'+L.length+' usulan'+(q?' · '+rows.length+' sesuai pencarian':'')+'</span>'+(ed?'<button type="button" class="btn" data-kka-import title="Impor dari workbook Kertas Kerja A (sheet Usulan)">↑ Impor</button>':'')+'<button type="button" class="btn" data-kka-uxlsx title="Unduh dalam format sheet Usulan" '+(L.length?'':'disabled')+'>↓ Excel</button></div></div>'+
   '<details class="psbank-accordion-program psbank-proposal-program kn-panel"'+(open?' open':'')+' data-kka-nonpanel><summary><span class="psbank-chevron" aria-hidden="true">▸</span><span class="psbank-accordion-name"><small>DI LUAR ISTK · tidak termapping ke program</small><b>Usulan Pengembangan SI Non-ISTK</b><small>'+y+' · dinilai MCDA · tidak masuk Penetapan, RKMK, WBS</small></span><span class="psbank-accordion-count">'+L.length+' usulan</span></summary>'+
   '<div class="psbank-accordion-body"><div class="psbank-proposal-programtools"><span>RINCIAN USULAN NON-ISTK</span>'+(ed&&L.length?'<button type="button" class="btn pri" data-kka-nonadd>+ Tambah Usulan Non-ISTK</button>':'')+'</div>'+
   (rows.length?'<div class="psbank-tablewrap"><table class="psbank-table psbank-proposal-table kn-table"><colgroup><col style="width:11%"><col style="width:19%"><col style="width:19%"><col style="width:13%"><col style="width:11%"><col style="width:10%"><col style="width:8%"><col style="width:180px"></colgroup><thead><tr><th>ID</th><th>Nama Sistem / Modul</th><th>Deskripsi</th><th>UE I / Unit Pemilik</th><th>Estimasi</th><th>Gate G1–G4</th><th>Validasi</th><th>Aksi</th></tr></thead><tbody>'+tr+'</tbody></table></div>':
@@ -459,9 +510,11 @@ function usulanXlsx(){const X=window.XLSX;if(!X){say('Pustaka Excel belum termua
 /* ---------- event ---------- */
 function findX(id){for(const p of allProgs())for(const x of (p.psProjects||[]))if(String(x.id)===String(id))return {p,x};return null}
 document.addEventListener('click',ev=>{
- const t=ev.target;if(!t.closest||!t.closest('.kka,.ps27-priority-head'))return;
+ const t=ev.target;if(!t.closest||!t.closest('.kka,.ps27-priority-head,.kka-syncnotice'))return;
  {const rw=t.closest('[data-kka-nonview]');if(rw&&!t.closest('button')){nonDetail(rw.dataset.kkaNonview);return}}
  const b=t.closest('button');if(!b)return;const u=ui();
+ if(b.hasAttribute('data-kka-retry')){void syncImport(year());return}
+ if(b.hasAttribute('data-kka-draft')){downloadPending(year());return}
  if(b.dataset.kkaSub){u.sub=b.dataset.kkaSub;save();render();return}
  if(b.dataset.kkaKpi&&Object.prototype.hasOwnProperty.call(KFILTER,b.dataset.kkaKpi)){const key=b.dataset.kkaKpi;if(u.sub==='rank'&&u.kpi===key){u.kpi='';}else{u.kpi=key;u.scope=kpiScope(key);u.ue=[];u.q='';u.sub='rank';}render();return}
  if(b.dataset.kkaScope){u.kpi='';u.scope=b.dataset.kkaScope;save();render();return}
@@ -543,6 +596,7 @@ document.addEventListener('input',ev=>{const t=ev.target;if(!t.matches||!t.match
 .kn-form section{margin-bottom:12px}.kn-form .fgrid{gap:8px 14px}.kn-form textarea{min-height:64px}.kka-card>.kka-note{margin-top:8px}.kn-form h4{margin:0 0 8px;font-size:12.5px;color:#12275A;border-bottom:1px solid #E2E8F0;padding-bottom:4px}.kn-multi{display:flex;flex-wrap:wrap;gap:6px 16px}.kn-multi label{display:flex;gap:6px;align-items:center;font-weight:500}.kn-multi input{width:auto}.kka-row-click{cursor:pointer}.kka-row-click:hover td{background:#F5F8FD}.kka-t td.c{text-align:center}.kka-istk{background:#12275A!important;color:#fff!important;font-size:10px!important;padding:1px 7px!important}.kka-istk-note{color:#475569;font-size:12px;background:#F8FAFD}.kka-istkrow td{background:#F8FAFD}.kka-kpi.istk b{color:#12275A}.kka-non{background:#EDE9FE!important;color:#5B21B6!important;font-size:10px!important;padding:1px 7px!important;vertical-align:1px;margin-left:4px}.kka .kka-ib{border:0!important;background:none!important;box-shadow:none!important;cursor:pointer;font-size:12px!important;padding:0 3px!important;width:auto!important;height:auto!important;min-width:0!important;min-height:0!important;color:#475569;vertical-align:1px;display:inline}.kka-ib:hover{color:#12275A}.kka-pc{min-width:32px;text-align:center}.kka-chip.p3{background:#FFF0C2;color:#7A5300}
 .kka-thc{display:inline-flex;align-items:center;gap:3px}.kka-rub{padding:0}.kka-rub>summary{cursor:pointer;padding:11px 14px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;color:#0F2346;font-size:13px}.kka-rub>summary small{color:#64748B;font-size:11.5px}.kka-rub .kka-scroll{border:0;border-top:1px solid #E2E8F0;border-radius:0 0 12px 12px}.kka-rub td{font-size:12px}.kka-ref td{vertical-align:top}.kka-ref td:nth-child(n+3){min-width:150px}
 b.up{color:#0F7A4B}b.dn{color:#B42318}
+.kka-syncnotice{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 12px;border:1px solid #ead29b;border-radius:9px;background:#fff8e7;color:#805500;font-size:12px}.kka-syncnotice>div{flex:1;min-width:200px}.kka-syncnotice small{display:block;margin-top:3px;font-size:11px;color:#805500}.kka-syncnotice .btn{white-space:nowrap}
 .kka .kka-kpi{--kc:#1f4b82;--kb:#cbdcf0;--kg:#eef5fd;appearance:none;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:5px;position:relative;text-align:left;font:inherit;min-width:0;min-height:77px;width:100%;padding:10px 12px;border:1px solid var(--kb);border-radius:10px;background:linear-gradient(135deg,var(--kg),#fff 140%);color:var(--kc);cursor:pointer;box-shadow:0 2px 5px #0b2d5909;transition:border-color .16s,box-shadow .16s,background .16s}
 .kka .kka-kpi.kka-tone-navy{--kc:#173d72;--kb:#c7d9ef;--kg:#eaf2fc}.kka .kka-kpi.kka-tone-violet{--kc:#6346a3;--kb:#ded5f2;--kg:#f3effb}.kka .kka-kpi.kka-tone-green{--kc:#12764e;--kb:#c7e5d5;--kg:#eaf7ef}.kka .kka-kpi.kka-tone-blue{--kc:#215fa9;--kb:#cbdff7;--kg:#edf5ff}.kka .kka-kpi.kka-tone-teal{--kc:#087e83;--kb:#c4e7e5;--kg:#e9f8f7}.kka .kka-kpi.kka-tone-gold{--kc:#986300;--kb:#efdfb7;--kg:#fff7e5}.kka .kka-kpi.kka-tone-slate{--kc:#475e7b;--kb:#d5dfea;--kg:#f0f4f9}
 .kka .kka-kpi-label{font-size:11.5px;line-height:1.25;font-weight:700;padding-right:13px;color:var(--kc)}.kka .kka-kpi b{font-size:23px;line-height:1.12;color:var(--kc);font-variant-numeric:tabular-nums}.kka .kka-kpi b i{font-size:12px;color:#53657b;white-space:nowrap}.kka .kka-kpi:after{content:'›';position:absolute;top:7px;right:9px;font-size:19px;font-weight:600;color:var(--kc);opacity:.7}.kka .kka-kpi:hover,.kka .kka-kpi:focus-visible{border-color:var(--kc);box-shadow:0 2px 9px #0b2d5922}.kka .kka-kpi.is-active{border-color:var(--kc);box-shadow:inset 0 0 0 1px var(--kc),0 2px 7px #0b2d5914}.kka .kka-kpi.is-active:after{content:'✓';font-size:13px;opacity:1}
@@ -563,5 +617,5 @@ function refView(){
   '<div class="kka-card"><h3>Referensi & Literasi</h3><div class="kka-scroll"><table class="kka-t kka-ref"><thead><tr><th>No</th><th>Rujukan</th><th>Jenis</th><th>Dipakai untuk</th></tr></thead><tbody>'+REFS.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+E(r[0])+'</td><td>'+E(r[1])+'</td><td>'+E(r[2])+'</td></tr>').join('')+'</tbody></table></div><p class="kka-note" style="margin-top:8px">Verifikasi versi/perubahan terbaru setiap regulasi sebelum dijadikan dasar resmi.</p></div>';
 }
 function isFunded(x){return x.included!==false} /* program ISTK bermetode MCDA: semua proyek diprioritaskan otomatis */
-window.MT_PS_KKA={page,methodSelect,importFile,nonProjects:y=>nonP(y).psProjects,usulanHtml:()=>usulanMapView(),compute,cfg,method,isFunded,GATES,KR,version:'20261126-kpi15'};
+window.MT_PS_KKA={page,methodSelect,importFile,nonProjects:y=>nonP(y).psProjects,usulanHtml:()=>usulanMapView(),compute,cfg,method,isFunded,GATES,KR,version:'20261126-import16'};
 })();
