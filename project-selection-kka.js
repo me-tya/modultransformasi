@@ -61,6 +61,15 @@ function cfg(y){const st=store(),k='cfg-'+(y||year());const c=st[k]||{};const w=
 function setCfg(patch){const st=store(),k='cfg-'+year(),cur=cfg();const nx=Object.assign({},cur,patch);delete nx.year;nx.updatedAt=new Date().toISOString();nx.updatedBy=me()?.email||'';st[k]=nx;save()}
 const ui=()=>{S.ui.psKka=S.ui.psKka||{sub:'rank',scope:'program',mode:'all',ue:[],q:''};return S.ui.psKka};
 
+/* ---------- wadah proyek di luar ISTK ----------
+   Proyek SI yang tidak termapping ke program/ISTK disimpan di S.psKka['non-<tahun>'].projects (koleksi psKka).
+   Ikut dinilai & diperingkat MCDA (berbagi pagu & SDM), tetapi tidak masuk Penetapan Program, Charter, Draft RKMK, WBS,
+   dan tidak dipantau PMO Kemenkeu (pengelolaan oleh unit pemilik sesuai tata kelola SPBE). Ubah: SA & PMOK. */
+const NONK=y=>'non-'+(y||year());
+function nonP(y){const st=store(),k=NONK(y),d=st[k]&&Array.isArray(st[k].projects)?st[k]:{year:+(y||year()),projects:[]};
+ return {id:'__nonistk',nama:'Di luar ISTK',nonIstk:true,psMethod:'kka',psProjects:d.projects,_doc:d,_keep:()=>{st[k]=d}}}
+const roP=p=>p&&p.nonIstk?!canCfg():I.readonly(p);
+const allProgs=y=>{const a=I.programs().slice(),n=nonP(y);if(n.psProjects.length)a.push(n);return a};
 /* ---------- perhitungan ---------- */
 const method=p=>p.psMethod||(p.psPrioritize?'smart':'manual');
 const costM=x=>{const v=x.estimatedCost;if(v===''||v==null||!isFinite(+v))return null;return +v/1e6};
@@ -72,7 +81,7 @@ const weighted=(s,w)=>Math.round(s.reduce((a,v,i)=>a+v*w[i],0)/5*100*100)/100;
 function category(score,c){if(score==null)return '';return score>=c.p1?CATS[0]:score>=c.p2?CATS[1]:score>=c.p3?CATS[2]:CATS[3]}
 function rankBy(arr,key){const v=arr.filter(r=>r[key]!=null);v.forEach(r=>{r['r_'+key]=v.filter(o=>o[key]>r[key]).length+v.filter(o=>o[key]===r[key]&&o.ord<=r.ord).length})}
 function compute(y){
- y=y||year();const c=cfg(y),wA=wFrac(c,c.profile),progs=I.programs().filter(p=>method(p)==='kka');
+ y=y||year();const c=cfg(y),wA=wFrac(c,c.profile),progs=I.programs().filter(p=>method(p)==='kka');{const n=nonP(y);if(n.psProjects.length)progs.push(n)}
  const rows=[];let ord=0;
  progs.forEach(p=>(p.psProjects||[]).forEach(x=>{ord++;const s=KR.map(k=>sc(x,k.c)),n=s.filter(v=>v!=null).length,gate=gateOf(x);
   const full=n===7,score=full?weighted(s,wA):null,ranked=full&&(c.onlyPassed==='Tidak'||gate==='Lolos');
@@ -115,32 +124,32 @@ function kpis(D){const s=D.sum,c=D.c,k=(v,l,cl)=>'<div class="kka-kpi '+(cl||'')
   k(s.nFunded,'Rekomendasi didanai '+D.y,'fund')+k(fmt(s.costFunded)+'<i> / '+fmt(c.pagu)+'</i>','Biaya didanai / pagu (Rp juta)')+k(fmt(s.sdmFunded,1)+'<i> / '+fmt(c.sdm)+'</i>','SDM terpakai / kapasitas (org-bln)')+'</div>'}
 function rankView(p,D,ro){
  const u=ui(),scopeAll=u.scope==='all',ueSel=Array.isArray(u.ue)?u.ue:[],q=T(u.q).toLowerCase();
- if(!D.progs.length)return '<div class="kka-empty">Belum ada program tahun '+D.y+' yang memakai metode MCDA.</div>';
- let rows=D.rows.filter(r=>scopeAll||r.p===p);
+ if(!D.progs.length&&u.scope!=='non'&&!canCfg())return '<div class="kka-empty">Belum ada program tahun '+D.y+' yang memakai metode MCDA.</div>';
+ const scopeNon=u.scope==='non';let rows=D.rows.filter(r=>scopeAll||(scopeNon?r.p.nonIstk:r.p===p));
  rows=rows.filter(r=>(!ueSel.length||ueSel.includes(r.uic))&&(!q||(r.name+' '+r.code+' '+r.uic+' '+r.p.nama).toLowerCase().includes(q)));
  const rk=r=>u.mode==='ue'?r.rankUe:r.rank;
  rows.sort((a,b)=>(rk(a)||1e9)-(rk(b)||1e9)||a.ord-b.ord);
  const ues=[...new Set([...UE,...D.rows.map(r=>r.uic).filter(Boolean)])];
- const tb='<div class="kka-toolbar"><div class="kka-seg" role="group" aria-label="Lingkup">'+[['program','Program ini'],['all','Portofolio '+D.y]].map(x=>'<button type="button" data-kka-scope="'+x[0]+'" class="'+((u.scope||'program')===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+'</div>'+
-  '<label class="kka-inl">Mode ranking <select data-kka-mode><option value="all"'+(u.mode!=='ue'?' selected':'')+'>Semua UE I</option><option value="ue"'+(u.mode==='ue'?' selected':'')+'>Per UE I</option></select></label>'+
+ const tb='<div class="kka-toolbar"><div class="kka-seg" role="group" aria-label="Lingkup">'+[['program','Program ini'],['non','Di luar ISTK'+(nonP().psProjects.length?' ('+nonP().psProjects.length+')':'')],['all','Portofolio '+D.y]].map(x=>'<button type="button" data-kka-scope="'+x[0]+'" class="'+((u.scope||'program')===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+'</div>'+
+  '<label class="kka-inl" title="Mode ranking"><select data-kka-mode aria-label="Mode ranking"><option value="all"'+(u.mode!=='ue'?' selected':'')+'>Ranking semua UE I</option><option value="ue"'+(u.mode==='ue'?' selected':'')+'>Ranking per UE I</option></select></label>'+
   '<details class="kka-uef"><summary>UE I: '+(ueSel.length?E(ueSel.join(', ')):'Semua')+'</summary><div>'+ues.map(v=>'<label><input type="checkbox" data-kka-ue="'+E(v)+'" '+(ueSel.includes(v)?'checked':'')+'> '+E(v)+'</label>').join('')+'<button type="button" class="btn btn-sm" data-kka-ue-clear>Semua</button></div></details>'+
   '<input class="kka-q" type="search" data-kka-q placeholder="Cari proyek, kode, UE I…" value="'+E(u.q||'')+'" aria-label="Cari proyek">'+
-  '<span class="kka-sp"></span><label class="kka-inl" title="'+E(canCfg()?'Ganti profil bobot aktif; skor & peringkat langsung dihitung ulang. Angka bobot diubah di tab Kriteria & Bobot.':'Hanya Superadmin dan PMO Kemenkeu yang dapat mengganti profil bobot.')+'">Profil bobot <select data-kka-cfg="profile"'+(canCfg()?'':' disabled')+'>'+PROFILES.map(p=>'<option'+(p===D.c.profile?' selected':'')+'>'+E(p)+'</option>').join('')+'</select></label>'+
-  '<button type="button" class="btn btn-sm" data-kka-import title="Impor workbook Kertas Kerja A (Pusakti)" '+(ro&&!canCfg()?'disabled':'')+'>↑ Impor</button><button type="button" class="btn btn-sm" data-kka-xlsx>⇩ Excel</button></div>';
+  '<span class="kka-sp"></span><label class="kka-inl" title="'+E(canCfg()?'Ganti profil bobot aktif; skor & peringkat langsung dihitung ulang. Angka bobot diubah di tab Kriteria & Bobot.':'Hanya Superadmin dan PMO Kemenkeu yang dapat mengganti profil bobot.')+'">Bobot <select data-kka-cfg="profile"'+(canCfg()?'':' disabled')+'>'+PROFILES.map(p=>'<option'+(p===D.c.profile?' selected':'')+'>'+E(p)+'</option>').join('')+'</select></label>'+
+  (canCfg()&&(u.scope==='non'||u.scope==='all')?'<button type="button" class="btn btn-sm pri" data-kka-nonadd title="Tambah usulan proyek SI yang tidak termapping ke ISTK">+ Usulan</button>':'')+'<button type="button" class="btn btn-sm" data-kka-import title="Impor workbook Kertas Kerja A (Pusakti)" '+(ro&&!canCfg()?'disabled':'')+'>↑ Impor</button><button type="button" class="btn btn-sm" data-kka-xlsx>⇩ Excel</button></div>';
  const rubTxt=k=>k.n+' — '+k.q+'\n'+RUB[k.c].map((t,i)=>(i+1)+' = '+t).join('\n');
  const wAct=D.c.weights[D.c.profile],wMax=Math.max(30,...wAct);
  const hdK=KR.map((k,j)=>'<th class="kka-k'+(j?'':' div')+'" title="'+E(rubTxt(k))+'"><b>'+k.c+'</b><span>'+E(k.s)+'</span><i class="kka-wbar"><i style="width:'+Math.round(wAct[j]/wMax*100)+'%"></i></i><em>'+fmt(wAct[j])+'%</em></th>').join('');
  const GS=['Selaras','Tdk duplikat','Sponsor','Kajian'];
  const hdG=GATES.map((g,j)=>'<th class="kka-g'+(j?'':' div')+'" title="'+E(g[1]+' — '+g[3]+'\nDicentang = Ya; tidak dicentang = Tidak (Tinjau Ulang); kotak bergaris putus-putus = belum dijawab (Lengkapi).')+'"><b>'+g[1]+'</b><span>'+GS[j]+'</span></th>').join('');
- const roOf=r=>ro||I.readonly(r.p);
+ const roOf=r=>r.p.nonIstk?!canCfg():(ro||I.readonly(r.p));
  const sel=(r,attr,val,opts,lab,desc)=>{const cur=desc&&val!=null&&val!==''?desc[+val-1]:'';return '<select '+attr+' aria-label="'+E(lab)+'" title="'+E(cur?val+' = '+cur:lab)+'" '+(roOf(r)?'disabled':'')+'>'+opts.map(v=>'<option value="'+v+'"'+(String(val??'')===String(v)?' selected':'')+(desc&&v!==''?' title="'+E(desc[+v-1])+'" data-l="'+E(v+' – '+desc[+v-1])+'"':'')+'>'+(v===''?'–':v)+'</option>').join('')+'</select>'};
- const tr=rows.map(r=>'<tr class="'+(r.ranked?'':'kka-nr')+'"><td class="kka-rk">'+(rk(r)||'—')+'</td><td class="kka-nm"><b>'+E(r.name)+'</b><small>'+E([r.code,scopeAll?r.p.nama:''].filter(Boolean).join(' · '))+'</small></td><td>'+E(r.uic||'—')+'</td><td class="kka-sc">'+(r.score==null?'<small>'+r.n+'/7</small>':fmt(r.score,2))+'</td><td class="kka-cat">'+(r.cat?'<span class="kka-chip kka-pc '+catCls(r.cat)+'" title="'+E(r.cat)+'">'+catCls(r.cat).toUpperCase()+'</span>':'<small>—</small>')+(r.full&&!r.ranked?'<small title="Skor lengkap tetapi gate belum Lolos">tdk diranking</small>':'')+'</td>'+
+ const tr=rows.map(r=>'<tr class="'+(r.ranked?'':'kka-nr')+'"><td class="kka-rk">'+(rk(r)||'—')+'</td><td class="kka-nm"><b>'+E(r.name)+(r.p.nonIstk?' <span class="kka-chip kka-non" title="Tidak termapping ke ISTK: ikut peringkat & roadmap, tidak masuk Penetapan/RKMK/WBS dan tidak dipantau PMO Kemenkeu.">Non-ISTK</span>'+(canCfg()?'<button type="button" class="kka-ib" data-kka-nonedit="'+E(r.id)+'" title="Ubah usulan">✎</button><button type="button" class="kka-ib" data-kka-nondel="'+E(r.id)+'" title="Hapus usulan">🗑</button>':''):'')+'</b><small>'+E([r.code,scopeAll&&!r.p.nonIstk?r.p.nama:''].filter(Boolean).join(' · '))+'</small></td><td>'+E(r.uic||'—')+'</td><td class="kka-sc">'+(r.score==null?'<small>'+r.n+'/7</small>':fmt(r.score,2))+'</td><td class="kka-cat">'+(r.cat?'<span class="kka-chip kka-pc '+catCls(r.cat)+'" title="'+E(r.cat)+'">'+catCls(r.cat).toUpperCase()+'</span>':'<small>—</small>')+(r.full&&!r.ranked?'<small title="Skor lengkap tetapi gate belum Lolos">tdk diranking</small>':'')+'</td>'+
   GATES.map((g,i)=>{const v=r.g[i];return '<td class="kka-g"><input type="checkbox" class="kka-cb'+(v?'':' unset')+'" data-kka-gatecb="'+E(r.id)+'|'+g[0]+'" '+(v==='Ya'?'checked ':'')+(roOf(r)?'disabled ':'')+'title="'+E(g[1]+' '+g[2]+': '+(v||'belum dijawab'))+'" aria-label="'+E(g[1]+' '+g[2]+' – '+r.name)+'"></td>'}).join('')+
   '<td><span class="kka-chip '+gateCls(r.gate)+'">'+r.gate+'</span></td>'+
   KR.map((k,i)=>'<td class="kka-k">'+sel(r,'data-kka-score="'+E(r.id)+'|'+k.c+'"',r.s[i],['',1,2,3,4,5],k.c+' '+r.name,RUB[k.c])+'</td>').join('')+
   '</tr>').join('');
  return kpis(D)+tb+'<div class="kka-scroll"><table class="kka-t kka-pen"><thead><tr><th>'+(u.mode==='ue'?'Rank UE I':'Rank')+'</th><th>Proyek</th><th>UE I</th><th class="r" title="Σ(skor K × bobot aktif) ÷ 5 × 100">Skor<span>bobot aktif</span></th><th class="kka-cat" title="P1 Utama ≥ '+D.c.p1+' · P2 Tinggi ≥ '+D.c.p2+' · P3 Menengah ≥ '+D.c.p3+' · P4 Rendah/Tunda">Kat.</th>'+hdG+'<th>Hasil gate</th>'+hdK+'</tr></thead><tbody>'+(tr||'<tr><td colspan="18" class="kka-empty">Tidak ada proyek sesuai filter.</td></tr>')+'</tbody></table></div>'+
-  rubLegend()+'<p class="kka-note">Skor 1–5 per kriteria mengikuti rubrik di atas (juga pada ikon ⓘ judul kolom dan saat dropdown dibuka). K7 terbalik: 5 = risiko terendah. Gate dan estimasi biaya/SDM juga dapat diisi di Pemetaan Proyek › Usulan Proyek. Hasil adalah bahan keputusan; keputusan akhir pada forum tata kelola.</p>';
+  (scopeNon?'<p class="kka-note kka-warn">Proyek di luar ISTK ikut dinilai dan berbagi pagu & SDM pada roadmap, tetapi tidak masuk Penetapan Program, Charter, Draft RKMK, maupun WBS, dan tidak dipantau PMO Kemenkeu. Pengelolaannya oleh unit pemilik proses bisnis bersama unit TI sesuai tata kelola SPBE.</p>':'')+rubLegend()+'<p class="kka-note">Skor 1–5 per kriteria mengikuti rubrik di atas (juga pada ikon ⓘ judul kolom dan saat dropdown dibuka). K7 terbalik: 5 = risiko terendah. Gate dan estimasi biaya/SDM juga dapat diisi di Pemetaan Proyek › Usulan Proyek. Hasil adalah bahan keputusan; keputusan akhir pada forum tata kelola.</p>';
 }
 function rubLegend(){
  const open=!!ui().rubOpen;
@@ -257,24 +266,24 @@ async function importFile(file){
  const P={},PN={};if(wb.Sheets['Penilaian']){const A=aoa(wb.Sheets['Penilaian']);const h=A.findIndex(r=>T(r[0])==='ID');A.slice(h+1).forEach(r=>{const sc=r.slice(3,10);if(!sc.some(v=>T(v)!==''&&!bad(v)))return;if(T(r[0])&&!bad(r[0]))P[T(r[0])]=sc;if(T(r[1])&&!bad(r[1]))PN[nk(r[1])]=sc})}
  const scoreOf=r=>P[T(r[0])]||PN[nk(r[1])]||[];
  const kr=wb.Sheets['Kriteria']?aoa(wb.Sheets['Kriteria']):null;
- const progs=I.programs(),all=[];progs.forEach(p=>(p.psProjects||[]).forEach(x=>all.push({p,x})));
+ const progs=allProgs(),all=[];progs.forEach(p=>(p.psProjects||[]).forEach(x=>all.push({p,x})));
  const match=r=>{const n=nk(r[1]);if(!n)return null;return all.find(o=>nk(o.x.name)===n||nk(o.x.applicationName)===n)||all.find(o=>{const a=nk(o.x.name);return a&&a.length>4&&(a.includes(n)||n.includes(a))})||null};
  const plan=U.map(r=>({r,m:match(r)})),ok=plan.filter(z=>z.m),miss=plan.filter(z=>!z.m);
  const yn=v=>/^ya$/i.test(T(v))?'Ya':/^tidak$/i.test(T(v))?'Tidak':'';
  const sv=v=>{const n=+v;return T(v)!==''&&n>=1&&n<=5&&Number.isInteger(n)?n:null};
- const cur=I.pickedProgram(),canAdd=progs.filter(p=>!I.readonly(p)||canCfg());
+ const cur=I.pickedProgram(),canAdd=progs.filter(p=>!p.nonIstk&&(!I.readonly(p)||canCfg()));
  const nSkor=plan.filter(z=>scoreOf(z.r).map(sv).some(v=>v!=null)).length;
  modal('Impor Kertas Kerja A',`<p class="s" style="margin:0 0 8px">${U.length} baris usulan di berkas · <b>${ok.length} cocok</b> dengan proyek tahun ${year()} · <b>${miss.length} belum ada</b> di aplikasi · ${nSkor} baris memiliki skor K1–K7.</p>
  <div class="kka-scroll" style="max-height:40vh"><table class="kka-t"><thead><tr><th>Usulan di berkas</th><th>Proyek di aplikasi</th><th>Gate G1–G4</th><th>Skor K1–K7</th><th>Biaya (Rp jt) · Durasi · SDM</th></tr></thead><tbody>${plan.map(z=>{const s=scoreOf(z.r).map(sv);return '<tr><td><b>'+E(z.r[1])+'</b><small>'+E([T(z.r[0]),T(z.r[8])].filter(Boolean).join(' · '))+'</small></td><td>'+(z.m?E(z.m.x.name)+'<small>'+E(z.m.p.nama)+'</small>':'<span class="kka-chip warn">Baru</span>')+'</td><td>'+[21,22,23,24].map(i=>yn(z.r[i])||'–').join(' / ')+'</td><td>'+(s.some(v=>v!=null)?s.map(v=>v??'–').join(' '):'<small>belum ada</small>')+'</td><td>'+[18,19,20].map(i=>T(z.r[i])===''?'–':E(z.r[i])).join(' · ')+'</td></tr>'}).join('')}</tbody></table></div>
  ${miss.length?`<div style="margin-top:10px;padding:10px;border:1px solid #F2D58A;background:#FFFBEA;border-radius:8px"><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="kka-imp-add" checked style="width:auto"> Tambahkan ${miss.length} usulan yang belum ada sebagai proyek baru ke program</label>
-  <select id="kka-imp-prog" style="margin-top:6px;width:100%">${canAdd.map(p=>'<option value="'+E(p.id)+'"'+(cur&&p.id===cur.id?' selected':'')+'>'+E(p.nama)+'</option>').join('')}</select>
+  <select id="kka-imp-prog" style="margin-top:6px;width:100%">${canAdd.map(p=>'<option value="'+E(p.id)+'"'+(cur&&p.id===cur.id&&ui().scope!=='non'?' selected':'')+'>'+E(p.nama)+'</option>').join('')}${canCfg()?'<option value="__nonistk"'+(ui().scope==='non'?' selected':'')+'>Di luar ISTK (tidak termapping ke program)</option>':''}</select>
   <small style="display:block;margin-top:4px;color:#64748B">Isian Usulan (jenis inisiatif, UE I, unit pemilik, domain SPBE, deskripsi, urgensi, landasan hukum, strategi, proses bisnis, narasi, fitur) ikut disalin.</small></div>`:''}
  <label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="checkbox" id="kka-imp-est" checked style="width:auto"> Perbarui estimasi biaya, durasi, dan SDM dari berkas (bila terisi)</label>
  <label style="display:flex;gap:8px;align-items:center;margin-top:6px"><input type="checkbox" id="kka-imp-desc" checked style="width:auto"> Lengkapi isian Usulan proyek yang sudah ada bila masih kosong</label>
  ${kr&&canCfg()?'<label style="display:flex;gap:8px;align-items:center;margin-top:6px"><input type="checkbox" id="kka-imp-cfg" style="width:auto"> Ambil juga pengaturan & bobot dari sheet Kriteria</label>':''}
  <label style="display:flex;gap:8px;align-items:center;margin-top:6px"><input type="checkbox" id="kka-imp-method" checked style="width:auto"> Set metode program terkait ke MCDA</label>
  <p class="s" style="margin:8px 0 0">Nilai rusak (#REF!) atau kosong diabaikan; isian lama di aplikasi tidak dihapus.</p>`,'Impor',o=>{
-  const q=id=>o.querySelector(id),est=q('#kka-imp-est')?.checked,useCfg=q('#kka-imp-cfg')?.checked,setM=q('#kka-imp-method')?.checked,desc=q('#kka-imp-desc')?.checked,add=q('#kka-imp-add')?.checked,tp=progs.find(p=>p.id===q('#kka-imp-prog')?.value);
+  const q=id=>o.querySelector(id),est=q('#kka-imp-est')?.checked,useCfg=q('#kka-imp-cfg')?.checked,setM=q('#kka-imp-method')?.checked,desc=q('#kka-imp-desc')?.checked,add=q('#kka-imp-add')?.checked,tp=q('#kka-imp-prog')?.value==='__nonistk'?nonP():progs.find(p=>p.id===q('#kka-imp-prog')?.value);
   let nG=0,nS=0,nNew=0;const touched=new Set();
   const DESC=[[7,'initiativeType'],[8,'uic'],[9,'businessOwner'],[10,'spbeDomain'],[11,'description'],[12,'urgency'],[13,'legalBasis'],[14,'strategyAlignment'],[15,'businessProcess'],[16,'businessNarrative'],[17,'features']];
   const apply=(r,x,p,isNew)=>{touched.add(p);
@@ -283,19 +292,38 @@ async function importFile(file){
    if(est||isNew){const cst=+r[18],du=+r[19],sd=+r[20];if(T(r[18])!==''&&isFinite(cst))x.estimatedCost=Math.round(cst*1e6);if(T(r[19])!==''&&isFinite(du))x.durationMonths=du;if(T(r[20])!==''&&isFinite(sd))x.estimatedStaffMonths=sd}
    if(desc||isNew)DESC.forEach(([c,k])=>{const v=T(r[c]);if(v&&!bad(v)&&!T(x[k]))x[k]=v});
    if(!T(x.psOriginRef)&&T(r[0])&&!bad(r[0]))x.psOriginRef=T(r[0])};
-  ok.forEach(({r,m})=>{if(I.readonly(m.p)&&!canCfg())return;apply(r,m.x,m.p,false)});
+  ok.forEach(({r,m})=>{if(roP(m.p)&&!canCfg())return;apply(r,m.x,m.p,false)});
   if(add&&miss.length){if(!tp){say('Pilih program tujuan untuk usulan baru.');return false}
-   tp.psProjects=tp.psProjects||[];miss.forEach(({r})=>{const x={id:'proj-'+uid(),name:T(r[1]),status:'Usulan',included:true,scores:{},poster:{},risks:{},indicators:[],benefits:[],psOriginYear:null};apply(r,x,tp,true);tp.psProjects.push(x);nNew++});
-   try{window.MT_PS_SCOPE&&window.MT_PS_SCOPE.normalizeProjectCodes&&window.MT_PS_SCOPE.normalizeProjectCodes(tp)}catch(_){}}
-  if(setM)touched.forEach(p=>{p.psMethod='kka';p.psPrioritize=false});
+   if(tp.nonIstk)tp._keep();tp.psProjects=tp.psProjects||[];miss.forEach(({r})=>{const x={id:'proj-'+uid(),name:T(r[1]),status:'Usulan',included:true,scores:{},poster:{},risks:{},indicators:[],benefits:[],psOriginYear:null};apply(r,x,tp,true);tp.psProjects.push(x);nNew++});
+   if(!tp.nonIstk)try{window.MT_PS_SCOPE&&window.MT_PS_SCOPE.normalizeProjectCodes&&window.MT_PS_SCOPE.normalizeProjectCodes(tp)}catch(_){}}
+  if(setM)touched.forEach(p=>{if(!p.nonIstk){p.psMethod='kka';p.psPrioritize=false}});
   if(useCfg&&kr){const cell=(r,cI)=>(kr[r-1]||[])[cI];const w={};PROFILES.forEach((p,j)=>{const a=[0,1,2,3,4,5,6].map(i=>Math.round(+cell(17+i,3+j)*1000)/10);if(a.every(v=>isFinite(v)))w[p]=a});
    const pf=T(cell(4,2));setCfg({profile:PROFILES.includes(pf)?pf:cfg().profile,onlyPassed:T(cell(6,2))==='Tidak'?'Tidak':'Ya',pagu:+cell(7,2)||cfg().pagu,sdm:+cell(8,2)||cfg().sdm,quadThr:+cell(9,2)||cfg().quadThr,p1:+cell(10,2)||cfg().p1,p2:+cell(11,2)||cfg().p2,p3:+cell(12,2)||cfg().p3,tol:+cell(13,2)||cfg().tol,weights:Object.assign(cfg().weights,w)})}
-  touched.forEach(p=>p.psUpdatedAt=new Date().toISOString());
+  touched.forEach(p=>{if(p.nonIstk)p._doc.updatedAt=new Date().toISOString();else p.psUpdatedAt=new Date().toISOString()});
   try{log('Impor Kertas Kerja A',ok.length+' diperbarui, '+nNew+' proyek baru')}catch(_){}save();render();
   say('Impor selesai: '+ok.length+' proyek diperbarui, '+nNew+' proyek baru, '+nG+' jawaban gate, '+nS+' skor.'+(nS?'':' Skor K1–K7 belum ada di berkas — isi di tabel penilaian.'))},{size:'wide'});
 }
+function nonEdit(id){
+ const n=nonP(),x=id?n.psProjects.find(z=>String(z.id)===String(id)):null;if(id&&!x)return;const v=k=>E(x?(k==='cost'?(x.estimatedCost==null||x.estimatedCost===''?'':x.estimatedCost/1e6):x[k]??''):'');
+ const opt=(arr,val)=>['',...arr].map(o=>'<option'+(String(o)===String(val||'')?' selected':'')+' value="'+E(o)+'">'+(o||'Pilih')+'</option>').join('');
+ modal((x?'Ubah':'Tambah')+' Usulan di Luar ISTK',`<div class="fgrid">
+ <div class="fld wide"><label for="kn-name">Nama sistem / modul *</label><input id="kn-name" value="${v('name')}"></div>
+ <div class="fld"><label for="kn-uic">UE I</label><select id="kn-uic">${opt(UE,x&&x.uic)}</select></div>
+ <div class="fld"><label for="kn-jenis">Jenis inisiatif</label><select id="kn-jenis">${opt(['Aplikasi Baru','Modul Baru','Pengayaan Modul','Data Analytics / Dashboard / AI','Interoperabilitas'],x&&x.initiativeType)}</select></div>
+ <div class="fld wide"><label for="kn-owner">Unit pemilik proses bisnis</label><input id="kn-owner" value="${v('businessOwner')}"></div>
+ <div class="fld"><label for="kn-cost">Estimasi biaya (Rp juta)</label><input id="kn-cost" type="number" min="0" step="any" value="${v('cost')}"></div>
+ <div class="fld"><label for="kn-dur">Durasi (bulan)</label><input id="kn-dur" type="number" min="0" step="any" value="${v('durationMonths')}"></div>
+ <div class="fld"><label for="kn-sdm">Kebutuhan SDM (orang-bulan)</label><input id="kn-sdm" type="number" min="0" step="any" value="${v('estimatedStaffMonths')}"></div>
+ <div class="fld wide"><label for="kn-desc">Deskripsi & alasan tidak termapping ke ISTK</label><textarea id="kn-desc" rows="3">${v('description')}</textarea></div></div>
+ <p class="s" style="margin:8px 0 0">Gate G1–G4 dan skor K1–K7 diisi di tabel penilaian. Proyek ini tidak masuk Penetapan Program/RKMK/WBS dan tidak dipantau PMO Kemenkeu.</p>`,x?'Simpan':'Tambah',o=>{
+  const g=s=>T(o.querySelector(s).value),name=g('#kn-name');if(!name){say('Nama wajib diisi.');return false}
+  const all=allProgs().flatMap(p=>p.psProjects||[]);if(all.some(z=>z!==x&&nk(z.name)===nk(name))){say('Nama proyek sudah ada pada tahun ini.');return false}
+  const num=s=>{const t=g(s);if(t==='')return '';const n=+t;return isFinite(n)&&n>=0?n:NaN};const c=num('#kn-cost'),d=num('#kn-dur'),m=num('#kn-sdm');if([c,d,m].some(Number.isNaN)){say('Estimasi harus angka nonnegatif.');return false}
+  const t=x||{id:'non-'+uid(),status:'Usulan',kka:{},nonIstk:true};Object.assign(t,{name,uic:g('#kn-uic'),initiativeType:g('#kn-jenis'),businessOwner:g('#kn-owner'),estimatedCost:c===''?'':Math.round(c*1e6),durationMonths:d,estimatedStaffMonths:m,description:g('#kn-desc')});
+  if(!x){n._keep();n.psProjects.push(t)}n._doc.updatedAt=new Date().toISOString();try{log((x?'Ubah':'Tambah')+' usulan di luar ISTK',name)}catch(_){}ui().scope='non';save();render();say('Usulan di luar ISTK '+(x?'diperbarui':'ditambahkan')+'.')},{size:'sm'});
+}
 /* ---------- event ---------- */
-function findX(id){for(const p of I.programs())for(const x of (p.psProjects||[]))if(String(x.id)===String(id))return {p,x};return null}
+function findX(id){for(const p of allProgs())for(const x of (p.psProjects||[]))if(String(x.id)===String(id))return {p,x};return null}
 document.addEventListener('click',ev=>{
  const t=ev.target;if(!t.closest||!t.closest('.kka,.ps27-priority-head'))return;
  const b=t.closest('button');if(!b)return;const u=ui();
@@ -305,6 +333,9 @@ document.addEventListener('click',ev=>{
  if(b.hasAttribute('data-kka-xlsx')){try{const d=currentData();downloadXlsx(d,'Prioritas_SI_KertasKerjaA_'+d.year+'.xlsx');say('Excel hasil prioritasi diunduh.')}catch(e){say(e.message)}return}
  if(b.hasAttribute('data-kka-import')){const i=document.createElement('input');i.type='file';i.accept='.xlsx,.xlsm,.xls';i.onchange=()=>{if(i.files[0])importFile(i.files[0])};i.click();return}
  if(b.hasAttribute('data-kka-snap')&&canCfg()){snapDialog();return}
+ if(b.hasAttribute('data-kka-nonadd')&&canCfg()){nonEdit('');return}
+ if(b.dataset.kkaNonedit&&canCfg()){nonEdit(b.dataset.kkaNonedit);return}
+ if(b.dataset.kkaNondel&&canCfg()){const n=nonP(),i=n.psProjects.findIndex(z=>String(z.id)===String(b.dataset.kkaNondel));if(i<0)return;const nm=n.psProjects[i].name;const go=()=>{n.psProjects.splice(i,1);try{log('Hapus usulan di luar ISTK',nm)}catch(_){}save();render();say('Usulan dihapus.')};if(typeof window.MT_PS_CONFIRM==='function')window.MT_PS_CONFIRM('Hapus usulan?','"'+nm+'" akan dihapus dari daftar usulan di luar ISTK.',go);else go();return}
  if(b.dataset.kkaSnapview){snapView(b.dataset.kkaSnapview);return}
  if(b.dataset.kkaSnapx){const s=store()[b.dataset.kkaSnapx];if(s)try{downloadXlsx({year:s.year,cfg:s.cfg,sum:s.sum,rows:s.rows},'Prioritas_SI_'+s.year+'_v'+s.version+'.xlsx')}catch(e){say(e.message)}return}
  if(b.dataset.kkaSnapfinal&&canCfg()){const st=store();snaps().forEach(s=>{if(s.status==='Final')st[s.key].status='Draft'});st[b.dataset.kkaSnapfinal].status='Final';try{log('Tandai final hasil prioritasi',b.dataset.kkaSnapfinal)}catch(_){}save();render();return}
@@ -315,8 +346,8 @@ document.addEventListener('change',ev=>{
  const t=ev.target;if(!t.closest||!t.closest('.kka'))return;const u=ui();
  if(t.matches('[data-kka-mode]')){u.mode=t.value;save();render();return}
  if(t.matches('[data-kka-ue]')){const v=t.dataset.kkaUe,a=new Set(u.ue||[]);t.checked?a.add(v):a.delete(v);u.ue=[...a];save();render();return}
- if(t.matches('[data-kka-gatecb]')){const[id,k]=t.dataset.kkaGatecb.split('|'),f=findX(id);if(!f||I.readonly(f.p))return;f.x[k]=t.checked?'Ya':'Tidak';f.p.psUpdatedAt=new Date().toISOString();save();render();return}
- if(t.matches('[data-kka-score],[data-kka-gate]')){const[id,k]=(t.dataset.kkaScore||t.dataset.kkaGate).split('|'),f=findX(id);if(!f||I.readonly(f.p))return;
+ if(t.matches('[data-kka-gatecb]')){const[id,k]=t.dataset.kkaGatecb.split('|'),f=findX(id);if(!f||roP(f.p))return;f.x[k]=t.checked?'Ya':'Tidak';f.p.psUpdatedAt=new Date().toISOString();save();render();return}
+ if(t.matches('[data-kka-score],[data-kka-gate]')){const[id,k]=(t.dataset.kkaScore||t.dataset.kkaGate).split('|'),f=findX(id);if(!f||roP(f.p))return;
   if(t.dataset.kkaScore){f.x.kka=f.x.kka||{};if(t.value==='')delete f.x.kka[k];else f.x.kka[k]=+t.value}else f.x[k]=t.value;
   f.p.psUpdatedAt=new Date().toISOString();save();render();return}
  if(!canCfg())return;
@@ -337,7 +368,7 @@ document.addEventListener('input',ev=>{const t=ev.target;if(!t.matches||!t.match
 .kka-kpis{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}.kka-kpi{background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:9px 11px}.kka-kpi b{display:block;font-size:20px;color:#0F2346}.kka-kpi b i{font-style:normal;font-size:12px;color:#64748B;font-weight:600}.kka-kpi small{font-size:11px;color:#64748B}.kka-kpi.ok b{color:#0F7A4B}.kka-kpi.fund b{color:#1F5FB8}
 .kka-toolbar,.kka-cardh{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.kka-sp{flex:1}.kka-prof{font-size:12px;color:#475569}
 .kka-seg{display:inline-flex;border:1px solid #C9D8EE;border-radius:9px;overflow:hidden}.kka-seg button{border:0;background:#fff;padding:6px 11px;font:600 12px inherit;cursor:pointer;color:#334155}.kka-seg button.on{background:#12275A;color:#fff}
-.kka-inl{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#334155}.kka .kka-inl select,.kka .kka-q{height:32px!important;min-height:0!important;line-height:30px!important;padding-top:0!important;padding-bottom:0!important;width:auto!important;border:1px solid #C9D8EE;border-radius:8px;padding:0 8px;font:inherit;font-size:12.5px;background:#fff}.kka .kka-q{min-width:180px!important;max-width:220px}
+.kka-inl{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#334155}.kka .kka-inl select,.kka .kka-q{height:32px!important;min-height:0!important;line-height:30px!important;padding-top:0!important;padding-bottom:0!important;width:auto!important;border:1px solid #C9D8EE;border-radius:8px;padding:0 8px;font:inherit;font-size:12.5px;background:#fff}.kka .kka-q{width:170px!important;min-width:0!important;flex:0 0 170px}
 .kka-uef{position:relative;font-size:12px}.kka-uef summary{cursor:pointer;height:32px;display:flex;align-items:center;border:1px solid #C9D8EE;border-radius:8px;padding:0 10px;background:#fff;font-weight:600;list-style:none}.kka-uef>div{position:absolute;z-index:20;top:36px;left:0;background:#fff;border:1px solid #D6DEEA;border-radius:10px;padding:8px;box-shadow:0 10px 24px rgba(15,35,70,.12);display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;min-width:240px}.kka-uef label{display:flex;gap:6px;align-items:center}
 .kka-card{background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:14px}.kka-card h3{margin:0 0 10px;font-size:14px;color:#0F2346;display:flex;align-items:center;gap:6px}.kka-cardh h3{margin:0}
 .kka-scroll{overflow:auto;border:1px solid #E2E8F0;border-radius:10px;background:#fff}
@@ -357,7 +388,7 @@ document.addEventListener('input',ev=>{const t=ev.target;if(!t.matches||!t.match
 .kka-pen thead th.kka-k{text-align:center;min-width:70px;max-width:none!important;white-space:nowrap}.kka-pen thead th.kka-k span{margin:2px 0 5px;white-space:nowrap}.kka-pen thead th.kka-k em{display:block;color:#F2B92C;font-style:normal;font-size:10.5px;font-weight:800;margin-top:3px}
 .kka-wbar{display:block;height:5px;margin:0 4px;background:rgba(255,255,255,.18);border-radius:4px;overflow:hidden}.kka-wbar>i{display:block;height:100%;background:#F2B92C}
 .kka-pen thead th.kka-g{text-align:center;min-width:44px}.kka-pen thead th.div{border-left:1px solid rgba(255,255,255,.22)}.kka-pen .kka-cat{text-align:center;width:56px}.kka-pen td.kka-cat small{display:block;font-size:10px}
-.kka-pc{min-width:32px;text-align:center}.kka-chip.p3{background:#FFF0C2;color:#7A5300}
+.kka-non{background:#EDE9FE!important;color:#5B21B6!important;font-size:10px!important;padding:1px 7px!important;vertical-align:1px;margin-left:4px}.kka .kka-ib{border:0!important;background:none!important;box-shadow:none!important;cursor:pointer;font-size:12px!important;padding:0 3px!important;width:auto!important;height:auto!important;min-width:0!important;min-height:0!important;color:#475569;vertical-align:1px;display:inline}.kka-ib:hover{color:#12275A}.kka-pc{min-width:32px;text-align:center}.kka-chip.p3{background:#FFF0C2;color:#7A5300}
 .kka-thc{display:inline-flex;align-items:center;gap:3px}.kka-rub{padding:0}.kka-rub>summary{cursor:pointer;padding:11px 14px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;color:#0F2346;font-size:13px}.kka-rub>summary small{color:#64748B;font-size:11.5px}.kka-rub .kka-scroll{border:0;border-top:1px solid #E2E8F0;border-radius:0 0 12px 12px}.kka-rub td{font-size:12px}.kka-ref td{vertical-align:top}.kka-ref td:nth-child(n+3){min-width:150px}
 b.up{color:#0F7A4B}b.dn{color:#B42318}
 @media(max-width:1200px){.kka-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}.kka-grid2{grid-template-columns:1fr}.kka-sets{grid-template-columns:1fr 1fr}}
