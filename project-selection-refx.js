@@ -28,6 +28,10 @@ function matrix(id){const sp=SPEC[id],q=st(id).q;
  return '<table><thead><tr><th>Kriteria</th>'+LV.map((l,i)=>'<th>'+(i+1)+' · '+l+'</th>').join('')+'</tr></thead><tbody>'+
  sp.crit.map(c=>'<tr><td>'+E(c.code+' '+c.name)+'<small>'+(c.grp?E(c.grp)+' · ':'')+E(c.wText||'')+tagsOf(c)+'</small></td>'+c.rub.map((t,i)=>{const u=sp.util?sp.util(c,i):(i+1)/5;return '<td class="'+(u>=1?'rfx-c5':'')+'">'+hl(t,q)+'</td>'}).join('')+'</tr>').join('')+'</tbody></table>'}
 
+/* MCDA details share one grid cell: hidden panels still determine natural height. */
+function methodDetails(spec,selected){
+ return spec.flow.map((f,i)=>'<div class="rfx-detail-slot'+(i===selected?' rfx-slot-on':'')+'" data-rfx-slot="'+i+'" aria-hidden="'+(i!==selected)+'"'+(i===selected?'':' inert')+'>'+f.det+'</div>').join('');
+}
 function html(spec){
  SPEC[spec.id]=spec;const s=st(spec.id);if(s.cur>=spec.crit.length)s.cur=0;
  const flowDet=s.flow!=null&&spec.flow[s.flow]?spec.flow[s.flow].det:'';
@@ -37,7 +41,7 @@ function html(spec){
  '<div class="rfx-wbar">'+spec.wbar.map(w=>'<i style="width:'+w.pct+'%;background:'+E(w.color)+'" title="'+E(w.title)+'"></i>').join('')+'</div><div class="rfx-wleg" style="grid-template-columns:repeat('+spec.wleg.length+',1fr)">'+spec.wleg.map(l=>'<span><b><i style="background:'+E(l.color)+'"></i>'+E(l.label)+'</b>'+E(l.sub)+'</span>').join('')+'</div></div></section>'+
  '<section class="rfx-sec"><div class="rfx-sech"><h3>'+E(spec.flowTitle||'Alur metode')+'</h3><small>klik tiap langkah untuk aturan lengkap</small><span class="rfx-sp"></span>'+(spec.tools||'')+'</div>'+
  '<div class="rfx-flow">'+spec.flow.map((f,i)=>'<div class="rfx-step'+(s.flow===i?' rfx-on':'')+'" data-rfx-step="'+i+'" role="button" tabindex="0"><div class="rfx-n">'+(i+1)+'</div><h4>'+E(f.t)+'</h4><p>'+E(f.d)+'</p><div class="rfx-out">'+f.out.map(o=>'<span class="rfx-o-'+o[1]+'">'+E(o[0])+'</span>').join('')+'</div></div>').join('')+'</div>'+
- '<div class="rfx-detail'+(flowDet?' rfx-on':'')+'">'+flowDet+'</div></section>'+
+ '<div class="rfx-detail'+(spec.id==='mcda'?' rfx-detail-fixed':'')+(flowDet?' rfx-on':'')+'">'+(spec.id==='mcda'?methodDetails(spec,s.flow):flowDet)+'</div></section>'+
  '<section class="rfx-sec"><div class="rfx-sech"><h3>Rubrik skala penilaian 1–5</h3><small>'+spec.rubNote+'</small><span class="rfx-sp"></span>'+
  '<input class="rfx-search" type="search" data-rfx-q value="'+E(s.q)+'" placeholder="'+E(spec.searchPh||'Cari kata di rubrik…')+'" aria-label="Cari kata di rubrik"><span class="rfx-toggle"><button type="button" data-rfx-mode="kartu" class="'+(s.mode==='kartu'?'rfx-on':'')+'">Kartu</button><button type="button" data-rfx-mode="matriks" class="'+(s.mode==='matriks'?'rfx-on':'')+'">Matriks</button></span></div>'+
  '<div class="rfx-rub" style="'+(s.mode==='kartu'?'':'display:none')+'"><div class="rfx-klist">'+klist(spec.id)+'</div><div class="rfx-kpanel">'+kpanel(spec.id,s.cur,s.pick)+'</div></div>'+
@@ -61,7 +65,7 @@ window.addEventListener('resize',()=>{clearTimeout(fitAll._t);fitAll._t=setTimeo
 function redrawK(root){const id=root.dataset.rfx,s=st(id),kl=root.querySelector('.rfx-klist'),top=kl.scrollTop;
  kl.innerHTML=klist(id);kl.scrollTop=top;root.querySelector('.rfx-kpanel').innerHTML=kpanel(id,s.cur,s.pick)}
 function act(root,el,ev){const id=root.dataset.rfx,sp=SPEC[id],s=st(id);if(!sp)return false;
- if(el.dataset.rfxStep!=null){const i=+el.dataset.rfxStep;s.flow=s.flow===i?null:i;root.querySelectorAll('.rfx-step').forEach((x,j)=>x.classList.toggle('rfx-on',j===s.flow));const d=root.querySelector('.rfx-detail');d.innerHTML=s.flow==null?'':sp.flow[i].det;d.classList.toggle('rfx-on',s.flow!=null);return true}
+ if(el.dataset.rfxStep!=null){const i=+el.dataset.rfxStep;s.flow=s.flow===i?null:i;root.querySelectorAll('.rfx-step').forEach((x,j)=>x.classList.toggle('rfx-on',j===s.flow));const d=root.querySelector('.rfx-detail');if(id==='mcda'){d.querySelectorAll('[data-rfx-slot]').forEach(slot=>{const active=Number(slot.dataset.rfxSlot)===s.flow;slot.classList.toggle('rfx-slot-on',active);slot.setAttribute('aria-hidden',String(!active));slot.toggleAttribute('inert',!active)})}else d.innerHTML=s.flow==null?'':sp.flow[i].det;d.classList.toggle('rfx-on',s.flow!=null);return true}
  if(el.dataset.rfxK!=null){s.cur=+el.dataset.rfxK;s.pick=null;redrawK(root);return true}
  if(el.dataset.rfxLv!=null){const v=+el.dataset.rfxLv;s.pick=s.pick===v?null:v;redrawK(root);return true}
  if(el.dataset.rfxMode){s.mode=el.dataset.rfxMode;root.querySelectorAll('[data-rfx-mode]').forEach(b=>b.classList.toggle('rfx-on',b===el));root.querySelector('.rfx-rub').style.display=s.mode==='kartu'?'':'none';const mx=root.querySelector('.rfx-mx');mx.style.display=s.mode==='matriks'?'':'none';mx.innerHTML=matrix(id);if(s.mode==='kartu')fit(root);return true}
@@ -101,6 +105,10 @@ document.addEventListener('change',ev=>{const t=ev.target;if(t.closest&&t.closes
 .rfx-o-ok{background:#E3F5EB;color:var(--rok)}.rfx-o-bad{background:#FDE8E8;color:#B42318}.rfx-o-warn{background:var(--rg2);color:#8A5A00}.rfx-o-n{background:#EEF2FB;color:var(--rn)}
 .rfx-detail{margin-top:10px;background:#fff;border:1px solid var(--rl);border-radius:14px;padding:14px 16px;display:none}
 .rfx-detail.rfx-on{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.rfx .rfx-detail-fixed.rfx-on{grid-template-columns:minmax(0,1fr);grid-template-rows:auto;gap:0}
+.rfx-detail-fixed>.rfx-detail-slot{grid-area:1/1;min-width:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-content:start;visibility:hidden;pointer-events:none}
+.rfx-detail-fixed>.rfx-detail-slot.rfx-slot-on{visibility:visible;pointer-events:auto}
+@media(max-width:1100px){.rfx-detail-fixed>.rfx-detail-slot{grid-template-columns:minmax(0,1fr)}}
 .rfx-detail h5{margin:0 0 6px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--rn)}
 .rfx-detail p,.rfx-detail li{font-size:12.8px;line-height:1.6;color:#1E293B;margin:0}.rfx-detail ul{margin:0;padding-left:18px}
 .rfx-tip{background:var(--rg2);border-radius:10px;padding:9px 12px;font-size:12px;color:#5C4300;margin-top:8px}.rfx-tip.bad{background:#FDE8E8;color:#991B1B}
