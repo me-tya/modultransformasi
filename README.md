@@ -88,3 +88,16 @@ Modul `rkmk-draft.js` (`window.MT_RKMK`). Aplikasi hanya menyusun **kerangka** n
 - **Ditandai `[…]` (sorot kuning) untuk diisi di Word:** nomor, Menimbang huruf a, Mengingat, Diktum KETIGA, tanggal & nama penandatangan.
 - Pratinjau dan unduhan Word memakai model yang sama (A4 tegak, Bookman Old Style 12 pt). Data: `S.psRkmkDoc[tahun] = {title, signYear, programIds|null, docs:[...]}`.
 - **RKMK Ditetapkan** (SA, PMOK): nomor KMK, tanggal, tentang, PDF TTE (IndexedDB lokal `mt-signed-documents`, kunci `rkmk:<id>`), tautan opsional, program tercakup. Setiap unggahan = versi baru; program tercakup diberi `p.psRkmkRef`.
+
+## Layanan akun: reset kata sandi (Worker `mt-account`)
+
+Kode: `cloudflare/mt-account.js`. Dipakai oleh tautan **Lupa kata sandi?** di halaman login (kirim tautan ke *Email alternatif*) dan tombol **Pengaturan › Pengguna › Reset akun login…** (Superadmin, memberi kata sandi sementara).
+
+1. Cloudflare › Workers & Pages › Create › Worker, beri nama **mt-account**, tempel isi `cloudflare/mt-account.js`, Deploy. URL harus `https://mt-account.<subdomain>.workers.dev` (sama subdomain dengan `mt-assistant`); bila berbeda, ubah `ACC_URL` di `index.html`.
+2. Settings › Variables and Secrets:
+   - Secret `FIREBASE_SERVICE_ACCOUNT` = isi file JSON dari Firebase Console › Project settings › Service accounts › Generate new private key.
+   - Secret `RESEND_API_KEY` = API key dari resend.com.
+   - Text `FIREBASE_PROJECT_ID` = `modul-transformasi`; Text `MAIL_FROM` = mis. `Modul Transformasi <onboarding@resend.dev>`.
+   - Catatan: pengirim `onboarding@resend.dev` hanya bisa mengirim ke email pemilik akun Resend; untuk penerima lain verifikasi domain sendiri di Resend.
+3. Buka `https://mt-account.<subdomain>.workers.dev/` — semua indikator harus `true`.
+4. Perbarui Firestore Rules (Pengaturan › Database › salin rules) agar pengguna boleh mengubah Email alternatif miliknya.
