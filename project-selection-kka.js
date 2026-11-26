@@ -249,33 +249,50 @@ const nk=s=>T(s).toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 async function importFile(file){
  const X=window.XLSX;if(!X){say('Pustaka Excel belum termuat.');return}
  let wb;try{wb=X.read(await file.arrayBuffer(),{type:'array'})}catch(e){say('Berkas tidak dapat dibaca sebagai Excel.');return}
- const us=wb.Sheets['Usulan'];if(!us){say("Sheet 'Usulan' tidak ditemukan. Gunakan workbook Kertas Kerja A Pusakti.");return}
+ const us=wb.Sheets['Usulan'];if(!us){say("Sheet 'Usulan' tidak ditemukan. Gunakan workbook Kertas Kerja A.");return}
  const aoa=s=>X.utils.sheet_to_json(s,{header:1,raw:true,defval:''});
- const U=aoa(us).slice(7).filter(r=>T(r[0])||T(r[1]));
- const P={};if(wb.Sheets['Penilaian'])aoa(wb.Sheets['Penilaian']).slice(7).forEach(r=>{const id=T(r[0]);if(id&&id!=='#REF!')P[id]=r.slice(3,10)});
+ const bad=v=>/^#(REF|N\/A|VALUE|DIV\/0|NAME)!?/i.test(T(v));
+ const U=aoa(us).slice(7).filter(r=>(T(r[0])||T(r[1]))&&!bad(r[1]));
+ /* Penilaian: cocokkan per ID, atau per nama bila ID rusak. Data mulai setelah baris judul 'ID'. */
+ const P={},PN={};if(wb.Sheets['Penilaian']){const A=aoa(wb.Sheets['Penilaian']);const h=A.findIndex(r=>T(r[0])==='ID');A.slice(h+1).forEach(r=>{const sc=r.slice(3,10);if(!sc.some(v=>T(v)!==''&&!bad(v)))return;if(T(r[0])&&!bad(r[0]))P[T(r[0])]=sc;if(T(r[1])&&!bad(r[1]))PN[nk(r[1])]=sc})}
+ const scoreOf=r=>P[T(r[0])]||PN[nk(r[1])]||[];
  const kr=wb.Sheets['Kriteria']?aoa(wb.Sheets['Kriteria']):null;
  const progs=I.programs(),all=[];progs.forEach(p=>(p.psProjects||[]).forEach(x=>all.push({p,x})));
- const match=r=>{const n=nk(r[1]);if(!n)return null;return all.find(o=>nk(o.x.name)===n||nk(o.x.applicationName)===n)||all.find(o=>{const a=nk(o.x.name);return a&&(a.includes(n)||n.includes(a))})||null};
+ const match=r=>{const n=nk(r[1]);if(!n)return null;return all.find(o=>nk(o.x.name)===n||nk(o.x.applicationName)===n)||all.find(o=>{const a=nk(o.x.name);return a&&a.length>4&&(a.includes(n)||n.includes(a))})||null};
  const plan=U.map(r=>({r,m:match(r)})),ok=plan.filter(z=>z.m),miss=plan.filter(z=>!z.m);
  const yn=v=>/^ya$/i.test(T(v))?'Ya':/^tidak$/i.test(T(v))?'Tidak':'';
- const sv=v=>{const n=+v;return n>=1&&n<=5&&Number.isInteger(n)?n:null};
- modal('Impor Kertas Kerja A',`<p class="s" style="margin:0 0 8px">${U.length} baris usulan di berkas · <b>${ok.length} cocok</b> dengan proyek tahun ${year()} · ${miss.length} tidak cocok.</p>
- <div class="kka-scroll" style="max-height:44vh"><table class="kka-t"><thead><tr><th>Usulan di berkas</th><th>Proyek di aplikasi</th><th>Gate</th><th>Skor K1–K7</th></tr></thead><tbody>${plan.map(z=>{const s=(P[T(z.r[0])]||[]).map(sv);return '<tr><td><b>'+E(z.r[1])+'</b><small>'+E(z.r[0])+' · '+E(z.r[8])+'</small></td><td>'+(z.m?E(z.m.x.name)+'<small>'+E(z.m.p.nama)+'</small>':'<span class="kka-chip bad">Tidak ditemukan</span>')+'</td><td>'+[21,22,23,24].map(i=>yn(z.r[i])||'–').join(' / ')+'</td><td>'+(s.length?s.map(v=>v??'–').join(' '):'–')+'</td></tr>'}).join('')}</tbody></table></div>
+ const sv=v=>{const n=+v;return T(v)!==''&&n>=1&&n<=5&&Number.isInteger(n)?n:null};
+ const cur=I.pickedProgram(),canAdd=progs.filter(p=>!I.readonly(p)||canCfg());
+ const nSkor=plan.filter(z=>scoreOf(z.r).map(sv).some(v=>v!=null)).length;
+ modal('Impor Kertas Kerja A',`<p class="s" style="margin:0 0 8px">${U.length} baris usulan di berkas · <b>${ok.length} cocok</b> dengan proyek tahun ${year()} · <b>${miss.length} belum ada</b> di aplikasi · ${nSkor} baris memiliki skor K1–K7.</p>
+ <div class="kka-scroll" style="max-height:40vh"><table class="kka-t"><thead><tr><th>Usulan di berkas</th><th>Proyek di aplikasi</th><th>Gate G1–G4</th><th>Skor K1–K7</th><th>Biaya (Rp jt) · Durasi · SDM</th></tr></thead><tbody>${plan.map(z=>{const s=scoreOf(z.r).map(sv);return '<tr><td><b>'+E(z.r[1])+'</b><small>'+E([T(z.r[0]),T(z.r[8])].filter(Boolean).join(' · '))+'</small></td><td>'+(z.m?E(z.m.x.name)+'<small>'+E(z.m.p.nama)+'</small>':'<span class="kka-chip warn">Baru</span>')+'</td><td>'+[21,22,23,24].map(i=>yn(z.r[i])||'–').join(' / ')+'</td><td>'+(s.some(v=>v!=null)?s.map(v=>v??'–').join(' '):'<small>belum ada</small>')+'</td><td>'+[18,19,20].map(i=>T(z.r[i])===''?'–':E(z.r[i])).join(' · ')+'</td></tr>'}).join('')}</tbody></table></div>
+ ${miss.length?`<div style="margin-top:10px;padding:10px;border:1px solid #F2D58A;background:#FFFBEA;border-radius:8px"><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="kka-imp-add" checked style="width:auto"> Tambahkan ${miss.length} usulan yang belum ada sebagai proyek baru ke program</label>
+  <select id="kka-imp-prog" style="margin-top:6px;width:100%">${canAdd.map(p=>'<option value="'+E(p.id)+'"'+(cur&&p.id===cur.id?' selected':'')+'>'+E(p.nama)+'</option>').join('')}</select>
+  <small style="display:block;margin-top:4px;color:#64748B">Isian Usulan (jenis inisiatif, UE I, unit pemilik, domain SPBE, deskripsi, urgensi, landasan hukum, strategi, proses bisnis, narasi, fitur) ikut disalin.</small></div>`:''}
  <label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="checkbox" id="kka-imp-est" checked style="width:auto"> Perbarui estimasi biaya, durasi, dan SDM dari berkas (bila terisi)</label>
+ <label style="display:flex;gap:8px;align-items:center;margin-top:6px"><input type="checkbox" id="kka-imp-desc" checked style="width:auto"> Lengkapi isian Usulan proyek yang sudah ada bila masih kosong</label>
  ${kr&&canCfg()?'<label style="display:flex;gap:8px;align-items:center;margin-top:6px"><input type="checkbox" id="kka-imp-cfg" style="width:auto"> Ambil juga pengaturan & bobot dari sheet Kriteria</label>':''}
  <label style="display:flex;gap:8px;align-items:center;margin-top:6px"><input type="checkbox" id="kka-imp-method" checked style="width:auto"> Set metode program terkait ke MCDA</label>
- <p class="s" style="margin:8px 0 0">Nilai skor yang rusak di berkas (#REF!) atau kosong diabaikan; isian lama di aplikasi tidak dihapus.</p>`,'Impor',o=>{
-  const est=o.querySelector('#kka-imp-est')?.checked,useCfg=o.querySelector('#kka-imp-cfg')?.checked,setM=o.querySelector('#kka-imp-method')?.checked;let nG=0,nS=0,touched=new Set();
-  ok.forEach(({r,m})=>{const x=m.x;if(I.readonly(m.p)&&!canCfg())return;touched.add(m.p);
+ <p class="s" style="margin:8px 0 0">Nilai rusak (#REF!) atau kosong diabaikan; isian lama di aplikasi tidak dihapus.</p>`,'Impor',o=>{
+  const q=id=>o.querySelector(id),est=q('#kka-imp-est')?.checked,useCfg=q('#kka-imp-cfg')?.checked,setM=q('#kka-imp-method')?.checked,desc=q('#kka-imp-desc')?.checked,add=q('#kka-imp-add')?.checked,tp=progs.find(p=>p.id===q('#kka-imp-prog')?.value);
+  let nG=0,nS=0,nNew=0;const touched=new Set();
+  const DESC=[[7,'initiativeType'],[8,'uic'],[9,'businessOwner'],[10,'spbeDomain'],[11,'description'],[12,'urgency'],[13,'legalBasis'],[14,'strategyAlignment'],[15,'businessProcess'],[16,'businessNarrative'],[17,'features']];
+  const apply=(r,x,p,isNew)=>{touched.add(p);
    GATES.forEach((g,i)=>{const v=yn(r[21+i]);if(v){x[g[0]]=v;nG++}});
-   const s=(P[T(r[0])]||[]).map(sv);if(s.some(v=>v!=null)){x.kka=x.kka||{};s.forEach((v,i)=>{if(v!=null){x.kka['K'+(i+1)]=v;nS++}})}
-   if(est){const cst=+r[18],du=+r[19],sd=+r[20];if(T(r[18])!==''&&isFinite(cst))x.estimatedCost=Math.round(cst*1e6);if(T(r[19])!==''&&isFinite(du))x.durationMonths=du;if(T(r[20])!==''&&isFinite(sd))x.estimatedStaffMonths=sd}
-   if(!x.uic&&T(r[8]))x.uic=T(r[8])});
+   const s=scoreOf(r).map(sv);if(s.some(v=>v!=null)){x.kka=x.kka||{};s.forEach((v,i)=>{if(v!=null){x.kka['K'+(i+1)]=v;nS++}})}
+   if(est||isNew){const cst=+r[18],du=+r[19],sd=+r[20];if(T(r[18])!==''&&isFinite(cst))x.estimatedCost=Math.round(cst*1e6);if(T(r[19])!==''&&isFinite(du))x.durationMonths=du;if(T(r[20])!==''&&isFinite(sd))x.estimatedStaffMonths=sd}
+   if(desc||isNew)DESC.forEach(([c,k])=>{const v=T(r[c]);if(v&&!bad(v)&&!T(x[k]))x[k]=v});
+   if(!T(x.psOriginRef)&&T(r[0])&&!bad(r[0]))x.psOriginRef=T(r[0])};
+  ok.forEach(({r,m})=>{if(I.readonly(m.p)&&!canCfg())return;apply(r,m.x,m.p,false)});
+  if(add&&miss.length){if(!tp){say('Pilih program tujuan untuk usulan baru.');return false}
+   tp.psProjects=tp.psProjects||[];miss.forEach(({r})=>{const x={id:'proj-'+uid(),name:T(r[1]),status:'Usulan',included:true,scores:{},poster:{},risks:{},indicators:[],benefits:[],psOriginYear:null};apply(r,x,tp,true);tp.psProjects.push(x);nNew++});
+   try{window.MT_PS_SCOPE&&window.MT_PS_SCOPE.normalizeProjectCodes&&window.MT_PS_SCOPE.normalizeProjectCodes(tp)}catch(_){}}
   if(setM)touched.forEach(p=>{p.psMethod='kka';p.psPrioritize=false});
   if(useCfg&&kr){const cell=(r,cI)=>(kr[r-1]||[])[cI];const w={};PROFILES.forEach((p,j)=>{const a=[0,1,2,3,4,5,6].map(i=>Math.round(+cell(17+i,3+j)*1000)/10);if(a.every(v=>isFinite(v)))w[p]=a});
    const pf=T(cell(4,2));setCfg({profile:PROFILES.includes(pf)?pf:cfg().profile,onlyPassed:T(cell(6,2))==='Tidak'?'Tidak':'Ya',pagu:+cell(7,2)||cfg().pagu,sdm:+cell(8,2)||cfg().sdm,quadThr:+cell(9,2)||cfg().quadThr,p1:+cell(10,2)||cfg().p1,p2:+cell(11,2)||cfg().p2,p3:+cell(12,2)||cfg().p3,tol:+cell(13,2)||cfg().tol,weights:Object.assign(cfg().weights,w)})}
   touched.forEach(p=>p.psUpdatedAt=new Date().toISOString());
-  try{log('Impor Kertas Kerja A',ok.length+' usulan cocok')}catch(_){}save();render();say('Impor selesai: '+ok.length+' usulan, '+nG+' jawaban gate, '+nS+' skor.')},{size:'wide'});
+  try{log('Impor Kertas Kerja A',ok.length+' diperbarui, '+nNew+' proyek baru')}catch(_){}save();render();
+  say('Impor selesai: '+ok.length+' proyek diperbarui, '+nNew+' proyek baru, '+nG+' jawaban gate, '+nS+' skor.'+(nS?'':' Skor K1–K7 belum ada di berkas — isi di tabel penilaian.'))},{size:'wide'});
 }
 /* ---------- event ---------- */
 function findX(id){for(const p of I.programs())for(const x of (p.psProjects||[]))if(String(x.id)===String(id))return {p,x};return null}
