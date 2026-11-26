@@ -430,11 +430,13 @@ function open(preset){
       const fresh=current.aoa?plan(current.aoa):current.plan;
       const fingerprint=pl=>JSON.stringify(pl.items.map(it=>[it.row,it.action,it.charterLocked,it.existing?.id,it.projects.map(x=>[x.action,x.problem,x.old?.id])]));
       if(fingerprint(fresh)!==fingerprint(current.plan))throw Error('Rencana impor berubah karena data diperbarui. Pilih kembali berkas untuk memeriksa pratinjau.');
-      pendingStage=stageImport(fresh,{file:current.file});
+      const staged=stageImport(fresh,{file:current.file});validateStage(staged);
+      if(typeof fsImportStage==='function'&&!fsImportStage(staged.docs.map(d=>({c:'programs',id:d.id,before:canonical(d.before),after:canonical(d.after)}))))throw Error('Cadangan impor belum dapat dibuat di browser. Unduh cadangan yang tersedia atau kosongkan ruang penyimpanan, lalu coba lagi.');
+      pendingStage=staged;
      }
      inform('Menyimpan '+pendingStage.docs.length+' program ke Firebase. Jangan tutup halaman.',false);
      const records=await commitStage(pendingStage,FB.db);
-     publishConfirmed(records);res=pendingStage.result;
+     publishConfirmed(records);if(typeof fsImportConfirmDocs==='function')fsImportConfirmDocs(records.map(d=>({c:'programs',id:d.id,after:d.desired})));res=pendingStage.result;
     }else{
      res=apply(current.plan,{file:current.file});
      if(typeof save==='function')save();
@@ -469,5 +471,5 @@ function open(preset){
  paint();
 }
 document.addEventListener('click',ev=>{if(ev.target.closest?.('[data-bank-import]')){ev.preventDefault();open()}});
-window.MT_PS_IMPORT={plan,apply,stageImport,commitStage,tables,templateBook,projectExportBook,exportProjects,open,downloadTemplate,dateOf,version:'20261126-import-sync-v3'};
+window.MT_PS_IMPORT={plan,apply,stageImport,commitStage,tables,templateBook,projectExportBook,exportProjects,open,downloadTemplate,dateOf,version:'20261126-import-sync-v4'};
 })();
