@@ -25,6 +25,25 @@ function pjText(u,pd){return [u?'Utama: '+u:'',pd?'Pendukung: '+pd:''].filter(Bo
    Isian asli charter tidak diubah (dipakai RKMK). Mode "Ringkas" memakai p.psCharterSum bila sudah disunting,
    selain itu ringkasan otomatis berbasis aturan (tanpa AI; data tidak keluar aplikasi). */
 const SUMF=[['tujuan','Tujuan Program'],['lb','Latar Belakang'],['tb','Terobosan'],['out','Output'],['oc','Outcome'],['ris','Risiko'],['pk','Pendukung Kesuksesan'],['ms','Key Milestones']];
+const CHARTER_AI_URL='https://mt-assistant.ristya-onlineshop.workers.dev/summarize';
+let charterAiBusy=false;
+async function requestCharterAI(fields,max,title){
+ const auth=typeof firebase!=='undefined'&&firebase.auth?firebase.auth():null;
+ const u=auth&&auth.currentUser;
+ if(!u||u.isAnonymous||typeof u.getIdToken!=='function')throw Error('Login Firebase terlebih dahulu menggunakan akun Kemenkeu.');
+ const token=await u.getIdToken();
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),60000);
+ try{
+  let res;
+  try{res=await fetch(CHARTER_AI_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({fields,max,title}),signal:controller.signal})}
+  catch(e){throw Error(e.name==='AbortError'?'Permintaan AI melebihi batas waktu.':'Worker AI tidak terhubung. Periksa internet atau gunakan ringkasan otomatis.')}
+  let data;try{data=await res.json()}catch(_){throw Error('Respons Worker belum sesuai. Hubungi superadmin (HTTP '+res.status+').')}
+  if(!res.ok||data.status!=='success')throw Error((data.error||'Layanan AI belum siap (HTTP '+res.status+').')+(data.code?' ['+data.code+']':''));
+  const out=data.summary;
+  if(!out||SUMF.some(([k])=>!Array.isArray(out[k])||out[k].some(v=>typeof v!=='string'||!v.trim()||/[\r\n]/.test(v))||(!fields[k].length&&out[k].length)||(fields[k].length&&!out[k].length)||(k!=='ms'&&out[k].length>max)))throw Error('Format ringkasan AI tidak sesuai. Draf tidak diubah.');
+  return out;
+ }finally{clearTimeout(timer)}
+}
 const SUM_MAX_WORDS=14,CUT=/\s(?:melalui|dengan|sehingga|agar|guna|termasuk|yang mencakup|antara lain|serta)\s/i,TAILW=/\s(?:dan|atau|serta|yang|di|ke|dari|untuk|dengan|pada|dalam|oleh|melalui|agar|serta|para)$/i;
 function sumItem(t,max){max=max||SUM_MAX_WORDS;let x=strip(t).replace(/\s+/g,' ').trim();if(!x)return '';
  const lab=x.match(/^([^:]{6,80}):\s+(.+)$/);if(lab){const ws=lab[1].split(' ').filter(w=>!/^(dan|atau|di|ke|dari|untuk|serta|yang|&)$/i.test(w)),cap=ws.filter(w=>/^[A-Z0-9]/.test(w)).length;
@@ -385,13 +404,33 @@ function sumDialog(pid){const P=(S.programs||[]).find(x=>String(x.id)===String(p
  const words=t=>String(t||'').split(/\s+/).filter(Boolean).length;
  const ov=document.createElement('div');ov.className='chx-ov chx-sumov';
  ov.innerHTML='<section class="chx-dlg chx-sumdlg" role="dialog" aria-modal="true" aria-label="Ringkasan Charter"><header><div><b>Ringkasan untuk Tampilan Export</b><small>'+E(P.nama)+' · isian asli charter tidak berubah (tetap dipakai untuk RKMK)</small></div><button type="button" data-chx-close aria-label="Tutup">×</button></header>'+
-  '<main><div class="chx-sumtop"><label>Maks. butir per isian <select data-sum-max>'+[3,4,5,6,8,10].map(n=>'<option '+(n===(+cur.max||6)?'selected':'')+'>'+n+'</option>').join('')+'</select></label><button type="button" class="btn" data-sum-auto title="Ganti semua teks ringkas dengan hasil ringkas otomatis">↻ Ringkas otomatis semua</button><span>Satu baris = satu butir (Key Milestones: «tahun | teks»). Kosongkan kolom untuk kembali ke ringkasan otomatis.</span></div>'+
+  '<main><div class="chx-sumtop"><label>Maks. butir per isian <select data-sum-max>'+[3,4,5,6,8,10].map(n=>'<option '+(n===(+cur.max||6)?'selected':'')+'>'+n+'</option>').join('')+'</select></label><button type="button" class="btn" data-sum-auto title="Ganti semua teks ringkas dengan hasil ringkas otomatis">↻ Ringkas otomatis semua</button><button type="button" class="btn" data-sum-ai title="Buat draf ringkasan dengan Groq AI; isian asli tidak diubah">✦ Ringkas dengan AI</button><span>Satu baris = satu butir (Key Milestones: «tahun | teks»). Kosongkan kolom untuk kembali ke ringkasan otomatis.</span><span data-sum-ai-status role="status" aria-live="polite" hidden></span></div>'+
   SUMF.map(([k,l])=>{const o=orig(k);return '<div class="chx-sumrow"><div class="chx-sumorig"><b>'+E(l)+' <em>asli · '+o.length+' butir · '+words(o.join(' '))+' kata</em></b><ul>'+o.map(t=>'<li>'+E(t)+'</li>').join('')+'</ul></div>'+
    '<div class="chx-sumedit"><b>Ringkas'+((Array.isArray(saved[k])?saved[k].length:String(saved[k]||'').trim())?' <em class="ed">disunting</em>':' <em>otomatis</em>')+'<button type="button" class="lnk" data-sum-one="'+k+'">↻ ringkas otomatis</button></b><textarea data-sum="'+k+'" rows="'+(k==='tujuan'?Math.min(6,Math.max(3,Math.ceil(val(k).length/90)+1)):Math.min(10,Math.max(2,(val(k).match(/\n/g)||[]).length+2)))+'">'+E(val(k))+'</textarea></div></div>'}).join('')+'</main>'+
   '<footer><button type="button" class="btn" data-sum-reset>Hapus suntingan</button><span style="flex:1"></span><button type="button" class="btn" data-chx-close>Batal</button><button type="button" class="btn mt-dlbtn" data-sum-save>Simpan ringkasan</button></footer></section>';
  document.body.appendChild(ov);
  const max=()=>+ov.querySelector('[data-sum-max]').value||6,fill=k=>{const a=autoSum(c,max());ov.querySelector('[data-sum="'+k+'"]').value=k==='tujuan'?a.tujuan:[].concat(a[k]).join('\n')};
- ov.addEventListener('click',e=>{const t=e.target;if(t===ov||t.closest('[data-chx-close]')){ov.remove();return}
+ ov.addEventListener('click',async e=>{const t=e.target;if(t===ov||t.closest('[data-chx-close]')){ov.remove();return}
+  const ai=t.closest('[data-sum-ai]');
+  if(ai){
+   const status=ov.querySelector('[data-sum-ai-status]');
+   const inform=(msg,bad)=>{status.hidden=false;status.textContent=msg;status.style.color=bad?'#b91c1c':''};
+   if(charterAiBusy){inform('Permintaan AI masih berjalan.',true);return}
+   const fields=Object.fromEntries(SUMF.map(([k])=>[k,orig(k)]));
+   const before=SUMF.map(([k])=>ov.querySelector('[data-sum="'+k+'"]').value);
+   const cap=max();
+   if(!window.confirm('Isian asli Charter akan dikirim ke layanan Groq di luar aplikasi untuk membuat draf. Lanjutkan hanya jika data diizinkan diproses oleh layanan eksternal. Draf yang ada dapat diganti; data asli tetap utuh. Lanjutkan?'))return;
+   charterAiBusy=true;ai.disabled=true;ai.textContent='✦ Meringkas…';inform('AI sedang menyusun draf ringkasan.',false);
+   try{
+    const draft=await requestCharterAI(fields,cap,P.nama||c.judul||'');
+    if(!ov.isConnected)return;
+    if(max()!==cap||SUMF.some(([k],i)=>ov.querySelector('[data-sum="'+k+'"]').value!==before[i])){inform('Draf atau batas butir berubah saat AI bekerja. Hasil tidak diterapkan.',true);return}
+    SUMF.forEach(([k])=>{ov.querySelector('[data-sum="'+k+'"]').value=draft[k].join(k==='tujuan'?'; ':'\n')});
+    inform('Draf AI siap. Periksa angka dan substansi, lalu klik Simpan ringkasan.',false);
+   }catch(err){if(ov.isConnected)inform((err.message||'Ringkasan AI gagal.')+' Draf tidak diubah. Ringkas otomatis tetap tersedia.',true)}
+   finally{charterAiBusy=false;if(ov.isConnected){ai.disabled=false;ai.textContent='✦ Ringkas dengan AI'}}
+   return
+  }
   const one=t.closest('[data-sum-one]');if(one){fill(one.dataset.sumOne);return}
   if(t.closest('[data-sum-auto]')){SUMF.forEach(([k])=>fill(k));return}
   if(t.closest('[data-sum-reset]')){delete P.psCharterSum;try{save()}catch(_){}ov.remove();say('Suntingan ringkasan dihapus; tampilan Ringkas memakai ringkasan otomatis.');setBrief(brief()?'brief':'full');return}
