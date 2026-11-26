@@ -3819,7 +3819,13 @@ function renderLogin(err){if(!err&&FB.loginErr){err=FB.loginErr;FB.loginErr=''}
  <div class="demo"><h4>Pilih akun uji · kata sandi ${FB.on?'awal ':''}<span class="mono">${PW}</span></h4><div class="dgs">${demo}</div></div></form></div></div>`;
  $('#lf').addEventListener('submit',async e=>{e.preventDefault();const em=$('#em').value.trim().toLowerCase(),pw=$('#pw').value;
   if(!/^[^@\s]+@kemenkeu\.go\.id$/.test(em))return renderLogin('Alamat email harus berakhiran @kemenkeu.go.id.');
-  if(FB.on){const sp=splashOn('Masuk…');try{await FB.auth.signInWithEmailAndPassword(em,pw);const r=await fbAfterAuth();sp.remove();if(r==='bootstrap'){bootstrapUI(em);return}resetFiltersOnLogin();log('Masuk',roleN(ME.role));save();if(!location.hash)location.hash='beranda';readHash();render()}catch(err){sp.remove();renderLogin(fbErr(err))}return}
+  if(FB.on){const sp=splashOn('Masuk…');try{
+   /* Akun terdaftar di Pengguna tapi belum punya akun login Firebase: dengan kata sandi awal, buat akun loginnya saat itu juga. */
+   try{await FB.auth.signInWithEmailAndPassword(em,pw)}catch(e0){if(pw===PW&&/invalid-credential|user-not-found|invalid-login/.test(e0.code||'')){try{await FB.auth.createUserWithEmailAndPassword(em,pw)}catch(e1){throw e1.code==='auth/email-already-in-use'?e0:e1}
+     /* Hanya untuk email yang memang ada di daftar Pengguna; selain itu akun login yang baru dibuat langsung dihapus lagi. */
+     let ok=false;try{ok=(await FB.db.collection('users').doc(em).get()).exists}catch(e2){}
+     if(!ok){try{await FB.auth.currentUser.delete()}catch(e3){try{await FB.auth.signOut()}catch(e4){}}throw e0}}else throw e0}
+   const r=await fbAfterAuth();sp.remove();if(r==='bootstrap'){bootstrapUI(em);return}resetFiltersOnLogin();log('Masuk',roleN(ME.role));save();if(!location.hash)location.hash='beranda';readHash();render()}catch(err){sp.remove();renderLogin(fbErr(err))}return}
   const u=S.users.find(x=>x.email.toLowerCase()===em);if(!u||u.pw!==pw)return renderLogin('Email atau kata sandi akun uji salah.');if(!u.aktif)return renderLogin('Akun nonaktif. Hubungi Superadmin.');
   ME=u;setSess(u.email);resetFiltersOnLogin();log('Masuk',roleN(u.role));save();splash(()=>{if(!location.hash)location.hash='beranda';readHash();render()})});
  $('#pwt').onchange=e=>{$('#pw').type=e.target.checked?'text':'password'};
