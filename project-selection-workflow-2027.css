@@ -501,3 +501,14 @@
 .ps27-ea-l1 li{display:flex;gap:6px;font-size:12px;color:#334155;line-height:1.35;padding:2px 4px;border-radius:5px}
 .ps27-ea-l1 li code{background:transparent;color:#94a3b8}
 .ps27-ea-l1 li.hit{background:#fff1c7}
+/* Charter Program · Semua Program — Opsi B: judul + satu bilah aksi */
+#app .ps27-charter>.ps27-chtop{display:flex;align-items:baseline;justify-content:flex-start!important;gap:10px;margin-bottom:10px}
+#app .ps27-chtop h3{margin:0}
+#app .ps27-chcount{font-size:12.5px;font-weight:600;color:#64748b}
+#app .ps27-chbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 10px 8px 14px;border:1px solid #dce4ef;border-radius:12px;background:#f5f8fd}
+#app .ps27-chpick{display:flex;align-items:center;gap:9px;cursor:pointer;margin:0}
+#app .ps27-chpick b{font-size:13.5px;color:#1F2A44}#app .ps27-chpick small{font-size:12px;color:#64748b;font-weight:600}
+#app .ps27-chbar-sp{flex:1}
+#app .ps27-chbar.none .chx-ddb{opacity:.5;pointer-events:none}
+#app .ps27-chbar .chx-bar{margin:0}
+#app .ps27-chall-item.off>summary{background:#1D3A78}
