@@ -277,7 +277,7 @@ function addHistoryNon(keys){
    start:shift(o.start,r.y,year()),goLive:shift(o.goLive,r.y,year())});added++});
  if(!added){toast('Tidak ada usulan baru yang ditambahkan. Periksa duplikasi nama.');return}
  K.nonAdd(out,year());const b=mapState();b.historySelected=b.historySelected.filter(k=>!keys.includes(k));b.mappingTab='nonistk';
- try{log('Salin riwayat ke Usulan Non-ISTK',added+' proyek')}catch(e){}save();window.render();
+ try{log('Salin riwayat ke Usulan Non-ISTK',added+' proyek')}catch(e){}save();if(year()>=2027&&window.MT_PS_WORKFLOW?.navigate){b.mappingTab='proposal';window.MT_PS_WORKFLOW.navigate('prioritasi:mcda-non')}else window.render();
  toast(added+' proyek ditambahkan ke Usulan Non-ISTK '+year()+(skipped?' ('+skipped+' duplikat dilewati)':'')+'. Lengkapi isiannya di tab Usulan Non-ISTK.');
 }
 function addHistory(keys){
@@ -319,7 +319,7 @@ function programAccordion(programs,on){
 const MAPPING_TABS=[['history','Riwayat Proyek','Referensi proyek lintas tahun; salin ke program tujuan tanpa menyalin WBS atau realisasi historis.'],['proposal','Usulan Proyek ISTK','Usulan proyek pada program ISTK, disusun per program induk dalam accordion, dengan aksi lihat, ubah, tambah, dan hapus.'],['nonistk','Usulan Non-ISTK','Usulan pengembangan SI yang tidak termapping ke program ISTK (isian sheet Usulan Kertas Kerja A). Dinilai MCDA di Prioritasi; dapat dipetakan ke program ISTK bila diputuskan.'],['docs','Buat Dokumen Proyek','Pilih proyek dan substansi untuk menyusun dokumen proyek; dokumen bukan bukti penetapan.']];
 function scopeTabs(on,rows){
  return '<div class="psbank-scope-tabline"><nav class="psbank-mapping-tabs" role="tablist" aria-label="Tahapan Pemetaan Proyek">'+
- MAPPING_TABS.map(x=>'<button type="button" role="tab" data-scope-tab="'+x[0]+'" title="'+E(x[2])+'" aria-label="'+E(x[1]+'. '+x[2])+'" aria-selected="'+(on===x[0])+'" class="'+(on===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+
+ MAPPING_TABS.filter(x=>year()<2027||x[0]!=='nonistk').map(x=>'<button type="button" role="tab" data-scope-tab="'+x[0]+'" title="'+E(x[2])+'" aria-label="'+E(x[1]+'. '+x[2])+'" aria-selected="'+(on===x[0])+'" class="'+(on===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+
  '</nav>'+(on==='nonistk'?(typeof MT_TABSEARCH==='function'?MT_TABSEARCH:()=>'')('ps-nonistk',S.ui?.psKka?.uq,'Cari usulan, ID, UE I atau unit pemilik...'):on==='history'?(typeof MT_TABSEARCH==='function'?MT_TABSEARCH:()=>'')('ps-history',mapState().historySearch,'Cari nama proyek, kode, program atau UIC...'):on==='proposal'?(typeof MT_TABSEARCH==='function'?MT_TABSEARCH:()=>'')('ps-proposal',S.ui?.psBank?.filterScopes?.mapping?.search,'Cari proyek, aplikasi, deskripsi atau UIC...'):(typeof MT_TABSEARCH_PH==='function'?MT_TABSEARCH_PH():''))+'</div>';
 }
 function nonIstkView(){return window.MT_PS_KKA&&window.MT_PS_KKA.usulanHtml?'<div class="kka kka-inmap">'+window.MT_PS_KKA.usulanHtml()+'</div>':'<div class="psbank-empty">Modul usulan non-ISTK belum termuat.</div>'}
