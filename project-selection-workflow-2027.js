@@ -212,7 +212,9 @@ function filter(p){
   F.push(field('Kategori Proyek',mk('data-ps27-category',projectCategories,String(f.category||'all'),'Semua Kategori'),on(f.category)?'Kategori: '+f.category:null));
  }else if(stage==='prioritasi'){
   const cp=curP,rows=(cp?.psProjects||[]);
-  F.push({html:singleProgField,chip:null,wide:true});
+  /* MCDA: "Semua Program" = lingkup Portofolio (sinkron dengan tombol Portofolio di Penilaian & Peringkat). SMART tetap per program karena bobot & ambang melekat pada program. */
+  const kAll=cp?.psMethod==='kka'&&(S.ui.psKka||{}).scope==='all';
+  F.push({html:cp?.psMethod==='kka'?'<label>Program <select data-ps27-prog><option value="__all"'+(kAll?' selected':'')+'>Semua Program · Portofolio MCDA</option>'+options.map(x=>'<option value="'+E(x.id)+'" '+(!kAll&&String(cp.id)===String(x.id)?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label>':singleProgField,chip:kAll?'Program: Semua (Portofolio)':null,wide:true});
   F.push(field('UIC Proyek',mk('data-ps27-unit',uniq(rows.map(x=>x.uic||cp?.uic)),unit,'Semua Unit'),on(unit)?'UIC: '+unit:null));
   F.push(field('Status Penilaian',mk('data-ps27-status',['Sudah Dinilai','Belum Dinilai'],status,'Semua Status'),on(status)?status:null));
  }else if(stage==='rkmk'){
@@ -586,6 +588,9 @@ function mount(){
    const chosen=list().find(p=>String(p.id)===String(el.value)&&!p.arsip&&p.psListStatus!=='Arsip');
    if(chosen){state().prog=chosen.id;setFilterField('program',chosen.id);setFilterField('allProgramsSelected',false);save();render()}return;
   }
+  if(el.dataset.ps27Prog!==undefined&&state().tab==='prioritasi'){const k=S.ui.psKka=S.ui.psKka||{sub:'usulan',scope:'non',mode:'all',ue:[],q:''};
+   if(el.value==='__all'){k.scope='all';k.kpi='';if(k.sub==='usulan'||!k.sub)k.sub='rank';save();render();return}
+   if(k.scope==='all'){k.scope='program';k.kpi=''}}
   if(el.dataset.ps27Prog!==undefined&&state().tab==='charter'){S.ui.ps27ChAll=el.value==='__all';if(el.value==='__all'){save();render();return}}
   if(el.dataset.ps27Prog!==undefined){
     S.ui.psBank=S.ui.psBank||{};
