@@ -127,13 +127,38 @@ function page(p,o){
  const body=sub==='usulan'?usulanView(D):sub==='criteria'?criteriaView(D):sub==='roadmap'?roadmapView(D):sub==='repo'?repoView(D):sub==='ref'?refView():rankView(p,D,ro);
  return head+'<div class="kka">'+body+'</div>';
 }
-function kpis(D){const s=D.sum,c=D.c,k=(v,l,cl)=>'<div class="kka-kpi '+(cl||'')+'"><b>'+v+'</b><small>'+l+'</small></div>';
- return '<div class="kka-kpis">'+k(s.istk+'<i> · Rp '+fmt(s.istkCost)+' jt</i>','Proyek ISTK (otomatis)','istk')+k(s.total,'Usulan non-ISTK dinilai')+k(s.lolos+'<i>/'+s.total+'</i>','Lolos gate','ok')+k(s.ranked,'Diranking')+
-  k(s.nFunded,'Non-ISTK didanai '+D.y,'fund')+k(fmt(s.costFunded)+'<i> / '+fmt(c.pagu)+'</i>','Total biaya / pagu (Rp juta)')+k(fmt(s.sdmFunded,1)+'<i> / '+fmt(c.sdm)+'</i>','SDM terpakai / kapasitas (org-bln)')+'</div>'}
+/* KPI filters use the same portfolio rows as the summary, without modifying scoring or source data. */
+const KFILTER={
+ istk:r=>r.istk, non:r=>!r.istk, passed:r=>!r.istk&&r.gate==='Lolos', ranked:r=>r.ranked,
+ funded:(r,D)=>!r.istk&&r.rec==='Didanai '+D.y,
+ cost:(r,D)=>(r.istk||r.rec==='Didanai '+D.y)&&r.cost>0,
+ staff:(r,D)=>(r.istk||r.rec==='Didanai '+D.y)&&r.sdmN>0
+};
+const kpiScope=k=>['istk','cost','staff'].includes(k)?'all':'non';
+function moduleTitle(r){
+ const name=T(r.name),app=T(r.x&&r.x.applicationName);
+ let clean=name.replace(/^Satu\s+Kemenkeu\s*(?:\/|[-–—:]|\|)\s*/i,'').trim();
+ if(app&&clean.toLowerCase().startsWith(app.toLowerCase())){
+  const suffix=clean.slice(app.length);if(/^\s*[/|:–—-]\s*\S/.test(suffix))clean=suffix.replace(/^\s*[/|:–—-]\s*/,'').trim();
+ }
+ return clean||name;
+}
+function kpis(D,rankPage=false){const s=D.sum,c=D.c,active=rankPage?ui().kpi:'';
+ const k=(key,v,l,tone,hint)=>'<button type="button" class="kka-kpi kka-tone-'+tone+(active===key?' is-active':'')+'" data-kka-kpi="'+key+'" aria-pressed="'+(active===key)+'" title="'+E(active===key?'Klik kembali untuk melepas filter':hint)+'"><span class="kka-kpi-label">'+l+'</span><b>'+v+'</b></button>';
+ return '<div class="kka-kpis" role="group" aria-label="Filter indikator portofolio">'+
+ k('istk',s.istk+'<i> · Rp '+fmt(s.istkCost)+' jt</i>','Proyek ISTK (otomatis)','navy','Lihat seluruh proyek ISTK tahun ini')+
+ k('non',s.total,'Usulan non-ISTK dinilai','violet','Lihat semua usulan non-ISTK')+
+ k('passed',s.lolos+'<i>/'+s.total+'</i>','Lolos gate','green','Lihat usulan dengan gate Lolos')+
+ k('ranked',s.ranked,'Diranking','blue','Lihat usulan yang masuk peringkat')+
+ k('funded',s.nFunded,'Non-ISTK didanai '+D.y,'teal','Lihat usulan yang direkomendasikan didanai')+
+ k('cost',fmt(s.costFunded)+'<i> / '+fmt(c.pagu)+'</i>','Total biaya / pagu (Rp juta)','gold','Lihat proyek dengan kontribusi biaya pada pagu')+
+ k('staff',fmt(s.sdmFunded,1)+'<i> / '+fmt(c.sdm)+'</i>','SDM terpakai / kapasitas (org-bln)','slate','Lihat proyek dengan kontribusi pada kapasitas SDM')+'</div>';
+}
 function rankView(p,D,ro){
  const u=ui(),scopeAll=u.scope==='all',ueSel=Array.isArray(u.ue)?u.ue:[],q=T(u.q).toLowerCase();
  if(!D.progs.length&&u.scope!=='non'&&!canCfg())return '<div class="kka-empty">Belum ada program tahun '+D.y+' yang memakai metode MCDA.</div>';
  const scopeNon=u.scope==='non';let rows=D.rows.filter(r=>scopeAll||(scopeNon?r.p.nonIstk:r.p===p));
+ const activeKpi=Object.prototype.hasOwnProperty.call(KFILTER,u.kpi)?u.kpi:'';if(activeKpi)rows=rows.filter(r=>KFILTER[activeKpi](r,D));
  rows=rows.filter(r=>(!ueSel.length||ueSel.includes(r.uic))&&(!q||(r.name+' '+r.code+' '+r.uic+' '+r.p.nama).toLowerCase().includes(q)));
  const rk=r=>u.mode==='ue'?r.rankUe:r.rank;
  rows.sort((a,b)=>(b.istk-a.istk)||(rk(a)||1e9)-(rk(b)||1e9)||a.ord-b.ord);
@@ -151,13 +176,13 @@ function rankView(p,D,ro){
  const hdG=GATES.map((g,j)=>'<th class="kka-g'+(j?'':' div')+'" title="'+E(g[1]+' — '+g[3]+'\nDicentang = Ya; tidak dicentang = Tidak (Tinjau Ulang); kotak bergaris putus-putus = belum dijawab (Lengkapi).')+'"><b>'+g[1]+'</b><span>'+GS[j]+'</span></th>').join('');
  const roOf=r=>r.p.nonIstk?!canCfg():(ro||I.readonly(r.p));
  const sel=(r,attr,val,opts,lab,desc)=>{const cur=desc&&val!=null&&val!==''?desc[+val-1]:'';return '<select '+attr+' aria-label="'+E(lab)+'" title="'+E(cur?val+' = '+cur:lab)+'" '+(roOf(r)?'disabled':'')+'>'+opts.map(v=>'<option value="'+v+'"'+(String(val??'')===String(v)?' selected':'')+(desc&&v!==''?' title="'+E(desc[+v-1])+'" data-l="'+E(v+' – '+desc[+v-1])+'"':'')+'>'+(v===''?'–':v)+'</option>').join('')+'</select>'};
- const tr=rows.map(r=>'<tr class="'+(r.ranked?'':'kka-nr')+'"><td class="kka-rk">'+(r.istk?'<span class="kka-chip kka-istk">ISTK</span>':(rk(r)||'—'))+'</td><td class="kka-nm"><b>'+E(r.name)+(r.p.nonIstk?' <span class="kka-chip kka-non" title="Tidak termapping ke ISTK: ikut peringkat & roadmap, tidak masuk Penetapan/RKMK/WBS dan tidak dipantau PMO Kemenkeu.">Non-ISTK</span>'+'<button type="button" class="kka-ib" data-kka-nondetail="'+E(r.id)+'" title="Lihat detail usulan">👁</button>'+(canCfg()?'<button type="button" class="kka-ib" data-kka-nonedit="'+E(r.id)+'" title="Ubah usulan">✎</button><button type="button" class="kka-ib" data-kka-nondel="'+E(r.id)+'" title="Hapus usulan">🗑</button>':''):'')+'</b><small>'+E([r.code,scopeAll&&!r.p.nonIstk?r.p.nama:''].filter(Boolean).join(' · '))+'</small></td><td>'+E(r.uic||'—')+'</td><td class="kka-sc">'+(r.istk?'<small>—</small>':r.score==null?'<small>'+r.n+'/7</small>':fmt(r.score,2))+'</td><td class="kka-cat">'+(r.cat?'<span class="kka-chip kka-pc '+catCls(r.cat)+'" title="'+E(r.cat)+'">'+catCls(r.cat).toUpperCase()+'</span>':'<small>—</small>')+(r.full&&!r.ranked?'<small title="Skor lengkap tetapi gate belum Lolos">tdk diranking</small>':'')+'</td>'+
+ const tr=rows.map(r=>'<tr class="'+(r.ranked?'':'kka-nr')+'"><td class="kka-rk">'+(r.istk?'<span class="kka-chip kka-istk">ISTK</span>':(rk(r)||'—'))+'</td><td class="kka-nm"><b class="kka-module-title">'+E(moduleTitle(r))+'</b>'+(r.p.nonIstk?'<div class="kka-module-meta"><span class="kka-chip kka-non" title="Tidak termapping ke ISTK: ikut peringkat & roadmap, tidak masuk Penetapan/RKMK/WBS dan tidak dipantau PMO Kemenkeu.">Non-ISTK</span><span class="kka-module-actions"><button type="button" class="kka-ib" data-kka-nondetail="'+E(r.id)+'" title="Lihat detail usulan">👁</button>'+(canCfg()?'<button type="button" class="kka-ib" data-kka-nonedit="'+E(r.id)+'" title="Ubah usulan">✎</button><button type="button" class="kka-ib" data-kka-nondel="'+E(r.id)+'" title="Hapus usulan">🗑</button>':'')+'</span></div>':'')+'<small>'+E([r.code,scopeAll&&!r.p.nonIstk?r.p.nama:'',activeKpi==='cost'?'Rp '+fmt(r.cost,2)+' jt':'',activeKpi==='staff'?fmt(r.sdmN,1)+' org-bln':''].filter(Boolean).join(' · '))+'</small></td><td>'+E(r.uic||'—')+'</td><td class="kka-sc">'+(r.istk?'<small>—</small>':r.score==null?'<small>'+r.n+'/7</small>':fmt(r.score,2))+'</td><td class="kka-cat">'+(r.cat?'<span class="kka-chip kka-pc '+catCls(r.cat)+'" title="'+E(r.cat)+'">'+catCls(r.cat).toUpperCase()+'</span>':'<small>—</small>')+(r.full&&!r.ranked?'<small title="Skor lengkap tetapi gate belum Lolos">tdk diranking</small>':'')+'</td>'+
   (r.istk?'<td colspan="12" class="kka-istk-note">Program ISTK · <b>prioritas otomatis</b>, tidak perlu dinilai. Biaya '+(r.cost==null?'—':'Rp '+fmt(r.cost,2)+' jt')+' · SDM '+(r.sdmN==null?'—':fmt(r.sdmN,1)+' org-bln')+' diperhitungkan lebih dulu pada roadmap.</td>':
   GATES.map((g,i)=>{const v=r.g[i];return '<td class="kka-g"><input type="checkbox" class="kka-cb'+(v?'':' unset')+'" data-kka-gatecb="'+E(r.id)+'|'+g[0]+'" '+(v==='Ya'?'checked ':'')+(roOf(r)?'disabled ':'')+'title="'+E(g[1]+' '+g[2]+': '+(v||'belum dijawab'))+'" aria-label="'+E(g[1]+' '+g[2]+' – '+r.name)+'"></td>'}).join('')+
   '<td><span class="kka-chip '+gateCls(r.gate)+'">'+r.gate+'</span></td>'+
   KR.map((k,i)=>'<td class="kka-k">'+sel(r,'data-kka-score="'+E(r.id)+'|'+k.c+'"',r.s[i],['',1,2,3,4,5],k.c+' '+r.name,RUB[k.c])+'</td>').join(''))+
   '</tr>').join('');
- return kpis(D)+tb+'<div class="kka-scroll"><table class="kka-t kka-pen"><thead><tr><th>'+(u.mode==='ue'?'Rank UE I':'Rank')+'</th><th>Proyek</th><th>UE I</th><th class="r" title="Σ(skor K × bobot aktif) ÷ 5 × 100">Skor<span>bobot aktif</span></th><th class="kka-cat" title="P1 Utama ≥ '+D.c.p1+' · P2 Tinggi ≥ '+D.c.p2+' · P3 Menengah ≥ '+D.c.p3+' · P4 Rendah/Tunda">Kat.</th>'+hdG+'<th>Hasil gate</th>'+hdK+'</tr></thead><tbody>'+(tr||'<tr><td colspan="18" class="kka-empty">Tidak ada proyek sesuai filter.</td></tr>')+'</tbody></table></div>'+
+ return kpis(D,true)+tb+'<div class="kka-scroll"><table class="kka-t kka-pen"><thead><tr><th>'+(u.mode==='ue'?'Rank UE I':'Rank')+'</th><th>Proyek</th><th>UE I</th><th class="r" title="Σ(skor K × bobot aktif) ÷ 5 × 100">Skor<span>bobot aktif</span></th><th class="kka-cat" title="P1 Utama ≥ '+D.c.p1+' · P2 Tinggi ≥ '+D.c.p2+' · P3 Menengah ≥ '+D.c.p3+' · P4 Rendah/Tunda">Kat.</th>'+hdG+'<th>Hasil gate</th>'+hdK+'</tr></thead><tbody>'+(tr||'<tr><td colspan="18" class="kka-empty">Tidak ada proyek sesuai filter.</td></tr>')+'</tbody></table></div>'+
   (!scopeNon?'<p class="kka-note">Proyek pada program ISTK diprioritaskan otomatis (tidak dinilai MCDA) dan mengambil pagu & SDM lebih dulu; yang dinilai hanya usulan non-ISTK.</p>':'')+(scopeNon?'<p class="kka-note kka-warn">Proyek di luar ISTK ikut dinilai dan berbagi pagu & SDM pada roadmap, tetapi tidak masuk Penetapan Program, Charter, Draft RKMK, maupun WBS, dan tidak dipantau PMO Kemenkeu. Pengelolaannya oleh unit pemilik proses bisnis bersama unit TI sesuai tata kelola SPBE.</p>':'')+rubLegend()+'<p class="kka-note">Skor 1–5 per kriteria mengikuti rubrik di atas (juga pada ikon ⓘ judul kolom dan saat dropdown dibuka). K7 terbalik: 5 = risiko terendah. Gate dan estimasi biaya/SDM juga dapat diisi di Pemetaan Proyek › Usulan Proyek. Hasil adalah bahan keputusan; keputusan akhir pada forum tata kelola.</p>';
 }
 function rubLegend(){
@@ -438,7 +463,8 @@ document.addEventListener('click',ev=>{
  {const rw=t.closest('[data-kka-nonview]');if(rw&&!t.closest('button')){nonDetail(rw.dataset.kkaNonview);return}}
  const b=t.closest('button');if(!b)return;const u=ui();
  if(b.dataset.kkaSub){u.sub=b.dataset.kkaSub;save();render();return}
- if(b.dataset.kkaScope){u.scope=b.dataset.kkaScope;save();render();return}
+ if(b.dataset.kkaKpi&&Object.prototype.hasOwnProperty.call(KFILTER,b.dataset.kkaKpi)){const key=b.dataset.kkaKpi;if(u.sub==='rank'&&u.kpi===key){u.kpi='';}else{u.kpi=key;u.scope=kpiScope(key);u.ue=[];u.q='';u.sub='rank';}render();return}
+ if(b.dataset.kkaScope){u.kpi='';u.scope=b.dataset.kkaScope;save();render();return}
  if(b.hasAttribute('data-kka-ue-clear')){u.ue=[];save();render();return}
  if(b.hasAttribute('data-kka-xlsx')){try{const d=currentData();downloadXlsx(d,'Prioritas_SI_KertasKerjaA_'+d.year+'.xlsx');say('Excel hasil prioritasi diunduh.')}catch(e){say(e.message)}return}
  if(b.hasAttribute('data-kka-import')){const i=document.createElement('input');i.type='file';i.accept='.xlsx,.xlsm,.xls';i.onchange=()=>{if(i.files[0])importFile(i.files[0])};i.click();return}
@@ -517,6 +543,10 @@ document.addEventListener('input',ev=>{const t=ev.target;if(!t.matches||!t.match
 .kn-form section{margin-bottom:12px}.kn-form .fgrid{gap:8px 14px}.kn-form textarea{min-height:64px}.kka-card>.kka-note{margin-top:8px}.kn-form h4{margin:0 0 8px;font-size:12.5px;color:#12275A;border-bottom:1px solid #E2E8F0;padding-bottom:4px}.kn-multi{display:flex;flex-wrap:wrap;gap:6px 16px}.kn-multi label{display:flex;gap:6px;align-items:center;font-weight:500}.kn-multi input{width:auto}.kka-row-click{cursor:pointer}.kka-row-click:hover td{background:#F5F8FD}.kka-t td.c{text-align:center}.kka-istk{background:#12275A!important;color:#fff!important;font-size:10px!important;padding:1px 7px!important}.kka-istk-note{color:#475569;font-size:12px;background:#F8FAFD}.kka-istkrow td{background:#F8FAFD}.kka-kpi.istk b{color:#12275A}.kka-non{background:#EDE9FE!important;color:#5B21B6!important;font-size:10px!important;padding:1px 7px!important;vertical-align:1px;margin-left:4px}.kka .kka-ib{border:0!important;background:none!important;box-shadow:none!important;cursor:pointer;font-size:12px!important;padding:0 3px!important;width:auto!important;height:auto!important;min-width:0!important;min-height:0!important;color:#475569;vertical-align:1px;display:inline}.kka-ib:hover{color:#12275A}.kka-pc{min-width:32px;text-align:center}.kka-chip.p3{background:#FFF0C2;color:#7A5300}
 .kka-thc{display:inline-flex;align-items:center;gap:3px}.kka-rub{padding:0}.kka-rub>summary{cursor:pointer;padding:11px 14px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;color:#0F2346;font-size:13px}.kka-rub>summary small{color:#64748B;font-size:11.5px}.kka-rub .kka-scroll{border:0;border-top:1px solid #E2E8F0;border-radius:0 0 12px 12px}.kka-rub td{font-size:12px}.kka-ref td{vertical-align:top}.kka-ref td:nth-child(n+3){min-width:150px}
 b.up{color:#0F7A4B}b.dn{color:#B42318}
+.kka .kka-kpi{--kc:#1f4b82;--kb:#cbdcf0;--kg:#eef5fd;appearance:none;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:5px;position:relative;text-align:left;font:inherit;min-width:0;min-height:77px;width:100%;padding:10px 12px;border:1px solid var(--kb);border-radius:10px;background:linear-gradient(135deg,var(--kg),#fff 140%);color:var(--kc);cursor:pointer;box-shadow:0 2px 5px #0b2d5909;transition:border-color .16s,box-shadow .16s,background .16s}
+.kka .kka-kpi.kka-tone-navy{--kc:#173d72;--kb:#c7d9ef;--kg:#eaf2fc}.kka .kka-kpi.kka-tone-violet{--kc:#6346a3;--kb:#ded5f2;--kg:#f3effb}.kka .kka-kpi.kka-tone-green{--kc:#12764e;--kb:#c7e5d5;--kg:#eaf7ef}.kka .kka-kpi.kka-tone-blue{--kc:#215fa9;--kb:#cbdff7;--kg:#edf5ff}.kka .kka-kpi.kka-tone-teal{--kc:#087e83;--kb:#c4e7e5;--kg:#e9f8f7}.kka .kka-kpi.kka-tone-gold{--kc:#986300;--kb:#efdfb7;--kg:#fff7e5}.kka .kka-kpi.kka-tone-slate{--kc:#475e7b;--kb:#d5dfea;--kg:#f0f4f9}
+.kka .kka-kpi-label{font-size:11.5px;line-height:1.25;font-weight:700;padding-right:13px;color:var(--kc)}.kka .kka-kpi b{font-size:23px;line-height:1.12;color:var(--kc);font-variant-numeric:tabular-nums}.kka .kka-kpi b i{font-size:12px;color:#53657b;white-space:nowrap}.kka .kka-kpi:after{content:'›';position:absolute;top:7px;right:9px;font-size:19px;font-weight:600;color:var(--kc);opacity:.7}.kka .kka-kpi:hover,.kka .kka-kpi:focus-visible{border-color:var(--kc);box-shadow:0 2px 9px #0b2d5922}.kka .kka-kpi.is-active{border-color:var(--kc);box-shadow:inset 0 0 0 1px var(--kc),0 2px 7px #0b2d5914}.kka .kka-kpi.is-active:after{content:'✓';font-size:13px;opacity:1}
+.kka .kka-pen .kka-module-title{display:block;line-height:1.3;overflow-wrap:anywhere}.kka .kka-module-meta{display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-top:3px}.kka .kka-module-meta .kka-non{margin-left:0;vertical-align:middle}.kka .kka-module-actions{display:inline-flex;align-items:center;gap:3px}.kka .kka-pen .kka-nm small:empty{display:none}
 @media(max-width:1200px){.kka-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}.kka-grid2{grid-template-columns:1fr}.kka-sets{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){.kka-kpis{grid-template-columns:1fr 1fr}.kka-sets{grid-template-columns:1fr}}`;document.head.appendChild(s)})();
 
@@ -533,5 +563,5 @@ function refView(){
   '<div class="kka-card"><h3>Referensi & Literasi</h3><div class="kka-scroll"><table class="kka-t kka-ref"><thead><tr><th>No</th><th>Rujukan</th><th>Jenis</th><th>Dipakai untuk</th></tr></thead><tbody>'+REFS.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+E(r[0])+'</td><td>'+E(r[1])+'</td><td>'+E(r[2])+'</td></tr>').join('')+'</tbody></table></div><p class="kka-note" style="margin-top:8px">Verifikasi versi/perubahan terbaru setiap regulasi sebelum dijadikan dasar resmi.</p></div>';
 }
 function isFunded(x){return x.included!==false} /* program ISTK bermetode MCDA: semua proyek diprioritaskan otomatis */
-window.MT_PS_KKA={page,methodSelect,importFile,nonProjects:y=>nonP(y).psProjects,usulanHtml:()=>usulanMapView(),compute,cfg,method,isFunded,GATES,KR,version:'20261127-kka1'};
+window.MT_PS_KKA={page,methodSelect,importFile,nonProjects:y=>nonP(y).psProjects,usulanHtml:()=>usulanMapView(),compute,cfg,method,isFunded,GATES,KR,version:'20261126-kpi15'};
 })();
