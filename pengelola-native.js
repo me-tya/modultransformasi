@@ -57,7 +57,7 @@ function importJson(obj){
   if(Array.isArray(z.rencanaCuti))p.leave=z.rencanaCuti.map(l=>({start:l.start||l.mulai||'',end:l.end||l.selesai||'',type:l.type||l.jenis||'Cuti Tahunan',note:l.note||l.catatan||''})).filter(l=>l.start&&l.end);
   if(!old){db().people.push(p);added++}else updated++;
  }
- save();render();toast('Impor selesai: '+added+' personel baru, '+updated+' diperbarui. Data kerja lama dipertahankan.');
+ if(typeof fsImportCapture==='function')fsImportCapture();save();render();toast('Impor diproses: '+added+' personel baru, '+updated+' diperbarui. Data kerja lama dipertahankan.'+(typeof FB!=='undefined'&&FB.on?' Menunggu konfirmasi Firebase.':''));
  return {added,updated};
 }
 
