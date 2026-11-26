@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup Warna Modul Transformasi</title>
+<style>
+/* VOICE: alat kerja, tenang dan jelas.
+   IDEA: pengalih tema di atas aplikasi asli yang tetap bisa diklik.
+   PICTURE: aplikasinya sendiri, memenuhi layar.
+   COLOUR and TYPE: biru Satu Kemenkeu #1A4F9C, kuning Kemenkeu #FDB913; Inter.
+   LAYOUT: satu bilah kendali tipis, di bawahnya satu atau dua panel aplikasi. */
+:root{color-scheme:light;--bar:#1A4F9C;--ink:#0F172A}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0;height:100%}
+body{display:flex;flex-direction:column;font:14px/1.4 Inter,system-ui,Arial,sans-serif;color:var(--ink);background:#EEF2F7}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:8px 14px;background:var(--bar);color:#fff}
+.bar b{font-size:15px}
+.note{font-size:12.5px;color:#D6E4F7}
+.sp{flex:1}
+.seg{display:inline-flex;background:rgba(255,255,255,.14);border-radius:10px;padding:3px}
+.seg button{all:unset;cursor:pointer;padding:8px 14px;min-height:20px;border-radius:8px;color:#fff;font-weight:600;font-size:13px}
+.seg button[aria-pressed=true]{background:#fff;color:var(--bar)}
+.seg button:focus-visible{outline:2px solid #FDB913;outline-offset:1px}
+.panes{flex:1;display:flex;gap:6px;min-height:0}
+.pane{flex:1;display:flex;flex-direction:column;min-height:0;background:#fff}
+.pane[hidden]{display:none}
+.pane .lb{padding:5px 12px;font-size:12px;font-weight:700;background:#E2E8F0;color:#334155}
+.pane.satu .lb{background:#DCE8F8;color:#1A4F9C}
+iframe{flex:1;width:100%;border:0;display:block}
+@media(max-width:700px){.note{display:none}.panes{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="bar">
+  <b>Mockup warna · Modul Transformasi</b>
+  <span class="note">Aplikasi asli dengan data contoh, tidak tersambung ke database. Hanya warna yang diubah.</span>
+  <a href="index.html?tema=satu" target="_top" style="color:#FDE68A;font-size:12.5px;font-weight:600">Buka warna Satu Kemenkeu dengan data asli ↗</a>
+  <span class="sp"></span>
+  <div class="seg" role="group" aria-label="Pilih tampilan">
+    <button type="button" id="v-klasik" aria-pressed="false">Warna saat ini</button>
+    <button type="button" id="v-satu" aria-pressed="true">Warna Satu Kemenkeu</button>
+    <button type="button" id="v-dua" aria-pressed="false">Berdampingan</button>
+  </div>
+</div>
+<div class="panes">
+  <div class="pane klasik" id="p-klasik" hidden><div class="lb">Warna saat ini</div><iframe id="f-klasik" src="index.html?demo#beranda" title="Modul Transformasi, warna saat ini"></iframe></div>
+  <div class="pane satu" id="p-satu"><div class="lb">Warna Satu Kemenkeu</div><iframe id="f-satu" src="index.html?demo&tema=satu#beranda" title="Modul Transformasi, warna Satu Kemenkeu"></iframe></div>
+</div>
+<script>
+{
+  const fk=document.getElementById('f-klasik'),fs=document.getElementById('f-satu');
+  const pk=document.getElementById('p-klasik'),ps=document.getElementById('p-satu');
+  const btn={klasik:document.getElementById('v-klasik'),satu:document.getElementById('v-satu'),dua:document.getElementById('v-dua')};
+  let mode='satu';
+  const hashOf=f=>{try{return f.contentWindow.location.hash}catch(e){return ''}};
+  const setHash=(f,h)=>{try{if(h&&f.contentWindow.location.hash!==h)f.contentWindow.location.hash=h}catch(e){}};
+  function show(m){
+    const h=hashOf(mode==='klasik'?fk:fs);mode=m;
+    pk.hidden=!(m==='klasik'||m==='dua');ps.hidden=!(m==='satu'||m==='dua');
+    for(const k in btn)btn[k].setAttribute('aria-pressed',String(k===m));
+    setHash(fk,h);setHash(fs,h);
+  }
+  for(const k in btn)btn[k].addEventListener('click',()=>show(k));
+  /* Mode berdampingan: halaman yang dibuka di satu panel ikut dibuka di panel lain. */
+  function link(a,b){a.addEventListener('load',()=>{try{a.contentWindow.addEventListener('hashchange',()=>{if(mode==='dua')setHash(b,hashOf(a))})}catch(e){}})}
+  link(fk,fs);link(fs,fk);
+}
+</script>
+</body>
+</html>
