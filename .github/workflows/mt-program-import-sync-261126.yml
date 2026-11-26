@@ -1,0 +1,23 @@
+name: Verify program import Firebase sync 261126
+on:
+  push:
+    branches: [main]
+    paths:
+      - project-selection-program-import.js
+      - tests/project-selection-import.test.cjs
+      - .github/workflows/mt-program-import-sync-261126.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify import, project selection and Charter regressions
+        run: |
+          node --check project-selection-program-import.js
+          node --test tests/project-selection-import.test.cjs tests/project-selection-bank.test.cjs tests/charter-export.test.cjs tests/program-charter-deck-regression.test.cjs tests/rkmk-draft.test.cjs
