@@ -1,0 +1,26 @@
+name: Full prechange backup 261126-MT-10
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/mt-backup-261126-mt-10.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: c2a373c3cca80d21e5e581c4b668c8ffbe7bc58c
+          fetch-depth: 0
+      - name: Create and verify complete snapshot
+        run: |
+          test "$(git rev-parse HEAD)" = "c2a373c3cca80d21e5e581c4b668c8ffbe7bc58c"
+          git archive --format=zip --output=261126-MT-10.zip HEAD
+          unzip -t 261126-MT-10.zip | tail -1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 261126-MT-10
+          path: 261126-MT-10.zip
+          retention-days: 90
