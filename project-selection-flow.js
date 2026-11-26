@@ -257,7 +257,7 @@ function criteriaPage(p){
  '<div class="prio-likert-wrap"><table class="prio-thr-t"><thead><tr><th>Program</th><th>Metode</th><th>Ambang</th><th>Terpilih / Calon</th><th>&gt;70</th><th>&gt;75</th><th>&gt;80</th><th>&gt;85</th></tr></thead><tbody>'+
  yearPlans.map(z=>{
   const pr=rowsFor(z),scores=pr.map(x=>calc(x,z).score);
-  return '<tr'+(z.id===p.id?' class="chg"':'')+'><td><b>'+esc2(z.nama)+'</b></td><td>'+(z.psMethod==='kka'?'Kertas Kerja A':z.psPrioritize?'SMART':'Manual')+'</td><td>'+(!z.psPrioritize?'—':'&gt;'+z.psThreshold)+'</td><td>'+chosen(z).length+' / '+pr.length+'</td>'+
+  return '<tr'+(z.id===p.id?' class="chg"':'')+'><td><b>'+esc2(z.nama)+'</b></td><td>'+(z.psMethod==='kka'?'MCDA':z.psPrioritize?'SMART':'Manual')+'</td><td>'+(!z.psPrioritize?'—':'&gt;'+z.psThreshold)+'</td><td>'+chosen(z).length+' / '+pr.length+'</td>'+
   [70,75,80,85].map(t=>'<td class="c'+(z.psThreshold===t?' sim cur':'')+'">'+scores.filter(x=>x!=null&&x>t).length+'</td>').join('')+'</tr>';
  }).join('')+'</tbody></table></div>'+
  '<small class="prio-thr-note">Kolom &gt;70 sampai &gt;85 menyimulasikan jumlah calon proyek dengan skor lengkap yang lolos pada setiap ambang. Nilai belum lengkap tidak dihitung lolos.</small></div>';
@@ -445,7 +445,7 @@ function mount(){
   if(q.id==='pswf-year'){S.ui.psSelectedYear=+q.value;state().prog='';state().q='';state().filter='all';save();render()}
   else if(q.id==='pswf-program'){state().prog=q.value;state().q='';state().filter='all';save();render()}
   else if(q.id==='pswf-prioritize'&&p&&!readonly(p)){p.psPrioritize=q.checked;p.psMethod=q.checked?'smart':'manual';save();render()}
-  else if(q.id==='pswf-method'&&p&&!readonly(p)){p.psMethod=q.value;p.psPrioritize=q.value==='smart';save();render()}
+  else if((q.id==='pswf-method'||q.name==='pswf-method')&&p&&!readonly(p)){p.psMethod=q.value;p.psPrioritize=q.value==='smart';save();render()}
   else if(q.id==='pswf-threshold'&&p&&!readonly(p)){const v=Number(q.value);if(v<0||v>99||!Number.isFinite(v)){toast('Ambang harus antara 0–99.');return}p.psThreshold=v;save();render()}
   else if(q.dataset.pswfInclude&&p&&!readonly(p)){const x=rowsFor(p).find(x=>x.id===q.dataset.pswfInclude);if(x){x.included=q.checked;save();render()}}
   else if(q.id==='pswf-snapshot'){state().snapshot=q.value;save();render()}
@@ -737,7 +737,7 @@ function rkmkContent(p,blank){
  out.push(wp('B4. RISK REGISTER · PROGRAM','head'));
  out.push(wt([['Risiko lintas proyek','Prob.','Dampak','Mitigasi','Risk Owner'],...(R.length?R.map(x=>[x.title,x.probability,x.impact,x.response,x.owner]):[[filler,filler,filler,filler,filler]])]));
  out.push(wp('C. DAFTAR PROYEK / MODUL YANG DITETAPKAN','head'));
- out.push(wp('Metode pemilihan: '+(p&&!blank?(p.psMethod==='kka'?'Kertas Kerja A Pusakti (gate G1–G4, 7 kriteria tertimbang, roadmap pagu & SDM)':p.psPrioritize?'SMART 12 kriteria; skor absolut > '+p.psThreshold+'%':'Pemilihan manual, tanpa SMART'):'[Diisi: SMART atau seleksi manual]')));
+ out.push(wp('Metode pemilihan: '+(p&&!blank?(p.psMethod==='kka'?'MCDA (gate G1–G4, skor tertimbang 7 kriteria, roadmap terhadap pagu & SDM)':p.psPrioritize?'SMART 12 kriteria; skor absolut > '+p.psThreshold+'%':'Pemilihan manual, tanpa SMART'):'[Diisi: SMART atau seleksi manual]')));
  out.push(wt([['No','Proyek/Modul','UIC','Output / Deliverable','Skor SMART'],...(selected.length?selected.map((x,i)=>[''+(i+1),x.name,x.uic||p.uic,x.outputs||filler,p.psPrioritize?labelScore(calc(x,p)):'Tidak digunakan']):[['1',filler,filler,filler,filler]])]));
  out.push(wp('D. KRITERIA PENYELESAIAN (ACCEPTANCE CRITERIA)','head'));
  out.push(wt([['No','Milestone/Proyek','Kriteria Penyelesaian','Bukti Penyelesaian'],...(selected.length?selected.map((x,i)=>[''+(i+1),x.name,x.accepted||filler,'[Dokumen/hasil uji/BA/persetujuan]']):[['1',filler,filler,filler]])]));

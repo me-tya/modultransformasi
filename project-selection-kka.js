@@ -99,11 +99,12 @@ function compute(y){
 /* ---------- tampilan ---------- */
 const catCls=c=>c===CATS[0]?'p1':c===CATS[1]?'p2':c===CATS[2]?'p3':c===CATS[3]?'p4':'';
 const gateCls=g=>g==='Lolos'?'ok':g==='Tinjau Ulang'?'bad':'warn';
-function methodSelect(p,ro){const m=method(p);return '<label class="kka-method"><span>Metode</span><select id="pswf-method" '+(ro?'disabled':'')+'>'+[['manual','Manual'],['smart','SMART (CM)'],['kka','Kertas Kerja A (Pusakti)']].map(o=>'<option value="'+o[0]+'"'+(m===o[0]?' selected':'')+'>'+o[1]+'</option>').join('')+'</select></label>'}
+const METHODS=[['manual','Manual','Pemilihan proyek secara manual tanpa skor.'],['smart','SMART','Simple Multi-Attribute Rating Technique: 12 kriteria, skor absolut di atas ambang.'],['kka','MCDA','Multi-Criteria Decision Analysis: gate G1–G4, skor tertimbang 7 kriteria (3 profil bobot), peringkat, dan roadmap terhadap pagu & SDM.']];
+function methodSelect(p,ro){const m=method(p);return '<div class="kka-method" role="radiogroup" aria-label="Metode prioritisasi"><span>Metode</span><div class="kka-mseg">'+METHODS.map(o=>'<label title="'+E(o[2])+'" class="'+(m===o[0]?'on':'')+(ro?' dis':'')+'"><input type="radio" name="pswf-method" value="'+o[0]+'"'+(m===o[0]?' checked':'')+(ro?' disabled':'')+'>'+o[1]+'</label>').join('')+'</div></div>'}
 const SUBS=[['rank','Penilaian & Peringkat'],['criteria','Kriteria & Bobot'],['roadmap','Roadmap & Analisis'],['repo','Repositori'],['ref','Referensi & Rubrik']];
 function page(p,o){
  o=o||{};const u=ui(),sub=SUBS.some(s=>s[0]===u.sub)?u.sub:'rank',ro=!!o.readOnly;
- const head='<div class="ps27-priority-head"><nav class="ps27-minitabs" role="tablist" aria-label="Tab Prioritasi Kertas Kerja A">'+SUBS.map(s=>'<button role="tab" type="button" data-kka-sub="'+s[0]+'" aria-selected="'+(sub===s[0])+'" class="'+(sub===s[0]?'on':'')+'">'+s[1]+'</button>').join('')+'</nav>'+
+ const head='<div class="ps27-priority-head"><nav class="ps27-minitabs" role="tablist" aria-label="Tab Prioritasi MCDA">'+SUBS.map(s=>'<button role="tab" type="button" data-kka-sub="'+s[0]+'" aria-selected="'+(sub===s[0])+'" class="'+(sub===s[0]?'on':'')+'">'+s[1]+'</button>').join('')+'</nav>'+
   '<div class="ps27-smart-actions">'+methodSelect(p,ro)+'</div></div>';
  const D=compute();
  const body=sub==='criteria'?criteriaView(D):sub==='roadmap'?roadmapView(D):sub==='repo'?repoView(D):sub==='ref'?refView():rankView(p,D,ro);
@@ -114,7 +115,7 @@ function kpis(D){const s=D.sum,c=D.c,k=(v,l,cl)=>'<div class="kka-kpi '+(cl||'')
   k(s.nFunded,'Rekomendasi didanai '+D.y,'fund')+k(fmt(s.costFunded)+'<i> / '+fmt(c.pagu)+'</i>','Biaya didanai / pagu (Rp juta)')+k(fmt(s.sdmFunded,1)+'<i> / '+fmt(c.sdm)+'</i>','SDM terpakai / kapasitas (org-bln)')+'</div>'}
 function rankView(p,D,ro){
  const u=ui(),scopeAll=u.scope==='all',ueSel=Array.isArray(u.ue)?u.ue:[],q=T(u.q).toLowerCase();
- if(!D.progs.length)return '<div class="kka-empty">Belum ada program tahun '+D.y+' yang memakai metode Kertas Kerja A.</div>';
+ if(!D.progs.length)return '<div class="kka-empty">Belum ada program tahun '+D.y+' yang memakai metode MCDA.</div>';
  let rows=D.rows.filter(r=>scopeAll||r.p===p);
  rows=rows.filter(r=>(!ueSel.length||ueSel.includes(r.uic))&&(!q||(r.name+' '+r.code+' '+r.uic+' '+r.p.nama).toLowerCase().includes(q)));
  const rk=r=>u.mode==='ue'?r.rankUe:r.rank;
@@ -153,7 +154,7 @@ function criteriaView(D){
  const tot=PROFILES.map(pr=>c.weights[pr].reduce((a,v)=>a+v,0));
  const rows=KR.map((k,i)=>'<tr><td><b>'+k.c+'</b></td><td><b>'+E(k.n)+'</b><small>'+E(k.q)+'</small></td>'+PROFILES.map(pr=>'<td class="kka-w"><input type="number" min="0" max="100" step="1" data-kka-w="'+E(pr)+'|'+i+'" value="'+c.weights[pr][i]+'"'+dis+' aria-label="Bobot '+E(k.c+' '+pr)+'">%</td>').join('')+'<td class="kka-w on">'+c.weights[c.profile][i]+'%</td><td><small>'+E(k.ref)+'</small></td></tr>').join('');
  const f=(k,l,h,t,extra)=>'<label class="kka-set"><span>'+l+ic(h)+'</span>'+(t==='sel'?'<select data-kka-cfg="'+k+'"'+dis+'>'+extra.map(v=>'<option'+(String(c[k])===v?' selected':'')+'>'+v+'</option>').join('')+'</select>':'<input type="number" min="0" step="any" data-kka-cfg="'+k+'" value="'+E(c[k])+'"'+dis+'>')+'</label>';
- return '<div class="kka-card"><h3>A. Pengaturan · '+D.y+ic('Diambil dari sheet Kriteria bagian A. Berlaku untuk seluruh portofolio Kertas Kerja A tahun ini.')+'</h3><div class="kka-sets">'+
+ return '<div class="kka-card"><h3>A. Pengaturan · '+D.y+ic('Diambil dari sheet Kriteria bagian A. Berlaku untuk seluruh portofolio metode MCDA tahun ini.')+'</h3><div class="kka-sets">'+
   f('profile','Profil bobot aktif','Seimbang / Prioritas Kepatuhan / Prioritas Efisiensi.','sel',PROFILES)+
   f('onlyPassed',"Hanya usulan 'Lolos' gate yang diranking?",'Ya = usulan Tinjau Ulang/Lengkapi tidak ikut ranking. Tidak = semua usulan yang skornya lengkap diranking.','sel',['Ya','Tidak'])+
   f('pagu','Pagu anggaran pengembangan (Rp juta)','Pagu indikatif/definitif; batas roadmap.')+f('sdm','Kapasitas SDM pengembangan (orang-bulan)','Mis. jumlah personel pengembang/analis × bulan efektif.')+
@@ -163,7 +164,7 @@ function criteriaView(D){
   '<div class="kka-card"><h3>B. Kriteria dan Bobot (skala skor 1–5)'+ic('Bobot tiap profil harus berjumlah 100%. Bobot awal adalah asumsi penyusun; sesuaikan melalui diskusi pemangku kepentingan.')+'</h3>'+
   '<div class="kka-scroll"><table class="kka-t kka-wt"><thead><tr><th>Kode</th><th>Kriteria & pertanyaan penilaian</th>'+PROFILES.map(pr=>'<th>'+E(pr)+'</th>').join('')+'<th>Bobot aktif</th><th>Rujukan utama</th></tr></thead><tbody>'+rows+
   '<tr class="kka-tot"><td></td><td>Total bobot</td>'+tot.map(t=>'<td class="'+(t===100?'ok':'bad')+'">'+t+'%'+(t===100?' · OK':' · ≠ 100%')+'</td>').join('')+'<td>'+tot[PROFILES.indexOf(c.profile)]+'%</td><td></td></tr></tbody></table></div>'+
-  (ed?'<div class="kka-actions"><button type="button" class="btn btn-sm" data-kka-wreset>↺ Bobot bawaan Pusakti</button></div>':'<p class="kka-note">Hanya Superadmin dan PMO Kemenkeu yang dapat mengubah pengaturan.</p>')+'</div>';
+  (ed?'<div class="kka-actions"><button type="button" class="btn btn-sm" data-kka-wreset>↺ Bobot bawaan</button></div>':'<p class="kka-note">Hanya Superadmin dan PMO Kemenkeu yang dapat mengubah pengaturan.</p>')+'</div>';
 }
 function quadSvg(D){
  const W=640,H=320,m=48,R=D.R.filter(r=>r.value!=null),t=D.c.quadThr,X=v=>m+(v/100)*(W-m-16),Y=v=>H-m-(v/100)*(H-m-16);
@@ -262,7 +263,7 @@ async function importFile(file){
  <div class="kka-scroll" style="max-height:44vh"><table class="kka-t"><thead><tr><th>Usulan di berkas</th><th>Proyek di aplikasi</th><th>Gate</th><th>Skor K1–K7</th></tr></thead><tbody>${plan.map(z=>{const s=(P[T(z.r[0])]||[]).map(sv);return '<tr><td><b>'+E(z.r[1])+'</b><small>'+E(z.r[0])+' · '+E(z.r[8])+'</small></td><td>'+(z.m?E(z.m.x.name)+'<small>'+E(z.m.p.nama)+'</small>':'<span class="kka-chip bad">Tidak ditemukan</span>')+'</td><td>'+[21,22,23,24].map(i=>yn(z.r[i])||'–').join(' / ')+'</td><td>'+(s.length?s.map(v=>v??'–').join(' '):'–')+'</td></tr>'}).join('')}</tbody></table></div>
  <label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="checkbox" id="kka-imp-est" checked style="width:auto"> Perbarui estimasi biaya, durasi, dan SDM dari berkas (bila terisi)</label>
  ${kr&&canCfg()?'<label style="display:flex;gap:8px;align-items:center;margin-top:6px"><input type="checkbox" id="kka-imp-cfg" style="width:auto"> Ambil juga pengaturan & bobot dari sheet Kriteria</label>':''}
- <label style="display:flex;gap:8px;align-items:center;margin-top:6px"><input type="checkbox" id="kka-imp-method" checked style="width:auto"> Set metode program terkait ke Kertas Kerja A</label>
+ <label style="display:flex;gap:8px;align-items:center;margin-top:6px"><input type="checkbox" id="kka-imp-method" checked style="width:auto"> Set metode program terkait ke MCDA</label>
  <p class="s" style="margin:8px 0 0">Nilai skor yang rusak di berkas (#REF!) atau kosong diabaikan; isian lama di aplikasi tidak dihapus.</p>`,'Impor',o=>{
   const est=o.querySelector('#kka-imp-est')?.checked,useCfg=o.querySelector('#kka-imp-cfg')?.checked,setM=o.querySelector('#kka-imp-method')?.checked;let nG=0,nS=0,touched=new Set();
   ok.forEach(({r,m})=>{const x=m.x;if(I.readonly(m.p)&&!canCfg())return;touched.add(m.p);
@@ -291,7 +292,7 @@ document.addEventListener('click',ev=>{
  if(b.dataset.kkaSnapx){const s=store()[b.dataset.kkaSnapx];if(s)try{downloadXlsx({year:s.year,cfg:s.cfg,sum:s.sum,rows:s.rows},'Prioritas_SI_'+s.year+'_v'+s.version+'.xlsx')}catch(e){say(e.message)}return}
  if(b.dataset.kkaSnapfinal&&canCfg()){const st=store();snaps().forEach(s=>{if(s.status==='Final')st[s.key].status='Draft'});st[b.dataset.kkaSnapfinal].status='Final';try{log('Tandai final hasil prioritasi',b.dataset.kkaSnapfinal)}catch(_){}save();render();return}
  if(b.dataset.kkaSnapdel&&canCfg()){const k=b.dataset.kkaSnapdel,s=store()[k];if(!s||s.status==='Final')return;const go=()=>{delete store()[k];save();render();say('Versi v'+s.version+' dihapus.')};if(typeof window.MT_PS_CONFIRM==='function')window.MT_PS_CONFIRM('Hapus v'+s.version+'?','Hasil "'+s.title+'" akan dihapus dari repositori.',go);else go();return}
- if(b.hasAttribute('data-kka-wreset')&&canCfg()){setCfg({weights:JSON.parse(JSON.stringify(DEFW))});render();say('Bobot dikembalikan ke bawaan Kertas Kerja A.');return}
+ if(b.hasAttribute('data-kka-wreset')&&canCfg()){setCfg({weights:JSON.parse(JSON.stringify(DEFW))});render();say('Bobot dikembalikan ke bawaan.');return}
 });
 document.addEventListener('change',ev=>{
  const t=ev.target;if(!t.closest||!t.closest('.kka'))return;const u=ui();
@@ -314,7 +315,7 @@ document.addEventListener('input',ev=>{const t=ev.target;if(!t.matches||!t.match
 
 /* ---------- gaya ---------- */
 (function style(){if(document.getElementById('kka-style'))return;const s=document.createElement('style');s.id='kka-style';s.textContent=`
-.kka-method{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--ink-2,#334155)}.kka-method select{width:auto!important;min-height:0!important;line-height:32px!important;padding-top:0!important;padding-bottom:0!important;height:34px;border:1px solid #C9D8EE;border-radius:8px;padding:0 8px;font:inherit;font-weight:600;background:#fff}
+.kka-mseg{display:inline-flex;border:1px solid #C9D8EE;border-radius:9px;overflow:hidden;background:#fff}.kka-mseg label{position:relative;padding:0 14px;height:34px;display:flex;align-items:center;font-size:12.5px;font-weight:700;color:#334155;cursor:pointer;border-left:1px solid #E2E8F0;white-space:nowrap}.kka-mseg label:first-child{border-left:0}.kka-mseg label.on{background:#12275A;color:#fff}.kka-mseg label.dis{cursor:default;opacity:.7}.kka-mseg input{position:absolute;opacity:0;pointer-events:none;width:0;height:0}.kka-method{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--ink-2,#334155)}.kka-method select{width:auto!important;min-height:0!important;line-height:32px!important;padding-top:0!important;padding-bottom:0!important;height:34px;border:1px solid #C9D8EE;border-radius:8px;padding:0 8px;font:inherit;font-weight:600;background:#fff}
 .kka{display:flex;flex-direction:column;gap:12px;margin-top:12px}
 .kka-kpis{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}.kka-kpi{background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:9px 11px}.kka-kpi b{display:block;font-size:20px;color:#0F2346}.kka-kpi b i{font-style:normal;font-size:12px;color:#64748B;font-weight:600}.kka-kpi small{font-size:11px;color:#64748B}.kka-kpi.ok b{color:#0F7A4B}.kka-kpi.fund b{color:#1F5FB8}
 .kka-toolbar,.kka-cardh{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.kka-sp{flex:1}.kka-prof{font-size:12px;color:#475569}
@@ -346,7 +347,7 @@ b.up{color:#0F7A4B}b.dn{color:#B42318}
 @media(max-width:700px){.kka-kpis{grid-template-columns:1fr 1fr}.kka-sets{grid-template-columns:1fr}}`;document.head.appendChild(s)})();
 
 function refView(){
- return '<div class="kka-card"><h3>Metode Kertas Kerja A (Pusakti)</h3><ul class="kka-bars" style="gap:6px">'+
+ return '<div class="kka-card"><h3>Metode MCDA (Multi-Criteria Decision Analysis)</h3><ul class="kka-bars" style="gap:6px">'+
   ['<b>Gate penyaringan:</b> usulan Lolos bila G1–G4 semua Ya; ada Tidak = Tinjau Ulang; ada kosong = Lengkapi. G1 selaras Renstra/peta rencana EA/Arsitektur SPBE; G2 tidak duplikatif; G3 pemilik proses bisnis & sponsor jelas; G4 dokumen kajian kebutuhan sudah dikirim ke Pusakti.',
    '<b>Skor Tertimbang (0–100)</b> = Σ(skor kriteria × bobot) ÷ 5 × 100. K7 diskalakan terbalik: skor 5 = risiko terendah. Bila skor seri, urutan usulan menjadi pemutus.',
    '<b>Peringkat</b> Semua UE I (satu pagu & kapasitas) atau Per UE I. Kategori: Prioritas 1 Utama / 2 Tinggi / 3 Menengah / 4 Rendah-Tunda sesuai ambang.',
@@ -358,5 +359,5 @@ function refView(){
   '<div class="kka-card"><h3>Referensi & Literasi</h3><div class="kka-scroll"><table class="kka-t kka-ref"><thead><tr><th>No</th><th>Rujukan</th><th>Jenis</th><th>Dipakai untuk</th></tr></thead><tbody>'+REFS.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+E(r[0])+'</td><td>'+E(r[1])+'</td><td>'+E(r[2])+'</td></tr>').join('')+'</tbody></table></div><p class="kka-note" style="margin-top:8px">Verifikasi versi/perubahan terbaru setiap regulasi sebelum dijadikan dasar resmi.</p></div>';
 }
 let _fc=null;function isFunded(x){if(!_fc||_fc.t!==Date.now()>>8||_fc.y!==year()){const D=compute(),set=new Set(D.funded.map(r=>String(r.id)));_fc={t:Date.now()>>8,y:year(),set}}return _fc.set.has(String(x.id))}
-window.MT_PS_KKA={page,compute,cfg,method,isFunded,GATES,KR,version:'20261127-kka1'};
+window.MT_PS_KKA={page,methodSelect,compute,cfg,method,isFunded,GATES,KR,version:'20261127-kka1'};
 })();
