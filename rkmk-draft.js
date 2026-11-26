@@ -8,6 +8,8 @@
    - Pratinjau dan unduhan Word memakai model yang sama (A4 tegak, Bookman Old Style 12 pt).
    - RKMK Ditetapkan: nomor, tanggal, tentang, PDF TTE (disimpan lokal di browser, IndexedDB 'mt-signed-documents'),
      tautan opsional, program yang tercakup. Setiap unggahan menjadi versi baru; program tercakup ditandai p.psRkmkRef.
+   - Penandatangan (Atur TTE): kota penetapan, tanggal, jabatan, nama, dan keterangan "Ditandatangani secara elektronik";
+     disimpan per tahun di S.psRkmkDoc[tahun].sign dan dipakai sama oleh pratinjau dan Word. Kosong = penanda [isian] kuning.
    - Hak ubah/unggah: SA, PMOK. Peran lain baca saja. */
 (function(){
 'use strict';
@@ -24,6 +26,11 @@ const uid=t=>(t||'rk')+'-'+Date.now().toString(36)+'-'+Math.random().toString(36
 const HURUF='abcdefghijklmnopqrstuvwxyz';
 const DIKTUM=['KESATU','KEDUA','KETIGA','KEEMPAT','KELIMA','KEENAM','KETUJUH','KEDELAPAN'];
 const PH=t=>({ph:t}); // penanda isian manual
+const BULAN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const tgl=v=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(T(v));return m?(+m[3])+' '+BULAN[+m[2]-1]+' '+m[1]:T(v)};
+const SIGN_TITLE='MENTERI KEUANGAN REPUBLIK INDONESIA,';
+function signOf(d){const g=(d&&d.sign)||{};return {city:T(g.city)||'Jakarta',date:T(g.date),dateText:tgl(g.date),title:T(g.title)||SIGN_TITLE,name:T(g.name),tte:g.tte!==false}}
+let signOpen=false;
 
 function store(){S.psRkmkDoc=S.psRkmkDoc||{};const y=year();const d=S.psRkmkDoc[y]||(S.psRkmkDoc[y]={title:'',signYear:'',programIds:null,docs:[]});d.docs=d.docs||[];return d}
 function programs(){return (S.programs||[]).filter(p=>+p.psYear===year()&&!p.arsip&&p.psListStatus!=='Arsip')}
@@ -44,7 +51,7 @@ function model(){
    ruang:{lb,tb},kondisi:{tujuan:T(c.tujuan),oc},kegiatan:out,
    pj:{champion:T(c.ch)||T(p.sponsor),owner:ow,uic:T(p.uic),pend:T(p.pend)}}});
  const ms=ps.map(p=>{const c=charterOf(p)||{};return {nama:p.nama,rows:(c.ms||[]).filter(m=>T(m.t)&&+m.y).sort((a,b)=>+a.y-+b.y).map(m=>({t:T(m.t),y:+m.y}))}});
- return {ttl,TTL,sy,p1,p2,yrs,ps,progItems,lamp,ms,
+ return {ttl,TTL,sy,p1,p2,yrs,ps,progItems,lamp,ms,sg:signOf(d),
   menimbang:[
    [PH('bahwa … (latar belakang dan dasar kebutuhan program transformasi; diisi di Word)')],
    ['bahwa untuk memberikan arah, prioritas, tahapan, dan target pelaksanaan program transformasi Kementerian Keuangan Tahun '+p1+(p2>p1?'–'+p2:'')+', perlu disusun '+ttl+';'],
@@ -62,6 +69,8 @@ function inl(parts){return parts.map(x=>typeof x==='string'?E(x):x&&x.ph?'<mark 
 /* Pratinjau = halaman A4 skala 1:1 (96 dpi): 1 px = 15 twip, font 12 pt = 16 px, margin sama dengan Word. */
 const TW=t=>(t/15).toFixed(2)+'px';
 function PP(ind,hang,label,html,cls){return '<div class="rk-pp'+(cls?' '+cls:'')+'" style="padding-left:'+TW(ind)+';text-indent:-'+TW(hang)+'">'+(label!=null?'<span class="rk-lbl" style="width:'+TW(hang)+'">'+label+'</span>':'')+html+'</div>'}
+function signHtml(m,place){const g=m.sg,ph=t=>'<mark class="rk-ph">['+E(t)+']</mark>';
+ return '<div class="rk-sign">'+(place?'<p>Ditetapkan di '+E(g.city)+'<br>pada tanggal '+(g.dateText?E(g.dateText):ph('…'))+'</p>':'')+'<p><b>'+E(g.title)+'</b></p>'+(g.tte?'<p class="rk-sp">Ditandatangani secara elektronik</p>':'<p class="rk-sp">&nbsp;</p>')+'<p>'+(g.name?E(g.name):ph('NAMA'))+'</p></div>'}
 function previewHtml(m){
  const row3=(lab,items,sep)=>items.map((it,i)=>'<tr><td class="rk-l">'+(i?'':lab)+'</td><td class="rk-c">'+(i?'':':')+'</td><td class="rk-n">'+(sep==='a'?HURUF[i]+'.':(i+1)+'.')+'</td><td>'+inl(it)+'</td></tr>').join('');
  const dk=m.diktum.map((it,i)=>{const items=(it.find(x=>x&&x.items)||{}).items;return '<tr><td class="rk-l">'+DIKTUM[i]+'</td><td class="rk-c">:</td><td colspan="2">'+inl(it.filter(x=>!x||!x.items))+
@@ -82,11 +91,11 @@ function previewHtml(m){
   '<p class="rk-c1"><b>KEPUTUSAN MENTERI KEUANGAN REPUBLIK INDONESIA</b></p><p class="rk-c1"><b>NOMOR <mark class="rk-ph">[…]</mark> TAHUN '+E(m.sy)+'</b></p><p class="rk-c1"><b>TENTANG</b></p><p class="rk-c1"><b>'+E(m.TTL)+'</b></p><p class="rk-c1 rk-sp">DENGAN RAHMAT TUHAN YANG MAHA ESA</p><p class="rk-c1"><b>MENTERI KEUANGAN REPUBLIK INDONESIA,</b></p>'+
   '<table class="rk-t">'+COLS+row3('Menimbang',m.menimbang,'a')+'<tr><td colspan="4">&nbsp;</td></tr>'+row3('Mengingat',m.mengingat,'1')+'</table>'+
   '<p class="rk-c1 rk-sp"><b>MEMUTUSKAN:</b></p><table class="rk-t">'+COLS+'<tr><td class="rk-l">Menetapkan</td><td class="rk-c">:</td><td colspan="2"><b>KEPUTUSAN MENTERI KEUANGAN TENTANG '+E(m.TTL)+'.</b></td></tr>'+dk+'</table>'+
-  '<div class="rk-sign"><p>Ditetapkan di Jakarta<br>pada tanggal <mark class="rk-ph">[…]</mark></p><p><b>MENTERI KEUANGAN REPUBLIK INDONESIA,</b></p><p class="rk-sp">Ditandatangani secara elektronik</p><p><mark class="rk-ph">[NAMA]</mark></p></div>'+
+  signHtml(m,true)+
   '<div class="rk-break">Lampiran</div><div class="rk-lhead"><p>LAMPIRAN<br>KEPUTUSAN MENTERI KEUANGAN REPUBLIK INDONESIA<br>NOMOR <mark class="rk-ph">[…]</mark><br>TENTANG<br>'+E(m.TTL)+'</p></div>'+
   H(L1,'A.','PROGRAM TRANSFORMASI KEMENTERIAN KEUANGAN')+(lamp||PP(L2[0],0,null,'<mark class="rk-ph">[Belum ada program dipilih]</mark>'))+
   H(L1,'B.','MILESTONE PROGRAM TRANSFORMASI KEMENTERIAN KEUANGAN')+'<table class="rk-ms"><colgroup><col style="width:9.85%"><col><'+'/colgroup><thead><tr><th>No</th><th>Kegiatan</th>'+m.yrs.map(y=>'<th style="width:'+(Math.min(993,Math.floor((9573-943-3780)/Math.max(1,m.yrs.length)))/95.73).toFixed(2)+'%">'+y+'</th>').join('')+'</tr></thead><tbody>'+msRows+'</tbody></table>'+
-  '<div class="rk-sign"><p><b>MENTERI KEUANGAN REPUBLIK INDONESIA,</b></p><p class="rk-sp">Ditandatangani secara elektronik</p><p><mark class="rk-ph">[NAMA]</mark></p></div></div>';
+  signHtml(m,false)+'</div>';
 }
 
 /* ---------- WORD (.docx) ---------- */
@@ -112,7 +121,7 @@ function docxXml(m){
  m.diktum.forEach((it,i)=>{const items=(it.find(x=>x&&x.items)||{}).items;
   drows.push(tr(cell(G[0],p(r(DIKTUM[i]),{jc:'left'}))+cell(G[1],p(r(':'),{jc:'left'}))+cell(G[2]+G[3],p(runs(it.filter(x=>!x||!x.items)))+(items?items.map((t,j)=>p(r(HURUF[j]+'.\t'+t+(j<items.length-1?';':'.')),{ind:446,hang:448,tabs:[446]})).join(''):''),{span:2})))});
  body.push(tbl(G,drows));
- const SG=3782,sign=()=>[p(r('Ditetapkan di Jakarta'),{jc:'left',ind:SG,after:0}),p(r('pada tanggal ')+r('[…]',{hl:1}),{jc:'left',ind:SG,after:200}),p(r('MENTERI KEUANGAN REPUBLIK INDONESIA,'),{jc:'left',ind:SG,after:200}),p(r('Ditandatangani secara elektronik'),{jc:'left',ind:SG,after:200}),p(r('[NAMA]',{hl:1}),{jc:'left',ind:SG})];
+ const SG=3782,g=m.sg,sign=()=>[p(r('Ditetapkan di '+g.city),{jc:'left',ind:SG,after:0}),p(r('pada tanggal ')+(g.dateText?r(g.dateText):r('[…]',{hl:1})),{jc:'left',ind:SG,after:200}),p(r(g.title),{jc:'left',ind:SG,after:200}),p(g.tte?r('Ditandatangani secara elektronik'):'',{jc:'left',ind:SG,after:200}),p(g.name?r(g.name):r('[NAMA]',{hl:1}),{jc:'left',ind:SG})];
  body.push(p('',{after:200}),...sign());
  /* Lampiran */
  body.push(p(r('LAMPIRAN'),{jc:'left',ind:SG,after:0,pb:1}),p(r('KEPUTUSAN MENTERI KEUANGAN REPUBLIK INDONESIA'),{jc:'left',ind:SG,after:0}),p(r('NOMOR ')+r('[…]',{hl:1}),{jc:'left',ind:SG,after:0}),p(r('TENTANG'),{jc:'left',ind:SG,after:0}),p(r(m.TTL),{jc:'left',ind:SG,after:300}));
@@ -160,6 +169,16 @@ const putFile=(id,file)=>idb('readwrite',st=>st.put(file,id));
 const getFile=id=>idb('readonly',st=>st.get(id));
 
 /* ---------- TAMPILAN ---------- */
+function signPanel(d,ed){const g=signOf(d),raw=d.sign||{},dis=ed?'':' disabled';
+ const users=[];(S.users||[]).forEach(u=>{if(u.aktif===false||!u.nama)return;const n=T(u.nama);if(!users.some(x=>x.n===n))users.push({n,j:T(u.jabatan||u.posisi||'')})});
+ const f=(k,lab,v,ph,type)=>'<label><span>'+lab+'</span><input data-rk-sign="'+k+'" '+(type?'type="'+type+'" ':'')+'value="'+E(v)+'" placeholder="'+E(ph)+'"'+dis+'></label>';
+ return '<details class="rk-tte"'+(signOpen?' open':'')+'><summary>✎ Atur TTE · Penandatangan <small>'+E(g.name||'nama belum diisi')+'</small></summary><div class="rk-tte-g">'+
+  (ed&&users.length?'<label class="w"><span>Ambil dari daftar pengguna</span><select data-rk-sign-pick><option value="">Isi manual</option>'+users.map((x,i)=>'<option value="'+i+'">'+E(x.n)+(x.j?' · '+E(x.j):'')+'</option>').join('')+'</select></label>':'')+
+  f('city','Ditetapkan di',raw.city||'','Jakarta')+f('date','Tanggal penetapan',raw.date||'','','date')+
+  '<label class="w"><span>Jabatan penandatangan</span><input data-rk-sign="title" value="'+E(raw.title||'')+'" placeholder="'+E(SIGN_TITLE)+'"'+dis+'></label>'+
+  '<label class="w"><span>Nama penandatangan</span><input data-rk-sign="name" value="'+E(raw.name||'')+'" placeholder="Kosongkan bila diisi di Word"'+dis+'></label>'+
+  '<label class="rk-chk w"><input type="checkbox" data-rk-sign-tte '+(g.tte?'checked':'')+dis+'> Cantumkan “Ditandatangani secara elektronik”</label>'+
+  '<p class="rk-note w">Berlaku di batang tubuh dan Lampiran, pada pratinjau dan Word. Isian kosong tetap ditandai kuning untuk diisi di Word.</p></div></details>'}
 function view(){
  const d=store(),all=programs(),sel=chosen(),m=model(),ed=can(),ic=typeof MT_INFO_ICON==='function'?MT_INFO_ICON:()=>'';
  const latest=d.docs[d.docs.length-1];
@@ -167,6 +186,7 @@ function view(){
   '<label><span>Tahun penetapan</span><input data-rk-signyear inputmode="numeric" maxlength="4" value="'+E(d.signYear||'')+'" placeholder="'+new Date().getFullYear()+'" '+(ed?'':'readonly')+'></label>'+
   '<div class="rk-progs"><div class="rk-progs-h"><b>Program dalam Lampiran ('+sel.length+'/'+all.length+')</b>'+(ed&&all.length?'<button type="button" class="btn btn-sm" data-rk-all>'+(sel.length===all.length?'Kosongkan':'Pilih semua')+'</button>':'')+'</div>'+
   (all.length?all.map(p=>'<label class="rk-pi"><input type="checkbox" data-rk-prog="'+E(p.id)+'" '+(sel.includes(p)?'checked':'')+' '+(ed?'':'disabled')+'><span>'+E(p.nama)+(charterOf(p)?'':' <em>· charter belum ada</em>')+'</span></label>').join(''):'<p class="s">Belum ada program pada tahun '+year()+'.</p>')+'</div>'+
+  signPanel(d,ed)+
   '<p class="rk-note"><mark class="rk-ph">[…]</mark> = diisi/disunting di Word saat legal drafting. Isian program dan milestone diambil otomatis dari Charter Program.</p>'+
   '<div class="mt-dlbar"><small>Format: Word (.docx) · kerangka RKMK</small><button type="button" class="btn mt-dlbtn rk-dl" data-rk-docx '+(sel.length?'':'disabled')+' title="Unduh Kerangka RKMK (.docx)">↓ Unduh DOCX</button></div></div>';
  const final='<div class="ps27-card rk-final"><div class="ps27-cardtop"><div><h3>RKMK Ditetapkan'+ic('Unggah KMK yang sudah ditetapkan (PDF TTE). Setiap unggahan menjadi versi baru dan menandai program yang tercakup.')+'</h3></div>'+
@@ -218,7 +238,11 @@ document.addEventListener('change',ev=>{
  const t=ev.target;if(!can())return;
  if(t.matches?.('[data-rk-prog]')){const d=store(),all=programs();const cur=new Set(chosen().map(p=>String(p.id)));if(t.checked)cur.add(t.dataset.rkProg);else cur.delete(t.dataset.rkProg);d.programIds=cur.size===all.length?null:[...cur];save();render();return}
  if(t.matches?.('[data-rk-title]')){store().title=T(t.value);save();render();return}
+ if(t.matches?.('[data-rk-sign]')){const d=store();d.sign=d.sign||{};d.sign[t.dataset.rkSign]=T(t.value);signOpen=true;save();render();return}
+ if(t.matches?.('[data-rk-sign-tte]')){const d=store();d.sign=d.sign||{};d.sign.tte=!!t.checked;signOpen=true;save();render();return}
+ if(t.matches?.('[data-rk-sign-pick]')){if(t.value==='')return;const users=[];(S.users||[]).forEach(u=>{if(u.aktif===false||!u.nama)return;const n=T(u.nama);if(!users.some(x=>x.n===n))users.push({n,j:T(u.jabatan||u.posisi||'')})});const x=users[+t.value];if(!x)return;const d=store();d.sign=d.sign||{};d.sign.name=x.n;if(x.j)d.sign.title=x.j;signOpen=true;save();render();return}
  if(t.matches?.('[data-rk-signyear]')){const v=T(t.value);if(v&&!/^\d{4}$/.test(v)){say('Tahun penetapan 4 digit.');return}store().signYear=v;save();render();return}
 });
-window.MT_RKMK={view,model,docxXml,docxBlob,previewHtml,version:'20261125-rkmk1'};
+document.addEventListener('toggle',ev=>{if(ev.target&&ev.target.matches&&ev.target.matches('details.rk-tte'))signOpen=ev.target.open},true);
+window.MT_RKMK={view,model,docxXml,docxBlob,previewHtml,version:'20261127-rkmk2'};
 })();

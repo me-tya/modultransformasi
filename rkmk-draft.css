@@ -72,3 +72,13 @@
 #app .rk-grid{align-items:stretch}
 #app .rk-set{position:static}
 #app .rk-set .mt-dlbar{background:#f7f9fc}
+/* Atur TTE · Penandatangan (Draft RKMK) */
+#app .rk-tte{border:1px solid #dce4ef;border-radius:10px;background:#fff}
+#app .rk-tte>summary{cursor:pointer;padding:8px 10px;font-size:12.5px;font-weight:700;color:#163A6B;list-style:none;display:flex;align-items:center;gap:8px}
+#app .rk-tte>summary::-webkit-details-marker{display:none}
+#app .rk-tte>summary small{margin-left:auto;font-weight:500;color:#64748b;max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app .rk-tte-g{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 10px 10px}
+#app .rk-tte-g .w{grid-column:1/-1}
+#app .rk-tte-g label>span{display:block;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#163A6B;margin-bottom:3px}
+#app .rk-tte-g input:not([type=checkbox]),#app .rk-tte-g select{width:100%;border:1px solid #c9d8ee;border-radius:8px;padding:6px 9px;font:inherit;font-size:13px;background:#fff}
+#app .rk-tte-g .rk-chk{display:flex;align-items:center;gap:8px;font-size:12.5px}
