@@ -59,7 +59,7 @@ const DEF={profile:'Seimbang',onlyPassed:'Ya',pagu:15000,sdm:160,quadThr:60,p1:7
 function cfg(y){const st=store(),k='cfg-'+(y||year());const c=st[k]||{};const w={};PROFILES.forEach(p=>{const a=(c.weights||{})[p];w[p]=Array.isArray(a)&&a.length===7?a.map(Number):DEFW[p].slice()});
  return Object.assign({},DEF,c,{weights:w,year:+(y||year())})}
 function setCfg(patch){const st=store(),k='cfg-'+year(),cur=cfg();const nx=Object.assign({},cur,patch);delete nx.year;nx.updatedAt=new Date().toISOString();nx.updatedBy=me()?.email||'';st[k]=nx;save()}
-const ui=()=>{S.ui.psKka=S.ui.psKka||{sub:'rank',scope:'non',mode:'all',ue:[],q:''};return S.ui.psKka};
+const ui=()=>{S.ui.psKka=S.ui.psKka||{sub:'usulan',scope:'non',mode:'all',ue:[],q:''};return S.ui.psKka};
 
 /* ---------- wadah proyek di luar ISTK ----------
    Proyek SI yang tidak termapping ke program/ISTK disimpan di S.psKka['non-<tahun>'].projects (koleksi psKka).
@@ -118,13 +118,13 @@ const catCls=c=>c===CATS[0]?'p1':c===CATS[1]?'p2':c===CATS[2]?'p3':c===CATS[3]?'
 const gateCls=g=>g==='Lolos'?'ok':g==='Tinjau Ulang'?'bad':'warn';
 const METHODS=[['smart','SMART','Simple Multi-Attribute Rating Technique: 12 kriteria, skor absolut di atas ambang.'],['kka','MCDA','Multi-Criteria Decision Analysis: gate G1–G4, skor tertimbang 7 kriteria (3 profil bobot), peringkat, dan roadmap terhadap pagu & SDM.']];
 function methodSelect(p,ro){const m=method(p);return '<div class="kka-method" role="radiogroup" aria-label="Metode prioritisasi"><span>Metode</span>'+(m==='manual'?'<em class="kka-mlegacy" title="Program ini dibuat dengan pemilihan manual (versi lama). Pilihan proyek tetap dipertahankan sampai metode SMART atau MCDA dipilih.">Manual (lama)</em>':'')+'<div class="kka-mseg">'+METHODS.map(o=>'<label title="'+E(o[2])+'" class="'+(m===o[0]?'on':'')+(ro?' dis':'')+'"><input type="radio" name="pswf-method" value="'+o[0]+'"'+(m===o[0]?' checked':'')+(ro?' disabled':'')+'>'+o[1]+'</label>').join('')+'</div></div>'}
-const SUBS=[['rank','Penilaian & Peringkat'],['criteria','Kriteria & Bobot'],['roadmap','Roadmap & Analisis'],['repo','Repositori'],['ref','Referensi & Rubrik']];
+const SUBS=[['usulan','Usulan Non-ISTK'],['rank','Penilaian & Peringkat'],['criteria','Kriteria & Bobot'],['roadmap','Roadmap & Analisis'],['repo','Repositori'],['ref','Referensi & Rubrik']];
 function page(p,o){
  o=o||{};const u=ui(),sub=SUBS.some(s=>s[0]===u.sub)?u.sub:'rank',ro=!!o.readOnly;
  const head='<div class="ps27-priority-head"><nav class="ps27-minitabs" role="tablist" aria-label="Tab Prioritasi MCDA">'+SUBS.map(s=>'<button role="tab" type="button" data-kka-sub="'+s[0]+'" aria-selected="'+(sub===s[0])+'" class="'+(sub===s[0]?'on':'')+'">'+s[1]+'</button>').join('')+'</nav>'+
   '<div class="ps27-smart-actions">'+methodSelect(p,ro)+'</div></div>';
  const D=compute();
- const body=sub==='criteria'?criteriaView(D):sub==='roadmap'?roadmapView(D):sub==='repo'?repoView(D):sub==='ref'?refView():rankView(p,D,ro);
+ const body=sub==='usulan'?usulanView(D):sub==='criteria'?criteriaView(D):sub==='roadmap'?roadmapView(D):sub==='repo'?repoView(D):sub==='ref'?refView():rankView(p,D,ro);
  return head+'<div class="kka">'+body+'</div>';
 }
 function kpis(D){const s=D.sum,c=D.c,k=(v,l,cl)=>'<div class="kka-kpi '+(cl||'')+'"><b>'+v+'</b><small>'+l+'</small></div>';
@@ -314,29 +314,64 @@ async function importFile(file){
   if(nNew&&tp){ui().scope=tp.nonIstk?'non':'all';if(!tp.nonIstk){try{I.state().prog=tp.id}catch(_){}ui().scope='program'}save();render()}
   say('Impor selesai: '+ok.length+' proyek diperbarui, '+nNew+' proyek baru'+(nNew&&tp?' di '+tp.nama:'')+', '+nG+' jawaban gate, '+nS+' skor.'+(nS?'':' Skor K1–K7 belum ada di berkas — isi di tabel penilaian.'))},{size:'wide'});
 }
-function nonEdit(id){
- const n=nonP(),x=id?n.psProjects.find(z=>String(z.id)===String(id)):null;if(id&&!x)return;const v=k=>E(x?(k==='cost'?(x.estimatedCost==null||x.estimatedCost===''?'':x.estimatedCost/1e6):x[k]??''):'');
- const opt=(arr,val)=>['',...arr].map(o=>'<option'+(String(o)===String(val||'')?' selected':'')+' value="'+E(o)+'">'+(o||'Pilih')+'</option>').join('');
- modal((x?'Ubah':'Tambah')+' Usulan di Luar ISTK',`<div class="fgrid">
- <div class="fld wide"><label for="kn-name">Nama sistem / modul *</label><input id="kn-name" value="${v('name')}"></div>
- <div class="fld"><label for="kn-uic">UE I</label><select id="kn-uic">${opt(UE,x&&x.uic)}</select></div>
- <div class="fld"><label for="kn-jenis">Jenis inisiatif</label><select id="kn-jenis">${opt(['Aplikasi Baru','Modul Baru','Pengayaan Modul','Data Analytics / Dashboard / AI','Interoperabilitas'],x&&x.initiativeType)}</select></div>
- <div class="fld wide"><label for="kn-owner">Unit pemilik proses bisnis</label><input id="kn-owner" value="${v('businessOwner')}"></div>
- <div class="fld"><label for="kn-cost">Estimasi biaya (Rp juta)</label><input id="kn-cost" type="number" min="0" step="any" value="${v('cost')}"></div>
- <div class="fld"><label for="kn-dur">Durasi (bulan)</label><input id="kn-dur" type="number" min="0" step="any" value="${v('durationMonths')}"></div>
- <div class="fld"><label for="kn-sdm">Kebutuhan SDM (orang-bulan)</label><input id="kn-sdm" type="number" min="0" step="any" value="${v('estimatedStaffMonths')}"></div>
- <div class="fld wide"><label for="kn-desc">Deskripsi & alasan tidak termapping ke ISTK</label><textarea id="kn-desc" rows="3">${v('description')}</textarea></div></div>
- <p class="s" style="margin:8px 0 0">Gate G1–G4 dan skor K1–K7 diisi di tabel penilaian. Proyek ini tidak masuk Penetapan Program/RKMK/WBS dan tidak dipantau PMO Kemenkeu.</p>`,x?'Simpan':'Tambah',o=>{
-  const g=s=>T(o.querySelector(s).value),name=g('#kn-name');if(!name){say('Nama wajib diisi.');return false}
+/* Usulan non-ISTK: isian mengikuti sheet 'Usulan' Kertas Kerja A (ID, nama, jenis inisiatif, unit, domain, deskripsi & konteks, estimasi, gate). */
+const UF=[
+ ['Identitas',[['psOriginRef','ID usulan','text','Mis. kode proses bisnis/usulan dari Pusakti (01.03.12.01-021.001)'],['name','Nama sistem / modul *','text'],['initiativeType','Jenis inisiatif','multi'],['uic','UE I','ue'],['businessOwner','Unit pemilik proses bisnis (Eselon II/unit)','text'],['spbeDomain','Domain arsitektur SPBE','dom']]],
+ ['Deskripsi & Konteks Usulan',[['description','Deskripsi aplikasi/modul','area'],['urgency','Urgensi','area'],['legalBasis','Landasan hukum/regulasi','area'],['strategyAlignment','Strategi organisasi yang didukung','area'],['businessProcess','Proses bisnis terkait','area'],['businessNarrative','Penjelasan/narasi proses bisnis aplikasi','area'],['features','Fitur utama yang akan dikembangkan','area']]],
+ ['Estimasi Biaya, Durasi & SDM',[['cost','Estimasi biaya (Rp juta)','num'],['durationMonths','Durasi (bulan)','num'],['estimatedStaffMonths','Kebutuhan SDM (orang-bulan)','num']]],
+ ['Gate Penyaringan',GATES.map(g=>[g[0],g[1]+' – '+g[3],'gate'])]];
+const JENIS=['Aplikasi Baru','Modul Baru','Pengayaan Modul','Data Analytics / Dashboard / AI','Interoperabilitas'],DOMAIN=['Proses Bisnis','Data dan Informasi','Aplikasi','Infrastruktur','Keamanan','Layanan'];
+const REQ=[['name','nama'],['initiativeType','jenis inisiatif'],['uic','UE I'],['businessOwner','unit pemilik'],['description','deskripsi'],['estimatedCost','biaya'],['durationMonths','durasi'],['estimatedStaffMonths','SDM']];
+const validasi=x=>{const m=REQ.filter(([k])=>x[k]===''||x[k]==null||(typeof x[k]==='string'&&!T(x[k]))).map(z=>z[1]);return m.length?'Lengkapi: '+m.join(', '):'OK'};
+function nonEdit(id,view){
+ const n=nonP(),x=id?n.psProjects.find(z=>String(z.id)===String(id)):null;if(id&&!x)return;const ro=!!view||!canCfg();
+ const val=k=>x?(k==='cost'?(x.estimatedCost==null||x.estimatedCost===''?'':x.estimatedCost/1e6):x[k]??''):'';
+ const dis=ro?' disabled':'';
+ const opt=(arr,v)=>['',...arr].map(o=>'<option'+(String(o)===String(v||'')?' selected':'')+' value="'+E(o)+'">'+(o||'Pilih')+'</option>').join('');
+ const fld=([k,l,t,h])=>{const v=val(k),lab='<label for="kn-'+k+'">'+E(l)+(h?ic(h):'')+'</label>';
+  if(t==='area')return '<div class="fld">'+lab+'<textarea id="kn-'+k+'" rows="3"'+dis+'>'+E(v)+'</textarea></div>';
+  if(t==='ue')return '<div class="fld">'+lab+'<select id="kn-'+k+'"'+dis+'>'+opt(UE,v)+'</select></div>';
+  if(t==='dom')return '<div class="fld">'+lab+'<select id="kn-'+k+'"'+dis+'>'+opt(DOMAIN,v)+'</select></div>';
+  if(t==='gate')return '<div class="fld">'+lab+'<select id="kn-'+k+'"'+dis+'><option value="">Belum dijawab</option>'+['Ya','Tidak'].map(o=>'<option'+(v===o?' selected':'')+'>'+o+'</option>').join('')+'</select></div>';
+  if(t==='multi'){const sel=String(v||'').split(/[,;]+/).map(T).filter(Boolean);return '<div class="fld wide">'+lab+'<div class="kn-multi">'+[...new Set([...JENIS,...sel])].map(o=>'<label><input type="checkbox" data-kn-jenis value="'+E(o)+'"'+(sel.includes(o)?' checked':'')+dis+'> '+E(o)+'</label>').join('')+'</div></div>'}
+  if(t==='num')return '<div class="fld">'+lab+'<input id="kn-'+k+'" type="number" min="0" step="any" value="'+E(v)+'"'+dis+'></div>';
+  return '<div class="fld'+(k==='name'?' wide':'')+'">'+lab+'<input id="kn-'+k+'" value="'+E(v)+'"'+dis+'></div>'};
+ const body='<div class="kn-form">'+UF.map(([g,fs])=>'<section><h4>'+E(g)+'</h4><div class="fgrid">'+fs.map(fld).join('')+'</div></section>').join('')+'</div>'+
+  (x?'<p class="s" style="margin:8px 0 0">Validasi: <b>'+E(validasi(x))+'</b> · Hasil gate: <b>'+gateOf(x)+'</b>. Skor K1–K7 diisi di Penilaian & Peringkat.</p>':'<p class="s" style="margin:8px 0 0">Skor K1–K7 diisi di Penilaian & Peringkat. Usulan di luar ISTK tidak masuk Penetapan Program/RKMK/WBS dan tidak dipantau PMO Kemenkeu.</p>');
+ if(ro){modal('Usulan Non-ISTK · '+E(x?x.name:''),body,canCfg()?'Ubah':'Tutup',()=>{if(canCfg())setTimeout(()=>nonEdit(id),0)},{size:'wide'});return}
+ modal((x?'Ubah':'Tambah')+' Usulan Non-ISTK',body,x?'Simpan':'Tambah',o=>{
+  const g=k=>{const el=o.querySelector('#kn-'+k);return el?T(el.value):''},name=g('name');if(!name){say('Nama sistem/modul wajib diisi.');return false}
   const all=allProgs().flatMap(p=>p.psProjects||[]);if(all.some(z=>z!==x&&nk(z.name)===nk(name))){say('Nama proyek sudah ada pada tahun ini.');return false}
-  const num=s=>{const t=g(s);if(t==='')return '';const n=+t;return isFinite(n)&&n>=0?n:NaN};const c=num('#kn-cost'),d=num('#kn-dur'),m=num('#kn-sdm');if([c,d,m].some(Number.isNaN)){say('Estimasi harus angka nonnegatif.');return false}
-  const t=x||{id:'non-'+uid(),status:'Usulan',kka:{},nonIstk:true};Object.assign(t,{name,uic:g('#kn-uic'),initiativeType:g('#kn-jenis'),businessOwner:g('#kn-owner'),estimatedCost:c===''?'':Math.round(c*1e6),durationMonths:d,estimatedStaffMonths:m,description:g('#kn-desc')});
-  if(!x){n._keep();n.psProjects.push(t)}n._doc.updatedAt=new Date().toISOString();try{log((x?'Ubah':'Tambah')+' usulan di luar ISTK',name)}catch(_){}ui().scope='non';save();render();say('Usulan di luar ISTK '+(x?'diperbarui':'ditambahkan')+'.')},{size:'sm'});
+  const num=k=>{const t=g(k);if(t==='')return '';const v=+t;return isFinite(v)&&v>=0?v:NaN};const c=num('cost'),d=num('durationMonths'),m=num('estimatedStaffMonths');if([c,d,m].some(Number.isNaN)){say('Estimasi harus angka nonnegatif.');return false}
+  const t=x||{id:'non-'+uid(),status:'Usulan',kka:{},nonIstk:true};
+  UF.forEach(([,fs])=>fs.forEach(([k,,ty])=>{if(ty==='num'||ty==='multi')return;t[k]=g(k)}));
+  t.initiativeType=[...o.querySelectorAll('[data-kn-jenis]:checked')].map(e=>e.value).join(', ');
+  t.estimatedCost=c===''?'':Math.round(c*1e6);t.durationMonths=d;t.estimatedStaffMonths=m;delete t.cost;
+  if(!x){n._keep();n.psProjects.push(t)}n._doc.updatedAt=new Date().toISOString();try{log((x?'Ubah':'Tambah')+' usulan non-ISTK',name)}catch(_){}save();render();say('Usulan '+(x?'diperbarui':'ditambahkan')+'.')},{size:'wide'});
 }
+function usulanView(D){
+ const L=nonP().psProjects,ed=canCfg(),q=T(ui().uq).toLowerCase();
+ const rows=L.filter(x=>!q||[x.name,x.psOriginRef,x.uic,x.businessOwner,x.initiativeType].join(' ').toLowerCase().includes(q));
+ const cm=x=>x.estimatedCost===''||x.estimatedCost==null?'—':fmt(x.estimatedCost/1e6,2);
+ const tr=rows.map((x,i)=>{const g=gateOf(x),v=validasi(x);return '<tr class="kka-row-click" data-kka-nonview="'+E(x.id)+'" tabindex="0" title="Lihat detail usulan"><td class="n">'+(i+1)+'</td><td><small>'+E(x.psOriginRef||'—')+'</small></td><td class="kka-nm"><b>'+E(x.name)+'</b><small>'+E(x.initiativeType||'')+'</small></td><td>'+E(x.uic||'—')+'</td><td><small>'+E(x.businessOwner||'—')+'</small></td><td><small>'+E(x.spbeDomain||'—')+'</small></td><td class="n">'+cm(x)+'</td><td class="n">'+fmt(num(x.durationMonths),1)+'</td><td class="n">'+fmt(num(x.estimatedStaffMonths),1)+'</td>'+
+  GATES.map(z=>'<td class="c">'+(x[z[0]]==='Ya'?'✓':x[z[0]]==='Tidak'?'✗':'·')+'</td>').join('')+'<td><span class="kka-chip '+gateCls(g)+'">'+g+'</span></td><td><span class="kka-chip '+(v==='OK'?'ok':'warn')+'" title="'+E(v)+'">'+(v==='OK'?'OK':'Lengkapi')+'</span></td>'+
+  '<td class="kka-act">'+(ed?'<button type="button" class="kka-ib" data-kka-nonedit="'+E(x.id)+'" title="Ubah usulan">✎</button><button type="button" class="kka-ib" data-kka-nondel="'+E(x.id)+'" title="Hapus usulan">🗑</button>':'')+'</td></tr>'}).join('');
+ return '<div class="kka-card"><div class="kka-cardh"><h3>Usulan Pengembangan SI di Luar ISTK · '+D.y+ic('Daftar usulan mengikuti sheet Usulan Kertas Kerja A. Klik baris untuk melihat isian lengkap. Proyek program ISTK tidak dicatat di sini karena sudah diprioritaskan otomatis.')+'</h3><span class="kka-sp"></span>'+
+  '<input class="kka-q" type="search" data-kka-uq placeholder="Cari usulan…" value="'+E(ui().uq||'')+'" aria-label="Cari usulan">'+
+  (ed?'<button type="button" class="btn btn-sm pri" data-kka-nonadd>+ Tambah Usulan</button>':'')+'<button type="button" class="btn btn-sm" data-kka-import title="Impor workbook Kertas Kerja A (sheet Usulan)">↑ Impor</button><button type="button" class="btn btn-sm" data-kka-uxlsx>⇩ Excel</button></div>'+
+  '<div class="kka-scroll"><table class="kka-t"><thead><tr><th>No</th><th>ID</th><th>Nama sistem / modul</th><th>UE I</th><th>Unit pemilik</th><th>Domain SPBE</th><th>Biaya (Rp jt)</th><th>Durasi (bln)</th><th>SDM (org-bln)</th>'+GATES.map(z=>'<th class="c" title="'+E(z[3])+'">'+z[1]+'</th>').join('')+'<th>Hasil gate</th><th>Validasi</th><th></th></tr></thead><tbody>'+
+  (tr||'<tr><td colspan="17" class="kka-empty">Belum ada usulan di luar ISTK untuk '+D.y+'. Gunakan <b>+ Tambah Usulan</b> atau <b>↑ Impor</b> dari workbook Kertas Kerja A.</td></tr>')+'</tbody></table></div>'+
+  '<p class="kka-note">Setelah usulan lengkap, beri skor K1–K7 di <b>Penilaian & Peringkat</b>.</p></div>';
+}
+function usulanXlsx(){const X=window.XLSX;if(!X){say('Pustaka Excel belum termuat.');return}const L=nonP().psProjects;
+ const head=['ID','Nama Sistem / Modul',...JENIS,'Jenis Inisiatif (ringkas)','UE I','Unit Pemilik Proses Bisnis (Eselon II/unit)','Domain Arsitektur SPBE','Deskripsi Aplikasi/Modul','Urgensi','Landasan Hukum/Regulasi','Strategi Organisasi yang Didukung','Proses Bisnis Terkait','Penjelasan/Narasi Proses Bisnis Aplikasi','Fitur Utama yang Akan Dikembangkan','Estimasi Biaya (Rp juta)','Durasi (bulan)','Kebutuhan SDM (orang-bulan)',...GATES.map(g=>g[1]+' '+g[2]),'Hasil Gate','Validasi'];
+ const rows=L.map(x=>{const j=String(x.initiativeType||'');return [x.psOriginRef||'',x.name,...JENIS.map(t=>j.includes(t)?'✓':''),j,x.uic||'',x.businessOwner||'',x.spbeDomain||'',x.description||'',x.urgency||'',x.legalBasis||'',x.strategyAlignment||'',x.businessProcess||'',x.businessNarrative||'',x.features||'',x.estimatedCost===''||x.estimatedCost==null?'':x.estimatedCost/1e6,x.durationMonths??'',x.estimatedStaffMonths??'',...GATES.map(g=>x[g[0]]||''),gateOf(x),validasi(x)]});
+ const ws=X.utils.aoa_to_sheet([head,...rows]);ws['!cols']=head.map((h,i)=>({wch:i===1?36:i>=12&&i<=18?40:14}));const wb=X.utils.book_new();X.utils.book_append_sheet(wb,ws,'Usulan');X.writeFile(wb,'Usulan_Non-ISTK_'+year()+'.xlsx')}
 /* ---------- event ---------- */
 function findX(id){for(const p of allProgs())for(const x of (p.psProjects||[]))if(String(x.id)===String(id))return {p,x};return null}
 document.addEventListener('click',ev=>{
  const t=ev.target;if(!t.closest||!t.closest('.kka,.ps27-priority-head'))return;
+ {const rw=t.closest('[data-kka-nonview]');if(rw&&!t.closest('button')){nonEdit(rw.dataset.kkaNonview,true);return}}
  const b=t.closest('button');if(!b)return;const u=ui();
  if(b.dataset.kkaSub){u.sub=b.dataset.kkaSub;save();render();return}
  if(b.dataset.kkaScope){u.scope=b.dataset.kkaScope;save();render();return}
@@ -345,6 +380,7 @@ document.addEventListener('click',ev=>{
  if(b.hasAttribute('data-kka-import')){const i=document.createElement('input');i.type='file';i.accept='.xlsx,.xlsm,.xls';i.onchange=()=>{if(i.files[0])importFile(i.files[0])};i.click();return}
  if(b.hasAttribute('data-kka-snap')&&canCfg()){snapDialog();return}
  if(b.hasAttribute('data-kka-nonadd')&&canCfg()){nonEdit('');return}
+ if(b.hasAttribute('data-kka-uxlsx')){usulanXlsx();return}
  if(b.dataset.kkaNonedit&&canCfg()){nonEdit(b.dataset.kkaNonedit);return}
  if(b.dataset.kkaNondel&&canCfg()){const n=nonP(),i=n.psProjects.findIndex(z=>String(z.id)===String(b.dataset.kkaNondel));if(i<0)return;const nm=n.psProjects[i].name;const go=()=>{n.psProjects.splice(i,1);try{log('Hapus usulan di luar ISTK',nm)}catch(_){}save();render();say('Usulan dihapus.')};if(typeof window.MT_PS_CONFIRM==='function')window.MT_PS_CONFIRM('Hapus usulan?','"'+nm+'" akan dihapus dari daftar usulan di luar ISTK.',go);else go();return}
  if(b.dataset.kkaSnapview){snapView(b.dataset.kkaSnapview);return}
@@ -370,7 +406,7 @@ const kkaLong=(t,on)=>{if(!t||!t.matches||!t.matches('select[data-kka-score]'))r
 document.addEventListener('focusin',ev=>kkaLong(ev.target,true));document.addEventListener('mousedown',ev=>kkaLong(ev.target,true),true);
 document.addEventListener('focusout',ev=>kkaLong(ev.target,false));document.addEventListener('change',ev=>kkaLong(ev.target,false),true);
 document.addEventListener('toggle',ev=>{const t=ev.target;if(t&&t.matches&&t.matches('[data-kka-rub]'))ui().rubOpen=t.open},true);
-document.addEventListener('input',ev=>{const t=ev.target;if(!t.matches||!t.matches('[data-kka-q]'))return;ui().q=t.value;clearTimeout(window.__kkaQ);const pos=t.selectionStart;window.__kkaQ=setTimeout(()=>{render();const n=document.querySelector('[data-kka-q]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}},260)});
+document.addEventListener('input',ev=>{const t=ev.target;if(!t.matches||!t.matches('[data-kka-q],[data-kka-uq]'))return;if(t.matches('[data-kka-uq]'))ui().uq=t.value;else ui().q=t.value;clearTimeout(window.__kkaQ);const pos=t.selectionStart;window.__kkaQ=setTimeout(()=>{render();const n=document.querySelector(t.matches('[data-kka-uq]')?'[data-kka-uq]':'[data-kka-q]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}},260)});
 
 /* ---------- gaya ---------- */
 (function style(){if(document.getElementById('kka-style'))return;const s=document.createElement('style');s.id='kka-style';s.textContent=`
@@ -399,7 +435,7 @@ document.addEventListener('input',ev=>{const t=ev.target;if(!t.matches||!t.match
 .kka-pen thead th.kka-k{text-align:center;min-width:70px;max-width:none!important;white-space:nowrap}.kka-pen thead th.kka-k span{margin:2px 0 5px;white-space:nowrap}.kka-pen thead th.kka-k em{display:block;color:#F2B92C;font-style:normal;font-size:10.5px;font-weight:800;margin-top:3px}
 .kka-wbar{display:block;height:5px;margin:0 4px;background:rgba(255,255,255,.18);border-radius:4px;overflow:hidden}.kka-wbar>i{display:block;height:100%;background:#F2B92C}
 .kka-pen thead th.kka-g{text-align:center;min-width:44px}.kka-pen thead th.div{border-left:1px solid rgba(255,255,255,.22)}.kka-pen .kka-cat{text-align:center;width:56px}.kka-pen td.kka-cat small{display:block;font-size:10px}
-.kka-istk{background:#12275A!important;color:#fff!important;font-size:10px!important;padding:1px 7px!important}.kka-istk-note{color:#475569;font-size:12px;background:#F8FAFD}.kka-istkrow td{background:#F8FAFD}.kka-kpi.istk b{color:#12275A}.kka-non{background:#EDE9FE!important;color:#5B21B6!important;font-size:10px!important;padding:1px 7px!important;vertical-align:1px;margin-left:4px}.kka .kka-ib{border:0!important;background:none!important;box-shadow:none!important;cursor:pointer;font-size:12px!important;padding:0 3px!important;width:auto!important;height:auto!important;min-width:0!important;min-height:0!important;color:#475569;vertical-align:1px;display:inline}.kka-ib:hover{color:#12275A}.kka-pc{min-width:32px;text-align:center}.kka-chip.p3{background:#FFF0C2;color:#7A5300}
+.kn-form section{margin-bottom:12px}.kn-form .fgrid{gap:8px 14px}.kn-form textarea{min-height:64px}.kka-card>.kka-note{margin-top:8px}.kn-form h4{margin:0 0 8px;font-size:12.5px;color:#12275A;border-bottom:1px solid #E2E8F0;padding-bottom:4px}.kn-multi{display:flex;flex-wrap:wrap;gap:6px 16px}.kn-multi label{display:flex;gap:6px;align-items:center;font-weight:500}.kn-multi input{width:auto}.kka-row-click{cursor:pointer}.kka-row-click:hover td{background:#F5F8FD}.kka-t td.c{text-align:center}.kka-istk{background:#12275A!important;color:#fff!important;font-size:10px!important;padding:1px 7px!important}.kka-istk-note{color:#475569;font-size:12px;background:#F8FAFD}.kka-istkrow td{background:#F8FAFD}.kka-kpi.istk b{color:#12275A}.kka-non{background:#EDE9FE!important;color:#5B21B6!important;font-size:10px!important;padding:1px 7px!important;vertical-align:1px;margin-left:4px}.kka .kka-ib{border:0!important;background:none!important;box-shadow:none!important;cursor:pointer;font-size:12px!important;padding:0 3px!important;width:auto!important;height:auto!important;min-width:0!important;min-height:0!important;color:#475569;vertical-align:1px;display:inline}.kka-ib:hover{color:#12275A}.kka-pc{min-width:32px;text-align:center}.kka-chip.p3{background:#FFF0C2;color:#7A5300}
 .kka-thc{display:inline-flex;align-items:center;gap:3px}.kka-rub{padding:0}.kka-rub>summary{cursor:pointer;padding:11px 14px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;color:#0F2346;font-size:13px}.kka-rub>summary small{color:#64748B;font-size:11.5px}.kka-rub .kka-scroll{border:0;border-top:1px solid #E2E8F0;border-radius:0 0 12px 12px}.kka-rub td{font-size:12px}.kka-ref td{vertical-align:top}.kka-ref td:nth-child(n+3){min-width:150px}
 b.up{color:#0F7A4B}b.dn{color:#B42318}
 @media(max-width:1200px){.kka-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}.kka-grid2{grid-template-columns:1fr}.kka-sets{grid-template-columns:1fr 1fr}}
