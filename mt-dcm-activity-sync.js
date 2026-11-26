@@ -101,7 +101,7 @@ function decide(a,x,s){const hD=hash(canonD(a)),hM=hash(canonM(x));
 const pushable=x=>x&&x.kind!=='cfg'&&x.id!=='pub-tim'&&(x.keAkt||(x.kat&&x.kat!=='1-on-1 T-Program'));
 
 /* ---------- runtime ---------- */
-const st={app:null,auth:null,db:null,user:null,unsub:null,dcm:new Map(),loaded:false,mig:null,busy:false,dirty:false,timer:null,err:'',last:'',pulling:false,pullFail:new Set(),skipBig:0,stats:{toMt:0,toDcm:0,newMt:0,newDcm:0,del:0}};
+const st={app:null,auth:null,db:null,user:null,unsub:null,listening:false,epoch:0,dcm:new Map(),loaded:false,mig:null,busy:false,dirty:false,timer:null,err:'',last:'',pulling:false,pullFail:new Set(),skipBig:0,stats:{toMt:0,toDcm:0,newMt:0,newDcm:0,del:0}};
 const env=()=>typeof window!=='undefined'&&window.firebase&&typeof FB!=='undefined';
 function canRun(){try{return env()&&FB.on&&FB.ready&&ME&&['SA','PMOK','CMOK'].includes(ME.role)&&typeof actCanEdit==='function'&&actCanEdit()}catch(e){return false}}
 const isOn=()=>{try{return localStorage.getItem(LS_ON)==='1'}catch(e){return false}};
@@ -109,17 +109,24 @@ function setOn(v){try{v?localStorage.setItem(LS_ON,'1'):localStorage.removeItem(
 function status(){if(!isOn())return {k:'off',t:'Belum terhubung'};if(st.err)return {k:'err',t:st.err};if(!st.user)return {k:'wait',t:'Menunggu login akun Dashboard CM'};if(!st.loaded)return {k:'wait',t:'Memuat data Dashboard CM…'};return {k:'ok',t:'Aktif'+(st.last?' · sinkron terakhir '+st.last:'')}}
 function badge(){const b=document.querySelector('.act-dbk');if(b){const s=status();b.dataset.sync=s.k;b.title='Sinkron Dashboard CM: '+s.t}}
 function ensureApp(){if(st.app)return;st.app=firebase.apps.find(a=>a.name==='dcm')||firebase.initializeApp(DCM_CFG,'dcm');st.auth=st.app.auth();st.db=st.app.firestore();
- st.auth.onAuthStateChanged(u=>{st.user=u&&!u.isAnonymous?u:null;if(st.user&&isOn())listen();else detach();badge()})}
+ st.auth.onAuthStateChanged(u=>{const next=u&&!u.isAnonymous?u:null;if(st.user?.uid!==next?.uid)detach();st.user=next;if(st.user&&isOn()&&canRun())listen();else detach();badge()})}
 async function connect(){if(!canRun())throw new Error('Sinkron hanya dapat dijalankan Superadmin/PMO/CMO Kemenkeu yang terhubung ke Firestore Modul Transformasi.');
  ensureApp();setOn(true);st.err='';if(!st.user){const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});await st.auth.signInWithPopup(p)}else listen();badge()}
 function disconnect(){setOn(false);detach();st.err='';try{st.auth&&st.auth.signOut()}catch(e){}badge()}
-function detach(){if(st.unsub){st.unsub();st.unsub=null}st.loaded=false;st.dcm.clear()}
-async function listen(){if(st.unsub||!st.user)return;st.err='';
- try{const m=await st.db.collection('dashboard').doc(MIG_DOC).get();let mig=null;try{mig=m.exists?JSON.parse(m.data().value||'null'):null}catch(e){}
-  if(!mig||!mig.done){st.err='Dashboard CM belum memakai penyimpanan per aktivitas (cmActivities). Buka Dashboard CM dengan akun Tim CM sekali agar migrasi otomatis berjalan.';badge();return}st.mig=mig}
- catch(e){st.err=/permission/i.test(e.code||e.message||'')?'Akun Google ini tidak punya akses ke data Dashboard CM.':'Gagal membaca Dashboard CM: '+(e.message||e);badge();return}
- st.unsub=st.db.collection(COLL).onSnapshot(snap=>{snap.docChanges().forEach(ch=>{if(ch.type==='removed'){st.dcm.delete(ch.doc.id);return}const d=ch.doc.data();if(!d||!d.v)return;try{const a=JSON.parse(d.v);if(a&&a.id)st.dcm.set(ch.doc.id,a)}catch(e){}});
-  st.loaded=true;st.err='';kick()},err=>{st.err=/permission/i.test(err.code||err.message||'')?'Akun Google ini tidak punya akses ke koleksi aktivitas Dashboard CM.':'Sinkron terputus: '+(err.message||err);detach();badge()})}
+function detach(){st.epoch++;st.listening=false;clearTimeout(st.timer);st.dirty=false;if(st.unsub){st.unsub();st.unsub=null}st.loaded=false;st.dcm.clear();st.pullFail.clear()}
+async function listen(){if(st.unsub||st.listening||!st.user||!canRun()||!isOn())return;st.err='';st.listening=true;const epoch=st.epoch;
+ try{const m=await st.db.collection('dashboard').doc(MIG_DOC).get({source:'server'});if(epoch!==st.epoch||!canRun()||!isOn())return;let mig=null;try{mig=m.exists?JSON.parse(m.data().value||'null'):null}catch(e){}
+  if(!mig||!mig.done){st.err='Dashboard CM belum memakai penyimpanan per aktivitas (cmActivities). Buka Dashboard CM dengan akun Tim CM sekali agar migrasi otomatis berjalan.';badge();return}st.mig=mig;
+  st.unsub=st.db.collection(COLL).onSnapshot({includeMetadataChanges:true},snap=>{
+   if(epoch!==st.epoch)return;
+   if(snap.metadata.fromCache||snap.metadata.hasPendingWrites){st.loaded=false;badge();return}
+   const next=new Map();let invalid=false;snap.forEach(doc=>{const d=doc.data();try{const a=JSON.parse(d.v);if(!a||!a.id)throw Error('Aktivitas tidak valid');next.set(doc.id,a)}catch(e){invalid=true}});
+   if(invalid){st.loaded=false;st.err='Sinkron dijeda: ada dokumen aktivitas Dashboard CM yang tidak dapat dibaca.';badge();return}
+   st.dcm=next;st.loaded=true;st.err='';kick()
+  },err=>{if(epoch!==st.epoch)return;st.err=/resource-exhausted|quota/i.test(err.code||err.message||'')?'Kuota Firestore Dashboard CM habis; sinkron dijeda.':/permission/i.test(err.code||err.message||'')?'Akun Google ini tidak punya akses ke koleksi aktivitas Dashboard CM.':'Sinkron terputus: '+(err.message||err);detach();badge()});
+ }catch(e){if(epoch!==st.epoch)return;st.err=/resource-exhausted|quota/i.test(e.code||e.message||'')?'Kuota Firestore Dashboard CM habis; sinkron dijeda.':/permission/i.test(e.code||e.message||'')?'Akun Google ini tidak punya akses ke data Dashboard CM.':'Gagal membaca Dashboard CM: '+(e.message||e);badge()}
+ finally{if(epoch===st.epoch)st.listening=false}
+}
 function kick(){st.dirty=true;clearTimeout(st.timer);st.timer=setTimeout(run,1200)}
 const me=()=>(st.user&&st.user.email)||(ME&&ME.email)||'';
 async function writeDcm(a){await st.db.collection(COLL).doc(docId(a.id)).set({v:JSON.stringify(a),updatedAt:a.updatedAt,updatedBy:me()});st.dcm.set(docId(a.id),a)}
@@ -134,7 +141,7 @@ async function pushFiles(x,dcmId){let n=0;for(const [k] of FIELDS){const att=x[k
    await st.db.collection('dashboardImages').doc(ref).set({dataUrl,name:it.nama||'Berkas',mime:it.type||blob.type||'application/octet-stream',activityId:dcmId,createdAt:new Date().toISOString(),sourceApp:'Modul Transformasi'});
    it.sourceRefId=ref;n++}catch(e){console.warn('[Sinkron DCM] berkas MT gagal dikirim',it.nama,e)}}}return n}
 /* tarik berkas DCM yang belum tersimpan di MT */
-async function pullFiles(){if(st.pulling)return;st.pulling=true;let n=0;
+async function pullFiles(){if(st.pulling||!st.loaded||!canRun()||!isOn())return;st.pulling=true;let n=0;
  try{for(const x of (S.oneonone||[])){if(!x.cmDashboardId)continue;for(const [k] of FIELDS){const att=x[k];if(!att||!Array.isArray(att.items))continue;
    for(let i=0;i<att.items.length;i++){const it=att.items[i];if(it.t!=='n'||!it.externalRefId||st.pullFail.has(it.externalRefId))continue;
     try{const d=await st.db.collection('dashboardImages').doc(it.externalRefId).get();if(!d.exists)throw new Error('tidak ada');const v=d.data()||{};const r=await fetch(String(v.dataUrl||''));const blob=await r.blob();
@@ -160,7 +167,7 @@ async function run(){if(st.busy){st.dirty=true;return}if(!st.loaded||!canRun()||
   st.okDel=false;st.pendingDel=null;
   /* 2) jalankan */
   let no=Math.max(0,...[...st.dcm.values()].map(a=>+a.no||0));
-  for(const p of plan){
+  for(const p of plan){if(!canRun()||!isOn()||!st.loaded)return;
    if(p.k==='same'){const s=p.x.cmSync||{};if(s.d!==p.hD||s.m!==p.hM){p.x.cmSync={d:p.hD,m:p.hM,at};changed=true}continue}
    if(p.k==='toMt'||p.k==='newMt'){const x=p.x||{id:'cm-import-'+str(p.a.id).replace(/[^a-zA-Z0-9_-]/g,''),keAkt:true};applyToMt(x,p.a);if(!p.x)mt.push(x);
     x.cmSync={d:hash(canonD(p.a)),m:hash(canonM(x)),at};changed=true;p.k==='newMt'?s0.newMt++:s0.toMt++;continue}
@@ -173,13 +180,13 @@ async function run(){if(st.busy){st.dirty=true;return}if(!st.loaded||!canRun()||
   Object.keys(s0).forEach(k=>st.stats[k]+=s0[k]);st.last=new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});st.err='';
   const moved=s0.toMt+s0.toDcm+s0.newMt+s0.newDcm+s0.del;if(moved)console.info('[Sinkron DCM]',s0);
  }catch(e){st.err='Sinkron gagal: '+(e&&e.message||e);console.warn('[Sinkron DCM]',e)}
- finally{st.busy=false;if(changed){save();if(typeof render==='function')render()}badge();if(st.dirty)kick();else pullFiles()}}
+ finally{st.busy=false;if(changed){save();if(typeof render==='function')render()}badge();if(st.dirty&&st.loaded&&canRun()&&isOn())kick();else if(st.loaded&&canRun()&&isOn())pullFiles()}}
 
 /* ---------- integrasi MT ---------- */
 function hook(){
  if(typeof window.save==='function'&&!window.save.__dcm){const orig=window.save;const w=function(){const r=orig.apply(this,arguments);if(st.loaded&&!st.busy)kick();return r};w.__dcm=1;window.save=w;try{save=w}catch(e){}}
  if(typeof window.remoteRender==='function'&&!window.remoteRender.__dcm){const o=window.remoteRender;const w=function(){if(st.loaded&&!st.busy)kick();return o.apply(this,arguments)};w.__dcm=1;window.remoteRender=w;try{remoteRender=w}catch(e){}}
- if(typeof window.render==='function'&&!window.render.__dcm){const o=window.render;const w=function(){const r=o.apply(this,arguments);try{badge()}catch(e){}return r};w.__dcm=1;window.render=w;try{render=w}catch(e){}}
+ if(typeof window.render==='function'&&!window.render.__dcm){const o=window.render;const w=function(){const r=o.apply(this,arguments);try{if(!canRun()&&(st.unsub||st.listening))detach();else if(canRun()&&isOn()&&st.user&&!st.unsub&&!st.listening&&!st.err)listen();badge()}catch(e){}return r};w.__dcm=1;window.render=w;try{render=w}catch(e){}}
  if(typeof ACT!=='undefined'&&ACT.oneDel&&!ACT.oneDel.__dcm){const o=ACT.oneDel;ACT.oneDel=function(el){const x=(S.oneonone||[]).find(v=>v.id===el.dataset.id);const dId=x&&x.cmDashboardId;const r=o.apply(this,arguments);
    if(dId){const t=setInterval(()=>{if(!(S.oneonone||[]).some(v=>v.cmDashboardId===dId)){clearInterval(t);const t=tombDoc();t.ids=[...new Set([...(t.ids||[]),str(dId)])];save()}},400);setTimeout(()=>clearInterval(t),60000)}return r};ACT.oneDel.__dcm=1}}
 function panel(){const s=status(),on=isOn();const t=st.stats;
@@ -191,7 +198,7 @@ function panel(){const s=status(),on=isOn();const t=st.stats;
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">${on?`<button class="btn" data-dcs="now">Sinkronkan sekarang</button><button class="btn" data-dcs="off">Putuskan</button>`:`<button class="btn pri" data-dcs="on">Hubungkan akun Google Dashboard CM</button>`}</div></div>`;
  const ov=modal('Sinkron Aktivitas Dashboard CM',body,null,null,{size:'sm',cancel:'Tutup'});
  const host=(ov&&ov.querySelector)?ov:document;host.addEventListener('click',async e=>{const b=e.target.closest('[data-dcs]');if(!b)return;const k=b.dataset.dcs;
-  try{if(k==='on'){b.disabled=true;await connect();toast('Terhubung ke Dashboard CM. Sinkron berjalan.')}else if(k==='off'){disconnect();toast('Sinkron Dashboard CM diputus.')}else if(k==='now'){kick()}else if(k==='okdel'){st.okDel=true;kick()}}
+  try{if(k==='on'){b.disabled=true;await connect();toast('Terhubung ke Dashboard CM. Sinkron berjalan.')}else if(k==='off'){disconnect();toast('Sinkron Dashboard CM diputus.')}else if(k==='now'){if(!st.unsub)await listen();else kick()}else if(k==='okdel'){st.okDel=true;kick()}}
   catch(err){toast('Gagal menghubungkan: '+(err&&err.message||err));b.disabled=false}
   document.querySelectorAll('.ov').forEach(o=>{if(o.querySelector('.dcs'))o.remove()});setTimeout(panel,k==='now'||k==='okdel'?1800:300)})}
 function boot(){hook();if(!isOn())return;const go=()=>{if(canRun()){ensureApp();if(st.user)listen()}else setTimeout(go,3000)};go()}

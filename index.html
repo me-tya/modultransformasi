@@ -3826,7 +3826,7 @@ function resetFiltersOnLogin(){
  if(typeof PG!=='undefined')Object.keys(PG).forEach(k=>PG[k]=0);
 }
 
-function renderLogin(err){if(!err&&FB.loginErr){err=FB.loginErr;FB.loginErr=''}
+function renderLogin(err,previousEmail=''){if(!err&&FB.loginErr){err=FB.loginErr;FB.loginErr=''}
  const DU=FB.on?demoUsers():S.users;const demo=ROLES.map(r=>{const us=DU.filter(x=>x.role===r.id&&x.aktif);if(!us.length)return '';return `<details class="dg"><summary><b>${r.nama}</b><span>${us.length} akun ▾</span></summary>${us.map(u=>`<button type="button" data-fill="${esc(u.email)}"><span><b>${esc(u.nama)}</b><br><span style="color:var(--ink-3)">${esc(u.email)}</span></span><em>${esc(u.unit)}${u.sub&&u.sub!==u.nama?' · '+esc(u.sub):''}</em></button>`).join('')}</details>`}).join('');
  $('#root').innerHTML=`<div class="login"><div class="lg-art"><div class="arcs"></div><div class="sun"></div><div class="brand"><span class="glyph"></span><b>satu</b><span>kemenkeu</span></div>
  <h1>Modul Transformasi PMO &amp; CMO</h1><p>Menu Lainnya › Transformasi: portofolio program, WBS, milestone, dan siklus manajemen perubahan dari ADP sampai closing CM.</p>
@@ -3834,25 +3834,27 @@ function renderLogin(err){if(!err&&FB.loginErr){err=FB.loginErr;FB.loginErr=''}
  <div class="lg-side"><form class="lg-card" id="lf" novalidate><h2><span class="glyph" style="border-color:var(--navy)"></span>Masuk Modul Transformasi</h2>
  ${FB.on?`<div class="proto" style="background:var(--info-bg);color:#1B4C93"><b>Terhubung ke Firestore</b> (project ${esc(FB.cfg.projectId)}). Masuk dengan akun yang dibuat Superadmin di Firebase Authentication.</div>`:'<div class="proto"><b>Mode prototipe.</b> Gunakan akun uji di bawah. Jangan memasukkan kata sandi KemenkeuID Anda; pada aplikasi produksi login melalui SSO.</div>'}
  ${err?`<div class="err" role="alert">${esc(err)}</div>`:''}
- <label class="l" for="em">Email Kemenkeu</label><input class="inp" id="em" type="email" autocomplete="off" placeholder="nama@kemenkeu.go.id">
- <label class="l" for="pw">${FB.on?'Kata sandi':'Kata sandi akun uji'}</label><input class="inp" id="pw" type="password" autocomplete="off" placeholder="Kata sandi">
+ <label class="l" for="em">Email Kemenkeu <button type="button" id="lg-change-email" style="float:right;border:0;background:transparent;color:var(--navy);font:inherit;cursor:pointer" hidden>Ganti email</button></label><input class="inp" id="em" name="username" type="email" autocomplete="username" placeholder="nama@kemenkeu.go.id" value="${esc(previousEmail)}">
+ <label class="l" for="pw">${FB.on?'Kata sandi':'Kata sandi akun uji'}</label><input class="inp" id="pw" name="password" type="password" autocomplete="current-password" placeholder="Kata sandi">
  <label style="display:flex;gap:6px;align-items:center;font-size:12.5px"><input type="checkbox" id="pwt"> Tampilkan kata sandi</label>
  <button class="lg-btn" type="submit">MASUK</button>${FB.on?'<button type="button" class="lg-forgot" id="lg-forgot">Lupa kata sandi?</button>':''}
- <div class="demo"><h4>Pilih akun uji · kata sandi ${FB.on?'awal ':''}<span class="mono">${PW}</span></h4><div class="dgs">${demo}</div></div></form></div></div>`;
+ <div class="demo"><h4>${FB.on?'Pilih akun terdaftar · masukkan kata sandi akun Anda':'Pilih akun uji · kata sandi <span class="mono">'+PW+'</span>'}</h4><div class="dgs">${demo}</div></div></form></div></div>`;
  const fg=$('#lg-forgot');if(fg)fg.onclick=()=>accForgot($('#em').value);
- $('#lf').addEventListener('submit',async e=>{e.preventDefault();const em=$('#em').value.trim().toLowerCase(),pw=$('#pw').value;
+ let submitting=false,selectedEmail='';
+ const lockEmail=v=>{selectedEmail=String(v).trim().toLowerCase();const el=$('#em');el.value=selectedEmail;el.readOnly=true;$('#lg-change-email').hidden=false;};
+ $('#lg-change-email').onclick=()=>{selectedEmail='';const el=$('#em');el.readOnly=false;el.value='';$('#pw').value='';$('#lg-change-email').hidden=true;el.focus();};
+ if(previousEmail&&/@kemenkeu\.go\.id$/i.test(previousEmail))lockEmail(previousEmail);
+ $('#lf').addEventListener('submit',async e=>{e.preventDefault();if(submitting)return;const em=selectedEmail||$('#em').value.trim().toLowerCase(),pw=$('#pw').value;
   if(!/^[^@\s]+@kemenkeu\.go\.id$/.test(em))return renderLogin('Alamat email harus berakhiran @kemenkeu.go.id.');
-  if(FB.on){const sp=splashOn('Masuk…');try{
-   /* Akun terdaftar di Pengguna tapi belum punya akun login Firebase: dengan kata sandi awal, buat akun loginnya saat itu juga. */
-   try{await FB.auth.signInWithEmailAndPassword(em,pw)}catch(e0){if(pw===PW&&/invalid-credential|user-not-found|invalid-login/.test(e0.code||'')){try{await FB.auth.createUserWithEmailAndPassword(em,pw)}catch(e1){throw e1.code==='auth/email-already-in-use'?new Error('Akun login '+em+' sudah ada di Firebase, tetapi dengan kata sandi lain (bukan kata sandi awal). Masuk dengan kata sandi yang dulu diisikan, atau hapus akun ini di Firebase Console › Authentication › Users lalu masuk lagi dengan kata sandi awal.'):e1}
-     /* Hanya untuk email yang memang ada di daftar Pengguna; selain itu akun login yang baru dibuat langsung dihapus lagi. */
-     let ok=false;try{ok=(await FB.db.collection('users').doc(em).get()).exists}catch(e2){}
-     if(!ok){try{await FB.auth.currentUser.delete()}catch(e3){try{await FB.auth.signOut()}catch(e4){}}throw new Error('Email '+em+' belum terdaftar di Pengaturan › Pengguna (atau belum tersimpan ke database). Minta Superadmin menambahkannya.')}}else if(/invalid-credential|wrong-password|user-not-found|invalid-login/.test(e0.code||''))throw new Error('Email atau kata sandi salah. Bila akun ini baru ditambahkan, coba kata sandi awal '+PW+'.');else throw e0}
-   const r=await fbAfterAuth();sp.remove();if(r==='bootstrap'){bootstrapUI(em);return}resetFiltersOnLogin();log('Masuk',roleN(ME.role));save();if(!location.hash)location.hash='beranda';readHash();render()}catch(err){sp.remove();renderLogin(fbErr(err))}return}
+  if(!pw)return renderLogin('Masukkan kata sandi.',em);
+  if(FB.on){submitting=true;$('.lg-btn').disabled=true;const sp=splashOn('Masuk…');try{
+   await FB.auth.signInWithEmailAndPassword(em,pw);
+   const r=await fbAfterAuth();sp.remove();if(r==='bootstrap'){bootstrapUI(em);return}resetFiltersOnLogin();log('Masuk',roleN(ME.role));save();if(!location.hash)location.hash='beranda';readHash();render()
+  }catch(err){sp.remove();renderLogin(fbErr(err),em)}finally{submitting=false}return}
   const u=S.users.find(x=>x.email.toLowerCase()===em);if(!u||u.pw!==pw)return renderLogin('Email atau kata sandi akun uji salah.');if(!u.aktif)return renderLogin('Akun nonaktif. Hubungi Superadmin.');
   ME=u;setSess(u.email);resetFiltersOnLogin();log('Masuk',roleN(u.role));save();splash(()=>{if(!location.hash)location.hash='beranda';readHash();render()})});
  $('#pwt').onchange=e=>{$('#pw').type=e.target.checked?'text':'password'};
- document.querySelectorAll('[data-fill]').forEach(b=>b.onclick=()=>{$('#em').value=b.dataset.fill;$('#pw').value=PW;document.querySelectorAll('[data-fill]').forEach(x=>x.style.background='');b.style.background='#E4ECF8';$('.lg-btn').focus()});
+ document.querySelectorAll('[data-fill]').forEach(b=>b.onclick=()=>{lockEmail(b.dataset.fill);$('#pw').value=FB.on?'':PW;document.querySelectorAll('[data-fill]').forEach(x=>x.style.background='');b.style.background='#E4ECF8';$('#pw').focus()});
 }
 function splash(cb){const d=document.createElement('div');d.className='splash';d.innerHTML='<span class="glyph" aria-label="Memuat"></span>';document.body.appendChild(d);setTimeout(()=>{d.remove();cb()},650)}
 
@@ -4049,7 +4051,7 @@ function bellMenu(btn,tk){const draw=()=>{const h=BELL.hidden(),vis=BELL.vis(tk)
   const g=e.target.closest('[data-go]');if(g){m.remove();goTask(g.dataset.go)}}}
 function userMenu(btn){const m=popMenu(btn,`<div class="hd"><b>${esc(ME.nama)}</b><br>${esc(ME.email)}<br>${roleN(ME.role)} · cakupan ${esc(scope())}</div>${STN.some(t=>lv(t[2])!=='-')?'<div class="it" data-m="set">⚙ Pengaturan</div>':''}${dbkVisible()?'<div class="it act-dbk" data-m="dbk">⛁ Data &amp; Backup</div>':''}<div class="it" data-m="pw">Ubah kata sandi</div>${FB.on?'<div class="it" data-m="alt">✉ Email alternatif</div>':''}<div class="it" data-m="out">Keluar</div>`);
  try{const d=m.querySelector('.act-dbk'),st=d&&window.MTDCM&&window.MTDCM.status();if(st){d.dataset.sync=st.k;d.title='Sinkron Dashboard CM: '+st.t}}catch(_){}
- m.onclick=e=>{const k=e.target.dataset.m;if(!k)return;m.remove();if(k==='dbk'){ACT.actDbk(btn);return}if(k==='alt'){accAltEdit();return}if(k==='set'){const st=STN.filter(t=>lv(t[2])!=='-');if(st.length)location.hash=st[0][0];return}if(k==='out'){log('Keluar','');save();if(FB.on){const go2=()=>{FB.unsub.forEach(u=>u());FB.unsub=[];FB.ready=false;FB.last={};S=fsBlank();ME=null;location.hash='';render()};setTimeout(()=>FB.auth.signOut().then(go2,go2),700);return}ME=null;setSess(null);location.hash='';render()}
+ m.onclick=e=>{const k=e.target.dataset.m;if(!k)return;m.remove();if(k==='dbk'){ACT.actDbk(btn);return}if(k==='alt'){accAltEdit();return}if(k==='set'){const st=STN.filter(t=>lv(t[2])!=='-');if(st.length)location.hash=st[0][0];return}if(k==='out'){log('Keluar','');save();if(FB.on){const go2=()=>{FB.unsub.forEach(u=>u());FB.unsub=[];FB.ready=false;mtFileReset();FB.last={};S=fsBlank();ME=null;location.hash='';render()};setTimeout(()=>FB.auth.signOut().then(go2,go2),700);return}ME=null;setSess(null);location.hash='';render()}
   if(k==='pw')modal('Ubah kata sandi',`<div class="fgrid"><div class="fld wide"><label for="np">Kata sandi baru (min. 8 karakter)</label><input id="np" type="password"></div></div>`,'Simpan',()=>{const v=$('#np').value;if(v.length<8){toast('Minimal 8 karakter.');return false}if(FB.on){FB.auth.currentUser.updatePassword(v).then(()=>{log('Ubah kata sandi','');save();toast('Kata sandi diperbarui.')},e=>toast(fbErr(e)));return}ME.pw=v;log('Ubah kata sandi','');save();toast('Kata sandi diperbarui.')},{size:'sm'})}}
 
 /* ======================== event global ======================== */
@@ -8437,7 +8439,7 @@ const IDBF={db:null,open(){return this.db?Promise.resolve(this.db):new Promise((
  async get(id){const db=await this.open();return new Promise((res,rej)=>{const q=db.transaction('f').objectStore('f').get(id);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})},
  async del(id){const db=await this.open();return new Promise(res=>{const t=db.transaction('f','readwrite');t.objectStore('f').delete(id);t.oncomplete=res;t.onerror=res})}};
 const b64of=blob=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]||'');r.onerror=()=>rej(r.error);r.readAsDataURL(blob)});
-async function fileStore(file){const id='f'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);const n=Math.max(1,Math.ceil(file.size/ATT_CH));
+async function fileStore(file){if(FB.on&&!FB.ready)throw new Error('Firestore belum siap; berkas belum disimpan.');const id='f'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);const n=Math.max(1,Math.ceil(file.size/ATT_CH));
  const meta={t:'f',id,nama:file.name,size:file.size,type:file.type||'',n,tgl:TODAY,by:(ME&&ME.nama)||''};
  if(FB.on&&FB.ready){for(let i=0;i<n;i++){const d=await b64of(file.slice(i*ATT_CH,(i+1)*ATT_CH));
    try{await FB.db.collection('files').doc(id+'_'+i).set({fid:id,i,n,d,nama:file.name,type:file.type||'',size:file.size,by:(ME&&ME.email)||'',at:new Date().toISOString()})}
@@ -8445,10 +8447,31 @@ async function fileStore(file){const id='f'+Date.now().toString(36)+Math.random(
  else await IDBF.put(id,file);
  if(/\.(docx|txt)$/i.test(file.name)){try{meta.chars=(await docText(file)).join('\n').replace(/\s+/g,' ').length}catch(e){}}
  return meta}
-async function fileLoad(m){if(FB.on&&FB.ready){const parts=await Promise.all(Array.from({length:m.n||1},(_,i)=>FB.db.collection('files').doc(m.id+'_'+i).get()));
-  if(parts.some(p=>!p.exists))throw new Error('Sebagian isi berkas tidak ditemukan di Firestore.');
-  const bufs=parts.map(p=>{const s=atob(p.data().d);const u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u});return new Blob(bufs,{type:m.type||'application/octet-stream'})}
- const b=await IDBF.get(m.id);if(!b)throw new Error('Berkas tidak ditemukan di peramban ini (mode lokal).');return b}
+// Session-only coalescing and bounded short-lived cache for immutable attachment IDs.
+const mtFileReads=new Map(),mtFileCache=new Map();let mtFileCacheBytes=0,mtFileOwner='';
+function mtFileReset(){mtFileReads.clear();mtFileCache.clear();mtFileCacheBytes=0;mtFileOwner=''}
+function mtFileForget(id){for(const [k,v] of mtFileCache){if(v.id===id){mtFileCache.delete(k);mtFileCacheBytes-=v.blob.size}}}
+async function fileLoad(m){
+ if(FB.on){
+  if(!FB.ready||!FB.auth?.currentUser)throw new Error('Firestore belum siap; berkas tidak dapat dimuat.');
+  const owner=FB.auth.currentUser.uid;if(mtFileOwner!==owner){mtFileReset();mtFileOwner=owner}
+  const key=owner+'::'+m.id+'::'+(m.n||1)+'::'+(m.type||'');
+  const cached=mtFileCache.get(key);if(cached&&cached.until>Date.now())return cached.blob;
+  if(cached){mtFileCache.delete(key);mtFileCacheBytes-=cached.blob.size}
+  if(mtFileReads.has(key))return mtFileReads.get(key);
+  const request=(async()=>{
+   const parts=await Promise.all(Array.from({length:m.n||1},(_,i)=>FB.db.collection('files').doc(m.id+'_'+i).get({source:'server'})));
+   if(!FB.ready||FB.auth?.currentUser?.uid!==owner)throw new Error('Sesi Firestore berubah.');
+   if(parts.some(p=>!p.exists))throw new Error('Sebagian isi berkas tidak ditemukan di Firestore.');
+   const bufs=parts.map(p=>{const s=atob(p.data().d);const u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u});
+   const blob=new Blob(bufs,{type:m.type||'application/octet-stream'});
+   if(blob.size<=16*1024*1024&&mtFileOwner===owner){while(mtFileCache.size>=12||mtFileCacheBytes+blob.size>32*1024*1024){const k=mtFileCache.keys().next().value;if(!k)break;mtFileCacheBytes-=mtFileCache.get(k).blob.size;mtFileCache.delete(k)}mtFileCache.set(key,{id:m.id,blob,until:Date.now()+60000});mtFileCacheBytes+=blob.size}
+   return blob
+  })();mtFileReads.set(key,request);
+  try{return await request}finally{if(mtFileReads.get(key)===request)mtFileReads.delete(key)}
+ }
+ const b=await IDBF.get(m.id);if(!b)throw new Error('Berkas tidak ditemukan di peramban ini (mode lokal).');return b
+}
 async function fileDownload(m){busy('Mengunduh berkas…',m.nama);try{const b=await fileLoad(m);busyOff();const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=m.nama||'berkas';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000)}catch(err){busyOff();toast('Gagal mengunduh: '+(err.message||err))}}
 /* Preview dan cetak berkas (surat undangan): PDF/gambar tampil langsung, Word dirender (docx-preview, cadangan teks), tautan dibuka di tab baru. */
 async function suratPreview(m){if(!m)return;if(m.t==='l'){window.open(m.link,'_blank','noopener');return}if(m.t!=='f'){toast('Isi berkas tidak tersimpan, tidak bisa dipratinjau.');return}
@@ -8464,7 +8487,7 @@ async function suratPreview(m){if(!m)return;if(m.t==='l'){window.open(m.link,'_b
   if(isPdf){try{host.contentWindow.focus();host.contentWindow.print()}catch(err){window.open(url,'_blank')}}
   else{const w=window.open('','_blank');if(!w){toast('Pop-up diblokir. Izinkan pop-up untuk mencetak.');return}const st=[...document.querySelectorAll('style')].filter(x=>x.closest&&!x.closest('head')||/docx/.test(x.textContent.slice(0,200))).map(x=>x.outerHTML).join('');w.document.write('<!doctype html><title>'+esc(m.nama||'Surat')+'</title>'+st+'<style>body{margin:0}@media print{.docx-wrapper{background:none!important;padding:0!important}}</style>'+host.innerHTML);w.document.close();w.focus();setTimeout(()=>w.print(),400)}}});
  new MutationObserver((_,o)=>{if(!ov.isConnected){URL.revokeObjectURL(url);o.disconnect()}}).observe(document.body,{childList:true})}
-async function fileDel(m){if(!m||!m.id)return;if(FB.on&&FB.ready){for(let i=0;i<(m.n||1);i++){try{await FB.db.collection('files').doc(m.id+'_'+i).delete()}catch(e){}}}else await IDBF.del(m.id)}
+async function fileDel(m){if(!m||!m.id)return;mtFileForget(m.id);if(FB.on&&!FB.ready)throw new Error('Firestore belum siap; berkas belum dihapus.');if(FB.on&&FB.ready){for(let i=0;i<(m.n||1);i++){try{await FB.db.collection('files').doc(m.id+'_'+i).delete()}catch(e){}}}else await IDBF.del(m.id)}
 
 /* ===== Impor isian dari dokumen (PPTX, Word, PDF, Excel, TXT): label pada dokumen dicocokkan dengan label isian ===== */
 const DOC_ACCEPT='.docx,.pptx,.pdf,.xlsx,.xls,.csv,.txt';
@@ -11369,7 +11392,7 @@ async function fbInit(){const cfg=fbCfg();if(!cfg)return false;const V='10.12.2'
  if(!window.firebase){for(const m of ['app','auth','firestore']){try{await loadScript(`https://cdn.jsdelivr.net/npm/firebase@${V}/firebase-${m}-compat.js`)}catch(e){await loadScript(`https://www.gstatic.com/firebasejs/${V}/firebase-${m}-compat.js`)}}}
  const app=firebase.apps.find(a=>a.name==='[DEFAULT]')||firebase.initializeApp(cfg);FB.db=app.firestore();FB.auth=app.auth();FB.cfg=cfg;FB.on=true;return true}
 function demoUsers(){try{const c=JSON.parse(localStorage.getItem(KEY+'_demo')||'null');if(c&&c.length)return c}catch(e){}try{const r=JSON.parse(localStorage.getItem(KEY)||'null');if(r&&r.users)return r.users}catch(e){}return seed().users}
-function fbErr(e){const c=(e&&e.code)||'';if(/invalid-credential|wrong-password|user-not-found|invalid-login/.test(c))return 'Email atau kata sandi salah.';if(/too-many-requests/.test(c))return 'Terlalu banyak percobaan. Coba lagi beberapa menit lagi.';if(/permission-denied/.test(c))return 'Ditolak Security Rules Firestore. Periksa peran akun dan rules.';if(/network|unavailable/.test(c))return 'Tidak dapat menghubungi Firebase. Periksa koneksi.';if(/weak-password/.test(c))return 'Kata sandi minimal 6 karakter.';if(/requires-recent-login/.test(c))return 'Keluar lalu masuk lagi sebelum mengubah kata sandi.';return (e&&e.message)||String(e)}
+function fbErr(e){const c=(e&&e.code)||'';if(/resource-exhausted|quota-exceeded/i.test(c)||/quota exceeded|daily usage limits/i.test((e&&e.message)||''))return 'Kuota Firestore harian habis. Jangan ulangi login atau simpan data hingga kuota tersedia kembali.';if(/invalid-credential|wrong-password|user-not-found|invalid-login/.test(c))return 'Email atau kata sandi salah.';if(/too-many-requests/.test(c))return 'Terlalu banyak percobaan. Coba lagi beberapa menit lagi.';if(/permission-denied/.test(c))return 'Ditolak Security Rules Firestore. Periksa peran akun dan rules.';if(/network|unavailable/.test(c))return 'Tidak dapat menghubungi Firebase. Periksa koneksi.';if(/weak-password/.test(c))return 'Kata sandi minimal 6 karakter.';if(/requires-recent-login/.test(c))return 'Keluar lalu masuk lagi sebelum mengubah kata sandi.';return (e&&e.message)||String(e)}
 function fsBlank(){let ui;try{ui=JSON.parse(localStorage.getItem(KEY+'_ui')||'null')}catch(e){}const b={v:6,av:2,cfg:{rep:9,pdmp:true},ui:ui||seed().ui,akses:{},log:[]};FS_ARR.forEach(c=>b[c]=b[c]||[]);FS_MAP.forEach(c=>b[c]={});return b}
 const fsId=(c,x)=>c==='users'?String(x.email).toLowerCase():String(x.id);
 function fsDocs(){const out={};FS_ARR.forEach(c=>{out[c]={};const arr=S[c]||[];let mx=arr.reduce((m,x)=>Math.max(m,x._o||0),0);
@@ -11391,9 +11414,9 @@ async function fsFlush(){const cur=fsDocs(),ops=[],next={},skip=[];
  const commit=async L=>{const b=FB.db.batch();L.forEach(([k,c,id,d])=>{const r=FB.db.collection(c).doc(id);k==='set'?b.set(r,d):b.delete(r)});await Promise.race([b.commit(),new Promise((_,rj)=>setTimeout(()=>rj(Object.assign(new Error('Tidak ada respons dari Firebase selama 2 menit. Kemungkinan jaringan (kantor/VPN) memblokir Firestore. Coba jaringan lain, lalu ulangi.'),{code:'timeout'})),120000))])};
  const fails=[];
  try{for(let i=0;i<ops.length;i+=400){const sp=document.querySelector('.splash span:last-child');if(sp)sp.textContent='Mengunggah ke Firestore… '+Math.min(i+400,ops.length).toLocaleString('id-ID')+' dari '+ops.length.toLocaleString('id-ID')+' dokumen · jangan tutup halaman';if(FB.done)busy('Menyimpan ke Firestore…',`${Math.min(i+400,ops.length).toLocaleString('id-ID')} dari ${ops.length.toLocaleString('id-ID')} perubahan · jangan tutup halaman`,80+i/ops.length*20);const part=ops.slice(i,i+400);
-   try{await commit(part)}catch(e){if(e&&e.code==='timeout')throw e;
+   try{await commit(part)}catch(e){if(e&&/timeout|resource-exhausted|unavailable|deadline-exceeded|unauthenticated|cancelled/i.test(e.code||''))throw e;
     /* Satu dokumen bermasalah tidak boleh menggagalkan perubahan lain: ulangi per dokumen. */
-    for(const op of part){try{await commit([op])}catch(e2){if(e2&&e2.code==='timeout')throw e2;fails.push({c:op[1],id:op[2],msg:fbErr(e2)})}}}}
+    for(const op of part){try{await commit([op])}catch(e2){if(e2&&/timeout|resource-exhausted|unavailable|deadline-exceeded|unauthenticated|cancelled/i.test(e2.code||''))throw e2;fails.push({c:op[1],id:op[2],msg:fbErr(e2)})}}}}
   keepLast(fails.concat(sk));const bad=fails.map(f=>f.c+'/'+f.id+' — '+f.msg).concat(skip);
   if(bad.length){FB.st='Sebagian gagal';FB.err=bad.join('; ');console.warn('Firestore: dokumen gagal disimpan',fails,skip);toast('Sebagian besar perubahan tersimpan, tetapi '+bad.length+' dokumen gagal: '+bad.slice(0,2).join('; ')+(bad.length>2?' …':''))}
   else{FB.st='Tersimpan ke Firestore';FB.err=''}
@@ -11416,19 +11439,25 @@ function fsOneQuery(){const m=FB.me||{},r=m.role,col=FB.db.collection('oneonone'
  if(['PMOU','CMOU'].includes(r))return m.unit?col.where('ownGrp','==','unit').where('ownUnit','==',m.unit):null;
  if(r==='TIM'){const mk=(m.modules||[]).slice(0,30);return mk.length?col.where('modKeys','array-contains-any',mk):null}
  return null}
-function fsListen(){FB.unsub.forEach(u=>u());FB.unsub=[];const cols=[...FS_ARR,...FS_MAP,'config'];let pending=cols.length;
- return new Promise(res=>{cols.forEach(c=>{let first=true;const q=c==='log'?FB.db.collection('log').orderBy('_o','desc').limit(400):c==='oneonone'?fsOneQuery():FB.db.collection(c);
-  if(!q){applyCol(c,{});if(--pending===0)res();return}
-  if(c==='oneonone'&&!['SA','PMOK','CMOK','KETUA','KAPUS','SEKPIM'].includes((FB.me||{}).role))FB.unsub.push(FB.db.collection('oneonone').doc('pub-tim').onSnapshot(d=>{S.pubTim=d.exists?d.data():null;remoteRender()},()=>{}));
-  FB.unsub.push(q.onSnapshot(snap=>{const docs={};snap.forEach(d=>docs[d.id]=d.data());const ch=applyCol(c,docs);if(first){first=false;if(--pending===0)res()}else if(ch&&!snap.metadata.hasPendingWrites)remoteRender()},
-   err=>{FB.err=fbErr(err);setDbBadge();if(first){first=false;if(--pending===0)res()}}))})})}
+function fsListen(){FB.unsub.forEach(u=>u());FB.unsub=[];const cols=[...FS_ARR,...FS_MAP,'config'];let pending=cols.length,failed=false,initial=true,timer;
+ return new Promise((res,rej)=>{
+  const stop=err=>{if(failed)return;failed=true;clearTimeout(timer);clearTimeout(FB.timer);FB.unsub.forEach(u=>u());FB.unsub=[];FB.ready=false;FB.err=fbErr(err);FB.st='Sinkron terhenti';setDbBadge();if(initial)rej(err);else toast('Sinkron Firestore terhenti: '+FB.err+'. Muat ulang setelah koneksi/kuota pulih; jangan lanjut mengubah data.');};
+  const done=()=>{if(--pending===0&&!failed){initial=false;clearTimeout(timer);res()}};
+  timer=setTimeout(()=>stop(Object.assign(new Error('Firestore belum memberikan snapshot server lengkap.'),{code:'unavailable'})),45000);
+  cols.forEach(c=>{if(failed)return;let first=true;const q=c==='log'?FB.db.collection('log').orderBy('_o','desc').limit(400):c==='oneonone'?fsOneQuery():FB.db.collection(c);
+   if(!q){applyCol(c,{});done();return}
+   if(c==='oneonone'&&!['SA','PMOK','CMOK','KETUA','KAPUS','SEKPIM'].includes((FB.me||{}).role))FB.unsub.push(FB.db.collection('oneonone').doc('pub-tim').onSnapshot(d=>{if(failed||d.metadata?.fromCache)return;S.pubTim=d.exists?d.data():null;remoteRender()},()=>{}));
+   FB.unsub.push(q.onSnapshot({includeMetadataChanges:true},snap=>{if(failed||snap.metadata.fromCache||(first&&snap.metadata.hasPendingWrites))return;const docs={};snap.forEach(d=>docs[d.id]=d.data());const ch=applyCol(c,docs);if(first){first=false;done()}else if(ch&&!snap.metadata.hasPendingWrites)remoteRender()},stop))
+  })
+ })
+}
 function remoteRender(){clearTimeout(FB.rt);FB.rt=setTimeout(()=>{const a=document.activeElement;if(document.querySelector('.ov,.menu')||(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))){remoteRender();return}if(ME)render()},400)}
-function setDbBadge(){const b=document.getElementById('dbb');if(b)b.textContent=(FB.err&&FB.st==='Gagal menyimpan'?'⚠ ':'● ')+(FB.st||'Firestore')}
+function setDbBadge(){const b=document.getElementById('dbb');if(b){b.textContent=(FB.err?'⚠ ':'● ')+(FB.st||'Firestore');b.title=FB.err||'Status sinkronisasi Firestore'}}
 async function fbAfterAuth(){const email=FB.auth.currentUser.email.toLowerCase();if(!/@kemenkeu\.go\.id$/.test(email)){await FB.auth.signOut();throw new Error('Gunakan email @kemenkeu.go.id.')}
- let ud=null;try{ud=await FB.db.collection('users').doc(email).get()}catch(e){}
- if(!ud||!ud.exists){let c=null;try{c=await FB.db.collection('config').doc('akses').get()}catch(e){}if(c&&!c.exists)return 'bootstrap';await FB.auth.signOut();throw new Error('Akun ini belum terdaftar di Modul Transformasi. Hubungi Superadmin.')}
- if(ud.data().aktif===false){await FB.auth.signOut();throw new Error('Akun nonaktif. Hubungi Superadmin.')}
- FB.me=Object.assign({email},ud.data());await fsListen();FB.ready=true;FB.st='Tersambung';ME=S.users.find(u=>u.email.toLowerCase()===email)||null;if(!ME)throw new Error('Data pengguna tidak terbaca dari Firestore.');return 'ok'}
+ const ud=await FB.db.collection('users').doc(email).get({source:'server'});
+ if(!ud.exists){const c=await FB.db.collection('config').doc('akses').get({source:'server'});if(!c.exists)return 'bootstrap';await FB.auth.signOut();throw new Error('Akun ini belum terdaftar di Modul Transformasi. Hubungi Superadmin.')}
+ if(ud.data().aktif!==true){await FB.auth.signOut();throw new Error('Akun nonaktif. Hubungi Superadmin.')}
+ FB.ready=false;mtFileReset();FB.last={};S=fsBlank();FB.me=Object.assign({email},ud.data());await fsListen();ME=S.users.find(u=>u.email.toLowerCase()===email)||null;if(!ME){FB.unsub.forEach(u=>u());FB.unsub=[];FB.ready=false;throw new Error('Data pengguna tidak terbaca dari Firestore.')}FB.ready=true;FB.err='';FB.st='Tersambung';return 'ok'}
 function bootstrapUI(email){let local=false;try{const r=JSON.parse(localStorage.getItem(KEY)||'null');local=!!(r&&r.v===6)}catch(e){}
  modal('Isi database Firestore',`<p style="margin:0 0 8px">Database Firestore project <b>${esc(FB.cfg.projectId)}</b> masih kosong.</p><p style="margin:0 0 8px">Data yang akan diunggah: <b>${local?'data di peramban ini (termasuk perubahan Anda)':'data awal (WBS Kompilasi 930 item + kertas kerja CM)'}</b>. Akun <b>${esc(email)}</b> menjadi Superadmin.</p><p class="s" style="margin:0">Sekitar 1.200 dokumen, satu kali saja.</p>`,'Isi database',()=>{doBootstrap(email)},{cancel:'Batal',size:'sm'})}
 async function doBootstrap(email){const sp=splashOn('Mengisi database Firestore…');try{let base=null;try{const r=JSON.parse(localStorage.getItem(KEY)||'null');if(r&&r.v===6)base=r}catch(e){}
