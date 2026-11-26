@@ -101,6 +101,16 @@ await t('Tim lain tidak bisa mengubah kegiatan tim M1', assertFails(updateDoc(do
 
 await t('Tim M1 membaca ringkasan pendamping (pub-tim)', assertSucceeds(getDoc(doc(as('tim'), 'oneonone', 'pub-tim'))));
 
+console.log('Akun @kemenkeu belum terdaftar (VT C1)');
+const asx = env.authenticatedContext('asing', { email: 'asing@kemenkeu.go.id' }).firestore();
+await t('Akun belum terdaftar tidak bisa membaca daftar pengguna', assertFails(getDocs(collection(asx, 'users'))));
+await t('Akun belum terdaftar tidak bisa membaca pengguna lain', assertFails(getDoc(doc(asx, 'users', mail('pmok')))));
+await t('Akun belum terdaftar membaca dokumen dirinya sendiri', assertSucceeds(getDoc(doc(asx, 'users', 'asing@kemenkeu.go.id'))));
+await t('Akun belum terdaftar membaca config/akses', assertSucceeds(getDoc(doc(asx, 'config', 'akses'))));
+await t('Akun belum terdaftar tidak bisa membaca config lain', assertFails(getDoc(doc(asx, 'config', 'cfg'))));
+await t('Akun aktif membaca daftar pengguna', assertSucceeds(getDocs(collection(as('pmouDjkn'), 'users'))));
+await t('Akun nonaktif tidak bisa membaca daftar pengguna', assertFails(getDocs(collection(as('nonaktif'), 'users'))));
+
 console.log('Tanpa login');
 await t('Tanpa login ditolak', assertFails(getDocs(col(env.unauthenticatedContext().firestore()))));
 await t('Tanpa login tidak bisa membaca pub-tim', assertFails(getDoc(doc(env.unauthenticatedContext().firestore(), 'oneonone', 'pub-tim'))));

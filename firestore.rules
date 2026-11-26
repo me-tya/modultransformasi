@@ -11,7 +11,8 @@ service cloud.firestore {
     // Pengguna: dibaca semua akun aktif; dikelola Superadmin.
     // Pengecualian: saat database masih kosong, akun pertama boleh mendaftarkan dirinya sebagai Superadmin.
     match /users/{email} {
-      allow read: if signedIn();
+      // VT C1: daftar pengguna hanya dibaca akun aktif; akun @kemenkeu yang belum terdaftar hanya dapat membaca dokumennya sendiri.
+      allow read: if aktif() || (signedIn() && email == request.auth.token.email);
       allow create: if role(['SA']) || (signedIn() && kosong() && email == request.auth.token.email && request.resource.data.role == 'SA');
       allow update, delete: if role(['SA']);
       // Pengguna boleh mengubah Email alternatif miliknya sendiri (untuk reset kata sandi), tanpa mengubah kolom lain.
@@ -19,7 +20,8 @@ service cloud.firestore {
                     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['emailAlt']);
     }
     match /config/{id} {
-      allow read: if signedIn();
+      // VT C1: konfigurasi hanya dibaca akun aktif; 'akses' tetap terbaca saat login untuk pemeriksaan awal.
+      allow read: if aktif() || (signedIn() && id == 'akses');
       allow write: if role(['SA']);
     }
     // Aktivitas & Kalender (koleksi oneonone) — dibaca/ditulis sesuai pemilik dokumen.

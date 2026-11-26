@@ -1,0 +1,13 @@
+# GitHub Pages: jangan sajikan berkas internal (hasil VT F1).
+exclude:
+  - tests
+  - scripts
+  - cloudflare
+  - README.md
+  - P0_SECURITY_FIRESTORE.md
+  - FIRESTORE_AKTIVITAS.md
+  - firestore.rules
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
