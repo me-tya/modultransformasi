@@ -254,7 +254,7 @@ function programReportModel(p){
 /* Margin dokumen Project Selection mengikuti RKMK (Lampiran Batang Tubuh RKMK Peta Rencana SPBE):
    atas 2,54 cm · kanan 1,78 cm · bawah 2,03 cm · kiri 2,29 cm (twips). */
 const RKMK_PAGE={top:1440,right:1008,bottom:1152,left:1296,header:709,footer:706};
-async function assertOfficialWordTemplate(blob){
+async function assertOfficialWordTemplate(blob,expectedPage){
  const zip=await window.JSZip.loadAsync(blob),xml=await zip.file('word/document.xml')?.async('string');
  if(!xml)throw new Error('Dokumen Word tidak mempunyai konten.');
  const dom=new DOMParser().parseFromString(xml,'application/xml');
@@ -265,6 +265,15 @@ async function assertOfficialWordTemplate(blob){
  if(Number(attr(page,'w'))!==11906||Number(attr(page,'h'))!==16838||!((left===794&&right===794)||(left===RKMK_PAGE.left&&right===RKMK_PAGE.right))||
     !zip.file('word/styles.xml'))
   throw new Error('Template Word tidak sesuai format laporan resmi A4; unduhan dibatalkan untuk mencegah layout rusak.');
+ if(expectedPage){
+  const sections=Array.from(dom.getElementsByTagNameNS('*','sectPr'));
+  for(const section of sections){
+   const m=section.getElementsByTagNameNS('*','pgMar')[0],p=section.getElementsByTagNameNS('*','pgSz')[0];
+   if(Number(attr(p,'w'))!==11906||Number(attr(p,'h'))!==16838||
+      Object.keys(expectedPage).some(k=>Number(attr(m,k))!==expectedPage[k])||
+      Number(attr(m,'gutter')||0)!==0)throw Error('Margin dokumen tidak sesuai pengaturan A4.');
+  }
+ }
  return blob;
 }
 
@@ -293,13 +302,35 @@ function psNarrativeWordXml(xml){
  }
  return changed?new XMLSerializer().serializeToString(dom):xml;
 }
+/* Word regenerates TOC fields using the paragraph styles, not the cached
+   paragraph tab stops. Keep both bound to the printable page width. */
+function psWordTocStyles(xml,page){
+ const width=11906-page.left-page.right;
+ const dom=new DOMParser().parseFromString(xml,'application/xml');
+ if(dom.querySelector('parsererror'))throw Error('Struktur gaya Word tidak valid.');
+ const ids=new Set(['TOC1','TOC2','TableofFigures']);
+ for(const style of Array.from(dom.getElementsByTagNameNS(PS_WORD_NS,'style'))){
+  if(!ids.has(style.getAttributeNS(PS_WORD_NS,'styleId')))continue;
+  for(const tab of Array.from(style.getElementsByTagNameNS(PS_WORD_NS,'tab'))){
+   if(tab.getAttributeNS(PS_WORD_NS,'val')==='right')tab.setAttributeNS(PS_WORD_NS,'w:pos',String(width));
+  }
+ }
+ return new XMLSerializer().serializeToString(dom);
+}
 async function psNarrativeDocx(model){
- const blob=await mtRptDocx(model);if(!model.justifyNarrative)return blob;
+ const blob=await mtRptDocx(model);
+ if(!model.justifyNarrative&&!model.page)return blob;
  const zip=await window.JSZip.loadAsync(blob),part=zip.file('word/document.xml');
  if(!part)throw Error('Dokumen Word tidak mempunyai konten.');
- const xml=await part.async('string'),next=psNarrativeWordXml(xml);
- if(next===xml)return blob;
- zip.file('word/document.xml',next);
+ if(model.justifyNarrative){
+  const xml=await part.async('string'),next=psNarrativeWordXml(xml);
+  if(next!==xml)zip.file('word/document.xml',next);
+ }
+ if(model.page){
+  const styles=zip.file('word/styles.xml');
+  if(!styles)throw Error('Gaya dokumen Word tidak tersedia.');
+  zip.file('word/styles.xml',psWordTocStyles(await styles.async('string'),model.page));
+ }
  return zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',compression:'DEFLATE'});
 }
 function psNarrativeHtml(model){
@@ -315,32 +346,60 @@ function psPdfJustifiedLine(pdf,text,x,y,width,justify){
  let at=x;words.forEach((word,i)=>{pdf.text(word,at,y);at+=lengths[i]+gap});
 }
 
-/* Resolve page references from the actual paginated DOCX preview.
-   The downloaded DOCX contains native TOC fields and Word refreshes them on open.
-   The browser preview needs to fill the cached page-number display separately. */
+/* docx-preview splits only at explicit page/section breaks. A rendered
+   section can contain many physical A4 pages. Estimate physical page numbers
+   from the rendered body height, rather than counting section elements.
+   Word remains the authoritative pagination engine. */
+function psPreviewPageAt(offset,height){return Math.max(0,Math.floor(Math.max(0,offset)/height))}
 function annotateDocxTocPages(target,model){
  if(!model?.formal||model.toc===false)return;
- const pages=[...target.querySelectorAll('section.docx,.docx-wrapper > .docx')];
+ const pages=[...target.querySelectorAll('section.docx')];
  if(!pages.length)return;
- const entries=(model.blocks||[]).filter(b=>b.t==='h1'||b.t==='h2');
- const normalize=s=>String(s||'').replace(/\\s+/g,' ').trim().toLowerCase();
- const all=pages.flatMap((page,index)=>[...page.querySelectorAll('p')].map(p=>({p,page:index+1,text:normalize(p.textContent)})));
- const used=new Set();
- entries.forEach(b=>{
-  const label=normalize(b.text);
-  if(!label)return;
-  // Pick the final matching paragraph: earlier matches are TOC field cache.
-  const heading=[...all].reverse().find(x=>x.text.includes(label)&&x.text.length<label.length+22&&!used.has(x.p));
-  if(!heading)return;
-  used.add(heading.p);
-  const toc=all.find(x=>x.page<heading.page&&x.text.includes(label)&&x.text.length<label.length+22);
-  if(!toc||toc.p.querySelector('[data-toc-page]'))return;
+ const pg=Object.assign({top:794,bottom:907},model.page||{});
+ const height=(16838-pg.top-pg.bottom)/15; // twips to CSS px
+ const normalize=t=>String(t||'').replace(/\s+/g,' ').trim().toLowerCase();
+ const key=t=>normalize(t).replace(/^(\d+(?:\.\d+)?)\s*/,'$1 ');
+ const headings=new Map(),toc=[];
+ let pageBase=1;
+ for(const page of pages){
+  const body=page.querySelector(':scope > article');
+  if(!body)continue;
+  const rect=body.getBoundingClientRect();
+  if(!rect.width)continue;
+  const scale=rect.width/(body.offsetWidth||rect.width);
+  let extent=0;
+  for(const child of body.children){
+   const box=child.getBoundingClientRect();
+   extent=Math.max(extent,(box.bottom-rect.top)/scale);
+  }
+  for(const p of body.querySelectorAll('p,h1,h2')){
+   const cls=String(p.className||'').toLowerCase();
+   const label=key(p.textContent);
+   if(!label)continue;
+   if(/(?:^|[\s_-])toc[12](?:$|\s)/.test(cls)){toc.push({p,label});continue}
+   if(!/(?:^|[\s_-])heading[12](?:$|\s)/.test(cls)&&!/^h[12]$/i.test(p.tagName))continue;
+   const offset=(p.getBoundingClientRect().top-rect.top)/scale;
+   headings.set(label,pageBase+psPreviewPageAt(offset,height));
+  }
+  const count=Math.max(1,Math.ceil(Math.max(0,extent-1)/height));
+  // PAGE field caches in this renderer are not evaluated by Microsoft Word.
+  for(const footer of page.querySelectorAll(':scope > footer')){
+   const walker=document.createTreeWalker(footer,NodeFilter.SHOW_TEXT);
+   let n;while((n=walker.nextNode())){
+    if(/^\s*\d+\s*$/.test(n.nodeValue||''))n.nodeValue=count===1?'≈'+pageBase:'≈'+pageBase+'–'+(pageBase+count-1);
+    else n.nodeValue=(n.nodeValue||'').replace(/(Halaman|Page)\s+\d+\s*$/i,(_,label)=>label+' ≈'+pageBase+(count>1?'–'+(pageBase+count-1):''));
+   }
+  }
+  pageBase+=count;
+ }
+ for(const {p,label} of toc){
   const number=document.createElement('span');
   number.dataset.tocPage='true';
-  number.textContent=String(heading.page);
-  number.style.cssText='float:right;font-weight:600;color:#172e52;background:#fff;padding-left:8px;margin-left:10px';
-  toc.p.appendChild(number);
- });
+  number.textContent=headings.has(label)?'≈'+headings.get(label):'—';
+  number.title='Perkiraan halaman pratinjau; Word memperbarui daftar isi sesuai pagination aktual.';
+  number.style.cssText='float:right;font-weight:600;color:#172e52;background:#fff;padding-left:6px;margin-left:6px';
+  p.appendChild(number);
+ }
 }
 
 /* Faithful preview: render the actual DOCX package/PDF blob generated by the
@@ -358,14 +417,21 @@ async function showActualDocumentPreview(root,model,format){
    await load('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',()=>!!window.JSZip);
    await load(ACTUAL_DOCX_URL,()=>!!window.docx?.renderAsync);
    if(typeof mtRptDocx!=='function')throw new Error('Pembuat laporan DOCX belum tersedia.');
-   const blob=await assertOfficialWordTemplate(await psNarrativeDocx(model));if(!alive())return false;
+   const blob=await assertOfficialWordTemplate(await psNarrativeDocx(model),model.page);if(!alive())return false;
    const target=document.createElement('div');target.className='psbank-actual-docx';
    await window.docx.renderAsync(blob,target,null,{
     breakPages:true,ignoreWidth:false,ignoreHeight:false,
     useBase64URL:true,renderHeaders:true,renderFooters:true
    });if(!alive())return false;
-   node.replaceChildren(target);
-   annotateDocxTocPages(target,model);
+   const note=document.createElement('small');
+   note.style.cssText='display:block;padding:6px 10px;color:#52647b;background:#f4f7fb;border-bottom:1px solid #dce5ef;font-size:11px';
+   note.textContent='Nomor halaman bertanda ≈ merupakan perkiraan pratinjau. Nomor final dihitung Microsoft Word saat daftar isi diperbarui.';
+   if(model.formal&&model.toc!==false)node.replaceChildren(note,target);else node.replaceChildren(target);
+   if(model.formal&&model.toc!==false){
+    // Final report preview can initially be hidden; defer measurement to its visible frame.
+    const measure=()=>{if(!alive())return;target.querySelectorAll('[data-toc-page]').forEach(el=>el.remove());annotateDocxTocPages(target,model)};
+    requestAnimationFrame(measure);
+   }
    // Fit every Word page into the preview pane without changing the actual A4
    // geometry; the same blob is downloaded and rendered by docx-preview.
    const fitPage=()=>{
@@ -717,7 +783,7 @@ async function exportFile(p){
    }
    await load('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',()=>!!window.JSZip);
    const model=programReportModel(p);
-   const blob=await assertOfficialWordTemplate(await psNarrativeDocx(model));
+   const blob=await assertOfficialWordTemplate(await psNarrativeDocx(model),model.page);
    mtRptDownloadBlob(blob,file+'.docx');
   }else if(d.format==='pdf'){
    await exportFormalPdf(programReportModel(p),file+'.pdf');
@@ -1050,7 +1116,7 @@ async function portfolioExport(){
   if(d.format==='word'){
    if(typeof mtRptDocx!=='function'||typeof mtRptDownloadBlob!=='function')throw new Error('Mesin laporan Word Project Management belum tersedia.');
    if(typeof window.JSZip==='undefined')await load('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',()=>!!window.JSZip);
-   const blob=await assertOfficialWordTemplate(await psNarrativeDocx(model));
+   const blob=await assertOfficialWordTemplate(await psNarrativeDocx(model),model.page);
    mtRptDownloadBlob(blob,file+'.docx');
   }else if(d.format==='pdf'){
    await exportFormalPdf(portfolioModel(),file+'.pdf');
