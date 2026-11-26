@@ -295,8 +295,8 @@ const cloudKka=()=>typeof FB!=='undefined'&&FB.on;
 const kkaAccount=()=>cloudKka()&&FB.auth?.currentUser?.email?String(FB.auth.currentUser.email).toLowerCase():'';
 const kkaOutboxKey=y=>{const a=kkaAccount();return a?'mt_kka_import_v1:'+FB.cfg.projectId+':'+a+':'+y:''};
 const pendingMem=new Map(),pendingBusy=new Set(),pendingErrors=new Map();
-function pendingImport(y){const k=kkaOutboxKey(y);if(!k)return null;try{const raw=localStorage.getItem(k);return raw?JSON.parse(raw):pendingMem.get(k)||null}catch(_){return pendingMem.get(k)||null}}
-function queueImport(y,ops){const k=kkaOutboxKey(y);if(!k)throw Error('Login Firebase belum siap. Masuk ulang sebelum impor.');if(pendingImport(y))throw Error('Masih ada impor tertunda. Sinkronkan cadangan tersebut dahulu.');const job={id:uid(),year:+y,ops,createdAt:new Date().toISOString()};localStorage.setItem(k,JSON.stringify(job));pendingMem.set(k,job);return job}
+function pendingImport(y){const k=kkaOutboxKey(y);if(!k)return null;try{const raw=localStorage.getItem(k);return raw?JSON.parse(raw):null}catch(_){return pendingMem.get(k)||null}}
+function queueImport(y,ops){const k=kkaOutboxKey(y);if(!k)throw Error('Login Firebase belum siap. Masuk ulang sebelum impor.');if(localStorage.getItem(k)!==null||pendingImport(y))throw Error('Masih ada impor tertunda. Sinkronkan cadangan tersebut dahulu.');const job={id:uid(),year:+y,ops,createdAt:new Date().toISOString()};localStorage.setItem(k,JSON.stringify(job));pendingMem.set(k,job);return job}
 const cloneKka=v=>JSON.parse(JSON.stringify(v));
 const sameKka=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const importNameKey=v=>nk(T(v).replace(/^Satu\s+Kemenkeu\s*[/|:–—-]\s*/i,''));
@@ -310,6 +310,10 @@ function mergeImport(doc,job){
  }
  out.year=job.year;out.updatedAt=job.createdAt;return out;
 }
+function mergeImportOnce(doc,job){
+ if(Array.isArray(doc?.importReceipts)&&doc.importReceipts.includes(job.id))return {data:doc,write:false};
+ const data=mergeImport(doc,job);data.importReceipts=[...(Array.isArray(data.importReceipts)?data.importReceipts:[]),job.id].slice(-64);return {data,write:true};
+}
 function pendingBanner(y){if(!cloudKka()||!canCfg())return '';const k=kkaOutboxKey(y),job=pendingImport(y),running=pendingBusy.has(k),err=pendingErrors.get(k);
  if(!job&&!FB_DENIED())return '';
  return '<div class="kka-syncnotice" role="status"><div><b>'+(job?(running?'Sedang menyimpan ke Firebase…':'Impor Non-ISTK belum terkonfirmasi Firebase'):'Koleksi Non-ISTK belum dapat dibaca dari Firebase')+'</b><small>'+(job?job.ops.length+' baris tersimpan sebagai cadangan di browser ini. '+E(err||'Data baru akan masuk daftar resmi setelah Firebase mengonfirmasi. Jangan hapus data browser.'):'Periksa Security Rules psKka di Pengaturan › Database. Impor dapat dicadangkan lokal sampai akses pulih.')+'</small>'+(job?'<small><b>Pending Sync (lokal):</b> '+job.ops.slice(0,8).map(op=>E(op.name||op.psOriginRef||op.id)).join(' · ')+(job.ops.length>8?' · +'+(job.ops.length-8)+' lainnya':'')+'</small>':'')+'</div>'+(job?'<button type="button" class="btn btn-sm" data-kka-draft>Unduh cadangan JSON</button><button type="button" class="btn btn-sm pri" data-kka-retry '+(running||!FB.ready||(typeof fsQuotaBlocked==='function'&&fsQuotaBlocked())?'disabled':'')+'>Coba sinkronkan</button>':'')+'</div>'
@@ -317,25 +321,24 @@ function pendingBanner(y){if(!cloudKka()||!canCfg())return '';const k=kkaOutboxK
 async function syncImport(y){
  const key=kkaOutboxKey(y),job=pendingImport(y);if(!key||!job||pendingBusy.has(key))return false;
  if(!canCfg()||!FB.db||!FB.ready||(typeof fsQuotaBlocked==='function'&&fsQuotaBlocked())){say('Firebase belum siap atau akun tidak berhak. Cadangan tetap tersedia.');return false}
- pendingBusy.add(key);pendingErrors.delete(key);render();
- try{
-  const id=NONK(y),ref=FB.db.collection('psKka').doc(id);
-  const account=kkaAccount(),prev=FB.last?.psKka?.[id];
-  const result=await FB.db.runTransaction(async tx=>{const snap=await tx.get(ref);const d=mergeImport(snap.exists?snap.data():null,job);
-   const bytes=new TextEncoder().encode(JSON.stringify(d)).length;if(bytes>900000)throw Error('Dokumen Non-ISTK mendekati batas 1 MB Firestore. Cadangan aman; perlu pemecahan dokumen sebelum impor.');
-   tx.set(ref,d);return d});
-  /* The transaction promise resolves only after server commit. Keep the listener's newer state if it already advanced. */
-  if(kkaAccount()===account){FB.last.psKka=FB.last.psKka||{};if(FB.last.psKka[id]===prev||FB.last.psKka[id]===stab(result)){store()[id]=result;FB.last.psKka[id]=stab(result)}
-   if(FB.optDenied?.psKka){say('Impor tersimpan di Firebase. Muat ulang untuk menyambungkan kembali listener psKka.')}else say('Impor Non-ISTK berhasil tersimpan di Firebase ('+job.ops.length+' baris).')}
-  const active=pendingImport(y);if(kkaAccount()===account&&active?.id===job.id){localStorage.removeItem(key);pendingMem.delete(key)}
-  return true;
- }catch(e){const msg=typeof fbErr==='function'?fbErr(e):String(e.message||e);pendingErrors.set(key,msg);say('Impor Non-ISTK belum tersimpan di Firebase: '+msg+'. Cadangan tetap tersedia.');return false}
+ const db=FB.db,last=FB.last,owner=FB.auth?.currentUser?.uid;
+ const sameSession=()=>kkaOutboxKey(y)===key&&FB.db===db&&FB.last===last&&FB.auth?.currentUser?.uid===owner&&canCfg();
+ const guard=()=>{if(!sameSession()||!FB.ready)throw Object.assign(Error('Sesi sinkronisasi berubah.'),{code:'cancelled'});if(typeof fsQuotaAssert==='function')fsQuotaAssert()};
+ pendingBusy.add(key);pendingErrors.delete(key);
+ try{render();guard();const id=NONK(y),ref=db.collection('psKka').doc(id),prev=last.psKka?.[id];
+ const result=await db.runTransaction(async tx=>{guard();const snap=await tx.get(ref);guard();const {data,write}=mergeImportOnce(snap.exists?snap.data():null,job);
+ if(write){const bytes=new TextEncoder().encode(JSON.stringify(data)).length;if(bytes>900000)throw Error('Dokumen Non-ISTK mendekati batas 1 MB Firestore. Cadangan aman; perlu pemecahan dokumen sebelum impor.');guard();tx.set(ref,data)}return data});
+ if(!sameSession())return false;
+ last.psKka=last.psKka||{};if(last.psKka[id]===prev||last.psKka[id]===stab(result)){store()[id]=result;last.psKka[id]=stab(result)}
+ const active=pendingImport(y);if(active?.id===job.id){try{localStorage.removeItem(key);pendingMem.delete(key)}catch(_){say('Impor terkonfirmasi Firebase, tetapi cadangan browser belum dapat dihapus. Coba sinkronkan kembali.');return true}}
+ if(FB.optDenied?.psKka){say('Impor tersimpan di Firebase. Muat ulang untuk menyambungkan kembali listener psKka.')}else say('Impor Non-ISTK berhasil tersimpan di Firebase ('+job.ops.length+' baris).');return true;
+ }catch(e){if(!sameSession())return false;const msg=typeof fbErr==='function'?fbErr(e):String(e.message||e);pendingErrors.set(key,msg);say('Impor Non-ISTK belum tersimpan di Firebase: '+msg+'. Cadangan tetap tersedia.');return false}
  finally{pendingBusy.delete(key);if(kkaOutboxKey(y)===key)render()}
 }
 function downloadPending(y){const job=pendingImport(y);if(!job)return;const url=URL.createObjectURL(new Blob([JSON.stringify(job,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='Non-ISTK-impor-tertunda-'+y+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 
 async function importFile(file){
- const importYear=year();if(cloudKka()&&pendingImport(importYear)){say('Ada impor Non-ISTK tertunda. Gunakan Coba sinkronkan dahulu.');return}
+ const importYear=year(),importCloud=cloudKka(),importAccount=kkaOutboxKey(importYear),importDb=importCloud?FB.db:null,importUid=importCloud?FB.auth?.currentUser?.uid:null;if(cloudKka()&&pendingImport(importYear)){say('Ada impor Non-ISTK tertunda. Gunakan Coba sinkronkan dahulu.');return}
  const X=window.XLSX;if(!X){say('Pustaka Excel belum termuat.');return}
  let wb;try{wb=X.read(await file.arrayBuffer(),{type:'array'})}catch(e){say('Berkas tidak dapat dibaca sebagai Excel.');return}
  const us=wb.Sheets['Usulan'];if(!us){say("Sheet 'Usulan' tidak ditemukan. Gunakan workbook Kertas Kerja A.");return}
@@ -364,7 +367,7 @@ async function importFile(file){
  <label style="display:flex;gap:8px;align-items:center;margin-top:6px"><input type="checkbox" id="kka-imp-method" checked style="width:auto"> Set metode program terkait ke MCDA</label>
  <p class="s" style="margin:8px 0 0">Nilai rusak (#REF!) atau kosong diabaikan; isian lama di aplikasi tidak dihapus.</p>`,'Impor',o=>{
   const q=id=>o.querySelector(id),est=q('#kka-imp-est')?.checked,useCfg=q('#kka-imp-cfg')?.checked,setM=q('#kka-imp-method')?.checked,desc=q('#kka-imp-desc')?.checked,add=q('#kka-imp-add')?.checked,tp=q('#kka-imp-prog')?.value==='__nonistk'?nonP():progs.find(p=>p.id===q('#kka-imp-prog')?.value);
-  if(+year()!==+importYear){say('Tahun aktif berubah. Buka ulang impor.');return false}
+  if(+year()!==+importYear||cloudKka()!==importCloud||(importCloud&&(kkaOutboxKey(importYear)!==importAccount||FB.db!==importDb||FB.auth?.currentUser?.uid!==importUid))){say('Tahun atau sesi aktif berubah. Buka ulang impor.');return false}
   const useCloud=cloudKka(),nonOps=[],deferred=[];let nG=0,nS=0,nNew=0;const touched=new Set();
   const DESC=[[7,'initiativeType'],[8,'uic'],[9,'businessOwner'],[10,'spbeDomain'],[11,'description'],[12,'urgency'],[13,'legalBasis'],[14,'strategyAlignment'],[15,'businessProcess'],[16,'businessNarrative'],[17,'features']];
   const apply=(r,x,p,isNew)=>{touched.add(p);
