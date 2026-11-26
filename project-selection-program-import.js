@@ -209,7 +209,7 @@ function apply(pl,meta,target){
   const r=it.src,y=+r.tahun,code=T(r.kodeResmi).toUpperCase();
   let p=it.existing;
   if(!p){
-   p={id:uid('program'),akr:'PS'+y+'-'+uid('p'),psYear:y,psDraft:true,psStatus:'Draft',psListStatus:'Baru',psThreshold:80,psPrioritize:false,
+   p={id:uid('program'),akr:'PS'+y+'-'+uid('p'),psYear:y,psDraft:true,psStatus:'Draft',psListStatus:'Baru',psThreshold:80,psPrioritize:true,psMethod:'smart',
     psProjects:[],psWeights:{},psGovernanceV:1,psBenefits:[],psStakeholders:[],psRiskRegister:[],status:'Perencanaan'};
    programs.push(p);done.created++;
   }else done.updated++;

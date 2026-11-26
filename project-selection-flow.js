@@ -506,7 +506,7 @@ function programModal(p){
   if(typed&&allPrograms().some(o=>o!==p&&+o.psYear===+y&&String(o.kodeResmi||'').trim().toUpperCase()===typed)){
    toast('Kode program resmi telah digunakan oleh program lain.');return
   }
-  const target=p||{id:uid2('program'),akr:'PS'+y+'-'+uid2('p'),psYear:y,psDraft:true,psStatus:'Draft',psListStatus:'Baru',psThreshold:80,psPrioritize:false,psProjects:[],psWeights:{},psGovernanceV:1,psBenefits:[],psStakeholders:[],psRiskRegister:[],mulai:y,periode:y+'–'+y,status:'Perencanaan'};
+  const target=p||{id:uid2('program'),akr:'PS'+y+'-'+uid2('p'),psYear:y,psDraft:true,psStatus:'Draft',psListStatus:'Baru',psThreshold:80,psPrioritize:true,psMethod:'smart',psProjects:[],psWeights:{},psGovernanceV:1,psBenefits:[],psStakeholders:[],psRiskRegister:[],mulai:y,periode:y+'–'+y,status:'Perencanaan'};
   Object.assign(target,{nama:name,kodeResmi:typed,jenis:val(box,'jenis'),uic,pend:val(box,'pend'),sponsor:val(box,'sponsor'),
    psObjective:val(box,'objective'),psBackground:val(box,'background'),psStrategy:val(box,'strategy'),
    psOutcome:val(box,'outcome'),psRisks:p?.psRisks||'',psThemes:val(box,'themes'),psYear:y,
