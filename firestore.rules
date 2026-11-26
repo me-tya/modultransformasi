@@ -45,7 +45,9 @@ service cloud.firestore {
     }
     // Data PMO
     match /{col}/{id} {
-      allow read: if aktif() && col in ['programs','charters','tahap','projectRisks','projectStakeholders','projectDecisions','wbs','bukti','ms','kwide','kwideLinks','risks','crs','usul','sub','ind','sh','impl','jj','jjMod','pantau','adopsi','tr','reviu','modMeta','log'];
+      allow read: if aktif() && col in ['programs','charters','tahap','projectRisks','projectStakeholders','projectDecisions','wbs','bukti','ms','kwide','kwideLinks','risks','crs','usul','sub','ind','sh','impl','jj','jjMod','pantau','adopsi','tr','reviu','modMeta','psKka','log'];
+      // Prioritasi Kertas Kerja A (Pusakti): pengaturan per tahun & Repositori Hasil Prioritasi.
+      allow write: if col == 'psKka' && role(['SA','PMOK','CMOK']);
       allow write: if col in ['programs','charters','tahap','projectRisks','projectStakeholders','projectDecisions','wbs','bukti','ms','kwide','kwideLinks','risks','crs'] && role(['SA','PMOK','CMOK','PMOU']);
       allow write: if col == 'sh' && role(['SA','PMOK','CMOK','PMOU','CMOU','TIM']);
       allow write: if col == 'usul' && role(['SA','PMOK','CMOK','PMOU','CMOU']);

@@ -286,7 +286,9 @@ function mapping(p){
 function prioritasi(p){
  if(!p)return '<div class="ps27-card ps27-empty">Pilih program untuk mengurutkan prioritas proyeknya.</div>';
  const sub=(ws().prioritySub==='monev'?'ranking':ws().prioritySub)||'ranking',readOnly=I.readonly(p);
- const mode='<label class="ps27-smart-toggle"><input type="checkbox" id="pswf-prioritize" '+(p.psPrioritize?'checked':'')+' '+(readOnly?'disabled':'')+'><span>Gunakan prioritisasi SMART</span></label>';
+ const meth=p.psMethod||(p.psPrioritize?'smart':'manual');
+ if(meth==='kka'&&window.MT_PS_KKA)return window.MT_PS_KKA.page(p,{readOnly});
+ const mode='<label class="kka-method"><span>Metode prioritisasi</span><select id="pswf-method" '+(readOnly?'disabled':'')+'>'+[['manual','Manual'],['smart','SMART (CM)'],['kka','Kertas Kerja A (Pusakti)']].map(o=>'<option value="'+o[0]+'"'+(meth===o[0]?' selected':'')+'>'+o[1]+'</option>').join('')+'</select></label>';
  const threshold=p.psPrioritize?'<label class="ps27-smart-threshold">Ambang skor &gt; <input type="number" id="pswf-threshold" min="0" max="99" value="'+E(p.psThreshold??80)+'" '+(readOnly?'disabled':'')+' aria-label="Ambang skor SMART"> %</label>':'';
  const tip='<button class="ps27-smart-info" type="button" data-pswf="smart-info" title="Aturan pemilihan: 12 kriteria lengkap dan skor absolut lebih besar dari ambang" aria-label="Informasi aturan seleksi otomatis SMART">i</button>';
  return '<div class="ps27-priority-head"><nav class="ps27-minitabs" role="tablist" aria-label="Tab Prioritasi">'+
