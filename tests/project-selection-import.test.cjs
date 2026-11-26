@@ -116,3 +116,15 @@ test('Oversized staged document rejected before any Firestore operation',async()
  stage.docs[0].after.psProgramCharter.tujuan='x'.repeat(960000);
  await assert.rejects(I.commitStage(stage,{collection:()=>{throw Error('must not reach db')}}),/terlalu besar/);
 });
+
+test('Master proyek tahap 2: enam atribut baru, nol valid, kosong tidak menimpa, skor SMART tetap',()=>{
+ const x={id:'p1',name:'Modul X',uic:'BaTii',scores:{C1:5},estimatedCost:900};
+ const p={id:'pr1',nama:'Program X',psYear:2027,psStatus:'Draft',uic:'BaTii',psProjects:[x]};
+ const {I}=boot('SA','BaTii',[p]);
+ const h=['Tahun','Nama Program','Nama Proyek','UIC Utama','Jenis Inisiatif','Unit Pemilik Proses Bisnis','Domain Arsitektur SPBE','Estimasi Biaya (Rp)','Estimasi Durasi (bulan)','Kebutuhan SDM (orang)'];
+ const make=(cost,dur,staff)=>({Proyek:[h,[2027,'Program X','Modul X','BaTii','Pengembangan','Unit A','Aplikasi',cost,dur,staff]]});
+ let pl=I.plan(make(0,'2,5',4));assert.equal(pl.items[0].projects[0].problem,'');I.apply(pl);
+ assert.equal(x.estimatedCost,0);assert.equal(x.durationMonths,2.5);assert.equal(x.estimatedStaff,4);assert.equal(x.businessOwner,'Unit A');assert.equal(x.spbeDomain,'Aplikasi');assert.equal(x.initiativeType,'Pengembangan');assert.equal(x.scores.C1,5);
+ I.apply(I.plan(make('','','')));assert.equal(x.estimatedCost,0);assert.equal(x.estimatedStaff,4);
+ pl=I.plan(make(-1,0,1.5));assert.equal(pl.items[0].projects[0].action,'Galat');I.apply(pl);assert.equal(x.estimatedStaff,4);assert.equal(p.psProjects.length,1);
+});

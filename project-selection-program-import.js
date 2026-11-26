@@ -25,7 +25,8 @@ const COLS={
   pic:'pic / initiative owner',status:'status usulan',tujuan:'tujuan proyek',lb:'latar belakang',urgency:'urgensi',legalBasis:'landasan hukum',
   strategyAlignment:'strategi organisasi yang didukung',businessProcess:'proses bisnis terkait',businessNarrative:'narasi proses bisnis',
   features:'fitur utama',out:'output',oc:'outcome',kp:'kriteria penyelesaian',batiiIdentification:'identifikasi tim batii',
-  probisConfirmation:'konfirmasi pemilik proses bisnis',start:'rencana mulai',goLive:'target go-live'},
+  probisConfirmation:'konfirmasi pemilik proses bisnis',start:'rencana mulai',goLive:'target go-live',
+  initiativeType:'jenis inisiatif',businessOwner:'unit pemilik proses bisnis',spbeDomain:'domain arsitektur spbe',estimatedCost:'estimasi biaya (rp)',durationMonths:'estimasi durasi (bulan)',estimatedStaff:'kebutuhan sdm (orang)',description:'deskripsi aplikasi / modul'},
  Milestone:{prog:'nama program',y:'tahun',t:'milestone',g:'kelompok wbs',kodeIS:'kode is'},
  Kriteria:{prog:'nama program',m:'milestone',k:'kriteria penyelesaian',kodeIS:'kode is'}
 };
@@ -34,7 +35,14 @@ const JENIS=['Berkelanjutan','Tematik','Lainnya'],STATUS=['Usulan','Berjalan','D
 /* Jenis Program longgar: 'Program Tematik', 'berkelanjutan (OA)', dsb. dikenali; nilai lain → Lainnya (bukan galat). */
 const jenisOf=v=>{const k=key(v);if(!k)return '';return JENIS.find(j=>key(j)===k)||JENIS.find(j=>k.includes(key(j)))||(/lanjut|sustain/.test(k)?'Berkelanjutan':/tema/.test(k)?'Tematik':'Lainnya')};
 const CAT=['Core APBN','Core Non APBN','Office Automation','APBN','Non APBN','Manajemen Birokrasi'];
-const TEXT_FIELDS=['applicationName','mainFunction','subModule','urgency','legalBasis','strategyAlignment','businessProcess','businessNarrative','batiiIdentification','probisConfirmation'];
+const TEXT_FIELDS=['applicationName','mainFunction','subModule','urgency','legalBasis','strategyAlignment','businessProcess','businessNarrative','batiiIdentification','probisConfirmation','initiativeType','businessOwner','spbeDomain'];
+const ESTIMATE_FIELDS=['estimatedCost','durationMonths','estimatedStaff'];
+function estimateOf(v,k){
+ const t=T(v);if(!t)return '';
+ if(!/^\d+(?:[.,]\d+)?$/.test(t))return null;
+ if(k!=='durationMonths'&&!/^\d+$/.test(t))return null;
+ const n=Number(t.replace(',','.'));return Number.isFinite(n)&&(k==='durationMonths'?n>0:Number.isSafeInteger(n)&&n>=0)?n:null;
+}
 const MON={jan:1,feb:2,mar:3,apr:4,mei:5,may:5,jun:6,jul:7,agu:8,aug:8,agt:8,sep:9,okt:10,oct:10,nov:11,des:12,dec:12};
 /* Tanggal → YYYY-MM-DD. Menerima 2027-03-01, 01/03/2027 (hari/bulan/tahun), Mar 2027, 2027-03, serial Excel. '' bila kosong, null bila tak dikenali. */
 function dateOf(v){
@@ -61,8 +69,9 @@ function checkProject(x,p,y){
  if(x.category&&!category)problems.push('Kategori tidak dikenal');
  if(x.status&&!STATUS.some(s=>key(s)===key(x.status)))notes.push('Status "'+x.status+'" diganti Usulan');
  if(x.url&&!/^https?:\/\//i.test(x.url))problems.push('URL harus diawali http(s)://');
+ const estimates={};for(const k of ESTIMATE_FIELDS){const n=estimateOf(x[k],k);if(n===null)problems.push(COLS.Proyek[k]+' tidak valid');else if(n!=='')estimates[k]=n}
  const old=p?(p.psProjects||[]).find(z=>key(z.name)===key(x.name)||(x.kodeIS&&z.psSourceIS===x.kodeIS)):null;
- return {...x,start:start||'',goLive:goLive||'',category:category||'',psAcronym:acr(x.psAcronym),problem:problems.join(', '),notes,old,
+ return {...x,...estimates,start:start||'',goLive:goLive||'',category:category||'',psAcronym:acr(x.psAcronym),problem:problems.join(', '),notes,old,
   action:problems.length?'Galat':old?'Perbarui':'Baru'};
 }
 const me=()=>{try{return typeof ME!=='undefined'?ME:null}catch(_){return null}};
@@ -165,6 +174,8 @@ function charterFrom(it,p){
 function projectFrom(x,p,old){
  const base=projectBase(x,p,old);
  TEXT_FIELDS.forEach(k=>{if(x[k])base[k]=k==='mainFunction'||k==='subModule'||k==='applicationName'?T(x[k]):lines(x[k]).length>1?lines(x[k]).map(v=>'• '+v).join('\n'):T(x[k])});
+ for(const k of ESTIMATE_FIELDS)if(x[k]!=null&&x[k]!=='')base[k]=x[k];
+ if(x.description)base.description=T(x.description);
  if(x.features)base.features=lines(x.features).map(v=>'• '+v).join('\n');
  if(x.url)base.url=x.url;if(x.category)base.category=x.category;
  if(x.start)base.start=x.start;if(x.goLive)base.goLive=x.goLive;
@@ -303,7 +314,7 @@ function templateBook(){
  const head=s=>Object.values(COLS[s]).map(h=>h.replace(/\b\w/g,m=>m.toUpperCase()).replace(/\b[A-Z][a-z]+\b/g,w=>FIX[w]||w));
  const ex={
   Program:[[1,year(),'Contoh Program Transformasi','','Berkelanjutan','BaTii','DJPb, DJP','Menteri Keuangan','Kepala Badan Teknologi, Informasi, dan Intelijen Keuangan',year(),year()+2,'Tujuan program…','• Latar belakang 1\n• Latar belakang 2','• Terobosan 1','• Output 1','• Outcome 1','• Risiko 1','• Pendukung 1','','','']],
-  Proyek:[[1,year(),'Contoh Program Transformasi','','Contoh Proyek','CONTOH','Nama aplikasi','Fungsi utama','','https://…','Non APBN','BaTii','DJPb','PIC proyek','Usulan','Tujuan proyek…','• Latar belakang','• Urgensi','Landasan hukum','Strategi yang didukung','Proses bisnis level 3/4/5','Narasi proses bisnis','• Fitur 1','• Output','• Outcome','Milestone — kriteria','','',year()+'-01-01',year()+'-12-31']],
+  Proyek:[[1,year(),'Contoh Program Transformasi','','Contoh Proyek','CONTOH','Nama aplikasi','Fungsi utama','','https://…','Non APBN','BaTii','DJPb','PIC proyek','Usulan','Tujuan proyek…','• Latar belakang','• Urgensi','Landasan hukum','Strategi yang didukung','Proses bisnis level 3/4/5','Narasi proses bisnis','• Fitur 1','• Output','• Outcome','Milestone — kriteria','','',year()+'-01-01',year()+'-12-31','Pengembangan','Unit pemilik probis','Aplikasi',150000000,12,5,'Deskripsi aplikasi/modul…']],
   Milestone:[['Contoh Program Transformasi',year(),'Milestone tahun pertama','','']],
   Kriteria:[['Contoh Program Transformasi','Milestone tahun pertama','Kriteria penyelesaian…','']]
  };
@@ -312,6 +323,7 @@ function templateBook(){
   ['Kolom wajib: Program (Tahun, Nama Program, UIC Utama); Proyek (Nama Program, Nama Proyek, UIC Utama); Milestone (Nama Program, Tahun, Milestone); Kriteria (Nama Program, Milestone).'],
   ['Sheet Proyek langsung masuk ke Pemetaan Proyek › Usulan Proyek. Baris Proyek yang Nama Programnya tidak ada di sheet Program ditambahkan ke program tahun tsb yang sudah ada di aplikasi (sheet Program boleh kosong). Akronim kosong = dibuat otomatis; Kode Proyek = kode program + akronim.'],
   ['Kategori: '+CAT.join(' / ')+'. Tanggal (Rencana Mulai, Target Go-Live) ditulis YYYY-MM-DD.'],
+  ['Kolom baru bersifat opsional. Biaya dalam Rupiah dan SDM dalam orang: angka bulat tanpa pemisah ribuan. Durasi dalam bulan (>0; desimal diperbolehkan). Kosong berarti belum diestimasi; impor kosong tidak menghapus estimasi lama.'],
   ['Isian daftar ditulis satu butir per baris (Alt+Enter). Jenis Program: Berkelanjutan/Tematik/Lainnya. Status Usulan: Usulan/Berjalan/Ditunda/Selesai.'],
   ['Program dengan nama dan tahun sama diperbarui (selama belum Ditetapkan/Arsip). Charter yang sudah disahkan tidak ditimpa. Hapus baris contoh sebelum mengimpor.']]);
  pet['!cols']=[{wch:130}];X.utils.book_append_sheet(wb,pet,'Petunjuk');
@@ -320,6 +332,21 @@ function templateBook(){
 function downloadTemplate(){
  if(!window.XLSX){toast('Pustaka Excel belum termuat. Periksa koneksi internet lalu muat ulang.');return}
  XLSX.writeFile(templateBook(),'Template_Impor_Usulan_Program_'+year()+'.xlsx');
+}
+function projectExportBook(entries){
+ const X=window.XLSX,wb=X.utils.book_new();
+ const header=Object.values(COLS.Proyek);
+ const data=entries.map(({p,x},i)=>{
+  const values={...x,no:i+1,tahun:p.psYear||year(),prog:p.nama,kodeIS:x.psSourceIS||'',pend:x.psSupportUic||'',uic:x.uic||p.uic||'',status:x.status||'Usulan',out:x.outputs||'',oc:x.outcome||'',kp:x.accepted||''};
+  return Object.keys(COLS.Proyek).map(k=>values[k]??'');
+ });
+ const sheet=X.utils.aoa_to_sheet([header,...data]);sheet['!cols']=header.map(h=>({wch:Math.max(12,Math.min(44,h.length+8))}));
+ X.utils.book_append_sheet(wb,sheet,'Proyek');return wb;
+}
+function exportProjects(entries){
+ if(!window.XLSX){toast('Pustaka Excel belum termuat. Muat ulang aplikasi.');return}
+ if(!entries.length){toast('Tidak ada usulan proyek untuk diekspor.');return}
+ window.XLSX.writeFile(projectExportBook(entries),'Usulan_Proyek_'+year()+'.xlsx');
 }
 /* ---------- UI ---------- */
 let current=null;
@@ -432,5 +459,5 @@ function open(preset){
  paint();
 }
 document.addEventListener('click',ev=>{if(ev.target.closest?.('[data-bank-import]')){ev.preventDefault();open()}});
-window.MT_PS_IMPORT={plan,apply,stageImport,commitStage,tables,templateBook,open,downloadTemplate,dateOf,version:'20261126-import-sync-v3'};
+window.MT_PS_IMPORT={plan,apply,stageImport,commitStage,tables,templateBook,projectExportBook,exportProjects,open,downloadTemplate,dateOf,version:'20261126-import-sync-v3'};
 })();

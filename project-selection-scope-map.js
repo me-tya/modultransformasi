@@ -70,6 +70,7 @@ const PROJECT_FIELDS=[
  ['subModule','Sub Modul','text','Identitas Aplikasi'],
  ['url','URL Aplikasi','url','Identitas Aplikasi'],
  ['category','Kategori','select','Identitas Aplikasi'],
+ ['initiativeType','Jenis Inisiatif','text','Identitas Aplikasi'],
  ['uic','UIC Utama','text','Identitas Aplikasi'],
  ['status','Status Usulan','status','Identitas Aplikasi'],
  ['batiiIdentification','Identifikasi Tim BaTii','textarea','Telaah & Validasi'],
@@ -79,10 +80,15 @@ const PROJECT_FIELDS=[
  ['legalBasis','Landasan Hukum / Regulasi','textarea','Keselarasan & Proses Bisnis'],
  ['strategyAlignment','Strategi Organisasi yang Didukung (Renstra Kementerian / UE I)','textarea','Keselarasan & Proses Bisnis'],
  ['businessProcess','Proses Bisnis Terkait (Level 3, 4, atau 5)','textarea','Keselarasan & Proses Bisnis'],
+ ['businessOwner','Unit Pemilik Proses Bisnis','text','Keselarasan & Proses Bisnis'],
+ ['spbeDomain','Domain Arsitektur SPBE','text','Keselarasan & Proses Bisnis'],
  ['businessNarrative','Penjelasan / Narasi Proses Bisnis Aplikasi','textarea','Keselarasan & Proses Bisnis'],
  ['features','Fitur Utama yang Akan Dikembangkan','textarea','Keselarasan & Proses Bisnis'],
  ['start','Rencana Mulai','date','Pelaksanaan Awal'],
- ['goLive','Target Go-Live','date','Pelaksanaan Awal']
+ ['goLive','Target Go-Live','date','Pelaksanaan Awal'],
+ ['estimatedCost','Estimasi Biaya (Rp)','number','Pelaksanaan Awal'],
+ ['durationMonths','Estimasi Durasi (bulan)','number','Pelaksanaan Awal'],
+ ['estimatedStaff','Kebutuhan SDM (orang)','number','Pelaksanaan Awal']
 ];
 const CAT=['Core APBN','Core Non APBN','Office Automation','APBN','Non APBN','Manajemen Birokrasi'];
 function defaultProjectCategory(p){
@@ -158,18 +164,22 @@ function mappingView(p){
 
 /* Usulan Proyek: satu tampilan lintas program, dengan accordion seperti Workspace Proyek.
    Riwayat Proyek tetap memakai historyView() lama, tanpa perubahan. */
-function proposalView(){
+function proposalSelection(){
  const filter=S.ui?.psBank?.filterScopes?.mapping||{},q=String(filter.search||'').trim().toLowerCase();
  const programs=I.programs().filter(p=>{
   return !filter.program||String(filter.program)===String(p.id);
  });
  const matched=p=>proposalRows(p).filter(x=>{
- const searchable=[p.nama,p.kode,x.name,x.applicationName,currentCode(p,x),projectValue(x,'description'),projectValue(x,'mainFunction'),x.uic].join(' ').toLowerCase();
+ const searchable=[p.nama,p.kode,x.name,x.applicationName,currentCode(p,x),projectValue(x,'description'),projectValue(x,'mainFunction'),x.uic,x.initiativeType,x.businessOwner,x.spbeDomain].join(' ').toLowerCase();
  return (!q||searchable.includes(q))&&(!filter.status||filter.status==='all'||(x.status||'Usulan')===filter.status)&&(!filter.unit||filter.unit==='all'||(x.uic||p.uic)===filter.unit)&&(!filter.category||filter.category==='all'||projectCategory(p,x)===filter.category);
  });
  const shown=programs.filter(p=>matched(p).length||(!q&&(!filter.status||filter.status==='all')&&(!filter.unit||filter.unit==='all')&&(!filter.category||filter.category==='all')));
+ return {shown,matched};
+}
+function proposalView(){
+ const {shown,matched}=proposalSelection();
  const total=shown.reduce((n,p)=>n+matched(p).length,0),state=mapState();state.proposalPaging=state.proposalPaging||{};
- return '<section class="psbank-proposals-detail psbank-proposal-groups"><div class="psbank-proposal-head"><div><h3>Usulan Proyek · '+year()+'</h3></div><div class="psbank-headright"><span class="psbank-count">'+shown.length+' program · '+total+' proyek</span></div></div>'+
+ return '<section class="psbank-proposals-detail psbank-proposal-groups"><div class="psbank-proposal-head"><div><h3>Usulan Proyek · '+year()+'</h3></div><div class="psbank-headright"><span class="psbank-count">'+shown.length+' program · '+total+' proyek</span>'+(can()?'<button type="button" class="btn" data-scope-project-import title="Impor usulan dari sheet Proyek">↑ Impor</button>':'')+'<button type="button" class="btn" data-scope-project-export title="Ekspor seluruh hasil filter, bukan hanya halaman ini" '+(total?'':'disabled')+'>↓ Excel</button></div></div>'+
  
  (shown.length?shown.map(p=>{
   const rows=matched(p),expanded=state.programOpen[p.id]!==false,editable=can(p),code=p.kodeResmi||'Belum ditetapkan',internalRef=p.kode||p.akr;
@@ -332,7 +342,7 @@ function projectEditor(id,readonly=false){
    '<label>'+E(label)+'<select data-scope-field="'+key+'" '+(readonly?'disabled':'')+'>'+((type==='status')?['Usulan','Berjalan','Ditunda','Selesai']:['',...CAT]).map(x=>'<option value="'+E(x)+'" '+(x===(key==='category'?projectCategory(p,existing):projectValue(existing||{},key))?'selected':'')+'>'+E(x||'Pilih kategori')+'</option>').join('')+'</select>'+(key==='category'?'<small class="psbank-category-hint">Kategori awal mengikuti program. Core Non APBN digunakan untuk sektor keuangan; kategori dapat diubah.</small>':'')+'</label>':
    '<label class="'+(type==='textarea'?'psbank-editor-long':'')+'">'+E(label)+(key==='name'?' *':'')+
    (type==='textarea'?'<textarea rows="3" data-scope-field="'+key+'" '+(readonly?'disabled':'')+'>'+E(projectValue(existing||{},key))+'</textarea>':
-    '<input type="'+type+'" data-scope-field="'+key+'" value="'+E(projectValue(existing||{},key))+'" '+(readonly?'disabled':'')+'>')+'</label>';
+    '<input type="'+type+'" data-scope-field="'+key+'" value="'+E(projectValue(existing||{},key))+'" '+(type==='number'?'min="'+(key==='durationMonths'?'0.01':'0')+'" step="'+(key==='durationMonths'?'any':'1')+'" placeholder="Belum diestimasi" ':'')+(readonly?'disabled':'')+'>')+'</label>';
  d.innerHTML='<section class="psbank-dialog psbank-project-dialog" role="dialog" aria-modal="true" aria-label="Detail Usulan Proyek">'+
  '<header><div><b>'+(readonly?'Detail':existing?'Ubah':'Tambah')+' Usulan Proyek</b><small>'+E(p.nama)+' · '+year()+'</small></div><button type="button" data-scope-editor-close title="Tutup" aria-label="Tutup">✕</button></header>'+
  '<main class="psbank-dialogbody"><div class="psbank-form-provenance"><b>Sumber Usulan</b><span>'+E(existing?.psOriginYear?existing.psOriginProgram+' · '+existing.psOriginYear:'Usulan baru')+'</span><small>Perubahan isian tahun tujuan tidak mengubah informasi tahun sumber.</small></div>'+
@@ -358,6 +368,14 @@ function projectEditor(id,readonly=false){
   if(!ev.target.closest('[data-scope-editor-save]'))return;
   const fields={};d.querySelectorAll('[data-scope-field]').forEach(x=>fields[x.dataset.scopeField]=x.value.trim());
   if(!fields.name){toast('Nama aplikasi/proyek wajib diisi.');return}
+  for(const k of ['estimatedCost','durationMonths','estimatedStaff']){
+   const input=d.querySelector('[data-scope-field="'+k+'"]');
+   if(input?.validity?.badInput){toast('Estimasi harus berupa angka yang valid.');return}
+   if(fields[k]==='')continue;
+   const n=Number(fields[k]);
+   if(!Number.isFinite(n)||(k==='durationMonths'?n<=0:!Number.isSafeInteger(n)||n<0)){toast('Estimasi biaya/SDM harus bilangan bulat nonnegatif; durasi harus lebih dari 0.');return}
+   fields[k]=n;
+  }
   if(fields.url&& !/^https?:\/\//i.test(fields.url)){toast('URL wajib dimulai https:// atau http://.');return}
   if((p.psProjects||[]).some(x=>x!==existing&&x.name?.toLowerCase()===fields.name.toLowerCase())){toast('Nama proyek sudah ada pada program tersebut.');return}
   fields.psAcronym=acronym(fields.psAcronym||suggestedAcronym(fields.name));
@@ -423,6 +441,8 @@ function transfer(){
  }
 }
 function click(ev){
+ if(ev.target.closest('[data-scope-project-import]')){window.MT_PS_IMPORT?.open();return true}
+ if(ev.target.closest('[data-scope-project-export]')){const {shown,matched}=proposalSelection();window.MT_PS_IMPORT?.exportProjects(shown.flatMap(p=>matched(p).map(x=>({p,x}))));return true}
  const pager=ev.target.closest('[data-scope-proposal-page]');
  if(pager){const b=mapState();b.proposalPaging=b.proposalPaging||{};const entry=b.proposalPaging[pager.dataset.scopeProposalPage];if(entry){entry.page=Math.max(1,(+entry.page||1)+Number(pager.dataset.move||0));save();window.render()}return true}
  /* Resolve program first for every per-project action within an accordion. */
