@@ -234,7 +234,7 @@ function programReportModel(p){
   blocks.push({t:'table',caption:'Rangkuman Charter',head:['Komponen','Uraian'],widths:[32,68],rows:annex(p)});
  }
  if(d.sign)blocks.push({t:'tte'});
- return {page:RKMK_PAGE,lang:'id',formal:true,template:d.template||'activity',toc:!!d.toc,header:'Dokumen Perencanaan Program · '+name,
+ return {page:RKMK_PAGE,lang:'id',formal:true,justifyNarrative:true,template:d.template||'activity',toc:!!d.toc,header:'Dokumen Perencanaan Program · '+name,
   fileName:'Perencanaan_Program_'+year()+'_'+code.replace(/[^A-Za-z0-9_-]/g,'_')+'_v'+v,
   cover:{kicker:'DOKUMEN PROGRAM',title:name,
    subject:'Tahun Anggaran '+year(),
@@ -266,6 +266,53 @@ async function assertOfficialWordTemplate(blob){
     !zip.file('word/styles.xml'))
   throw new Error('Template Word tidak sesuai format laporan resmi A4; unduhan dibatalkan untuk mencegah layout rusak.');
  return blob;
+}
+
+/* Scope to Project Selection narrative tables: retain label, heading and numeric alignment. */
+const PS_WORD_NS='http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+function psNarrativeWordXml(xml){
+ const dom=new DOMParser().parseFromString(xml,'application/xml');
+ if(dom.querySelector('parsererror'))throw Error('Struktur Word tidak valid.');
+ const children=(node,tag)=>Array.from(node.children).filter(x=>x.namespaceURI===PS_WORD_NS&&x.localName===tag);
+ const content=node=>Array.from(node.getElementsByTagNameNS(PS_WORD_NS,'t')).map(x=>x.textContent).join('').trim();
+ let changed=false;
+ for(const tbl of Array.from(dom.getElementsByTagNameNS(PS_WORD_NS,'tbl'))){
+  const rows=children(tbl,'tr'),head=rows[0]&&children(rows[0],'tc');
+  if(!head||head.length!==2||content(head[0])!=='Komponen'||content(head[1])!=='Uraian')continue;
+  for(const row of rows.slice(1)){
+   const cells=children(row,'tc');if(cells.length!==2)continue;
+   for(const p of children(cells[1],'p')){
+    if(!/\s/.test(content(p)))continue;
+    let pr=children(p,'pPr')[0];if(!pr){pr=dom.createElementNS(PS_WORD_NS,'w:pPr');p.insertBefore(pr,p.firstChild)}
+    if(children(pr,'jc').length)continue;
+    const jc=dom.createElementNS(PS_WORD_NS,'w:jc');jc.setAttributeNS(PS_WORD_NS,'w:val','both');
+    const following=Array.from(pr.children).find(e=>['textDirection','textAlignment','textboxTightWrap','outlineLvl','divId','cnfStyle','rPr','sectPr','pPrChange'].includes(e.localName));
+    pr.insertBefore(jc,following||null);changed=true;
+   }
+  }
+ }
+ return changed?new XMLSerializer().serializeToString(dom):xml;
+}
+async function psNarrativeDocx(model){
+ const blob=await mtRptDocx(model);if(!model.justifyNarrative)return blob;
+ const zip=await window.JSZip.loadAsync(blob),part=zip.file('word/document.xml');
+ if(!part)throw Error('Dokumen Word tidak mempunyai konten.');
+ const xml=await part.async('string'),next=psNarrativeWordXml(xml);
+ if(next===xml)return blob;
+ zip.file('word/document.xml',next);
+ return zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',compression:'DEFLATE'});
+}
+function psNarrativeHtml(model){
+ const html=mtRptHtml(model);if(!model.justifyNarrative)return html;
+ return html.replace('</head>','<style>table.tbl:has(>thead>tr>th:nth-child(2):last-child)>tbody>tr>td:nth-child(2){text-align:justify;text-align-last:start}</style></head>');
+}
+/* PDF: distribute words only on wrapped, non-final lines. */
+function psPdfJustifiedLine(pdf,text,x,y,width,justify){
+ const words=String(text).trim().split(/\s+/);
+ if(!justify||words.length<2){pdf.text(text,x,y);return}
+ const lengths=words.map(word=>pdf.getTextWidth(word)),gap=(width-lengths.reduce((a,b)=>a+b,0))/(words.length-1);
+ if(!Number.isFinite(gap)||gap<0){pdf.text(text,x,y);return}
+ let at=x;words.forEach((word,i)=>{pdf.text(word,at,y);at+=lengths[i]+gap});
 }
 
 /* Resolve page references from the actual paginated DOCX preview.
@@ -311,7 +358,7 @@ async function showActualDocumentPreview(root,model,format){
    await load('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',()=>!!window.JSZip);
    await load(ACTUAL_DOCX_URL,()=>!!window.docx?.renderAsync);
    if(typeof mtRptDocx!=='function')throw new Error('Pembuat laporan DOCX belum tersedia.');
-   const blob=await assertOfficialWordTemplate(await mtRptDocx(model));if(!alive())return false;
+   const blob=await assertOfficialWordTemplate(await psNarrativeDocx(model));if(!alive())return false;
    const target=document.createElement('div');target.className='psbank-actual-docx';
    await window.docx.renderAsync(blob,target,null,{
     breakPages:true,ignoreWidth:false,ignoreHeight:false,
@@ -438,7 +485,7 @@ function programSlideHtml(p,slide,idx,count,version){
 
 function documentPreview(p){
  const d=cfg(),list=sections(p),version=nextVersion('program',p.id||p.akr,year());
- if(d.format!=='pptx'&&typeof mtRptHtml==='function')return actualPreviewShell('program',d.format,'<iframe class="psbank-program-report-frame" title="Pratinjau awal dokumen perencanaan program" srcdoc="'+E(mtRptHtml(programReportModel(p)))+'"></iframe>');
+ if(d.format!=='pptx'&&typeof mtRptHtml==='function')return actualPreviewShell('program',d.format,'<iframe class="psbank-program-report-frame" title="Pratinjau awal dokumen perencanaan program" srcdoc="'+E(psNarrativeHtml(programReportModel(p)))+'"></iframe>');
  if(d.format==='pptx'){
   const slides=programDeck(p),n=Math.max(0,Math.min(+d.slide||0,slides.length-1)),slide=slides[n]||{kind:'section',title:'Belum ada substansi',rows:[]};
   return programSlideHtml(p,slide,n,slides.length||1,version)+
@@ -449,8 +496,8 @@ function documentPreview(p){
  }
  return '<article class="psbank-docpaper">'+(d.cover?'<header class="psbank-doccover"><small>KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</small><h2>DOKUMEN PERENCANAAN PROGRAM</h2><h3>'+E(p.nama)+'</h3><p>'+E(officialCode(p))+' · Tahun '+year()+'</p><span>Rancangan untuk reviu — belum disahkan</span></header>':'')+
  (d.toc?'<section class="psbank-doctoc"><b>DAFTAR ISI</b>'+list.map((x,i)=>'<div>'+(i+1)+'. '+E(x.title)+'</div>').join('')+'</section>':'')+
- list.map((x,i)=>'<section class="psbank-docsection"><h4>'+(i+1)+'. '+E(x.title)+'</h4><table>'+x.rows.map(r=>'<tr><th>'+E(r[0])+'</th><td>'+E(r[1]||'Belum diisi')+'</td></tr>').join('')+'</table></section>').join('')+
- (d.annex&&annex(p).length?'<section class="psbank-docsection"><h4>LAMPIRAN CHARTER</h4><table>'+annex(p).map(r=>'<tr><th>'+E(r[0])+'</th><td>'+E(r[1]||'Belum diisi')+'</td></tr>').join('')+'</table></section>':'')+
+ list.map((x,i)=>'<section class="psbank-docsection"><h4>'+(i+1)+'. '+E(x.title)+'</h4><table>'+x.rows.map(r=>'<tr><th>'+E(r[0])+'</th><td style="text-align:justify;text-align-last:start">'+E(r[1]||'Belum diisi')+'</td></tr>').join('')+'</table></section>').join('')+
+ (d.annex&&annex(p).length?'<section class="psbank-docsection"><h4>LAMPIRAN CHARTER</h4><table>'+annex(p).map(r=>'<tr><th>'+E(r[0])+'</th><td style="text-align:justify;text-align-last:start">'+E(r[1]||'Belum diisi')+'</td></tr>').join('')+'</table></section>':'')+
  (d.sign?'<section class="psbank-docsignature">Mengetahui / menyetujui<br><br><br>Pejabat Berwenang</section>':'')+
  '<footer class="psbank-docfoot">Versi '+version+' · Pratinjau '+(d.format==='pdf'?'PDF':'Word')+' · '+list.length+' substansi · '+year()+'</footer></article>';
 }
@@ -493,10 +540,10 @@ async function exportFormalPdf(model,file,{preview=false}={}){
  const ink=[21,45,78],navy=[14,41,81],pale=[237,244,251],gold=[250,181,36],gray=[93,110,137],W=210,mm=t=>Math.round(t/56.6929*10)/10,PGm=model.page,left=PGm?mm(PGm.left):19,right=PGm?W-mm(PGm.right):191,bw=right-left;
  const headingPages=[];
  let y=25;
- const setColor=a=>pdf.setTextColor(...a),line=(v,size=10,bold=false,space=4)=>{
-  const lines=pdf.splitTextToSize(String(v??'—'),bw);
+ const setColor=a=>pdf.setTextColor(...a),line=(v,size=10,bold=false,space=4,justify=false)=>{
   pdf.setFont('helvetica',bold?'bold':'normal');pdf.setFontSize(size);setColor(ink);
-  for(const txt of lines){if(y>274){pdf.addPage();y=25}pdf.text(txt,left,y);y+=Math.max(4.6,size*.48+1)}
+  const lines=String(v??'—').split('\n').flatMap(p=>{const parts=pdf.splitTextToSize(p,bw);return parts.map((text,i)=>({text,justify:justify&&i<parts.length-1}))});
+  for(const row of lines){if(y>274){pdf.addPage();y=25}psPdfJustifiedLine(pdf,row.text,left,y,bw,row.justify);y+=Math.max(4.6,size*.48+1)}
   y+=space;
  };
  const title=(v)=>{
@@ -511,8 +558,11 @@ async function exportFormalPdf(model,file,{preview=false}={}){
   const cellRow=(values,isHead=false)=>{
    const parts=values.map((v,i)=>{
     pdf.setFont('helvetica',isHead?'bold':'normal');pdf.setFontSize(isHead?9.2:9.2);
-    const cw=Math.max(9,w[i]-5),src=String(v??'—');
-    if(isHead||!/(^|\n)\s*(?:[•·▪●◦\-–\*]|\d{1,2}[.)])\s+/.test(src))return pdf.splitTextToSize(src,cw);
+    const cw=Math.max(9,w[i]-5),src=String(v??'—'),justify=!!model.justifyNarrative&&!isHead&&i===1&&head.length===2&&head[0]==='Komponen'&&head[1]==='Uraian';
+    if(isHead||!/(^|\n)\s*(?:[•·▪●◦\-–\*]|\d{1,2}[.)])\s+/.test(src)){
+     if(!justify)return pdf.splitTextToSize(src,cw);
+     return src.split('\n').flatMap(p=>{const parts=pdf.splitTextToSize(p,cw);return parts.map((t,k)=>({t,ind:0,just:k<parts.length-1}))});
+    }
     /* Daftar bernomor dengan indentasi gantung: nomor di kiri, teks lanjutan sejajar teks, bukan di bawah nomor. */
     const out=[];let n=0;const IND=5;
     src.split('\n').forEach(l=>{const m=l.match(/^\s*(?:[•·▪●◦\-–\*]|\d{1,2}[.)])\s+(.*)$/);
@@ -530,7 +580,7 @@ async function exportFormalPdf(model,file,{preview=false}={}){
      pdf.setFillColor(...fill);pdf.rect(x,y,w[i],h,'F');
      pdf.setDrawColor(218,228,240);pdf.rect(x,y,w[i],h);
      pdf.setFont('helvetica',isHead?'bold':'normal');pdf.setFontSize(9.2);
-     setColor(isHead?[255,255,255]:ink);{const ls=rows[i]||[];if(ls.some(z=>typeof z==='object')){const lh=pdf.getLineHeight()/pdf.internal.scaleFactor;ls.forEach((z,k)=>{const yy=y+4.5+k*lh;if(typeof z==='object'){if(z.num)pdf.text(z.num,x+2.5,yy);pdf.text(z.t,x+2.5+z.ind,yy)}else if(z)pdf.text(z,x+2.5,yy)})}else pdf.text(ls,x+2.5,y+4.5)}x+=w[i];
+     setColor(isHead?[255,255,255]:ink);{const ls=rows[i]||[];if(ls.some(z=>typeof z==='object')){const lh=pdf.getLineHeight()/pdf.internal.scaleFactor;ls.forEach((z,k)=>{const yy=y+4.5+k*lh;if(typeof z==='object'){if(z.num)pdf.text(z.num,x+2.5,yy);psPdfJustifiedLine(pdf,z.t,x+2.5+z.ind,yy,w[i]-5-z.ind,!!z.just)}else if(z)pdf.text(z,x+2.5,yy)})}else pdf.text(ls,x+2.5,y+4.5)}x+=w[i];
     });y+=h;
    }
   };
@@ -605,7 +655,7 @@ async function exportFormalPdf(model,file,{preview=false}={}){
  for(const b of model.blocks||[]){
   if(b.t==='h1'){headingPages.push({text:b.text,page:pdf.getNumberOfPages(),level:1});title(b.text);headingPages[headingPages.length-1].page=pdf.getNumberOfPages();}
   else if(b.t==='h2'){if(y>251){pdf.addPage();y=26}headingPages.push({text:b.text,page:pdf.getNumberOfPages(),level:2});line(b.text,12,true,5)}
-  else if(b.t==='p')line(b.text,10,false,7);
+  else if(b.t==='p')line(b.text,10,false,7,!!model.justifyNarrative);
   else if(b.t==='kv')drawTable(['Komponen','Informasi'],b.rows||[],[34,66]);
   else if(b.t==='table'){if(b.caption)line('Tabel: '+b.caption,9,true,3);drawTable(b.head||[],b.rows||[],b.widths)}
   else if(b.t==='bullets')for(const x of b.items||[])line('• '+x,10,false,3);
@@ -667,7 +717,7 @@ async function exportFile(p){
    }
    await load('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',()=>!!window.JSZip);
    const model=programReportModel(p);
-   const blob=await assertOfficialWordTemplate(await mtRptDocx(model));
+   const blob=await assertOfficialWordTemplate(await psNarrativeDocx(model));
    mtRptDownloadBlob(blob,file+'.docx');
   }else if(d.format==='pdf'){
    await exportFormalPdf(programReportModel(p),file+'.pdf');
@@ -837,7 +887,7 @@ function portfolioModel(){
  h1('Catatan Penggunaan dan Pembaruan Dokumen');
  B.push({t:'bullets',items:['Dokumen memuat data program yang dipilih pada saat ekspor; perubahan isian setelah ekspor tidak otomatis mengubah berkas yang telah diunduh.','Nomor versi dokumen baru diterbitkan setelah PDF hasil TTE diunggah kembali sebagai bukti dukung.','Status dan bukti tanda tangan elektronik memerlukan verifikasi melalui layanan resmi sebelum dianggap sah.']});
  if(d.sign)B.push({t:'tte'});
- return {page:RKMK_PAGE,lang:'id',formal:true,template:d.template||'activity',toc:true,fileName:(mode?(docSrc()==='non'?'Dokumen_Usulan_Non-ISTK_':'Dokumen_Usulan_Proyek_'):'Dokumen_Portofolio_Transformasi_')+year()+'_v'+version,
+ return {page:RKMK_PAGE,lang:'id',formal:true,justifyNarrative:true,template:d.template||'activity',toc:true,fileName:(mode?(docSrc()==='non'?'Dokumen_Usulan_Non-ISTK_':'Dokumen_Usulan_Proyek_'):'Dokumen_Portofolio_Transformasi_')+year()+'_v'+version,
   header:(mode?'Dokumen Usulan Proyek · ':'Dokumen Portofolio Program Transformasi · ')+year(),
   cover:{kicker:mode?'DOKUMEN USULAN PROYEK':'DOKUMEN PORTOFOLIO',title:mode?(docSrc()==='non'?'Usulan Proyek di Luar ISTK':projectAllPrograms()?'Usulan Proyek Seluruh Program':String(projectTarget()?.nama||'Usulan Proyek')):'Portofolio Program Transformasi',subject:'Tahun Anggaran '+year(),
    chips:['Tahun '+year(),data.length+(mode?' usulan proyek':' program'),'Versi v'+version],scope:[],
@@ -971,11 +1021,11 @@ function portfolioPreview(){
  }
  const model=portfolioModel();
  if(typeof mtRptHtml==='function'){
-  const html=mtRptHtml(model);
+  const html=psNarrativeHtml(model);
   return actualPreviewShell('portfolio',d.format,'<iframe class="psbank-port-report-frame" title="Pratinjau awal dokumen portofolio '+(d.format==='pdf'?'PDF':'Word')+'" srcdoc="'+E(html)+'"></iframe>');
  }
  return '<article class="psbank-docpaper"><header class="psbank-doccover"><small>KEMENTERIAN KEUANGAN REPUBLIK INDONESIA</small><h2>'+E(model.cover.title)+'</h2><h3>'+year()+' · Versi '+v+'</h3></header>'+
-  model.blocks.map(b=>b.t==='h1'?'<section class="psbank-docsection"><h3>'+E(b.text)+'</h3></section>':b.t==='h2'?'<h4>'+E(b.text)+'</h4>':b.t==='p'?'<p>'+E(b.text)+'</p>':b.t==='table'?'<section class="psbank-docsection"><table><thead><tr>'+b.head.map(x=>'<th>'+E(x)+'</th>').join('')+'</tr></thead><tbody>'+b.rows.map(row=>'<tr>'+row.map(v=>'<td>'+E(v)+'</td>').join('')+'</tr>').join('')+'</tbody></table></section>':'').join('')+'</article>';
+  model.blocks.map(b=>b.t==='h1'?'<section class="psbank-docsection"><h3>'+E(b.text)+'</h3></section>':b.t==='h2'?'<h4>'+E(b.text)+'</h4>':b.t==='p'?'<p>'+E(b.text)+'</p>':b.t==='table'?'<section class="psbank-docsection"><table><thead><tr>'+b.head.map(x=>'<th>'+E(x)+'</th>').join('')+'</tr></thead><tbody>'+b.rows.map(row=>'<tr>'+row.map((v,i)=>'<td'+(i===1&&b.head.length===2&&b.head[0]==='Komponen'&&b.head[1]==='Uraian'?' style="text-align:justify;text-align-last:start"':'')+'>'+E(v)+'</td>').join('')+'</tr>').join('')+'</tbody></table></section>':'').join('')+'</article>';
 }
 function portfolioBuilder(){
  const d=portCfg(),all=portPrograms(),chosen=portSelected(),mode=projectMode(),steps=docSections(),ver=nextVersion(docKind(),docId(),year());
@@ -1000,7 +1050,7 @@ async function portfolioExport(){
   if(d.format==='word'){
    if(typeof mtRptDocx!=='function'||typeof mtRptDownloadBlob!=='function')throw new Error('Mesin laporan Word Project Management belum tersedia.');
    if(typeof window.JSZip==='undefined')await load('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',()=>!!window.JSZip);
-   const blob=await assertOfficialWordTemplate(await mtRptDocx(model));
+   const blob=await assertOfficialWordTemplate(await psNarrativeDocx(model));
    mtRptDownloadBlob(blob,file+'.docx');
   }else if(d.format==='pdf'){
    await exportFormalPdf(portfolioModel(),file+'.pdf');
