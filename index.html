@@ -3006,7 +3006,20 @@ table.matrix-table td.matrix-cell{font-weight:700;color:#12275A}table.matrix-tab
 .sw .act-letter-section .sl-t small{margin-top:2px}
 .sw .act-letter-section .sl-a .sl-b{width:34px;height:34px;min-width:34px;font-size:15px;border-radius:9px}
 .sw .act-letter-section .sl-pending-input{height:30px;margin-top:5px}
-.sw .act-method2 .sw-mm{display:grid;grid-template-columns:minmax(230px,260px) minmax(0,1fr);gap:9px 12px;align-items:start}
+/* MT 261126: align Metode with standard section grid and Dashboard CM controls. */
+.sw .act-method-section.act-method2.sw-sec{display:grid;grid-template-columns:172px minmax(0,1fr);gap:14px;padding:11px 14px;border-radius:12px}
+.sw .act-method-section.act-method2 .sw-sh{grid-template-columns:22px 1fr;gap:2px 8px;margin-bottom:0;align-items:start}
+.sw .act-method-section.act-method2 .sw-sh i{width:22px;height:22px;border-radius:6px;font-size:11px}
+.sw .act-method-section.act-method2 .sw-sh b{font-size:13.5px}
+.sw .act-method2 .sw-mm{display:grid;grid-template-columns:minmax(220px,.6fr) minmax(0,1.4fr);gap:12px;align-items:start}
+.sw .act-method-section.act-method2 .sw-mode{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));height:42px;padding:0;box-sizing:border-box;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#EEF1F6}
+.sw .act-method-section.act-method2 .sw-mode button{min-height:0;height:100%;border-radius:0;border-right:1px solid var(--line);font-size:12.5px;font-weight:700}
+.sw .act-method-section.act-method2 .sw-mode button:last-child{border-right:0}
+.sw .act-method-section.act-method2 .sw-mode button.on{background:var(--navy);color:#fff}
+.sw .act-method-section.act-method2 .sw-iw{height:42px;border-radius:9px;background:#EEF1F6;box-sizing:border-box}
+.sw .act-method-section.act-method2 .sw-cp{height:40px;width:40px;background:#fff}
+@media(max-width:860px){.sw .act-method-section.act-method2.sw-sec{grid-template-columns:1fr;gap:6px}}
+
 .sw .act-method2 .sw-mm>.fld{margin:0}
 .sw .act-method2 .sw-mode{height:38px;padding:3px;box-sizing:border-box}
 .sw .act-method2 .sw-mode button{padding:0 8px;font-size:12.5px}
@@ -5793,7 +5806,7 @@ function editOneOnOne(item,step,after){
    <div class="sw-g2" data-one><div class="fld"><label for="one-tw">Triwulan</label><select class="inp" id="one-tw">${[1,2,3,4].map(t=>`<option value="${t}"${oneTwOf(item)===t?' selected':''}>TW ${ONE_RM[t]}</option>`).join('')}</select></div><div class="fld"><label for="one-tema">Tema pembahasan</label><input class="inp" id="one-tema" value="${esc(item.tema||'')}"></div></div>`)+
   sec(3,'Tahapan WBS','Centang bila kegiatan mendukung tahapan WBS. Bisa lebih dari satu tahapan (PM dan CM paralel).',ActivityWBS.formHTML(item))+
    sec(4,'Dasar surat','Bisa menambahkan beberapa file atau tautan. Surat undangan dan surat tugas bersifat opsional.',`${slot('und','Surat undangan','b')}${slot('st','Surat tugas','p')}`,'act-letter-section')+
-  sec(5,'Metode','Tempat dan/atau tautan rapat.',`<div class="sw-mm"><div class="fld"><label>Metode pelaksanaan</label><div class="sw-mode" role="group" aria-label="Metode">${ONE_MODE.map(m=>`<button type="button" data-swm="${m}"${m===mode?' class="on"':''}>${m}</button>`).join('')}</div></div><div class="sw-g2" id="one-mf">${mfld('lokasi','Lokasi rapat','mis. Ruang Rapat Gedung JB. Sumarlin Lt. 4',1)}${mfld('link','Tautan rapat','https://teams.microsoft.com/…')}</div></div>`,'act-method-section act-method2');
+  sec(5,'Metode','Tempat dan/atau tautan rapat.',`<div class="sw-mm"><div class="fld"><label>Metode pelaksanaan</label><div class="sw-mode" role="group" aria-label="Metode">${['Online','Offline','Hybrid'].map(m=>`<button type="button" data-swm="${m}"${m===mode?' class="on"':''}>${m}</button>`).join('')}</div></div><div class="sw-g2" id="one-mf">${mfld('lokasi','Lokasi rapat','mis. Ruang Rapat Gedung JB. Sumarlin Lt. 4',1)}${mfld('link','Tautan rapat','https://teams.microsoft.com/…')}</div></div>`,'act-method-section act-method2');
  const p2=sec(1,'Tujuan & catatan','Dipakai sebagai Agenda pada notula.',`<div class="sw-g2">${ta('tujuan','Tujuan / output',4,'Apa yang ingin dicapai kegiatan ini.',0)}${ta('catatan','Catatan',4,'',0)}</div>`)+
   sec(2,'Status','Status pelaksanaan kegiatan.',`<div class="fld"><label>Status ${IC('Terjadwal otomatis menjadi Berlangsung lalu Selesai mengikuti tanggal dan jam. Status lain ditetapkan manual.')}</label>${chips('stat',ACT_STS.map(s=>s[0]),stat)}</div>
    <div class="fld" data-reason style="margin-top:10px"><label for="one-alasan">Alasan (jika ditunda, tidak dihadiri, atau dibatalkan)</label><input class="inp" id="one-alasan" value="${esc(item.alasan||'')}"></div>`)+
