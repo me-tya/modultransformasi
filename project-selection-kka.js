@@ -424,6 +424,29 @@ const KATEGORI=['Core APBN','Core Non APBN','Office Automation','APBN','Non APBN
 const JENIS=['Aplikasi Baru','Modul Baru','Pengayaan Modul','Data Analytics / Dashboard / AI','Interoperabilitas'],DOMAIN=['Proses Bisnis','Data dan Informasi','Aplikasi','Infrastruktur','Keamanan','Layanan'];
 const REQ=[['name','nama'],['category','kategori'],['eaL2','proses bisnis EA'],['initiativeType','jenis inisiatif'],['uic','UE I'],['businessOwner','unit pemilik'],['description','deskripsi'],['estimatedCost','biaya'],['durationMonths','durasi'],['estimatedStaffMonths','SDM']];
 const validasi=x=>{const m=REQ.filter(([k])=>k==='eaL2'?!(window.MT_EA&&MT_EA.primary(x)):x[k]===''||x[k]==null||(typeof x[k]==='string'&&!T(x[k]))).map(z=>z[1]);return m.length?'Lengkapi: '+m.join(', '):'OK'};
+/* Context navigation: keep the original navy/white/gold mockup styling, and scroll only the modal body. */
+function kd2ContextNav(ov,attr,prefix){
+ const body=ov.querySelector('.kd2-body'),buttons=[...ov.querySelectorAll('['+attr+']')],sections=buttons.map(b=>ov.querySelector('#'+prefix+b.getAttribute(attr)));
+ let destination=null;
+ const activate=i=>buttons.forEach((b,j)=>{b.classList.toggle('on',j===i);if(j===i)b.setAttribute('aria-current','location');else b.removeAttribute('aria-current')});
+ const update=()=>{
+  if(!buttons[0]?.closest('.kd2-pane')?.classList.contains('on'))return;
+  if(destination!==null){if(Math.abs(body.scrollTop-destination)<=2)destination=null;return}
+  const edge=body.getBoundingClientRect().top+12;let i=0;
+  sections.forEach((s,j)=>{if(s&&s.getBoundingClientRect().top<=edge)i=j});
+  if(body.scrollTop>0&&body.scrollHeight-body.clientHeight-body.scrollTop<=2)i=buttons.length-1;
+  activate(i);
+ };
+ body.addEventListener('scroll',update,{passive:true});
+ ['wheel','touchstart','pointerdown','keydown'].forEach(ev=>body.addEventListener(ev,()=>{destination=null},{passive:true}));
+ return {reset(){destination=null;activate(0)},go(key){
+  const i=buttons.findIndex(b=>b.getAttribute(attr)===key),s=sections[i];if(!s)return;
+  activate(i);
+  const top=Math.max(0,Math.min(body.scrollHeight-body.clientHeight,body.scrollTop+s.getBoundingClientRect().top-body.getBoundingClientRect().top-8));
+  destination=Math.abs(body.scrollTop-top)<=2?null:top;
+  body.scrollTo({top,behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+ }};
+}
 function nonEdit(id,view,initialTab){
  const n=nonP(),x=id?n.psProjects.find(z=>String(z.id)===String(id)):null;if(id&&!x)return;
  if(view||!canCfg()){if(x)nonDetail(id);return}
@@ -458,7 +481,8 @@ function nonEdit(id,view,initialTab){
  const $=q=>ov.querySelector(q),$$=q=>[...ov.querySelectorAll(q)],put=(q,v)=>{const e=$(q);if(e)e.textContent=v};
  const g=k=>T($('#kn-'+k)?.value),numbers=k=>g(k)===''?'':Number(g(k));
  const scores=()=>KR.map(k=>{const v=$('[data-ke-score="'+k.c+'"]').value;return v===''?null:Number(v)});
- const show=k=>{tab=tabs.some(z=>z[0]===k)?k:'ring';$$('.kd2-tb [data-ke-tab]').forEach(b=>b.classList.toggle('on',b.dataset.keTab===tab));$$('[data-ke-pane]').forEach(p=>p.classList.toggle('on',p.dataset.kePane===tab));$('.kd2-body').scrollTop=0;$('[data-ke-prev]').disabled=tab==='ring';$('[data-ke-next]').disabled=tab==='skor'};
+ const ctxNav=kd2ContextNav(ov,'data-ke-context','ke-');
+ const show=k=>{tab=tabs.some(z=>z[0]===k)?k:'ring';$$('.kd2-tb [data-ke-tab]').forEach(b=>b.classList.toggle('on',b.dataset.keTab===tab));$$('[data-ke-pane]').forEach(p=>p.classList.toggle('on',p.dataset.kePane===tab));$('.kd2-body').scrollTop=0;if(tab==='ctx')ctxNav.reset();$('[data-ke-prev]').disabled=tab==='ring';$('[data-ke-next]').disabled=tab==='skor'};
  const label=c=>EA?EA.label(c):c,chosen=c=>c===main?' kd2-mn':sup.includes(c)?' kd2-su':'';
  function drawMap(){
   if(!EA){put('[data-ke-map]','Master EA belum termuat. Pemetaan lama dipertahankan.');return}
@@ -497,7 +521,7 @@ function nonEdit(id,view,initialTab){
  }
  ov.addEventListener('input',e=>{if(e.target.matches('[data-ke-search]')){query=e.target.value.toLowerCase().trim();drawMap();return}if(e.target.matches('input,textarea,select')&&!e.target.matches('[data-ke-domain],[data-ke-level]')){dirty=true;refresh()}});
  ov.addEventListener('change',e=>{const a=e.target.dataset;if('keDomain'in a){domain=e.target.value;drawMap()}else if('keLevel'in a){depth=e.target.value;drawMap()}else if(e.target.matches('input,textarea,select')&&!e.target.matches('[data-ke-search]')){dirty=true;refresh()}});
- ov.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset;if('keClose'in a)return close();if('keTab'in a)return show(a.keTab);if('kePrev'in a)return show(tabs[Math.max(0,tabs.findIndex(z=>z[0]===tab)-1)][0]);if('keNext'in a)return show(tabs[Math.min(tabs.length-1,tabs.findIndex(z=>z[0]===tab)+1)][0]);if('keContext'in a){$('#ke-'+a.keContext)?.scrollIntoView({behavior:'smooth',block:'start'});return}if('keRole'in a){role=a.keRole;$$('[data-ke-role]').forEach(z=>z.classList.toggle('pri',z===b));return}if('keFocus'in a){focus=!focus;b.classList.toggle('pri',focus);drawMap();return}if('keNode'in a)return choose(a.keNode);if('keRemove'in a){sup=sup.filter(z=>z!==a.keRemove);dirty=changedEA=true;drawMap();refresh();return}if('keClear'in a){if(confirm('Hapus seluruh pemetaan?')){main='';sup=[];dirty=changedEA=true;drawMap();refresh()}return}if('keSave'in a)return commit()});
+ ov.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset;if('keClose'in a)return close();if('keTab'in a)return show(a.keTab);if('kePrev'in a)return show(tabs[Math.max(0,tabs.findIndex(z=>z[0]===tab)-1)][0]);if('keNext'in a)return show(tabs[Math.min(tabs.length-1,tabs.findIndex(z=>z[0]===tab)+1)][0]);if('keContext'in a){ctxNav.go(a.keContext);return}if('keRole'in a){role=a.keRole;$$('[data-ke-role]').forEach(z=>z.classList.toggle('pri',z===b));return}if('keFocus'in a){focus=!focus;b.classList.toggle('pri',focus);drawMap();return}if('keNode'in a)return choose(a.keNode);if('keRemove'in a){sup=sup.filter(z=>z!==a.keRemove);dirty=changedEA=true;drawMap();refresh();return}if('keClear'in a){if(confirm('Hapus seluruh pemetaan?')){main='';sup=[];dirty=changedEA=true;drawMap();refresh()}return}if('keSave'in a)return commit()});
  drawMap();refresh();show(tab);
 }
 /* Detail usulan Non-ISTK (tampilan baca, desain v2): header navy (identitas, skor, status) + jalur Proses Bisnis EA (stepper putih)
@@ -547,13 +571,14 @@ function nonDetail(id,tab){
  document.querySelector('.kd2-ov')?.remove();
  const ov=document.createElement('div');ov.className='kd2-ov';ov.innerHTML='<section class="kd2" role="dialog" aria-modal="true" aria-label="Detail usulan '+E(x.name)+'">'+hero+step+'<main class="kd2-body">'+pRing+pCtx+pEa+pGate+pSkor+'</main>'+foot+'</section>';
  document.body.appendChild(ov);
- const show=t=>{ov.querySelectorAll('[data-kd2-tab]').forEach(b=>b.classList.toggle('on',b.dataset.kd2Tab===t&&b.closest('.kd2-tb')));ov.querySelectorAll('[data-kd2-pane]').forEach(pn=>pn.classList.toggle('on',pn.dataset.kd2Pane===t));ov.querySelector('.kd2-body').scrollTop=0};
+ const ctxNav=kd2ContextNav(ov,'data-kd2-ctx','kd2c-');
+ const show=t=>{ov.querySelectorAll('[data-kd2-tab]').forEach(b=>b.classList.toggle('on',b.dataset.kd2Tab===t&&b.closest('.kd2-tb')));ov.querySelectorAll('[data-kd2-pane]').forEach(pn=>pn.classList.toggle('on',pn.dataset.kd2Pane===t));ov.querySelector('.kd2-body').scrollTop=0;if(t==='ctx')ctxNav.reset()};
  show(tab||'ring');
  const close=()=>{ov.remove();document.removeEventListener('keydown',esc)},esc=e=>{if(e.key==='Escape')close()};document.addEventListener('keydown',esc);
  ov.addEventListener('click',e=>{const t=e.target;
   if(t===ov||t.closest('[data-kd2-close]'))return close();
   const tb=t.closest('[data-kd2-tab]');if(tb)return show(tb.dataset.kd2Tab);
-  const cx=t.closest('[data-kd2-ctx]');if(cx){ov.querySelectorAll('[data-kd2-ctx]').forEach(b=>b.classList.toggle('on',b===cx));const el=ov.querySelector('#kd2c-'+cx.dataset.kd2Ctx);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});return}
+  const cx=t.closest('[data-kd2-ctx]');if(cx){ctxNav.go(cx.dataset.kd2Ctx);return}
   const dm=t.closest('[data-kd2-dom]');if(dm){dm.classList.toggle('on');ov.querySelectorAll('[data-kd2-dommap]').forEach(m=>{m.hidden=!ov.querySelector('[data-kd2-dom="'+m.dataset.kd2Dommap+'"]').classList.contains('on')});return}
   const k=t.closest('[data-kd2-k]');if(k)return k.classList.toggle('open');
   if(t.closest('[data-kd2-edit]')&&canCfg()){close();nonEdit(id,false,t.closest('.kd2-step,.kd2-eafoot')?'ea':ov.querySelector('.kd2-pane.on')?.dataset.kd2Pane||'ring');return}
@@ -877,7 +902,7 @@ function isFunded(x){return x.included!==false} /* program ISTK bermetode MCDA: 
 .kd2-gate b{font-size:12px}.kd2-gate p{margin:3px 0 0;font-size:11px;color:#64748B;line-height:1.35}.kd2-gate em{display:inline-block;margin-top:5px;font-style:normal;font-size:10.5px;font-weight:800;border-radius:999px;padding:1px 8px;background:#F1F5F9;color:#475569}.kd2-gate.y em{background:#E3F5EB;color:#0F7A4B}.kd2-gate.n em{background:#FDE8E8;color:#B42318}
 .kd2-ctx{display:grid;grid-template-columns:210px 1fr;gap:16px}.kd2-ctx>nav{display:flex;flex-direction:column;gap:3px;position:sticky;top:0;align-self:start}
 .kd2-ctx>nav button{display:flex;justify-content:space-between;align-items:center;gap:6px;border:0;background:transparent;text-align:left;padding:8px 10px;border-radius:9px;font:600 12.5px inherit;color:#334155;cursor:pointer}
-.kd2-ctx>nav button.on{background:#F5F8FD;color:#12275A;box-shadow:inset 3px 0 0 #F2B92C}.kd2-ctx>nav em{font-style:normal;font-size:10px;font-weight:800;border-radius:999px;padding:1px 7px;flex:none}.kd2-ctx>nav em.y{background:#E3F5EB;color:#0F7A4B}.kd2-ctx>nav em.n{background:#FFF4D6;color:#8A5A00}
+.kd2-ctx>nav button.on{background:#F2F5FA;color:#12275A;box-shadow:inset 3px 0 0 #F2B92C}.kd2-ctx>nav em{font-style:normal;font-size:10px;font-weight:800;border-radius:999px;padding:1px 7px;flex:none}.kd2-ctx>nav em.y{background:#E3F5EB;color:#0F7A4B}.kd2-ctx>nav em.n{background:#FFF4D6;color:#8A5A00}
 .kd2-blk{border:1px solid #E2E8F0;border-radius:12px;padding:13px 16px;margin-bottom:10px;scroll-margin-top:8px}.kd2-blk h5{margin:0 0 6px;font-size:13px;color:#12275A;display:flex;gap:8px;align-items:center}
 .kd2-blk p,.kd2-blk li{font-size:12.8px;line-height:1.6;color:#1E293B;margin:0 0 4px}.kd2-blk ol{margin:4px 0 0;padding-left:20px}.kd2-blk.miss{background:#FFFBEA;border-style:dashed;border-color:#E9C46A}.kd2-blk .kd2-btn{margin:6px 0 0}
 .kd2-eahead{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}.kd2-dom{display:flex;gap:6px;flex-wrap:wrap}
