@@ -637,7 +637,7 @@ function mount(){
 /* Cheatsheet › SMART & MCDA: perbandingan metode dan rincian MCDA (sumber aturan: project-selection-kka.js). */
 function mcdaCompare(){
  const rows=[['Nama lengkap','Simple Multi-Attribute Rating Technique','Multi-Criteria Decision Analysis — mudahnya: <b>“skor tertimbang + gate”</b>'],
-  ['Cocok untuk','Memilih sub-proyek/modul di dalam satu program ISTK','Memprioritaskan seluruh usulan pengembangan SI satu tahun (lintas program & UE I, termasuk yang di luar ISTK) terhadap pagu & SDM'],
+  ['Cocok untuk','Memilih sub-proyek/modul di dalam satu program ISTK','Menilai usulan pengembangan SI <b>di luar ISTK</b>. Proyek ISTK diprioritaskan otomatis (tidak dinilai) dan mengambil pagu & SDM lebih dulu; sisa pagu & SDM diisi usulan non-ISTK sesuai peringkat'],
   ['Penyaring awal','—','Gate G1–G4: Lolos / Tinjau Ulang / Lengkapi'],
   ['Kriteria','12 kriteria (C1–C12), skala 1–5','7 kriteria (K1–K7), skala 1–5 dengan rubrik'],
   ['Bobot','Bobot per kriteria pada program','3 profil bobot: Seimbang, Prioritas Kepatuhan, Prioritas Efisiensi'],
@@ -654,7 +654,7 @@ function mcdaSection(){
    f('01','GATE','G1–G4 semua Ya → Lolos','Ada Tidak → Tinjau Ulang · ada yang belum dijawab → Lengkapi. Hanya yang Lolos diranking (dapat diubah di pengaturan).')+
    f('02','SKOR TERTIMBANG','Σ(skor K × bobot) ÷ 5 × 100','Skor 1–5 per kriteria; bobot dari profil aktif (total 100%). K7 terbalik: 5 = risiko terendah.')+
    f('03','KATEGORI','P1 ≥ '+(c?c.p1:75)+' · P2 ≥ '+(c?c.p2:65)+' · P3 ≥ '+(c?c.p3:50)+' · P4','P1 Utama, P2 Tinggi, P3 Menengah, P4 Rendah/Tunda.')+
-   f('04','ROADMAP','Urut peringkat, selama muat pagu DAN SDM → Didanai','Bila melampaui → Cadangan / Tunda; usulan berikutnya yang masih muat tetap didanai. Biaya bukan kriteria skor.')+
+   f('04','ROADMAP','ISTK dulu, lalu non-ISTK urut peringkat selama muat pagu DAN SDM → Didanai','Bila melampaui → Cadangan / Tunda; usulan berikutnya yang masih muat tetap didanai. Biaya bukan kriteria skor.')+
   '</div>'+
   '<div class="ps27-sheet-subhead"><h4>Kriteria & bobot aktif'+(c?' · profil '+E(c.profile)+' · '+c.year:'')+'</h4><span>'+KR.length+' kriteria</span></div>'+
   (KR.length?'<div class="ps27-sheet-tablewrap"><table class="ps27-sheet-table"><thead><tr><th>Kode</th><th>Kriteria</th><th>Pertanyaan penilaian</th><th>Bobot</th></tr></thead><tbody>'+
@@ -664,7 +664,7 @@ function mcdaSection(){
    ps27SheetCard('SENS','Uji sensitivitas','Skor dihitung ulang dengan ketiga profil bobot. <b>Stabil</b> bila rentang peringkat ≤ toleransi ('+(c?c.tol:3)+'); selain itu <b>Sensitif bobot</b> — perlu dibahas forum.')+
    ps27SheetCard('KUAD','Kuadran Nilai–Kemudahan','Nilai Manfaat = K1–K5, Kemudahan = K6–K7 (diboboti, 0–100). ≥ '+(c?c.quadThr:60)+' dianggap tinggi: Quick Win, Proyek Strategis, Pelengkap, Tunda / Kaji Ulang — dipakai untuk saran pendekatan.')+
    ps27SheetCard('WSJF','Pembanding WSJF','(K2 + K4 + K5) ÷ (6 − K7). <b>Konsisten</b> bila selisih peringkat WSJF vs skor tertimbang ≤ toleransi; bila tidak, tandai untuk ditinjau.')+
-   ps27SheetCard('ISTK','Usulan di luar ISTK','Proyek yang tidak termapping ke ISTK ikut dinilai & berbagi pagu/SDM, tetapi tidak masuk Penetapan, Charter, RKMK, WBS dan tidak dipantau PMO Kemenkeu.',ps27SheetJump('Di luar ISTK','prioritasi:mcda-non'))+
+   ps27SheetCard('ISTK','ISTK vs non-ISTK','Proyek ISTK: prioritas otomatis, tidak dinilai. Usulan di luar ISTK: dinilai MCDA, berbagi sisa pagu/SDM, tidak masuk Penetapan, Charter, RKMK, WBS dan tidak dipantau PMO Kemenkeu.',ps27SheetJump('Di luar ISTK','prioritasi:mcda-non'))+
    ps27SheetCard('REPO','Repositori hasil','Simpan hasil sebagai versi (Draft/Final) beserta bobot, skor dan roadmap saat itu; versi Final tidak dapat dihapus.',ps27SheetJump('Repositori','prioritasi:mcda-repo'))+
    ps27SheetCard('REF','Dasar praktik','Struktur kriteria dari COBIT 2019 & TOGAF 10; portofolio terhadap pagu & kapasitas dari PMI Portfolio Management; tata kelola ISO/IEC 38500; mandat regulasi SPBE, PDP, keamanan siber.',ps27SheetJump('Referensi & Rubrik','prioritasi:mcda-ref'))+
   '</div>'+
@@ -714,7 +714,7 @@ function helpPage(tab){
    ['03','Manfaat & indikator','Tetapkan outcome yang terukur, baseline, target, benefit owner, kelompok penerima dan waktu ukur.','usulan:detail:benefits'],
    ['04','Stakeholder & risiko','Petakan pemangku kepentingan, ketergantungan lintas unit, risiko dan rencana mitigasi.','usulan:detail:stakeholders'],
    ['05','Pemetaan proyek','Ambil referensi Riwayat Proyek atau buat usulan baru. Periksa nama, ruang lingkup, UIC, tahun, status dan kode.','mapping:proposal'],
-   ['06','Prioritasi proyek','Pilih metode SMART atau MCDA. SMART: isi 12 kriteria dan ambang. MCDA: centang gate G1–G4, isi skor K1–K7 (arti 1–5 ada di rubrik), cek roadmap pagu & SDM, lalu simpan hasil ke Repositori. Usulan yang tidak termapping ke ISTK dicatat di lingkup Di luar ISTK.','prioritasi:ranking'],
+   ['06','Prioritasi proyek','Pilih metode SMART atau MCDA. SMART: isi 12 kriteria dan ambang. MCDA: centang gate G1–G4, isi skor K1–K7 (arti 1–5 ada di rubrik), cek roadmap pagu & SDM, lalu simpan hasil ke Repositori. Proyek ISTK diprioritaskan otomatis; yang dinilai MCDA hanya usulan di luar ISTK.','prioritasi:ranking'],
    ['07','Charter Program','Susun charter tingkat program dan periksa pratinjau 3 slide sebelum penetapan. Dokumen proyek disusun per proyek di Project Management.','charter'],
    ['08','Kontrak dan penetapan','Periksa target K-Wide TW I–IV, nomor/tanggal/pejabat, dokumen kontrak dan proyek terpilih sebelum penetapan.','penetapan-program'],
    ['09','Reviu RKMK','Periksa substansi tahun tujuan, penanggung jawab dan keluaran sebelum mengunduh rancangan Word.','rkmk']
