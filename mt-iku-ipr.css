@@ -54,3 +54,20 @@
 @media(max-width:700px){.iku-sumg{grid-template-columns:1fr 1fr}.iku-q{width:100%}}
 .iku-mini{display:inline-flex;flex-wrap:wrap;gap:4px;margin:3px 0 0 4px;vertical-align:middle}
 .iku-mini span{padding:2px 6px;border-radius:6px;border:1px solid #D6E4FA;background:#F4F7FC;color:#163A6B;font-size:9.5px;font-weight:750;white-space:nowrap}
+/* IPR 261126: pratinjau sebelum unduh (meniru format sheet Excel) */
+.ipr-pv{margin-top:10px;border:1px solid #DCE3EE;border-radius:10px;overflow:hidden;background:#fff}
+.ipr-pv[hidden]{display:none!important}
+.ipr-pv-tabs{display:flex;border-bottom:1px solid #E3E8F1;background:#fff}
+.ipr-pv-tabs button{all:unset;box-sizing:border-box;flex:1;text-align:center;padding:9px 6px;font:600 12px Inter,Arial,sans-serif;color:#51607A;cursor:pointer;border-bottom:3px solid transparent}
+.ipr-pv-tabs button:hover{color:#0F2346;background:#F7F9FC}
+.ipr-pv-tabs button.on{color:#0F2346;border-bottom-color:#D6AD3A;font-weight:700}
+.ipr-pv-tabs button i{font-style:normal;margin-left:6px;padding:1px 7px;border-radius:10px;background:#EEF2F8;font-size:10.5px;color:#41506B}
+.ipr-pv-tabs button.on i{background:#FFF1C9;color:#7A5300}
+.ipr-pv-sc{max-height:42vh;overflow:auto}
+.ipr-pv table{width:100%;min-width:900px;border-collapse:collapse;table-layout:fixed;font:12px/1.4 Barlow,Inter,Arial,sans-serif;color:#1B2436}
+.ipr-pv th{position:sticky;top:0;z-index:1;background:#1F497D;color:#fff;font-weight:700;text-align:center;vertical-align:middle;padding:7px 6px;border:1px solid #16365E}
+.ipr-pv td{border:1px solid #C9D1DD;padding:6px 7px;vertical-align:top;white-space:pre-line;word-break:break-word}
+.ipr-pv td:first-child{text-align:center}
+.ipr-pv tr.ss td{background:#FDE9D9;font-weight:700}
+.ipr-pv td.em{color:#A3ADBD}
+.ipr-pv-ft{display:flex;justify-content:space-between;gap:8px;padding:7px 10px;border-top:1px solid #E3E8F1;background:#F9FBFE;font-size:11px;color:#6B7690}
