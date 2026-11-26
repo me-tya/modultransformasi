@@ -95,3 +95,20 @@
 .chx-phd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 0 -6px}
 .chx-phd>span{font-size:12px;font-weight:800;color:#1F2A44;letter-spacing:.02em;text-transform:uppercase}
 .chx-fs small{font-size:11px;font-weight:800;color:#5b6b85;padding:0 2px 0 8px}
+/* Ringkasan untuk tampilan export */
+.chx-sumb{border:1px solid #c9d1e0;background:#fff;border-radius:999px;padding:4px 11px;font:800 12px 'Inter',sans-serif;color:#1F2A44;cursor:pointer;white-space:nowrap}
+.chx-sumb:hover{background:#FFF4D6;border-color:#FDB913}
+.chx-sumdlg{width:min(1180px,96vw)}
+.chx-sumdlg main{display:flex;flex-direction:column;gap:10px}
+.chx-sumtop{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font:600 12px 'Inter',sans-serif;color:#5b6b85;position:sticky;top:-1px;background:#fff;padding:6px 0;z-index:2}
+.chx-sumtop label{display:flex;align-items:center;gap:6px;color:#1F2A44;font-weight:800}
+.chx-sumtop select{height:32px;border:1px solid #c9d1e0;border-radius:7px;padding:0 6px}
+.chx-sumrow{display:grid;grid-template-columns:1fr 1fr;gap:12px;border:1px solid #dce4ef;border-radius:10px;padding:10px;background:#fbfcfe}
+.chx-sumorig b,.chx-sumedit b{display:flex;align-items:center;gap:8px;font:800 12.5px 'Inter',sans-serif;color:#1F2A44;margin-bottom:6px}
+.chx-sumorig em,.chx-sumedit em{font-style:normal;font-weight:600;font-size:11px;color:#5b6b85}
+.chx-sumedit em.ed{color:#a15c00}
+.chx-sumedit .lnk{margin-left:auto;border:0;background:none;color:#1d5fa8;font:700 11.5px 'Inter',sans-serif;cursor:pointer}
+.chx-sumorig ul{margin:0;padding-left:18px;max-height:220px;overflow:auto;font-size:12px;line-height:1.45;color:#334155}
+.chx-sumedit textarea{width:100%;box-sizing:border-box;border:1px solid #c9d8ee;border-radius:8px;padding:7px 9px;font:500 12.5px/1.5 'Inter',sans-serif;resize:vertical}
+.chx-sumdlg footer{display:flex;align-items:center;gap:8px}
+@media(max-width:800px){.chx-sumrow{grid-template-columns:1fr}}

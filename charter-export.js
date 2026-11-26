@@ -21,8 +21,37 @@ const QN=['TWI','TWII','TWIII','TWIV'];
 /* ---------- MODEL ---------- */
 function yearsOf(c){const a=+c.p1||+c.tahun||new Date().getFullYear(),b=Math.max(a,+c.p2||a);const y=[];for(let i=a;i<=b&&y.length<10;i++)y.push(i);return y}
 function pjText(u,pd){return [u?'Utama: '+u:'',pd?'Pendukung: '+pd:''].filter(Boolean).join('\n')}
+/* ---------- RINGKASAN (tampilan export) ----------
+   Isian asli charter tidak diubah (dipakai RKMK). Mode "Ringkas" memakai p.psCharterSum bila sudah disunting,
+   selain itu ringkasan otomatis berbasis aturan (tanpa AI; data tidak keluar aplikasi). */
+const SUMF=[['tujuan','Tujuan Program'],['lb','Latar Belakang'],['tb','Terobosan'],['out','Output'],['oc','Outcome'],['ris','Risiko'],['pk','Pendukung Kesuksesan'],['ms','Key Milestones']];
+const SUM_MAX_WORDS=14,CUT=/\s(?:melalui|dengan|sehingga|agar|guna|termasuk|yang mencakup|antara lain|serta)\s/i,TAILW=/\s(?:dan|atau|serta|yang|di|ke|dari|untuk|dengan|pada|dalam|oleh|melalui|agar|serta|para)$/i;
+function sumItem(t,max){max=max||SUM_MAX_WORDS;let x=strip(t).replace(/\s+/g,' ').trim();if(!x)return '';
+ const lab=x.match(/^([^:]{6,80}):\s+(.+)$/);if(lab){const ws=lab[1].split(' ').filter(w=>!/^(dan|atau|di|ke|dari|untuk|serta|yang|&)$/i.test(w)),cap=ws.filter(w=>/^[A-Z0-9]/.test(w)).length;
+  /* "Judul Bertitel: uraian" → pakai judulnya; "frasa biasa: uraian" → pakai uraian setelah titik dua. */
+  x=ws.length>=2&&cap/ws.length>=.6?lab[1]:(lab[1].split(' ').length<=4?lab[1]+' '+lab[2]:x)}
+ x=x.replace(/\s*\([^)]*\)/g,'').replace(/\s*\[[^\]]*\]/g,'').trim();
+ x=x.split(/(?<=[.!?])\s+(?=[A-Z])/)[0];
+ const semi=x.split(/;\s*/);if(semi[0].split(' ').length>=4)x=semi[0];
+ const m=x.match(CUT);if(m&&x.slice(0,m.index).split(' ').length>=4)x=x.slice(0,m.index);
+ let w=x.split(' ');if(w.length>max){w=w.slice(0,max);x=w.join(' ')}
+ while(TAILW.test(x))x=x.replace(TAILW,'');
+ return x.replace(/[,;:–\-\s]+$/,'').replace(/\.$/,'').trim();
+}
+function sumList(L,maxItems){const seen=new Set(),out=[];list(L).forEach(t=>{const v=sumItem(t);const k=v.toLowerCase();if(v&&!seen.has(k)){seen.add(k);out.push(v)}});return out.slice(0,Math.max(1,+maxItems||6))}
+/* Milestone ditulis "tahun | teks" per baris; ringkas = teks dipendekkan, maks. ½ batas butir per tahun. */
+const msLines=c=>(c.ms||[]).filter(m=>T(m.t)).slice().sort((a,b)=>+a.y-+b.y).map(m=>(+m.y||'')+' | '+T(m.t));
+const msParse=L=>[].concat(L||[]).map(x=>{const m=String(x).match(/^\s*(\d{4})\s*[|:–-]\s*(.+)$/);return m?{y:+m[1],t:m[2].trim()}:null}).filter(Boolean);
+function msSum(c,maxItems){const per=Math.max(1,Math.ceil((+maxItems||6)/2)),by={};(c.ms||[]).filter(m=>T(m.t)).forEach(m=>{(by[+m.y]=by[+m.y]||[]).push(m.t)});
+ return Object.keys(by).sort().flatMap(y=>sumList(by[y],per).map(t=>y+' | '+t))}
+function autoSum(c,maxItems){const o={};SUMF.forEach(([k])=>{if(k==='ms'){o.ms=msSum(c,maxItems);return}if(k==='tujuan'){const L=list(c.tujuan);o.tujuan=L.length>1?sumList(L,maxItems).join('; '):sumItem(c.tujuan,28)}else o[k]=sumList(k==='tb'?String(c.tb||'').split('\n'):c[k],maxItems)});return o}
+const brief=()=>{try{return S.ui.chxBrief==='brief'}catch(_){return false}};
+function sumOf(c,p){const sv=(p&&p.psCharterSum)||{},a=autoSum(c||{},sv.max||6),o={};SUMF.forEach(([k])=>{const v=sv[k];o[k]=(Array.isArray(v)?v.filter(Boolean).length:String(v||'').trim())?v:a[k]});o.max=sv.max||6;return o}
+function briefC(c,p){if(!brief()||!c)return c;const o=sumOf(c,p),x=Object.assign({},c);SUMF.forEach(([k])=>{x[k]=k==='tb'?[].concat(o.tb).join('\n'):k==='tujuan'?String(o.tujuan||''):k==='ms'?msParse(o.ms):[].concat(o[k])});
+ /* Rencana kerja & kriteria: teks dipendekkan (baris tetap utuh). */
+ x.rk=(c.rk||[]).map(r=>Object.assign({},r,{t:sumItem(r.t,12)||r.t}));x.kp=(c.kp||[]).map(k=>Object.assign({},k,{k:list(k.k).map(t=>sumItem(t,22)||t)}));return x}
 function model(c,p){
- c=c||{};p=p||{};
+ c=c||{};p=p||{};c=briefC(c,p);
  const judul=T(c.judul)||T(p.nama)||'—',yrs=yearsOf(c),num=L=>L.map((t,i)=>({n:i+1,txt:t}));
  const ms=[];yrs.forEach(y=>{const L=(c.ms||[]).filter(m=>+m.y===y&&T(m.t)).map(m=>T(m.t));if(L.length){ms.push({h:String(y)});L.forEach((t,i)=>ms.push({n:i+1,txt:t}))}});
  (c.ms||[]).filter(m=>T(m.t)&&!yrs.includes(+m.y)).forEach((m,i)=>{if(!i)ms.push({h:'Lainnya'});ms.push({n:i+1,txt:T(m.t)})});
@@ -155,6 +184,9 @@ function setFs(pid,dir,sec){const p=(S.programs||[]).find(x=>String(x.id)===Stri
  try{if(typeof save==='function')save()}catch(_){}
  document.querySelectorAll('[data-chx-fs-pid]').forEach(g=>{if(String(g.dataset.chxFsPid)!==String(pid))return;const k=fsOf(p,g.dataset.chxFsSec||'');g.querySelector('[data-chx-fs-v]').textContent=fsLbl(k);g.querySelector('[data-chx-fs="-1"]').disabled=k!=null&&k<=FS_MIN+.001;g.querySelector('[data-chx-fs="1"]').disabled=k!=null&&k>=FS_MAX-.001});
  document.querySelectorAll('[data-chx-preview][data-chx-mounted]').forEach(x=>{try{const r=resolve(x);if(r&&r.p&&String(r.p.id)===String(pid)&&x.__chxRender){const y=window.scrollY;x.__chxRender();window.scrollTo(0,y)}}catch(_){}})}
+function setBrief(v){try{S.ui.chxBrief=v==='brief'?'brief':'full';if(typeof save==='function')save()}catch(_){}
+ document.querySelectorAll('[data-chx-brief]').forEach(b=>{const on=b.dataset.chxBrief===(brief()?'brief':'full');b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))});
+ document.querySelectorAll('[data-chx-preview]').forEach(x=>x.__chxRender&&x.__chxRender())}
 function setMode(v){try{S.ui.chxMode=v==='mono'?'mono':'color';if(typeof save==='function')save()}catch(_){}
  document.querySelectorAll('[data-chx-mode]').forEach(b=>{const on=b.dataset.chxMode===mode();b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))});
  document.querySelectorAll('[data-chx-preview]').forEach(x=>x.__chxRender&&x.__chxRender());}
@@ -184,7 +216,7 @@ function clipped1(sl){const E=sl.E,idx=BOX1.map(([t])=>E.findIndex(e=>txtOf(e)==
 const clippedAny=sl=>{const i=sl.E.findIndex(e=>txtOf(e)==='MILESTONES (LEVEL 4)');return sl.E.slice(i<0?0:i).some(e=>ELL.test(txtOf(e)))};
 function deckFor(src){
  if(!src||!src.c||typeof chDeck3!=='function'||typeof dkHtml!=='function')return null;
- const p=src.p||{},c=Object.assign({},src.c),y=+c.tahun||+p.psYear||+(S.ui&&S.ui.psSelectedYear)||new Date().getFullYear();
+ const p=src.p||{},c=Object.assign({},briefC(src.c,src.p)),y=+c.tahun||+p.psYear||+(S.ui&&S.ui.psSelectedYear)||new Date().getFullYear();
  c.tahun=y;c.ver=c.ver||1;c.prog=c.prog||p.akr;c.p1=+c.p1||y;c.p2=Math.max(+c.p1,+c.p2||+c.p1);c.judul=c.judul||p.nama||'';
  ['lb','out','oc','ris','pk','ow'].forEach(k=>{if(!Array.isArray(c[k]))c[k]=list(c[k])});
  ['ms','kp','rk','cs','mf'].forEach(k=>{if(!Array.isArray(c[k]))c[k]=[]});
@@ -341,8 +373,31 @@ function bar(attrs,all,fs){
  const grp=(lab,scope)=>'<div class="chx-mg"><small>'+lab+'</small>'+FMT.map(([k,l])=>'<button type="button" role="menuitem" class="chx-mi" data-chx-x="'+k+'"'+(scope?' data-chx-scope="all"':'')+'>'+l+'</button>').join('')+'</div>';
  return '<div class="chx-bar" data-chx-bar '+(attrs||'')+'>'+
   '<span class="chx-chips" role="group" aria-label="Mode warna">'+[['color','Berwarna'],['mono','Monokrom']].map(([k,l])=>'<button type="button" class="chx-chip'+(mode()===k?' on':'')+'" data-chx-mode="'+k+'" aria-pressed="'+(mode()===k)+'">'+l+'</button>').join('')+'</span>'+
-  (fs?fsCtl(fs.pid,fs.k):'')+'<div class="chx-dd"><button type="button" class="chx-ddb" data-chx-dd aria-haspopup="menu" aria-expanded="false">Export to <span aria-hidden="true">▾</span></button>'+
+  briefChips()+(fs?'<button type="button" class="chx-sumb" data-chx-sum="'+E(fs.pid)+'" title="Atur teks ringkas untuk tampilan export (isian asli tetap utuh)">✎ Ringkasan</button>'+fsCtl(fs.pid,fs.k):'')+'<div class="chx-dd"><button type="button" class="chx-ddb" data-chx-dd aria-haspopup="menu" aria-expanded="false">Export to <span aria-hidden="true">▾</span></button>'+
   '<div class="chx-menu" role="menu" hidden>'+grp(all?'Program ini':'Charter Program','')+(all?grp('Semua program ('+all.n+')','all'):'')+'</div></div></div>';
+}
+function briefChips(){const b=brief()?'brief':'full';return '<span class="chx-chips chx-brief" role="group" aria-label="Isi narasi" title="Lengkap = isian asli · Ringkas = versi ringkas untuk tampilan export">'+[['full','Lengkap'],['brief','Ringkas']].map(([k,l])=>'<button type="button" class="chx-chip'+(b===k?' on':'')+'" data-chx-brief="'+k+'" aria-pressed="'+(b===k)+'">'+l+'</button>').join('')+'</span>'}
+/* Dialog Ringkasan: kiri isian asli (hanya baca), kanan teks ringkas (satu butir per baris) yang bisa disunting. */
+function sumDialog(pid){const P=(S.programs||[]).find(x=>String(x.id)===String(pid));const src=P&&fromProgram(P);if(!src||!src.c){say('Charter Program belum tersedia.');return}
+ const c=src.c,cur=sumOf(c,P),saved=P.psCharterSum||{};document.querySelectorAll('.chx-sumov').forEach(x=>x.remove());
+ const orig=k=>k==='ms'?msLines(c):k==='tujuan'?list(c.tujuan):k==='tb'?String(c.tb||'').split('\n').map(strip).filter(Boolean):list(c[k]);
+ const val=k=>k==='tujuan'?String(cur.tujuan||''):[].concat(cur[k]||[]).join('\n');
+ const words=t=>String(t||'').split(/\s+/).filter(Boolean).length;
+ const ov=document.createElement('div');ov.className='chx-ov chx-sumov';
+ ov.innerHTML='<section class="chx-dlg chx-sumdlg" role="dialog" aria-modal="true" aria-label="Ringkasan Charter"><header><div><b>Ringkasan untuk Tampilan Export</b><small>'+E(P.nama)+' · isian asli charter tidak berubah (tetap dipakai untuk RKMK)</small></div><button type="button" data-chx-close aria-label="Tutup">×</button></header>'+
+  '<main><div class="chx-sumtop"><label>Maks. butir per isian <select data-sum-max>'+[3,4,5,6,8,10].map(n=>'<option '+(n===(+cur.max||6)?'selected':'')+'>'+n+'</option>').join('')+'</select></label><button type="button" class="btn" data-sum-auto title="Ganti semua teks ringkas dengan hasil ringkas otomatis">↻ Ringkas otomatis semua</button><span>Satu baris = satu butir (Key Milestones: «tahun | teks»). Kosongkan kolom untuk kembali ke ringkasan otomatis.</span></div>'+
+  SUMF.map(([k,l])=>{const o=orig(k);return '<div class="chx-sumrow"><div class="chx-sumorig"><b>'+E(l)+' <em>asli · '+o.length+' butir · '+words(o.join(' '))+' kata</em></b><ul>'+o.map(t=>'<li>'+E(t)+'</li>').join('')+'</ul></div>'+
+   '<div class="chx-sumedit"><b>Ringkas'+((Array.isArray(saved[k])?saved[k].length:String(saved[k]||'').trim())?' <em class="ed">disunting</em>':' <em>otomatis</em>')+'<button type="button" class="lnk" data-sum-one="'+k+'">↻ ringkas otomatis</button></b><textarea data-sum="'+k+'" rows="'+(k==='tujuan'?Math.min(6,Math.max(3,Math.ceil(val(k).length/90)+1)):Math.min(10,Math.max(2,(val(k).match(/\n/g)||[]).length+2)))+'">'+E(val(k))+'</textarea></div></div>'}).join('')+'</main>'+
+  '<footer><button type="button" class="btn" data-sum-reset>Hapus suntingan</button><span style="flex:1"></span><button type="button" class="btn" data-chx-close>Batal</button><button type="button" class="btn mt-dlbtn" data-sum-save>Simpan ringkasan</button></footer></section>';
+ document.body.appendChild(ov);
+ const max=()=>+ov.querySelector('[data-sum-max]').value||6,fill=k=>{const a=autoSum(c,max());ov.querySelector('[data-sum="'+k+'"]').value=k==='tujuan'?a.tujuan:[].concat(a[k]).join('\n')};
+ ov.addEventListener('click',e=>{const t=e.target;if(t===ov||t.closest('[data-chx-close]')){ov.remove();return}
+  const one=t.closest('[data-sum-one]');if(one){fill(one.dataset.sumOne);return}
+  if(t.closest('[data-sum-auto]')){SUMF.forEach(([k])=>fill(k));return}
+  if(t.closest('[data-sum-reset]')){delete P.psCharterSum;try{save()}catch(_){}ov.remove();say('Suntingan ringkasan dihapus; tampilan Ringkas memakai ringkasan otomatis.');setBrief(brief()?'brief':'full');return}
+  if(t.closest('[data-sum-save]')){const o={max:max(),at:new Date().toISOString()};SUMF.forEach(([k])=>{const v=ov.querySelector('[data-sum="'+k+'"]').value;o[k]=k==='tujuan'?v.trim():v.split('\n').map(x=>x.trim()).filter(Boolean)});
+   P.psCharterSum=o;try{save()}catch(_){}ov.remove();if(!brief())setBrief('brief');else setBrief('brief');say('Ringkasan disimpan. Tampilan export memakai mode Ringkas.')}});
+ ov.querySelector('[data-sum-max]').addEventListener('change',()=>SUMF.forEach(([k])=>{if(!((Array.isArray(saved[k])?saved[k].length:String(saved[k]||'').trim())))fill(k)}));
 }
 /* Semua program tahun y saja (tanpa grup 'Program ini'). */
 function barAllYear(y,n){return bar('data-chx-all="'+E(y)+'" data-chx-sel="1"',null).replace(/data-chx-x="(\w+)"/g,'data-chx-x="$1" data-chx-scope="all"').replace('<small>Charter Program</small>','<small>Program terpilih ('+n+')</small>')}
@@ -364,7 +419,7 @@ async function exportAs(fmt,src){
    Kinerja: hasil paginasi di-cache per isi charter + mode (render ulang aplikasi tidak menyusun ulang halaman),
    pratinjau di dalam <details> tertutup baru disusun saat dibuka, dan penyesuaian skala hanya saat lebar berubah. */
 const CACHE=new Map();
-function cacheKey(src,md){try{return md+'|'+JSON.stringify([src.c,src.p&&[src.p.id,src.p.kode,src.p.kodeResmi,src.p.nama,src.p.uic,src.p.pend,src.p.psYear,fsMap(src.p)]])}catch(_){return ''}}
+function cacheKey(src,md){try{return md+'|'+JSON.stringify([src.c,src.p&&[src.p.id,src.p.kode,src.p.kodeResmi,src.p.nama,src.p.uic,src.p.pend,src.p.psYear,fsMap(src.p),brief(),src.p.psCharterSum||null]])}catch(_){return ''}}
 function pagesHtml(src,md){
  const k=cacheKey(src,md);if(k&&CACHE.has(k))return CACHE.get(k);
  const m=model(src.c,src.p);m.mode=md;const o=offscreen(m);
@@ -404,10 +459,12 @@ document.addEventListener('click',ev=>{
   if(!menu.hidden){menu.classList.remove('up');const r=menu.getBoundingClientRect();if(r.bottom>window.innerHeight-8)menu.classList.add('up')}return}
  if(!ev.target.closest?.('.chx-menu'))closeMenus();
  const f=ev.target.closest?.('[data-chx-fs]');if(f){ev.preventDefault();ev.stopPropagation();const g=f.closest('[data-chx-fs-pid]');if(g&&!f.disabled)setFs(g.dataset.chxFsPid,+f.dataset.chxFs,g.dataset.chxFsSec||'');return}
+ const bb=ev.target.closest?.('[data-chx-brief]');if(bb){ev.preventDefault();ev.stopPropagation();setBrief(bb.dataset.chxBrief);return}
+ const sb=ev.target.closest?.('[data-chx-sum]');if(sb){ev.preventDefault();ev.stopPropagation();sumDialog(sb.dataset.chxSum);return}
  const m=ev.target.closest?.('[data-chx-mode]');if(m){ev.preventDefault();ev.stopPropagation();setMode(m.dataset.chxMode);return}
  const x=ev.target.closest?.('[data-chx-x]');if(x){ev.preventDefault();ev.stopPropagation();if(x.disabled)return;const src=resolve(x);closeMenus();x.disabled=true;exportAs(x.dataset.chxX,src).finally(()=>{x.disabled=false})}
 },true);
 if(typeof MutationObserver==='function'&&document.body){let pend=0;new MutationObserver(()=>{if(pend)return;pend=requestAnimationFrame(()=>{pend=0;if(document.querySelector('[data-chx-preview]:not([data-chx-mounted])'))mountAll()})}).observe(document.body,{childList:true,subtree:true})}
 function listAll(y){return (S.programs||[]).filter(p=>+p.psYear===+y&&!p.arsip&&p.psListStatus!=='Arsip').map(fromProgram).filter(Boolean)}
-window.MT_CHX={barAllYear,deckFor,pagesFor,listAll,barAll,bundle,model,docxXml,docxBlob,paginate,bar,barFor,barSrc,preview,mountAll,open,register,fromProgram,exportAs,setMode,mode,fsCtl,fsOf,version:'20261125-chx5'};
+window.MT_CHX={barAllYear,deckFor,pagesFor,listAll,barAll,bundle,model,docxXml,docxBlob,paginate,bar,barFor,barSrc,preview,mountAll,open,register,fromProgram,exportAs,setMode,mode,fsCtl,fsOf,sumBtn:pid=>'<button type="button" class="chx-sumb" data-chx-sum="'+E(pid)+'" title="Atur teks ringkas untuk tampilan export">✎ Ringkasan</button>',setBrief,brief,briefChips,sumDialog,autoSum,sumItem,version:'20261125-chx5'};
 })();

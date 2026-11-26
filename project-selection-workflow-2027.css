@@ -481,3 +481,5 @@
 #app .ps27-chall-item.off>summary b{opacity:.85}
 #app .ps27-chall-item>summary .chx-fs{margin-left:auto}
 #app .ps27-chall-item>summary .chx-fs+.btn{margin-left:0}
+#app .ps27-chall-item>summary .chx-sumb{margin-left:auto}
+#app .ps27-chall-item>summary .chx-sumb+.chx-fs{margin-left:0}
