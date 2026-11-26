@@ -14,6 +14,17 @@ const list=()=>I.programs();
 const current=()=>I.pickedProgram();
 const ws=()=>{S.ui.ps27=S.ui.ps27||{sourceYear:2026,selected:[],search:'',sub:'identity',filterOpen:false};return S.ui.ps27};
 const TABS=[['usulan','Usulan Program'],['mapping','Pemetaan Proyek'],['prioritasi','Prioritasi'],['charter','Charter Program'],['penetapan-program','Penetapan Program'],['rkmk','Draft RKMK']];
+const ISTK_TABS=TABS.filter(t=>t[0]!=='prioritasi');
+function laneNav(active){
+ const choices=[['istk','Program & Proyek ISTK','Usulan, pemetaan, charter, penetapan dan Draft RKMK.'],['non','Clearance Proyek Non ISTK','Telaah dan prioritas usulan SI di luar ISTK. ISTK diperhitungkan terlebih dahulu dalam simulasi anggaran dan SDM, tanpa penilaian MCDA.']];
+ return '<nav class="ps27-lanes" role="tablist" aria-label="Jalur Project Selection">'+choices.map(([k,label,tip])=>'<button type="button" role="tab" class="'+(active===k?'on':'')+'" aria-selected="'+(active===k)+'" data-ps27-lane="'+k+'" title="'+E(tip)+'"><span class="ps27-lane-icon" aria-hidden="true">'+(k==='istk'?'<svg viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5ZM3 12l9 5 9-5M3 16l9 5 9-5"/></svg>':'<svg viewBox="0 0 24 24"><path d="m3 6 2 2 4-4M11 6h10M3 12l2 2 4-4M11 12h10M3 18l2 2 4-4M11 18h10"/></svg>')+'</span>'+E(label)+'</button>').join('')+'</nav>';
+}
+function switchLane(lane){
+ if(yr()<2027||!['istk','non'].includes(lane))return;
+ const u=state(),w=ws();
+ if(lane==='non'){if(u.tab==='prioritasi')return;w.istkLastTab=u.tab;navigate('prioritasi');}
+ else {if(u.tab!=='prioritasi')return;const t=ISTK_TABS.some(x=>x[0]===w.istkLastTab)?w.istkLastTab:'usulan';u.tab=t;save();render();}
+}
 function sourcePrograms(){const y=+ws().sourceYear;return (S.programs||[]).filter(p=>{if(p.psYear)return +p.psYear===y;const yrs=String(p.periode||'').match(/20\d{2}/g)||[];const start=+p.mulai||+(yrs[0]||0),end=+(yrs[yrs.length-1]||start);return start&&start<=y&&end>=y});}
 function sourceWbs(p,y){return (S.wbs||[]).filter(w=>w.prog===p.akr&&!w.arsip&&+(String(w.f||w.s||'').slice(0,4))===+y);}
 function shiftDate(v,from,to){return typeof v==='string'&&new RegExp('^'+from+'-\\d{2}-\\d{2}').test(v)?String(to)+v.slice(4):v;}
@@ -157,7 +168,7 @@ function filter(p){
  const title={
   'usulan':'Usulan Program',
   'mapping':'Pemetaan Proyek',
-  'prioritasi':'Prioritasi',
+  'prioritasi':yr()>=2027?'Clearance Proyek Non ISTK':'Prioritasi',
   'charter':'Charter Program',
   'penetapan-program':'Penetapan Program',
   'rkmk':'Draft RKMK'
@@ -313,15 +324,15 @@ function methodChooser(p,ro){
 }
 /* 2027+: proyek ISTK otomatis terpilih (tidak diprioritaskan). Prioritasi = clearance usulan Non-ISTK yang masuk ke Pusakti; default MCDA, SMART sebagai pembanding. */
 if(typeof window!=='undefined')window.MT_PS_PICK_OVERRIDE=()=>{try{return state().tab==='prioritasi'&&yr()>=2027&&window.MT_PS_KKA&&window.MT_PS_KKA.nonMethod()==='smart'?window.MT_PS_KKA.nonSmartP():null}catch(_){return null}};
-function nonIstkPrio(){
- const K=window.MT_PS_KKA;if(!K)return '<div class="ps27-card ps27-empty">Memuat…</div>';
+function nonIstkPrio(stageHtml=null){
+ const K=window.MT_PS_KKA;if(!K)return (stageHtml||'')+'<div class="ps27-card ps27-empty">Memuat…</div>';
  const m=K.nonMethod();
  const seg='<div class="kka-method" role="radiogroup" aria-label="Metode penilaian usulan Non-ISTK"><span>Metode</span><div class="kka-mseg">'+[['kka','MCDA','Metode utama (Kertas Kerja A Pusakti): gate G1–G4, K1–K7, peringkat, pagu & SDM.'],['smart','SMART','Pembanding: 12 kriteria SMART dengan ambang skor.']].map(o=>'<label title="'+E(o[2])+'" class="'+(m===o[0]?'on':'')+'"><input type="radio" data-ps27-nmethod="'+o[0]+'" name="ps27-nmethod" value="'+o[0]+'"'+(m===o[0]?' checked':'')+'>'+o[1]+(o[0]==='kka'?' <small>utama</small>':' <small>pembanding</small>')+'</label>').join('')+'</div></div>';
  const intro='<div class="ps27-clear"><b>Clearance usulan Non-ISTK</b><span>Yang dinilai di sini hanya usulan proyek di luar ISTK yang diajukan ke Pusakti, untuk menentukan mana yang <b>boleh lanjut</b> dan mana yang <b>di-drop</b>. Proyek ISTK otomatis terpilih dan tidak perlu dinilai.</span></div>';
  const p=m==='smart'?current():(current()||{id:'',psProjects:[]}),ro=m==='smart'?I.readonly(p):false;
  const threshold=m==='smart'?'<label class="ps27-smart-threshold">Ambang skor &gt; <input type="number" id="pswf-threshold" min="0" max="99" value="'+E(p.psThreshold??80)+'" '+(ro?'disabled':'')+' aria-label="Ambang skor SMART"> %</label>':'';
  const search=m==='smart'?(typeof MT_TABSEARCH==='function'?MT_TABSEARCH:()=>'')('ps-prioritasi',localFilter().search,'Cari usulan, UIC…'):'';
- return intro+K.page(p,{nonOnly:true,readOnly:ro,methodHtml:seg,smart:m==='smart',smartTools:threshold,smartBody:sub=>sub==='criteria'?I.criteriaPage(p):sub==='ref'||sub==='literature'?I.referencePage(p):search+I.projectsPage(p)});
+ return (stageHtml==null?intro:'')+K.page(p,{nonOnly:true,stageHtml,readOnly:ro,methodHtml:seg,smart:m==='smart',smartTools:threshold,smartBody:sub=>sub==='criteria'?I.criteriaPage(p):sub==='ref'||sub==='literature'?I.referencePage(p):search+I.projectsPage(p)});
 
 }
 function prioritasi(p){
@@ -497,8 +508,12 @@ function syncWbs(p){
 }
 function navigate(target){
  const a=String(target||'usulan').split(':'),stage=a[0],sub=a[1],item=a[2];
- const actual=stage==='penetapan'?'penetapan-program':TABS.some(t=>t[0]===stage)?stage:'usulan';
- state().tab=actual;
+ const split=yr()>=2027,nonShortcut=split&&stage==='mapping'&&sub==='nonistk';
+ const actual=nonShortcut||stage==='clearance'?'prioritasi':stage==='penetapan'?'penetapan-program':TABS.some(t=>t[0]===stage)?stage:'usulan';
+ const u=state();if(split&&actual==='prioritasi'&&u.tab!=='prioritasi')ws().istkLastTab=u.tab;
+ u.tab=actual;
+ if(nonShortcut){S.ui.psKka=S.ui.psKka||{};S.ui.psKka.sub='usulan';if(window.MT_PS_SCOPE)window.MT_PS_SCOPE.bank().mappingTab='proposal'}
+ if(split&&actual!=='prioritasi')ws().istkLastTab=actual;
  if(actual==='usulan'){
   S.ui.psBank=S.ui.psBank||{};
   const tab=['bank','daftar','ambil'].includes(sub)?'bank':sub==='portfolio'?'portfolio':'detail';
@@ -511,9 +526,10 @@ function navigate(target){
   window.MT_PS_SCOPE.bank().mappingTab=sub==='nonistk'?'nonistk':['proposal','usulan-proyek','results','hasil'].includes(sub)?'proposal':['docs','dokumen'].includes(sub)?'docs':'history';
  }
  if(actual==='prioritasi'&&sub==='monev'){location.hash='#pmo-pascaproyek';return}
- if(actual==='prioritasi'&&/^mcda-/.test(sub||'')){S.ui.psKka=S.ui.psKka||{};const k=sub.slice(5);S.ui.psKka.sub=k==='non'?'rank':k;if(k==='non')S.ui.psKka.scope='non';else if(k==='rank'&&S.ui.psKka.scope==='non')S.ui.psKka.scope='program'}
+ if(actual==='prioritasi'&&/^mcda-/.test(sub||'')){S.ui.psKka=S.ui.psKka||{};const k=sub.slice(5);S.ui.psKka.sub=k==='non'?(split?'usulan':'rank'):k;if(k==='non')S.ui.psKka.scope='non';else if(k==='rank'&&S.ui.psKka.scope==='non')S.ui.psKka.scope='program'}
  if(actual==='prioritasi'&&['ranking','criteria','reference'].includes(sub)){
   ws().prioritySub=sub;
+  if(split){S.ui.psKka=S.ui.psKka||{};S.ui.psKka.sub=({ranking:'rank',criteria:'criteria',reference:'ref'})[sub]}
   if(sub==='reference'&&!ws().referenceVisited){I.state().formula=true;I.state().params=true;ws().referenceVisited=true}
  }
  if(actual==='charter'&&sub){
@@ -532,11 +548,17 @@ function page(){
  // before generating this view; otherwise the filter can say 2027 while the table says 2026.
  const f=localFilter(),selected=String(f.year||'');
  if(/^20\d{2}$/.test(selected)&&+S.ui.psSelectedYear!==+selected)S.ui.psSelectedYear=+selected;
- const p=current(),u=state(),T=list(),countAll=T.reduce((n,x)=>n+count(x),0);
- let h=vh('PS','pmo','Project Selection','Usulkan program, petakan proyek, prioritaskan, susun charter dan tetapkan dasar WBS.');
- h+='<section class="pswf ps27" aria-label="Project Selection">';
+ const u=state(),split=yr()>=2027;
+ if(split&&u.tab==='mapping'&&window.MT_PS_SCOPE?.bank()?.mappingTab==='nonistk'){
+  window.MT_PS_SCOPE.bank().mappingTab='proposal';u.tab='prioritasi';S.ui.psKka=S.ui.psKka||{};S.ui.psKka.sub='usulan';ws().istkLastTab='mapping';
+ }
+ const p=current(),T=list(),countAll=T.reduce((n,x)=>n+count(x),0),clearance=split&&u.tab==='prioritasi',tabs=split?ISTK_TABS:TABS;
+ let h=vh('PS','pmo','Project Selection',split?'Pengelolaan usulan program dan seleksi proyek.':'Usulkan program, petakan proyek, prioritaskan, susun charter dan tetapkan dasar WBS.');
+ h+='<section class="pswf ps27'+(split?' ps27-split':'')+(clearance?' ps27-clearance':'')+'" aria-label="Project Selection">';
+ if(split)h+=laneNav(clearance?'non':'istk');
+ if(clearance)return h+nonIstkPrio(filter(p)+actionBar(p))+'</section>';
  h+='<div class="pm-stage-shell ps27-stage"><nav class="ptabs pmo-journey ps27-tabs" role="tablist" aria-label="Submenu Project Selection">'+
- TABS.map((t,i)=>'<button type="button" role="tab" title="'+E(TOP_HELP[t[0]]||'')+'" aria-selected="'+(u.tab===t[0])+'" class="'+(u.tab===t[0]?'on':'')+'" data-ps27-tab="'+t[0]+'"><span><em>'+(''+(i+1))+'</em> '+t[1]+'</span>'+(t[0]==='usulan'&&T.length?'<b>'+T.length+'</b>':t[0]==='mapping'&&countAll?'<b>'+countAll+'</b>':'')+'</button>').join('')+
+ tabs.map((t,i)=>'<button type="button" role="tab" title="'+E(TOP_HELP[t[0]]||'')+'" aria-selected="'+(u.tab===t[0])+'" class="'+(u.tab===t[0]?'on':'')+'" data-ps27-tab="'+t[0]+'"><span><em>'+(''+(i+1))+'</em> '+t[1]+'</span>'+(t[0]==='usulan'&&T.length?'<b>'+T.length+'</b>':t[0]==='mapping'&&countAll?'<b>'+countAll+'</b>':'')+'</button>').join('')+
  '</nav><span class="ps27-contextinfo" tabindex="0" role="img" aria-label="Informasi submenu '+E(TABS.find(x=>x[0]===u.tab)?.[1]||'Project Selection')+': '+E(TOP_HELP[u.tab]||'')+'" title="'+E(TOP_HELP[u.tab]||'')+'">ⓘ</span></div>';
  h+=filter(p)+actionBar(p);
  if(u.tab==='usulan')h+=usulan(p);
@@ -554,10 +576,11 @@ function mount(){
  const root=document.querySelector('#view .pswf');if(!root)return;
  setTimeout(()=>fillCount(root),0);
  root.addEventListener('click',function(ev){
-  const b=ev.target.closest('[data-ps27-nmethod],[data-ps27-setmethod],[data-ps27-pkpi],[data-ps27-openprog],[data-ps27-clear],[data-ps27],[data-ps27-tab],[data-ps27-pick],[data-ps27-remove],[data-ps27-sub],[data-ps27-usul],[data-ps27-reset],[data-ps27-period],[data-mt-filter-icon]');
+  const b=ev.target.closest('[data-ps27-lane],[data-ps27-nmethod],[data-ps27-setmethod],[data-ps27-pkpi],[data-ps27-openprog],[data-ps27-clear],[data-ps27],[data-ps27-tab],[data-ps27-pick],[data-ps27-remove],[data-ps27-sub],[data-ps27-usul],[data-ps27-reset],[data-ps27-period],[data-mt-filter-icon]');
   if(!b)return;
   ev.stopImmediatePropagation();
   if(b.hasAttribute('data-mt-filter-icon')){ws().filterOpen=!ws().filterOpen;save();render();return}
+  if(b.dataset.ps27Lane){switchLane(b.dataset.ps27Lane);return}
   if(b.dataset.ps27Nmethod){const K=window.MT_PS_KKA;if(K&&K.nonMethod()!==b.dataset.ps27Nmethod){K.setNonMethod(b.dataset.ps27Nmethod);ws().prioritySub='ranking';render()}return}
   if(b.dataset.ps27Setmethod){const p=I.pickedProgram();if(!p||I.readonly(p))return;const v=b.dataset.ps27Setmethod;
    const go=()=>{p.psMethod=v;p.psPrioritize=v==='smart';ws().prioritySub='ranking';try{log('Pilih metode prioritisasi',p.nama+' → '+(v==='kka'?'MCDA':'SMART'))}catch(_){}save();render();toast('Metode '+(v==='kka'?'MCDA':'SMART')+' dipilih untuk program ini.')};
