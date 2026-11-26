@@ -3576,8 +3576,11 @@ const modOfItem=it=>mods().find(m=>m.items.includes(it));
 /* ======================== akses ======================== */
 const meLab=()=>ME.role==='CMOU'?'CMO '+esc(ME.unit):ME.role==='PMOU'?'PMO '+esc(ME.unit):roleN(ME.role)+' · '+esc(ME.unit)+(ME.sub?' ('+esc(ME.sub)+')':'');
 const roleN=id=>(ROLES.find(r=>r.id===id)||{}).nama||id;
-const lv=f=>{const r=S.akses[ME.role];if(!r&&ME.role==='KETUA')return f==='cr'?'R':f==='crok'?'RU':'-';if(!r&&ME.role==='KAPUS')return f==='crok'?'-':'R';if(!r&&ME.role==='SEKPIM')return '-';return r?(r.f[f]||'-'):'-'};
-const scope=()=>['KETUA','KAPUS','SEKPIM'].includes(ME.role)?'Semua':((S.akses[ME.role]||{}).scope||'Unit');
+/* Cadangan hak akses: bila baris peran hilang dari config/akses (mis. dokumen Firestore terhapus/tertimpa), pakai bawaan seed agar Superadmin tidak terkunci dari Pengaturan. */
+let AKS0=null;const aks0=()=>AKS0||(AKS0=(()=>{try{return seed().akses||{}}catch(e){return {}}})());
+const aksOf=r=>(S.akses&&S.akses[r])||(['KETUA','KAPUS','SEKPIM'].includes(r)?null:aks0()[r])||null;
+const lv=f=>{const r=aksOf(ME.role);if(!r&&ME.role==='KETUA')return f==='cr'?'R':f==='crok'?'RU':'-';if(!r&&ME.role==='KAPUS')return f==='crok'?'-':'R';if(!r&&ME.role==='SEKPIM')return '-';return r?(r.f[f]||'-'):'-'};
+const scope=()=>['KETUA','KAPUS','SEKPIM'].includes(ME.role)?'Semua':((aksOf(ME.role)||{}).scope||'Unit');
 function inScope(mk){const sc=scope();if(sc==='Semua')return true;const m=modOf(mk);if(!m)return false;if(sc==='Unit')return m.uicUnits.includes(ME.unit);return (ME.modules||[]).includes(mk)}
 function can(f,act,mk){const L=lv(f);if(L==='-'||!L.includes(act))return false;if(act==='R'&&UNREAD_SCOPED.includes(f))return true;if(mk==null)return scope()==='Semua'||mods().filter(cmoMatch).some(m=>inScope(m.kode));return inScope(mk)}
 const bkUnits=w=>[uicU(w),w.d].filter(Boolean).join(', ');
@@ -11337,7 +11340,10 @@ function fsBlank(){let ui;try{ui=JSON.parse(localStorage.getItem(KEY+'_ui')||'nu
 const fsId=(c,x)=>c==='users'?String(x.email).toLowerCase():String(x.id);
 function fsDocs(){const out={};FS_ARR.forEach(c=>{out[c]={};const arr=S[c]||[];let mx=arr.reduce((m,x)=>Math.max(m,x._o||0),0);
   (c==='log'?arr.slice().reverse():arr).forEach(x=>{if(c==='log'&&!x.id)x.id=uid();if(x._o==null)x._o=++mx;let d=x;if(c==='users'){d=Object.assign({},x);delete d.pw}out[c][fsId(c,x)]=d})});
- FS_MAP.forEach(c=>{out[c]={};Object.entries(S[c]||{}).forEach(([k,v])=>{if(v&&typeof v==='object')out[c][k]=v})});out.config={akses:{v:S.akses},cfg:{v:S.cfg}};return out}
+ FS_MAP.forEach(c=>{out[c]={};Object.entries(S[c]||{}).forEach(([k,v])=>{if(v&&typeof v==='object')out[c][k]=v})});out.config={cfg:{v:S.cfg}};
+ /* Jangan pernah menimpa config/akses dengan matriks kosong (mis. sesi yang belum menerima snapshot config). */
+ if(S.akses&&Object.keys(S.akses).length)out.config.akses={v:S.akses};else if(FB.last.config&&FB.last.config.akses){try{out.config.akses=JSON.parse(FB.last.config.akses)}catch(e){}}
+ return out}
 function fsSchedule(){if(!FB.on||!FB.ready)return;clearTimeout(FB.timer);FB.st='Menyimpan…';setDbBadge();FB.timer=setTimeout(fsFlush,500)}
 /* Bersihkan dokumen sebelum dikirim: Firestore menolak array bersarang dan kunci kosong. Array di dalam array → objek berindeks {"0":..,"1":..}. */
 function fsClean(v,inArr){if(Array.isArray(v)){const a=v.map(x=>fsClean(x,true));if(inArr){const o={};a.forEach((x,i)=>o[i]=x);return o}return a}
@@ -11360,7 +11366,9 @@ async function fsFlush(){const cur=fsDocs(),ops=[],next={},skip=[];
   if(FB.done){const m=FB.done;FB.done='';busyOff();toast(m+(bad.length?'':' Tersimpan ke Firestore.'))}}
  catch(e){FB.st='Gagal menyimpan';FB.err=fbErr(e);if(FB.done){FB.done='';busyOff()}toast('Gagal menyimpan ke Firestore: '+FB.err)}setDbBadge()}
 function applyCol(c,docs){FB.last[c]=FB.last[c]||{};let changed=false;
- if(c==='config'){if(docs.akses&&stab(docs.akses)!==FB.last.config.akses){S.akses=docs.akses.v;changed=true}if(docs.cfg&&stab(docs.cfg)!==FB.last.config.cfg){S.cfg=docs.cfg.v;changed=true}}
+ if(c==='config'){if(docs.akses&&stab(docs.akses)!==FB.last.config.akses){S.akses=docs.akses.v;changed=true}if(docs.cfg&&stab(docs.cfg)!==FB.last.config.cfg){S.cfg=docs.cfg.v;changed=true}
+  /* Pulihkan otomatis baris peran yang hilang (hanya oleh Superadmin, sesuai rules config). */
+  if(FB.me&&FB.me.role==='SA'){if(!S.akses||typeof S.akses!=='object')S.akses={};const d=aks0(),miss=Object.keys(d).filter(k=>!S.akses[k]);if(miss.length){miss.forEach(k=>S.akses[k]=JSON.parse(JSON.stringify(d[k])));changed=true;setTimeout(()=>{try{log('Pulihkan hak akses',miss.map(roleN).join(', '));save();toast('Hak akses peran '+miss.map(roleN).join(', ')+' tidak ditemukan di database dan telah dipulihkan ke bawaan.')}catch(e){}},0)}}}
  else if(FS_MAP.includes(c)){const tgt=S[c];Object.entries(docs).forEach(([k,d])=>{if(stab(d)===FB.last[c][k])return;changed=true;if(tgt[k]){Object.keys(tgt[k]).forEach(x=>delete tgt[k][x]);Object.assign(tgt[k],d)}else tgt[k]=d});Object.keys(tgt).forEach(k=>{if(!(k in docs)){delete tgt[k];changed=true}})}
  else{const arr=S[c],by=new Map(arr.map(x=>[fsId(c,x),x]));const res=[];Object.entries(docs).forEach(([id,d])=>{const o=by.get(id);if(o&&stab(d)===FB.last[c][id]){res.push(o);return}changed=true;if(o){const pw=o.pw;Object.keys(o).forEach(x=>delete o[x]);Object.assign(o,d);if(pw)o.pw=pw;res.push(o)}else res.push(d)});
   if(res.length!==arr.length)changed=true;res.sort((a,b)=>c==='log'?(b._o||0)-(a._o||0):(a._o||0)-(b._o||0));arr.length=0;res.forEach(x=>arr.push(x))}
