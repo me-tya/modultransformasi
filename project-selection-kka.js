@@ -99,7 +99,7 @@ function compute(y){
 /* ---------- tampilan ---------- */
 const catCls=c=>c===CATS[0]?'p1':c===CATS[1]?'p2':c===CATS[2]?'p3':c===CATS[3]?'p4':'';
 const gateCls=g=>g==='Lolos'?'ok':g==='Tinjau Ulang'?'bad':'warn';
-function methodSelect(p,ro){const m=method(p);return '<label class="kka-method"><span>Metode prioritisasi</span><select id="pswf-method" '+(ro?'disabled':'')+'>'+[['manual','Manual'],['smart','SMART (CM)'],['kka','Kertas Kerja A (Pusakti)']].map(o=>'<option value="'+o[0]+'"'+(m===o[0]?' selected':'')+'>'+o[1]+'</option>').join('')+'</select></label>'}
+function methodSelect(p,ro){const m=method(p);return '<label class="kka-method"><span>Metode</span><select id="pswf-method" '+(ro?'disabled':'')+'>'+[['manual','Manual'],['smart','SMART (CM)'],['kka','Kertas Kerja A (Pusakti)']].map(o=>'<option value="'+o[0]+'"'+(m===o[0]?' selected':'')+'>'+o[1]+'</option>').join('')+'</select></label>'}
 const SUBS=[['rank','Penilaian & Peringkat'],['criteria','Kriteria & Bobot'],['roadmap','Roadmap & Analisis'],['repo','Repositori'],['ref','Referensi & Rubrik']];
 function page(p,o){
  o=o||{};const u=ui(),sub=SUBS.some(s=>s[0]===u.sub)?u.sub:'rank',ro=!!o.readOnly;
