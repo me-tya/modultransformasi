@@ -63,7 +63,7 @@ const touch=()=>{last=Date.now();warned=false;try{localStorage.setItem(LK,String
 ['pointerdown','keydown','wheel','touchstart'].forEach(t=>document.addEventListener(t,()=>{if(Date.now()-last>15000)touch();else last=Date.now()},{capture:true,passive:true}));
 function loggedIn(){try{return typeof FB!=='undefined'&&FB&&FB.on&&FB.auth&&FB.auth.currentUser&&typeof ME!=='undefined'&&ME}catch(e){return false}}
 async function expire(){try{if(typeof log==='function')log('Sesi berakhir','Tidak ada aktivitas 60 menit');if(typeof save==='function')save()}catch(e){}
- await new Promise(r=>setTimeout(r,700));clearLocal();try{await FB.auth.signOut()}catch(e){}try{sessionStorage.setItem('mt_sess_expired','1')}catch(e){}location.hash='';location.reload()}
+ await new Promise(r=>setTimeout(r,700));try{await FB.auth.signOut()}catch(e){}try{sessionStorage.setItem('mt_sess_expired','1')}catch(e){}location.hash='';location.reload()}
 setInterval(()=>{if(!loggedIn())return;let l=last;try{l=Math.max(l,+localStorage.getItem(LK)||0)}catch(e){}const idle=Date.now()-l;
  if(idle>=IDLE){expire();return}
  if(idle>=IDLE-5*60*1000&&!warned){warned=true;try{toast('Sesi akan berakhir dalam 5 menit karena tidak ada aktivitas. Klik atau tekan tombol apa saja untuk melanjutkan.')}catch(e){}}},30000);
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded',()=>{try{if(sessionStorage.getItem(
 
 /* ---------- C8/E2: bersihkan data lokal saat keluar ---------- */
 function clearLocal(){try{const ks=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/_demo$/.test(k))ks.push(k)}ks.forEach(k=>localStorage.removeItem(k))}catch(e){}try{sessionStorage.clear()}catch(e){}}
-document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-m="out"]');if(b&&loggedIn())setTimeout(clearLocal,1200)},true);
+/* Mode pengujian: daftar akun uji di halaman login dipertahankan, jadi tidak dibersihkan saat keluar. */
 
 /* ---------- G3: rel=noopener untuk target _blank ---------- */
 document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[target="_blank"]');if(a){const r=(a.getAttribute('rel')||'');if(!/noopener/.test(r))a.setAttribute('rel',(r+' noopener noreferrer').trim())}},true);
