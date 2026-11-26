@@ -312,11 +312,11 @@ function mergeImport(doc,job){
 }
 function pendingBanner(y){if(!cloudKka()||!canCfg())return '';const k=kkaOutboxKey(y),job=pendingImport(y),running=pendingBusy.has(k),err=pendingErrors.get(k);
  if(!job&&!FB_DENIED())return '';
- return '<div class="kka-syncnotice" role="status"><div><b>'+(job?(running?'Sedang menyimpan ke Firebase…':'Impor Non-ISTK belum terkonfirmasi Firebase'):'Koleksi Non-ISTK belum dapat dibaca dari Firebase')+'</b><small>'+(job?job.ops.length+' baris tersimpan sebagai cadangan di browser ini. '+E(err||'Data baru akan masuk daftar resmi setelah Firebase mengonfirmasi. Jangan hapus data browser.'):'Periksa Security Rules psKka di Pengaturan › Database. Impor dapat dicadangkan lokal sampai akses pulih.')+'</small></div>'+(job?'<button type="button" class="btn btn-sm" data-kka-draft>Unduh cadangan JSON</button><button type="button" class="btn btn-sm pri" data-kka-retry '+(running?'disabled':'')+'>Coba sinkronkan</button>':'')+'</div>'
+ return '<div class="kka-syncnotice" role="status"><div><b>'+(job?(running?'Sedang menyimpan ke Firebase…':'Impor Non-ISTK belum terkonfirmasi Firebase'):'Koleksi Non-ISTK belum dapat dibaca dari Firebase')+'</b><small>'+(job?job.ops.length+' baris tersimpan sebagai cadangan di browser ini. '+E(err||'Data baru akan masuk daftar resmi setelah Firebase mengonfirmasi. Jangan hapus data browser.'):'Periksa Security Rules psKka di Pengaturan › Database. Impor dapat dicadangkan lokal sampai akses pulih.')+'</small>'+(job?'<small><b>Pending Sync (lokal):</b> '+job.ops.slice(0,8).map(op=>E(op.name||op.psOriginRef||op.id)).join(' · ')+(job.ops.length>8?' · +'+(job.ops.length-8)+' lainnya':'')+'</small>':'')+'</div>'+(job?'<button type="button" class="btn btn-sm" data-kka-draft>Unduh cadangan JSON</button><button type="button" class="btn btn-sm pri" data-kka-retry '+(running||!FB.ready||(typeof fsQuotaBlocked==='function'&&fsQuotaBlocked())?'disabled':'')+'>Coba sinkronkan</button>':'')+'</div>'
 }
 async function syncImport(y){
  const key=kkaOutboxKey(y),job=pendingImport(y);if(!key||!job||pendingBusy.has(key))return false;
- if(!canCfg()||!FB.db||!FB.ready){say('Firebase belum siap atau akun tidak berhak. Cadangan tetap tersedia.');return false}
+ if(!canCfg()||!FB.db||!FB.ready||(typeof fsQuotaBlocked==='function'&&fsQuotaBlocked())){say('Firebase belum siap atau akun tidak berhak. Cadangan tetap tersedia.');return false}
  pendingBusy.add(key);pendingErrors.delete(key);render();
  try{
   const id=NONK(y),ref=FB.db.collection('psKka').doc(id);
