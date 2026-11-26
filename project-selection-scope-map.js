@@ -230,15 +230,17 @@ function historyRows(p){
  return historyRecords().filter(r=>!(p&&r.p.id===p.id&&r.y===year())&&(b.historyYear==='all'||+b.historyYear===r.y)&&(hp==='all'||r.p.nama===hp)&&(hu==='all'||(r.x.uic||r.p.uic)===hu)&&
   [r.x.name,r.p.nama,r.p.kode,r.x.uic,codeFor(r.p,r.x.original||{name:r.x.name})].join(' ').toLowerCase().includes(q));
 }
-function historyView(p){
- const b=mapState(),rows=historyRows(p),years=[...new Set(historyRecords().map(r=>r.y))],all=rows.length>0&&rows.every(r=>b.historySelected.includes(r.key));
+const canNon=()=>!!ME&&['SA','PMOK','CMOK'].includes(ME.role);
+function historyView(p0){
+ const b=mapState(),toNon=b.historyDest==='non',p=toNon?null:p0,ok=toNon?canNon():can(p),rows=historyRows(p),years=[...new Set(historyRecords().map(r=>r.y))],all=rows.length>0&&rows.every(r=>b.historySelected.includes(r.key));
  const plus='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
  return '<div class="psbank-history-projects"><div class="psbank-proposal-head"><div><h3>Riwayat Proyek</h3></div><div class="psbank-headright"><span class="psbank-count">'+rows.length+' proyek</span><span class="psbank-helpicon" tabindex="0" role="button" data-mt-info="Riwayat Proyek hanya referensi lintas tahun. Klik baris untuk melihat detail; tombol + menyalin proyek ke program tahun tujuan tanpa mengubah WBS dan realisasi historis." aria-label="Informasi: Riwayat Proyek hanya referensi lintas tahun. Klik baris untuk melihat detail; tombol + menyalin proyek ke program tahun tujuan tanpa mengubah WBS dan realisasi historis.">ⓘ</span></div></div>'+
- '<div class="psbank-history-project-controls psbank-history-target"><label>Program Tujuan <select data-scope-history-target>'+I.programs().map(x=>'<option value="'+E(x.id)+'" '+(p?.id===x.id?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label>'+
+ '<div class="psbank-history-project-controls psbank-history-target"><div class="pshist-dest"><span>Tujuan</span><div class="pshist-seg" role="radiogroup" aria-label="Tujuan salinan proyek">'+[['istk','ISTK'],['non','Non-ISTK']].map(o=>'<label class="'+((toNon?'non':'istk')===o[0]?'on':'')+'"><input type="radio" name="pshist-dest" data-scope-history-dest="'+o[0]+'" '+((toNon?'non':'istk')===o[0]?'checked':'')+'>'+o[1]+'</label>').join('')+'</div></div>'+
+ (toNon?'<div class="pshist-nontarget"><b>Usulan Non-ISTK '+year()+'</b><small>Proyek disalin sebagai usulan di luar ISTK untuk clearance Pusakti (Prioritasi › MCDA).</small></div>':'<label>Program Tujuan <select data-scope-history-target>'+I.programs().map(x=>'<option value="'+E(x.id)+'" '+(p0?.id===x.id?'selected':'')+'>'+E(x.nama)+'</option>').join('')+'</select></label>')+
  '</div>'+
  '<div class="psbank-tablewrap psbank-project-history-wrap"><table class="psbank-table psbank-project-history-table"><colgroup><col class="pshist-check"><col class="pshist-year"><col class="pshist-code"><col class="pshist-name"><col class="pshist-program"><col class="pshist-uic"><col class="pshist-action"></colgroup><thead><tr><th><input type="checkbox" data-scope-history-all '+(all?'checked':'')+' aria-label="Pilih semua hasil filter"></th><th>Tahun</th><th>Kode Proyek</th><th>Nama Proyek / Modul</th><th>Program Sumber</th><th>UIC</th><th>Aksi</th></tr></thead><tbody>'+
- (rows.length?rows.map(r=>'<tr tabindex="0" class="psbank-clickrow pshist-clickrow" data-scope-history-detail="'+E(r.key)+'" title="Klik untuk melihat detail proyek '+E(r.x.name)+'" aria-label="Lihat detail proyek '+E(r.x.name)+'"><td class="psbank-checkcol"><input type="checkbox" data-scope-history-check="'+E(r.key)+'" '+(b.historySelected.includes(r.key)?'checked':'')+' aria-label="Pilih '+E(r.x.name)+'"></td><td class="pshist-year-cell">'+r.y+'</td><td><b>'+E(codeFor(r.p,r.x.original||{name:r.x.name}))+'</b></td><td class="pshist-name-cell"><b>'+E(r.x.name)+'</b></td><td>'+E(r.p.nama)+'</td><td>'+E(r.x.uic||r.p.uic||'—')+'</td><td class="psbank-rowactions"><button type="button" class="psbank-action-icon psbank-program-action add" data-scope-history-add="'+E(r.key)+'" title="Tambahkan Proyek ke Program Tujuan" aria-label="Tambahkan '+E(r.x.name)+' ke Program Tujuan" '+(!can(p)?'disabled':'')+'>'+plus+'</button></td></tr>').join(''):'<tr><td colspan="7" class="psbank-empty">Tidak ada proyek sesuai filter.</td></tr>')+'</tbody></table></div>'+
- '<div class="psbank-history-project-foot"><small>'+b.historySelected.length+' dipilih · kode proyek tujuan mengikuti program dan akronim yang dapat diedit.</small><button type="button" class="btn pri" data-scope-history-bulk '+(!can(p)||!b.historySelected.length?'disabled':'')+'>+ Tambahkan ke Program Tujuan</button></div></div>';
+ (rows.length?rows.map(r=>'<tr tabindex="0" class="psbank-clickrow pshist-clickrow" data-scope-history-detail="'+E(r.key)+'" title="Klik untuk melihat detail proyek '+E(r.x.name)+'" aria-label="Lihat detail proyek '+E(r.x.name)+'"><td class="psbank-checkcol"><input type="checkbox" data-scope-history-check="'+E(r.key)+'" '+(b.historySelected.includes(r.key)?'checked':'')+' aria-label="Pilih '+E(r.x.name)+'"></td><td class="pshist-year-cell">'+r.y+'</td><td><b>'+E(codeFor(r.p,r.x.original||{name:r.x.name}))+'</b></td><td class="pshist-name-cell"><b>'+E(r.x.name)+'</b></td><td>'+E(r.p.nama)+'</td><td>'+E(r.x.uic||r.p.uic||'—')+'</td><td class="psbank-rowactions"><button type="button" class="psbank-action-icon psbank-program-action add" data-scope-history-add="'+E(r.key)+'" title="Tambahkan Proyek ke Program Tujuan" aria-label="Tambahkan '+E(r.x.name)+' ke Program Tujuan" '+(!ok?'disabled':'')+'>'+plus+'</button></td></tr>').join(''):'<tr><td colspan="7" class="psbank-empty">Tidak ada proyek sesuai filter.</td></tr>')+'</tbody></table></div>'+
+ '<div class="psbank-history-project-foot"><small>'+b.historySelected.length+' dipilih · '+(toNon?'usulan Non-ISTK dapat dilengkapi di tab Usulan Non-ISTK.':'kode proyek tujuan mengikuti program dan akronim yang dapat diedit.')+'</small><button type="button" class="btn pri" data-scope-history-bulk '+(!ok||!b.historySelected.length?'disabled':'')+'>'+(toNon?'+ Tambahkan ke Usulan Non-ISTK':'+ Tambahkan ke Program Tujuan')+'</button></div></div>';
 }
 function historyDetail(key){
  const r=historyRecords().find(x=>x.key===key);if(!r)return;
@@ -264,7 +266,22 @@ function historyDetail(key){
  d.addEventListener('click',ev=>{if(ev.target===d||ev.target.closest('[data-pshist-close]'))close()});
  d.addEventListener('keydown',ev=>{if(ev.key==='Escape'){ev.preventDefault();close()}});
 }
+function addHistoryNon(keys){
+ if(!canNon()){toast('Hanya Superadmin, PMO Kemenkeu, dan CMO Kemenkeu yang dapat menambah usulan Non-ISTK.');return}
+ const K=window.MT_PS_KKA;if(!K||!K.nonAdd){toast('Modul Non-ISTK belum dimuat.');return}
+ const catalog=new Map(historyRecords().map(x=>[x.key,x])),cur=K.nonProjects(year())||[];let added=0,skipped=0;const out=[];
+ [...new Set(keys)].forEach(key=>{const r=catalog.get(key);if(!r)return;
+  if(cur.concat(out).some(x=>String(x.name||'').toLowerCase()===r.x.name.toLowerCase())){skipped++;return}
+  const o=C(r.x.original||{});['psCode','psAcronym','included','scores','poster','risks','indicators','benefits','programId'].forEach(k=>delete o[k]);
+  out.push({...o,id:uid('non'),name:r.x.name,uic:r.x.uic||r.p.uic||'',psOriginRef:codeFor(r.p,r.x.original||{name:r.x.name}),psOriginProgram:r.p.nama,psOriginYear:r.y,psFromHistory:true,
+   start:shift(o.start,r.y,year()),goLive:shift(o.goLive,r.y,year())});added++});
+ if(!added){toast('Tidak ada usulan baru yang ditambahkan. Periksa duplikasi nama.');return}
+ K.nonAdd(out,year());const b=mapState();b.historySelected=b.historySelected.filter(k=>!keys.includes(k));b.mappingTab='nonistk';
+ try{log('Salin riwayat ke Usulan Non-ISTK',added+' proyek')}catch(e){}save();window.render();
+ toast(added+' proyek ditambahkan ke Usulan Non-ISTK '+year()+(skipped?' ('+skipped+' duplikat dilewati)':'')+'. Lengkapi isiannya di tab Usulan Non-ISTK.');
+}
 function addHistory(keys){
+ if(mapState().historyDest==='non'){addHistoryNon(keys);return}
  const p=target();if(!can(p)||!p){toast('Pilih program tujuan yang dapat diubah.');return}
  const catalog=new Map(historyRecords().map(x=>[x.key,x]));
  let added=0,skipped=0;
@@ -514,6 +531,7 @@ function change(ev){
   const entry=b.proposalPaging[el.dataset.scopeProposalSize]||(b.proposalPaging[el.dataset.scopeProposalSize]={page:1,size:10});
   entry.size=Math.max(10,Number(el.value)||10);entry.page=1;save();window.render();return true
  }
+ if(el.dataset.scopeHistoryDest!==undefined){b.historyDest=el.dataset.scopeHistoryDest==='non'?'non':'istk';b.historySelected=[];save();window.render();return true}
  if(el.dataset.scopeHistoryTarget!==undefined){const p=get(el.value);if(p){bank().target=p.id;I.state().prog=p.id;b.historySelected=[];save();window.render()}return true}
  if(el.dataset.scopeHistoryYear!==undefined){b.historyYear=el.value;b.historySelected=[];save();window.render();return true}
  if(el.dataset.scopeHistorySearch!==undefined){b.historySearch=el.value;save();window.render();return true}
