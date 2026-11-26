@@ -634,6 +634,42 @@ function mount(){
  searchChange('[data-ps27-search]',v=>{ws().search=v;});
  I.mount();
 }
+/* Cheatsheet › SMART & MCDA: perbandingan metode dan rincian MCDA (sumber aturan: project-selection-kka.js). */
+function mcdaCompare(){
+ const rows=[['Nama lengkap','Simple Multi-Attribute Rating Technique','Multi-Criteria Decision Analysis — mudahnya: <b>“skor tertimbang + gate”</b>'],
+  ['Cocok untuk','Memilih sub-proyek/modul di dalam satu program ISTK','Memprioritaskan seluruh usulan pengembangan SI satu tahun (lintas program & UE I, termasuk yang di luar ISTK) terhadap pagu & SDM'],
+  ['Penyaring awal','—','Gate G1–G4: Lolos / Tinjau Ulang / Lengkapi'],
+  ['Kriteria','12 kriteria (C1–C12), skala 1–5','7 kriteria (K1–K7), skala 1–5 dengan rubrik'],
+  ['Bobot','Bobot per kriteria pada program','3 profil bobot: Seimbang, Prioritas Kepatuhan, Prioritas Efisiensi'],
+  ['Hasil','Skor 0–100, terpilih bila skor > ambang','Skor 0–100, kategori P1–P4, peringkat, roadmap Didanai / Cadangan'],
+  ['Analisis tambahan','Kuadran & snapshot','Uji sensitivitas bobot, kuadran Nilai–Kemudahan, pembanding WSJF'],
+  ['Penyimpanan hasil','Snapshot per program','Repositori hasil per tahun (versi Draft / Final)']];
+ return '<div class="ps27-sheet-tablewrap"><table class="ps27-sheet-table"><thead><tr><th>Aspek</th><th>SMART</th><th>MCDA</th></tr></thead><tbody>'+rows.map(r=>'<tr><td><b>'+r[0]+'</b></td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>').join('')+'</tbody></table></div>';
+}
+function mcdaSection(){
+ const K=window.MT_PS_KKA,c=K?K.cfg():null,KR=K?K.KR:[],G=K?K.GATES:[],w=c?c.weights[c.profile]:[];
+ const f=(n,t,b,sm)=>'<article><span>'+n+' · '+t+'</span><strong>'+b+'</strong><small>'+sm+'</small></article>';
+ return '<div class="ps27-sheet-subhead" style="margin-top:22px"><h4>B. MCDA · Multi-Criteria Decision Analysis (skor tertimbang + gate)</h4><span>diadaptasi dari Kertas Kerja A Prioritas SI</span></div>'+
+  '<div class="ps27-sheet-formulas">'+
+   f('01','GATE','G1–G4 semua Ya → Lolos','Ada Tidak → Tinjau Ulang · ada yang belum dijawab → Lengkapi. Hanya yang Lolos diranking (dapat diubah di pengaturan).')+
+   f('02','SKOR TERTIMBANG','Σ(skor K × bobot) ÷ 5 × 100','Skor 1–5 per kriteria; bobot dari profil aktif (total 100%). K7 terbalik: 5 = risiko terendah.')+
+   f('03','KATEGORI','P1 ≥ '+(c?c.p1:75)+' · P2 ≥ '+(c?c.p2:65)+' · P3 ≥ '+(c?c.p3:50)+' · P4','P1 Utama, P2 Tinggi, P3 Menengah, P4 Rendah/Tunda.')+
+   f('04','ROADMAP','Urut peringkat, selama muat pagu DAN SDM → Didanai','Bila melampaui → Cadangan / Tunda; usulan berikutnya yang masih muat tetap didanai. Biaya bukan kriteria skor.')+
+  '</div>'+
+  '<div class="ps27-sheet-subhead"><h4>Kriteria & bobot aktif'+(c?' · profil '+E(c.profile)+' · '+c.year:'')+'</h4><span>'+KR.length+' kriteria</span></div>'+
+  (KR.length?'<div class="ps27-sheet-tablewrap"><table class="ps27-sheet-table"><thead><tr><th>Kode</th><th>Kriteria</th><th>Pertanyaan penilaian</th><th>Bobot</th></tr></thead><tbody>'+
+   KR.map((k,i)=>'<tr><td><span class="ps27-sheet-chip">'+E(k.c)+'</span></td><td>'+E(k.n)+'</td><td>'+E(k.q)+'</td><td>'+(w[i]??'—')+'%</td></tr>').join('')+'</tbody></table></div>':'')+
+  (G.length?'<div class="ps27-sheet-subhead"><h4>Gate penyaringan</h4></div><div class="ps27-sheet-checks">'+G.map(g=>'<span><b>'+E(g[1])+'</b> '+E(g[3])+'</span>').join('')+'</div>':'')+
+  '<div class="ps27-sheet-grid ps27-sheet-grid3">'+
+   ps27SheetCard('SENS','Uji sensitivitas','Skor dihitung ulang dengan ketiga profil bobot. <b>Stabil</b> bila rentang peringkat ≤ toleransi ('+(c?c.tol:3)+'); selain itu <b>Sensitif bobot</b> — perlu dibahas forum.')+
+   ps27SheetCard('KUAD','Kuadran Nilai–Kemudahan','Nilai Manfaat = K1–K5, Kemudahan = K6–K7 (diboboti, 0–100). ≥ '+(c?c.quadThr:60)+' dianggap tinggi: Quick Win, Proyek Strategis, Pelengkap, Tunda / Kaji Ulang — dipakai untuk saran pendekatan.')+
+   ps27SheetCard('WSJF','Pembanding WSJF','(K2 + K4 + K5) ÷ (6 − K7). <b>Konsisten</b> bila selisih peringkat WSJF vs skor tertimbang ≤ toleransi; bila tidak, tandai untuk ditinjau.')+
+   ps27SheetCard('ISTK','Usulan di luar ISTK','Proyek yang tidak termapping ke ISTK ikut dinilai & berbagi pagu/SDM, tetapi tidak masuk Penetapan, Charter, RKMK, WBS dan tidak dipantau PMO Kemenkeu.',ps27SheetJump('Di luar ISTK','prioritasi:mcda-non'))+
+   ps27SheetCard('REPO','Repositori hasil','Simpan hasil sebagai versi (Draft/Final) beserta bobot, skor dan roadmap saat itu; versi Final tidak dapat dihapus.',ps27SheetJump('Repositori','prioritasi:mcda-repo'))+
+   ps27SheetCard('REF','Dasar praktik','Struktur kriteria dari COBIT 2019 & TOGAF 10; portofolio terhadap pagu & kapasitas dari PMI Portfolio Management; tata kelola ISO/IEC 38500; mandat regulasi SPBE, PDP, keamanan siber.',ps27SheetJump('Referensi & Rubrik','prioritasi:mcda-ref'))+
+  '</div>'+
+  ps27SheetNote('Catatan metodologi','Bobot awal dan ambang P1–P3 adalah asumsi penyusun kertas kerja, bukan hasil perbandingan berpasangan (AHP); sepakati melalui forum. Roadmap memakai aturan urut-peringkat (greedy), bukan optimasi kombinasi.');
+}
 function helpPage(tab){
  const items=[
   ['usulan','Usulan Program','Cari riwayat, buat dan lengkapi usulan, business case, manfaat, stakeholder, risiko, tata kelola, serta dokumen portofolio.'],
@@ -798,7 +834,9 @@ function sheetPage(tab){
   const total=weighted.reduce((n,k)=>n+k.w,0);
   const fmt=n=>Number(n||0).toFixed(2);
   return '<div class="ps27-sheet">'+
-   ps27SheetHead('SMART · PRIORITISASI OPSIONAL','Formula, Kriteria, Bobot dan Ambang','SMART membantu membandingkan calon proyek secara transparan. Aktifkan pada menu Prioritasi bila memang diperlukan; hasilnya tetap menjadi bahan keputusan, bukan keputusan otomatis.')+
+   ps27SheetHead('METODE PRIORITISASI','SMART dan MCDA','Prioritasi memakai salah satu dari dua metode yang dipilih per program pada menu Prioritasi. Keduanya alat bantu yang transparan; hasilnya bahan keputusan forum, bukan penetapan otomatis.')+
+   mcdaCompare()+
+   '<div class="ps27-sheet-subhead"><h4>A. SMART · Simple Multi-Attribute Rating Technique</h4><span>12 kriteria · ambang skor</span></div>'+
    '<div class="ps27-sheet-formulas">'+
     '<article><span>01 · NORMALISASI</span><strong>Bobot kriteria ÷ Σ bobot</strong><small>Σ bobot aktif'+(total?' = '+fmt(total):' belum tersedia')+'</small></article>'+
     '<article><span>02 · UTILITY MANFAAT</span><strong>(Nilai − 1) ÷ 4</strong><small>Untuk kriteria manfaat pada skala 1–5.</small></article>'+
@@ -814,7 +852,8 @@ function sheetPage(tab){
     ps27SheetCard('AMB','Ambang kelulusan','Pada mode SMART, proyek yang memenuhi syarat nilai dan memiliki skor <b>lebih besar</b> dari ambang yang ditentukan dapat ditampilkan sebagai calon lolos.','Jangan menyamakan angka skor dengan keputusan penetapan.')+
     ps27SheetCard('SNAP','Snapshot Penilaian','Simpan rekaman skor dan pilihan proyek pada waktu tertentu agar hasil sebelum/sesudah perubahan dapat dibandingkan.',ps27SheetJump('Penilaian & Peringkat','prioritasi:ranking'))+
    '</div>'+
-   ps27SheetNote('Batasan penggunaan','SMART merupakan alat bantu seleksi, bukan persetujuan otomatis. Rekomendasi prioritas tetap perlu mempertimbangkan mandat, risiko, kesiapan, dependensi, serta kapasitas.','gold')+
+   mcdaSection()+
+   ps27SheetNote('Batasan penggunaan','SMART dan MCDA merupakan alat bantu seleksi, bukan persetujuan otomatis. Rekomendasi prioritas tetap perlu mempertimbangkan mandat, risiko, kesiapan, dependensi, serta kapasitas; keputusan akhir pada forum tata kelola.','gold')+
    '</div>';
  }
  if(tab==='rkmk'){
@@ -859,7 +898,15 @@ function sheetPage(tab){
    ['Proyek','Upaya sementara untuk menghasilkan keluaran atau layanan yang spesifik.'],
    ['Portofolio','Kumpulan program/proyek yang dikelola untuk mendukung sasaran strategis; tidak harus saling terkait secara langsung.'],
    ['Business Case','Analisis dasar kebutuhan, alternatif, biaya, manfaat dan alasan usulan dipilih.'],
-   ['SMART','Metode pembobotan multikriteria untuk membandingkan prioritas proyek.'],
+   ['SMART','Simple Multi-Attribute Rating Technique: 12 kriteria berbobot dengan ambang skor, untuk memilih proyek dalam satu program.'],
+   ['MCDA','Multi-Criteria Decision Analysis — “skor tertimbang + gate”: gate G1–G4, skor 7 kriteria berbobot, kategori P1–P4, dan roadmap terhadap pagu & SDM.'],
+   ['Gate (G1–G4)','Penyaring awal MCDA: selaras strategi/EA, tidak duplikatif, sponsor & pemilik jelas, kajian kebutuhan sudah dikirim. Hasil: Lolos, Tinjau Ulang, Lengkapi.'],
+   ['Profil bobot','Set bobot K1–K7 pada MCDA: Seimbang, Prioritas Kepatuhan, atau Prioritas Efisiensi; profil aktif dipakai untuk skor.'],
+   ['Roadmap Didanai / Cadangan','Hasil MCDA yang mengurutkan usulan berdasarkan peringkat sampai pagu anggaran dan kapasitas SDM (orang-bulan) habis.'],
+   ['Kuadran Nilai–Kemudahan','Pemetaan usulan MCDA menjadi Quick Win, Proyek Strategis, Pelengkap, atau Tunda / Kaji Ulang.'],
+   ['WSJF','Weighted Shortest Job First: Cost of Delay ÷ Job Size, dipakai sebagai pembanding peringkat MCDA.'],
+   ['Repositori hasil','Arsip versi hasil prioritasi MCDA per tahun (Draft/Final) beserta bobot dan roadmap saat disimpan.'],
+   ['Di luar ISTK (Non-ISTK)','Usulan proyek SI yang tidak termapping ke program/ISTK: ikut prioritasi MCDA, tidak masuk penetapan program dan tidak dipantau PMO Kemenkeu.'],
    ['Kriteria & Bobot','Aspek penilaian dan tingkat kepentingan relatif yang dipakai dalam skor prioritas.'],
    ['Utility','Transformasi nilai kriteria ke skala pembanding sebelum penggabungan berbobot.'],
    ['Ambang','Batas skor yang ditetapkan untuk penyaringan calon proyek pada mode SMART.'],
@@ -881,7 +928,7 @@ function sheetPage(tab){
    ['Benefit Realization','Penilaian sejauh mana manfaat yang direncanakan telah benar-benar diwujudkan.']
   ];
   return '<div class="ps27-sheet">'+ps27SheetHead('GLOSARIUM · ISTILAH & BATASAN','Kamus Istilah Project Selection','Seluruh istilah dan penjelasan konsep disajikan di Cheatsheet, bukan di Bantuan operasional.')+
-   '<input class="sk-search" type="search" data-ps27-help-search placeholder="Cari istilah, misalnya SMART, K-Wide, carry over, WBS..." aria-label="Cari istilah pada Cheatsheet">'+
+   '<input class="sk-search" type="search" data-ps27-help-search placeholder="Cari istilah, misalnya SMART, MCDA, gate, K-Wide, WBS..." aria-label="Cari istilah pada Cheatsheet">'+
    '<div class="ps27-sheet-gloss">'+dictionary.map(x=>'<article data-ps27-menuitem="'+E((x[0]+' '+x[1]).toLowerCase())+'"><h4>'+E(x[0])+'</h4><p>'+E(x[1])+'</p></article>').join('')+'</div>'+
    ps27SheetNote('Interpretasi istilah','Penggunaan konsep pada menu mengikuti proses yang diimplementasikan. Ketentuan persetujuan formal tetap ditetapkan oleh kebijakan dan keputusan yang berlaku.','gold')+'</div>';
  }
@@ -889,7 +936,7 @@ function sheetPage(tab){
   return '<div class="ps27-sheet">'+ps27SheetHead('REFERENSI · BATASAN KERANGKA','Landasan Konseptual dan Sumber Data','Cheatsheet menjelaskan konsep dan aturan aplikasi yang bisa dipelajari pengguna. Jangan menyamakan referensi metodologi, keputusan desain, dan dasar penetapan formal.')+
   '<div class="ps27-sheet-grid ps27-sheet-grid3">'+
    ps27SheetCard('PMI','Praktik manajemen program/proyek','Area strategic alignment, benefits management, stakeholder, risk, governance, charter dan WBS dipakai sebagai inspirasi kerangka kerja.','Pemeriksaan kelengkapan dalam aplikasi adalah desain implementasi, bukan klaim daftar kolom wajib PMI.')+
-   ps27SheetCard('APP','Aturan dan formula aplikasi','SMART opsional, utility, normalisasi, bobot, ambang, snapshot, status dan penguncian alur mengikuti logika yang diimplementasikan.',ps27SheetJump('Kriteria & Bobot','prioritasi:criteria'))+
+   ps27SheetCard('APP','Aturan dan formula aplikasi','SMART (utility, normalisasi, ambang, snapshot), MCDA (gate, skor tertimbang, profil bobot, roadmap, repositori), status dan penguncian alur mengikuti logika yang diimplementasikan.',ps27SheetJump('Kriteria & Bobot','prioritasi:criteria'))+
    ps27SheetCard('DOC','Dokumen resmi dan penetapan','Target dan kontrak K-Wide serta keputusan program/proyek harus sesuai dokumen, kewenangan dan proses formal pada tahun tujuan.',ps27SheetJump('Penetapan Program','penetapan-program'))+
   '</div>'+
   '<div class="ps27-sheet-grid ps27-sheet-grid2">'+
@@ -906,7 +953,7 @@ function open(mode){
  const isSheet=mode==='sheet';
  let tab=isSheet?'framework':'map';
  const tabs=isSheet?
-  [['framework','Framework'],['governance','Tata Kelola'],['carry','Carry Over'],['formula','SMART & Formula'],['kwide','Penetapan K-Wide'],['rkmk','RKMK'],['terms','Istilah'],['reference','Referensi']]:
+  [['framework','Framework'],['governance','Tata Kelola'],['carry','Carry Over'],['formula','SMART & MCDA'],['kwide','Penetapan K-Wide'],['rkmk','RKMK'],['terms','Istilah'],['reference','Referensi']]:
   [['map','Peta Menu'],['flow','Tahapan'],['fill','Cara Pengisian'],['roles','Peran & Akses'],['check','Checklist']];
  const old=document.querySelector('.ps27-rich-overlay');if(old)old.remove();
  const previous=document.activeElement;
