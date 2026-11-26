@@ -1,0 +1,26 @@
+name: Full prechange backup 261126-MT-08
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/mt-backup-261126-mt-08.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: add9b46f20371ad6c6c4daea7c7bce2c63555ba5
+          fetch-depth: 0
+      - name: Create and verify full pre-change ZIP
+        run: |
+          test "$(git rev-parse HEAD)" = "add9b46f20371ad6c6c4daea7c7bce2c63555ba5"
+          git archive --format=zip --output=261126-MT-08.zip HEAD
+          unzip -t 261126-MT-08.zip | tail -1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 261126-MT-08
+          path: 261126-MT-08.zip
+          retention-days: 90
