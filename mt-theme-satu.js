@@ -1,9 +1,12 @@
-/* Tema warna Satu Kemenkeu (uji coba). Aktif hanya bila alamat memuat ?tema=satu.
+/* Tema warna Satu Kemenkeu. Dipilih di menu profil › Tema, atau lewat alamat ?tema=satu.
    Mengganti keluarga navy menjadi biru Satu Kemenkeu pada latar, garis tepi, bayangan dan fill;
    warna teks, kuning Kemenkeu, warna status, ukuran dan tata letak tidak diubah. */
 (function(){
 'use strict';
-if(!/[?&]tema=satu\b/.test(location.search))return;
+/* Pilihan tema: ?tema=satu / ?tema=klasik di alamat menang; selain itu pilihan pengguna di menu profil (localStorage mt_theme). */
+var q=(location.search.match(/[?&]tema=(satu|klasik)\b/)||[])[1],pref='';try{pref=localStorage.getItem('mt_theme')||''}catch(e){}
+window.MT_THEME=q||(pref==='satu'?'satu':'klasik');
+if(window.MT_THEME!=='satu')return;
 function hls(r,g,b){r/=255;g/=255;b/=255;var mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2,h=0,s=0,d=mx-mn;
  if(d){s=l>0.5?d/(2-mx-mn):d/(mx+mn);h=mx===r?((g-b)/d+(g<b?6:0)):mx===g?((b-r)/d+2):((r-g)/d+4);h*=60}return [h,l,s]}
 function rgbOf(h,l,s){function f(n){var k=(n+h/30)%12,a=s*Math.min(l,1-l);return Math.round(255*(l-a*Math.max(-1,Math.min(k-3,9-k,1))))}return [f(0),f(8),f(4)]}
@@ -29,7 +32,7 @@ function fixRules(rules){for(var i=0;i<rules.length;i++){var r=rules[i];
 function fixSheets(){var L=document.styleSheets,i,s;for(i=0;i<L.length;i++){s=L[i];if(s.ownerNode&&s.ownerNode.id==='mt-theme-satu')continue;try{collectVars(s.cssRules)}catch(e){}}
  for(i=0;i<L.length;i++){s=L[i];if(s.ownerNode&&s.ownerNode.id==='mt-theme-satu')continue;try{fixRules(s.cssRules)}catch(e){}}}
 var seen=new WeakMap();
-function fixEl(el){var t=el.getAttribute&&el.getAttribute('style');if(!t||seen.get(el)===t)return;var n=fixText(t);if(n!==t)el.setAttribute('style',n);seen.set(el,n)}
+function fixEl(el){if(el.closest&&el.closest('[data-theme-keep]'))return;var t=el.getAttribute&&el.getAttribute('style');if(!t||seen.get(el)===t)return;var n=fixText(t);if(n!==t)el.setAttribute('style',n);seen.set(el,n)}
 function fixTree(root){if(root.nodeType!==1)return;fixEl(root);var l=root.querySelectorAll('[style]');for(var i=0;i<l.length;i++)fixEl(l[i])}
 /* Kerangka: header bergradasi biru, sidebar tetap gelap. */
 var st=document.createElement('style');st.id='mt-theme-satu';
