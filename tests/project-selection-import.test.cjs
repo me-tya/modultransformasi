@@ -8,7 +8,7 @@ const aoa=JSON.parse(readFileSync('tests/fixtures-import-charter-is.json','utf8'
 function boot(role='SA',unit='BaTii',programs=[]){
  const S={ui:{psSelectedYear:2027},programs};
  const noop=()=>{};
- const ctx=vm.createContext({S,ME:{role,unit,email:'t@kemenkeu.go.id'},save:noop,render:noop,toast:noop,
+ const ctx=vm.createContext({S,TextEncoder,fsClean:x=>x,stab:x=>JSON.stringify(x,(k,v)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.keys(v).sort().reduce((o,p)=>(o[p]=v[p],o),{}):v),ME:{role,unit,email:'t@kemenkeu.go.id'},save:noop,render:noop,toast:noop,
   document:{addEventListener:noop,querySelector:()=>null,querySelectorAll:()=>[]},window:{}});
  ctx.window.MT_PS_SCOPE={normalizeProjectCodes:p=>p.psProjects.forEach((x,i)=>{x.psCode='X-'+(i+1)})};
  vm.runInContext(src,ctx);return {S,I:ctx.window.MT_PS_IMPORT};
@@ -86,4 +86,33 @@ test('Jenis Program tidak baku tidak menggagalkan impor',()=>{
  A.Program[1][h]='Program Tematik';A.Program[2][h]='Inisiatif Strategis';A.Program[3][h]='Kode Resmi ISTK';
  const pl=I.plan(A);assert.ok(pl.items.every(x=>x.action==='Baru'));I.apply(pl);
  assert.equal(S.programs[0].jenis,'Tematik');assert.equal(S.programs[1].jenis,'Lainnya');assert.equal(S.programs[1].psJenisSumber,'Inisiatif Strategis');
+});
+
+test('Staging leaves live programs unchanged; transaction is atomic and idempotent',async()=>{
+ const {S,I}=boot();const stage=I.stageImport(I.plan(aoa),{file:'x.xlsx'});
+ assert.equal(S.programs.length,0);assert.equal(stage.docs.length,9);
+ const store=new Map(), writes=[];
+ const db={collection:name=>{assert.equal(name,'programs');return {doc:id=>id}},runTransaction:async fn=>{
+  const pending=[];await fn({get:async id=>({exists:store.has(id),data:()=>store.get(id)}),set:(id,data)=>pending.push([id,data])});
+  for(const [id,data] of pending){store.set(id,data);writes.push(id)}
+ }};
+ await I.commitStage(stage,db);assert.equal(store.size,9);assert.equal(writes.length,9);
+ await I.commitStage(stage,db);assert.equal(writes.length,9);assert.equal(S.programs.length,0);
+ const old=stage.docs[0];store.set(old.id,{...store.get(old.id),nama:'perubahan bersamaan'});
+ await assert.rejects(I.commitStage(stage,db),/Konflik data server/);assert.equal(writes.length,9);
+});
+test('Existing program import stages copies, retains unrelated programs and protects failed write',async()=>{
+ const {S,I}=boot();I.apply(I.plan(aoa));S.programs.push({id:'unrelated',nama:'Program lain',psYear:2027});
+ const before=JSON.stringify(S.programs);
+ const stage=I.stageImport(I.plan(aoa),{file:'new.xlsx'});
+ assert.equal(JSON.stringify(S.programs),before);assert.equal(stage.docs.length,9);
+ assert.ok(stage.docs.every(d=>d.id!=='unrelated'&&d.before&&d.after.psImport.file===undefined));
+ const db={collection:()=>({doc:id=>id}),runTransaction:async()=>{throw Error('permission-denied')}};
+ await assert.rejects(I.commitStage(stage,db),/permission-denied/);
+ assert.equal(JSON.stringify(S.programs),before);
+});
+test('Oversized staged document rejected before any Firestore operation',async()=>{
+ const {I}=boot();const stage=I.stageImport(I.plan(aoa));
+ stage.docs[0].after.psProgramCharter.tujuan='x'.repeat(960000);
+ await assert.rejects(I.commitStage(stage,{collection:()=>{throw Error('must not reach db')}}),/terlalu besar/);
 });
