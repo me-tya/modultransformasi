@@ -1269,3 +1269,13 @@
 #app .psbank-docscroll:has(.psbank-actual-pdf){overflow:hidden!important;display:flex;flex-direction:column}
 #app .psbank-actual-view:has(>.psbank-actual-pdf){flex:1 1 auto;height:100%;min-height:450px;overflow:hidden;display:flex;flex-direction:column}
 #app .psbank-actual-view>.psbank-actual-pdf{flex:1 1 auto;height:100%!important;min-height:450px;max-height:none}
+
+/* Master Usulan: compact aligned field captions and multi-choice dropdown. */
+.psbank-project-editor .psbank-scope-field{display:flex;flex-direction:column;gap:4px;min-width:0;font:inherit;font-size:12px;font-weight:700;color:inherit}
+.psbank-project-editor .psbank-field-caption{display:flex;align-items:center;gap:2px;min-height:18px;line-height:1.35}
+.psbank-project-editor .psbank-scope-field>input:not([type=hidden]),.psbank-project-editor .psbank-scope-field>select,.psbank-project-editor .psbank-scope-field>textarea{width:100%;box-sizing:border-box;font:inherit;font-weight:400}
+.psbank-project-editor .psbank-initiative-select{border:1px solid #cbd5e1;border-radius:6px;background:var(--card,#fff);min-width:0;font-weight:400}
+.psbank-project-editor .psbank-initiative-select>summary{padding:8px 10px;cursor:pointer;overflow-wrap:anywhere;min-height:20px}
+.psbank-project-editor .psbank-initiative-options{padding:4px 10px 8px;display:grid;gap:5px;border-top:1px solid #dbe4ee}
+.psbank-project-editor .psbank-initiative-options label{display:flex!important;flex-direction:row!important;align-items:center!important;gap:7px;font-weight:400}
+.psbank-project-editor .psbank-initiative-options input[type=checkbox]{width:15px!important;height:15px!important;min-height:0!important;flex:none;margin:0;accent-color:#153a65}

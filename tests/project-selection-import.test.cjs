@@ -128,3 +128,12 @@ test('Master proyek tahap 2: enam atribut baru, nol valid, kosong tidak menimpa,
  I.apply(I.plan(make('','','')));assert.equal(x.estimatedCost,0);assert.equal(x.estimatedStaff,4);
  pl=I.plan(make(-1,0,1.5));assert.equal(pl.items[0].projects[0].action,'Galat');I.apply(pl);assert.equal(x.estimatedStaff,4);assert.equal(p.psProjects.length,1);
 });
+
+test('Satuan workbook: Rp juta menjadi rupiah, orang-bulan terpisah dari jumlah orang',()=>{
+ const x={id:'p1',name:'Modul X',uic:'BaTii',estimatedStaff:3,estimatedCost:900};
+ const p={id:'pr1',nama:'Program X',psYear:2027,psStatus:'Draft',uic:'BaTii',psProjects:[x]};
+ const {I}=boot('SA','BaTii',[p]);
+ const h=['Tahun','Nama Program','Nama Proyek','UIC Utama','Jenis Inisiatif','Estimasi Biaya (Rp juta)','Kebutuhan SDM (orang-bulan)','Durasi tidak dipakai','Estimasi Durasi (bulan)'];
+ const pl=I.plan({Proyek:[h,[2027,'Program X','Modul X','BaTii','Modul Baru, Interoperabilitas',150.5,12.5,'',0]]});
+ assert.equal(pl.items[0].projects[0].problem,'');I.apply(pl);assert.equal(x.estimatedCost,150500000);assert.equal(x.estimatedStaff,3);assert.equal(x.estimatedStaffMonths,12.5);assert.equal(x.durationMonths,0);assert.equal(x.initiativeType,'Modul Baru, Interoperabilitas');
+});

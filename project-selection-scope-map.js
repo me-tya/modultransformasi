@@ -62,6 +62,10 @@ function normalizeProjectCodes(p){
 const currentCode=(p,x)=>codeFor(p,x);
 
 
+const INITIATIVE_TYPES=["Aplikasi Baru","Modul Baru","Pengayaan Modul","Data Analytics / Dashboard / AI","Interoperabilitas"],SPBE_DOMAINS=["Proses Bisnis","Data dan Informasi","Aplikasi","Infrastruktur","Keamanan","Layanan"],EXCEL_UNITS=["SETJEN","ITJEN","DJSEF","DJA","DJPK","DJPPR","DJSPSK","BPPK","BaTii"];
+const FIELD_GUIDES={"name":"Isi nama sistem informasi atau modul yang diusulkan.","initiativeType":"Pilih satu atau lebih jenis inisiatif sesuai sheet Usulan kolom C–G. Centang semua yang relevan.","uic":"Pilih UE I pengusul sesuai sheet Daftar Kertas Kerja A. Unit di luar daftar yang sudah tersimpan tetap dipertahankan.","businessOwner":"Isi nama unit pemilik proses bisnis (Eselon II/unit), bukan hanya UE I pengusul. Excel tidak menetapkan daftar pilihan Eselon II.","spbeDomain":"Pilih domain arsitektur SPBE utama sesuai pilihan sheet Usulan kolom K.","description":"Uraikan aplikasi/modul, fungsi dan batas cakupan usulan.","urgency":"Jelaskan kebutuhan, masalah saat ini, urgensi dan konsekuensi apabila usulan tidak dilaksanakan.","legalBasis":"Cantumkan landasan hukum/regulasi yang mendasari usulan.","strategyAlignment":"Jelaskan strategi organisasi atau Renstra yang didukung.","businessProcess":"Cantumkan proses bisnis terkait dan referensi level 3, 4 atau 5 jika tersedia.","businessNarrative":"Uraikan alur proses bisnis, pihak yang terlibat, dan keterkaitannya dengan aplikasi.","features":"Tuliskan fitur utama yang akan dikembangkan sesuai cakupan usulan.","estimatedCostMillions":"Estimasi biaya 2027 dalam Rp juta. Contoh 150 berarti Rp150.000.000. Biaya digunakan sebagai batas pagu, bukan kriteria skor MCDA. Kosong berarti belum tersedia.","durationMonths":"Durasi dalam bulan. Masukkan angka nonnegatif, termasuk desimal jika diperlukan.","estimatedStaffMonths":"Estimasi kapasitas SDM 2027 dalam orang-bulan. Contoh 3 orang selama 4 bulan = 12 orang-bulan. Tidak sama dengan jumlah orang. Kosong berarti belum tersedia.","estimatedStaff":"Data lama dalam jumlah orang, bukan orang-bulan. Dipertahankan untuk kompatibilitas; jangan gunakan langsung untuk kapasitas MCDA.","category":"Kategori awal mengikuti program. Core Non APBN digunakan untuk sektor keuangan; kategori dapat diubah.","psAcronym":"Akronim membentuk kode proyek dengan awalan kode program. Contoh FRSW, MKER, MKES, JFKN.","start":"Isi tanggal rencana mulai proyek.","goLive":"Isi tanggal target go-live proyek."};
+const info=t=>typeof window.MT_INFO_ICON==='function'?window.MT_INFO_ICON(t):'<button type="button" class="mt-info-ic" title="'+E(t)+'" aria-label="Informasi: '+E(t)+'">ⓘ</button>';
+const initiativeValues=v=>String(v||'').split(/[,;\n]+/).map(x=>x.trim()).filter(Boolean);
 const PROJECT_FIELDS=[
  ['name','Nama Aplikasi / Proyek','text','Identitas Aplikasi'],
  ['psAcronym','Akronim Proyek (contoh FRSW, MKER, MKES, JFKN)','text','Identitas Aplikasi'],
@@ -70,8 +74,8 @@ const PROJECT_FIELDS=[
  ['subModule','Sub Modul','text','Identitas Aplikasi'],
  ['url','URL Aplikasi','url','Identitas Aplikasi'],
  ['category','Kategori','select','Identitas Aplikasi'],
- ['initiativeType','Jenis Inisiatif','text','Identitas Aplikasi'],
- ['uic','UIC Utama','text','Identitas Aplikasi'],
+ ['initiativeType','Jenis Inisiatif','multi','Identitas Aplikasi'],
+ ['uic','UE I / UIC Utama','options','Identitas Aplikasi'],
  ['status','Status Usulan','status','Identitas Aplikasi'],
  ['batiiIdentification','Identifikasi Tim BaTii','textarea','Telaah & Validasi'],
  ['probisConfirmation','Konfirmasi Pemilik Proses Bisnis','textarea','Telaah & Validasi'],
@@ -80,15 +84,16 @@ const PROJECT_FIELDS=[
  ['legalBasis','Landasan Hukum / Regulasi','textarea','Keselarasan & Proses Bisnis'],
  ['strategyAlignment','Strategi Organisasi yang Didukung (Renstra Kementerian / UE I)','textarea','Keselarasan & Proses Bisnis'],
  ['businessProcess','Proses Bisnis Terkait (Level 3, 4, atau 5)','textarea','Keselarasan & Proses Bisnis'],
- ['businessOwner','Unit Pemilik Proses Bisnis','text','Keselarasan & Proses Bisnis'],
- ['spbeDomain','Domain Arsitektur SPBE','text','Keselarasan & Proses Bisnis'],
+ ['businessOwner','Unit Pemilik Proses Bisnis (Eselon II/unit)','text','Keselarasan & Proses Bisnis'],
+ ['spbeDomain','Domain Arsitektur SPBE','options','Keselarasan & Proses Bisnis'],
  ['businessNarrative','Penjelasan / Narasi Proses Bisnis Aplikasi','textarea','Keselarasan & Proses Bisnis'],
  ['features','Fitur Utama yang Akan Dikembangkan','textarea','Keselarasan & Proses Bisnis'],
  ['start','Rencana Mulai','date','Pelaksanaan Awal'],
  ['goLive','Target Go-Live','date','Pelaksanaan Awal'],
- ['estimatedCost','Estimasi Biaya (Rp)','number','Pelaksanaan Awal'],
+ ['estimatedCostMillions','Estimasi Biaya (Rp juta)','number','Pelaksanaan Awal'],
  ['durationMonths','Estimasi Durasi (bulan)','number','Pelaksanaan Awal'],
- ['estimatedStaff','Kebutuhan SDM (orang)','number','Pelaksanaan Awal']
+ ['estimatedStaffMonths','Kebutuhan SDM (orang-bulan)','number','Pelaksanaan Awal'],
+ ['estimatedStaff','Jumlah SDM (orang) · data lama','number','Pelaksanaan Awal']
 ];
 const CAT=['Core APBN','Core Non APBN','Office Automation','APBN','Non APBN','Manajemen Birokrasi'];
 function defaultProjectCategory(p){
@@ -107,6 +112,7 @@ function projectCategory(p,x){
  return v;
 }
 function projectValue(x,key){
+ if(key==='estimatedCostMillions')return x.estimatedCost==null||x.estimatedCost===''?'':Number(x.estimatedCost)/1000000;
  if(key==='psAcronym')return x.psAcronym||x.name&&assignedAcronym(x)||'';
  if(key==='applicationName')return x.applicationName||x.name||'';
  if(key==='mainFunction')return x.mainFunction||x.outputs||'';
@@ -338,22 +344,40 @@ function projectEditor(id,readonly=false){
  if(id&&!existing)return;
  const d=document.createElement('div');d.className='psbank-overlay psbank-project-editor';
  const groups=[...new Set(PROJECT_FIELDS.map(x=>x[3]))];
- const control=([key,label,type])=>type==='select'||type==='status'?
-   '<label>'+E(label)+'<select data-scope-field="'+key+'" '+(readonly?'disabled':'')+'>'+((type==='status')?['Usulan','Berjalan','Ditunda','Selesai']:['',...CAT]).map(x=>'<option value="'+E(x)+'" '+(x===(key==='category'?projectCategory(p,existing):projectValue(existing||{},key))?'selected':'')+'>'+E(x||'Pilih kategori')+'</option>').join('')+'</select>'+(key==='category'?'<small class="psbank-category-hint">Kategori awal mengikuti program. Core Non APBN digunakan untuk sektor keuangan; kategori dapat diubah.</small>':'')+'</label>':
-   '<label class="'+(type==='textarea'?'psbank-editor-long':'')+'">'+E(label)+(key==='name'?' *':'')+
-   (type==='textarea'?'<textarea rows="3" data-scope-field="'+key+'" '+(readonly?'disabled':'')+'>'+E(projectValue(existing||{},key))+'</textarea>':
-    '<input type="'+type+'" data-scope-field="'+key+'" value="'+E(projectValue(existing||{},key))+'" '+(type==='number'?'min="'+(key==='durationMonths'?'0.01':'0')+'" step="'+(key==='durationMonths'?'any':'1')+'" placeholder="Belum diestimasi" ':'')+(readonly?'disabled':'')+'>')+'</label>';
+ const control=([key,label,type])=>{
+  if(key==='estimatedStaff'&&(existing?.estimatedStaff==null||existing.estimatedStaff===''))return '';
+  const value=String(key==='uic'?(existing?.uic||p.uic||''):key==='category'?projectCategory(p,existing):projectValue(existing||{},key));
+  const caption='<span class="psbank-field-caption">'+E(label)+(key==='name'?' *':'')+(FIELD_GUIDES[key]?info(FIELD_GUIDES[key]):'')+'</span>';
+  const field=(html,cl='')=>'<div class="psbank-scope-field '+cl+'">'+caption+html+'</div>';
+  if(type==='multi'){
+   const selected=initiativeValues(value),options=[...new Set([...INITIATIVE_TYPES,...selected])];
+   return field('<details class="psbank-initiative-select"><summary data-scope-initiative-summary>'+E(selected.join(', ')||'Pilih jenis inisiatif')+'</summary><div class="psbank-initiative-options">'+options.map((v,i)=>'<label><input type="checkbox" data-scope-initiative-option value="'+E(v)+'" '+(selected.includes(v)?'checked ':'')+(readonly?'disabled':'')+'>'+E(v)+(INITIATIVE_TYPES.includes(v)?'':' (data lama)')+'</label>').join('')+'</div></details><input type="hidden" data-scope-field="'+key+'" value="'+E(value)+'">');
+  }
+  if(type==='select'||type==='status'||type==='options'){
+   const choices=type==='status'?['Usulan','Berjalan','Ditunda','Selesai']:key==='category'?CAT:key==='spbeDomain'?SPBE_DOMAINS:EXCEL_UNITS;
+   const opts=[...new Set(['',...choices,...(value?[value]:[])])];
+   return field('<select aria-label="'+E(label)+'" data-scope-field="'+key+'" '+(readonly?'disabled':'')+'>'+opts.map(v=>'<option value="'+E(v)+'" '+(v===value?'selected':'')+'>'+E(v?(choices.includes(v)?v:v+' (di luar daftar)'):'Pilih '+label)+'</option>').join('')+'</select>');
+  }
+  return field(type==='textarea'?'<textarea aria-label="'+E(label)+'" rows="3" data-scope-field="'+key+'" '+(readonly?'disabled':'')+'>'+E(value)+'</textarea>':
+   '<input aria-label="'+E(label)+'" type="'+type+'" data-scope-field="'+key+'" value="'+E(value)+'" '+(type==='number'?'min="0" step="'+(key==='estimatedStaff'?'1':key==='estimatedCostMillions'?'0.000001':'any')+'" placeholder="Belum diestimasi" ':'')+(readonly?'disabled':'')+'>',type==='textarea'?'psbank-editor-long':'');
+ };
  d.innerHTML='<section class="psbank-dialog psbank-project-dialog" role="dialog" aria-modal="true" aria-label="Detail Usulan Proyek">'+
  '<header><div><b>'+(readonly?'Detail':existing?'Ubah':'Tambah')+' Usulan Proyek</b><small>'+E(p.nama)+' · '+year()+'</small></div><button type="button" data-scope-editor-close title="Tutup" aria-label="Tutup">✕</button></header>'+
- '<main class="psbank-dialogbody"><div class="psbank-form-provenance"><b>Sumber Usulan</b><span>'+E(existing?.psOriginYear?existing.psOriginProgram+' · '+existing.psOriginYear:'Usulan baru')+'</span><small>Perubahan isian tahun tujuan tidak mengubah informasi tahun sumber.</small></div>'+
- '<div class="psbank-project-code-preview"><span>Kode Proyek</span><strong data-scope-code-preview>'+E(existing?currentCode(p,existing):String(p.kode||p.akr)+'-…')+'</strong><small>Awalan mengikuti kode program; akronim diisi pada bagian Identitas Aplikasi/Proyek.</small></div>'+
+ '<main class="psbank-dialogbody"><div class="psbank-form-provenance"><b>Sumber Usulan'+info('Perubahan isian tahun tujuan tidak mengubah informasi tahun sumber.')+'</b><span>'+E(existing?.psOriginYear?existing.psOriginProgram+' · '+existing.psOriginYear:'Usulan baru')+'</span></div>'+
+ '<div class="psbank-project-code-preview"><span>Kode Proyek'+info(FIELD_GUIDES.psAcronym)+'</span><strong data-scope-code-preview>'+E(existing?currentCode(p,existing):String(p.kode||p.akr)+'-…')+'</strong></div>'+
  '<nav class="psbank-proj-editor-tabs" role="tablist" aria-label="Substansi Usulan Proyek">'+groups.map((g,i)=>'<button type="button" role="tab" data-scope-editor-tab="'+i+'" aria-selected="'+(!i)+'" class="'+(!i?'on':'')+'">'+E(g)+'</button>').join('')+'</nav>'+
  groups.map((g,i)=>'<section class="psbank-form-section psbank-proj-editor-panel" data-scope-editor-panel="'+i+'" '+(i?'hidden':'')+'><h3>'+E(g)+'</h3><div class="psbank-proj-editor-grid">'+PROJECT_FIELDS.filter(x=>x[3]===g).map(control).join('')+'</div></section>').join('')+
- '</main><footer><span>Form usulan aplikasi/modul · WBS disusun kemudian.</span><div><button type="button" class="btn" data-scope-editor-close>Tutup</button>'+
+ '</main><footer><span>Form usulan'+info('WBS disusun kemudian pada tahap perencanaan proyek. Panduan pilihan mengacu Kertas Kerja A Prioritas SI 2027, sheet Usulan, Daftar dan Petunjuk.')+'</span><div><button type="button" class="btn" data-scope-editor-close>Tutup</button>'+
  (!readonly?'<button type="button" class="btn pri" data-scope-editor-save>Simpan</button>':can(p)?'<button type="button" class="btn pri" data-scope-editor-edit>✎ Ubah</button>':'')+'</div></footer></section>';
  (document.querySelector('#app')||document.body).appendChild(d);
  const projectName=d.querySelector('[data-scope-field="name"]'),acrInput=d.querySelector('[data-scope-field="psAcronym"]'),codePreview=d.querySelector('[data-scope-code-preview]');
  let acrCustomized=!!existing?.psAcronym;
+ d.addEventListener('change',ev=>{
+  if(!ev.target.matches('[data-scope-initiative-option]'))return;
+  const selected=[...d.querySelectorAll('[data-scope-initiative-option]:checked')].map(x=>x.value).join(', ');
+  d.querySelector('[data-scope-field="initiativeType"]').value=selected;
+  d.querySelector('[data-scope-initiative-summary]').textContent=selected||'Pilih jenis inisiatif';
+ });
  d.addEventListener('input',ev=>{
   if(ev.target===acrInput)acrCustomized=true;
   if(ev.target===projectName&&!acrCustomized&&acrInput)acrInput.value=suggestedAcronym(projectName.value);
@@ -368,14 +392,15 @@ function projectEditor(id,readonly=false){
   if(!ev.target.closest('[data-scope-editor-save]'))return;
   const fields={};d.querySelectorAll('[data-scope-field]').forEach(x=>fields[x.dataset.scopeField]=x.value.trim());
   if(!fields.name){toast('Nama aplikasi/proyek wajib diisi.');return}
-  for(const k of ['estimatedCost','durationMonths','estimatedStaff']){
+  for(const k of ['estimatedCostMillions','durationMonths','estimatedStaffMonths','estimatedStaff']){
    const input=d.querySelector('[data-scope-field="'+k+'"]');
    if(input?.validity?.badInput){toast('Estimasi harus berupa angka yang valid.');return}
-   if(fields[k]==='')continue;
+   if(fields[k]==null||fields[k]==='')continue;
    const n=Number(fields[k]);
-   if(!Number.isFinite(n)||(k==='durationMonths'?n<=0:!Number.isSafeInteger(n)||n<0)){toast('Estimasi biaya/SDM harus bilangan bulat nonnegatif; durasi harus lebih dari 0.');return}
+   if(!Number.isFinite(n)||n<0||(k==='estimatedStaff'&&!Number.isSafeInteger(n))||(k==='estimatedCostMillions'&&(!Number.isSafeInteger(Math.round(n*1000000))||Math.abs(n*1000000-Math.round(n*1000000))>1e-5))){toast('Estimasi harus nonnegatif; biaya maksimal enam desimal dalam Rp juta.');return}
    fields[k]=n;
   }
+  fields.estimatedCost=fields.estimatedCostMillions===''?'':Math.round(fields.estimatedCostMillions*1000000);delete fields.estimatedCostMillions;
   if(fields.url&& !/^https?:\/\//i.test(fields.url)){toast('URL wajib dimulai https:// atau http://.');return}
   if((p.psProjects||[]).some(x=>x!==existing&&x.name?.toLowerCase()===fields.name.toLowerCase())){toast('Nama proyek sudah ada pada program tersebut.');return}
   fields.psAcronym=acronym(fields.psAcronym||suggestedAcronym(fields.name));
