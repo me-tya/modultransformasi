@@ -9498,6 +9498,13 @@ function rptTutupBlocks(c){const B=[];B.push({t:'h1',text:'Penutupan Proyek'});c
 const MT_RPT_ORG=['KEMENTERIAN KEUANGAN REPUBLIK INDONESIA','Badan Teknologi, Informasi, dan Intelijen Keuangan','Pusat Manajemen Transformasi dan Perubahan'];
 const mtRptT=(lang,i,e)=>lang==='en'?e:i;
 function mtRptHas(v){const s=String(v??'').trim();return !!s&&!/^[-–—]$/.test(s);}
+/* Teks sel tabel/kv: baris berawalan •, -, *, ▪ atau "1." menjadi daftar bernomor dengan indentasi gantung (seperti Draft RKMK). */
+const MT_LI=/^\s*(?:[•·▪●◦\-–\*]|\d{1,2}[.)])\s+(.*)$/;
+function mtRptSegs(s){const out=[];let ol=null;String(s??'').split('\n').forEach(l=>{const m=l.match(MT_LI);if(m){if(!ol){ol={t:'ol',items:[]};out.push(ol)}ol.items.push(m[1]);return}ol=null;out.push({t:'p',text:l})});while(out.length&&out[out.length-1].t==='p'&&!out[out.length-1].text.trim())out.pop();return out}
+function mtRptRich(s){if(s&&typeof s==='object')return mtRptMd(s);const g=mtRptSegs(s);if(!g.some(x=>x.t==='ol'))return mtRptMd(s);
+ return g.map(x=>x.t==='ol'?`<ol class="rnum">${x.items.map(i=>`<li>${mtRptMd(i)}</li>`).join('')}</ol>`:(x.text.trim()?`<div class="rp">${mtRptMd(x.text)}</div>`:'<div class="rgap"></div>')).join('')}
+function mtDxRich(text,o={}){if(typeof text!=='string')return null;const g=mtRptSegs(text);if(!g.some(x=>x.t==='ol'))return null;
+ return g.map(x=>x.t==='ol'?x.items.map((it,i)=>`<w:p><w:pPr><w:tabs><w:tab w:val="left" w:pos="360"/></w:tabs><w:spacing w:before="0" w:after="40" w:line="264" w:lineRule="auto"/><w:ind w:left="360" w:hanging="360"/></w:pPr>${mtDxRuns((i+1)+'.',o)}<w:r><w:tab/></w:r>${mtDxRuns(it,o)}</w:p>`).join(''):(x.text.trim()?mtDxP(mtDxRuns(x.text,o),{after:40}):mtDxP('',{after:0,line:160}))).join('')}
 function mtRptMd(s){return esc(String(s??'')).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>');}
 function mtRptOrderedMeta(rows){
  const all=Array.isArray(rows)?rows.filter(r=>Array.isArray(r)&&r.length>=2).slice():[];
@@ -9509,7 +9516,7 @@ function mtRptHtml(model){
   const c=model.cover,L=(i,e)=>mtRptT(model.lang,i,e),F=!!model.formal;c.meta=mtRptOrderedMeta(c.meta);let n=0,m2=0,fg=0,tb=0,nn=false,an=0;const toc=[],figs=[],tabs=[];
   const tte0=c.tte||{};
   const tteHtml=`<div class="tte">${tte0.date?`<div class="tdt">${esc(tte0.city?tte0.city+', '+tte0.date:tte0.date)}</div>`:''}${tte0.label?`<div class="tlb">${esc(tte0.label)}</div>`:''}<div class="tj">${esc(tte0.title||L('[Jabatan]','[Position]'))}</div><div class="qrph" role="img" aria-label="Placeholder QR Digital Signature">QR TTE</div><div class="tl">${L('Ditandatangani secara elektronik','Electronically signed')}</div><div class="tn">${esc(tte0.name||L('[Nama Pejabat]','[Signer Name]'))}</div></div>`;
-  const cell=v=>{if(v&&typeof v==='object'){const st=[v.fill?`background:#${v.fill}`:'',v.bg?`background:#${v.bg}`:'',v.color?`color:#${v.color}`:'',v.bold?'font-weight:700':'',v.align?`text-align:${v.align}`:''].filter(Boolean).join(';');return `<td style="${st}">${v.fill?`<span class="pill">${mtRptMd(v.text)}</span>`:mtRptMd(v.text)}</td>`;}return `<td>${mtRptMd(v)}</td>`;};
+  const cell=v=>{if(v&&typeof v==='object'){const st=[v.fill?`background:#${v.fill}`:'',v.bg?`background:#${v.bg}`:'',v.color?`color:#${v.color}`:'',v.bold?'font-weight:700':'',v.align?`text-align:${v.align}`:''].filter(Boolean).join(';');return `<td style="${st}">${v.fill?`<span class="pill">${mtRptMd(v.text)}</span>`:mtRptMd(v.text)}</td>`;}return `<td>${mtRptRich(v)}</td>`;};
   const body=model.blocks.map(b=>{
     switch(b.t){
       case 'h1':if(b.nonum){nn=true;m2=0;an++;const id='app'+an;if(F)toc.push({l:1,id,t:b.text});return `<h2 class="sec pb" id="${id}">${esc(b.text)}</h2>`;}nn=false;n++;m2=0;if(F)toc.push({l:1,id:'sec'+n,t:n+'   '+b.text});return `<h2 class="sec" id="sec${n}"><span class="num">${n}</span>${esc(b.text)}</h2>`;
@@ -9522,7 +9529,7 @@ function mtRptHtml(model){
         return `<div class="charts n${b.items.length}">${b.items.map(x=>`<figure class="chart"><figcaption>${esc(x.title)}</figcaption>${x.img?`<img src="${x.img.src}" alt="">`:`<div class="noimg">${L('Grafik tidak tersedia','Chart unavailable')}</div>`}${x.caption?`<small>${esc(x.caption)}</small>`:''}</figure>`).join('')}</div>`;
       case 'callout':return `<div class="callout ${b.tone||'info'}"><b>${esc(b.title)}</b>${b.lines.length>1?`<ul>${b.lines.map(l=>`<li>${mtRptMd(l)}</li>`).join('')}</ul>`:`<p>${mtRptMd(b.lines[0])}</p>`}</div>`;
       case 'bullets':return `<ul class="bul">${b.items.map(l=>`<li>${mtRptMd(l)}</li>`).join('')}</ul>`;
-      case 'kv':return `<table class="kvt">${b.rows.map(r=>`<tr><th>${esc(r[0])}</th><td>${mtRptMd(r[1])}</td></tr>`).join('')}</table>`;
+      case 'kv':return `<table class="kvt">${b.rows.map(r=>`<tr><th>${esc(r[0])}</th><td>${mtRptRich(r[1])}</td></tr>`).join('')}</table>`;
       case 'table':return (F&&b.caption?(()=>{tb++;const id='tab'+tb,t=`${L('Tabel','Table')} ${tb}. ${b.caption}`;tabs.push({id,t});return `<div class="tcap" id="${id}">${esc(t)}</div>`;})():'')+`<table class="tbl ${b.small?'small':''} ${b.fixed?'fixed':''}"><colgroup>${(b.widths||[]).map(w=>`<col style="width:${w}%">`).join('')}</colgroup><thead><tr>${b.head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${b.rows.map(r=>`<tr>${r.map(cell).join('')}</tr>`).join('')}</tbody></table>`;
       case 'gallery':return `<div class="gallery">${b.images.map(im=>`<figure><img src="${im.src}" alt=""><figcaption>${esc(im.caption||'')}</figcaption></figure>`).join('')}</div>`;
       case 'ai':return `<div class="ai"><div class="aih">✦ ${esc(b.title)}</div><div class="ain">${esc(b.note||'')}</div>${b.sections.map(s=>`${s.title?`<h4>${esc(s.title)}</h4>`:''}${s.paras.map(p=>`<p>${mtRptMd(p)}</p>`).join('')}${s.bullets.length?`<ul>${s.bullets.map(x=>`<li>${mtRptMd(x)}</li>`).join('')}</ul>`:''}`).join('')}</div>`;
@@ -9566,6 +9573,7 @@ function mtRptHtml(model){
   .bul{margin:6px 0 12px 20px;padding:0}.bul li{margin:6px 0}
   table{border-collapse:collapse;width:100%}
   .tbl{margin:8px 0 14px;font-size:12.5px}.tbl th{background:#12275A;color:#fff;text-align:left;padding:8px;font-weight:700}.tbl td{padding:7px 8px;border-bottom:1px solid #E4E7EC;vertical-align:top}.tbl tbody tr:nth-child(even) td{background:#F8FAFD}.tbl.small{font-size:11.5px}.tbl.fixed{table-layout:fixed}.tbl.fixed td{word-wrap:break-word}.tbl thead{display:table-header-group}.tbl tr{break-inside:avoid}
+  .tbl td ol.rnum,.kvt td ol.rnum{margin:2px 0 2px;padding-left:22px;list-style:decimal}.tbl td ol.rnum li,.kvt td ol.rnum li{margin:0 0 2px;padding-left:2px}.tbl td .rgap,.kvt td .rgap{height:8px}
   .tbl td .pill{display:inline-block;border-radius:999px;padding:2px 9px;font-size:11px;color:#fff}
   .tbl td[style*="background"]{background-clip:padding-box}
   .kvt{margin:8px 0 14px;font-size:13px}.kvt th{width:32%;text-align:left;background:#F3F6FB;color:#344054;padding:8px 10px;border-bottom:1px solid #fff;vertical-align:top}.kvt td{padding:8px 10px;border-bottom:1px solid #EEF1F6}
@@ -9692,7 +9700,7 @@ async function mtRptDocx(model){
         const inner=mtDxP(mtDxRuns(b.title,{b:true,color:tone[1],sz:21}),{after:60})+b.lines.map(l=>mtDxP(mtDxRuns((b.lines.length>1?'•  ':'')+l,{sz:21}),{after:50,indent:b.lines.length>1?200:0})).join('');
         x.push(mtDxTable([{cells:[mtDxCell(inner,W,{fill:tone[0],padL:220,padR:200,padT:120,padB:120,borders:`<w:tcBorders><w:top w:val="nil"/><w:right w:val="nil"/><w:bottom w:val="nil"/><w:left w:val="single" w:sz="36" w:color="${tone[1]}"/></w:tcBorders>`})]}],[W],{noBorder:true,after:160}));break;}
       case 'bullets':b.items.forEach(l=>x.push(mtDxP(mtDxRuns(l,{sz:22}),{numId:1,after:80})));x.push(mtDxP('',{after:60}));break;
-      case 'kv':x.push(mtDxTable(b.rows.map(r=>({cells:[mtDxCell(mtDxP(mtDxRuns(r[0],{b:true,color:'344054',sz:20}),{after:0}),3100,{fill:'F3F6FB'}),mtDxCell(mtDxP(mtDxRuns(r[1],{sz:20}),{after:0}),W-3100)]})),[3100,W-3100],{borderColor:'E4E7EC'}));break;
+      case 'kv':x.push(mtDxTable(b.rows.map(r=>({cells:[mtDxCell(mtDxP(mtDxRuns(r[0],{b:true,color:'344054',sz:20}),{after:0}),3100,{fill:'F3F6FB'}),mtDxCell(mtDxRich(r[1],{sz:20})||mtDxP(mtDxRuns(r[1],{sz:20}),{after:0}),W-3100)]})),[3100,W-3100],{borderColor:'E4E7EC'}));break;
       case 'table':{
         if(F&&b.caption){tbN++;x.push(capP(capTab,tbN,b.caption,{keepNext:true,before:160,after:60}));}
         // Normalize all column weights to the exact printable A4 width, regardless
@@ -9709,7 +9717,8 @@ async function mtRptDocx(model){
           {fill:'12275A',padL:cellPad,padR:cellPad,padT:75,padB:75}))};
         const rows=(b.rows||[]).map((r,ri)=>({cells:(b.head||[]).map((_,i)=>{
           const v=Array.isArray(r)?r[i]:'',o=v&&typeof v==='object'?v:{text:v};
-          return mtDxCell(mtDxP(mtDxRuns(o.text,{b:o.bold,color:o.color?String(o.color).replace('#',''):undefined,sz}),
+          const ro={b:o.bold,color:o.color?String(o.color).replace('#',''):undefined,sz};
+          return mtDxCell(mtDxRich(o.text,ro)||mtDxP(mtDxRuns(o.text,ro),
             {after:0,align:o.align==='center'?'center':undefined}),ws[i],
             {fill:o.fill||o.bg||(ri%2?'F8FAFD':undefined),v:o.v||'center',padL:cellPad,padR:cellPad,padT:70,padB:70});
         })}));
@@ -12782,7 +12791,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script src="project-selection-scope-map.js?v=20261127-hist1"></script>
 <script src="mt-ea-taxonomy.js?v=20261127-ea1"></script>
 <script src="project-selection-kka.js?v=20261127-hist1"></script>
-<script src="project-selection-documents.js?v=20261127-ea1"></script>
+<script src="project-selection-documents.js?v=20261127-num1"></script>
 <script src="mt-estimate-helper.js?v=20261127-est1"></script>
 <script src="project-selection-program-bank.js?v=20261127-non4"></script>
 <script src="project-selection-program-import.js?v=20261127-kka11"></script>

@@ -511,7 +511,14 @@ async function exportFormalPdf(model,file,{preview=false}={}){
   const cellRow=(values,isHead=false)=>{
    const parts=values.map((v,i)=>{
     pdf.setFont('helvetica',isHead?'bold':'normal');pdf.setFontSize(isHead?9.2:9.2);
-    return pdf.splitTextToSize(String(v??'—'),Math.max(9,w[i]-5));
+    const cw=Math.max(9,w[i]-5),src=String(v??'—');
+    if(isHead||!/(^|\n)\s*(?:[•·▪●◦\-–\*]|\d{1,2}[.)])\s+/.test(src))return pdf.splitTextToSize(src,cw);
+    /* Daftar bernomor dengan indentasi gantung: nomor di kiri, teks lanjutan sejajar teks, bukan di bawah nomor. */
+    const out=[];let n=0;const IND=5;
+    src.split('\n').forEach(l=>{const m=l.match(/^\s*(?:[•·▪●◦\-–\*]|\d{1,2}[.)])\s+(.*)$/);
+     if(m){n++;pdf.splitTextToSize(m[1],cw-IND).forEach((t,k)=>out.push({num:k?'':n+'.',t,ind:IND}))}
+     else{n=0;if(!l.trim())out.push('');else pdf.splitTextToSize(l,cw).forEach(t=>out.push(t))}});
+    while(out.length&&out[out.length-1]==='')out.pop();return out;
    });
    const max=Math.max(1,...parts.map(x=>x.length));
    for(let start=0;start<max;start+=30){
@@ -523,7 +530,7 @@ async function exportFormalPdf(model,file,{preview=false}={}){
      pdf.setFillColor(...fill);pdf.rect(x,y,w[i],h,'F');
      pdf.setDrawColor(218,228,240);pdf.rect(x,y,w[i],h);
      pdf.setFont('helvetica',isHead?'bold':'normal');pdf.setFontSize(9.2);
-     setColor(isHead?[255,255,255]:ink);pdf.text(rows[i]||[],x+2.5,y+4.5);x+=w[i];
+     setColor(isHead?[255,255,255]:ink);{const ls=rows[i]||[];if(ls.some(z=>typeof z==='object')){const lh=pdf.getLineHeight()/pdf.internal.scaleFactor;ls.forEach((z,k)=>{const yy=y+4.5+k*lh;if(typeof z==='object'){if(z.num)pdf.text(z.num,x+2.5,yy);pdf.text(z.t,x+2.5+z.ind,yy)}else if(z)pdf.text(z,x+2.5,yy)})}else pdf.text(ls,x+2.5,y+4.5)}x+=w[i];
     });y+=h;
    }
   };
