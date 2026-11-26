@@ -144,15 +144,16 @@ function moduleTitle(r){
  return clean||name;
 }
 function kpis(D,rankPage=false){const s=D.sum,c=D.c,active=rankPage?ui().kpi:'';
- const k=(key,v,l,tone,hint)=>'<button type="button" class="kka-kpi kka-tone-'+tone+(active===key?' is-active':'')+'" data-kka-kpi="'+key+'" aria-pressed="'+(active===key)+'" title="'+E(active===key?'Klik kembali untuk melepas filter':hint)+'"><span class="kka-kpi-label">'+l+'</span><b>'+v+'</b></button>';
+ const pc=(n,d)=>d?fmt(n/d*100,1)+'%':'0%';
+ const k=(key,v,l,tone,sub,hint)=>'<button type="button" class="kka-kpi kka-tone-'+tone+(active===key?' is-active':'')+'" data-kka-kpi="'+key+'" aria-pressed="'+(active===key)+'" title="'+E(active===key?'Klik kembali untuk melepas filter':hint)+'"><span class="kka-kpi-label">'+l+'</span><b>'+v+'</b><small>'+sub+'</small></button>';
  return '<div class="kka-kpis" role="group" aria-label="Filter indikator portofolio">'+
- k('istk',s.istk+'<i> · Rp '+fmt(s.istkCost)+' jt</i>','Proyek ISTK (otomatis)','navy','Lihat seluruh proyek ISTK tahun ini')+
- k('non',s.total,'Usulan non-ISTK dinilai','violet','Lihat semua usulan non-ISTK')+
- k('passed',s.lolos+'<i>/'+s.total+'</i>','Lolos gate','green','Lihat usulan dengan gate Lolos')+
- k('ranked',s.ranked,'Diranking','blue','Lihat usulan yang masuk peringkat')+
- k('funded',s.nFunded,'Non-ISTK didanai '+D.y,'teal','Lihat usulan yang direkomendasikan didanai')+
- k('cost',fmt(s.costFunded)+'<i> / '+fmt(c.pagu)+'</i>','Total biaya / pagu (Rp juta)','gold','Lihat proyek dengan kontribusi biaya pada pagu')+
- k('staff',fmt(s.sdmFunded,1)+'<i> / '+fmt(c.sdm)+'</i>','SDM terpakai / kapasitas (org-bln)','slate','Lihat proyek dengan kontribusi pada kapasitas SDM')+'</div>';
+ k('istk',s.istk,'Proyek ISTK','navy','Otomatis · Rp '+fmt(s.istkCost)+' jt','Lihat seluruh proyek ISTK tahun ini')+
+ k('non',s.total,'Usulan non-ISTK','violet','Usulan yang dinilai','Lihat semua usulan non-ISTK')+
+ k('passed',s.lolos,'Lolos gate','green',pc(s.lolos,s.total)+' dari usulan','Lihat usulan dengan gate Lolos')+
+ k('ranked',s.ranked,'Diranking','blue',pc(s.ranked,s.total)+' dari usulan','Lihat usulan yang masuk peringkat')+
+ k('funded',s.nFunded,'Non-ISTK didanai','teal','Rekomendasi '+D.y,'Lihat usulan yang direkomendasikan didanai')+
+ k('cost',fmt(s.costFunded),'Biaya terpakai','gold','dari pagu Rp '+fmt(c.pagu)+' jt','Lihat proyek dengan kontribusi biaya pada pagu')+
+ k('staff',fmt(s.sdmFunded,1),'SDM terpakai','slate','dari kapasitas '+fmt(c.sdm)+' org-bln','Lihat proyek dengan kontribusi pada kapasitas SDM')+'</div>';
 }
 function rankView(p,D,ro){
  const u=ui(),scopeAll=u.scope==='all',ueSel=Array.isArray(u.ue)?u.ue:[],q=T(u.q).toLowerCase();
@@ -648,6 +649,14 @@ b.up{color:#0F7A4B}b.dn{color:#B42318}
 .kka .kka-kpi{--kc:#1f4b82;--kb:#cbdcf0;--kg:#eef5fd;appearance:none;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:5px;position:relative;text-align:left;font:inherit;min-width:0;min-height:77px;width:100%;padding:10px 12px;border:1px solid var(--kb);border-radius:10px;background:linear-gradient(135deg,var(--kg),#fff 140%);color:var(--kc);cursor:pointer;box-shadow:0 2px 5px #0b2d5909;transition:border-color .16s,box-shadow .16s,background .16s}
 .kka .kka-kpi.kka-tone-navy{--kc:#173d72;--kb:#c7d9ef;--kg:#eaf2fc}.kka .kka-kpi.kka-tone-violet{--kc:#6346a3;--kb:#ded5f2;--kg:#f3effb}.kka .kka-kpi.kka-tone-green{--kc:#12764e;--kb:#c7e5d5;--kg:#eaf7ef}.kka .kka-kpi.kka-tone-blue{--kc:#215fa9;--kb:#cbdff7;--kg:#edf5ff}.kka .kka-kpi.kka-tone-teal{--kc:#087e83;--kb:#c4e7e5;--kg:#e9f8f7}.kka .kka-kpi.kka-tone-gold{--kc:#986300;--kb:#efdfb7;--kg:#fff7e5}.kka .kka-kpi.kka-tone-slate{--kc:#475e7b;--kb:#d5dfea;--kg:#f0f4f9}
 .kka .kka-kpi-label{font-size:11.5px;line-height:1.25;font-weight:700;padding-right:13px;color:var(--kc)}.kka .kka-kpi b{font-size:23px;line-height:1.12;color:var(--kc);font-variant-numeric:tabular-nums}.kka .kka-kpi b i{font-size:12px;color:#53657b;white-space:nowrap}.kka .kka-kpi:after{content:'›';position:absolute;top:7px;right:9px;font-size:19px;font-weight:600;color:var(--kc);opacity:.7}.kka .kka-kpi:hover,.kka .kka-kpi:focus-visible{border-color:var(--kc);box-shadow:0 2px 9px #0b2d5922}.kka .kka-kpi.is-active{border-color:var(--kc);box-shadow:inset 0 0 0 1px var(--kc),0 2px 7px #0b2d5914}.kka .kka-kpi.is-active:after{content:'✓';font-size:13px;opacity:1}
+.kka .kka-kpi{background:#fff;border:1px solid #d6e0ef;border-radius:13px;padding:12px 14px;min-height:94px;gap:2px;justify-content:flex-start;box-shadow:0 2px 6px #0b2d5910;transition:transform .16s,border-color .16s,box-shadow .16s}
+.kka .kka-kpi:hover,.kka .kka-kpi:focus-visible{transform:translateY(-2px);border-color:#5c86ba;box-shadow:0 2px 6px #0b2d5910}
+.kka .kka-kpi:after{content:none}.kka .kka-kpi .kka-kpi-label{color:#3c5174;font-size:12px;font-weight:800;padding-right:16px}
+.kka .kka-kpi b{font-size:27px;line-height:1.25;font-weight:800}.kka .kka-kpi small{color:#5F6B85;font-size:11px;line-height:1.3}
+.kka .kka-kpi.kka-tone-navy{background:linear-gradient(135deg,#064781,#071e51);border-color:#0a4277}.kka .kka-kpi.kka-tone-navy .kka-kpi-label,.kka .kka-kpi.kka-tone-navy b,.kka .kka-kpi.kka-tone-navy small{color:#fff}
+.kka .kka-kpi.kka-tone-violet b{color:#6346a3}.kka .kka-kpi.kka-tone-green b{color:#158653}.kka .kka-kpi.kka-tone-blue b{color:#1368d6}.kka .kka-kpi.kka-tone-teal b{color:#087e83}.kka .kka-kpi.kka-tone-gold b{color:#B07400}.kka .kka-kpi.kka-tone-slate b{color:#5F6B85}
+.kka .kka-kpi.is-active{border-color:#13294b;box-shadow:inset 0 0 0 1px #13294b,0 4px 12px #0b2d5922}.kka .kka-kpi.kka-tone-navy.is-active{box-shadow:0 0 0 3px #F2B92C}
+.kka .kka-kpi.is-active:after{content:'✓';position:absolute;top:9px;right:11px;font-size:13px;font-weight:900;color:#13294b;opacity:1}.kka .kka-kpi.kka-tone-navy.is-active:after{color:#F2B92C}
 .kka .kka-pen .kka-module-title{display:block;line-height:1.3;overflow-wrap:anywhere}.kka .kka-module-meta{display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-top:3px}.kka .kka-module-meta .kka-non{margin-left:0;vertical-align:middle}.kka .kka-module-actions{display:inline-flex;align-items:center;gap:3px}.kka .kka-pen .kka-nm small:empty{display:none}
 @media(max-width:1200px){.kka-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}.kka-grid2{grid-template-columns:1fr}.kka-sets{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){.kka-kpis{grid-template-columns:1fr 1fr}.kka-sets{grid-template-columns:1fr}}`;document.head.appendChild(s)})();
