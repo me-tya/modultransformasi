@@ -45,7 +45,7 @@ var ROUTES={
 var PRIMARY={
  'usulan':['Membuat dan melengkapi usulan program serta dokumen pendukung.','Usulan masih konsep sampai melalui proses penetapan program.'],
  'mapping':['Mengambil riwayat proyek dan mengelola proyek yang diusulkan pada program tujuan.','Salinan tidak membawa WBS atau realisasi historis menjadi aktif.'],
- 'prioritasi':['Menilai, membandingkan, dan memeringkat calon proyek secara manual atau SMART.','Skor adalah dasar pertimbangan; tidak secara otomatis menetapkan proyek.'],
+ 'prioritasi':['Menilai, membandingkan, dan memeringkat calon proyek dengan metode SMART atau MCDA.','Skor adalah dasar pertimbangan; tidak secara otomatis menetapkan proyek.'],
  'charter':['Menyusun charter dan dokumen perencanaan program/proyek.','Dokumen rancangan belum menjadi baseline tanpa persetujuan.'],
  'penetapan-program':['Mencatat kontrak kinerja K-Wide dan menetapkan program beserta proyek terpilih.','Penetapan memerlukan kelengkapan dan kewenangan; WBS baru disusun sesudahnya.'],
  'rkmk':['Menyusun, memeriksa, dan menyimpan rancangan narasi RKMK.','Narasi awal perlu direviu; bukan dokumen yang otomatis disahkan.']

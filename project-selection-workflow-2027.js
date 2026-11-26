@@ -288,25 +288,28 @@ function mapping(p){
 }
 /* Prioritasi › Semua Program (SMART/manual): ringkasan portofolio seluruh program tahun aktif. Skor tiap proyek memakai bobot & ambang programnya sendiri. */
 function prioritasiAll(){
- const progs=list(),y=I.year?I.year():'';
- const meth=p=>p.psMethod==='kka'?'MCDA':p.psPrioritize?'SMART':'Manual';
- const rows=progs.map(p=>{const a=p.psProjects||[],sc=a.map(x=>({x,r:I.calc(x,p)})),done=sc.filter(z=>z.r.score!=null),m=meth(p);
-  return {p,m,n:a.length,done:m==='SMART'?done.length:null,pick:I.chosen(p).length,p1:m==='SMART'?done.filter(z=>z.r.score>=70).length:null,p2:m==='SMART'?done.filter(z=>z.r.score>=40&&z.r.score<70).length:null,p3:m==='SMART'?done.filter(z=>z.r.score<40).length:null,top:m==='SMART'?done.sort((a,b)=>b.r.score-a.r.score)[0]:null}});
- const sum=(k)=>rows.reduce((t,r)=>t+(r[k]||0),0),cnt=m=>rows.filter(r=>r.m===m).length;
- const fk=ws().prioAllKpi||'';
- const kp=(key,l,v,sub,cls)=>'<button type="button" class="ps27-pkpi'+(cls?' '+cls:'')+(fk===key?' is-active':'')+'" data-ps27-pkpi="'+key+'" aria-pressed="'+(fk===key)+'" title="'+(fk===key?'Klik lagi untuk melepas filter':'Klik untuk lihat detail')+'"><span>'+E(l)+'</span><b>'+v+'</b><small>'+E(sub)+'</small></button>';
- const nCal=sum('n'),nPick=sum('pick');
- let h='<div class="ps27-pall-head"><div><h3>Portofolio Prioritasi · Semua Program '+E(y)+'</h3><p>Ringkasan seluruh program tahun aktif. Skor SMART dihitung dengan bobot dan ambang <b>masing-masing program</b>, jadi gunakan peringkat gabungan sebagai gambaran, bukan pembanding mutlak. Klik nama program untuk menilai atau mengubahnya.</p></div></div>';
- h+='<div class="ps27-pkpis">'+kp('program','Program',progs.length,'Program tahun '+y,'navy')+kp('smart','Metode SMART',cnt('SMART'),cnt('MCDA')+' MCDA · '+cnt('Manual')+' manual')+kp('calon','Calon proyek',nCal,'Seluruh program','c-blue')+kp('pick','Terpilih',nPick,(nCal?(nPick/nCal*100).toFixed(1).replace('.',','):'0')+'% dari calon','c-green')+kp('p1','P1 Tinggi (SMART)',sum('p1'),'Skor ≥ 70','c-green')+kp('pending','Belum dinilai (SMART)',rows.filter(r=>r.m==='SMART').reduce((t,r)=>t+r.n-r.done,0),'Kriteria belum lengkap','c-red')+'</div>';
- h+='<div class="ps27-card" id="ps27-pall-prog"><div class="ps27-cardtop"><div><h3>Ringkasan per program'+(fk==='smart'?' · hanya SMART':'')+'</h3></div></div><div class="ps27-tablewrap"><table class="ps27-table ps27-pall-t"><thead><tr><th>Program</th><th>Metode</th><th>Ambang</th><th>Calon</th><th>Dinilai</th><th>Terpilih</th><th>P1</th><th>P2</th><th>P3</th><th>Prioritas teratas</th></tr></thead><tbody>'+
- (rows.length?rows.filter(r=>fk!=='smart'||r.m==='SMART').map(r=>'<tr><td><button type="button" class="ps27-plink" data-ps27-openprog="'+E(r.p.id)+'">'+E(r.p.nama)+'</button><small>'+E(r.p.uic||'')+(r.p.psStatus?' · '+E(r.p.psStatus):'')+'</small></td><td><span class="ps27-mchip m-'+r.m.toLowerCase()+'">'+r.m+'</span></td><td>'+(r.m==='SMART'?'&gt; '+E(r.p.psThreshold??80):'—')+'</td><td>'+r.n+'</td><td>'+(r.done==null?'—':r.done+' / '+r.n)+'</td><td><b>'+r.pick+'</b></td><td>'+(r.p1??'—')+'</td><td>'+(r.p2??'—')+'</td><td>'+(r.p3??'—')+'</td><td>'+(r.top?E(r.top.x.name)+' <small>'+r.top.r.score.toFixed(1)+'</small>':'—')+'</td></tr>').join(''):'<tr><td colspan="10">Belum ada program tahun ini.</td></tr>')+'</tbody></table></div></div>';
- const all=[];rows.forEach(r=>{const ch=I.chosen(r.p);(r.p.psProjects||[]).forEach(x=>{all.push({x,p:r.p,m:r.m,s:r.m==='SMART'?I.calc(x,r.p).score:null,pick:ch.includes(x)})})});
- const pf=(S.ui&&S.ui.psBank&&S.ui.psBank.filterScopes&&S.ui.psBank.filterScopes.prioritasi)||{},q=String(pf.search||'').trim().toLowerCase();
- const list2=all.filter(z=>(!pf.unit||pf.unit==='all'||(z.x.uic||z.p.uic)===pf.unit)&&(pf.status!=='Sudah Dinilai'||z.s!=null)&&(pf.status!=='Belum Dinilai'||z.s==null)&&(!q||[z.x.name,z.x.uic,z.p.nama].join(' ').toLowerCase().includes(q))&&(fk!=='pick'||z.pick)&&(fk!=='p1'||(z.s!=null&&z.s>=70))&&(fk!=='pending'||(z.m==='SMART'&&z.s==null))&&(fk!=='smart'||z.m==='SMART')).sort((a,b)=>(b.s??-1)-(a.s??-1)||(a.m===b.m?0:a.m==='SMART'?-1:1));
- const FL={pick:'terpilih',p1:'P1 Tinggi',pending:'belum dinilai',smart:'hanya SMART'};h+='<div class="ps27-card" id="ps27-pall-rank"><div class="ps27-cardtop"><div><h3>Daftar gabungan proyek · '+list2.length+' proyek'+(FL[fk]?' · '+FL[fk]:'')+'</h3></div>'+(FL[fk]?'<button type="button" class="btn btn-outline btn-sm" data-ps27-pkpi="'+fk+'">✕ Lepas filter</button>':'')+'</div><div class="ps27-tablewrap"><table class="ps27-table ps27-pall-t"><thead><tr><th>#</th><th>Proyek</th><th>Program</th><th>UIC</th><th>Skor</th><th>Kategori</th><th>Ambang program</th><th>Status</th></tr></thead><tbody>'+
- (list2.length?list2.map((z,i)=>{const cat=z.m!=='SMART'?'<span class="ps27-mchip m-'+z.m.toLowerCase()+'">'+z.m+'</span>':z.s==null?'<span class="ps27-mchip">Belum dinilai</span>':z.s>=70?'<span class="ps27-mchip c1">P1 Tinggi</span>':z.s>=40?'<span class="ps27-mchip c2">P2 Sedang</span>':'<span class="ps27-mchip">P3 Rendah</span>';
-  return '<tr><td>'+(z.s==null?'—':i+1)+'</td><td><b>'+E(z.x.name)+'</b></td><td><button type="button" class="ps27-plink" data-ps27-openprog="'+E(z.p.id)+'">'+E(z.p.nama)+'</button></td><td>'+E(z.x.uic||z.p.uic||'—')+'</td><td><b>'+(z.s==null?'—':z.s.toFixed(1))+'</b><span class="ps27-pbar"><i style="width:'+(z.s||0)+'%"></i></span></td><td>'+cat+'</td><td>'+(z.m==='SMART'?'&gt; '+E(z.p.psThreshold??80):'—')+'</td><td>'+(z.pick?'<span class="pswf-picked">✓ Terpilih</span>':'<span class="pswf-rejected">Belum terpilih</span>')+'</td></tr>'}).join(''):'<tr><td colspan="8">Tidak ada proyek yang sesuai.</td></tr>')+'</tbody></table></div></div>';
+ const progs=list(),y=I.year?I.year():'',fk=['method','score','ok'].includes(ws().prioAllKpi)?ws().prioAllKpi:'';
+ const meth=p=>p.psMethod==='kka'?'MCDA':p.psPrioritize?'SMART':'';
+ const rows=progs.map(p=>{const a=p.psProjects||[],m=meth(p),pick=I.chosen(p).length,todo=m==='SMART'?a.filter(x=>I.calc(x,p).score==null).length:0;
+  const st=!m?'method':todo?'score':'ok';return {p,m,n:a.length,pick,todo,st}});
+ const nNo=rows.filter(r=>r.st==='method').length,nTodo=rows.filter(r=>r.st==='score').length,nOk=rows.filter(r=>r.st==='ok').length;
+ const nCal=rows.reduce((t,r)=>t+r.n,0),nPick=rows.reduce((t,r)=>t+r.pick,0);
+ const kp=(key,l,v,sub,cls)=>'<button type="button" class="ps27-pkpi'+(cls?' '+cls:'')+(fk===key?' is-active':'')+'" data-ps27-pkpi="'+key+'" aria-pressed="'+(fk===key)+'" title="'+(fk===key?'Klik lagi untuk melepas filter':'Klik untuk lihat programnya')+'"><span>'+E(l)+'</span><b>'+v+'</b><small>'+E(sub)+'</small></button>';
+ let h='<div class="ps27-pall-head"><h3>Prioritasi · Semua Program '+E(y)+'</h3></div>';
+ h+='<ol class="ps27-steps3"><li><b>1</b><div><strong>Pilih metode</strong><span>SMART atau MCDA, sekali per program</span></div></li><li><b>2</b><div><strong>Nilai proyeknya</strong><span>Lengkapi skor sampai tidak ada yang tertinggal</span></div></li><li><b>3</b><div><strong>Lanjut ke Charter</strong><span>Proyek terpilih otomatis ikut</span></div></li></ol>';
+ h+='<div class="ps27-pkpis k4">'+kp('all','Program',progs.length,'Tahun '+y,'navy')+kp('method','Perlu pilih metode',nNo,nNo?'Langkah 1 belum':'Semua sudah','pk-gold')+kp('score','Perlu dinilai',nTodo,nTodo?'Langkah 2 belum':'Tidak ada','pk-red')+kp('ok','Siap lanjut',nOk,nPick+' dari '+nCal+' proyek terpilih','pk-green')+'</div>';
+ const vis=rows.filter(r=>!fk||r.st===fk);
+ const stTxt=r=>r.st==='method'?'<span class="ps27-stt w">Belum pilih metode</span><small>Sementara semua proyek dianggap terpilih</small>':r.st==='score'?'<span class="ps27-stt r">'+r.todo+' proyek belum dinilai</span><small>Proyek baru terpilih setelah dinilai</small>':'<span class="ps27-stt g">Siap lanjut</span><small>'+(r.m==='MCDA'?'Proyek ISTK otomatis diprioritaskan':'Semua proyek sudah dinilai')+'</small>';
+ const act=r=>'<button type="button" class="btn '+(r.st==='ok'?'btn-outline':'pri')+' btn-sm" data-ps27-openprog="'+E(r.p.id)+'">'+(r.st==='method'?'Pilih metode':r.st==='score'?'Nilai proyek':'Lihat')+' →</button>';
+ h+='<div class="ps27-card" id="ps27-pall-prog"><div class="ps27-cardtop"><div><h3>Daftar program'+(fk?' · '+({method:'perlu pilih metode',score:'perlu dinilai',ok:'siap lanjut'})[fk]:'')+'</h3></div>'+(fk?'<button type="button" class="btn btn-outline btn-sm" data-ps27-pkpi="'+fk+'">✕ Tampilkan semua</button>':'')+'</div><div class="ps27-tablewrap"><table class="ps27-table ps27-pall-t"><thead><tr><th>Program</th><th>Metode</th><th>Status</th><th>Proyek terpilih</th><th></th></tr></thead><tbody>'+
+ (vis.length?vis.map(r=>'<tr><td><b>'+E(r.p.nama)+'</b><small>'+E(r.p.uic||'')+'</small></td><td>'+(r.m?'<span class="ps27-mchip m-'+r.m.toLowerCase()+'">'+r.m+'</span>':'<span class="ps27-mchip">—</span>')+'</td><td>'+stTxt(r)+'</td><td><b>'+r.pick+'</b> dari '+r.n+'</td><td style="text-align:right">'+act(r)+'</td></tr>').join(''):'<tr><td colspan="5">Tidak ada program pada kelompok ini.</td></tr>')+'</tbody></table></div></div>';
  return h;
+}
+/* Program lama tanpa metode: kartu pilihan metode yang sederhana. */
+function methodChooser(p,ro){
+ return '<div class="ps27-mchoose"><div class="ps27-mchoose-h"><b>Program ini belum memilih metode prioritisasi</b><span>Sementara ini semua proyeknya dianggap terpilih. Pilih salah satu:</span></div><div class="ps27-mchoose-g">'+
+ '<button type="button" class="ps27-mcard" data-ps27-setmethod="smart"'+(ro?' disabled':'')+'><i>SMART</i><b>Nilai proyek di program ini</b><span>Isi 12 kriteria per proyek. Proyek dengan skor di atas ambang otomatis terpilih.</span><em>Cocok bila perlu memilih sebagian proyek</em></button>'+
+ '<button type="button" class="ps27-mcard" data-ps27-setmethod="kka"'+(ro?' disabled':'')+'><i>MCDA</i><b>Proyek ISTK langsung diprioritaskan</b><span>Tidak perlu menilai proyek ISTK. Yang dinilai hanya usulan di luar ISTK terhadap pagu & SDM.</span><em>Cocok bila semua proyek program sudah pasti (ISTK)</em></button></div></div>';
 }
 function prioritasi(p){
  if(ws().prioAll&&!(p&&p.psMethod==='kka'))return prioritasiAll();
@@ -315,6 +318,7 @@ function prioritasi(p){
  const meth=p.psMethod||(p.psPrioritize?'smart':'manual');
  if(meth==='kka'&&window.MT_PS_KKA)return window.MT_PS_KKA.page(p,{readOnly});
  const mode=window.MT_PS_KKA?window.MT_PS_KKA.methodSelect(p,readOnly):'';
+ if(meth==='manual'&&!readOnly)return methodChooser(p,readOnly)+I.projectsPage(p);
  const threshold=p.psPrioritize?'<label class="ps27-smart-threshold">Ambang skor &gt; <input type="number" id="pswf-threshold" min="0" max="99" value="'+E(p.psThreshold??80)+'" '+(readOnly?'disabled':'')+' aria-label="Ambang skor SMART"> %</label>':'';
  const tip='<button class="ps27-smart-info" type="button" data-pswf="smart-info" title="Aturan pemilihan: 12 kriteria lengkap dan skor absolut lebih besar dari ambang" aria-label="Informasi aturan seleksi otomatis SMART">i</button>';
  return '<div class="ps27-priority-head"><nav class="ps27-minitabs" role="tablist" aria-label="Tab Prioritasi">'+
@@ -537,12 +541,16 @@ function mount(){
  const root=document.querySelector('#view .pswf');if(!root)return;
  setTimeout(()=>fillCount(root),0);
  root.addEventListener('click',function(ev){
-  const b=ev.target.closest('[data-ps27-pkpi],[data-ps27-openprog],[data-ps27-clear],[data-ps27],[data-ps27-tab],[data-ps27-pick],[data-ps27-remove],[data-ps27-sub],[data-ps27-usul],[data-ps27-reset],[data-ps27-period],[data-mt-filter-icon]');
+  const b=ev.target.closest('[data-ps27-setmethod],[data-ps27-pkpi],[data-ps27-openprog],[data-ps27-clear],[data-ps27],[data-ps27-tab],[data-ps27-pick],[data-ps27-remove],[data-ps27-sub],[data-ps27-usul],[data-ps27-reset],[data-ps27-period],[data-mt-filter-icon]');
   if(!b)return;
   ev.stopImmediatePropagation();
   if(b.hasAttribute('data-mt-filter-icon')){ws().filterOpen=!ws().filterOpen;save();render();return}
-  if(b.dataset.ps27Pkpi){const k=b.dataset.ps27Pkpi,w=ws();w.prioAllKpi=(w.prioAllKpi===k||k==='program')?'':k;save();render();
-   const tgt=k==='program'||k==='smart'?'ps27-pall-prog':'ps27-pall-rank';setTimeout(()=>{const el=document.getElementById(tgt);if(el&&w.prioAllKpi!==''||k==='program'){el&&el.scrollIntoView({behavior:'smooth',block:'start'})}},60);return}
+  if(b.dataset.ps27Setmethod){const p=I.pickedProgram();if(!p||I.readonly(p))return;const v=b.dataset.ps27Setmethod;
+   const go=()=>{p.psMethod=v;p.psPrioritize=v==='smart';ws().prioritySub='ranking';try{log('Pilih metode prioritisasi',p.nama+' → '+(v==='kka'?'MCDA':'SMART'))}catch(_){}save();render();toast('Metode '+(v==='kka'?'MCDA':'SMART')+' dipilih untuk program ini.')};
+   const n=(p.psProjects||[]).length;
+   if(v==='smart'&&n&&typeof window.MT_PS_CONFIRM==='function')window.MT_PS_CONFIRM('Pakai SMART?','Setelah memilih SMART, '+n+' proyek di program ini baru terpilih kembali setelah dinilai dan skornya di atas ambang.',go);else go();return}
+  if(b.dataset.ps27Pkpi){const k=b.dataset.ps27Pkpi,w=ws();w.prioAllKpi=(w.prioAllKpi===k||k==='all')?'':k;save();render();
+   const tgt='ps27-pall-prog';setTimeout(()=>{const el=document.getElementById(tgt);if(el){el.scrollIntoView({behavior:'smooth',block:'start'})}},60);return}
   if(b.dataset.ps27Openprog){ws().prioAll=false;I.state().prog=b.dataset.ps27Openprog;setFilterField('program',b.dataset.ps27Openprog);save();render();return}
   if(b.dataset.ps27Tab){navigate(b.dataset.ps27Tab);return}
   if(b.dataset.ps27Pick){state().prog=b.dataset.ps27Pick;ws().usulanSub='detail';save();render();return}
