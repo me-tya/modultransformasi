@@ -700,7 +700,7 @@ function eaSheet(){
   '<div class="ps27-ea-flow">'+steps.map((x,i)=>'<div><span class="ps27-sheet-number">0'+(i+1)+'</span><b>'+E(x[0])+'</b><p>'+E(x[1])+'</p></div>').join('<i aria-hidden="true">›</i>')+'</div>'+
   '<div class="ps27-sheet-subhead"><h4>B. Metodologi telaah usulan pengembangan SI</h4></div>'+
   '<div class="ps27-sheet-grid ps27-sheet-grid3">'+ps27SheetCard('1','Gateway G1–G4','G1 Selaras (Renstra/EA/Arsitektur SPBE) · G2 Tidak duplikatif · G3 Sponsor & pemilik jelas · G4 Menyampaikan kajian kebutuhan. Semua terpenuhi → lanjut dinilai.')+
-   ps27SheetCard('2','Penilaian kriteria K1–K7','K1 Strategis, K2 Nilai Bisnis, K3 Regulasi, K4 Urgensi, K5 Reuse & Integrasi, K6 Kesiapan, K7 Risiko → usulan prioritas pengembangan (P1–P4, roadmap pagu & SDM).',ps27SheetJump('Prioritasi MCDA','prioritasi:mcda-rank'))+
+   ps27SheetCard('2','Penilaian kriteria K1–K7','K1 Strategis, K2 Nilai Bisnis, K3 Regulasi, K4 Urgensi, K5 Reuse & Integrasi, K6 Kesiapan, K7 Risiko → usulan prioritas pengembangan (P1–P4, simulasi Anggaran & SDM).',ps27SheetJump('Prioritasi MCDA','prioritasi:mcda-rank'))+
    ps27SheetCard('REF','Referensi kriteria','COBIT 2019, TOGAF 10, Perpres 132/2022 (Arsitektur SPBE), UU 27/2022 (PDP), PP 71/2019 (PSE), Perpres 47/2023 (Strategi Keamanan Siber Nasional).')+'</div>'+
   '<div class="ps27-sheet-subhead"><h4>C. Taksonomi Proses Bisnis EA · Level 0–2</h4><span>'+(EA?EA.tree.reduce((n,d)=>n+1+d[2].length+d[2].reduce((m,a)=>m+a[2].length,0),0)+' proses':'')+'</span></div>'+
   '<input class="sk-search" type="search" data-ps27-help-search placeholder="Cari kode atau nama proses, mis. 3.7.2 atau sistem informasi…" aria-label="Cari proses bisnis EA">'+
@@ -714,7 +714,7 @@ function mcdaCompare(){
   ['Penyaring awal','—','Gate G1–G4: Lolos / Tinjau Ulang / Lengkapi'],
   ['Kriteria','12 kriteria (C1–C12), skala 1–5','7 kriteria (K1–K7), skala 1–5 dengan rubrik'],
   ['Bobot','Bobot per kriteria pada program','3 profil bobot: Seimbang, Prioritas Kepatuhan, Prioritas Efisiensi'],
-  ['Hasil','Skor 0–100, terpilih bila skor > ambang','Skor 0–100, kategori P1–P4, peringkat, roadmap Didanai / Cadangan'],
+  ['Hasil','Skor 0–100, terpilih bila skor > ambang','Skor 0–100, kategori P1–P4, peringkat, alokasi direkomendasikan / cadangan'],
   ['Analisis tambahan','Kuadran & snapshot','Uji sensitivitas bobot, kuadran Nilai–Kemudahan, pembanding WSJF'],
   ['Penyimpanan hasil','Snapshot per program','Repositori hasil per tahun (versi Draft / Final)']];
  return '<div class="ps27-sheet-tablewrap"><table class="ps27-sheet-table"><thead><tr><th>Aspek</th><th>SMART</th><th>MCDA</th></tr></thead><tbody>'+rows.map(r=>'<tr><td><b>'+r[0]+'</b></td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>').join('')+'</tbody></table></div>';
@@ -727,7 +727,7 @@ function mcdaSection(){
    f('01','GATE','G1–G4 semua Ya → Lolos','Ada Tidak → Tinjau Ulang · ada yang belum dijawab → Lengkapi. Hanya yang Lolos diranking (dapat diubah di pengaturan).')+
    f('02','SKOR TERTIMBANG','Σ(skor K × bobot) ÷ 5 × 100','Skor 1–5 per kriteria; bobot dari profil aktif (total 100%). K7 terbalik: 5 = risiko terendah.')+
    f('03','KATEGORI','P1 ≥ '+(c?c.p1:75)+' · P2 ≥ '+(c?c.p2:65)+' · P3 ≥ '+(c?c.p3:50)+' · P4','P1 Utama, P2 Tinggi, P3 Menengah, P4 Rendah/Tunda.')+
-   f('04','ROADMAP','ISTK dulu, lalu non-ISTK urut peringkat selama muat pagu DAN SDM → Didanai','Bila melampaui → Cadangan / Tunda; usulan berikutnya yang masih muat tetap didanai. Biaya bukan kriteria skor.')+
+   f('04','ALOKASI','ISTK dulu, lalu non-ISTK urut peringkat selama muat pagu DAN SDM → Didanai','Bila melampaui → Cadangan / Tunda; usulan berikutnya yang masih muat tetap didanai. Biaya bukan kriteria skor.')+
   '</div>'+
   '<div class="ps27-sheet-subhead"><h4>Kriteria & bobot aktif'+(c?' · profil '+E(c.profile)+' · '+c.year:'')+'</h4><span>'+KR.length+' kriteria</span></div>'+
   (KR.length?'<div class="ps27-sheet-tablewrap"><table class="ps27-sheet-table"><thead><tr><th>Kode</th><th>Kriteria</th><th>Pertanyaan penilaian</th><th>Bobot</th></tr></thead><tbody>'+
@@ -738,10 +738,10 @@ function mcdaSection(){
    ps27SheetCard('KUAD','Kuadran Nilai–Kemudahan','Nilai Manfaat = K1–K5, Kemudahan = K6–K7 (diboboti, 0–100). ≥ '+(c?c.quadThr:60)+' dianggap tinggi: Quick Win, Proyek Strategis, Pelengkap, Tunda / Kaji Ulang — dipakai untuk saran pendekatan.')+
    ps27SheetCard('WSJF','Pembanding WSJF','(K2 + K4 + K5) ÷ (6 − K7). <b>Konsisten</b> bila selisih peringkat WSJF vs skor tertimbang ≤ toleransi; bila tidak, tandai untuk ditinjau.')+
    ps27SheetCard('ISTK','ISTK vs non-ISTK','Proyek ISTK: prioritas otomatis, tidak dinilai. Usulan di luar ISTK: dinilai MCDA, berbagi sisa pagu/SDM, tidak masuk Penetapan, Charter, RKMK, WBS dan tidak dipantau PMO Kemenkeu.',ps27SheetJump('Di luar ISTK','prioritasi:mcda-non'))+
-   ps27SheetCard('REPO','Repositori hasil','Simpan hasil sebagai versi (Draft/Final) beserta bobot, skor dan roadmap saat itu; versi Final tidak dapat dihapus.',ps27SheetJump('Repositori','prioritasi:mcda-repo'))+
+   ps27SheetCard('REPO','Repositori hasil','Simpan hasil sebagai versi (Draft/Final) beserta bobot, skor dan hasil alokasi saat itu; versi Final tidak dapat dihapus.',ps27SheetJump('Repositori','prioritasi:mcda-repo'))+
    ps27SheetCard('REF','Dasar praktik','Struktur kriteria dari COBIT 2019 & TOGAF 10; portofolio terhadap pagu & kapasitas dari PMI Portfolio Management; tata kelola ISO/IEC 38500; mandat regulasi SPBE, PDP, keamanan siber.',ps27SheetJump('Referensi & Rubrik','prioritasi:mcda-ref'))+
   '</div>'+
-  ps27SheetNote('Catatan metodologi','Bobot awal dan ambang P1–P3 adalah asumsi penyusun kertas kerja, bukan hasil perbandingan berpasangan (AHP); sepakati melalui forum. Roadmap memakai aturan urut-peringkat (greedy), bukan optimasi kombinasi.');
+  ps27SheetNote('Catatan metodologi','Bobot awal dan ambang P1–P3 adalah asumsi penyusun kertas kerja, bukan hasil perbandingan berpasangan (AHP); sepakati melalui forum. Alokasi memakai aturan urut-peringkat (greedy), bukan optimasi kombinasi.');
 }
 function helpPage(tab){
  const items=[
@@ -756,7 +756,7 @@ function helpPage(tab){
   const deep=[
    [['Riwayat Program','usulan:bank'],['Usulan Program · Kelola & Unggah / Unduh','usulan:detail'],['Dokumen Portofolio','usulan:portfolio'],['Identitas','usulan:detail:identity'],['Business Case','usulan:detail:case'],['Manfaat','usulan:detail:benefits'],['Stakeholder','usulan:detail:stakeholders'],['Risiko','usulan:detail:risks'],['Tata Kelola','usulan:detail:governance'],['Buat Dokumen Program','usulan:detail:docs']],
    [['Riwayat Proyek','mapping:history'],['Usulan Proyek ISTK (accordion per program)','mapping:proposal'],['Usulan Non-ISTK','mapping:nonistk'],['Gate Penyaringan (form Usulan Proyek)','mapping:proposal'],['Buat Dokumen Proyek','mapping:docs']],
-   [['SMART · Penilaian & Peringkat','prioritasi:ranking'],['SMART · Kriteria & Bobot','prioritasi:criteria'],['SMART · Referensi & Formula','prioritasi:reference'],['MCDA · Penilaian & Peringkat','prioritasi:mcda-rank'],['MCDA · Usulan di luar ISTK','prioritasi:mcda-non'],['MCDA · Kriteria & Bobot','prioritasi:mcda-criteria'],['MCDA · Roadmap & Analisis','prioritasi:mcda-roadmap'],['MCDA · Repositori Hasil','prioritasi:mcda-repo'],['MCDA · Referensi & Rubrik','prioritasi:mcda-ref']],
+   [['SMART · Penilaian & Peringkat','prioritasi:ranking'],['SMART · Kriteria & Bobot','prioritasi:criteria'],['SMART · Referensi & Formula','prioritasi:reference'],['MCDA · Penilaian & Peringkat','prioritasi:mcda-rank'],['MCDA · Usulan di luar ISTK','prioritasi:mcda-non'],['MCDA · Kriteria & Bobot','prioritasi:mcda-criteria'],['Anggaran & SDM','prioritasi:mcda-roadmap'],['Analisis','prioritasi:mcda-analysis'],['Riwayat Hasil','prioritasi:mcda-repo'],['Metodologi & Rubrik','prioritasi:mcda-ref'],['Referensi','prioritasi:mcda-literature']],
    [['Charter Program','charter']],
    [['Kontrak K-Wide dan Cakupan Proyek','penetapan-program']],
    [['Narasi & Reviu','rkmk']]
@@ -774,7 +774,7 @@ function helpPage(tab){
   '<div class="ps27-sheet-subhead"><h4>Alur keputusan dan keluaran</h4></div><div class="ps27-sheet-tablewrap"><table class="ps27-sheet-table"><thead><tr><th>Tahap</th><th>Keluaran yang diperiksa</th><th>Berikutnya</th></tr></thead><tbody>'+
   '<tr><td>Usulan</td><td>Tujuan, business case, manfaat, stakeholder, risiko dan dokumen program</td><td>Pemetaan proyek</td></tr>'+
   '<tr><td>Pemetaan</td><td>Proyek relevan dan pemilik pekerjaan teridentifikasi</td><td>Prioritasi</td></tr>'+
-  '<tr><td>Prioritasi</td><td>SMART: peringkat & snapshot. MCDA: hasil gate, peringkat P1–P4, roadmap Didanai/Cadangan, versi hasil di Repositori (Draft/Final). Proyek di luar ISTK berhenti di sini (tidak ke Penetapan/WBS)</td><td>Charter</td></tr>'+
+  '<tr><td>Prioritasi</td><td>SMART: peringkat & snapshot. MCDA: hasil gate, peringkat P1–P4, alokasi direkomendasikan/cadangan, versi hasil di Repositori (Draft/Final). Proyek di luar ISTK berhenti di sini (tidak ke Penetapan/WBS)</td><td>Charter</td></tr>'+
   '<tr><td>Charter</td><td>Rencana awal, milestone, manfaat, kriteria penyelesaian, unit pengelola</td><td>Penetapan</td></tr>'+
   '<tr><td>Penetapan</td><td>Kontrak K-Wide, target triwulan dan cakupan proyek terpilih</td><td>Draft RKMK / WBS</td></tr>'+
   '<tr><td>RKMK</td><td>Narasi rancangan direviu dan disiapkan untuk proses formal</td><td>Project Management setelah penetapan</td></tr>'+
@@ -787,7 +787,7 @@ function helpPage(tab){
    ['03','Manfaat & indikator','Tetapkan outcome yang terukur, baseline, target, benefit owner, kelompok penerima dan waktu ukur.','usulan:detail:benefits'],
    ['04','Stakeholder & risiko','Petakan pemangku kepentingan, ketergantungan lintas unit, risiko dan rencana mitigasi.','usulan:detail:stakeholders'],
    ['05','Pemetaan proyek','Ambil referensi Riwayat Proyek atau buat usulan baru. Periksa nama, ruang lingkup, UIC, tahun, status dan kode.','mapping:proposal'],
-   ['06','Prioritasi proyek','Pilih metode SMART atau MCDA. SMART: isi 12 kriteria dan ambang. MCDA: centang gate G1–G4, isi skor K1–K7 (arti 1–5 ada di rubrik), cek roadmap pagu & SDM, lalu simpan hasil ke Repositori. Proyek ISTK diprioritaskan otomatis; yang dinilai MCDA hanya usulan di luar ISTK.','prioritasi:ranking'],
+   ['06','Prioritasi proyek','Pilih metode SMART atau MCDA. SMART: isi 12 kriteria dan ambang. MCDA: centang gate G1–G4, isi skor K1–K7 (arti 1–5 ada di rubrik), cek simulasi Anggaran & SDM, lalu simpan hasil ke Repositori. Proyek ISTK diprioritaskan otomatis; yang dinilai MCDA hanya usulan di luar ISTK.','prioritasi:ranking'],
    ['07','Charter Program','Susun charter tingkat program dan periksa pratinjau 3 slide sebelum penetapan. Dokumen proyek disusun per proyek di Project Management.','charter'],
    ['08','Kontrak dan penetapan','Periksa target K-Wide TW I–IV, nomor/tanggal/pejabat, dokumen kontrak dan proyek terpilih sebelum penetapan.','penetapan-program'],
    ['09','Reviu RKMK','Periksa substansi tahun tujuan, penanggung jawab dan keluaran sebelum mengunduh rancangan Word.','rkmk']
@@ -837,26 +837,26 @@ function sheetPage(tab){
  const p=current(),criteria=B.criteria||[];
  if(tab==='framework'){
   const steps=[
-   ['01','Usulan Program','Tetapkan alasan, sasaran, sponsor, indikator manfaat, pemilik proses bisnis dan unit pengelola.','usulan:detail'],
-   ['02','Pemetaan Proyek','Gunakan Riwayat Proyek sebagai referensi; pilih proyek yang relevan untuk program tahun tujuan.','mapping:history'],
-   ['03','Prioritasi','2027+: clearance usulan Non-ISTK (MCDA utama, SMART pembanding). Proyek ISTK otomatis terpilih. Skor membantu keputusan, bukan penetapan.','prioritasi:ranking'],
-   ['04','Charter Program','Lengkapi tujuan, latar belakang, terobosan, output, outcome, milestone dan risiko program.','charter'],
-   ['05','Penetapan Program','Catat kontrak K-Wide dan tetapkan program beserta proyek terpilih pada satu tahapan.','penetapan-program'],
-   ['06','Draft RKMK','Konsolidasikan narasi untuk tahun tujuan, reviu perubahan, lalu unduh rancangan dokumen.','rkmk']
+   ['01','Usulan Program','ISTK','Sasaran strategis, mandat/kebutuhan, riwayat program atau usulan baru.','Pilih tahun; salin riwayat bila perlu; lengkapi identitas, business case, manfaat (baseline, target, benefit owner), stakeholder, risiko, tata kelola dan reviu. Buat dokumen dari isian.','Usulan program tahun tujuan; Dokumen Program dan Dokumen Portofolio (jika digenerasi).','usulan:detail','Ke Pemetaan Proyek'],
+   ['02','Pemetaan Proyek','ISTK / NON-ISTK','Usulan program, riwayat proyek, usulan baru atau kajian kebutuhan SI.','Petakan proyek ISTK ke program tujuan; lengkapi ruang lingkup, jenis inisiatif, UIC, pemilik probis, estimasi biaya, durasi dan SDM. Usulan di luar ISTK dicatat terpisah, termasuk pemetaan EA.','Daftar usulan proyek per program; Dokumen Usulan Proyek bila dibuat; daftar Non-ISTK untuk clearance.','mapping:proposal','ISTK → Charter · Non-ISTK → Prioritasi'],
+   ['03','Prioritasi','NON-ISTK · 2027+','Usulan Non-ISTK, kajian kebutuhan, gate G1–G4, skor K1–K7, bobot, estimasi biaya/SDM ISTK dan Non-ISTK, serta pagu & kapasitas.','MCDA: periksa gate → isi skor → hitung peringkat P1–P4 → simulasi Anggaran & SDM (ISTK lebih dulu) → Analisis opsional → simpan Riwayat Hasil. SMART sebagai pembanding. ISTK tidak dinilai.','Daftar prioritas Non-ISTK, rekomendasi alokasi/cadangan, hasil analisis dan snapshot Draft/Final untuk forum clearance.','prioritasi:mcda-rank','Non-ISTK → forum telaah SI'],
+   ['04','Charter Program','ISTK','Dokumen Program, cakupan proyek ISTK dan target manfaat.','Susun charter tingkat program: latar belakang, tujuan, terobosan, output, outcome, key milestones, risiko dan pengelola. Periksa pratinjau; unduh charter.','Charter Program sebagai bahan penetapan dan sumber isi kerangka RKMK.','charter','Ke Penetapan Program'],
+   ['05','Penetapan Program','ISTK','Charter, daftar proyek terpilih, kesiapan dokumen, target output TW I–IV dan kontrak K-Wide.','Lengkapi target; catat kontrak K-Wide yang ditetapkan beserta metadata/dokumen; pastikan program tercakup dan persyaratan terpenuhi. Tetapkan program beserta proyek melalui aksi berwenang.','Program dan cakupan proyek berstatus Ditetapkan; target K-Wide tercatat; acuan WBS baru.','penetapan-program','Ke Project Management dan Draft RKMK'],
+   ['06','Draft RKMK','ISTK','Program tahun aktif yang dipilih, Charter Program, judul dan data kerangka naskah.','Kompilasi daftar program, uraian dan milestone dari charter; pratinjau dan unduh kerangka DOCX; lengkapi bagian umum di Word. Setelah keputusan resmi, unggah PDF TTE dan metadata KMK.','Kerangka RKMK (.docx); versi arsip RKMK Ditetapkan bila PDF TTE diunggah.','rkmk','Dokumen penetapan / arsip resmi']
   ];
-  return '<div class="ps27-sheet">'+
-   ps27SheetHead('KERANGKA KERJA · WHY → WHAT → HOW','Framework Program dan Proyek','Membaca keterkaitan seleksi program, penetapan proyek, pelaksanaan WBS, dan evaluasi manfaat tanpa mencampur kewenangan antarproses.')+
-   '<div class="ps27-sheet-band"><div><span>WHY</span><b>Alasan perubahan</b><p>Mandat, urgensi, strategic fit, business case dan outcome.</p></div><div><span>WHAT</span><b>Program & proyek dipilih</b><p>Ruang lingkup, target output, manfaat, charter dan keputusan penetapan.</p></div><div><span>HOW</span><b>Project Management</b><p>WBS baru, pelaksanaan, pengendalian, bukti dukung, penutupan dan evaluasi.</p></div></div>'+
-   '<div class="ps27-sheet-subhead"><h4>Enam tahap Project Selection</h4><span>Menu yang dapat dibuka langsung</span></div>'+
-   '<div class="ps27-sheet-grid ps27-sheet-grid3">'+steps.map(x=>ps27SheetCard(x[0],x[1],x[2],ps27SheetJump('Buka '+x[1],x[3]))).join('')+'</div>'+
-   '<div class="ps27-sheet-subhead"><h4>Hubungan antarlevel</h4></div>'+
-   '<div class="ps27-sheet-grid ps27-sheet-grid3">'+
-    ps27SheetCard('P','Program','Sekumpulan proyek terkait yang dikelola bersama untuk mencapai manfaat yang tidak optimal jika dikelola sendiri-sendiri.','Berisi tujuan, outcome, benefit owner, tata kelola dan target program.')+
+  const blocks=steps.map(x=>'<article class="ps27-ipo-row"><div class="ps27-ipo-step"><span class="ps27-sheet-number">'+x[0]+'</span><div><h4>'+E(x[1])+'</h4><small>'+E(x[2])+'</small></div>'+ps27SheetJump('Buka',x[6])+'</div><div class="ps27-ipo-cell"><span class="ps27-ipo-label">INPUT</span><p>'+E(x[3])+'</p></div><div class="ps27-ipo-cell process"><span class="ps27-ipo-label">PROSES</span><p>'+E(x[4])+'</p></div><div class="ps27-ipo-cell output"><span class="ps27-ipo-label">OUTPUT</span><p>'+E(x[5])+'</p><small class="ps27-ipo-next">'+E(x[7])+'</small></div></article>').join('');
+  return '<div class="ps27-sheet ps27-ipo">'+ps27SheetHead('PROJECT SELECTION · 2027+','Alur Project Selection: Input → Proses → Output','Enam menu utama, dua jalur seleksi. Pahami apa yang harus tersedia, apa yang dikerjakan, dan keluaran yang digunakan pada tahap berikutnya.')+
+   '<div class="ps27-ipo-map"><div class="ps27-ipo-lane"><b>ISTK</b><div>'+['Usulan Program','Pemetaan Proyek','Charter Program','Penetapan Program'].map(s=>'<span>'+E(s)+'</span>').join('<i>›</i>')+'<i>›</i><span class="ps27-ipo-end">WBS baru (PM)</span></div><small>Charter juga menjadi sumber Draft RKMK. Prioritasi tidak menilai proyek ISTK.</small></div><div class="ps27-ipo-lane non"><b>NON-ISTK</b><div>'+['Usulan SI','Gate G1–G4','Skor & Peringkat','Anggaran & SDM','Riwayat Hasil'].map(s=>'<span>'+E(s)+'</span>').join('<i>›</i>')+'<i>›</i><span class="ps27-ipo-end">Forum clearance</span></div><small>Analisis opsional sebelum simpan hasil; tidak otomatis masuk Charter, Penetapan Program, Draft RKMK atau WBS ISTK.</small></div></div>'+
+   '<div class="ps27-sheet-subhead"><h4>Rincian input, proses dan output per tahap</h4><span>Klik Buka untuk menuju menu</span></div><div class="ps27-ipo-table"><div class="ps27-ipo-cols"><span>TAHAP</span><span>INPUT · bahan awal</span><span>PROSES · tindakan pengguna</span><span>OUTPUT · hasil</span></div>'+blocks+'</div>'+
+   '<div class="ps27-sheet-subhead"><h4>Titik keputusan dan serah terima</h4></div><div class="ps27-sheet-grid ps27-sheet-grid3">'+
+   ps27SheetCard('GATE','Non-ISTK belum memenuhi gate','Lengkapi jawaban atau tinjau ulang usulan. Pada pengaturan bawaan hanya usulan Lolos dengan tujuh skor lengkap yang diranking.',ps27SheetJump('Penilaian & Peringkat','prioritasi:mcda-rank'))+
+   ps27SheetCard('SDM','Estimasi belum lengkap','Lengkapi biaya, durasi dan kebutuhan SDM di form sumber atau ikon edit pada Anggaran & SDM. Biaya/SDM ISTK kosong saat ini dihitung nol dalam simulasi, sehingga sisa kapasitas belum dapat dianggap final.',ps27SheetJump('Anggaran & SDM','prioritasi:mcda-roadmap'))+
+   ps27SheetCard('PM','Program ditetapkan','Susun WBS baru di Project Management berdasarkan cakupan proyek yang ditetapkan. Kelola perubahan di Change Management sesuai kebutuhan; WBS dan realisasi historis tidak otomatis diaktifkan.')+
+   '</div><div class="ps27-sheet-subhead"><h4>Hubungan antarlevel</h4></div><div class="ps27-sheet-grid ps27-sheet-grid3">'+
+    ps27SheetCard('P','Program','Sekumpulan proyek terkait yang dikelola bersama untuk mencapai manfaat bersama.','Berisi tujuan, outcome, benefit owner, tata kelola dan target program.')+
     ps27SheetCard('PR','Proyek','Hasil/layanan yang diusulkan dan dipilih untuk mendukung target program.','Menjadi cakupan keputusan penetapan dan acuan dokumen proyek.')+
     ps27SheetCard('W','WBS','Pemecahan pekerjaan ke deliverable, paket kerja, PIC, jadwal, bobot dan bukti pelaksanaan.','Disusun pada Project Management setelah penetapan; bukan salinan WBS historis.')+
-   '</div>'+
-   ps27SheetNote('Batasan utama','Project Selection memilih dan menetapkan program beserta proyeknya. Project Management mengelola baseline WBS, progres, change request, penutupan, dan evaluasi pascaproyek. Evaluasi adopsi pengguna tetap berada di Change Management.','gold')+
-   '</div>';
+   '</div>'+ps27SheetNote('Batas kewenangan','Skor, rekomendasi alokasi, simpan snapshot, dan unduh kerangka bukan persetujuan formal. Penetapan dan clearance mengikuti keputusan pejabat/forum yang berwenang. Untuk tahun 2026 ke bawah, prioritisasi per program tetap mengikuti metode yang berlaku.','gold')+'</div>';
  }
  if(tab==='governance'){
   const governance=[
@@ -1010,7 +1010,7 @@ function sheetPage(tab){
   return '<div class="ps27-sheet">'+ps27SheetHead('REFERENSI · BATASAN KERANGKA','Landasan Konseptual dan Sumber Data','Cheatsheet menjelaskan konsep dan aturan aplikasi yang bisa dipelajari pengguna. Jangan menyamakan referensi metodologi, keputusan desain, dan dasar penetapan formal.')+
   '<div class="ps27-sheet-grid ps27-sheet-grid3">'+
    ps27SheetCard('PMI','Praktik manajemen program/proyek','Area strategic alignment, benefits management, stakeholder, risk, governance, charter dan WBS dipakai sebagai inspirasi kerangka kerja.','Pemeriksaan kelengkapan dalam aplikasi adalah desain implementasi, bukan klaim daftar kolom wajib PMI.')+
-   ps27SheetCard('APP','Aturan dan formula aplikasi','SMART (utility, normalisasi, ambang, snapshot), MCDA (gate, skor tertimbang, profil bobot, roadmap, repositori), status dan penguncian alur mengikuti logika yang diimplementasikan.',ps27SheetJump('Kriteria & Bobot','prioritasi:criteria'))+
+   ps27SheetCard('APP','Aturan dan formula aplikasi','SMART (utility, normalisasi, ambang, snapshot), MCDA (gate, skor tertimbang, profil bobot, alokasi, riwayat hasil), status dan penguncian alur mengikuti logika yang diimplementasikan.',ps27SheetJump('Kriteria & Bobot','prioritasi:criteria'))+
    ps27SheetCard('DOC','Dokumen resmi dan penetapan','Target dan kontrak K-Wide serta keputusan program/proyek harus sesuai dokumen, kewenangan dan proses formal pada tahun tujuan.',ps27SheetJump('Penetapan Program','penetapan-program'))+
   '</div>'+
   '<div class="ps27-sheet-grid ps27-sheet-grid2">'+
@@ -1027,18 +1027,18 @@ function open(mode){
  const isSheet=mode==='sheet';
  let tab=isSheet?'framework':'map';
  const tabs=isSheet?
-  [['framework','Framework'],['governance','Tata Kelola'],['carry','Carry Over'],['formula','SMART & MCDA'],['ea','Telaah SI & Proses Bisnis EA'],['kwide','Penetapan K-Wide'],['rkmk','RKMK'],['terms','Istilah'],['reference','Referensi']]:
+  [['framework','Alur Project Selection'],['governance','Tata Kelola'],['carry','Carry Over'],['formula','SMART & MCDA'],['ea','Telaah SI & Proses Bisnis EA'],['kwide','Penetapan K-Wide'],['rkmk','RKMK'],['terms','Istilah'],['reference','Referensi']]:
   [['map','Peta Menu'],['flow','Tahapan'],['fill','Cara Pengisian'],['roles','Peran & Akses'],['check','Checklist']];
  const old=document.querySelector('.ps27-rich-overlay');if(old)old.remove();
  const previous=document.activeElement;
  const root=document.createElement('div');root.className='sk-overlay ps27-rich-overlay';root.setAttribute('data-ps27-rich','1');
  const label=isSheet?'Cheatsheet':'Bantuan';
- const subtitle=isSheet?'Framework, metodologi, istilah, tata kelola, serta penetapan program dan proyek.':'Peta menu, tahapan, cara pengisian, peran dan checklist kerja.';
+ const subtitle=isSheet?'Alur input–proses–output, metodologi, tata kelola, dan referensi penetapan.':'Peta menu, tahapan, cara pengisian, peran dan checklist kerja.';
  root.innerHTML='<section class="sk-dialog ps27-rich-dialog" role="dialog" aria-modal="true" aria-label="'+label+' Project Selection">'+
  '<header class="sk-head"><div class="sk-hwrap"><div class="sk-hicon" aria-hidden="true">'+(isSheet?'▤':'?')+'</div><div class="sk-hwords"><div class="sk-overline">'+(isSheet?'REFERENSI TATA KELOLA & KONSEP':'PANDUAN PENGGUNA APLIKASI')+'</div><h2>'+label+' Project Selection</h2><p>'+subtitle+'</p></div><button class="sk-close" type="button" data-ps27-close aria-label="Tutup '+label+'">×</button></div></header>'+
  '<nav class="sk-tabbar" role="tablist" aria-label="Tab '+label+' Project Selection">'+tabs.map(x=>'<button type="button" role="tab" data-ps27-htab="'+x[0]+'" class="sk-tab" aria-selected="'+(tab===x[0]?'true':'false')+'">'+x[1]+'</button>').join('')+'</nav>'+
  '<main class="sk-content ps27-rich-content"><section class="sk-view ps27-rich-body" role="tabpanel">'+(isSheet?sheetPage(tab):helpPage(tab))+'</section></main>'+
- '<footer class="sk-footer"><span><b>'+(isSheet?'Cheatsheet = teori & referensi.':'Bantuan = cara menggunakan aplikasi.')+'</b> '+(isSheet?'Untuk langkah pengisian buka Bantuan.':'Untuk teori, istilah dan formula buka Cheatsheet.')+'</span><span>Project Selection · 2027–2029</span></footer></section>';
+ '<footer class="sk-footer"><span><b>'+(isSheet?'Cheatsheet = alur & referensi.':'Bantuan = cara menggunakan aplikasi.')+'</b> '+(isSheet?'Untuk petunjuk pengisian rinci buka Bantuan.':'Untuk teori, istilah dan formula buka Cheatsheet.')+'</span><span>Project Selection · 2027–2029</span></footer></section>';
  document.body.appendChild(root);
  function close(){root.remove();if(previous&&previous.isConnected&&previous.focus)previous.focus({preventScroll:true})}
  root.addEventListener('click',function(ev){
