@@ -678,3 +678,10 @@ button.ps27-pkpi.navy:hover{border-color:#0a4277}
 #app .ps27.ps27-clearance .kka-group-actions .kka-group-context{line-height:30px;white-space:nowrap}
 @media(max-width:1000px){#app .ps27.ps27-clearance .kka-group-actions{height:34px;min-height:34px}}
 @media(max-width:650px){#app .ps27.ps27-clearance .kka-group-sub button{height:auto;min-height:32px;padding:4px 3px;font-size:11px}}
+
+
+/* SMART ranking: search, equal-width file actions and threshold share one compact row. */
+#app .ps27.ps27-clearance .ps27-smart-tools{grid-template-columns:minmax(0,1fr) auto auto;gap:8px}
+#app .ps27.ps27-clearance .ps27-smart-actions{display:grid;grid-template-columns:repeat(2,minmax(92px,1fr));gap:6px;align-items:center}
+#app .ps27.ps27-clearance .ps27-smart-actions>.btn{box-sizing:border-box;height:36px;min-height:36px;margin:0;padding:0 10px;white-space:nowrap;font-family:inherit;justify-content:center}
+@media(max-width:700px){#app .ps27.ps27-clearance .ps27-smart-tools{grid-template-columns:minmax(0,1fr) auto;gap:6px}#app .ps27.ps27-clearance .ps27-smart-tools>.mt-tabsearch{grid-column:1/-1}#app .ps27.ps27-clearance .ps27-smart-actions{grid-template-columns:repeat(2,minmax(0,1fr))}#app .ps27.ps27-clearance .ps27-smart-actions>.btn{padding:0 6px}}
