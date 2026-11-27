@@ -685,3 +685,22 @@ button.ps27-pkpi.navy:hover{border-color:#0a4277}
 #app .ps27.ps27-clearance .ps27-smart-actions{display:grid;grid-template-columns:repeat(2,minmax(92px,1fr));gap:6px;align-items:center}
 #app .ps27.ps27-clearance .ps27-smart-actions>.btn{box-sizing:border-box;height:36px;min-height:36px;margin:0;padding:0 10px;white-space:nowrap;font-family:inherit;justify-content:center}
 @media(max-width:700px){#app .ps27.ps27-clearance .ps27-smart-tools{grid-template-columns:minmax(0,1fr) auto;gap:6px}#app .ps27.ps27-clearance .ps27-smart-tools>.mt-tabsearch{grid-column:1/-1}#app .ps27.ps27-clearance .ps27-smart-actions{grid-template-columns:repeat(2,minmax(0,1fr))}#app .ps27.ps27-clearance .ps27-smart-actions>.btn{padding:0 6px}}
+
+
+/* SMART and MCDA share the same reading order: indicators, then filter/action toolbar. */
+#app .ps27.ps27-clearance .ps27-smart-kpis{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin:0 0 8px}
+#app .ps27.ps27-clearance .ps27-smart-kpis>.prio-kpi{min-height:94px;box-sizing:border-box;justify-content:flex-start;gap:3px;padding:12px 14px;border-radius:13px}
+#app .ps27.ps27-clearance .ps27-smart-kpis>.prio-kpi.k-rated{border-top-color:#1768b7}
+#app .ps27.ps27-clearance .ps27-smart-kpis>.prio-kpi.k-selected{border-top-color:#15805e}
+#app .ps27.ps27-clearance .ps27-smart-kpis>.prio-kpi.k-top b{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app .ps27.ps27-clearance .ps27-smart-tools{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+#app .ps27.ps27-clearance .ps27-smart-filters,#app .ps27.ps27-clearance .ps27-smart-actions{display:flex;align-items:center;gap:7px;min-width:0}
+#app .ps27.ps27-clearance .ps27-smart-filters{flex:1 1 420px}
+#app .ps27.ps27-clearance .ps27-smart-actions{flex:0 0 auto;justify-content:flex-end;margin-left:auto}
+#app .ps27.ps27-clearance .ps27-smart-filters>select{box-sizing:border-box;height:36px!important;min-height:36px!important;width:auto;max-width:175px;margin:0;font:inherit;font-size:12px;white-space:nowrap;padding:0 8px;border:1px solid #c9d8ee;border-radius:8px;background:#fff;color:#173a66}
+#app .ps27.ps27-clearance .ps27-smart-filters>.mt-tabsearch{order:0;flex:1 1 160px!important;width:auto!important;min-width:110px!important;max-width:280px!important;margin:0!important}
+#app .ps27.ps27-clearance .ps27-smart-actions>.ps27-smart-threshold{height:36px;display:inline-flex;align-items:center;gap:5px;margin:0;white-space:nowrap}
+#app .ps27.ps27-clearance .ps27-smart-actions>.ps27-smart-threshold input{box-sizing:border-box;height:36px!important;min-height:36px!important}
+#app .ps27.ps27-clearance .ps27-smart-actions>.btn{height:36px;min-height:36px;min-width:0;padding:0 9px;white-space:nowrap;font-size:12px}
+@media(max-width:1200px){#app .ps27.ps27-clearance .ps27-smart-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:700px){#app .ps27.ps27-clearance .ps27-smart-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}#app .ps27.ps27-clearance .ps27-smart-filters,#app .ps27.ps27-clearance .ps27-smart-actions{flex-wrap:wrap;width:100%;justify-content:flex-start}#app .ps27.ps27-clearance .ps27-smart-filters>.mt-tabsearch{max-width:none!important}#app .ps27.ps27-clearance .ps27-smart-actions>.btn{flex:1 0 auto}}
