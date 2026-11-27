@@ -649,3 +649,17 @@ button.ps27-pkpi.navy:hover{border-color:#0a4277}
 #app #view .vh:has(.ps27-header-lane)>.mt-audit-trigger{position:static;flex:none;align-self:center;margin:0}
 @media(max-width:750px){#app #view .ps27-lane-label{display:none}#app #view .ps27-lane-seg{grid-template-columns:repeat(2,minmax(62px,1fr))}#app #view .ps27-lane-seg button{padding:4px 6px}}
 @media(max-width:420px){#app #view .vh:has(.ps27-header-lane){flex-wrap:wrap;row-gap:4px}#app #view .vh:has(.ps27-header-lane)>div:nth-child(2){flex:1 1 calc(100% - 55px)}#app #view .vh:has(.ps27-header-lane) .acts{margin-left:auto}}
+
+
+/* SMART: equal-width tabs and stable method slot; threshold belongs to the search row. */
+#app .ps27.ps27-clearance .kka-group-sub{flex:1 1 0;min-width:0}
+#app .ps27.ps27-clearance .kka-group-sub button{flex:1 1 0;min-width:0;transition:background-color .15s ease,color .15s ease,border-color .15s ease}
+#app .ps27.ps27-clearance .kka-group-actions{flex:0 0 320px;width:320px;justify-content:flex-end;box-sizing:border-box}
+#app .ps27.ps27-clearance .kka-group-actions .kka-mseg label{flex:1 1 0;justify-content:center;min-width:0}
+#app .ps27.ps27-clearance .ps27-smart-tools{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;width:100%;box-sizing:border-box}
+#app .ps27.ps27-clearance .ps27-smart-tools>.mt-tabsearch{width:100%!important;min-width:0!important;max-width:none!important;margin:0!important;order:0}
+#app .ps27.ps27-clearance .ps27-smart-tools>.ps27-smart-threshold{height:36px;min-width:0;box-sizing:border-box;margin:0;gap:6px}
+#app .ps27.ps27-clearance .ps27-smart-tools>.ps27-smart-threshold input{height:36px!important;box-sizing:border-box}
+@media(max-width:1000px){#app .ps27.ps27-clearance .kka-group-subline{flex-wrap:wrap;gap:0}#app .ps27.ps27-clearance .kka-group-sub{flex:1 1 100%}#app .ps27.ps27-clearance .kka-group-actions{width:100%;flex:0 0 100%;min-height:38px}}
+@media(max-width:440px){#app .ps27.ps27-clearance .ps27-smart-tools{gap:6px}#app .ps27.ps27-clearance .ps27-smart-tools>.ps27-smart-threshold{font-size:10px;gap:3px}#app .ps27.ps27-clearance .ps27-smart-tools>.ps27-smart-threshold input{width:44px;min-width:44px}}
+@media(prefers-reduced-motion:reduce){#app .ps27.ps27-clearance .kka-group-sub button{transition:none}}
