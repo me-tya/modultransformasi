@@ -3832,7 +3832,7 @@ function resetFiltersOnLogin(){
   wcm:'',wth:'',wst:'',lvn:10,lvm:'sd',portoF:{},portoAdvanced:false,
   seg:'',crseg:'',mseg:'all',rf:'',rstatus:'',rrisk:'',
   cunit:'',crole:'',cpr:'all',cd1:'',cd2:'',cprog:'',cth:'',mod:'',
-  pgq:'',wbsProject:'',planYear:'all'
+  pgq:'',wbsProject:'',planYear:'year',planYearV:2
  });
  if(typeof PG!=='undefined')Object.keys(PG).forEach(k=>PG[k]=0);
 }
@@ -4102,7 +4102,7 @@ function onChange(el){const k=el.dataset.on,v=el.value;if(k==='impwbs')return;
  if(['tahun','prog','unit','umode','lvm','wcm','wth','wst','mod','pr','d1','d2','cunit','crole','cpr','cd1','cd2','cprog','cth'].includes(k)){if(k==='cunit'&&!v)S.ui.crole='';if(k==='umode'&&v!=='up'&&!curUnit()&&ME.unit&&UNITS.includes(ME.unit)){S.ui.unit=ME.unit;toast(`Unit diisi ${ME.unit} (unit Anda) agar peran unit bisa diterapkan.`)}if(k==='unit'&&!v)S.ui.umode='up';if(k==='umode'&&lockU()){S.ui.umodeL=v;Object.keys(PG).forEach(x=>PG[x]=0);save();render();return}if(k==='cunit'||k==='crole')S.ui.mod=''}
  if(['tahun','prog','unit','umode','lvm','wcm','wth','wst','mod','pr','d1','d2','cunit','crole','cpr','cd1','cd2','cprog','cth'].includes(k)){S.ui[k]=k==='tahun'?+v:v;Object.keys(PG).forEach(x=>PG[x]=0)}
  else if(k==='ltw'){S.ui.ltw=+v}
- else if(k==='planYear'){S.ui.planYear=v;Object.keys(PG).forEach(x=>PG[x]=0)}
+ else if(k==='planYear'){S.ui.planYear=v;S.ui.planYearV=2;Object.keys(PG).forEach(x=>PG[x]=0)}
  else if(k==='dxq')S.ui.dxq=v;else if(k==='pgq')S.ui.pgq=v;else if(k==='nprev')S.ui.nprev=el.checked;
  else if(k==='lvn')S.ui.lvn=+v;
  else if(k==='adpst'){S.modMeta[el.dataset.m]=S.modMeta[el.dataset.m]||{};S.modMeta[el.dataset.m].adp=v;log('Status ADP',el.dataset.m+' → '+v);adpAutoBukti(el.dataset.m)}
@@ -4694,7 +4694,7 @@ function fltBar(o={}){const P=per();const open=S.ui.fopen===1;const pv=progVis()
  ${o.umode?`<span class="fg pm-role"><label for="f-um">${lockU()?esc(lockU())+' sebagai':'Peran unit'}</label><select class="sel${act(umOf()!==umDef())}" id="f-um" data-on="umode" aria-label="Peran unit"${!curUnit()&&!(ME.unit&&UNITS.includes(ME.unit))?' disabled title="Pilih unit dulu"':''}>${opts([['up','Utama/Pendukung'],['u','UIC Utama'],['p','UIC Pendukung'],['ue','Cakupan UE I']],umOf())}</select></span>`:''}
  ${o.extra||''}</div></div></section>`}
 ACT.ftog=()=>{S.ui.fopen=S.ui.fopen===1?0:1;save();window.FCAR_ANIM=1;try{render()}finally{window.FCAR_ANIM=0}};
-ACT.freset=()=>{S.ui.wbk='';S.ui.prog='';S.ui.unit='';S.ui.pr='all';S.ui.umode='up';S.ui.umodeL='';S.ui.wcm='';S.ui.wth='';S.ui.wst='';S.ui.lvn=10;S.ui.lvm='sd';S.ui.portoF={};S.ui.wbsProject='';S.ui.planYear='all';S.ui.seg='';S.ui.crseg='';S.ui.mseg='all';S.ui.rf='';S.ui.rstatus='';S.ui.rrisk='';Object.keys(PG).forEach(x=>PG[x]=0);save();render()};
+ACT.freset=()=>{S.ui.wbk='';S.ui.prog='';S.ui.unit='';S.ui.pr='all';S.ui.umode='up';S.ui.umodeL='';S.ui.wcm='';S.ui.wth='';S.ui.wst='';S.ui.lvn=10;S.ui.lvm='sd';S.ui.portoF={};S.ui.wbsProject='';S.ui.planYear='year';S.ui.seg='';S.ui.crseg='';S.ui.mseg='all';S.ui.rf='';S.ui.rstatus='';S.ui.rrisk='';Object.keys(PG).forEach(x=>PG[x]=0);save();render()};
 const twSel=()=>S.ui.tw||(S.ui.tw===0?0:4);
 function unitMatch(it,u,mode){if(!u)return true;mode=mode||'ue';if(mode==='ue')return (it.ue||[]).includes(u);const U=unitsOf(uicU(it)).includes(u),P=unitsOf(it.d).includes(u);return mode==='u'?U:mode==='p'?P:U||P}
 function wbsFilt(o={}){const y=S.ui.tahun,pr=S.ui.prog,u=curUnit();return S.wbs.filter(w=>!w.arsip&&yrOf(w)===y&&(!pr||w.prog===pr)&&unitMatch(w,u,o.mode))}
@@ -4863,9 +4863,11 @@ ACT.lapexp=()=>exportLaporan();
 /* ===== Satu komponen filter PMO lintas tab ===== */
 /* ISTK baru berlaku mulai 2027: sejak 2027 program tampil di PM hanya bila DITETAPKAN di Project Selection untuk tahun itu (per tahun,
    bukan rentang periode multiyears). Sampai 2026 tetap aturan lama: periode program mencakup tahun tsb atau ada item WBS bertanggal tahun tsb. */
+/* Perencanaan WBS: default hanya tahun anggaran terpilih; "Semua tahun" harus dipilih sendiri. planYearV=2 menandai migrasi dari default lama ('all'). */
+function planAll(){const u=S.ui||{};if(u.planYearV!==2){u.planYear='year';u.planYearV=2}return u.planYear==='all'}
 const PS_FIRST_YEAR=2027;
 function psYearOn(y){return +y>=PS_FIRST_YEAR}
-function pmoAllWbsRaw(){return S.wbs.filter(w=>!w.arsip&&(VIEW==='pmo-wbsplan'&&S.ui.planYear!=='year'||yrOf(w)===S.ui.tahun))}
+function pmoAllWbsRaw(){return S.wbs.filter(w=>!w.arsip&&(VIEW==='pmo-wbsplan'&&planAll()||yrOf(w)===S.ui.tahun))}
 function pmoYearOk(p,y){y=+y;if(p.psDraft)return false;
  if(psYearOn(y))return +p.psYear===y&&p.psStatus==='Ditetapkan';
  const ys=String(p.periode||'').match(/20\d{2}/g)||[],y0=+p.mulai||+(ys[0]||0),y1=+(ys[ys.length-1]||0)||y0;
@@ -4874,7 +4876,7 @@ function pmoYearAkr(y){return new Set((S.programs||[]).filter(p=>pmoYearOk(p,y))
 function pmoAllWbs(){const raw=pmoAllWbsRaw();if(VIEW==='pmo-wbsplan')return raw; /* Susun WBS tetap menampilkan semua item agar dapat ditinjau */if(!psYearOn(S.ui.tahun))return raw;const ok=pmoYearAkr(+S.ui.tahun);return raw.filter(w=>ok.has(w.prog))}
 /* Item WBS bertanggal tahun berjalan milik program yang tidak ditetapkan untuk tahun itu (mis. program multiyears lama yang tidak masuk ISTK). */
 function pmoOrphanWbs(){if(!psYearOn(S.ui.tahun))return [];const ok=pmoYearAkr(+S.ui.tahun);return S.wbs.filter(w=>!w.arsip&&yrOf(w)===+S.ui.tahun&&!ok.has(w.prog))}
-function pmoScopedWbs(period=true){const P=per();return pmoAllWbs().filter(w=>(!S.ui.prog||w.prog===S.ui.prog)&&unitMatch(w,curUnit(),umOf())&&(!period||VIEW==='pmo-wbsplan'&&S.ui.planYear!=='year'||inP(w,P)))}
+function pmoScopedWbs(period=true){const P=per();return pmoAllWbs().filter(w=>(!S.ui.prog||w.prog===S.ui.prog)&&unitMatch(w,curUnit(),umOf())&&(!period||VIEW==='pmo-wbsplan'&&planAll()||inP(w,P)))}
 function pmoProgramList(ignoreProgram=false){const y=+S.ui.tahun,u=curUnit(),mode=umOf();return progVis().filter(p=>{
  if(p.psDraft)return false; /* Project Selection draft remains upstream of WBS */
  if(!ignoreProgram&&S.ui.prog&&p.akr!==S.ui.prog)return false;
@@ -4930,7 +4932,7 @@ function pmoFilterPanel(tab){const P=per(),all=pmoAllWbs(),base=pmoScopedWbs(),p
   extra=`<span class="fg w2"><label for="f-th2">Tahapan</label><select class="sel${S.ui.wth?' act':''}" id="f-th2" data-on="wth">${tahapOpts(S.ui.wth||'')}</select></span><span class="fg"><label for="f-st">Status item WBS</label><select class="sel${S.ui.wst?' act':''}" id="f-st" data-on="wst">${opts([['','Semua'],'Selesai','Berjalan','Terlambat','Terjadwal','Belum dijadwalkan'],S.ui.wst||'')}</select></span>`;
   if(S.ui.wth)chips.push({t:'Tahapan: '+tahapLab(S.ui.wth),k:'wth'});if(S.ui.wst)chips.push({t:'Status: '+S.ui.wst,k:'wst'});break;}
  case 'siklus':case 'perencanaan':case 'penutupan':case 'charter':res=[ps.length,S.programs.length,'program'];break;
- case 'wbs':case 'wbsplan':res=[wbsRows().length,all.length,'item'];if(tab==='wbsplan'&&S.ui.planYear!=='year'){const R=wbsRows(),y0=S.ui.tahun;res[2]=`item · ${R.filter(w=>yrOf(w)===y0).length} thn ${y0}, ${R.filter(w=>yrOf(w)&&yrOf(w)!==y0).length} thn lain, ${R.filter(w=>!yrOf(w)).length} tanpa jadwal`}extra=`${tab==='wbsplan'?`<span class="fg w2"><label for="plan-year">Cakupan jadwal</label><select class="sel" id="plan-year" data-on="planYear"><option value="all" ${S.ui.planYear!=='year'?'selected':''}>Semua tahun + belum terjadwal</option><option value="year" ${S.ui.planYear==='year'?'selected':''}>Hanya tahun anggaran ${S.ui.tahun}</option></select></span>`:''}<span class="fg w2"><label for="f-th2">Tahapan</label><select class="sel${S.ui.wth?' act':''}" id="f-th2" data-on="wth">${tahapOpts(S.ui.wth||'')}</select></span>
+ case 'wbs':case 'wbsplan':res=[wbsRows().length,all.length,'item'];if(tab==='wbsplan'&&planAll()){const R=wbsRows(),y0=S.ui.tahun;res[2]=`item · ${R.filter(w=>yrOf(w)===y0).length} thn ${y0}, ${R.filter(w=>yrOf(w)&&yrOf(w)!==y0).length} thn lain, ${R.filter(w=>!yrOf(w)).length} tanpa jadwal`}extra=`${tab==='wbsplan'?`<span class="fg w2"><label for="plan-year">Cakupan jadwal</label><select class="sel" id="plan-year" data-on="planYear"><option value="all" ${planAll()?'selected':''}>Semua tahun + belum terjadwal</option><option value="year" ${!planAll()?'selected':''}>Hanya tahun anggaran ${S.ui.tahun}</option></select></span>`:''}<span class="fg w2"><label for="f-th2">Tahapan</label><select class="sel${S.ui.wth?' act':''}" id="f-th2" data-on="wth">${tahapOpts(S.ui.wth||'')}</select></span>
   <span class="fg w2 lvg"><label for="f-lv">Level</label><span class="fgi"><span class="seg">${[['sd','s.d.'],['eq','hanya']].map(([v,l])=>`<button data-seg="lvm" data-v="${v}" class="${(S.ui.lvm||'sd')===v?'on':''}">${l}</button>`).join('')}</span><select class="sel" id="f-lv" data-on="lvn">${[3,4,5,6,7,8,9,10].map(n=>`<option value="${n}" ${(S.ui.lvn||10)==n?'selected':''}>Lv ${n}</option>`).join('')}</select></span></span>
   <span class="fg"><label for="f-st">Status</label><select class="sel" id="f-st" data-on="wst">${opts([['','Semua'],'Selesai','Berjalan','Terlambat','Terjadwal','Belum dijadwalkan'],S.ui.wst||'')}</select></span>${tab==='wbs'?`<span class="fg"><label for="f-bk">Bukti dukung</label><select class="sel${S.ui.wbk?' act':''}" id="f-bk" data-on="wbk">${opts([['','Semua'],'Belum diunggah','Menunggu validasi','Valid','Ditolak'],S.ui.wbk||'')}</select></span>`:''}`;break;
  case 'bukti':res=[base.filter(w=>buktiSt(w)===(S.ui.bseg||'Menunggu validasi')).length,all.length,'bukti'];break;
@@ -7258,7 +7260,7 @@ ACT.oneExport=()=>xlsxSave(actRows().map(x=>({
 
 /* --- WBS --- */
 function wbsRows(){const P=per(),M=P.b;const u=curUnit(),um=umOf();const lvm=S.ui.lvm||'sd',lvn=S.ui.lvn||10;const wth=S.ui.wth||'',wst=S.ui.wst||'';
- return S.wbs.filter(w=>(!w.arsip||(VIEW==='pmo-wbs'&&S.ui.wbsArsip))&&(VIEW==='pmo-wbsplan'&&S.ui.planYear!=='year'||yrOf(w)===S.ui.tahun)&&(!S.ui.prog||w.prog===S.ui.prog)&&unitMatch(w,u,um)&&(VIEW==='pmo-wbsplan'&&S.ui.planYear!=='year'||inP(w,P))
+ return S.wbs.filter(w=>(!w.arsip||(VIEW==='pmo-wbs'&&S.ui.wbsArsip))&&(VIEW==='pmo-wbsplan'&&planAll()||yrOf(w)===S.ui.tahun)&&(!S.ui.prog||w.prog===S.ui.prog)&&unitMatch(w,u,um)&&(VIEW==='pmo-wbsplan'&&planAll()||inP(w,P))
   &&(lvm==='sd'?lvOf(w)<=lvn:lvOf(w)===lvn)&&(!wth||tahapMatch(w,wth))&&(!wst||stP(w,P)===wst)&&(VIEW!=='pmo-wbs'||!S.ui.wbk||buktiSt(w)===S.ui.wbk)&&(VIEW!=='pmo-wbs'||!S.ui.wbsProject||String(w.p[2]||w.p[1]||'(tanpa kelompok)')===S.ui.wbsProject))}
 function ganttCell(w){const y=yrOf(w)||S.ui.tahun;const d0=new Date(y,0,1),d1=new Date(y,11,31);const pos=d=>{if(!d)return null;const x=new Date(d+'T00:00:00');return Math.max(0,Math.min(1,(x-d0)/(d1-d0)))};const a=pos(w.s)??pos(w.f),b=pos(w.f)??a;if(a==null)return '';
  const st=stOf(w,12);const col=st==='Selesai'?'var(--ok)':st==='Terlambat'?'var(--bad)':st==='Berjalan'?'var(--blue)':'#9FB2CF';const t=pos(TODAY);return `<div class="gantt" title="${fmtD(w.s)} – ${fmtD(w.f)}"><i style="left:${a*100}%;width:${Math.max(2,(b-a)*100)}%;background:${col}"></i>${String(y)===TODAY.slice(0,4)?`<em style="left:${t*100}%"></em>`:''}</div>`}
@@ -7297,7 +7299,7 @@ ACT.psWbsStart=el=>{
  const fld=document.getElementById('f_pth');if(fld)fld.focus();
 };
 
-function pWbs(){const P=per(),M=P.b,tw=P.tw;const rowsA=wbsRows(),rows=rowsA.filter(w=>!w.arsip);const yearlyRows=VIEW==='pmo-wbsplan'&&S.ui.planYear!=='year'?rows.filter(w=>yrOf(w)===S.ui.tahun):rows;const s0=sumP(yearlyRows,P);const s={t:s0.t,r:s0.r};const stc=st=>yearlyRows.filter(w=>stP(w,P)===st).length;
+function pWbs(){const P=per(),M=P.b,tw=P.tw;const rowsA=wbsRows(),rows=rowsA.filter(w=>!w.arsip);const yearlyRows=VIEW==='pmo-wbsplan'&&planAll()?rows.filter(w=>yrOf(w)===S.ui.tahun):rows;const s0=sumP(yearlyRows,P);const s={t:s0.t,r:s0.r};const stc=st=>yearlyRows.filter(w=>stP(w,P)===st).length;
  const pr=S.ui.prog?progOf(S.ui.prog):null;
  const plan=VIEW==='pmo-wbsplan';
  return vh('W','pmo',plan?'WBS':'WBS & Progres',plan?'Pecah rencana kerja hingga level paling detail, impor dari Excel, lalu jadikan baseline.':'Struktur, jadwal, progres, dan bukti dukung item WBS per program.','')+pmoTabs('wbs')+(plan?`<div class="note i"><span><b>Susun WBS.</b> Impor sheet Kompilasi atau sheet program, atau tambah item manual. Bobot, target bulanan, triwulan, dan cakupan UE I dihitung otomatis dari Start–Finish. Setelah charter disahkan, WBS menjadi baseline dan perubahan berikutnya lewat Change Request. Update progres bulanan dilakukan di <a href="#pmo-wbs">Pelaksanaan › WBS &amp; progres</a>.</span></div>`:'')+
