@@ -13,8 +13,8 @@ const state=()=>{const u=I.state();const map={portfolio:'usulan',program:'usulan
 const list=()=>I.programs();
 const current=()=>I.pickedProgram();
 const ws=()=>{S.ui.ps27=S.ui.ps27||{sourceYear:2026,selected:[],search:'',sub:'identity',filterOpen:false};return S.ui.ps27};
-const TABS=[['usulan','Usulan Program'],['mapping','Pemetaan Proyek'],['prioritasi','Prioritasi'],['charter','Charter Program'],['penetapan-program','Penetapan Program'],['rkmk','Draft RKMK ISTK']];
-const ISTK_TABS=TABS.filter(t=>t[0]!=='prioritasi');
+const TABS=[['usulan','Usulan Program'],['mapping','Pemetaan Proyek'],['prioritasi','Prioritasi'],['charter','Charter Program'],['penetapan-program','Penetapan Program'],['rkmk','Draft RKMK']];
+const ISTK_TABS=TABS.filter(t=>t[0]!=='prioritasi').map(t=>t[0]==='rkmk'?['rkmk','Draft RKMK ISTK']:t);
 function laneNav(active){
  const choices=[['istk','ISTK','Program & Proyek ISTK'],['non','Non-ISTK','Clearance Proyek Non ISTK']];
  return '<div class="ps27-header-lane"><span class="ps27-lane-label">Jalur</span><div class="ps27-lane-seg" role="group" aria-label="Jalur Project Selection">'+choices.map(([k,label,tip])=>'<button type="button" class="'+(active===k?'on':'')+'" aria-pressed="'+(active===k)+'" data-ps27-lane="'+k+'" title="'+E(tip)+'" aria-label="'+E(tip)+'">'+E(label)+'</button>').join('')+'</div><div class="ps27-lane-seg" role="group" aria-label="Peta Rencana bersama"><button type="button" class="'+(active==='peta'?'on':'')+'" aria-pressed="'+(active==='peta')+'" data-ps27-lane="peta" title="Konsolidasi ISTK dan Non-ISTK">Peta Rencana</button></div></div>';
@@ -566,6 +566,7 @@ function petaRencana(){
  const rows=m.istk.concat(m.non).filter(r=>kind==='all'||r.kind===kind);
  const tabs=[['all','Semua',m.istk.length+m.non.length],['ISTK','ISTK',m.istk.length],['Non-ISTK','Non-ISTK',m.non.length]];
  return '<section class="ps27-card"><div class="ps27-cardtop"><div><h3>Peta Rencana '+E(y)+'</h3><small>Konsolidasi hasil penetapan ISTK dan hasil clearance Non-ISTK. Data ditarik dari sumber masing-masing, tanpa input ulang.</small></div><span class="ps27-status">Hanya baca</span></div>'+
+ '<div class="ps27-filter" style="margin:0 0 6px"><label>Tahun Anggaran <select data-ps27-year aria-label="Tahun Peta Rencana">'+[...new Set([2027,2028,2029,y])].sort((a,b)=>a-b).map(n=>'<option value="'+n+'" '+(n===y?'selected':'')+'>'+n+'</option>').join('')+'</select></label></div>'+
  '<div class="ps27-minitabs" role="tablist" aria-label="Filter klasifikasi Peta Rencana">'+tabs.map(([k,l,n])=>'<button type="button" role="tab" class="'+(kind===k?'on':'')+'" aria-selected="'+(kind===k)+'" data-ps27-plan-kind="'+E(k)+'">'+E(l)+' · '+n+'</button>').join('')+'</div>'+
  '<div class="ps27-tablewrap"><table class="ps27-table"><colgroup><col style="width:5%"><col style="width:13%"><col style="width:34%"><col style="width:19%"><col style="width:12%"><col style="width:17%"></colgroup><thead><tr><th>No</th><th>Klasifikasi</th><th>Proyek</th><th>Program ISTK</th><th>UIC</th><th>Status / sumber</th></tr></thead><tbody>'+
  (rows.length?rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td><b>'+E(r.kind)+'</b></td><td><b>'+E(r.name)+'</b><small>'+E(r.code)+'</small></td><td>'+E(r.program)+'</td><td>'+E(r.uic)+'</td><td>'+E(r.status)+'<small>'+E(r.source)+'</small></td></tr>').join(''):'<tr><td colspan="6">Belum ada proyek dari hasil penetapan atau clearance final pada filter ini.</td></tr>')+
@@ -817,9 +818,10 @@ function helpPage(tab){
    [['Narasi & Reviu','rkmk']]
   ];
 
-  const split=yr()>=2027,order=split?[0,1,3,4,5,2]:[0,1,2,3,4,5];
+  const split=yr()>=2027,order=split?[0,1,3,4,5,2,6]:[0,1,2,3,4,5];
+  if(split){items.push(['peta','Peta Rencana','Konsolidasi penetapan ISTK dan rekomendasi hasil clearance final Non-ISTK, tanpa input ulang.']);deep.push([['Peta Rencana bersama','peta']]);}
   if(split){deep[1]=deep[1].filter(z=>z[1]!=='mapping:nonistk');deep[2]=[['Usulan Non-ISTK','prioritasi:mcda-non'],['Penilaian & Peringkat (MCDA / SMART)','prioritasi:mcda-rank'],['Anggaran & SDM','prioritasi:mcda-roadmap'],['Analisis','prioritasi:mcda-analysis'],['Riwayat Hasil','prioritasi:mcda-repo'],['Kriteria & Bobot','prioritasi:mcda-criteria'],['Metodologi & Rubrik','prioritasi:mcda-ref'],['Referensi','prioritasi:mcda-literature']]}
-  return '<div class="ps27-sheet">'+ps27SheetHead('NAVIGASI · PROJECT SELECTION','Peta Menu sampai Level Tab',split?'Lima tahap Program & Proyek ISTK dan jalur terpisah Clearance Proyek Non ISTK. Gunakan pencarian atau shortcut menu.':'Enam tahapan utama dan tautan langsung menuju subtab.')+
+  return '<div class="ps27-sheet">'+ps27SheetHead('NAVIGASI · PROJECT SELECTION','Peta Menu sampai Level Tab',split?'Lima tahap Program & Proyek ISTK, jalur terpisah Clearance Proyek Non-ISTK, serta Peta Rencana bersama. Gunakan pencarian atau shortcut menu.':'Enam tahapan utama dan tautan langsung menuju subtab.')+
    '<input class="sk-search" type="search" data-ps27-help-search placeholder="Cari menu, tab, fungsi atau istilah seperti manfaat, kontrak, WBS..." aria-label="Cari menu Project Selection">'+
    '<div class="ps27-helpmap">'+order.map((i,n)=>{const x=items[i];return '<section data-ps27-menuitem="'+E((x[1]+' '+x[2]+' '+deep[i].map(z=>z[0]).join(' ')).toLowerCase())+'"><button class="ps27-helpmap-head" data-ps27-jump="'+x[0]+'"><b>'+(split&&i===2?'NON ISTK':n+1)+' · '+x[1]+'</b><span>Buka submenu ↗</span></button><p>'+x[2]+'</p><div class="ps27-helpmap-links">'+deep[i].map(z=>'<button type="button" data-ps27-jump="'+z[1]+'">'+z[0]+'</button>').join('')+'</div></section>'}).join('')+'</div>'+
    ps27SheetNote('Panduan dan referensi dipisahkan','Bantuan menjelaskan langkah penggunaan aplikasi. Definisi, metodologi SMART, istilah, tata kelola, dan dasar pemikiran ada di Cheatsheet.','gold')+
@@ -832,7 +834,7 @@ function helpPage(tab){
   '<div class="ps27-sheet-subhead"><h4>Alur keputusan dan keluaran</h4></div><div class="ps27-sheet-tablewrap"><table class="ps27-sheet-table"><thead><tr><th>Tahap</th><th>Keluaran yang diperiksa</th><th>Berikutnya</th></tr></thead><tbody>'+
   '<tr><td>Usulan</td><td>Tujuan, business case, manfaat, stakeholder, risiko dan dokumen program</td><td>Pemetaan proyek</td></tr>'+
   '<tr><td>Pemetaan</td><td>Proyek relevan dan pemilik pekerjaan teridentifikasi</td><td>Prioritasi</td></tr>'+
-  '<tr><td>Prioritasi</td><td>SMART: peringkat & snapshot. MCDA: hasil gate, peringkat P1–P4, alokasi direkomendasikan/cadangan, versi hasil di Repositori (Draft/Final). Proyek di luar ISTK masuk Peta Rencana berdasarkan hasil clearance final (tidak ke Penetapan/WBS)</td><td>Charter</td></tr>'+
+  '<tr><td>Prioritasi</td><td>SMART: peringkat & snapshot. MCDA: hasil gate, peringkat P1–P4, alokasi direkomendasikan/cadangan, versi hasil di Repositori (Draft/Final). Proyek di luar ISTK berhenti di sini (tidak ke Penetapan/WBS)</td><td>Charter</td></tr>'+
   '<tr><td>Charter</td><td>Rencana awal, milestone, manfaat, kriteria penyelesaian, unit pengelola</td><td>Penetapan</td></tr>'+
   '<tr><td>Penetapan</td><td>Kontrak K-Wide, target triwulan dan cakupan proyek terpilih</td><td>Draft RKMK / WBS</td></tr>'+
   '<tr><td>RKMK</td><td>Narasi rancangan direviu dan disiapkan untuk proses formal</td><td>Project Management setelah penetapan</td></tr>'+
