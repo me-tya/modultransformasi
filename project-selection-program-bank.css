@@ -1292,9 +1292,10 @@
 .psbank-history-target .pshist-dest{display:flex;flex-direction:column;gap:4px;flex:none}
 .psbank-history-target .pshist-dest>span{font-size:12px;font-weight:800;color:#12275A}
 .psbank-history-target .pshist-seg{display:inline-flex!important;width:auto!important;border:1px solid #C9D8EE;border-radius:10px;overflow:hidden;background:#fff}
-.psbank-history-target .pshist-seg label{display:flex!important;align-items:center;justify-content:center;width:auto!important;min-width:96px;padding:0 18px!important;height:40px;font-weight:800!important;font-size:13px!important;color:#12275A!important;background:#fff;cursor:pointer;border-right:1px solid #C9D8EE;margin:0!important;white-space:nowrap}
-.psbank-history-target .pshist-seg label:last-child{border-right:0}
-.psbank-history-target .pshist-seg label.on{background:#12275A!important;color:#fff!important}
-.psbank-history-target .pshist-seg input{position:absolute;opacity:0;width:0;height:0}
+.psbank-history-target .pshist-seg button{display:flex!important;align-items:center;justify-content:center;min-width:96px;padding:0 14px;height:36px;font:700 12px/1.2 inherit;font-family:inherit;font-size:12px;font-weight:700;color:#12275A;background:#fff;cursor:pointer;border:0;border-right:1px solid #C9D8EE;margin:0;white-space:nowrap;position:relative}
+.psbank-history-target .pshist-seg button:last-child{border-right:0}
+.psbank-history-target .pshist-seg button.on{background:#12275A;color:#fff;box-shadow:inset 0 -2px #F2B92C}
+.psbank-history-target .pshist-seg button:not(.on):hover{background:#EDF2FA}
+.psbank-history-target .pshist-seg button:focus-visible{outline:2px solid #D4A31B;outline-offset:-3px}
 .psbank-history-target .pshist-nontarget{flex:1;min-width:280px;max-width:640px;display:flex;flex-direction:column;justify-content:center;min-height:40px;padding:6px 14px;border:1px dashed #9DB3D8;border-radius:10px;background:#F5F8FD}
 .psbank-history-target .pshist-nontarget b{color:#12275A;font-size:13px}.psbank-history-target .pshist-nontarget small{color:#64748B;font-size:11.5px}
