@@ -333,7 +333,7 @@ function nonIstkPrio(stageHtml=null){
  const p=m==='smart'?current():(current()||{id:'',psProjects:[]}),ro=m==='smart'?I.readonly(p):false;
  const threshold=m==='smart'?'<label class="ps27-smart-threshold">Ambang skor &gt; <input type="number" id="pswf-threshold" min="0" max="99" value="'+E(p.psThreshold??80)+'" '+(ro?'disabled':'')+' aria-label="Ambang skor SMART"> %</label>':'';
  const search=m==='smart'?(typeof MT_TABSEARCH==='function'?MT_TABSEARCH:()=>'')('ps-prioritasi',localFilter().search,'Cari usulan, UIC…'):'';
- return (stageHtml==null?intro:'')+K.page(p,{nonOnly:true,stageHtml,readOnly:ro,methodHtml:seg,smart:m==='smart',smartTools:threshold,smartBody:sub=>sub==='criteria'?I.criteriaPage(p):sub==='ref'||sub==='literature'?I.referencePage(p):search+I.projectsPage(p)});
+ return (stageHtml==null?intro:'')+K.page(p,{nonOnly:true,stageHtml,readOnly:ro,methodHtml:seg,smart:m==='smart',smartBody:sub=>sub==='criteria'?I.criteriaPage(p):sub==='ref'||sub==='literature'?I.referencePage(p):'<div class="ps27-smart-tools">'+search+threshold+'</div>'+I.projectsPage(p)});
 
 }
 function prioritasi(p){
