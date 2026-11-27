@@ -122,17 +122,18 @@ function page(){
  else h+=referencePage(p);
  h+='</section>';return h;
 }
-function projectsPage(p){
- const u=state(),arr=rowsFor(p),scored=arr.map(x=>({x,r:calc(x,p)})),ranks=scored.filter(z=>z.r.score!=null),high=ranks.filter(z=>z.r.score>=70),mid=ranks.filter(z=>z.r.score>=40&&z.r.score<70),low=ranks.filter(z=>z.r.score<40),top=ranks.slice().sort((a,b)=>b.r.score-a.r.score)[0];
+function projectsPage(p,opts={}){
+ const compact=!!(p.nonIstk&&opts.toolbar),u=state(),arr=rowsFor(p),scored=arr.map(x=>({x,r:calc(x,p)})),ranks=scored.filter(z=>z.r.score!=null),high=ranks.filter(z=>z.r.score>=70),mid=ranks.filter(z=>z.r.score>=40&&z.r.score<70),low=ranks.filter(z=>z.r.score<40),top=ranks.slice().sort((a,b)=>b.r.score-a.r.score)[0];
  let h='';
- h+='<div class="pswf-scope"><b>LINGKUP PERINGKAT</b><span class="pswf-chip on">Program: '+esc2(p.nama)+'</span><span class="pswf-chip">Tahun '+year()+'</span><span class="pswf-sp"></span><span>Program dan proyek tahun lain tidak tercampur.</span></div>';
+ if(!compact)h+='<div class="pswf-scope"><b>LINGKUP PERINGKAT</b><span class="pswf-chip on">Program: '+esc2(p.nama)+'</span><span class="pswf-chip">Tahun '+year()+'</span><span class="pswf-sp"></span><span>Program dan proyek tahun lain tidak tercampur.</span></div>';
  const active=u.filter||'all';
  const kpi=(key,value,label,klass='')=>'<button type="button" class="prio-kpi '+klass+(active===key?' is-filtered':'')+'" data-pswf-kpi="'+key+'" aria-pressed="'+(active===key)+'" title="Tampilkan '+esc2(label)+'"><b>'+value+'</b><small>'+label+'</small></button>';
- h+='<div class="prio-kpis prio-kpis-clickable">'+kpi('all',arr.length,'Calon proyek')+
+ h+='<div class="prio-kpis prio-kpis-clickable'+(compact?' ps27-smart-kpis':'')+'">'+kpi('all',arr.length,compact?'Usulan Non-ISTK':'Calon proyek')+(compact?kpi('rated',ranks.length,'Sudah dinilai','k-rated'):'')+
  kpi('high',high.length,'P1 Tinggi (≥70)','k-high')+
  kpi('mid',mid.length,'P2 Sedang (40–69)','k-mid')+
- kpi('low',low.length,'P3 Rendah (<40)','k-low')+
+ kpi('low',low.length,'P3 Rendah (<40)','k-low')+(compact?kpi('selected',ranks.filter(z=>included(z.x,p)).length,'Lanjut','k-selected'):'')+
  '<button type="button" class="prio-kpi k-top'+(active==='top'?' is-filtered':'')+'" data-pswf-kpi="top" aria-pressed="'+(active==='top')+'" title="Tampilkan proyek skor tertinggi"><small>Prioritas teratas</small><b>'+(top?esc2(top.x.name):'—')+'</b><small>'+(top?labelScore(top.r):'Belum ada penilaian')+'</small></button></div>';
+ if(compact)h+=opts.toolbar;
  h+='<div class="prio-toolbar prio-toolbar-compact"><span class="pswf-sp"></span><span class="prio-toolbar-label">Urutkan</span><div class="prio-seg">'+[['score','Skor ↓'],['golive','Go-live'],['name','Nama']].map(t=>'<button type="button" class="'+(u.sort===t[0]?'on':'')+'" data-pswf-sort="'+t[0]+'">'+t[1]+'</button>').join('')+'</div>'+
  '<div class="prio-seg">'+[['list','☰ Daftar'],['quad','◫ Kuadran']].map(t=>'<button type="button" class="'+(u.view===t[0]?'on':'')+'" data-pswf-view="'+t[0]+'">'+t[1]+'</button>').join('')+'</div></div>';
  // Filter panel Prioritasi (UIC, Status Penilaian) + kolom Cari di samping tab.
@@ -142,13 +143,15 @@ function projectsPage(p){
   if(pf.unit&&pf.unit!=='all'&&(x.uic||p.uic)!==pf.unit)return false;
   if(pf.status==='Sudah Dinilai'&&r.score==null)return false;
   if(pf.status==='Belum Dinilai'&&r.score!=null)return false;
-  if(pq&&![x.name,x.applicationName,x.uic,x.category,x.psAcronym,st].join(' ').toLowerCase().includes(pq))return false;
+  if(pq&&![x.name,x.applicationName,x.uic,x.category,x.psAcronym,st,...(compact?[x.id,x.psCode,x.psOriginRef]:[])].join(' ').toLowerCase().includes(pq))return false;
+  if(compact&&u.filter==='rated'&&r.score==null)return false;
   if(u.filter==='top'&&(!top||top.x.id!==x.id))return false;
   if(u.filter==='selected'&&!sel)return false;
   if(['Usulan','Berjalan'].includes(u.filter)&&st!==u.filter)return false;
   if(['high','mid','low'].includes(u.filter)&&level(r)!==u.filter)return false;
   return true; /* Project search uses the shared filter above, not a duplicate toolbar. */
  }).sort((a,b)=>u.sort==='name'?a.x.name.localeCompare(b.x.name):u.sort==='golive'?String(a.x.goLive||'9999').localeCompare(String(b.x.goLive||'9999')):(b.r.score??-1)-(a.r.score??-1));
+ const smartRanks=new Map(),unitRanks=new Map();if(compact){let rank=0;const counts=new Map();ranks.slice().sort((a,b)=>b.r.score-a.r.score).forEach(z=>{const key=String(z.x.uic||p.uic||'');const ur=(counts.get(key)||0)+1;counts.set(key,ur);smartRanks.set(z.x.id,++rank);unitRanks.set(z.x.id,ur)})}
  h+='<div class="pswf-snapshot"><label>Riwayat Snapshot <select id="pswf-snapshot"><option value="">— tanpa pembanding —</option>'+p.psSnapshots.map(z=>'<option value="'+esc2(z.id)+'"'+(u.snapshot===z.id?' selected':'')+'>'+esc2(z.at.slice(0,16).replace('T',' '))+' · '+esc2(z.by||'PMO')+'</option>').join('')+'</select></label>'+(ownerOk(p)?'<button type="button" class="btn" data-pswf="save-snapshot">▣ Simpan Snapshot Penilaian</button>':'')+'<button type="button" class="btn" data-pswf="history-snapshots">Lihat Riwayat ('+p.psSnapshots.length+')</button></div>';
  if(u.view==='quad'&&p.psPrioritize)h+=quadrant(p,filtered);
  else {
@@ -156,7 +159,7 @@ function projectsPage(p){
  if(!filtered.length)h+='<div class="prio-empty">Belum ada proyek sesuai filter. Tambahkan calon proyek untuk memulai.</div>';
  filtered.forEach((z,i)=>{
   const x=z.x,r=z.r,on=(u.open||[]).includes(x.id),label=levelName(r),sel=included(x,p);
-  h+='<article class="prio-row cat-'+level(r)+(on?' open':'')+'"><div class="prio-rank"><b>'+(i+1)+'</b><small>'+(!p.psPrioritize?'CALON':r.score==null?'—':'P'+(r.score>=70?1:r.score>=40?2:3))+'</small></div>'+
+  h+='<article class="prio-row cat-'+level(r)+(on?' open':'')+'"><div class="prio-rank"><b>'+(compact?((opts.rankMode==='ue'?unitRanks:smartRanks).get(x.id)??'—'):i+1)+'</b><small>'+(!p.psPrioritize?'CALON':r.score==null?'—':'P'+(r.score>=70?1:r.score>=40?2:3))+'</small></div>'+
   '<div class="prio-main"><div class="prio-title"><h4>'+esc2(x.name)+'</h4></div><div class="prio-meta"><span class="prio-status">'+esc2(x.status||'Usulan')+'</span><span class="prio-ue">'+esc2(x.uic||p.uic||'—')+'</span><span class="prio-prog">'+esc2(p.nama)+'</span><span>Go-live: <b>'+esc2(x.goLive||'—')+'</b></span><span>PIC: '+esc2(x.pic||'—')+'</span><span>Pengguna: '+esc2(x.users||'—')+'</span>'+
   (p.nonIstk?(r.score==null?'<span class="pswf-rejected">Belum dinilai</span>':sel?'<span class="pswf-picked">✓ Lanjut</span>':'<span class="pswf-rejected">Drop</span>'):sel?'<span class="pswf-picked">✓ Dipilih</span>':'<span class="pswf-rejected">Belum dipilih</span>')+'</div><div class="prio-utils">'+r.details.map(d=>'<span class="prio-u" title="'+esc2(d.c.code+' '+d.c.name)+'"><span class="prio-ub"><i style="height:'+Math.max(3,Math.round(d.u*100))+'%"></i></span><em>'+d.c.code+'</em></span>').join('')+'</div></div>'+
   '<div class="prio-score"><b>'+(p.psPrioritize?labelScore(r):'—')+'</b><div class="prio-bar"><i style="width:'+(r.score||0)+'%"></i></div><span class="prio-cat">'+(p.psPrioritize?'Prioritas '+label:'Seleksi manual')+'</span>'+snapshotDelta(p,x,r)+'</div>'+
