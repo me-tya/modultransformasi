@@ -74,7 +74,7 @@ function attachNon(inp){
   result.innerHTML='<div class="estv-result-top"><div class="estv-kicker">TOTAL ESTIMASI</div><div data-estv-amount></div><span>'+(t==='sdm'?'orang-bulan':'dalam rupiah juta')+'</span></div><div class="estv-result-details"><div><span>'+(t==='sdm'?'Peran terisi':'Komponen terisi')+'</span><b data-estv-count="'+t+'">0</b></div>'+(t==='sdm'?'<div><span data-estv-people-label>Orang (penugasan)</span><b data-estv-people>0</b></div><div><span data-estv-fte-label>Rata-rata FTE</span><b data-estv-fte>—</b></div>':'')+'<div class="estv-manual"><span>Nilai usulan</span></div></div><div class="estv-result-action"></div>';
   result.querySelector('[data-estv-amount]').append(total);result.querySelector('.estv-result-action').append(use);use.textContent='Gunakan hasil →';
   const target=t==='cost'?cost:sdm;result.querySelector('.estv-manual').append(fieldBox(target));
-  const manualNote=document.createElement('p');manualNote.textContent='Nilai yang disimpan ke usulan. Bisa diisi manual atau diisi melalui tombol Gunakan hasil. Rincian kalkulator hanya berlaku selama formulir terbuka.';result.querySelector('.estv-manual>span').append(info('Nilai usulan',[manualNote]));
+  const manualNote=document.createElement('p');manualNote.textContent='Nilai yang disimpan ke usulan. Terisi otomatis dari total rincian; bisa diubah manual (sesudah diubah manual tidak ditimpa lagi, kecuali lewat tombol Gunakan hasil). Rincian kalkulator ikut tersimpan saat usulan disimpan.';result.querySelector('.estv-manual>span').append(info('Nilai usulan',[manualNote]));
   if(t==='sdm'){const pn=document.createElement('p');pn.textContent='Jumlah orang pada baris yang lengkap. Orang yang mengisi lebih dari satu peran dapat terhitung lebih dari sekali; ini bukan jumlah pegawai unik.';result.querySelector('[data-estv-people-label]').append(info('Jumlah penugasan',[pn]));const note=document.createElement('p');note.textContent='FTE rata-rata = total orang-bulan dibagi durasi proyek. Ini bukan jumlah pegawai unik.';result.querySelector('[data-estv-fte-label]').append(info('Rata-rata FTE',[note]))}
   grid.append(editor,result);sec.append(grid);
  });
@@ -95,6 +95,18 @@ function attachNon(inp){
  const defaults={cost:[['Pro hire / tenaga ahli','orang-bulan'],['Jasa pengembangan / vendor','paket'],['Lisensi / langganan','lisensi'],['Infrastruktur / cloud','bulan'],['Pelatihan / lainnya','paket']],sdm:SDM_ROLES.map(n=>[n])};
  function resetRows(t){q('[data-e2-'+t+'-rows]').replaceChildren();defaults[t].forEach(a=>add(t,...a));}
  resetRows('cost');resetRows('sdm');
+ /* Rincian kalkulator disimpan bersama usulan (estimateDetail, JSON) dan dipulihkan saat formulir dibuka lagi. */
+ const det=(istk?inp.closest('.psbank-project-editor'):inp.closest('.ke-ov'))?.querySelector('#kn-estimateDetail,[data-scope-field="estimateDetail"]');
+ const KEYS={cost:['n','unit','rate'],sdm:['n','months','pct']};
+ try{const saved=det&&det.value?JSON.parse(det.value):null;
+  if(saved)['cost','sdm'].forEach(t=>{const L=Array.isArray(saved[t])?saved[t]:null;if(!L||!L.length)return;q('[data-e2-'+t+'-rows]').replaceChildren();
+   L.forEach(a=>{add(t,String(a[0]||''),t==='cost'?String(a[2]||''):'');const r=q('[data-e2-'+t+'-rows]').lastElementChild;
+    KEYS[t].forEach((k,i)=>{const e=r.querySelector('[data-e2-'+k+']');if(e&&a[i+1]!=null)e.value=String(a[i+1])})})})}catch(_){}
+ function persist(){if(!det||det.disabled)return;const o={v:1};
+  ['cost','sdm'].forEach(t=>{o[t]=qa('[data-e2-row="'+t+'"]').map(r=>[r.querySelector('[data-e2-name]').value.trim()].concat(KEYS[t].map(k=>{const e=r.querySelector('[data-e2-'+k+']');return e?e.value.trim():''})))});
+  const v=JSON.stringify(o);if(det.value!==v)det.value=v}
+ /* Nilai usulan mengikuti total rincian selama belum diubah manual (kosong/0/sama dengan hasil otomatis sebelumnya). */
+ const lastAuto={cost:null,sdm:null};let quiet=true;
  const parse=e=>{if(!e||e.value.trim()===''||!e.validity.valid)return null;const n=Number(e.value);return Number.isFinite(n)&&n>=0?n:null};
  function calc(type){
   let total=0,valid=true,used=false,count=0,people=0;
@@ -109,7 +121,10 @@ function attachNon(inp){
   });
   q('[data-e2-total="'+type+'"]').textContent=(type==='cost'?'Rp ':'')+nf(total)+(type==='cost'?' jt':' OB');q('[data-estv-count="'+type+'"]').textContent=count+(type==='cost'?' komponen':' peran');if(type==='sdm'){q('[data-estv-people]').textContent=valid?nf(people):'—';const d=parse(dur);q('[data-estv-fte]').textContent=d>0&&valid?nf(total/d):'—'}
   q('[data-e2-use="'+type+'"]').disabled=!used||!valid||!Number.isFinite(total);
-  return {total,valid:used&&valid&&Number.isFinite(total)};
+  const ok=used&&valid&&Number.isFinite(total),target=type==='cost'?cost:sdm,cur=target.value.trim();
+  if(quiet){if(ok&&cur!==''&&Math.abs(num(cur)-total)<1e-6)lastAuto[type]=total}
+  else{persist();if(ok&&(cur===''||num(cur)===0||(lastAuto[type]!=null&&Math.abs(num(cur)-lastAuto[type])<1e-6))&&Math.abs(num(cur)-total)>=1e-6){lastAuto[type]=total;setVal(target,total)}}
+  return {total,valid:ok};
  }
 
  /* Pro hire: role/level chips with explicitly identified salary or consulting references. */
@@ -187,6 +202,7 @@ function attachNon(inp){
   if(b.hasAttribute('data-e2-duration')){if(parse(dur)>0)qa('[data-e2-row="sdm"]').forEach(r=>{const n=r.querySelector('[data-e2-n]'),m=r.querySelector('[data-e2-months]');if(n.value!==''&&m.value==='')m.value=dur.value});else dur.focus();calc('sdm');return}
   if(b.dataset.e2Use){const t=b.dataset.e2Use,v=calc(t);if(v.valid){setVal(t==='cost'?cost:sdm,v.total);navRefresh();b.textContent='✓ Hasil digunakan';setTimeout(()=>{b.textContent='Gunakan hasil →'},1600)}}
  });
+ calc('cost');calc('sdm');quiet=false;
  show('sdm');
  return true;
 }

@@ -390,7 +390,7 @@ function projectEditor(id,readonly=false,explicitProgram=null,initialGroup=''){
    return field('<select aria-label="'+E(label)+'" data-scope-field="'+key+'" '+(readonly?'disabled':'')+'>'+opts.map(v=>'<option value="'+E(v)+'" '+(v===value?'selected':'')+'>'+E(v?(choices.includes(v)?v:v+' (di luar daftar)'):'Pilih '+label)+'</option>').join('')+'</select>');
   }
   return field(type==='textarea'?'<textarea aria-label="'+E(label)+'" rows="3" data-scope-field="'+key+'" '+(readonly?'disabled':'')+'>'+E(value)+'</textarea>':
-   '<input aria-label="'+E(label)+'" type="'+type+'" data-scope-field="'+key+'" value="'+E(value)+'" '+(type==='number'?'min="0" step="'+(key==='estimatedStaff'?'1':key==='estimatedCostMillions'?'0.000001':'any')+'" placeholder="Belum diestimasi" ':'')+(readonly?'disabled':'')+'>',type==='textarea'?'psbank-editor-long':'');
+   '<input aria-label="'+E(label)+'" type="'+type+'" data-scope-field="'+key+'" value="'+E(value)+'" '+(type==='number'?'min="0" step="'+(key==='estimatedStaff'?'1':key==='estimatedCostMillions'?'0.000001':'any')+'" placeholder="Belum diestimasi" ':'')+(readonly?'disabled':'')+'>'+(key==='estimatedStaffMonths'?'<input type="hidden" data-scope-field="estimateDetail" value="'+E(String(existing&&existing.estimateDetail||''))+'">':''),type==='textarea'?'psbank-editor-long':'');
  };
  d.innerHTML='<section class="psbank-dialog psbank-project-dialog" role="dialog" aria-modal="true" aria-label="Detail Usulan Proyek">'+
  '<header><div><b>'+(readonly?'Detail':existing?'Ubah':'Tambah')+' Usulan Proyek</b><small>'+E(p.nama)+' · '+year()+'</small></div><button type="button" data-scope-editor-close title="Tutup" aria-label="Tutup">✕</button></header>'+

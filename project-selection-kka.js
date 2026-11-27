@@ -608,7 +608,7 @@ function nonEdit(id,view,initialTab,initialCheck){
   if(t==='dom')return '<div class="fld">'+lab+'<select id="kn-'+k+'"'+dis+'>'+opt(DOMAIN,v)+'</select></div>';
   if(t==='gate')return '<div class="fld">'+lab+'<select id="kn-'+k+'"'+dis+'><option value="">Belum dijawab</option>'+['Ya','Tidak'].map(o=>'<option'+(v===o?' selected':'')+'>'+o+'</option>').join('')+'</select></div>';
   if(t==='multi'){const sel=String(v||'').split(/[,;]+/).map(T).filter(Boolean);return '<div class="fld wide">'+lab+'<div class="kn-multi">'+[...new Set([...JENIS,...sel])].map(o=>'<label><input type="checkbox" data-kn-jenis value="'+E(o)+'"'+(sel.includes(o)?' checked':'')+dis+'> '+E(o)+'</label>').join('')+'</div></div>'}
-  if(t==='num')return '<div class="fld">'+lab+'<input id="kn-'+k+'" type="number" min="0" step="any" value="'+E(v)+'"'+dis+'></div>';
+  if(t==='num')return '<div class="fld">'+lab+'<input id="kn-'+k+'" type="number" min="0" step="any" value="'+E(v)+'"'+dis+'>'+(k==='estimatedStaffMonths'?'<input type="hidden" id="kn-estimateDetail" value="'+E(x&&x.estimateDetail||'')+'">':'')+'</div>';
   return '<div class="fld">'+lab+'<input id="kn-'+k+'" value="'+E(v)+'"'+dis+'></div>'};
 
  const scoreOptions=(code,value)=>'<option value="">Pilih skor &amp; kriteria</option>'+RUB[code].map((label,i)=>'<option value="'+(i+1)+'"'+(String(value??'')===String(i+1)?' selected':'')+'>'+E((i+1)+' — '+label)+'</option>').join('');
@@ -689,7 +689,7 @@ function nonEdit(id,view,initialTab,initialCheck){
   const c=numbers('cost'),du=numbers('durationMonths'),sd=numbers('estimatedStaffMonths');if(['cost','durationMonths','estimatedStaffMonths'].some(k=>$('#kn-'+k)?.validity?.badInput)||[c,du,sd].some(v=>v!==''&&(!Number.isFinite(v)||v<0))){show('gate');say('Estimasi harus angka nonnegatif.');return}
   if(changedEA){try{Object.assign(draft,EA.mapping(main,sup))}catch(e){show('ea');say(e.message);return}}
   [UF[0],UF[2],UF[4]].forEach(([,fs])=>fs.forEach(([k,,ty])=>{if(ty!=='multi')draft[k]=g(k)}));
-  draft.initiativeType=$$('[data-kn-jenis]:checked').map(e=>e.value).join(', ');draft.estimatedCost=c===''?'':Math.round(c*1e6);draft.durationMonths=du;draft.estimatedStaffMonths=sd;delete draft.cost;
+  draft.initiativeType=$$('[data-kn-jenis]:checked').map(e=>e.value).join(', ');draft.estimatedCost=c===''?'':Math.round(c*1e6);draft.durationMonths=du;draft.estimatedStaffMonths=sd;delete draft.cost;const det=$('#kn-estimateDetail');if(det)draft.estimateDetail=det.value;
   const sc=scores();draft.kka=draft.kka||{};KR.forEach((k,i)=>{if(sc[i]==null)delete draft.kka[k.c];else draft.kka[k.c]=sc[i]});
   if(live){Object.assign(live,draft);delete live.cost}else{now._keep();now.psProjects.push(draft)}
   now._doc.updatedAt=new Date().toISOString();try{log((x?'Ubah':'Tambah')+' usulan non-ISTK',draft.name)}catch(_){}save();close(true);render();say(cloud?'Perubahan diproses. Periksa status sinkronisasi Firebase.':'Usulan '+(x?'diperbarui':'ditambahkan')+'.');
