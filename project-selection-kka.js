@@ -433,6 +433,14 @@ function smartTemplate(){
  const rub=X.utils.aoa_to_sheet([['Kode','Kriteria','Bobot bawaan','Skor 1','Skor 2','Skor 3','Skor 4','Skor 5'],...criteria.map(c=>[c.code,c.name,c.w,...(c.rubric||[])])]);rub['!cols']=[{wch:10},{wch:42},{wch:15},...Array.from({length:5},()=>({wch:45}))];
  const wb=X.utils.book_new();X.utils.book_append_sheet(wb,sh,'SMART');X.utils.book_append_sheet(wb,guide,'Petunjuk');X.utils.book_append_sheet(wb,rub,'Rubrik');X.writeFile(wb,'Template_SMART_Non-ISTK_'+y+'.xlsx');
 }
+function smartExport(){
+ const X=window.XLSX;if(!X){say('Pustaka Excel belum termuat.');return}
+ const y=year(),p=I.norm(nonSmartP(y)),head=[...smartHeaders(),'Skor SMART (%)','Peringkat keseluruhan','Peringkat UE I','Keputusan SMART'];
+ const sorted=p.psProjects.map(x=>({x,r:I.calc(x,p)})).sort((a,b)=>(b.r.score??-1)-(a.r.score??-1)),counts=new Map();let rank=0;
+ const rows=sorted.map(({x,r})=>{const scored=r.score!=null,k=String(x.uic||''),ur=scored?(counts.get(k)||0)+1:'';if(scored)counts.set(k,ur);return [y,x.id,x.name,x.uic||'',...A.criteria.map(c=>r.details.find(d=>d.c.code===c.code)?.v??''),r.score??'',scored?++rank:'',ur,scored?(r.score>Number(p.psThreshold)?'Lanjut':'Drop'):'Belum dinilai']});
+ const sh=X.utils.aoa_to_sheet([head,...rows]);sh['!cols']=head.map((_,i)=>({wch:i===0?10:i===1?28:i===2?44:i===3?18:i>=16?23:8}));sh['!autofilter']={ref:'A1:T'+Math.max(1,rows.length+1)};
+ const wb=X.utils.book_new();X.utils.book_append_sheet(wb,sh,'Hasil SMART');X.writeFile(wb,'Hasil_SMART_Non-ISTK_'+y+'.xlsx');
+}
 function smartPlan(rows,existing,y,criteria){
  const head=['Tahun','ID Proyek','Nama Sistem / Modul','UE I',...criteria.map(c=>c.code)];
  if(!rows.length||head.some((h,i)=>T(rows[0][i])!==h))throw Error('Header sheet SMART tidak sesuai. Unduh template SMART terbaru.');
@@ -774,6 +782,7 @@ document.addEventListener('click',ev=>{
  if(b.dataset.kkaScope){u.kpi='';u.scope=b.dataset.kkaScope;save();render();return}
  if(b.hasAttribute('data-kka-ue-clear')){u.ue=[];save();render();return}
  if(b.hasAttribute('data-kka-xlsx')){try{const d=currentData();downloadXlsx(d,'Prioritas_SI_KertasKerjaA_'+d.year+'.xlsx');say('Excel hasil prioritasi diunduh.')}catch(e){say(e.message)}return}
+ if(b.hasAttribute('data-kka-smart-export')){try{smartExport()}catch(e){say(e.message)}return}
  if(b.hasAttribute('data-kka-smart-template')){try{smartTemplate()}catch(e){say(e.message)}return}
  if(b.hasAttribute('data-kka-smart-import')&&canCfg()){const i=document.createElement('input');i.type='file';i.accept='.xlsx,.xls';i.onchange=()=>{if(i.files[0])void smartImport(i.files[0])};i.click();return}
  if(b.hasAttribute('data-kka-import')){const i=document.createElement('input');i.type='file';i.accept='.xlsx,.xlsm,.xls';i.onchange=()=>{if(i.files[0])importFile(i.files[0])};i.click();return}
