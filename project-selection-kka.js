@@ -378,7 +378,17 @@ const fillKeys=new Set(['initiativeType','uic','businessOwner','spbeDomain','des
 function importDelta(old,x){const set={};Object.keys(x).forEach(k=>{if(k==='id'||k==='name')return;if(!sameKka(old?.[k],x[k]))set[k]=x[k]});if(set.kka){const diff={};Object.entries(set.kka).forEach(([k,v])=>{if(old?.kka?.[k]!==v)diff[k]=v});set.kka=diff}return {id:x.id,name:x.name,psOriginRef:x.psOriginRef||'',create:!old,set}}
 function mergeImport(doc,job){
  const out=cloneKka(doc||{year:job.year,projects:[]});if(!Array.isArray(out.projects))throw Error('Format dokumen Non-ISTK di Firebase tidak valid.');
- for(const op of job.ops){let x=matchNon(out.projects,op);if(!x){if(!op.create)throw Error('Usulan '+op.name+' sudah tidak ada di Firebase. Periksa data sebelum mengulang impor.');x={id:op.id,name:op.name,status:'Usulan',included:true,nonIstk:true};out.projects.push(x)}
+ for(const op of job.ops){
+  if(op.smart){
+   const sameId=out.projects.filter(r=>String(r.id)===String(op.id));
+   const sameName=out.projects.filter(r=>nk(r.name)===nk(op.name)&&nk(r.uic)===nk(op.uic));
+   const found=op.create?(sameId.length?sameId:sameName):sameId;
+   if(found.length>1)throw Error('Usulan SMART ambigu: '+op.name);
+   let x=found[0];
+   if(!x){if(!op.create)throw Error('ID usulan SMART sudah tidak tersedia: '+op.id);x={id:op.id,name:op.name,uic:op.uic,status:'Usulan',included:true,nonIstk:true,scores:{}};out.projects.push(x)}
+   x.scores=Object.assign({},x.scores||{},op.set.scores);continue;
+  }
+  let x=matchNon(out.projects,op);if(!x){if(!op.create)throw Error('Usulan '+op.name+' sudah tidak ada di Firebase. Periksa data sebelum mengulang impor.');x={id:op.id,name:op.name,status:'Usulan',included:true,nonIstk:true};out.projects.push(x)}
   for(const [k,v] of Object.entries(op.set)){if(k==='kka'){x.kka=Object.assign({},x.kka||{},v);continue}if(fillKeys.has(k)&&T(x[k]))continue;if(op.create&&['status','included','scores','poster','risks','indicators','benefits','psOriginYear','nonIstk'].includes(k)&&Object.prototype.hasOwnProperty.call(x,k))continue;x[k]=v}
  }
  out.year=job.year;out.updatedAt=job.createdAt;return out;
@@ -407,6 +417,61 @@ async function syncImport(y){
 }
 function downloadPending(y){const job=pendingImport(y);if(!job)return;const url=URL.createObjectURL(new Blob([JSON.stringify(job,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='Non-ISTK-impor-tertunda-'+y+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 
+/* SMART workbook: one master Non-ISTK, separate manual C1–C12 scores.
+   Blank cells preserve existing values; exact technical IDs take precedence. */
+const smartHeaders=()=>['Tahun','ID Proyek','Nama Sistem / Modul','UE I',...A.criteria.map(c=>c.code)];
+function smartTemplate(){
+ const X=window.XLSX;if(!X){say('Pustaka Excel belum termuat.');return}
+ const y=year(),L=nonP(y).psProjects,head=smartHeaders();
+ const rows=L.map(x=>[y,x.id,x.name,x.uic||'',...A.criteria.map(c=>x.scores?.[c.code]??'')]);
+ const sh=X.utils.aoa_to_sheet([head,...(rows.length?rows:[[y,'','','',...A.criteria.map(()=> '')]])]);
+ sh['!cols']=head.map((_,i)=>({wch:i===0?10:i===1?30:i===2?44:i===3?18:8}));
+ sh['!autofilter']={ref:'A1:P'+Math.max(2,rows.length+1)};
+ const guide=X.utils.aoa_to_sheet([['Petunjuk SMART Non-ISTK'],['1. Isi sheet SMART. Gunakan tahun aktif. ID Proyek jangan diubah untuk usulan yang sudah ada.'],['2. Untuk menambahkan usulan baru, kosongkan ID Proyek, isi nama dan UE I, serta minimal satu skor.'],['3. C1–C12: bilangan bulat 1–5 sesuai rubrik. Kolom kosong tidak menghapus skor lama; skor manual yang diisi dapat menggantikan penilaian otomatis.'],['4. Proyek dan skor K1–K7 MCDA tidak diubah. Usulan baru muncul pada master Non-ISTK bersama.'],['5. Skor akhir dihitung aplikasi dari bobot aktif, bukan dari Excel.']]);
+ guide['!cols']=[{wch:115}];
+ const criteria=typeof PS_CRITERIA!=='undefined'?PS_CRITERIA:A.criteria;
+ const rub=X.utils.aoa_to_sheet([['Kode','Kriteria','Bobot bawaan','Skor 1','Skor 2','Skor 3','Skor 4','Skor 5'],...criteria.map(c=>[c.code,c.name,c.w,...(c.rubric||[])])]);rub['!cols']=[{wch:10},{wch:42},{wch:15},...Array.from({length:5},()=>({wch:45}))];
+ const wb=X.utils.book_new();X.utils.book_append_sheet(wb,sh,'SMART');X.utils.book_append_sheet(wb,guide,'Petunjuk');X.utils.book_append_sheet(wb,rub,'Rubrik');X.writeFile(wb,'Template_SMART_Non-ISTK_'+y+'.xlsx');
+}
+function smartPlan(rows,existing,y,criteria){
+ const head=['Tahun','ID Proyek','Nama Sistem / Modul','UE I',...criteria.map(c=>c.code)];
+ if(!rows.length||head.some((h,i)=>T(rows[0][i])!==h))throw Error('Header sheet SMART tidak sesuai. Unduh template SMART terbaru.');
+ const ops=[],errors=[],seen=new Set();
+ for(let i=1;i<rows.length;i++){
+  const r=rows[i],line=i+1,id=T(r[1]),name=T(r[2]),uic=T(r[3]),scores={};
+  if(!id&&!name&&!uic&&!r.slice(4).some(v=>T(v)))continue;
+  if(Number(r[0])!==Number(y)){errors.push('Baris '+line+': tahun harus '+y);continue}
+  let invalid=false;
+  criteria.forEach((c,j)=>{const v=T(r[j+4]);if(!v)return;const n=Number(v);if(!Number.isInteger(n)||n<1||n>5){errors.push('Baris '+line+': '+c.code+' harus 1–5');invalid=true}else scores[c.code]=n});
+  if(invalid||!Object.keys(scores).length)continue;
+  if(!name){errors.push('Baris '+line+': nama proyek wajib diisi');continue}
+  const found=id?existing.filter(x=>String(x.id)===id):existing.filter(x=>nk(x.name)===nk(name)&&nk(x.uic)===nk(uic));
+  if(found.length>1||(id&&found.length!==1)){errors.push('Baris '+line+': ID tidak ditemukan atau usulan ambigu. Gunakan template terbaru.');continue}
+  const x=found[0];if(!x&&!uic){errors.push('Baris '+line+': UE I wajib untuk usulan baru');continue}
+  if(x&&id&&(nk(x.name)!==nk(name)||nk(x.uic)!==nk(uic))){errors.push('Baris '+line+': nama/UE I tidak cocok dengan ID. Unduh template terbaru.');continue}
+  const key=x?'id:'+x.id:'new:'+nk(name)+'|'+nk(uic);
+  if(seen.has(key)){errors.push('Baris '+line+': proyek duplikat dalam berkas');continue}seen.add(key);
+  ops.push({smart:true,id:x?x.id:'proj-'+uid(),name:x?x.name:name,uic:x?x.uic||'':uic,create:!x,set:{scores}});
+ }
+ if(errors.length)throw Error(errors.slice(0,8).join('\n')+(errors.length>8?'\n… '+(errors.length-8)+' kesalahan lain':''));
+ return ops;
+}
+async function smartImport(file){
+ const y=year();if(y<2027||!canCfg()){say('Impor SMART Non-ISTK hanya tersedia bagi Superadmin/PMO Kemenkeu.');return}
+ if(cloudKka()&&pendingImport(y)){say('Ada impor Non-ISTK tertunda. Sinkronkan dahulu.');return}
+ const X=window.XLSX;if(!X){say('Pustaka Excel belum termuat.');return}
+ let ops;
+ try{const wb=X.read(await file.arrayBuffer(),{type:'array'});if(!wb.Sheets.SMART)throw Error('Sheet SMART tidak ditemukan. Gunakan template SMART.');ops=smartPlan(X.utils.sheet_to_json(wb.Sheets.SMART,{header:1,raw:true,defval:''}),nonP(y).psProjects,y,A.criteria)}catch(e){say('Impor SMART dibatalkan: '+e.message);return}
+ if(!ops.length){say('Tidak ada skor SMART yang terisi.');return}
+ const n=ops.filter(o=>o.create).length;
+ modal('Pratinjau Impor SMART','<p class="s">'+ops.length+' usulan · '+n+' baru · '+(ops.length-n)+' diperbarui. Skor kosong, MCDA, dan data proyek lama tidak dihapus.</p><div class="kka-scroll" style="max-height:45vh"><table class="kka-t"><thead><tr><th>Nama Sistem / Modul</th><th>UE I</th><th>Proses</th><th>Skor terisi</th></tr></thead><tbody>'+ops.map(o=>'<tr><td>'+E(o.name)+'</td><td>'+E(o.uic)+'</td><td>'+(o.create?'Baru':'Perbarui')+'</td><td>'+Object.keys(o.set.scores).length+'/12</td></tr>').join('')+'</tbody></table></div>','Impor',()=>{
+  if(+year()!==+y||!canCfg()){say('Tahun atau hak akses berubah. Buka ulang impor.');return false}
+  try{
+   if(cloudKka()){queueImport(y,ops);render();say('Cadangan impor SMART tersimpan di browser. Menunggu konfirmasi Firebase.');void syncImport(y)}
+   else{const p=nonP(y),d=mergeImport(p._doc,{year:y,ops,createdAt:new Date().toISOString()});store()[NONK(y)]=d;save();render();say('Impor SMART diproses: '+ops.length+' usulan.')}
+  }catch(e){say('Impor SMART dibatalkan: '+e.message);return false}
+ },{size:'wide'});
+}
 async function importFile(file){
  const importYear=year(),nonOnly=+importYear>=2027;if(nonOnly&&!canCfg()){say('Hanya Superadmin atau PMO Kemenkeu dapat mengimpor usulan Non-ISTK.');return}if(cloudKka()&&pendingImport(importYear)){say('Ada impor Non-ISTK tertunda. Gunakan Coba sinkronkan dahulu.');return}
  const X=window.XLSX;if(!X){say('Pustaka Excel belum termuat.');return}
@@ -698,7 +763,7 @@ function usulanXlsx(){const X=window.XLSX;if(!X){say('Pustaka Excel belum termua
 /* ---------- event ---------- */
 function findX(id){for(const p of allProgs())for(const x of (p.psProjects||[]))if(String(x.id)===String(id))return {p,x};return null}
 document.addEventListener('click',ev=>{
- const t=ev.target;if(!t.closest||!t.closest('.kka,.ps27-priority-head,.kka-syncnotice,.kka-groupnav'))return;
+ const t=ev.target;if(!t.closest||!t.closest('.kka,.ps27-priority-head,.kka-syncnotice,.kka-groupnav,.ps27-smart-tools'))return;
  {const rw=t.closest('[data-kka-nonview]');if(rw&&!t.closest('button')){nonDetail(rw.dataset.kkaNonview);return}}
  const b=t.closest('button');if(!b)return;const u=ui();
  if(b.dataset.kkaAllocAction){allocOpen(b);return}
@@ -709,6 +774,8 @@ document.addEventListener('click',ev=>{
  if(b.dataset.kkaScope){u.kpi='';u.scope=b.dataset.kkaScope;save();render();return}
  if(b.hasAttribute('data-kka-ue-clear')){u.ue=[];save();render();return}
  if(b.hasAttribute('data-kka-xlsx')){try{const d=currentData();downloadXlsx(d,'Prioritas_SI_KertasKerjaA_'+d.year+'.xlsx');say('Excel hasil prioritasi diunduh.')}catch(e){say(e.message)}return}
+ if(b.hasAttribute('data-kka-smart-template')){try{smartTemplate()}catch(e){say(e.message)}return}
+ if(b.hasAttribute('data-kka-smart-import')&&canCfg()){const i=document.createElement('input');i.type='file';i.accept='.xlsx,.xls';i.onchange=()=>{if(i.files[0])void smartImport(i.files[0])};i.click();return}
  if(b.hasAttribute('data-kka-import')){const i=document.createElement('input');i.type='file';i.accept='.xlsx,.xlsm,.xls';i.onchange=()=>{if(i.files[0])importFile(i.files[0])};i.click();return}
  if(b.hasAttribute('data-kka-snap')&&canCfg()){snapDialog();return}
  if(b.hasAttribute('data-kka-nonadd')&&canCfg()){nonEdit('');return}
