@@ -333,7 +333,19 @@ function nonIstkPrio(stageHtml=null){
  const p=m==='smart'?current():(current()||{id:'',psProjects:[]}),ro=m==='smart'?I.readonly(p):false;
  const threshold=m==='smart'?'<label class="ps27-smart-threshold">Ambang skor &gt; <input type="number" id="pswf-threshold" min="0" max="99" value="'+E(p.psThreshold??80)+'" '+(ro?'disabled':'')+' aria-label="Ambang skor SMART"> %</label>':'';
  const search=m==='smart'?(typeof MT_TABSEARCH==='function'?MT_TABSEARCH:()=>'')('ps-prioritasi',localFilter().search,'Cari usulan, UIC…'):'';
- return (stageHtml==null?intro:'')+K.page(p,{nonOnly:true,stageHtml,readOnly:ro,methodHtml:seg,smart:m==='smart',smartBody:sub=>sub==='criteria'?I.criteriaPage(p):sub==='ref'||sub==='literature'?I.referencePage(p):'<div class="ps27-smart-tools">'+search+'<div class="ps27-smart-actions"><button type="button" class="btn" data-kka-smart-template title="Unduh template Excel SMART beserta rubrik C1–C12">↓ Template</button>'+(ME&&['SA','PMOK'].includes(ME.role)?'<button type="button" class="btn pri" data-kka-smart-import title="Impor penilaian SMART dari Excel">↑ Impor</button>':'<button type="button" class="btn" disabled title="Impor hanya untuk Superadmin dan PMO Kemenkeu">↑ Impor</button>')+'</div>'+threshold+'</div>'+I.projectsPage(p)});
+ const smartToolbar=()=>{
+  const f=localFilter(),mode=ws().smartRankMode==='ue'?'ue':'all',units=[...new Set((p.psProjects||[]).map(x=>String(x.uic||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id'));
+  const unit=String(f.unit||'all'),edit=!!ME&&['SA','PMOK'].includes(ME.role);
+  return '<div class="ps27-smart-tools" role="group" aria-label="Filter dan aksi SMART"><div class="ps27-smart-filters">'+
+   '<select data-ps27-smart-mode aria-label="Mode ranking SMART"><option value="all"'+(mode==='all'?' selected':'')+'>Ranking semua UE I</option><option value="ue"'+(mode==='ue'?' selected':'')+'>Ranking per UE I</option></select>'+
+   '<select data-ps27-unit aria-label="Filter UE I"><option value="all">UE I: Semua</option>'+[...new Set([...units,...(unit!=='all'?[unit]:[])])].map(v=>'<option value="'+E(v)+'"'+(unit===v?' selected':'')+'>UE I: '+E(v)+'</option>').join('')+'</select>'+search+'</div>'+
+   '<div class="ps27-smart-actions">'+threshold+
+   (edit?'<button type="button" class="btn pri" data-kka-nonadd title="Tambah usulan pada master Non-ISTK">+ Usulan</button>':'')+
+   '<button type="button" class="btn" data-kka-smart-template title="Unduh template Excel SMART beserta rubrik C1–C12">↓ Template</button>'+
+   (edit?'<button type="button" class="btn" data-kka-smart-import title="Impor penilaian SMART dari Excel">↑ Impor</button>':'')+
+   '<button type="button" class="btn" data-kka-smart-export title="Unduh hasil penilaian SMART">↓ Excel</button></div></div>';
+ };
+ return (stageHtml==null?intro:'')+K.page(p,{nonOnly:true,stageHtml,readOnly:ro,methodHtml:seg,smart:m==='smart',smartBody:sub=>sub==='criteria'?I.criteriaPage(p):sub==='ref'||sub==='literature'?I.referencePage(p):I.projectsPage(p,{toolbar:smartToolbar(),rankMode:ws().smartRankMode==='ue'?'ue':'all'})});
 
 }
 function prioritasi(p){
@@ -706,7 +718,8 @@ function mount(){
     save();render();return
    }
    if(el.dataset.ps27Status!==undefined){S.ui.psBank=S.ui.psBank||{};setFilterField('status',el.value);save();render();return}
-   if(el.dataset.ps27Unit!==undefined){setFilterField('unit',el.value);save();render();return}
+   if(el.dataset.ps27SmartMode!==undefined){ws().smartRankMode=el.value==='ue'?'ue':'all';save();render();return}
+  if(el.dataset.ps27Unit!==undefined){setFilterField('unit',el.value);save();render();return}
    if(el.dataset.ps27Origin!==undefined){setFilterField('origin',el.value);save();render();return}
    if(el.dataset.ps27Category!==undefined){setFilterField('category',el.value);save();render();return}
    if(el.dataset.ps27Ready!==undefined){setFilterField('ready',el.value);save();render();return}
