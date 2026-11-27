@@ -571,7 +571,28 @@ function kd2ContextNav(ov,attr,prefix){
   body.scrollTo({top,behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
  }};
 }
-function nonEdit(id,view,initialTab){
+// Stable checklist destinations; both detail and edit use the same index.
+const KKA_CHECK_TABS=['ring','ring','ring','ring','ea','ctx','gate','gate','gate','skor'];
+function kkaCheckTarget(i,empty,firstGate,firstScore){
+ switch(i){
+  case 0:return {selector:empty('name')?'#kn-name':'#kn-psOriginRef'};
+  case 1:return {selector:'#kn-category'};
+  case 2:return {selector:'[data-kn-jenis]'};
+  case 3:return {selector:empty('uic')?'#kn-uic':'#kn-businessOwner'};
+  case 4:return {selector:'[data-ke-search]',ea:true};
+  case 5:return {selector:'#kn-description'};
+  case 6:return {mode:'cost',selector:empty('durationMonths')?'#kn-durationMonths':'#kn-cost'};
+  case 7:return {mode:'sdm',selector:'#kn-estimatedStaffMonths'};
+  case 8:return {mode:'gate',selector:firstGate?'#kn-'+firstGate:'[data-ke-pane="gate"] select'};
+  case 9:return {selector:firstScore?'[data-ke-score="'+firstScore+'"]':'[data-ke-score]'};
+  default:return {};
+ }
+}
+function kkaCheckMarkup(label,done,index,editable,attr){
+ const content='<i aria-hidden="true">'+(done?'✓':'!')+'</i><span>'+E(label)+'</span>';
+ return !done&&editable?'<button type="button" class="kd2-chk n kd2-check-link" '+attr+'="'+index+'" title="Lengkapi '+E(label)+'" aria-label="Lengkapi '+E(label)+'">'+content+'<span class="kd2-check-arrow" aria-hidden="true">›</span></button>':'<div class="kd2-chk '+(done?'y':'n')+'">'+content+'</div>';
+}
+function nonEdit(id,view,initialTab,initialCheck){
  const n=nonP(),x=id?n.psProjects.find(z=>String(z.id)===String(id)):null;if(id&&!x)return;
  if(view||!canCfg()){if(x)nonDetail(id);return}
  const ro=false,EA=window.MT_EA,D=compute(),before=x?JSON.stringify(x):null,draft=x?JSON.parse(before):{id:'non-'+uid(),status:'Usulan',kka:{},nonIstk:true};
@@ -607,7 +628,19 @@ function nonEdit(id,view,initialTab){
  const g=k=>T($('#kn-'+k)?.value),numbers=k=>g(k)===''?'':Number(g(k));
  const scores=()=>KR.map(k=>{const v=$('[data-ke-score="'+k.c+'"]').value;return v===''?null:Number(v)});
  const ctxNav=kd2ContextNav(ov,'data-ke-context','ke-');
- const show=k=>{tab=tabs.some(z=>z[0]===k)?k:'ring';$$('.kd2-tb [data-ke-tab]').forEach(b=>b.classList.toggle('on',b.dataset.keTab===tab));$$('[data-ke-pane]').forEach(p=>p.classList.toggle('on',p.dataset.kePane===tab));$('.kd2-body').scrollTop=0;if(tab==='ctx')ctxNav.reset();$('[data-ke-prev]').disabled=tab==='ring';$('[data-ke-next]').disabled=tab==='skor'};
+ const show=k=>{tab=tabs.some(z=>z[0]===k)?k:'ring';$('.kd2-tb [data-ke-tab]').forEach(b=>b.classList.toggle('on',b.dataset.keTab===tab));$('[data-ke-pane]').forEach(p=>p.classList.toggle('on',p.dataset.kePane===tab));$('.kd2-body').scrollTop=0;if(tab==='ctx')ctxNav.reset();$('[data-ke-prev]').disabled=tab==='ring';$('[data-ke-next]').disabled=tab==='skor'};
+ function goCheck(index){
+  if(!Number.isInteger(index)||!KKA_CHECK_TABS[index])return;
+  const target=kkaCheckTarget(index,k=>!g(k),GATES.find(z=>!g(z[0]))?.[0],KR.find(k=>!$('[data-ke-score="'+k.c+'"]').value)?.c);
+  show(KKA_CHECK_TABS[index]);
+  if(target.ea){focus=false;role='main';query='';domain='all';depth='all';$('[data-ke-search]').value='';$('[data-ke-domain]').value='all';$('[data-ke-level]').value='all';$('[data-ke-focus]').classList.remove('pri');$('[data-ke-role]').forEach(b=>b.classList.toggle('pri',b.dataset.keRole==='main'));drawMap()}
+  if(target.mode){window.MT_EST_HELPER?.attach(ov);$('[data-e2-mode="'+target.mode+'"]')?.click()}
+  const body=$('.kd2-body'),field=$(target.selector);
+  if(!field)return;
+  field.focus({preventScroll:true});
+  const rect=field.getBoundingClientRect(),edge=body.getBoundingClientRect(),top=Math.max(0,Math.min(body.scrollHeight-body.clientHeight,body.scrollTop+rect.top-edge.top-24));
+  body.scrollTo({top,behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'auto':'smooth'});
+ }
  const label=c=>EA?EA.label(c):c,chosen=c=>c===main?' kd2-mn':sup.includes(c)?' kd2-su':'';
  function drawMap(){
   if(!EA){put('[data-ke-map]','Master EA belum termuat. Pemetaan lama dipertahankan.');return}
@@ -622,7 +655,7 @@ function nonEdit(id,view,initialTab){
   put('[data-ke-name]',g('name')||'Usulan baru');put('[data-ke-id]',g('psOriginRef'));$('[data-ke-tags]').innerHTML=[g('category'),...types,g('uic')].filter(Boolean).map((v,i)=>'<span class="kd2-tag'+(i===0&&g('category')?' gold':'')+'">'+E(v)+'</span>').join('')+'<span class="kd2-tag vio">Non-ISTK</span>';
   put('[data-ke-result]',score==null?'—':fmt(score,2));$('[data-ke-ring]').style.setProperty('--v',score||0);put('[data-ke-cat]',score==null?'—':category(score,D.c));put('[data-ke-gate]',gate);
   const p=EA?EA.path(main):[];$('[data-ke-strip]').innerHTML='<span class="kd2-steplab">Proses Bisnis EA</span>'+(p.length?p.map((z,i)=>(i?'<span class="kd2-ln"></span>':'')+'<div class="kd2-st2'+(i===p.length-1?' on':'')+'"><i>'+(i+1)+'</i><div><small>Level '+(i+1)+(i===p.length-1?' · utama':'')+'</small><b><code>'+E(z.c)+'</code>'+E(z.n)+'</b></div></div>').join(''):'<span class="kd2-stepmiss">Belum dipetakan</span>')+(sup.length?'<span class="kd2-sup">+'+sup.length+' pendukung</span>':'')+'<button class="kd2-btn" data-ke-tab="ea">✎ Ubah pemetaan</button>';
-  const done=checks.filter(z=>z[1]).length;$('[data-ke-meter]').style.width=done*10+'%';$('[data-ke-checks]').innerHTML=checks.map(z=>'<div class="kd2-chk '+(z[1]?'y':'n')+'"><i>'+(z[1]?'✓':'!')+'</i>'+E(z[0])+(z[1]?'':'<button class="ke-link" data-ke-tab="'+z[2]+'">Isi ›</button>')+'</div>').join('');
+  const done=checks.filter(z=>z[1]).length;$('[data-ke-meter]').style.width=done*10+'%';$('[data-ke-checks]').innerHTML=checks.map((z,i)=>kkaCheckMarkup(z[0],z[1],i,true,'data-ke-check')).join('');
   put('[data-ke-count="ring"]',done+'/10');put('[data-ke-count="ctx"]',UF[2][1].filter(f=>g(f[0])).length+'/7');put('[data-ke-count="ea"]',main?'L'+EA.level(main):'—');put('[data-ke-count="gate"]',gs.filter(Boolean).length+'/4');put('[data-ke-count="skor"]',count+'/7');
   put('[data-ke-summary]',g('description')||'Belum diisi.');put('[data-ke-cost]',g('cost')===''?'—':'Rp '+fmt(numbers('cost'))+' jt');put('[data-ke-sdm]',g('estimatedStaffMonths')===''?'—':fmt(numbers('estimatedStaffMonths'))+' org-bln');
   UF[2][1].forEach(([k])=>{const e=$('[data-ke-cstat="'+k+'"]');e.textContent=g(k)?'✓':'kosong';e.className=g(k)?'y':'n'});KR.forEach((k,i)=>put('[data-ke-rub="'+k.c+'"]',sc[i]?RUB[k.c][sc[i]-1]:'Belum dinilai'));
@@ -646,8 +679,8 @@ function nonEdit(id,view,initialTab){
  }
  ov.addEventListener('input',e=>{if(e.target.matches('[data-ke-search]')){query=e.target.value.toLowerCase().trim();drawMap();return}if(e.target.matches('input,textarea,select')&&!e.target.matches('[data-ke-domain],[data-ke-level]')){dirty=true;refresh()}});
  ov.addEventListener('change',e=>{const a=e.target.dataset;if('keDomain'in a){domain=e.target.value;drawMap()}else if('keLevel'in a){depth=e.target.value;drawMap()}else if(e.target.matches('input,textarea,select')&&!e.target.matches('[data-ke-search]')){dirty=true;refresh()}});
- ov.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset;if('keClose'in a)return close();if('keTab'in a)return show(a.keTab);if('kePrev'in a)return show(tabs[Math.max(0,tabs.findIndex(z=>z[0]===tab)-1)][0]);if('keNext'in a)return show(tabs[Math.min(tabs.length-1,tabs.findIndex(z=>z[0]===tab)+1)][0]);if('keContext'in a){ctxNav.go(a.keContext);return}if('keRole'in a){role=a.keRole;$$('[data-ke-role]').forEach(z=>z.classList.toggle('pri',z===b));return}if('keFocus'in a){focus=!focus;b.classList.toggle('pri',focus);drawMap();return}if('keNode'in a)return choose(a.keNode);if('keRemove'in a){sup=sup.filter(z=>z!==a.keRemove);dirty=changedEA=true;drawMap();refresh();return}if('keClear'in a){if(confirm('Hapus seluruh pemetaan?')){main='';sup=[];dirty=changedEA=true;drawMap();refresh()}return}if('keSave'in a)return commit()});
- drawMap();refresh();show(tab);
+ ov.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset;if('keClose'in a)return close();if('keCheck'in a)return goCheck(Number(a.keCheck));if('keTab'in a)return show(a.keTab);if('kePrev'in a)return show(tabs[Math.max(0,tabs.findIndex(z=>z[0]===tab)-1)][0]);if('keNext'in a)return show(tabs[Math.min(tabs.length-1,tabs.findIndex(z=>z[0]===tab)+1)][0]);if('keContext'in a){ctxNav.go(a.keContext);return}if('keRole'in a){role=a.keRole;$$('[data-ke-role]').forEach(z=>z.classList.toggle('pri',z===b));return}if('keFocus'in a){focus=!focus;b.classList.toggle('pri',focus);drawMap();return}if('keNode'in a)return choose(a.keNode);if('keRemove'in a){sup=sup.filter(z=>z!==a.keRemove);dirty=changedEA=true;drawMap();refresh();return}if('keClear'in a){if(confirm('Hapus seluruh pemetaan?')){main='';sup=[];dirty=changedEA=true;drawMap();refresh()}return}if('keSave'in a)return commit()});
+ drawMap();refresh();show(tab);if(initialCheck!=null)goCheck(initialCheck);
 }
 /* Detail usulan Non-ISTK (tampilan baca, desain v2): header navy (identitas, skor, status) + jalur Proses Bisnis EA (stepper putih)
    + tab Ringkasan · Deskripsi & Konteks · Peta Proses Bisnis EA · Estimasi & Gate · Penilaian K1–K7. Ubah melalui form (nonEdit). */
@@ -660,7 +693,7 @@ function nonDetail(id,tab){
  const jenis=String(x.initiativeType||'').split(/[,;]+/).map(T).filter(Boolean);
  const cost=x.estimatedCost===''||x.estimatedCost==null?null:x.estimatedCost/1e6,dur=num(x.durationMonths),sdmV=num(x.estimatedStaffMonths);
  const main=EA?.primary(x)||'',p=EA?EA.path(main):[],sup=EA?.supports(x)||[];
- const checks=[['Nama & ID',!!T(x.name)],['Kategori',fill('category')],['Jenis inisiatif',fill('initiativeType')],['UE I & unit',fill('uic')&&fill('businessOwner')],['Proses bisnis EA',p.length>0],['Deskripsi',fill('description')],['Biaya & durasi',cost!=null&&dur!=null],['Kebutuhan SDM',sdmV!=null],['Gate G1–G4',GATES.every(z=>x[z[0]])],['Skor K1–K7',(r.n||0)===7]];
+ const checks=[['Nama & ID',!!T(x.name)&&!!T(x.psOriginRef)],['Kategori',fill('category')],['Jenis inisiatif',fill('initiativeType')],['UE I & unit',fill('uic')&&fill('businessOwner')],['Proses bisnis EA',p.length>0],['Deskripsi',fill('description')],['Biaya & durasi',cost!=null&&dur!=null],['Kebutuhan SDM',sdmV!=null],['Gate G1–G4',GATES.every(z=>x[z[0]])],['Skor K1–K7',(r.n||0)===7]];
  const done=checks.filter(z=>z[1]).length;
  const stC=s=>/^Didanai|prioritas otomatis/.test(s)?'ok':/lengkapi/i.test(s)?'warn':'bad';
  const score=r.score!=null?r.score:null;
@@ -679,7 +712,7 @@ function nonDetail(id,tab){
  const gatesHtml=full=>'<div class="kd2-gates">'+GATES.map(z=>{const a=x[z[0]];return '<div class="kd2-gate '+(a==='Ya'?'y':a==='Tidak'?'n':'u')+'"><div class="dot">'+(a==='Ya'?'✓':a==='Tidak'?'✕':'?')+'</div><b>'+z[1]+(full?' · '+E(z[2]):'')+'</b><p>'+E(full?z[3]:z[2])+'</p>'+(full?'<em>'+(a||'Belum dijawab')+'</em>':'')+'</div>'}).join('')+'</div>';
  const pRing='<section class="kd2-pane" data-kd2-pane="ring"><div class="kd2-g3">'+
   card('▦','Identitas',idl([['Kategori',E(x.category||'')],['Jenis inisiatif',E(x.initiativeType||'')],['UE I',E(x.uic||'')],['Unit pemilik probis',E(x.businessOwner||'')],['Domain arsitektur SPBE',E(x.spbeDomain||'')],['Proses bisnis EA',p.length?E(EA.label(main))+(sup.length?' <small>(+ '+E(sup.join(', '))+')</small>':''):'']]),'<span class="kd2-ct">Sheet Usulan</span>')+
-  card('✓','Kelengkapan','<div class="kd2-meter"><i style="width:'+(done*10)+'%"></i></div><div class="kd2-checks">'+checks.map(z=>'<div class="kd2-chk '+(z[1]?'y':'n')+'"><i>'+(z[1]?'✓':'!')+'</i>'+z[0]+'</div>').join('')+'</div>','<span class="kd2-ct">'+done+' dari '+checks.length+'</span>')+
+  card('✓','Kelengkapan','<div class="kd2-meter"><i style="width:'+(done*10)+'%"></i></div><div class="kd2-checks">'+checks.map((z,i)=>kkaCheckMarkup(z[0],z[1],i,canCfg(),'data-kd2-check')).join('')+'</div>','<span class="kd2-ct">'+done+' dari '+checks.length+'</span>')+
   card('◔','Posisi Alokasi '+D.y,'<div class="kd2-rm"><div class="row"><span>Pagu pengembangan</span><b>Rp '+fmt(c.pagu)+' jt</b></div><div class="kd2-bar"><i style="width:'+pct(used)+'%;background:#1D3A78"></i><i style="width:'+pct(mine)+'%;background:#F2B92C"></i></div><div class="kd2-leg"><span style="--c:#1D3A78">ISTK Rp '+fmt(used)+' jt</span><span style="--c:#F2B92C">Usulan ini '+(cost==null?'—':'Rp '+fmt(cost)+' jt')+'</span></div><div class="row"><span>Kapasitas SDM</span><b>'+fmt(c.sdm)+' org-bln</b></div><div class="kd2-bar"><i style="width:'+Math.min(100,usedS/cap*100)+'%;background:#1D3A78"></i><i style="width:'+Math.min(100,(sdmV||0)/cap*100)+'%;background:#F2B92C"></i></div>'+(r.rec?'<p class="kd2-note '+stC(r.rec)+'">Rekomendasi: <b>'+E(r.rec)+'</b>'+(r.cumC!=null&&r.rank?' · biaya kumulatif Rp '+fmt(r.cumC)+' jt':'')+'</p>':'<p class="kd2-note warn">Belum masuk perhitungan alokasi.</p>')+'</div>')+
   '</div><div class="kd2-g2">'+card('✎','Deskripsi singkat',fill('description')?'<p class="kd2-clamp">'+E(x.description)+'</p>':'<p class="kd2-empty">Belum diisi.</p>','<button type="button" class="kd2-link" data-kd2-tab="ctx">Lihat konteks lengkap ›</button>')+card('⛨','Gate penyaringan',gatesHtml(false),'<button type="button" class="kd2-link" data-kd2-tab="gate">Detail ›</button>')+'</div></section>';
  const pCtx='<section class="kd2-pane" data-kd2-pane="ctx"><div class="kd2-ctx"><nav>'+CTX.map(([k,l])=>'<button type="button" data-kd2-ctx="'+k+'">'+l+'<em class="'+(fill(k)?'y':'n')+'">'+(fill(k)?'✓':'kosong')+'</em></button>').join('')+'</nav><div>'+CTX.map(([k,l])=>'<div class="kd2-blk'+(fill(k)?'':' miss')+'" id="kd2c-'+k+'"><h5>'+l+(fill(k)?'':' <span class="kd2-st warn">Belum diisi</span>')+'</h5>'+(fill(k)?tx(x[k]):'<p class="kd2-empty">Isian ini masih kosong.</p>'+(canCfg()?'<button type="button" class="kd2-btn" data-kd2-edit>✎ Isi sekarang</button>':''))+'</div>').join('')+'</div></div></section>';
@@ -702,6 +735,7 @@ function nonDetail(id,tab){
  const close=()=>{ov.remove();document.removeEventListener('keydown',esc)},esc=e=>{if(e.key==='Escape')close()};document.addEventListener('keydown',esc);
  ov.addEventListener('click',e=>{const t=e.target;
   if(t===ov||t.closest('[data-kd2-close]'))return close();
+  const chk=t.closest('[data-kd2-check]');if(chk&&canCfg()){const index=Number(chk.dataset.kd2Check);if(Number.isInteger(index)&&KKA_CHECK_TABS[index]){close();nonEdit(id,false,KKA_CHECK_TABS[index],index)}return}
   const tb=t.closest('[data-kd2-tab]');if(tb)return show(tb.dataset.kd2Tab);
   const cx=t.closest('[data-kd2-ctx]');if(cx){ctxNav.go(cx.dataset.kd2Ctx);return}
   const dm=t.closest('[data-kd2-dom]');if(dm){dm.classList.toggle('on');ov.querySelectorAll('[data-kd2-dommap]').forEach(m=>{m.hidden=!ov.querySelector('[data-kd2-dom="'+m.dataset.kd2Dommap+'"]').classList.contains('on')});return}
@@ -1020,7 +1054,7 @@ function isFunded(x){return x.included!==false} /* program ISTK bermetode MCDA: 
 .kd2-empty{color:#94A3B8;font-style:italic;font-weight:500}
 .kd2-meter{height:8px;background:#EEF2F7;border-radius:6px;overflow:hidden;margin:2px 0 10px}.kd2-meter i{display:block;height:100%;background:linear-gradient(90deg,#F2B92C,#F59E0B)}
 .kd2-checks{display:grid;grid-template-columns:1fr 1fr;gap:5px 12px}.kd2-chk{display:flex;gap:7px;align-items:center;font-size:12px;color:#334155}
-.kd2-chk i{width:16px;height:16px;border-radius:5px;display:grid;place-items:center;font-style:normal;font-size:10px;font-weight:900;flex:none}.kd2-chk.y i{background:#0F7A4B;color:#fff}.kd2-chk.n i{background:#FFF4D6;color:#8A5A00;border:1px dashed #E0B44D}.kd2-chk.n{color:#8A5A00;font-weight:600}
+.kd2-chk i{width:16px;height:16px;border-radius:5px;display:grid;place-items:center;font-style:normal;font-size:10px;font-weight:900;flex:none}.kd2-chk.y i{background:#0F7A4B;color:#fff}.kd2-chk.n i{background:#FFF4D6;color:#8A5A00;border:1px dashed #E0B44D}.kd2-chk.n{color:#8A5A00;font-weight:600}.kd2 .kd2-check-link{display:flex;width:100%;min-width:0;align-items:center;gap:7px;border:0;background:transparent;padding:0;text-align:left;cursor:pointer;font:inherit;font-size:12px;font-weight:600;color:#8A5A00;box-shadow:none;border-radius:5px;min-height:0}.kd2 .kd2-check-link>span:first-of-type{text-decoration:underline;text-underline-offset:2px;min-width:0}.kd2 .kd2-check-link:hover{background:#FFF4D6}.kd2 .kd2-check-link:focus-visible{outline:2px solid #D8A21D;outline-offset:2px}.kd2-check-arrow{margin-left:auto;font-weight:800;flex:none}
 .kd2-rm{display:flex;flex-direction:column;gap:7px}.kd2-rm .row{display:flex;justify-content:space-between;font-size:12px}
 .kd2-bar{height:10px;border-radius:6px;background:#EEF2F7;overflow:hidden;display:flex}.kd2-bar i{display:block;height:100%}
 .kd2-leg{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:#64748B}.kd2-leg span:before{content:"";display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:-1px;background:var(--c)}
