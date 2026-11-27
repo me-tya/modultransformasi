@@ -9,21 +9,22 @@ const clone=x=>JSON.parse(JSON.stringify(x));
 const uid=k=>(k||'ps')+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);
 const can=p=>!!ME&&['SA','PMOK','PMOU'].includes(ME.role)&&(!p||ME.role!=='PMOU'||!p.uic||p.uic===ME.unit);
 const yr=()=>+S.ui.psSelectedYear||+S.ui.tahun||2026;
-const state=()=>{const u=I.state();const map={portfolio:'usulan',program:'usulan',projects:'mapping',criteria:'prioritasi',reference:'prioritasi'};if(map[u.tab])u.tab=map[u.tab];if(u.tab==='penetapan')u.tab='penetapan-program';if(!['usulan','mapping','prioritasi','charter','penetapan-program','rkmk'].includes(u.tab))u.tab='usulan';return u};
+const state=()=>{const u=I.state();const map={portfolio:'usulan',program:'usulan',projects:'mapping',criteria:'prioritasi',reference:'prioritasi'};if(map[u.tab])u.tab=map[u.tab];if(u.tab==='penetapan')u.tab='penetapan-program';if(!['usulan','mapping','prioritasi','charter','penetapan-program','rkmk','peta'].includes(u.tab))u.tab='usulan';return u};
 const list=()=>I.programs();
 const current=()=>I.pickedProgram();
 const ws=()=>{S.ui.ps27=S.ui.ps27||{sourceYear:2026,selected:[],search:'',sub:'identity',filterOpen:false};return S.ui.ps27};
-const TABS=[['usulan','Usulan Program'],['mapping','Pemetaan Proyek'],['prioritasi','Prioritasi'],['charter','Charter Program'],['penetapan-program','Penetapan Program'],['rkmk','Draft RKMK']];
+const TABS=[['usulan','Usulan Program'],['mapping','Pemetaan Proyek'],['prioritasi','Prioritasi'],['charter','Charter Program'],['penetapan-program','Penetapan Program'],['rkmk','Draft RKMK ISTK']];
 const ISTK_TABS=TABS.filter(t=>t[0]!=='prioritasi');
 function laneNav(active){
  const choices=[['istk','ISTK','Program & Proyek ISTK'],['non','Non-ISTK','Clearance Proyek Non ISTK']];
- return '<div class="ps27-header-lane"><span class="ps27-lane-label">Jalur</span><div class="ps27-lane-seg" role="group" aria-label="Jalur Project Selection">'+choices.map(([k,label,tip])=>'<button type="button" class="'+(active===k?'on':'')+'" aria-pressed="'+(active===k)+'" data-ps27-lane="'+k+'" title="'+E(tip)+'" aria-label="'+E(tip)+'">'+E(label)+'</button>').join('')+'</div></div>';
+ return '<div class="ps27-header-lane"><span class="ps27-lane-label">Jalur</span><div class="ps27-lane-seg" role="group" aria-label="Jalur Project Selection">'+choices.map(([k,label,tip])=>'<button type="button" class="'+(active===k?'on':'')+'" aria-pressed="'+(active===k)+'" data-ps27-lane="'+k+'" title="'+E(tip)+'" aria-label="'+E(tip)+'">'+E(label)+'</button>').join('')+'</div><div class="ps27-lane-seg" role="group" aria-label="Peta Rencana bersama"><button type="button" class="'+(active==='peta'?'on':'')+'" aria-pressed="'+(active==='peta')+'" data-ps27-lane="peta" title="Konsolidasi ISTK dan Non-ISTK">Peta Rencana</button></div></div>';
 }
 function switchLane(lane){
- if(yr()<2027||!['istk','non'].includes(lane))return;
+ if(yr()<2027||!['istk','non','peta'].includes(lane))return;
  const u=state(),w=ws();
- if(lane==='non'){if(u.tab==='prioritasi')return;w.istkLastTab=u.tab;navigate('prioritasi');}
- else {if(u.tab!=='prioritasi')return;const t=ISTK_TABS.some(x=>x[0]===w.istkLastTab)?w.istkLastTab:'usulan';u.tab=t;save();render();}
+ if(lane==='peta'){if(u.tab!=='peta')navigate('peta');return;}
+ if(lane==='non'){if(u.tab==='prioritasi')return;if(ISTK_TABS.some(x=>x[0]===u.tab))w.istkLastTab=u.tab;navigate('prioritasi');}
+ else {if(ISTK_TABS.some(x=>x[0]===u.tab))return;const t=ISTK_TABS.some(x=>x[0]===w.istkLastTab)?w.istkLastTab:'usulan';u.tab=t;save();render();}
 }
 function sourcePrograms(){const y=+ws().sourceYear;return (S.programs||[]).filter(p=>{if(p.psYear)return +p.psYear===y;const yrs=String(p.periode||'').match(/20\d{2}/g)||[];const start=+p.mulai||+(yrs[0]||0),end=+(yrs[yrs.length-1]||start);return start&&start<=y&&end>=y});}
 function sourceWbs(p,y){return (S.wbs||[]).filter(w=>w.prog===p.akr&&!w.arsip&&+(String(w.f||w.s||'').slice(0,4))===+y);}
@@ -94,7 +95,7 @@ function count(p){return p?(p.psProjects||[]).length:0;}
 const TOP_HELP={
  usulan:'Susun usulan program: Riwayat Program hanya referensi untuk menyalin data, sedangkan penambahan dan penyuntingan substansi dilakukan di Usulan Program.',
  mapping:'Gunakan Riwayat Proyek untuk mengambil referensi proyek lintas tahun ke program tujuan tanpa mengubah WBS atau realisasi historis. Lengkapi usulan di tab berikutnya.',
- prioritisasi:'Prioritaskan dan nilai proyek dengan kriteria yang tersedia. Hasilnya menjadi masukan pemilihan proyek untuk program.',
+ prioritasi:'Untuk 2027 ke atas, gate dan penilaian hanya berlaku bagi Non-ISTK. Hasil clearance final menjadi masukan Peta Rencana bersama.',
  charter:'Susun Charter Program dan rencana kerja sebagai dasar usulan program lintas unit.',
  'penetapan-program':'Kelola target output program TW I–IV dan kontrak kinerja K-Wide, lalu tetapkan program beserta seluruh proyek terpilih dalam satu submenu. WBS disusun setelah penetapan.',
  rkmk:'Susun dan reviu narasi Draft RKMK berdasarkan sumber program untuk tahun aktif.'
@@ -509,11 +510,11 @@ function syncWbs(p){
 function navigate(target){
  const a=String(target||'usulan').split(':'),stage=a[0],sub=a[1],item=a[2];
  const split=yr()>=2027,nonShortcut=split&&stage==='mapping'&&sub==='nonistk';
- const actual=nonShortcut||stage==='clearance'?'prioritasi':stage==='penetapan'?'penetapan-program':TABS.some(t=>t[0]===stage)?stage:'usulan';
- const u=state();if(split&&actual==='prioritasi'&&u.tab!=='prioritasi')ws().istkLastTab=u.tab;
+ const actual=split&&stage==='peta'?'peta':nonShortcut||stage==='clearance'?'prioritasi':stage==='penetapan'?'penetapan-program':TABS.some(t=>t[0]===stage)?stage:'usulan';
+ const u=state();if(split&&['prioritasi','peta'].includes(actual)&&ISTK_TABS.some(t=>t[0]===u.tab))ws().istkLastTab=u.tab;
  u.tab=actual;
  if(nonShortcut){S.ui.psKka=S.ui.psKka||{};S.ui.psKka.sub='usulan';if(window.MT_PS_SCOPE)window.MT_PS_SCOPE.bank().mappingTab='proposal'}
- if(split&&actual!=='prioritasi')ws().istkLastTab=actual;
+ if(split&&ISTK_TABS.some(t=>t[0]===actual))ws().istkLastTab=actual;
  if(actual==='usulan'){
   S.ui.psBank=S.ui.psBank||{};
   const tab=['bank','daftar','ambil'].includes(sub)?'bank':sub==='portfolio'?'portfolio':'detail';
@@ -543,19 +544,48 @@ function navigate(target){
  }
 }
 
+/* Shared Peta Rencana: read-only projection, not a new master or approval workflow.
+   Keep the ISTK RKMK legal document separate. Non-ISTK uses the existing final MCDA snapshot;
+   its allocation recommendation is not represented as a signed legal decision. */
+function planModel(programs,store,year,choose){
+ const active=(programs||[]).filter(p=>!p.arsip&&p.psListStatus!=='Arsip'&&p.psStatus!=='Arsip');
+ const fixed=active.filter(p=>p.psStatus==='Ditetapkan');
+ const istk=fixed.flatMap(p=>{
+  const ids=Array.isArray(p.psSelectedProjectIds)?new Set(p.psSelectedProjectIds.map(String)):null;
+  const selected=ids?(p.psProjects||[]).filter(x=>ids.has(String(x.id))):choose(p);
+  return selected.map(x=>({kind:'ISTK',id:String(p.id)+':'+String(x.id),code:x.psCode||'',name:x.name||'',program:p.nama||'',uic:x.uic||p.uic||'',status:'Program ditetapkan',source:'Penetapan ISTK'}));
+ });
+ const snaps=Object.entries(store||{}).filter(([k,v])=>k.startsWith('snap-'+year+'-')&&v&&v.status==='Final').map(([,v])=>v).sort((a,b)=>(+b.version||0)-(+a.version||0));
+ const final=snaps[0]||null,seen=new Set();
+ const non=(final?.rows||[]).filter(r=>!r.istk&&r.rec==='Didanai '+year).filter(r=>{const k=String(r.pid||r.code||r.name);if(seen.has(k))return false;seen.add(k);return true;}).map(r=>({kind:'Non-ISTK',id:String(r.pid||r.code||r.name),code:r.code||'',name:r.name||'',program:'—',uic:r.uic||'',status:'Direkomendasikan didanai',source:'Clearance final v'+(final.version||'—')}));
+ return {istk,non,final,draft:active.length-fixed.length};
+}
+function petaRencana(){
+ const y=yr(),m=planModel(list(),S.psKka,y,p=>I.chosen(p)||[]);
+ const kind=['all','ISTK','Non-ISTK'].includes(ws().planKind)?ws().planKind:'all';
+ const rows=m.istk.concat(m.non).filter(r=>kind==='all'||r.kind===kind);
+ const tabs=[['all','Semua',m.istk.length+m.non.length],['ISTK','ISTK',m.istk.length],['Non-ISTK','Non-ISTK',m.non.length]];
+ return '<section class="ps27-card"><div class="ps27-cardtop"><div><h3>Peta Rencana '+E(y)+'</h3><small>Konsolidasi hasil penetapan ISTK dan hasil clearance Non-ISTK. Data ditarik dari sumber masing-masing, tanpa input ulang.</small></div><span class="ps27-status">Hanya baca</span></div>'+
+ '<div class="ps27-minitabs" role="tablist" aria-label="Filter klasifikasi Peta Rencana">'+tabs.map(([k,l,n])=>'<button type="button" role="tab" class="'+(kind===k?'on':'')+'" aria-selected="'+(kind===k)+'" data-ps27-plan-kind="'+E(k)+'">'+E(l)+' · '+n+'</button>').join('')+'</div>'+
+ '<div class="ps27-tablewrap"><table class="ps27-table"><colgroup><col style="width:5%"><col style="width:13%"><col style="width:34%"><col style="width:19%"><col style="width:12%"><col style="width:17%"></colgroup><thead><tr><th>No</th><th>Klasifikasi</th><th>Proyek</th><th>Program ISTK</th><th>UIC</th><th>Status / sumber</th></tr></thead><tbody>'+
+ (rows.length?rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td><b>'+E(r.kind)+'</b></td><td><b>'+E(r.name)+'</b><small>'+E(r.code)+'</small></td><td>'+E(r.program)+'</td><td>'+E(r.uic)+'</td><td>'+E(r.status)+'<small>'+E(r.source)+'</small></td></tr>').join(''):'<tr><td colspan="6">Belum ada proyek dari hasil penetapan atau clearance final pada filter ini.</td></tr>')+
+ '</tbody></table></div><div class="ps27-clear"><b>Dasar konsolidasi</b><span>ISTK: '+m.draft+' program belum ditetapkan dan tidak masuk daftar. Non-ISTK: '+(m.final?'menggunakan hasil MCDA final v'+E(m.final.version||'—')+'; hanya rekomendasi didanai yang ditampilkan.':'belum ada hasil MCDA final. Finalisasi hasil di jalur Non-ISTK.')+' Rekomendasi pendanaan bukan pengesahan Peta Rencana secara hukum. Draft RKMK ISTK tetap tersedia di jalur ISTK.</span></div></section>';
+}
 function page(){
  // The selected year's data, filter label and list heading must resolve from one value
  // before generating this view; otherwise the filter can say 2027 while the table says 2026.
  const f=localFilter(),selected=String(f.year||'');
  if(/^20\d{2}$/.test(selected)&&+S.ui.psSelectedYear!==+selected)S.ui.psSelectedYear=+selected;
  const u=state(),split=yr()>=2027;
+ if(!split&&u.tab==='peta')u.tab='usulan';
  if(split&&u.tab==='mapping'&&window.MT_PS_SCOPE?.bank()?.mappingTab==='nonistk'){
   window.MT_PS_SCOPE.bank().mappingTab='proposal';u.tab='prioritasi';S.ui.psKka=S.ui.psKka||{};S.ui.psKka.sub='usulan';ws().istkLastTab='mapping';
  }
  const p=current(),T=list(),countAll=T.reduce((n,x)=>n+count(x),0),clearance=split&&u.tab==='prioritasi',tabs=split?ISTK_TABS:TABS;
- let h=vh('PS','pmo','Project Selection',split?'Pengelolaan usulan program dan seleksi proyek.':'Usulkan program, petakan proyek, prioritaskan, susun charter dan tetapkan dasar WBS.',split?laneNav(clearance?'non':'istk'):'');
+ let h=vh('PS','pmo','Project Selection',split?'Pengelolaan usulan program dan seleksi proyek.':'Usulkan program, petakan proyek, prioritaskan, susun charter dan tetapkan dasar WBS.',split?laneNav(u.tab==='peta'?'peta':clearance?'non':'istk'):'');
  h+='<section class="pswf ps27'+(split?' ps27-split':'')+(clearance?' ps27-clearance':'')+'" aria-label="Project Selection">';
  if(clearance)return h+nonIstkPrio(filter(p)+actionBar(p))+'</section>';
+ if(split&&u.tab==='peta')return h+petaRencana()+'</section>';
  h+='<div class="pm-stage-shell ps27-stage"><nav class="ptabs pmo-journey ps27-tabs" role="tablist" aria-label="Submenu Project Selection">'+
  tabs.map((t,i)=>'<button type="button" role="tab" title="'+E(TOP_HELP[t[0]]||'')+'" aria-selected="'+(u.tab===t[0])+'" class="'+(u.tab===t[0]?'on':'')+'" data-ps27-tab="'+t[0]+'"><span><em>'+(''+(i+1))+'</em> '+t[1]+'</span>'+(t[0]==='usulan'&&T.length?'<b>'+T.length+'</b>':t[0]==='mapping'&&countAll?'<b>'+countAll+'</b>':'')+'</button>').join('')+
  '</nav><span class="ps27-contextinfo" tabindex="0" role="img" aria-label="Informasi submenu '+E(TABS.find(x=>x[0]===u.tab)?.[1]||'Project Selection')+': '+E(TOP_HELP[u.tab]||'')+'" title="'+E(TOP_HELP[u.tab]||'')+'">ⓘ</span></div>';
@@ -577,6 +607,7 @@ function mount(){
  if(lane&&!lane.dataset.ps27Bound){lane.dataset.ps27Bound='1';lane.addEventListener('click',ev=>{const b=ev.target.closest('[data-ps27-lane]');if(!b)return;ev.preventDefault();const selected=b.dataset.ps27Lane;switchLane(selected);document.querySelector('#view .ps27-header-lane [data-ps27-lane="'+selected+'"]')?.focus({preventScroll:true})})}
  setTimeout(()=>fillCount(root),0);
  root.addEventListener('click',function(ev){
+  const plan=ev.target.closest('[data-ps27-plan-kind]');if(plan){ev.stopImmediatePropagation();ws().planKind=plan.dataset.ps27PlanKind;render();return;}
   const b=ev.target.closest('[data-ps27-lane],[data-ps27-nmethod],[data-ps27-setmethod],[data-ps27-pkpi],[data-ps27-openprog],[data-ps27-clear],[data-ps27],[data-ps27-tab],[data-ps27-pick],[data-ps27-remove],[data-ps27-sub],[data-ps27-usul],[data-ps27-reset],[data-ps27-period],[data-mt-filter-icon]');
   if(!b)return;
   ev.stopImmediatePropagation();
@@ -801,7 +832,7 @@ function helpPage(tab){
   '<div class="ps27-sheet-subhead"><h4>Alur keputusan dan keluaran</h4></div><div class="ps27-sheet-tablewrap"><table class="ps27-sheet-table"><thead><tr><th>Tahap</th><th>Keluaran yang diperiksa</th><th>Berikutnya</th></tr></thead><tbody>'+
   '<tr><td>Usulan</td><td>Tujuan, business case, manfaat, stakeholder, risiko dan dokumen program</td><td>Pemetaan proyek</td></tr>'+
   '<tr><td>Pemetaan</td><td>Proyek relevan dan pemilik pekerjaan teridentifikasi</td><td>Prioritasi</td></tr>'+
-  '<tr><td>Prioritasi</td><td>SMART: peringkat & snapshot. MCDA: hasil gate, peringkat P1–P4, alokasi direkomendasikan/cadangan, versi hasil di Repositori (Draft/Final). Proyek di luar ISTK berhenti di sini (tidak ke Penetapan/WBS)</td><td>Charter</td></tr>'+
+  '<tr><td>Prioritasi</td><td>SMART: peringkat & snapshot. MCDA: hasil gate, peringkat P1–P4, alokasi direkomendasikan/cadangan, versi hasil di Repositori (Draft/Final). Proyek di luar ISTK masuk Peta Rencana berdasarkan hasil clearance final (tidak ke Penetapan/WBS)</td><td>Charter</td></tr>'+
   '<tr><td>Charter</td><td>Rencana awal, milestone, manfaat, kriteria penyelesaian, unit pengelola</td><td>Penetapan</td></tr>'+
   '<tr><td>Penetapan</td><td>Kontrak K-Wide, target triwulan dan cakupan proyek terpilih</td><td>Draft RKMK / WBS</td></tr>'+
   '<tr><td>RKMK</td><td>Narasi rancangan direviu dan disiapkan untuk proses formal</td><td>Project Management setelah penetapan</td></tr>'+
@@ -1008,7 +1039,7 @@ function sheetPage(tab){
    ['Kuadran Nilai–Kemudahan','Pemetaan usulan MCDA menjadi Quick Win, Proyek Strategis, Pelengkap, atau Tunda / Kaji Ulang.'],
    ['WSJF','Weighted Shortest Job First: Cost of Delay ÷ Job Size, dipakai sebagai pembanding peringkat MCDA.'],
    ['Repositori hasil','Arsip versi hasil prioritasi MCDA per tahun (Draft/Final) beserta bobot dan roadmap saat disimpan.'],
-   ['Di luar ISTK (Non-ISTK)','Usulan proyek SI yang tidak termapping ke program/ISTK: ikut prioritasi MCDA, tidak masuk penetapan program dan tidak dipantau PMO Kemenkeu.'],
+   ['Di luar ISTK (Non-ISTK)','Usulan proyek SI yang tidak termapping ke program/ISTK: ikut prioritasi MCDA, hasil clearance final menjadi masukan Peta Rencana; tidak masuk penetapan program ISTK dan tidak dipantau PMO Kemenkeu.'],
    ['Kriteria & Bobot','Aspek penilaian dan tingkat kepentingan relatif yang dipakai dalam skor prioritas.'],
    ['Utility','Transformasi nilai kriteria ke skala pembanding sebelum penggabungan berbobot.'],
    ['Ambang','Batas skor yang ditetapkan untuk penyaringan calon proyek pada mode SMART.'],
