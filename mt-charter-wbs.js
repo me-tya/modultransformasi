@@ -91,7 +91,7 @@ function open(pid){
    '<span class="cwb-sum" data-cwb-sum></span>'+
   '</div><div class="cwb-wrap"><table class="cwb-tb"><colgroup><col style="width:34px"><col style="width:88px"><col><col><col style="width:128px"><col style="width:128px"><col style="width:120px"><col style="width:140px"></colgroup>'+
    '<thead><tr><th><input type="checkbox" data-cwb-all aria-label="Pilih semua"></th><th>Kode</th><th>Lv 4 · Milestone / Tindakan</th><th>Lv 5 · Deliverable (Kriteria)</th><th>Mulai</th><th>Selesai</th><th>UIC Utama</th><th>UIC Pendukung</th></tr></thead><tbody data-cwb-body></tbody></table></div></main>'+
-  '<footer><span class="cwb-note">Baris dapat disunting langsung. Bobot, target bulanan dan cakupan UE I dihitung otomatis dari jadwal dan UIC.</span><span style="flex:1"></span><button type="button" class="btn" data-cwb-close>Batal</button><button type="button" class="btn mt-dlbtn" data-cwb-save>Simpan ke WBS</button></footer></section>';
+  '<footer><span class="cwb-note">Baris dapat disunting langsung. Bobot, target bulanan dan cakupan UE I dihitung otomatis dari jadwal dan UIC.</span><span style="flex:1"></span><button type="button" class="btn" data-cwb-close>Batal</button><button type="button" class="btn" data-cwb-xlsx title="Unduh baris terpilih dalam format Template WBS (sheet Data) yang bisa diimpor lagi lewat Import Excel">⇩ Export Excel</button><button type="button" class="btn mt-dlbtn" data-cwb-save>Simpan ke WBS</button></footer></section>';
  document.body.appendChild(ov);
  const body=ov.querySelector('[data-cwb-body]'),sum=ov.querySelector('[data-cwb-sum]'),btn=ov.querySelector('[data-cwb-save]'),all=ov.querySelector('[data-cwb-all]');
  const codes=()=>{const pre=String(opt.prefix||'').toUpperCase();let n=Math.max(0,...usedNums(pre)),w=Math.max(3,...usedNums(pre).map(x=>String(x).length));
@@ -106,7 +106,7 @@ function open(pid){
    '<tr><td colspan="8" class="cwb-empty">Charter belum memiliki Key Milestones, Kriteria Penyelesaian, atau Rencana Kerja'+(opt.year?' untuk tahun '+opt.year:'')+'.</td></tr>';
   const n=rows.filter(r=>r.on).length,d=rows.filter(r=>r.dup).length;
   sum.textContent=rows.length+' baris · '+n+' dipilih'+(d?' · '+d+' sudah ada':'');
-  btn.textContent='Simpan '+n+' item ke WBS';btn.disabled=!n;
+  btn.textContent='Simpan '+n+' item ke WBS';btn.disabled=!n;ov.querySelector('[data-cwb-xlsx]').disabled=!n;
   all.checked=!!rows.length&&rows.every(r=>r.on);all.indeterminate=n>0&&!all.checked};
  paint();
  const close=()=>{ov.remove();document.removeEventListener('keydown',esc,true)},esc=e=>{if(e.key==='Escape'){e.stopPropagation();close()}};document.addEventListener('keydown',esc,true);
@@ -117,10 +117,11 @@ function open(pid){
   if(t.matches('[data-cwb-all]')){rows.forEach(r=>r.on=t.checked);paint();return}
   const o=t.dataset.cwbOpt;if(o==='year'||o==='lv3'){opt[o]=o==='year'?+t.value:t.value;rows=build(p,c,opt);paint()}});
  ov.addEventListener('click',e=>{const t=e.target;if(t===ov||t.closest('[data-cwb-close]')){close();return}
-  if(!t.closest('[data-cwb-save]'))return;
+  const xl=t.closest('[data-cwb-xlsx]');if(!xl&&!t.closest('[data-cwb-save]'))return;
   const pre=String(opt.prefix||'').toUpperCase();if(!/^[A-Z]{2,10}$/.test(pre)){say('Prefix kode harus 2–10 huruf, mis. OA atau CORE.');return}
   const pick=rows.map((r,i)=>[r,i]).filter(([r])=>r.on);
   for(const [r,i] of pick){if(!T(r.l4)){say('Baris '+(i+1)+': Lv 4 wajib diisi.');return}if(!isD(r.s)||!isD(r.f)){say('Baris '+(i+1)+': tanggal Mulai dan Selesai wajib diisi.');return}if(r.f<r.s){say('Baris '+(i+1)+': tanggal Selesai harus ≥ Mulai.');return}}
+  if(xl){exportXlsx(p,opt,pick,codes());return}
   const k=codes(),taken=new Set((S.wbs||[]).concat(...(S.programs||[]).map(q=>q.psWbsDraft||[])).map(w=>w&&w.k));
   if(pick.some(([,i])=>taken.has(k[i]))){say('Kode bentrok dengan kode yang sudah ada. Ubah prefix kode.');return}
   const dW=typeof durW==='function'?durW:(s,f)=>Math.round((new Date(f)-new Date(s))/864e5)+1;
@@ -132,6 +133,20 @@ function open(pid){
   close();try{if(typeof render==='function')render()}catch(_){}try{if(typeof save==='function')save()}catch(_){}
   say(items.length+' item WBS dibuat ('+items[0].k+' s.d. '+items[items.length-1].k+'). '+(draft?'Tersimpan sebagai Draft WBS program; otomatis masuk WBS saat program ditetapkan.':'Lihat di PMO › WBS & Progres.'));
  });
+}
+/* Export: format sheet Data Template WBS Standar (Code, Lv 1–6, Start, Finish, Triwulan Finish, UIC, Jenis Dokumen),
+   sama dengan yang dibaca PMO › WBS & Progres › Import Excel. */
+const XH=['Code','Lv 1','Lv 2','Lv 3','Lv 4','Lv 5','Lv 6','Start','Finish','Triwulan Finish','UIC Utama','UIC Pendukung','Jenis Dokumen Pendukung','Catatan Template'];
+function exportXlsx(p,opt,pick,k){
+ if(!window.XLSX||!XLSX.utils){say('Pustaka Excel belum termuat. Periksa koneksi internet.');return}
+ const data=[XH].concat(pick.map(([r,i])=>{const L=pathOf(p,opt,r);return [k[i],'Program Transformasi Kemenkeu '+r.f.slice(0,4),L[0]||'',L[1]||'',L[2]||'',L[3]||'','',r.s,r.f,'TW '+Math.ceil(+r.f.slice(5,7)/3),T(r.u),T(r.d),'','Dari Charter Program · '+r.src]}));
+ const wb=XLSX.utils.book_new(),sh=XLSX.utils.aoa_to_sheet(data);
+ sh['!cols']=[14,34,34,28,40,48,16,12,12,14,18,22,26,34].map(w=>({wch:w}));sh['!autofilter']={ref:'A1:N'+data.length};
+ XLSX.utils.book_append_sheet(wb,sh,'Data');
+ const yrs=[...new Set(pick.map(([r])=>r.f.slice(0,4)))].sort();
+ XLSX.writeFile(wb,'WBS_dari_Charter_'+String(opt.prefix||'').toUpperCase()+'_'+(yrs.length>1?yrs[0]+'-'+yrs[yrs.length-1]:yrs[0]||'')+'.xlsx',{bookType:'xlsx',compression:true});
+ try{if(typeof log==='function')log('Export WBS dari Charter',p.nama+': '+pick.length+' baris')}catch(_){}
+ say(pick.length+' baris WBS diekspor ke Excel (format Template WBS, sheet Data).');
 }
 const btn=pid=>{const p=progById(pid);return p&&canCreate(p)?'<button type="button" class="chx-sumb" data-chx-wbs="'+E(pid)+'" title="Create WBS: susun item WBS dari Key Milestones, Kriteria Penyelesaian dan Rencana Kerja charter ini">⊞ Buat WBS</button>':''};
 document.addEventListener('click',ev=>{const b=ev.target.closest&&ev.target.closest('[data-chx-wbs]');if(!b)return;ev.preventDefault();ev.stopPropagation();open(b.dataset.chxWbs)},true);
