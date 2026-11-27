@@ -663,3 +663,18 @@ button.ps27-pkpi.navy:hover{border-color:#0a4277}
 @media(max-width:1000px){#app .ps27.ps27-clearance .kka-group-subline{flex-wrap:wrap;gap:0}#app .ps27.ps27-clearance .kka-group-sub{flex:1 1 100%}#app .ps27.ps27-clearance .kka-group-actions{width:100%;flex:0 0 100%;min-height:38px}}
 @media(max-width:440px){#app .ps27.ps27-clearance .ps27-smart-tools{gap:6px}#app .ps27.ps27-clearance .ps27-smart-tools>.ps27-smart-threshold{font-size:10px;gap:3px}#app .ps27.ps27-clearance .ps27-smart-tools>.ps27-smart-threshold input{width:44px;min-width:44px}}
 @media(prefers-reduced-motion:reduce){#app .ps27.ps27-clearance .kka-group-sub button{transition:none}}
+
+
+/* A single compact row height for Clearance tabs and method toggle.
+   The context text occupies the same slot on Allocation, Analysis and History. */
+#app .ps27.ps27-clearance .kka-group-subline{min-height:34px;align-items:center;box-sizing:border-box}
+#app .ps27.ps27-clearance .kka-group-sub{align-items:center}
+#app .ps27.ps27-clearance .kka-group-sub button{box-sizing:border-box;height:32px;min-height:32px;line-height:1.2;padding:4px 6px}
+#app .ps27.ps27-clearance .kka-group-actions{height:32px;min-height:32px;padding:0;align-items:center}
+#app .ps27.ps27-clearance .kka-group-actions .kka-method{height:32px;min-height:32px;gap:6px;box-sizing:border-box;align-items:center}
+#app .ps27.ps27-clearance .kka-group-actions .kka-mseg{height:30px;min-height:30px;box-sizing:border-box;align-items:stretch;border-radius:6px}
+#app .ps27.ps27-clearance .kka-group-actions .kka-mseg label{box-sizing:border-box;height:28px;min-height:28px;padding:0 9px;line-height:1.2;font-size:12px;font-family:inherit}
+#app .ps27.ps27-clearance .kka-group-actions .kka-mseg label small{font-size:10px;line-height:1.2}
+#app .ps27.ps27-clearance .kka-group-actions .kka-group-context{line-height:30px;white-space:nowrap}
+@media(max-width:1000px){#app .ps27.ps27-clearance .kka-group-actions{height:34px;min-height:34px}}
+@media(max-width:650px){#app .ps27.ps27-clearance .kka-group-sub button{height:auto;min-height:32px;padding:4px 3px;font-size:11px}}
